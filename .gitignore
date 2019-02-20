@@ -18,5 +18,6 @@ gauss/settings*
 bin/*
 include/*
 lib64/*
+lib/*
 pyvenv.cfg
 share/*
