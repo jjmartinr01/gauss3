@@ -1,0 +1,18 @@
+# -*- coding: utf-8 -*-
+from django.db import models
+
+# Create your models here.
+
+class Banco(models.Model):
+    codigo = models.CharField("Código de cuatro dígitos", max_length=10)
+    nombre = models.CharField("Nombre", max_length=250)
+    bic = models.CharField("BIC/SWIFT", max_length=15, null=True, blank=True)
+    nif = models.CharField("NIF", max_length=25)
+    tel = models.CharField("Teléfono", max_length=15, null=True, blank=True)
+    fax = models.CharField("Fax", max_length=15, null=True, blank=True)
+    web = models.CharField("Página web", max_length=50, null=True, blank=True)
+    address = models.CharField("Dirección", max_length=150, null=True, blank=True)
+    cp = models.CharField("Código postal", max_length=15, null=True, blank=True)
+    localidad = models.CharField("Localidad", max_length=150, null=True, blank=True)
+    def __unicode__(self):
+      return u'%s (%s)' % (self.nombre,self.nif)

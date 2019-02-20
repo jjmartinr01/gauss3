@@ -1,0 +1,116 @@
+{% extends "base_select2-4.html" %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Configuración
+                {% if request.session.gauser_extra.ronda.entidad.organization.id == 102 %}
+                    de la ronda solar
+                {% elif request.session.gauser_extra.ronda.entidad.general_name == 104 %}
+                    del curso escolar
+                {% else %} del periodo de trabajo{% endif %}
+            </strong></h4>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_rondas" title="Lista de rondas">
+            {% for ronda in rondas %}
+                {% include "configura_rondas_accordion.html" %}
+            {% endfor %}
+        </dl>
+
+    </form>
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        habilita(['s_plus']);
+
+        $("#plus_sign").click(function (e) {
+            e.preventDefault();
+            $.post("/configura_rondas/", {action: 'add_ronda'}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#list_rondas').prepend(data.html);
+                }
+            });
+        });
+
+
+        $('body').on('click', '.delete_ronda', function (e) {
+            e.preventDefault();
+            var ronda = $(this).data('ronda');
+            $.post("/configura_rondas/", {action: 'delete_ronda', ronda: ronda}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#accordion' + ronda).hide();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('keyup change', '.campo_texto', function (e) {
+            var campo = $(this).data('campo');
+            var value = $(this).val();
+            var ronda = $(this).data('ronda');
+            $.post("/configura_rondas/", {action: 'change_campo_texto', ronda: ronda, value: value, campo: campo},
+                function (data) {
+                    if (data.ok) {
+                        if (campo == 'nombre') {
+                            $('#span_nombre' + ronda).html(data.texto);
+                        } else if (campo == 'inicio') {
+                            $('#span_inicio' + ronda).html(data.texto);
+                        } else if (campo == 'fin') {
+                            $('#span_fin' + ronda).html(data.texto);
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.upgrade_usuarios', function (e) {
+            var cargo = $(this).data('cargo');
+            var ronda = $(this).data('ronda');
+            $.post("/configura_rondas/", {action: 'upgrade_usuarios', ronda: ronda, cargo: cargo},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#cargos' + data.ronda).html(data.html);
+                    }
+                });
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('ronda_contenido')) {
+                        var id = accordion.data('ronda');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/configura_rondas/", {action: 'open_accordion', id: id}, function (data) {
+                                if (data.ok) {
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                    $('#panel' + id).html(data.html);
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).empty();
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

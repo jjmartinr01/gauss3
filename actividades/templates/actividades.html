@@ -1,0 +1,302 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    {#    <link href="/static/select2/select2-4.0-foundation5.css" rel="stylesheet"/>#}
+    <style>
+        .opera {
+            margin-right: 20px;
+            cursor: pointer;
+            color: #008CBA;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .opera:hover {
+            -webkit-transform: scale(1.7, 1.7);
+            -webkit-transition-timing-function: ease-out;
+            -webkit-transition-duration: 150ms;
+            -moz-transform: scale(1.7, 1.7);
+            -moz-transition-timing-function: ease-out;
+            -moz-transition-duration: 150ms;
+            position: relative;
+            z-index: 99;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_actividad" name="id_actividad" value="">
+
+        <div id="div_actividades_seleccionados"></div>
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Actividades Extraescolares/Complementarias</strong>
+            </h4>
+        </div>
+
+        {% if request.session.gauser_extra|has_permiso:"aprueba_actividades" %}
+            {% if sin_aprobar > 0 %}
+                <div class="row panel callout radius" id="aviso_actividades_sin_aprobar">
+                    <div class="columns large-12">
+                        <div class="row">
+                            <div class="columns large-12">
+                                <p style="font-weight: 800;">Hay {{ sin_aprobar }} actividades marcadas como no
+                                    aprobadas por el Consejo Escolar. Si ya estuvieran aprobadas, introduce la fecha de
+                                    aprobación y pulsa sobre el botón "Aceptar".</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-6">
+                                <label>Fecha de aprobación general:
+                                    <input type="text" id="fecha_aprobacion_general" class="fecha" value=""></label>
+                            </div>
+                            <div class="columns large-6">
+                                <a class="button" id="aceptar_fecha_aprobacion_general">Aceptar</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+        <div class="row">
+            <div class="columns large-6">
+                <label>Buscar entre esta fecha ...</label>
+                <input class="fecha" name="search_fecha_inicio" id="search_fecha_inicio" type="text"
+                       value="{{ request.session.gauser_extra.ronda.inicio|date:"d-m-Y" }}">
+            </div>
+            <div class="columns large-6">
+                <label>... y esta otra</label>
+                <input class="fecha" name="search_fecha_fin" id="search_fecha_fin" type="text"
+                       value="{% now "d-m-Y" %}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-10">
+                <input type="text" name="busca_actividades" id="busca_actividades"
+                       placeholder="Escribe parte del texto incluido en la actividad">
+            </div>
+            <div class="columns large-2">
+                <a id="busca_actividades_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>
+            </div>
+        </div>
+        {#        <div class="row">#}
+        {#            <div class="columns large-12">#}
+        {#                <select id="select_actividad">#}
+        {#                </select>#}
+
+        {#            </div>#}
+        {#        </div>#}
+        <br><br>
+        <dl class="accordion" data-accordion id="list_actividades_selected"></dl>
+
+        <div id="list_actividades_pagination">
+            {% include 'actividad_accordion.html' %}
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+
+    <script type="application/javascript">
+
+        {% if request.session.gauser_extra|has_permiso:"aprueba_actividades" %}
+            $('#aceptar_fecha_aprobacion_general').click(function (e) {
+                e.preventDefault();
+                $.post("/ajax_actividades/", {
+                        action: 'aceptar_fecha_aprobacion_general',
+                        fecha: $('#fecha_aprobacion_general').val()
+                    },
+                    function (data) {
+                        if (data.success) {
+                            $('#aviso_actividades_sin_aprobar').remove();
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    }, 'json');
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:"crea_actividad" %}
+            habilita(['s_plus', 's_list-alt']);
+
+            $('#plus_sign').click(function (event) {
+                event.preventDefault();
+                $.post("/ajax_actividades/", {action: 'add_actividad'},
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_actividades_recientes').prepend(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('#list-alt_sign').click(function (event) {
+                event.preventDefault();
+                $.post("/ajax_actividades/", {action: 'paginar_actividades', page: 1},
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_actividades_pagination').html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('click', '.go_page', function (e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            if (page) {
+                var section = $(this).closest('section').prop('id');
+                $.post("/ajax_actividades/", {action: 'paginar_actividades', page: page},
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_actividades_pagination').html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:"crea_informe_actividades" %}
+            habilita(['s_file-pdf-o']);
+
+            $("#file-pdf-o_sign").click(function (e) {
+                e.preventDefault();
+                $('#id_actividad').val('todas');
+                $('#action').val('pdf_actividades');
+                document.{{formname}}.submit();
+            });
+        {% endif %}
+
+
+        $(".fecha").fdatepicker({
+            format: 'dd-mm-yyyy',
+            weekStart: 1
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-actividad')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/ajax_actividades/", {action: 'open_accordion', actividad: id}, function (data) {
+                                if (data.ok) {
+                                    $('#panel' + id).html(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $("body").on('click', '#busca_actividades_manual', function (e) {
+            var texto = $('#busca_actividades').val();
+            var id_fecha_inicio = $('#search_fecha_inicio').val();
+            var id_fecha_fin = $('#search_fecha_fin').val();
+            $.post("/ajax_actividades/", {
+                    action: 'busca_actividades', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                    id_fecha_fin: id_fecha_fin
+                },
+                function (data) {
+                    $('#list_actividades_selected').html(data['html']);
+                    $(document).foundation();
+                });
+        });
+        $("body").on('keyup', '#busca_actividades', function (e) {
+            var texto = $('#busca_actividades').val();
+            var id_fecha_inicio = $('#search_fecha_inicio').val();
+            var id_fecha_fin = $('#search_fecha_fin').val();
+            $.post("/ajax_actividades/", {
+                    action: 'busca_actividades', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                    id_fecha_fin: id_fecha_fin
+                },
+                function (data) {
+                    $('#list_actividades_selected').html(data['html']);
+                    $(document).foundation();
+                });
+        });
+
+        {#        $('#select_actividad').select2({#}
+        {#            placeholder: "Escribe parte de texto para buscar documento",#}
+        {#            allowClear: true,#}
+        {#            ajax: {#}
+        {#                url: "/ajax_actividades/",#}
+        {#                type: 'GET',#}
+        {#                dataType: 'json',#}
+        {#                delay: 250,#}
+        {#                data: function (params) {#}
+        {#                    $('#q').val(params.term);#}
+        {#                    $('#page').val(params.page);#}
+        {#                    $('#action').val('buscar_extraescolares');#}
+        {##}
+        {#                    return $('#' + '{{ formname }}').serialize();#}
+        {#                },#}
+        {#                processResults: function (data, page) {#}
+        {#                    return {#}
+        {#                        results: $.map(data, function (item) {#}
+        {#                            return {#}
+        {#                                text: item.text,#}
+        {#                                id: item.id#}
+        {#                            }#}
+        {#                        })#}
+        {#                    };#}
+        {#                },#}
+        {#                cache: true#}
+        {#            },#}
+        {#            escapeMarkup: function (markup) {#}
+        {#                return markup;#}
+        {#            }, // let our custom formatter work#}
+        {#            minimumInputLength: 3,#}
+        {#            language: {#}
+        {#                inputTooShort: function () {#}
+        {#                    return "Introduce al menos 3 caracteres para iniciar búsqueda";#}
+        {#                }#}
+        {#            }#}
+        {#        });#}
+        {##}
+        {##}
+        {#        $('#select_actividad').change(function (e) {#}
+        {#            e.preventDefault();#}
+        {#            var actividad = $(this).val();#}
+        {#            $.post("/ajax_actividades/", {action: 'get_actividad', actividad: actividad},#}
+        {#                function (data) {#}
+        {#                    $('#list_actividades_recientes').prepend(data);#}
+        {#                    $("#update_ok").show().delay(1500).fadeOut();#}
+        {#                });#}
+        {#        });#}
+
+    </script>
+
+{% endblock %}
+
+
+
+	
+
+
+
+
+
+
+

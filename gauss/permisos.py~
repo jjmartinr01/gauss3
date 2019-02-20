@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+import itertools
+
+PERM_ADMINISTRADOR = ['carga_masiva','add_socio','conf_grupo','conf_bajas','add_baja','mod_socio']
+
+PERM_PRESIDENTE = ['carga_masiva','add_socio','conf_grupo','conf_bajas','add_baja','mod_socio']
+
+PERM_SECRETARIO = ['carga_masiva','add_socio','conf_grupo','conf_bajas','add_baja','mod_socio']
+
+PERM_TESORERO = []
+
+PERM_JEFERAMA = ['add_actividad','mod_socio']
+
+PERM_SCOUTER = ['add_actividad',]
+
+PERM_EDUCANDO = []
+
+PERM_CONSEJO = []
+
+PERM_COMITE = []
+
+PERM_PADRE = []
+
+PERM_ALMACENERO = []
+
+PERM_COCINERO = []
+
+PERM_FONTANERO = []
+
+PERM_CARPINTERO = []
+
+PERM_ELECTRICISTA = []
+
+def get_permisos(user):
+  permisos = []
+  grupos_usuario = user.groups.all()
+  for grupo in grupos_usuario:
+    permisos.append(grupo.permissions.all())
+  return list(set(itertools.chain.from_iterable(permisos)))
+  

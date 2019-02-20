@@ -1,0 +1,6 @@
+<ul class="stack button-group round">
+    {% for enlace in content_div.enlaces.all %}
+        <li><a href="{% if enlace.href %}{{ enlace.href }}{% else %}#{% endif %}" class="button link_html_web"
+               id="link-{{ enlace.id }}">{{ enlace.texto }}</a></li>
+    {% endfor %}
+</ul>

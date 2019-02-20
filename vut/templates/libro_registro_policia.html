@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="tipo_documento"
+          content="Documento requerido en virtud de la Ley Orgánica 4/2015 de Protección de la Seguridad Ciudadana"/>
+    <title>Anexo </title>
+</head>
+<style>
+    .center {
+        text-align: center
+    }
+    .interlineado{
+        line-height: 50%;
+    }
+    p{
+        font-size: 10pt;
+    }
+    h1{
+        font-size: 14pt;
+    }
+    h2{
+        font-size: 13pt;
+    }
+</style>
+<body>
+
+{% for viajero in viajeros reversed %}
+    <h1 class="pagebreak center"><u>ANEXO</u></h1>
+    <h2 class="center interlineado">Modelo de parte de entrada de viajeros.</h2>
+    <h2 class="center interlineado">Hoja-registro (mayores de 16 años)</h2>
+    <p class="center interlineado">(Rellenar con mayúsculas) </p>
+    <h1 class="center interlineado"><u>Datos del establecimiento</u></h1>
+
+    Parte nº: {{ forloop.counter }}<br>
+    NIF: {{ vivienda.nif|upper }} <br>
+    Nombre del establecimiento: {{ vivienda.nombre|upper }}<br>
+    Municipio: {{ vivienda.municipio|upper }}<br>
+    Provincia: {{ vivienda.provincia|upper }} <br>
+
+    <h1 class="center"><u>Datos del viajero</u></h1>
+
+    Núm de documento de identidad: {{ viajero.ndi|upper }}<br>
+    Tipo de documento(1): {{ viajero.tipo_ndi|upper }}<br>
+    Fecha expedición del documento: (5): {{ viajero.fecha_exp|date:'Ymd' }}<br>
+    Primer apellido: {{ viajero.apellido1|upper }}<br>
+    Segundo apellido: {{ viajero.apellido2|upper }}<br>
+    Nombre: {{ viajero.nombre|upper }}<br>
+    Sexo(2): {{ viajero.sexo|upper }}<br>
+    Fecha de nacimiento(3): {{ viajero.nacimiento|date:'Ymd' }}<br>
+    País de nacionalidad(4): {{ viajero.get_pais_display|upper }}<br>
+    Fecha de entrada(5): {{ viajero.reserva.entrada|date:'Ymd' }}<br>
+    <p class="center">Logroño, a {{ viajero.reserva.entrada|date:'j' }} de {{ viajero.reserva.entrada|date:'F'|lower }}
+        de {{ viajero.reserva.entrada|date:'Y' }}</p>
+    <table><tr><td>Firma del viajero</td><td><img src="{{ ruta_base }}{{ viajero.firma.url }}" width="100px"></td></tr></table>
+
+    <div style="font-size: small">
+    <p>La recogida y tratamiento se hará de acuerdo con la Ley Orgánica 15/1999, de 13 de diciembre, de Protección de
+        Datos de Carácter Personal y al amparo de lo dispuesto en el artículo 12.1 de la Ley Orgánica 1/1992, de 21 de
+        febrero, sobre Protección de la Seguridad Ciudadana.<br>
+        Instrucciones de confección del impreso.</p>
+    (1) Se admiten:<br>
+    - <u>Para españoles</u>: D.N.I., pasaporte o permiso de conducir.<br>
+    - <u>Para extranjeros</u>: pasaporte, carta o documento de identidad (para ciudadanos de la Unión Europea, Andorra,
+    Islandia, Suiza, Noruega, Malta, Mónaco y San Marino). Permiso de residencia español en vigor para los extranjeros
+    residentes en España.<br>
+    Se cumplimentará: D = DNI, P = pasaporte, C = permiso de conducir, I = carta o documento de identidad, N = Permiso
+    de residencia español, X = Permiso de residencia de otro Estado Miembro de la Unión Europea.<br>
+    (2) F = sexo femenino, y M = sexo masculino.<br>
+    (3) En el formato AAAAMMDD, al menos se cumplimentará el año de nacimiento. El mes y el día, si se desconocen, irán
+    como 0000.<br>
+    (4) Nombre del país de nacionalidad.<br>
+    (5) En el formato AAAAMMDD.
+    </div>
+
+{% endfor %}
+</body>
+</html>

@@ -1,0 +1,34 @@
+{% extends "lateral.html" %}
+
+
+{% block ready %}
+  $('#aceptar').click(function () {  document.{{formname}}.submit(); });
+  $('#volver').click(function () {  javascript:history.go(-1); });
+{% endblock %}
+
+
+{% block navegar %}
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <img id="volver" style="cursor:pointer;" border="0" align="right" alt="Atrás" title="Atrás" src="/static/images/volver.gif">
+  <img id="aceptar" style="cursor:pointer;" border="0" align="right" alt="Aceptar" title="Aceptar" src="/static/images/aceptar.gif">
+  Configuración de datos del Grupo
+{% endblock %}
+
+
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+{{tipo_usuario}}
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Añadir miembros a la comunidad del grupo scout (scouts, monitores, padres, ...) </td></tr></table>
+    
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+		<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+ 		  Fichero datos de usuarios de GAUSS (Obtenido de Racima .xls): </td><td><input type="file" name="file_usuarios" /> </td></tr></table> 
+
+      
+    
+  
+    
+  </form>
+{% endblock %}

@@ -1,0 +1,64 @@
+<style>
+    .duplicated {
+        background-color: #feefef;
+    }
+</style>
+{% if forloop.counter|divisibleby:9 %}
+    <div class="row" style="border-bottom: 1px solid grey">
+        <div class="columns large-5 cabecera_title">
+            Actividad
+        </div>
+        <div class="columns large-1 cabecera_title" title="Requiere un grupo/subentidad para llevarla a cabo">
+            Grupo
+        </div>
+        <div class="columns large-1 cabecera_title" title="Requiere una materia para llevarla a cabo">
+            Materia
+        </div>
+        <div class="columns large-1 cabecera_title"
+             title="Esta actividad es una guardia (esta identificación es necesaria para el módulo de guardias)">
+            Guardia
+        </div>
+        <div class="columns large-4 cabecera_title" title="Observaciones sobre la actividad">
+            Observaciones
+        </div>
+    </div>
+{% endif %}
+<div class="row {% if duplicated %} duplicated
+    {% else %}{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}{% endif %}" id="row{{ a.id }}">
+    <div class="columns large-5" data-id="{{ a.id }}">
+        <a id="nombre_actual{{ m.id }}" data-dropdown="drop{{ a.id }}" aria-controls="drop{{ a.id }}"
+           aria-expanded="false"><span id="act{{ a.id }}">{{ a.nombre }}</span></a>
+        <div id="drop{{ a.id }}" data-dropdown-content class="f-dropdown content medium" aria-hidden="true"
+             tabindex="-1" aria-autoclose="false">
+            <ul style="list-style-type: none;">
+                <li><a data-id="{{ a.id }}" class="delete_actividad"><i class="fa fa-trash-o fa-fw"></i>
+                    Borrar</a></li>
+                <li><a data-id="{{ a.id }}" class="duplicate_actividad"><i class="fa fa-copy fa-fw"></i>
+                    Duplicar</a>
+                </li>
+            </ul>
+            <label>Cambia el nombre:<input type="text" data-id="{{ a.id }}" class="change_nombre_actividad"
+                                           value="{{ a.nombre }}"></label>
+        </div>
+
+    </div>
+    <div class="columns large-1 requiere_grupo" title="Requiere un grupo/subentidad para llevarla a cabo">
+        <input type="checkbox" data-id="{{ a.id }}" class="rg_checkbox2 change_checkbox" data-attr="requiere_unidad"
+               {% if a.requiere_unidad %}checked{% endif %}>
+    </div>
+    <div class="columns large-1 requiere_materia" title="Requiere una materia para llevarla a cabo">
+        <input type="checkbox" data-id="{{ a.id }}" class="rm_checkbox2 change_checkbox" data-attr="requiere_materia"
+               {% if a.requiere_materia %}checked{% endif %}>
+    </div>
+    <div class="columns large-1 guardia"
+         title="Esta actividad es una guardia (esta identificación es necesaria para el módulo de guardias)">
+        <input type="checkbox" data-id="{{ a.id }}" class="rgu_checkbox2 change_checkbox" data-attr="guardia"
+               {% if a.guardia %}checked{% endif %}>
+    </div>
+    <div class="columns large-4 ob_actividad" data-id="{{ a.id }}" title="Observaciones sobre la actividad"
+         contenteditable="true">
+        {% autoescape off %}
+            {{ a.observaciones }}
+        {% endautoescape %}
+    </div>
+</div>

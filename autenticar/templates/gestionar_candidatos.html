@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+    .row:hover{
+        background-color: lightgrey;
+    }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Candidatos a Gauser</strong></h4>
+        </div>
+
+        {% for c in candidatos %}
+            <div id="candidato{{ c.id }}">
+                <div class="row">
+                    <div class="columns large-12">
+                        <hr>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns large-4">
+                        <b>Candidato</b> <b><a class="nuevo" data-candidato="{{ c.id }}">New</a></b>
+                    </div>
+                    <div class="columns large-2">
+                        <a class="todos_atributos" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4">
+                        <b>Gauser</b> <b><a class="arreglado" data-candidato="{{ c.id }}"><i
+                            class="fa fa-thumbs-up"></i>
+                    </a> </b>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        <b>Password del candidato</b>
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="password" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="password{{ c.id }}">
+                        <b>Password del Gauser</b>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        {{ c.username }}
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="username" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="username{{ c.id }}">
+                        {{ c.gauser.username }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        {{ c.first_name }}
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="first_name" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="first_name{{ c.id }}">
+                        {{ c.gauser.first_name }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        {{ c.last_name }}
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="last_name" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="last_name{{ c.id }}">
+                        {{ c.gauser.last_name }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        {{ c.email }}
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="email" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="email{{ c.id }}">
+                        {{ c.gauser.email }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        {{ c.sexo }}
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="sexo" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="sexo{{ c.id }}">
+                        {{ c.gauser.sexo }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        {{ c.dni }}
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="dni" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="dni{{ c.id }}">
+                        {{ c.gauser.dni }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        {{ c.address }}
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="address" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="address{{ c.id }}">
+                        {{ c.gauser.address }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        {{ c.postalcode }}
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="postalcode" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="postalcode{{ c.id }}">
+                        {{ c.gauser.postalcode }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        {{ c.localidad }}
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="localidad" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="localidad{{ c.id }}">
+                        {{ c.gauser.localidad }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        {{ c.provincia }}
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="provincia" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="provincia{{ c.id }}">
+                        {{ c.gauser.provincia }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        {{ c.nacimiento }}
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="nacimiento" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="nacimiento{{ c.id }}">
+                        {{ c.gauser.nacimiento }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        {{ c.telfij }}
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="telfij" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="telfij{{ c.id }}">
+                        {{ c.gauser.telfij }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-4">
+                        {{ c.telmov }}
+                    </div>
+                    <div class="columns large-2">
+                        <a class="atributo" data-atributo="telmov" data-candidato="{{ c.id }}"><i
+                                class="fa fa-arrow-right"></i> </a>
+                    </div>
+                    <div class="columns large-4" id="telmov{{ c.id }}">
+                        {{ c.gauser.telmov }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </form>
+
+{% endblock %}
+
+
+{% block final %}
+    <script>
+
+        $('.atributo').click(function (e) {
+            e.preventDefault();
+            var atributo = $(this).data('atributo');
+            var candidato = $(this).data('candidato');
+            $.post("/gestionar_candidatos/", {
+                    action: 'atributo', atributo: atributo, candidato: candidato
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#' + data.atributo + data.candidato).html(data.valor);
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('.todos_atributos').click(function (e) {
+            e.preventDefault();
+            var atributos = ['sexo', 'dni', 'address', 'postalcode', 'localidad', 'provincia', 'nacimiento', 'telfij', 'telmov',
+                'familia', 'username', 'email', 'password', 'first_name', 'last_name'];
+            var candidato = $(this).data('candidato');
+            $.each(atributos, function (index, atributo) {
+                $.post("/gestionar_candidatos/", {
+                    action: 'atributo', atributo: atributo, candidato: candidato
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#' + data.atributo + data.candidato).html(data.valor);
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+        });
+
+        $('.arreglado').click(function (e) {
+            e.preventDefault();
+            var candidato = $(this).data('candidato');
+            $.post("/gestionar_candidatos/", {
+                    action: 'arreglado', candidato: candidato
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#candidato' + candidato).empty();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('.nuevo').click(function (e) {
+            e.preventDefault();
+            var candidato = $(this).data('candidato');
+            $.post("/gestionar_candidatos/", {
+                    action: 'nuevo', candidato: candidato
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#candidato' + candidato).empty();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+    </script>
+{% endblock %}

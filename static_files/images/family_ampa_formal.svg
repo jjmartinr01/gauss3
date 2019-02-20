@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:svg="http://www.w3.org/2000/svg" id="svg2181" viewBox="0 0 332.41 240.04" version="1.0">
+  <g id="layer1" transform="translate(-116.65 -475.2)">
+    <g id="Layer_x0020_1" fill-rule="evenodd" transform="matrix(.09 0 0 .09 -99.643 100.22)">
+      <g id="g9" stroke="#1f1a17" stroke-width="3" fill="#1f1a17">
+        <path id="path11" d="m2709.5 6053.3c-56.3 307.9-159.8 519.2-304.7 778.8h1054.3c-144.9-281.8-265.2-515.2-265.2-772.7-187.2 86.5-297.3 84.5-484.4-6.1z" class="fil0 str0"/>
+        <path id="path13" d="m3372.7 4954.7c358.2 167 605.7 90.6 802.9-96.6 249 213.3 517.6 269.6 814.9 96.6 48.3 82.5 96.6 165 144.9 247.5-94.4 57.8-147 118.8-178.7 210.4-10.6 31-18.9 65.4-25.6 104.4-14.5 84.8-10.1 112.1-69.4 179.5-33.1 37.7-68.5 76.8-68.1 93.1 9.3 363.6 223.9 678.9 233.1 1042.5-202.4-0.9-549.8-1.8-752.3-2.7-28.9-0.1-45.8-489.2-74.7-489.3-21.7-0.1-31.3 482.7-53 482.6-209.7-0.9-443.6 4.2-653.3 3.3 4-428.6 8.1-857.2 12.1-1285.8-13.8-183.4-140.7-267.8-283.7-338 50.3-82.5 100.6-165 150.9-247.5z" class="fil0 str0"/>
+        <path id="path15" d="m5111.2 6071.4c2 249.6 4.1 499.1 6.1 748.6l350.1-6c-2-100.7-4-201.3-6-301.9 78.4 106.7 156.9 213.3 235.4 320 132.8-2.1 265.6-4.1 398.4-6.1-156.9-247.5-313.9-495-470.8-742.5-178.6 56.4-350.7 60.4-513.2-12.1z" class="fil0 str0"/>
+        <path id="path17" d="m2977.3 5403.4c177.9 0 323 145.1 323 323s-145.1 323-323 323-323-145.1-323-323 145.1-323 323-323z" class="fil0 str0"/>
+        <path id="path19" d="m5373.8 5395.4c177.9 0 323 145 323 322.9s-145.1 323-323 323c-177.8 0-322.9-145.1-322.9-323s145.1-322.9 322.9-322.9z" class="fil0 str0"/>
+        <path id="path21" d="m4667.6 4167.9c211.1 0 383.3 172.2 383.3 383.4 0 211.1-172.2 383.3-383.3 383.3-211.2 0-383.4-172.2-383.4-383.3 0-211.2 172.2-383.4 383.4-383.4z" class="fil0 str0"/>
+        <path id="path23" d="m3725.8 4176c211.2 0 383.4 172.2 383.4 383.3s-172.2 383.3-383.4 383.3c-211.1 0-383.3-172.2-383.3-383.3s172.2-383.3 383.3-383.3z" class="fil0 str0"/>
+      </g>
+    </g>
+  </g>
+  <metadata>
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <cc:license rdf:resource="http://creativecommons.org/licenses/publicdomain/"/>
+        <dc:publisher>
+          <cc:Agent rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:title>Family</dc:title>
+        <dc:date>2007-03-26T07:41:18</dc:date>
+        <dc:description>black, black, clip art, clipart, human, human, icon, icon, image, media, people, people, png, public domain, roadsign, roadsign, silhouette, silhouette, svg, </dc:description>
+        <dc:source>http://openclipart.org/detail/3672/family-by-frodoxv</dc:source>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>frodoxv</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>black</rdf:li>
+            <rdf:li>clip art</rdf:li>
+            <rdf:li>clipart</rdf:li>
+            <rdf:li>human</rdf:li>
+            <rdf:li>icon</rdf:li>
+            <rdf:li>image</rdf:li>
+            <rdf:li>media</rdf:li>
+            <rdf:li>people</rdf:li>
+            <rdf:li>png</rdf:li>
+            <rdf:li>public domain</rdf:li>
+            <rdf:li>roadsign</rdf:li>
+            <rdf:li>silhouette</rdf:li>
+            <rdf:li>svg</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+      </cc:Work>
+      <cc:License rdf:about="http://creativecommons.org/licenses/publicdomain/">
+        <cc:permits rdf:resource="http://creativecommons.org/ns#Reproduction"/>
+        <cc:permits rdf:resource="http://creativecommons.org/ns#Distribution"/>
+        <cc:permits rdf:resource="http://creativecommons.org/ns#DerivativeWorks"/>
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

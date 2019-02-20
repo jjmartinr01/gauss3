@@ -1,0 +1,171 @@
+{% load my_templatetags %}
+
+
+{% if request.session.gauser_extra|has_permiso:'borra_subentidades' %}
+    <div class="row">
+        <div class="large-9 medium-6 small-3 columns">
+            &nbsp;
+        </div>
+        <div class="large-3 medium-6 small-9 columns" style="text-align: right;">
+            <a class="button del_subentidad" data-subentidad="{{ subentidad.id }}"><i class="fa fa-trash-o"></i> Borrar</a>
+        </div>
+    </div>
+{% endif %}
+<div class="row">
+    <div class="large-6 columns integer-field">
+        <label>Nombre de la sección
+            <input type="text" class="nombre_subentidad" data-id="{{ subentidad.id }}" required
+                   value="{{ subentidad.nombre }}">
+        </label>
+        <small class="error">El nombre es obligatorio</small>
+    </div>
+    <div class="large-2 columns integer-field">
+        <label>Edad mínima
+            <input type="text" required class="edad_min_subentidad" pattern="integer" data-id="{{ subentidad.id }}"
+                   value="{{ subentidad.edad_min }}">
+        </label>
+        <small class="error">Número obligatorio entre 0 y 99</small>
+    </div>
+    <div class="large-2 columns integer-field">
+        <label>Edad máxima
+            <input type="text" required class="edad_max_subentidad" pattern="integer" data-id="{{ subentidad.id }}"
+                   value="{{ subentidad.edad_max }}">
+        </label>
+        <small class="error">Número mayor que edad mínima</small>
+    </div>
+    <div class="large-2 columns"
+         title="Si se acepta la mensajería, será posible enviar mensajes a los miembros de esta sección/departamento.">
+        <label>Mensajería</label>
+        <a class="mensajes" id="mensajes{{ subentidad.id }}" data-id="{{ subentidad.id }}" style="font-weight: 800">
+            {% if subentidad.mensajes %}Sí{% else %}No{% endif %}</a>
+    </div>
+</div>
+<div class="row">
+    <div class="large-12 columns">
+        <label>Observaciones
+            <textarea class="observaciones" id="observaciones{{ subentidad.id }}"
+                      data-id="{{ subentidad.id }}">{{ subentidad.observaciones }}</textarea>
+        </label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="large-12 columns">
+        <label>Personas que pertenecen a este departamento/sección
+            <select class="usuarios_subentidad" multiple="multiple" data-id="{{ subentidad.id }}">
+                {% for u in g_es %}
+                    <option value="{{ u.id }}" selected="selected">{{ u.gauser.get_full_name }}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="usuarios_subentidad" id="usuarios_subentidad" value="">
+        </label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="large-6 columns">
+        <label>Depende de:
+            <select id="parent{{ subentidad.id }}" data-id="{{ subentidad.id }}" class="sub_padre">
+                    <option value="">No depende de otra sección/departamento</option>
+                {% for s in subentidades %}
+                    <option value="{{ s.id }}" {% if subentidad.parent.id == s.id %}selected{% endif %}>{{ s.nombre }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label title="Fecha máxima de existencia, a partir de la cual esta sección/departamento no podrá usarse">Fecha
+            máxima:
+            <input type="text" data-id="{{ subentidad.id }}" readonly="readonly" class="fecha_expira" value="{{ subentidad.fecha_expira|date:"d/m/Y" }}">
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label title="Clave alfanumérica proporcionada/utilizada al cargar masivamente datos en GAUSS.">Clave externa:
+            {% if subentidad.clave_ex %}
+                <input type="text" class="clave_ex" data-id="{{ subentidad.id }}" value="{{ subentidad.clave_ex }}">
+            {% else %}
+                <input type="text" class="clave_ex" data-id="{{ subentidad.id }}" value="">
+            {% endif %}
+        </label>
+    </div>
+</div>
+
+
+<script>
+    $('.fecha_expira').fdatepicker({
+            format: "dd/mm/yyyy",
+            language: 'es',
+            weekStart: 1
+        });
+    $('body').on('change', '.fecha_expira', function (e) {
+            var fecha = $(this).val();
+            var id = $(this).data('id');
+            $.post("/subentidades_ajax/", {
+                    action: 'fecha_expira',
+                    id: id,
+                    fecha: fecha
+                }, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+    $('.usuarios_subentidad').select2({
+        placeholder: "Escribe parte del nombre",
+        allowClear: true,
+        ajax: {
+            url: "/subentidades_ajax/",
+            type: 'POST',
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return {
+                    action: 'buscar_usuarios',
+                    q: params.term
+                };
+            },
+            processResults: function (data, page) {
+                return {
+                    results: $.map(data, function (item) {
+                        return {
+                            text: item.text,
+                            id: item.id
+                        }
+                    })
+                };
+            },
+            cache: true
+        },
+        escapeMarkup: function (markup) {
+            return markup;
+        }, // let our custom formatter work
+        minimumInputLength: 3,
+        language: {
+            inputTooShort: function () {
+                return "Introduce al menos 3 caracteres para iniciar búsqueda";
+            }
+        }
+    });
+
+
+    $(".usuarios_subentidad").change(function (e) {
+        var users = $(this).val();
+        var id = $(this).data('id');
+        $.post("/subentidades_ajax/", {
+                    action: 'usuarios_subentidad',
+                    id: id,
+                    users: users
+                }, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+    });
+
+
+</script>

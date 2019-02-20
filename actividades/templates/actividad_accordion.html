@@ -1,0 +1,67 @@
+{% load my_templatetags %}
+<dl class="accordion" data-accordion id="list_actividades_recientes">
+    {% for actividad in actividades %}
+        <dd class="accordion-navigation" id="accordion{{ actividad.id }}">
+
+            {% if actividad.fecha_hora_inicio|date:"dmY" == actividad.fecha_hora_fin|date:"dmY" %}
+                <a href="#panel{{ actividad.id }}">
+                    <i id="circle{{ actividad.id }}" class="fa fa-plus-circle circle_icon"></i>
+                    <b><span
+                            id="span_actividad_title{{ actividad.id }}">{{ actividad.actividad_title|title }}</span></b>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span
+                        id="span_fecha_inicio{{ actividad.id }}">{{ actividad.fecha_hora_inicio|date:"d-m-Y H:i" }}</span>
+                    ~
+                    <span id="span_fecha_fin{{ actividad.id }}">{{ actividad.fecha_hora_fin|date:"H:i" }}</span>)
+
+                    {% if check %}<span style="color:red;"><i class="fa fa-check"></i></span>{% endif %}</a>
+            {% else %}
+                <a href="#panel{{ actividad.id }}">
+                    <i id="circle{{ actividad.id }}" class="fa fa-plus-circle circle_icon"></i>
+                    <b><span
+                            id="span_actividad_title{{ actividad.id }}">{{ actividad.actividad_title|title }}</span></b>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Inicio: <span
+                        id="span_fecha_inicio{{ actividad.id }}">{{ actividad.fecha_hora_inicio|date:"d-m-Y" }}</span>,
+                    Fin: <span id="span_fecha_fin{{ actividad.id }}">{{ actividad.fecha_hora_fin|date:"d-m-Y" }}</span>)
+
+                    {% if check %}<span style="color:red;"><i class="fa fa-check"></i></span>{% endif %}</a>
+            {% endif %}
+            <div id="panel{{ actividad.id }}" class="content accordion-actividad"
+                 data-id="{{ actividad.id }}">
+            </div>
+        </dd>
+    {% endfor %}
+</dl>
+{% if pag %}
+    <br>
+    <div class="row">
+        <div class="columns large-12">
+            <ul class="pagination" role="menubar" aria-label="Pagination">
+                {% if actividades.has_previous %}
+                    <li class="arrow">
+                        <a class="go_page" data-page="{{ actividades.previous_page_number }}">&laquo; Anterior</a>
+                    </li>
+                {% else %}
+                    <li class="arrow unavailable" aria-disabled="true">
+                        <a class="go_page">&laquo; Anterior</a>
+                    </li>
+                {% endif %}
+                {% for page in actividades.paginator.num_pages|number_range %}
+                    {% if page == actividades.number %}
+                        <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
+                    {% else %}
+                        <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if actividades.has_next %}
+                    <li class="arrow">
+                        <a class="go_page" data-page="{{ actividades.next_page_number }}">Siguiente &raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="arrow unavailable" aria-disabled="true">
+                        <a class="go_page">Siguiente &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+{% endif %}

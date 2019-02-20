@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<django-objects version="1.0">
+<!--  -->
+<!-- Para cargar esta fixture es necesario ejecutar el comando: -->
+<!-- python manage.py loaddata ./entidades/fixtures/datos_iniciales.xml -->
+<!--  -->
+
+      
+
+    <object pk="1" model="entidades.organization">
+	<field type="CharField" name="organization">Asociación de Scouts de España</field>
+	<field type="CharField" name="iniciales">ASDE</field>
+    </object>
+    <object pk="2" model="entidades.organization">
+	<field type="CharField" name="organization">Movimiento Scout Católico</field>
+	<field type="CharField" name="iniciales">MSC</field>
+    </object>
+
+
+
+<!--  ************************************************************************  -->
+<!--  ************************************************************************  -->
+
+    <object pk="1" model="entidades.entidad">
+	<field to="entidades.organization" name="organization" rel="ManyToOneRel">1</field>
+	<!-- Inicialmente no se puede asignar la ronda porque todavía no está creada -->
+	<field type="CharField" name="name">Monte Clavijo</field>
+	<field type="CharField" name="code">109</field>
+	<field type="CharField" name="address">Torrecilla en Cameros</field>
+	<field type="CharField" name="localidad">Logroño</field>
+	<field type="CharField" name="provincia">28</field>
+	<field type="IntegerField" name="postalcode">26009</field>
+	<field type="CharField" name="localidad">Logroño</field>
+    </object>
+
+<!--  ************************************************************************  -->
+<!--  ************************************************************************  -->
+    
+    <object pk="1" model="entidades.ronda">
+	<field to="entidades.entidad" name="entidad" rel="ManyToOneRel">1</field>
+	<field type="CharField" name="nombre">3</field>
+    </object>
+    
+<!--  ************************************************************************  -->
+<!--  ************************************************************************  -->
+    
+    <object pk="5" model="autenticar.gauser">
+	<field type="CharField" name="username">scout</field>
+	<field type="CharField" name="first_name">Gauss</field>
+	<field type="CharField" name="last_name">Gestión Aumentada</field>
+	<field type="CharField" name="email">jmar0269@gmail.com</field>
+    </object>
+    
+<!--  ************************************************************************  -->
+<!--  ************************************************************************  -->    
+    
+    
+
+    
+    
+</django-objects>
+

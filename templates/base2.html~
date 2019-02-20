@@ -1,0 +1,268 @@
+<!DOCTYPE HTML>
+<html style="overflow:hidden">
+  <head>
+    <title>Programa de gestión aumentada GAUSS</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="expires" content="-1" >
+    <meta http-equiv="Pragma" content="no-cache" >
+    <link rel="shortcut icon" type="image/x-icon" href="/static/images/favicon.png">
+    
+    <!--<link rel="stylesheet" href="/static/css/jquery-ui-1.8.21.custom.css" type="text/css">-->
+    <link rel="stylesheet" href="/static/js/jquery-ui-1.10.3/css/custom-theme/jquery-ui-1.10.3.custom.min.css" type="text/css">
+    <link rel="stylesheet" href="/static/css/jquery.multiselect.css" type="text/css">
+    <link rel="stylesheet" href="/static/font-awesome-4.0.0/css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="/static/css/gauss.css" type="text/css">
+
+
+    <!--<script src="/static/js/jquery-1.7.2.min.js"></script> -->
+    <script src="/static/js/jquery-1.10.2.min.js"></script>
+    <script src="/static/js/jquery.cookie.js"></script>
+    <!--<script type="text/javascript" src="/static/js/jquery-ui-1.8.21.custom.min.js"></script>-->
+    <script type="text/javascript" src="/static/js/jquery-ui-1.10.3/js/jquery-ui-1.10.3.custom.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.multiselect.min.js"></script>
+    <script src="/static/js/nestedAccordion.js"></script>
+
+
+    {% block head %}{% endblock %}
+
+    <script type = "text/javascript">
+    
+    function visualizar(identificadores){
+      for (i in identificadores){
+	$('#'+identificadores[i]).removeClass('oculto');
+      }
+    }
+
+    // removes MS Office generated guff
+    // code from Mark Brown: http://www.sitepoint.com/forums/showthread.php?858386-Strip-Unwanted-Formatting-from-Pasted-Content
+    function removeWordTags(string){
+      var input = string;
+      // 1. remove line breaks / Mso classes
+      var stringStripper = /(\n|\r| class=(")?Mso[a-zA-Z]+(")?)/g; 
+      var output = input.replace(stringStripper, '');
+      // 2. strip Word generated HTML comments
+      var commentSripper = new RegExp('<!--(.*?)-->','g');
+      var output = output.replace(commentSripper, ' ');
+      var tagStripper = new RegExp('<(/)*(meta|link|span|\\?xml:|st1:|o:|font)(.*?)>','gi');
+      // 3. remove tags leave content if any
+      output = output.replace(tagStripper, ' ');
+      // 4. Remove everything in between and including tags style, ...
+      var badTags = ['style', 'script','applet','embed','noframes','noscript'];
+      for (var i=0; i< badTags.length; i++) {
+	tagStripper = new RegExp('<'+badTags[i]+'.*?'+badTags[i]+'(.*?)>', 'gi');
+	output = output.replace(tagStripper, ' ');
+      }
+      // 5. remove attributes ' style="..."'
+      var badAttributes = ['style', 'start'];
+      for (var i=0; i< badAttributes.length; i++) {
+	var attributeStripper = new RegExp(' ' + badAttributes[i] + '="(.*?)"','gi');
+	output = output.replace(attributeStripper, ' ');
+      }
+      // 6. remove multiple space by only one space
+      output = output.replace('/ \s + / g', ' '); //Reemplazar los dobles espacios que se pudieran haber producido.
+      //this.textarea.value = output;
+      return output;
+    }
+
+    $(document).ready(function()
+    {
+      if ($.cookie('cabecera_cookie_display') == 'block'){
+	$('#Contenido').css('height',$(window).height()-90);
+      }else{
+	$('#cabecera_gauss').hide();
+	$('#Contenido').css('height',$(window).height()-40);
+	$('#img_cabecera').html('<i id="icono_cabecera" class="fa fa-angle-double-down" ></i>&nbsp;Mostrar cabecera');
+      }
+      if ($.cookie('lateral_cookie_display') == 'block'){
+	$('#Contenido').css('height',$(window).height()-90);
+      }else{
+	$('#menu_lateral').hide();
+	$('#Contenido').css('width','98%');
+	$('#img_lateral').html('Mostrar menú&nbsp; <i id="icono_lateral" class="fa fa-angle-double-right" ></i>');
+	$('#img_lateral').css('left','0%');
+      }
+      
+      $.fn.nestedaccordion.defaults.container = false; 
+      $(function() {
+      $("#contenido_menu_lateral").nestedaccordion({initShow : "{{menu}}"});
+
+      
+      $('#img_cabecera').click(function () {
+      $('#cabecera_gauss').slideToggle()
+      if ( $('#icono_cabecera').hasClass('fa-angle-double-up') ){
+	$('#img_cabecera').html('<i id="icono_cabecera" class="fa fa-angle-double-down" ></i>&nbsp;Mostrar cabecera');
+	$('#Contenido').css('height',$(window).height()-40);
+	$.cookie('cabecera_cookie_display', 'none', { path: '/' });
+      }else{
+	$('#img_cabecera').html('<i id="icono_cabecera" class="fa fa-angle-double-up" ></i>&nbsp;Ocultar cabecera');
+	$('#Contenido').css('height',$(window).height()-90);
+	$.cookie('cabecera_cookie_display', 'block', { path: '/' });
+      }
+      });
+      $('#img_lateral').click(function () {
+      $('#menu_lateral').animate({width: 'toggle'})
+      
+      if ( $('#icono_lateral').hasClass('fa-angle-double-left') ){
+	$('#img_lateral').html('Mostrar menú&nbsp; <i id="icono_lateral" class="fa fa-angle-double-right" ></i>');
+	$('#img_lateral').css('left','0%');
+	$.cookie('lateral_cookie_display', 'none', { path: '/' });
+	$('#Contenido').animate({width: '98%'})
+      }else{
+	$('#img_lateral').html('<i id="icono_lateral" class="fa fa-angle-double-left" ></i>&nbsp;Ocultar menú');
+	$('#img_lateral').css('left','12%');
+	$.cookie('lateral_cookie_display', 'block', { path: '/' });
+	$('#Contenido').css('width','78%');
+      }
+      });
+
+
+    $(document).ajaxStart(function() { $('#ajax-loader').show();}).ajaxStop(function() {$('#ajax-loader').hide();});
+      
+      var csrftoken = $.cookie('csrftoken');
+      function csrfSafeMethod(method) {
+	// these HTTP methods do not require CSRF protection
+	return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+	}
+	$.ajaxSetup({
+	    crossDomain: false, // obviates need for sameOrigin test
+	    beforeSend: function(xhr, settings) {
+		if (!csrfSafeMethod(settings.type)) {
+		    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+		}
+	    }
+	});
+      
+      $('#volver').click(function () {  javascript:history.go(-1); });
+      
+      {% block ready %}{% endblock %}
+  
+    });
+    $(window).resize(function() {
+      if ($.cookie('cabecera_cookie_display') == 'block'){
+	$('#Contenido').css('height',$(window).height()-90);
+      }else{
+	$('#cabecera_gauss').hide();
+	$('#Contenido').css('height',$(window).height()-40);
+	$('#img_cabecera').html('<i id="icono_cabecera" class="fa fa-angle-double-down" ></i>&nbsp;Mostrar cabecera');
+      }
+      if ($.cookie('lateral_cookie_display') == 'block'){
+	$('#Contenido').css('height',$(window).height()-90);
+      }else{
+	$('#menu_lateral').hide();
+	$('#Contenido').css('width','98%');
+	$('#img_lateral').html('Mostrar menú&nbsp; <i id="icono_lateral" class="fa fa-angle-double-right" ></i>');
+	$('#img_lateral').css('left','0%');
+      }
+    });
+    // cuando se comprueba en la página si los campos son incorrectos se puede realizar una llamada a:
+    $( "#faltan_campos" ).dialog({ autoOpen: false, width:'auto', modal: true, });
+    });
+    
+    
+  </script>
+  </head>
+  {% load my_templatetags %}
+  <body leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" rightmargin="0">
+  <div >
+    <div class="cabecera" style="leftmargin:0px;" id="cabecera_gauss">
+      <div class="cabecera_personal">
+	  <p><i class="fa fa-user"></i> {{request.session.gauser_extra.gauser.get_full_name}}</p>
+	  <p><i class="fa fa-briefcase"></i> {{request.session.gauser_extra.cargo}}</p>
+	  <p>{% if request.session.gauser_extra|has_perfiles:'11' %}<i class="fa fa-group"></i> {{request.session.gauser_extra.grupo.nombre}}{% endif %}</p>
+      </div>
+      <div class="cabecera_gauss">
+	  <div style="padding-top:3px;float:left;height:43px;">
+	    <img height="45px" src="/static/images/logo_gauss.png" id="logo_gauss" />
+	  </div>
+	  <div style="padding-top:-3px;float:left;height:43px;">
+	    <p>
+	      <span id="texto_cabecera" style="font-size:26px;font-weight:bold;color:white;font-family:Arial;vertical-align:top;white-space:nowrap;">&nbsp; Gestión Interna del Grupo Scout </span>
+	    </p>
+	    <p>
+	      <a style="float:left;padding-left:5px;" href="{{request.session.gauser_extra.entidad.web}}">
+		<i class="fa fa-info-circle pulsar" style="padding-left:1px;" title="Datos de la entidad"></i> {{request.session.gauser_extra.entidad.name}} ({{request.session.gauser_extra.entidad.code}}) {{request.session.gauser_extra.ronda.get_nombre_display}}
+	      </a>
+	    </p>
+	  </div>
+      </div>
+      <div class="cabecera_institucional">
+      <div style="padding-top:3px;float:right;height:43px;">
+	  <a href="{{request.session.gauser_extra.entidad.organization.web}}"><img height="45px" src="/media/{{request.session.gauser_extra.entidad.organization.anagrama}}" align="right"/></a>
+      </div>
+      
+      </div>
+    </div>
+    <div class="MenuCabecera" id="menucabecera">
+      <div class="ocultar_mostrar" id="img_lateral" style="float:left;position:relative;left:12%;top:3px;"><i id="icono_lateral" class="fa fa-angle-double-left" ></i>&nbsp;Ocultar menú</div>
+      <div class="ocultar_mostrar" id="img_cabecera" style="float:left;position:relative;left:15%;top:3px;"><i id="icono_cabecera" class="fa fa-angle-double-up" ></i> &nbsp;Ocultar cabecera</div>
+      <div class="spinner" id="ajax-loader" style="float:left;display:none;position:relative;left:17%;"><i class="fa fa-spinner fa-spin navegar"></i></div>
+      <div id="salir_gauss" style="float:right;">
+      
+      {% block navegar %}{% endblock %}
+     
+<!--       <i id="question_sign" title="Ayuda" class="fa fa-question-sign navegar"></i> -->
+      
+      <i id="money_sign" class="fa fa-money no_navegar oculto"></i>
+      <i id="ok_sign_plus" class="fa fa-check no_navegar oculto"><span style="font-size:9pt;"><i class="fa fa-plus"></i></span></i>
+      <i id="actividades_sign" class="fa fa-tags no_navegar oculto"></i>
+      <i id="actividad_sign" class="fa fa-tag no_navegar oculto"></i>
+      <i id="list_sign" title="" class="fa fa-list-alt no_navegar oculto"></i>
+      <i id="clip_sign" title="" class="fa fa-paperclip no_navegar oculto"></i>
+      <i id="alta_sign" class="fa fa-male no_navegar oculto"><span style="font-size:9pt;"><i class="fa fa-check"></i></span></i>
+      <i id="baja_sign" class="fa fa-male no_navegar oculto"><span style="font-size:9pt;"><i class="fa fa-times"></i></span></i>
+      <i id="sobre_sign" title="" class="fa fa-envelope-o no_navegar oculto"><span style="font-size:11pt;margin-left:-6px;"><i class="fa fa-mail-forward"></i></span></i>
+      <i id="save_sign" title="" class="fa fa-save no_navegar oculto"></i>
+      <i id="th_sign" title="" class="fa fa-th no_navegar oculto"></i>
+      <i id="off_sign" title="" class="fa fa-power-off no_navegar oculto"></i>
+      <i id="chincheta_sign" title="" class="fa fa-thumb-tack no_navegar oculto"></i>
+      <i id="cogs_sign" title="" class="fa fa-cogs no_navegar oculto"></i>
+      <i id="light_sign" title="" class="fa fa-lightbulb-o no_navegar oculto"></i>
+      <i id="computer_sign" title="" class="fa fa-laptop no_navegar oculto"></i>
+      <i id="water_sign" title="" class="fa fa-tint no_navegar oculto"></i>
+      <i id="build_sign" title="" class="fa fa-building no_navegar oculto"></i>
+      <i id="left_sign" title="" class="fa fa-arrow-left no_navegar oculto"></i>
+      <i id="search_sign" title="" class="fa fa-search no_navegar oculto"></i>
+      <i id="calendar_sign" title="" class="fa fa-calendar no_navegar oculto"></i>
+      <i id="right_sign" title="" class="fa fa-arrow-right no_navegar oculto"></i>
+      <i id="expulsar_sign" class="fa fa-male no_navegar oculto"><span style="font-size:9pt;"><i class="fa fa-hand-right"></i></span></i>
+      <i id="delete_sign" title="" class="fa fa-times no_navegar oculto"></i>
+      <i id="file_xls" title="" class="fa fa-file-o no_navegar oculto"><span class="text_overlap_navegar">XLS</span></i>
+      <i id="file_pdf" title="" class="fa fa-file-o no_navegar oculto"><span class="text_overlap_navegar">PDF</span></i>
+      <i id="file_odt" title="" class="fa fa-file-o no_navegar oculto"><span class="text_overlap_navegar">ODT</span></i>
+      <i id="book_sign" title="" class="fa fa-book no_navegar oculto"></i>
+      <i id="file-alt_sign" title="" class="fa fa-file-o no_navegar oculto"></i>
+      <i id="file_text" title="" class="fa fa-file-text-o no_navegar oculto"></i>
+      <i id="pencil_sign" title="" class="fa fa-pencil no_navegar oculto"></i>
+      <i id="file_sign" title="" class="fa fa-file-o no_navegar oculto"></i>
+      <i id="certificate_sign" title="" class="fa fa-certificate no_navegar oculto"></i>
+      <i id="remove_sign" title="" class="fa fa-trash-o no_navegar oculto"></i>
+      <i id="plus_sign" title="" class="fa fa-plus no_navegar oculto"></i>
+      <i id="ok_sign" title="" class="fa fa-check no_navegar oculto"></i>
+      <i id="volver" title="Volver a la página anterior" class="fa fa-arrow-circle-left navegar"></i>
+      <span style="color:#03764E;background:#03764E;">|</span>
+
+      
+      <a style="text-align:right;margin-right:10px;" href="/mis_datos/"><i class="fa fa-user pulsar"></i>Mis datos</a>
+      <a style="text-align:right;margin-right:10px;" href="/"><i class="fa fa-sign-out pulsar"></i>Salir de GAUSS</a>
+    </div>
+  </div>
+
+
+<div class="Principal" id="Principal">
+  <div class="MenuLateral" id="menu_lateral" style="display:block;">
+    <h3 class="MenuLateral"> <i class="fa fa-youtube-play"></i> Menú</h3>
+    {% block lateral %}{% endblock %}
+  </div>
+  <div class="Contenido" id="Contenido">
+  <table class="tablaFondo" align="center" cellpadding="0" cellspacing="0" width="100%" id="general"><tr><td class="columnaFondo" align="LEFT" nowrap="nowrap">
+  {% if avisos %}
+    {% include "avisos.html" %}
+  {% endif %}
+  {% block contenido %}{% endblock %}
+  </table>
+  </div>
+</div>
+<div id="faltan_campos" title="Faltan campos por rellenar"></div>
+</body>
+</html>
+

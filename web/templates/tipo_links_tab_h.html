@@ -1,0 +1,6 @@
+<ul class="inline-list right">
+    {% for enlace in content_div.enlaces.all %}
+        <li><a href="{% if enlace.href %}{{ enlace.href }}{% else %}#{% endif %}" class="link_html_web"
+               id="link{{ content_div.id }}-{{ enlace.id }}">{{ enlace.texto }}</a></li>
+    {% endfor %}
+</ul>

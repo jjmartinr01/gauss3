@@ -1,0 +1,118 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Lista y creación de nuevos grupos</strong></h4>
+        </div>
+
+        <div data-alert class="alert-box success radius">
+            <span style="font-weight: 800;">En estos momentos hay {{ grupos|length }} grupo creadaos</span>
+            <a href="#" class="close">&times;</a>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_grupos" title="Lista de grupos">
+            {% for grupo in grupos %}
+                {% include "configura_grupos_formulario.html" %}
+            {% endfor %}
+        </dl>
+        <hr>
+        <div class="row">
+            <div class="columns large-12">
+                <a class="button" id="add_grupo"><i class="fa fa-plus"></i> Añadir grupo</a>
+            </div>
+        </div>
+
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        $('#add_grupo').click(function (e) {
+            e.preventDefault();
+            $.post("/configura_grupos/", {action: 'add_grupo'}, function (data) {
+                $('#list_grupos').append(data);
+            });
+        });
+
+        $('body').on('click', '.delete_grupo', function (e) {
+            e.preventDefault();
+            var grupo = $(this).data('grupo');
+            $.post("/configura_grupos/", {action: 'delete_grupo', grupo: grupo}, function (data) {
+                $('#accordion' + grupo).hide();
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('keyup', '.campo_texto', function (e) {
+            var campo = $(this).data('campo');
+            var value = $(this).val();
+            var grupo = $(this).data('grupo');
+            $.post("/configura_grupos/", {action: 'change_campo_texto', grupo: grupo, value: value, campo: campo},
+                function (data) {
+                    if (data.ok) {
+                        if (campo == 'nombre') {
+                            $('#span_nombre' + grupo).html(data.texto);
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.campo', function (e) {
+            var campo = $(this).data('campo');
+            var value = $(this).val();
+            var grupo = $(this).data('grupo');
+            $.post("/configura_grupos/", {action: 'change_campo', grupo: grupo, value: value, campo: campo},
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+        });
+
+        $('body').on('change', '.update_cursos', function (e) {
+            var cursos = $(this).val();
+            var grupo = $(this).data('grupo');
+            $.post("/configura_grupos/", {action: 'update_cursos', grupo: grupo, cursos: cursos},
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+        });
+
+
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('grupo_contenido')) {
+                        var id = accordion.data('grupo');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/configura_grupos/", {action: 'open_accordion', id: id}, function (data) {
+                                if (data.ok) {
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                    $('#panel' + id).html(data.html);
+                                    $('#cursos' + id).select2();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).empty();
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        .check_departamento {
+            text-align: center;
+            cursor: pointer;
+            font-size: 120%;
+        }
+
+        #check_todos {
+            text-align: center;
+            cursor: pointer;
+            font-size: 120%;
+        }
+
+        .gris {
+            color: #a3a3a3;
+        }
+
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}" data-abide>
+        {% csrf_token %}
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Profesores del centro</strong></h4>
+        </div>
+
+        <div data-alert class="alert-box success radius">
+            Hay un total de {{ profesores|length }} profesores en el centro
+            <a href="#" class="close">&times;</a>
+        </div>
+
+        <div id="div_profesores">
+            <div class="row">
+                <div class="columns large-3">
+                    <b>Nombre</b>
+                </div>
+                <div class="columns large-3">
+                    <b>Especialidad</b>
+                </div>
+                <div class="columns large-2">
+                    <b>Puesto</b>
+                </div>
+                <div class="columns large-3">
+                    <b>Departamento</b>
+                </div>
+                <div class="columns large-1">
+                    <b>Jefe</b>
+                </div>
+            </div>
+            {% for p in profesores %}
+                <div class="row">
+                    <div class="columns large-3">
+                        {{ p.gauser.last_name }}, {{ p.gauser.first_name }}
+                    </div>
+                    <div class="columns large-3">
+                        <select class="especialidad" data-ge="{{ p.id }}">
+                            <option value="">----</option>
+                            {% for e in especialidades %}
+                                <option value="{{ e.id }}"
+                                        {% if p.gauser_extra_programaciones.especialidad == e %}selected{% endif %}>{{ e.especialidad.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="columns large-2">
+                        <input type="text" class="puesto" data-ge="{{ p.id }}"
+                               value="{{ p.gauser_extra_programaciones.puesto }}">
+                    </div>
+                    <div class="columns large-3">
+                        <select class="departamento" data-ge="{{ p.id }}">
+                            <option value="">----</option>
+                            {% for d in departamentos %}
+                                <option value="{{ d.id }}"
+                                        {% if p.gauser_extra_programaciones.departamento == d %}selected{% endif %}>{{ d.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="columns large-1">
+                        <input type="checkbox" class="jefe_departamento" data-ge="{{ p.id }}"
+                               {% if p.gauser_extra_programaciones.jefe %}checked{% endif %}>
+                    </div>
+                </div>
+                <hr>
+            {% endfor %}
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        {#        {% if request.session.gauser_extra|has_permiso:'crea_departamentos' %}#}
+        $('#Contenido').on('change', '.especialidad', function (e) {
+            var ge = $(this).data('ge');
+            var especialidad = $(this).val();
+            $.post("/profesores_centro_educativo/", {
+                action: 'change_especialidad',
+                ge: ge,
+                especialidad: especialidad
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+        {#        {% endif %}#}
+
+        $('#Contenido').on('keyup', '.puesto', function (e) {
+            var elemento = $(this);
+            var ge = elemento.data('ge');
+            var puesto = elemento.val();
+            setTimeout(function () {
+                if (puesto == elemento.val()) {
+                    $.post("/profesores_centro_educativo/", {
+                        action: 'change_puesto',
+                        ge: ge,
+                        puesto: puesto
+                    }, function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+                }
+            }, 550);
+        });
+
+        $('#Contenido').on('change', '.departamento', function (e) {
+            var ge = $(this).data('ge');
+            var departamento = $(this).val();
+            $.post("/profesores_centro_educativo/", {
+                action: 'change_departamento',
+                ge: ge,
+                departamento: departamento
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#Contenido').on('click', '.jefe_departamento', function (e) {
+            var ge = $(this).data('ge');
+            var checked = $(this).prop('checked');
+            $.post("/profesores_centro_educativo/", {
+                action: 'change_jefe_departamento',
+                ge: ge,
+                checked: checked
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+    </script>
+{% endblock %}

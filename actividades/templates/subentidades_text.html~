@@ -1,0 +1,22 @@
+<div id="tot___id_subentidades" class="div_total_checkboxes">
+      <div class="div_texto_checkboxes">
+	  <span class="texto_checkboxes" id="texto___id_subentidades"><i class="fa fa-hand-o-up"></i> Pulsa aquí para seleccionar las secciones que participan en la actividad</span>
+      </div>
+      <div class="ya_checked" id="ya_checked___id_subentidades">
+	  <span class="" style="white-space:normal;"><i class="fa fa-eye-slash"></i> </span>
+      </div>
+      <div class="todos_ningunos" id="todos_ningunos___id_subentidades">
+	  <span id="todo___id_subentidades" class="select_todos color2"><i class="fa fa-check-circle"></i> Todos </span>
+	  <span id="ninguno___id_subentidades" class="select_ninguno color2"><i class="fa fa-times-circle"></i> Ninguno</span>
+      </div>
+      <div class="total_seleccionados" id="total_seleccionados___secciones">(No hay secciones seleccionadas)</div>
+      <table width="100%" id="checkboxes___id_subentidades" class="multiselect2checkbox"><tbody><tr>
+	  {% for subentidad in subentidades %}
+	    <td>
+		<input type="checkbox" id="subentidad___{{subentidad.id}}" name="subentidades" class="check___id_subentidades" value="{{subentidad.id}}" {% if subentidad in actividad.subentidades.all %} checked="checked" {% endif %}> {{subentidad.nombre}}</td>
+	    {%if forloop.counter|divisibleby:"3" %}
+		</tr><tr>
+	    {% endif %}
+	  {% endfor %}
+      </tbody></table>
+    </div>

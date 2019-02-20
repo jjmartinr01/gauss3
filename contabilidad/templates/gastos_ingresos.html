@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <style>
+        li {
+            margin-left: 20px;
+        }
+
+        .ficheros_justificantes {
+            cursor: pointer;
+        }
+
+        .puede_borrar {
+            font-size: 12pt;
+            cursor: pointer;
+        }
+
+        .puede_borrar:hover {
+            font-size: 12pt;
+            cursor: pointer;
+            color: #E76123;
+        }
+
+        .check_asiento {
+            text-align: center;
+            cursor: pointer;
+            font-size: 120%;
+        }
+
+        #check_todos_i {
+            text-align: center;
+            cursor: pointer;
+            font-size: 120%;
+        }
+
+        #check_todos_g {
+            text-align: center;
+            cursor: pointer;
+            font-size: 120%;
+        }
+    </style>
+{% endblock %}
+
+
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="id_presupuesto" id="id_presupuesto" value="{{ presupuesto.id }}">
+        <input type="hidden" name="asiento_id" id="asiento_id" value="">
+        {% if not presupuesto %}
+            <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong> Ingresos y gastos asociados a un
+                presupuesto
+                de {{ request.session.gauser_extra.ronda.entidad.name }}</strong></h4>
+        {% else %}
+            <h4 id="h4_title" style="text-align: center;color: #008CBA;">
+                <strong> Ingresos y gastos asociados al presupuesto: {{ presupuesto.nombre }}</strong>
+            </h4>
+        {% endif %}
+        <div id="div_asientos" style="float:inherit;display: none;">
+            {{ data }}
+        </div>
+        <div class="row" id="elige_presupuesto" style="display: none;">
+            <div class="columns large-12">
+                {% if presupuestos|length > 1 %}
+                    <a id="abrir_dropdown" href="#" data-options="" data-dropdown="drop_presupuestos" class="button">
+                        Elige el presupuesto sobre el que vas a trabajar</a>
+                    <ul id="drop_presupuestos" class="large f-dropdown" data-dropdown-content>
+                        {% for presupuesto in presupuestos %}
+                            <li><a class="presupuesto_option" id="pre___{{ presupuesto.id }}" href="#">
+                                {{ presupuesto.nombre }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <h3>No existe todavía ningún presupuesto</h3>
+                    <h5>Puedes crear uno pulsando <a href="/presupuesto/">aquí</a></h5>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        {% if not presupuesto %}
+            $('#elige_presupuesto').show();
+            $('#abrir_dropdown').trigger('click');
+            $('.presupuesto_option').click(function (e) {
+                e.preventDefault();
+                $('#id_presupuesto').val($(this).attr('id').split('___')[1]);
+                $.post("/gastos_ingresos_ajax/", {
+                    action: 'muestra_presupuesto',
+                    id_presupuesto: $('#id_presupuesto').val()
+                }, function (data) {
+                    $('#div_asientos').show().html(data);
+                    $('#elige_presupuesto').hide();
+                });
+            });
+        {% else %}
+            $('#div_asientos').show();
+        {% endif %}
+
+        {% if presupuestos|length > 0 %}
+            habilita(['s_plus', 's_file-pdf-o']);
+
+
+            $('#plus_sign').click(function (event) {
+                event.preventDefault();
+                habilita(['s_check', 'h_plus', 's_list-alt', 'h_file-pdf-o']);
+                $.post("/gastos_ingresos_ajax/", {
+                    action: 'add_gasto_ingreso',
+                    id_presupuesto: $('#id_presupuesto').val()
+                }, function (data) {
+                    $('#div_asientos').html(data);
+                    $(document).scrollTop($('#h4_title').offset().top - 150);
+                    $('#action').val('save_added_gasto_ingreso');
+                });
+            });
+
+            $('#list-alt_sign').click(function (event) {
+                event.preventDefault();
+                habilita(['s_plus', 's_file-pdf-o', 'h_list-alt', 'h_check']);
+                $.post("/gastos_ingresos_ajax/", {
+                    action: 'muestra_presupuesto',
+                    id_presupuesto: $('#id_presupuesto').val()
+                }, function (data) {
+                    $('#div_asientos').html(data);
+                    $(document).scrollTop($('#h4_title').offset().top - 150);
+                });
+            });
+
+            $('#trash-o_sign').click(function (event) {
+                event.preventDefault();
+                var id_asientos = $('.id_asientos').map(function () {
+                    var id_asiento = this.value;
+                    if (id_asiento != '') {
+                        $('#fila___' + id_asiento).hide();
+                        $('#id_asiento___' + id_asiento).val('');
+                        return id_asiento;
+                    }
+                }).get();
+                $.post("/gastos_ingresos_ajax/", {
+                    action: 'borrar_asientos',
+                    id_asientos: JSON.stringify(id_asientos),
+                    id_presupuesto: $('#id_presupuesto').val()
+                }, function (data) {
+                    console.log(data);
+                    habilita(['s_plus', 'h_pencil', 'h_trash-o']);
+                }, 'json');
+            });
+
+            $("#file-pdf-o_sign").click(function (event) {
+                event.preventDefault();
+                $('#action').val('pdf_gastos_ingresos');
+                document.{{formname}}.submit();
+            });
+
+            $('#div_asientos').on('click', '.check_asiento', function () {
+                var id = $(this).attr('id').split('___')[1];
+                $('#asiento_id').val(id);
+                {# Contiene el último asiento seleccionado #}
+                var o = $('#part___' + id);
+                if (o.hasClass('fa-check-square-o')) {
+                    o.removeClass('fa-check-square-o').addClass('fa-square-o');
+                    $('#id_asiento___' + id).val('');
+                } else {
+                    o.removeClass('fa-square-o').addClass('fa-check-square-o');
+                    $('#id_asiento___' + id).val(id);
+                }
+                var num_checked = $(".id_asientos[value!='']").length;
+                if (num_checked == 1) {
+                    habilita(['h_plus', 's_pencil', 's_trash-o']);
+                }
+                else if (num_checked == 0) {
+                    habilita(['s_plus', 'h_pencil', 'h_trash-o']);
+                }
+                else {
+                    habilita(['h_plus', 'h_pencil', 's_trash-o']);
+                }
+            });
+
+            $('#check_sign').click(function (event) {
+                event.preventDefault();
+                var par = $('#id_partida').val().length > 0;
+                var con = $('#id_concepto').val().length > 3;
+                var can = !isNaN(parseFloat($('#id_cantidad').val()));
+                if (can) {
+                    $('#id_cantidad').val(parseFloat($('#id_cantidad').val()));
+                }
+                if (par && con && can) {
+                    if ($('#action').val() == 'save_added_gasto_ingreso' || $('#action').val() == 'save_mod_gasto_ingreso') {
+                        $('#' + '{{formname}}').ajaxSubmit({
+                            url: '/gastos_ingresos_ajax/',
+                            success: function (data) {
+                                $('#div_asientos').html(data);
+                                habilita(['h_check', 's_plus', 'h_trash-o', 'h_pencil', 'h_list-alt', 's_file-pdf-o']);
+                            }
+                        });
+                    }
+                    return false;
+                } else {
+                    var texto = '';
+                    if (!par) {
+                        texto = texto + '<li>Es necesario seleccionar una partida presupuestada.</li>';
+                    }
+                    if (!con) {
+                        texto = texto + '<li>Debes escribir el concepto.</li>';
+                    }
+                    if (!can) {
+                        texto = texto + '<li>Cantidad debe ser un número real (sin letras y usa "." para los decimales).</li>';
+                    }
+                    $("#texto_faltan_campos").html(texto);
+                    $('#faltan_campos').foundation('reveal', 'open');
+                }
+            });
+
+            $('#pencil_sign').click(function (event) {
+                event.preventDefault();
+                var id = $('#asiento_id').val();
+                habilita(['s_check', 'h_plus', 'h_pencil', 'h_trash-o']);
+                $.post("/gastos_ingresos_ajax/", {
+                    id: id,
+                    action: 'mod_gasto_ingreso',
+                    id_presupuesto: $('#id_presupuesto').val()
+                }, function (data) {
+                    $('#div_asientos').html(data);
+                    $('#action').val('save_mod_gasto_ingreso');
+                    $(document).scrollTop($('#h4_title').offset().top - 150);
+                });
+            });
+
+            $('#Contenido').on('click', '.ficheros_justificantes', function () {
+                var asiento_id = $(this).attr('id').split('___')[1];
+                $('#action').val('bajar_justificante');
+                $('#asiento_id').val(asiento_id);
+                document.{{formname}}.submit();
+            });
+
+
+            $("#Contenido").on('click', '#check_todos_i', function (e) {
+                e.preventDefault();
+                var num_elements = $(".tipo_i").length;
+                var num_checked = $(".tipo_i.fa-check-square-o").length;
+                if (num_elements > num_checked) {
+                    $(".tipo_i").each(function () {
+                        var id = $(this).attr('id').split('___')[1];
+                        $('#part___' + id).removeClass('fa-square-o').addClass('fa-check-square-o');
+                        $('#id_asiento___' + id).val(id);
+                        habilita(['h_plus', 's_trash-o', 'h_check', 'h_pencil']);
+                    });
+                } else {
+                    $(".tipo_i").each(function () {
+                        var id = $(this).attr('id').split('___')[1];
+                        $('#part___' + id).removeClass('fa-check-square-o').addClass('fa-square-o');
+                        $('#id_asiento___' + id).val('');
+                        habilita(['s_plus', 'h_trash-o', 'h_check', 'h_pencil']);
+                    });
+                }
+            });
+            $("#Contenido").on('click', '#check_todos_g', function (e) {
+                e.preventDefault();
+                var num_elements = $(".tipo_g").length;
+                var num_checked = $(".tipo_g.fa-check-square-o").length;
+                if (num_elements > num_checked) {
+                    $(".tipo_g").each(function () {
+                        var id = $(this).attr('id').split('___')[1];
+                        $('#part___' + id).removeClass('fa-square-o').addClass('fa-check-square-o');
+                        $('#id_asiento___' + id).val(id);
+                        habilita(['h_plus', 's_trash-o', 'h_check', 'h_pencil']);
+                    });
+                } else {
+                    $(".tipo_g").each(function () {
+                        var id = $(this).attr('id').split('___')[1];
+                        $('#part___' + id).removeClass('fa-check-square-o').addClass('fa-square-o');
+                        $('#id_asiento___' + id).val('');
+                        habilita(['s_plus', 'h_trash-o', 'h_check', 'h_pencil']);
+                    });
+                }
+            });
+        {% endif %}
+    </script>
+{% endblock %}

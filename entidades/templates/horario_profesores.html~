@@ -1,0 +1,148 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+<script>
+  $(function() {
+      var rama = $( "#rama" ),
+	  aula = $( "#aula" ),
+	  tarea = $( "#tarea" ),
+	  materia = $( "#materia" );
+
+      $( "#dialog_form" ).dialog({
+	      autoOpen: false,
+	      height: 250,
+	      width: 400,
+	      modal: true,
+	      buttons: {
+		      "Modificar sesión": function() {
+				  $('#action').val('mod_sesion');
+				  $('#mod_rama').val(rama.val());
+				  $('#mod_aula').val(aula.val());
+				  $('#mod_materia').val(materia.val());
+				  $('#mod_tarea').val(tarea.val());
+				  $( this ).dialog( "close" );
+				  document.{{formname}}.submit(); 
+		      },
+		      "Eliminar sesión": function() {
+				  $('#action').val('eliminar_sesion');
+				  $( this ).dialog( "close" );
+				  document.{{formname}}.submit(); 
+		      },
+		      "Cancelar": function() { $( this ).dialog( "close" ); }
+	      },
+// 	      close: function() { }
+      });
+
+      $( ".modsesion" ).click(function() {
+alert(this.id);
+	$("#select_materia").text( $("#materia_"+this.id).val() );
+	$("#select_aula").text( $("#aula_"+this.id).val() );
+	$("#select_rama").text( $("#rama_"+this.id).val() );
+	$("#select_tarea").text( $("#tarea_"+this.id).val() );
+	$("#select_materia").val( $("#materia_"+this.id).val() );
+	$("#select_aula").val( $("#aula_"+this.id).val() );
+	$("#select_rama").val( $("#rama_"+this.id).val() );
+	$("#select_tarea").val( $("#tarea_"+this.id).val() );
+	$("#mod_dia").val( $("#dia_"+this.id).val() );
+	$("#mod_comienzo").val( $("#comienzo_"+this.id).val() );
+	$("#sesion_id").val( $("#sesion_"+this.id).val() );
+	$("#dialog_form").dialog( "open" );
+      });
+  });
+</script>
+{% endblock %}
+
+{% block ready %}
+  $('#volver').click(function () {  javascript:history.go(-1); });
+  $('#monitor').change(function () {
+	  $('#docente_selected').val($('#monitor').val());
+	  document.{{formname}}.submit();
+  });
+  
+{% endblock %}
+
+
+{% block navegar %}
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <img id="volver" style="rondar:pointer;" border="0" align="right" alt="Atrás" title="Atrás" src="/static/images/volver.gif">
+  Horario de monitores: <span class="info">{{docente_seleccionado}}</span>
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <div style="float:right;">
+    <select id="monitor" name="monitor">
+    <option value="{{docente_seleccionado}}">{{docente_seleccionado}}</option>
+    {% for monitor in monitores %}
+      <option value="{{monitor}}"> {{monitor}} </option>
+    {% endfor %}
+    </select>
+  </div>
+{% endblock %}
+
+
+
+{% block contenido %}
+
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+<input type="hidden" id="action" name="action" value=""/>
+<input type="hidden" id="mod_rama" name="mod_rama" value=""/>
+<input type="hidden" id="mod_aula" name="mod_aula" value=""/>
+<input type="hidden" id="mod_materia" name="mod_materia" value=""/>
+<input type="hidden" id="mod_dia" name="mod_dia" value=""/>
+<input type="hidden" id="mod_comienzo" name="mod_comienzo" value=""/>
+<input type="hidden" id="mod_tarea" name="mod_tarea" value=""/>
+<input type="hidden" id="sesion_id" name="sesion_id" value=""/>
+<input type="hidden" id="docente_selected" name="docente_selected" value="{{docente_seleccionado}}"/>
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+<tr> <td></td><td title="{{sesion.2}}" style="border: 1px solid #BFDDCB;" class="columnaFondo">Lunes</td><td title="{{sesion.2}}" style="border: 1px solid #BFDDCB;" class="columnaFondo">Martes</td><td title="{{sesion.2}}" style="border: 1px solid #BFDDCB;" class="columnaFondo">Miércoles</td><td title="{{sesion.2}}" style="border: 1px solid #BFDDCB;" class="columnaFondo">Jueves</td><td title="{{sesion.2}}" style="border: 1px solid #BFDDCB;" class="columnaFondo">Viernes</td>
+{%for horas in horario%}
+<tr>
+{% for sesion in horas %}
+  {% if sesion.0 == None or sesion.0 == "None" %}
+    <td title="{{sesion.3}}" style="border: 1px solid #BFDDCB;max-width:100px;white-space:normal;" class="columnaFondo {{clase_permisos}}" id="td{{forloop.parentloop.counter}}{{forloop.counter}}"><div style="rondar:pointer;">
+    {% if sesion.3 != None %} <p class="info">{{sesion.3}}</p> {% endif %} </div></td>
+  {% else %}
+    <td title="{{sesion.3}}" style="border: 1px solid #BFDDCB;max-width:100px;white-space:normal;" class="columnaFondo {{clase_permisos}}" id="td{{forloop.parentloop.counter}}{{forloop.counter}}"><div style="rondar:pointer;"><p> {{sesion.0}}</p><p class="info">{{sesion.1}}</p><p>{{sesion.2}}</p></div></td>
+  {% endif %}
+  <input type="hidden" id="rama_td{{forloop.parentloop.counter}}{{forloop.counter}}" value="{{sesion.0}}"/>
+  <input type="hidden" id="materia_td{{forloop.parentloop.counter}}{{forloop.counter}}" value="{{sesion.1}}"/>
+  <input type="hidden" id="aula_td{{forloop.parentloop.counter}}{{forloop.counter}}" value="{{sesion.2}}"/>
+  <input type="hidden" id="tarea_td{{forloop.parentloop.counter}}{{forloop.counter}}" value="{{sesion.3}}"/>
+  <input type="hidden" id="sesion_td{{forloop.parentloop.counter}}{{forloop.counter}}" value="{{sesion.4}}"/>
+  <input type="hidden" id="dia_td{{forloop.parentloop.counter}}{{forloop.counter}}" value="{{sesion.5}}"/>
+  <input type="hidden" id="comienzo_td{{forloop.parentloop.counter}}{{forloop.counter}}" value="{{sesion.6}}"/>  
+{% endfor %}
+</tr>
+{%endfor%}
+</table>
+
+<div id="dialog_form" title="Modificar la sesión seleccionada" style="display:none;">
+  <p class="validateTips">Todos los campos deben tener un valor</p>
+  <table><tr><td>
+      <select id="rama" name="rama">
+      <option value="" id="select_rama">Selecciona rama</option>
+      {% for rama in ramas %}
+	<option value="{{rama}}"> {{rama}} </option>
+      {% endfor %}
+      </select></td></tr><tr><td><select id="materia" name="materia">
+      <option value="" id="select_materia">Selecciona un materia</option>
+      {% for materia in materias %}
+	<option value="{{materia}}"> {{materia}} </option>
+      {% endfor %}
+      </select>
+      </td></tr><tr></tr><tr><td>
+      <select id="aula" name="aula">
+      <option value="" id="select_aula">Selecciona aula</option>
+      {% for aula in aulas %}
+	<option value="{{aula}}"> {{aula}} </option>
+      {% endfor %}
+      </select></td></tr><tr><td>
+      <select id="tarea" name="tarea">
+      <option value="" id="select_tarea">Selecciona tarea</option>
+      {% for tarea in tareas %}
+	<option value="{{tarea}}"> {{tarea}} </option>
+      {% endfor %}
+      </select></td></tr></table>
+</div>
+</form>
+
+{% endblock %}

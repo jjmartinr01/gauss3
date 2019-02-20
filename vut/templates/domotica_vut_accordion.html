@@ -1,0 +1,12 @@
+{% load my_templatetags %}
+{% load vut_extras %}
+<dd class="accordion-navigation" id="accordion{{ vivienda.id }}"
+    style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+    <a href="#panel{{ vivienda.id }}">
+        <i id="circle{{ vivienda.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <span id="span_vivienda_nombre{{ vivienda.id }}">{{ vivienda.nombre }}</span>
+    </a>
+
+    <div id="panel{{ vivienda.id }}" class="content accordion-vivienda" data-id="{{ vivienda.id }}">
+    </div>
+</dd>

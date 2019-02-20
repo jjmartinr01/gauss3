@@ -1,0 +1,96 @@
+{% extends "lateral.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+<style>
+  .passwords {color:red;display:none;}
+  .ver_passwords { color:red;cursor:pointer;margin-bottom:100px;text-align:left;}
+  .ver_passwords:hover { color:#672296;cursor:pointer;margin-bottom:100px;text-align:left;}
+</style>
+{% endblock %}
+
+{% block ready %}
+  visualizar(['ok_sign']);
+  $( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Guardar las modificaciones');
+  
+  $( "#ok_sign" ).click(function () {
+      $('#action').val('aceptar');
+      document.{{formname}}.submit(); });
+
+  $( "#dialog_password" ).dialog({
+      autoOpen: false,
+      resizable: false,
+      width:'auto',
+      modal: true,
+      buttons: { Cancelar: function() { $( this ).dialog( "close" ); }, Ok: function() {
+	  $('#password1').val($('#dialog_password1').val())
+	  $('#password2').val($('#dialog_password2').val())
+	  document.{{formname}}.submit(); }  }});
+  
+  $(".ver_passwords").click(function (){
+      $('#action').val('aceptar');
+      $( "#dialog_password" ).dialog("open");
+  });
+
+  $( "#id_nacimiento" ).datepicker({
+	  dateFormat: "dd/mm/yy",
+	  dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	  dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	  firstDay: 1,
+	  changeMonth: true,
+	  changeYear: true,
+	  yearRange: "1950:2012",
+	  monthNamesShort: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	  monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	  onClose: function(dateText, inst) { } });
+{% endblock %}
+
+{% block navegar %}
+{% endblock %}
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+    <input type="hidden" name="action" id="action" value="">
+    <input type="hidden" name="password1" id="password1" value="">
+    <input type="hidden" name="password2" id="password2" value="">
+   
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Datos del usuario de GAUSS en el grupo {{request.session['gauser_extra'].entidad.name}}</td></tr></table>
+
+    <table align="CENTER" style="border-spacing:8px;padding-left:10px;" width="100%">
+      {% for form in form1 %}
+	  {% if forloop.first %}
+	    <tr><td>{{form.label_tag}}</td><td>{{form}}</td><td rowspan="10" align="center"><div class="ver_passwords"><i class="fa fa-shield"></i>&nbsp;Pulsa aquí para cambiar contraseña <i class="fa fa-puzzle-piece"></i></div><br><div>
+	    {% if request.session['gauser_extra'].foto %}
+	      <img  width="70" src="{{request.session['gauser_extra'].foto.url}}">
+	    {% else %}
+	      {% if request.session['gauser_extra'].gauser.sexo == 'H' %}
+		<img  width="70" src="/media/fotos/general_h.png">
+	      {% else %}
+		<img  width="70" src="/media/fotos/general_m.png">
+	      {% endif %}
+	    {% endif %}
+	    <br>Fotografía:
+	    <br>{{form2.foto}}</div></td> </tr>
+	  {% else %}
+	    <tr><td>{{form.label_tag}}</td><td>{{form}}</td> </tr>
+	  {% endif %}
+      {% endfor %}
+
+      {% for form in form2 %}
+	{% if forloop.counter == 1 %}
+	  {# Es la foto y por tanto no hay que hacer nada #}
+	{% else %}
+	  <tr><td>{{form.label_tag}}</td><td>{{form}}</td> </tr>
+	{% endif %}
+      {% endfor %}
+    </table>    
+</form>
+
+
+<div id="dialog_password" title="Cambio de contraseña">
+  <table><tr>
+  <td>Contraseña:</td><td> <input type="password" id="dialog_password1"/></td></tr><tr>
+  <td>Confirma contraseña:</td><td> <input type="password" id="dialog_password2"/></td></tr>
+</div>
+{% endblock %}

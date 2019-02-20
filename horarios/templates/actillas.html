@@ -1,0 +1,36 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Actillas de evaluación</strong></h4>
+        </div>
+
+        <div class="row">
+            {% for g in grupos %}
+                <div class="columns large-3">
+                    <input name="grupo" type="checkbox" value="{{ g.id }}"> {{ g.nombre }}
+                </div>
+            {% endfor %}
+        </div>
+    <div class="row">
+    <div class="large-12 text-center columns">
+        <a href="#" class="button" id="genera_actillas"><i class="fa fa-file-o"></i> Genera actilla/s</a>
+    </div>
+</div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+$('#genera_actillas').click(function (e) {
+    e.preventDefault();
+    document.actillas_evaluacion.submit();
+})
+    </script>
+
+{% endblock %}
+

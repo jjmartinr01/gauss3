@@ -1,0 +1,107 @@
+.cancel_imagen {
+    cursor:pointer;
+}
+.cancel_imagen:hover {
+    color:#00A6AC;
+}
+.ok_imagen {
+    cursor:pointer;
+}
+.ok_imagen:hover {
+    color:#00A6AC;
+}
+
+.desplegable {
+    cursor: pointer;
+}
+
+.contenedor {
+    display: none;
+    background: #ffffff;
+    border-top: 1px solid #CCCCCC;
+    border-right: 1px solid #333333;
+    border-bottom: 1px solid #333333;
+    border-left: 1px solid #CCCCCC;
+}
+
+.contenedor ul li {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.contenedor ul li a{
+    color:#333333;
+}
+
+.elige_color {
+    width: 18px;height: 18px;
+    margin: 2px;
+}
+
+.wysihtml5-toolbar{
+    border-top: 1px solid #CCCCCC;
+    border-left: 1px solid #CCCCCC;
+    border-right: 1px solid #CCCCCC;
+    margin: 5px 5px 0px 5px;
+    width: 95%;
+    padding: 10px;
+}
+
+.gauss_editor_button {
+    font: bold 11px Arial;
+    text-decoration: none;
+    background-color: #eeeeee;
+    color: #333333;
+    padding: 2px 6px 2px 6px;
+    border-top: 1px solid #CCCCCC;
+    border-right: 1px solid #333333;
+    border-bottom: 1px solid #333333;
+    border-left: 1px solid #CCCCCC;
+    margin: 5px;
+    cursor:pointer;
+}
+
+.block_secondary {
+    margin-top: 10px;
+}
+
+.gauss_editor_button_secondary {
+    background-color: #bbffff;
+    cursor:pointer;
+}
+
+.gauss_editor_button_code {
+    font: bold 11px Arial;
+    text-decoration: none;
+    background-color: #eeeeee;
+    color: #333333;
+    padding: 2px 6px 2px 6px;
+    border-top: 1px solid #CCCCCC;
+    border-right: 1px solid #333333;
+    border-bottom: 1px solid #333333;
+    border-left: 1px solid #CCCCCC;
+    margin: 5px;
+}
+
+.gauss_editor_button:hover {
+    display: inline !important;
+    color: #00A6AC;
+    background-color: #bbbbbb;
+}
+
+/*.gauss_editor_button ul li a:hover {*/
+    /*display: inline !important;*/
+    /*color: #00A6AC;*/
+    /*background-color: #eee;*/
+    /*list-style-type: none;*/
+/*}*/
+
+/*Esta clase se aparece en las casillas seleccionadas temporalmente*/
+.wysiwyg-tmp-selected-cell {
+    border: 2px solid #bbffff !important;
+}
+
+.wysiwyg-table-border1 td{
+    border: solid 2px #d3d3d3;
+}

@@ -1,0 +1,738 @@
+/* Propiedades generales */
+
+* {margin:0; padding:0}
+
+html,body{
+  font-family:Arial, Helvetica, sans-serif;
+  background:#FFF;
+  color: #623090;
+  margin:0px;
+  height:100%;}
+
+/* ************************************************************* */
+
+select {
+  font-size: 9pt;
+  font-weight:bold;
+  background:#ffffff;  
+  -webkit-appearance: none;
+  -moz-appearance: toolbarbutton;}
+
+select.par {
+  background-color:lightgray;}
+
+span.alerta {
+  color: red;}
+
+p.info {
+  color: #3ca6c1;
+  font-size:8pt;}
+
+span.info {
+  color: #3ca6c1;
+  font-size:8pt;}
+
+input {
+    font-family: arial,sans-serif;
+    font-size: 8pt;
+    font-weight: normal;
+    border:1px solid #D0D0D0;}
+
+a {
+  color: #623090;
+  font-size: 8pt;
+  font-weight: bold;
+  text-decoration: none;}
+
+.input_search {
+  height: 22px;
+  width: 190px;
+  padding-right: 17px;
+  font-size: 10pt;
+  font-weight: bold;
+  border-radius: 10px;}
+
+.input_search_nodialog {
+  height: 12pt;
+  width: 190px;
+  padding-right: 17px;
+  font-size: 10pt;
+  font-weight: bold;}
+
+/* ************************************************************* */
+
+/*  CSS para colores  */
+.color_info {color: #E76123;}
+
+.color1 {color:#623090; opacity:1;}
+.color2 {color:#E76123; opacity:1;}
+
+.color1_suave {color:#623090; opacity:0.2;}
+.color2_suave {color:#E76123; opacity:0.2;}
+
+.hr1 {color: #623090; background-color: #623090; border:0px;}
+.hr2 {color: #E76123; background-color: #E76123; border:0px;}
+
+/* ************************************************************* */
+
+/* CSS de la página de autenticación */
+.bgacceso a{ color:#769706;text-decoration:none;font-size:10pt; }
+.bgacceso a:hover{ color:#31859C;text-decoration:none;font-size:10pt; }
+.bgacceso .campo{ color:#31859C;font-weight:bold;font-size:12pt; }
+.bgacceso input{font-size:12pt;}
+#autenticar_form{height:100%;}
+#autenticar_main{width:30%;margin-left:auto;margin-right:auto;height:100%;margin-top:10%;margin-bottom:auto;}
+#autenticar_right{text-align:right;}
+#autenticar_center{text-align:center;}
+
+/* ************************************************************* */
+
+/* CSS asociado a la no autenticación */
+body.noacceso {
+  margin:50px 0px; padding:0px;
+  text-align:center;
+  z-index: 0;
+  color:#00006b;
+  font-family:sans-serif;}
+
+/* ************************************************************* */
+
+/* DIVISIONES */
+
+
+div.Principal { float: left; width: 100%;}
+div.Navegar {float: right; width:100%; height:30px; color: #623090; font-family: Arial,Helvetica,sans-serif; font-size: 14pt; font-weight: bold; text-align:center;padding-bottom:4px;}
+div.Contenido { margin-top:5px ; margin-right:1%; margin-left:1%; overflow:auto; overflow-x:auto; width:78%;  float:left;}
+
+/* ************************************************************* */
+
+/* DIV de cabecera no deberá mostrarse en resoluciones pequeñas */
+div.cabecera {display:none;}
+
+
+/* ************************************************************* */
+
+/* DIV correspondiente a la barra de menú de la cabecera */
+div.MenuCabecera { 
+  background-color: #FFFFFF;
+  font-size: 80%;
+  width:100%;
+  float: left;
+  border: 1px solid;
+  border-color: #eaeaea #eaeaea #eaeaea #eaeaea;
+  height:19pt;} /*modificado*/
+  .pulsar {
+    font-size:18pt; /*modificado*/
+    color: #623090;
+    font-weight: bold;
+    cursor:pointer;
+    margin-left:10px;
+    margin-right:5px;
+    margin-bottom:10px;
+    padding:1px;}
+    .navegar {
+      color: #E76123;
+      font-size:18pt; /*modificado*/
+      cursor:pointer;
+      text-align:right;
+      margin-right:10px;}
+    .navegar:hover{
+      color: #623090;}
+    .text_overlap_navegar {
+      font-family: Arial,Helvetica,sans-serif;
+      position:relative;
+      left:9px;
+      bottom:2px;
+      font-size:4pt;
+      font-weight: bold;
+      text-align:right;
+      margin-right:11px;
+      margin-left:-21px;
+      z-index:3;}
+    .no_navegar {
+      color: #ACACAC;
+      font-size:18pt; /*modificado*/
+      cursor:default;
+      text-align:right;
+      margin-right:10px;}
+    .ocultar_mostrar {
+      font-size:13pt; /*modificado*/
+      color: #623090;
+      border: 1px solid;
+      border-color: #eaeaea #eaeaea #eaeaea #eaeaea;
+      background:#eaeaea;
+      cursor:pointer;
+      border-top-left-radius: 5px;
+      border-top-right-radius: 5px;}
+    .visible {
+      display:block;}
+    .oculto {
+      display:none;}
+    #logo_gauss_menucabecera{
+      display:block;}
+    #img_cabecera{
+      display:none;}
+    #mis_datos{
+      display:none;}
+    #salir_gauss{
+      display:none;}
+    
+    
+/* ************************************************************* */
+
+/* Menú lateral */
+div.MenuLateral {
+  background-color: #FFFFFF;
+  font-size: 80%;
+  width:20%;
+  float: left;
+  margin-top:10px;}
+  h3.MenuLateral {
+    display:block;
+    border:1px solid;
+    border-radius: 10px;
+    color: #623090;
+    font-size: 120%;
+    height: 24px;
+    width:70%;
+    margin: 10px;
+    padding: 8px 0 0 10px;
+    box-shadow: 5px 5px 12px #623090;}
+  .accordion a {color: #623090;
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 8pt;
+    font-weight: bold;
+    text-decoration: none;}
+  .accordion li {
+    list-style-type:none}
+  .accordion li.last-child {
+    margin-left:10px;}
+  #side ul.accordion ul {
+    margin:0; padding:0 0 0 7px;}
+  ul li a:hover {
+    display:block;
+    color: #E76123;
+    background-color: #eee;
+    list-style-type: none;}
+  ul ul li a:hover {
+    display:block;
+    color: #369;
+    background-color: #eee;
+    list-style-type: none;}
+  ul ul ul li a:hover {
+    display:block;
+    color: #369;
+    background-color: #eee;
+    list-style-type: none;}
+  a.trigger {
+    padding-left:16px;
+    background-repeat: no-repeat;
+    background-position: 1px 50%;
+    font-weight:700;
+    list-style-type: none;}
+  a.trigger:before {
+    padding-right:4px;
+    font-family: FontAwesome;
+    content: '\f116';}
+  a.trigger.open:before {
+    font-family: FontAwesome;
+    content: '\f117';
+    color:#c82f2f; }
+  a.trigger.open{
+    color:#c82f2f;}
+  .last-child a.trigger{
+    padding-left:8px;}
+  .last-child a.trigger:before {
+    font-family: FontAwesome;
+    content: '\f0da';}
+  .trigger {
+    padding-top:5px;}
+
+/* ************************************************************* */
+
+/* TABLAS */
+
+table {
+  border: medium none;
+  font-family: sans-serif,arial;
+  font-size: 8pt;}
+
+.tablaFondo {
+  background-color: #FFFFFF;
+  border: 1px solid #BFDDCB;
+  border-radius: 10px 10px 10px 10px;
+  box-shadow: 5px 5px 5px #DCDCDC;
+  font-family: arial,sans-serif;
+  font-size: 8pt; }
+
+th {
+  text-align:left;
+  height:25px;}
+
+td.correo {
+  padding:7px;}
+
+tr.par {
+  background-color:lightgray;}
+
+tr.impar{
+  background-color:rgba(231, 97, 35, .2);}
+
+td.tabla_mensajes {
+ border-top:1px;
+ padding:7px;}
+
+label {
+  /* Lo mismo que columnaFondo */
+  border: medium none;
+  color: #623090;
+  font-size: 8pt;
+  font-weight: bold;
+  margin: 3px;
+  padding: 2px;}
+
+.columnaFondo {
+  border: medium none;
+/*   color: #623090; */
+/*   font-size: 8pt; */
+  font-weight: bold;
+  margin: 3px;
+  padding: 2px;
+}
+
+.columnaFondo .cabecera {
+  background-color: #E76123;
+  background-repeat: repeat-x;
+  color: #FFFFFF;
+  font-size:10pt;
+  border-radius: 10px;
+}
+
+.errorlist {
+  color: red;}
+
+.helptext {
+  white-space:normal;}
+
+.invisible {
+  display:none;}
+
+/* ************************************************************* */
+
+
+
+/*  MODIFICACIONES U-JQUERY  */
+
+/* ************************************************************* */
+/* DatePicker */
+
+.ui-datepicker-trigger:hover {
+    background-color: #BFDDCB;
+}
+
+/* Dialog */
+.ui-widget-header {
+ color: #672296;
+}
+
+/* ************************************************************* */
+
+/*  CSS para las convocatorias  */
+
+/* ************************************************************* */
+
+.pdf_convocatoria {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.pdf_convocatoria:hover{ color: #E76123; }
+
+.edit_convocatoria {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.edit_convocatoria:hover{ color: #E76123; }
+
+.delete_convocatoria {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.delete_convocatoria:hover{ color: #E76123; }
+
+.copy_convocatoria {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.copy_convocatoria:hover{ color: #E76123; }
+
+.ver_convocatoria {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.ver_convocatoria:hover{ color: #E76123; }
+
+
+.desactivado{ color:gray; }
+
+
+
+/* ************************************************************* */
+
+/*  CSS para las actas  */
+
+/* ************************************************************* */
+
+.pdf_acta {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.pdf_acta:hover{ color: #E76123; }
+
+.editar_acta {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.editar_acta:hover{ color: #E76123; }
+
+.delete_acta {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.delete_acta:hover{ color: #E76123; }
+
+.copy_acta {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.copy_acta:hover{ color: #E76123; }
+
+.ver_acta {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.ver_acta:hover{ color: #E76123; }
+
+
+.desactivado{ color:gray; }
+
+
+
+/* ************************************************************* */
+
+/*  CSS para las reparaciones  */
+
+/* ************************************************************* */
+
+.repara_hover:hover{background-color: #FFFFCC; color:#E76123; border-radius: 2px;}
+
+/* ************************************************************* */
+
+/*  CSS para los escritos  */
+
+/* ************************************************************* */
+
+.pdf_escrito {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.pdf_escrito:hover{ color: #E76123; }
+
+.edit_escrito {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.edit_escrito:hover{ color: #E76123; }
+
+.delete_escrito {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.delete_escrito:hover{ color: #E76123; }
+
+.copy_escrito {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.copy_escrito:hover{ color: #E76123; }
+
+/* ************************************************************* */
+
+/*  CSS para los documentos  */
+
+/* ************************************************************* */
+
+.add_capitulo {
+cursor:pointer;
+display:none;
+}
+.add_capitulo:hover{ color: #E76123; }
+
+
+.pdf_documento {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.pdf_documento:hover{ color: #E76123; }
+
+.edit_documento {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.edit_documento:hover{ color: #E76123; }
+
+.delete_documento {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.delete_documento:hover{ color: #E76123; }
+
+.edit_subdocumento {
+float:right;
+/* float:left; */
+margin-left:25px;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+display:none;
+}
+.edit_subdocumento:hover{ color: #E76123; }
+
+.delete_subdocumento {
+float:right;
+/* float:left; */
+margin-left:25px;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+display:none;
+}
+.delete_subdocumento:hover{ color: #E76123; }
+
+.add_subdocumento {
+float:right;
+/* float:left; */
+margin-left:25px;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+display:none;
+}
+.add_subdocumento:hover{ color: #E76123; }
+
+.subdocumento_up {
+float:right;
+/* float:left; */
+margin-left:25px;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+display:none;
+}
+.subdocumento_up:hover{ color: #E76123; }
+
+.subdocumento_down {
+float:right;
+/* float:left; */
+margin-left:25px;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+display:none;
+}
+.subdocumento_down:hover{ color: #E76123; }
+
+.toc {
+margin-top:10px;
+padding-top:3px;
+padding-bottom:3px;
+margin-bottom:10px;
+font-size:10pt;
+}
+.toc:hover { background-color:#ffffaa;  border-radius: 10px;}
+
+.toc_apagado {
+margin-top:10px;
+padding-top:3px;
+padding-bottom:3px;
+margin-bottom:10px;
+font-size:10pt;
+color:gray;
+}
+
+
+.texto_title{
+cursor:pointer;
+}
+
+/* ************************************************************* */
+
+/*  CSS para los acontecimientos  */
+
+/* ************************************************************* */
+
+.varios_acontecimientos {
+background: -webkit-linear-gradient(#ffa500, green, #ff00ff);
+background:    -moz-linear-gradient(#ffa500, green, #ff00ff);
+background:     -ms-linear-gradient(#ffa500, green, #ff00ff);
+background:      -o-linear-gradient(#ffa500, green, #ff00ff);
+background:         linear-gradient(#ffa500, green, #ff00ff);
+cursor:pointer;
+border-radius:5px;
+}
+
+.EVT_PER {
+background:#ffa500;
+cursor:pointer;
+border-radius:5px;
+}
+
+.EVT_FES {
+background:red;
+cursor:pointer;
+border-radius:5px;
+}
+
+.EVT_REU {
+background:green;
+cursor:pointer;
+border-radius:5px;
+}
+
+.EVT_EVA{
+background:#ff00ff;
+cursor:pointer;
+border-radius:5px;
+}
+
+.EVT_EXA{
+background:#81F7BE;
+cursor:pointer;
+border-radius:5px;
+}
+
+
+
+/* ************************************************************* */
+
+/*  CSS para las actividades  */
+
+/* ************************************************************* */
+
+.pdf_actividad {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.pdf_actividad:hover{ color: #623090; }
+
+.delete_actividad {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.delete_actividad:hover{ color: #623090; }
+
+.edit_actividad {
+float:right;
+margin-right:15px;
+padding:0 15px 0 0px;
+cursor:pointer;
+}
+.edit_actividad:hover{ color: #623090; }
+
+
+.lista_alumnos_incluidos:hover{color: #E76123;}
+
+
+
+
+
+
+
+/* ************************************************************* */
+
+/*  CSS multiselect to checkboxes  */
+
+/* ************************************************************* */
+
+.div_total_checkboxes {
+padding:15px;
+}
+
+.multiselect2checkbox {
+border-spacing:25px 0px;
+/* padding-top:20px; */
+display:none;
+}
+
+.select_todos {
+cursor:pointer;
+margin-left:10px;
+}
+.select_todos:hover{ color: #623090; }
+
+.select_ninguno {
+cursor:pointer;
+margin-left:10px;
+}
+.select_ninguno:hover{ color: #623090; }
+
+.div_texto_checkboxes {
+padding: 10px 5px 5px 5px;
+float:left;
+cursor:pointer;
+}
+
+.todos_ningunos {
+padding: 10px 5px 5px 5px;
+float:left;
+display:none;
+}
+
+.ya_checked {
+padding: 10px 5px 5px 5px;
+float:left;
+}
+
+.total_seleccionados {
+padding: 10px 5px 5px 5px;
+float:left;
+display:block;
+}
+

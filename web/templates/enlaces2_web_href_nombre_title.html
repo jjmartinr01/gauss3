@@ -1,0 +1,14 @@
+{% load my_templatetags %}
+{# Fichero empleado en enlaces1_web.html para cargar dinámicamente el nombre y enlace en el accordion #}
+{% if enlace_web.hijos|length > 0 %}
+    <span id="texto_t{{ enlace_web.id }}">{{ enlace_web.texto }}</span> ( Tiene subenlaces )
+{% else %}
+    <span id="texto_t{{ enlace_web.id }}">{{ enlace_web.texto }}</span>
+    {% if enlace_web.href %}
+        ( <i class="fa fa-link"></i> <span id="href_t{{ enlace_web.id }}">{{ enlace_web|escribe_href:'title' }} </span>)
+    {% else %}
+        (<span style="color:red">
+        <i class="fa fa-warning"></i> <span id="href_t{{ enlace_web.id }}">Necesita enlace a url </span>
+        </span>)
+    {% endif %}
+{% endif %}

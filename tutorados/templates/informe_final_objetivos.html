@@ -1,0 +1,131 @@
+{% extends "base_foundation.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="materia_elegida" id="materia_elegida" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Definición de objetivos educativos</strong></h4>
+        </div>
+        <div class="row">
+            <div class="columns large-6">
+                <label><strong>Escribe el texto del objetivo:</strong>
+                    <textarea name="objetivo" id="objetivo" rows="2">{{ texto_objetivo }}</textarea>
+                </label>
+            </div>
+            <div class="columns large-6">
+                <label><strong>Tipo de valoración:</strong>
+                    <select name="valorable" id="valorable">
+                        <option value="0" {% if valorable == '0' %}selected{% endif %}>Nada/Poco/Bastante/Mucho</option>
+                        <option value="1" {% if valorable == '1' %}selected{% endif %}>Nunca/A veces/Habitualmente/Siempre</option>
+                        <option value="2" {% if valorable == '2' %}selected{% endif %}>No conseguido/Parcialmente conseguido/Casi conseguido/Completamente
+                            conseguido
+                        </option>
+                    </select>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-6">
+                <label><strong>Selecciona un curso:</strong>
+                    <select name="estudio" id="estudio">
+                        {% if request.session.gauser_extra|has_perfiles:'4,5,6,7' %}
+                            <option value="10">Objetivo general no asociado a un curso</option>
+                        {% endif %}
+                        <option value="250010" {% if estudio.id == 250010 %}selected{% endif %}>1º E.S.O.</option>
+                        <option value="250030" {% if estudio.id == 250030 %}selected{% endif %}>2º E.S.O.</option>
+                        <option value="250040" {% if estudio.id == 250040 %}selected{% endif %}>2º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)</option>
+                        <option value="250050" {% if estudio.id == 250050 %}selected{% endif %}>3º E.S.O.</option>
+                        <option value="250060" {% if estudio.id == 250060 %}selected{% endif %}>3º de E.S.O. (DIVERSIFICACIÓN)</option>
+                        <option value="250070" {% if estudio.id == 250070 %}selected{% endif %}>4º E.S.O.</option>
+                        <option value="250080" {% if estudio.id == 250080 %}selected{% endif %}>4º de E.S.O. (DIVERSIFICACIÓN)</option>
+                    </select>
+                </label>
+            </div>
+
+
+            <div class="columns large-6">
+                <label><strong>Selecciona una materia:</strong>
+                    <input type="hidden" name="elegir_materia" id="elegir_materia" value="">
+                </label>
+            </div>
+        </div>
+        <div id="informe_final_formulario"></div>
+
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_check']);
+        $("#th-list_sign").click(function (e) {
+            e.preventDefault();
+            window.location.href('/objetivos_informe/');
+        });
+        $("#check_sign").click(function (e) {
+            e.preventDefault();
+            $('#action').val('aceptar');
+            document.{{formname}}.submit();
+        });
+
+        $("#elegir_materia").select2({
+            placeholder: "Escribe parte del nombre de la materia",
+            minimumInputLength: 3,
+            multiple: true,
+            ajax: {
+                url: "/informe_final_objetivos/",
+                type: 'POST',
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (term, page) { // page is the one-based page number tracked by Select2
+                    return {
+                        action: 'busca_materia',
+                        q: term, //search term
+                        estudio: $('#estudio').val(),
+                        page_limit: 10, // page size
+                        page: page // page number
+                    };
+                },
+                results: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                }
+            },
+            formatResult: function (resultado) {
+                return '<div class="select2-user-result">' + resultado.text + '</div>';
+            },
+            formatSelection: function (resultado) {
+                $('#materia_elegida').val(resultado.id);
+                $('#materia_elegida').trigger('change');
+                return resultado.text;
+            },
+            dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
+            escapeMarkup: function (m) {
+                return m;
+            } // we do not want to escape markup since we are displaying html in results
+        });
+
+        {#        $("#materia_elegida").change(function () {#}
+        {#            window.console.log('Materia elegida: ' + $('#materia_elegida').val());#}
+        {#            var materia = $('#materia_elegida').val();#}
+        {#            var alumno = $('#alumno_elegido').val();#}
+        {#            $.post("/informe_final/", {action: 'formulario_informe', materia: materia, alumno: alumno}, function (data) {#}
+        {#                $('#informe_final_formulario').html(data);#}
+        {#                window.console.log('informe final: ' + $('#informe_final').val());#}
+        {#                $("#materia-check").show().delay(1500).fadeOut();#}
+        {#            });#}
+        {#        });#}
+
+
+    </script>
+
+{% endblock %}

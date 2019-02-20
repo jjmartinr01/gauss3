@@ -1,0 +1,637 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+{% load horarios_extras %}
+
+{% block contenido %}
+    <style>
+        #barra_iconos_menu {
+            z-index: 2000000 !important;
+        }
+
+        h2 {
+            color: red;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        div.horario {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            height: {{ horario.horario_height }}px;
+            border: 1px solid grey;
+        }
+
+        div.dia_horario {
+            display: table-cell;
+            text-align: center;
+            height: {{ horario.horario_height }}px;
+            position: relative;
+        }
+
+        div.div_cell_sesion {
+            position: absolute;
+            border-left: 1px solid #BFDDCB;
+            border-top: 1px solid #BFDDCB;
+            border-right: 1px solid #BFDDCB;
+            background-color: white;
+            opacity: 1;
+            z-index: 1;
+            width: 100%;
+        }
+
+        div.div_cell_sesion:hover {
+            z-index: 100000 !important;
+            background-color: #ffd3e8;
+        }
+
+        .show_complete_cell {
+            z-index: 100000 !important;
+            background-color: #ffd3e8 !important;
+        }
+
+        #horas {
+            border-right: 1px solid grey;
+        }
+
+        div.horas {
+            position: absolute;
+            padding-left: 5px;
+            border-top: 1px solid #BFDDCB;
+            width: 100%;
+        }
+
+        .cell_sesion {
+            border: 1px solid #BFDDCB;
+            position: relative;
+        }
+
+        .span_add_sesion {
+            display: none;
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            z-index: 1000;
+        }
+
+        .hr {
+            display: none;
+        }
+
+        .grupo {
+            color: #117700;
+        }
+
+        .materia {
+            color: #008CBA;
+        }
+
+        .dependencia {
+            color: #888888;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="graba_horario">
+        <input type="hidden" id="q" name="q" value="">
+        <input type="hidden" id="page" name="page" value="">
+        {% if gauser_extra %}
+            <div class="row">
+                <div class="columns large-6 text-right"><h4 style="color: #008CBA;"><strong>Horario
+                    de </strong></h4>
+                </div>
+                <div class="columns large-6">
+                    <h5 style="text-align: center;"><strong> <select name="gauser_extra" id="gauser_extra">
+                        {% for g in g_es %}
+                            <option value="{{ g.id }}"
+                                    {% if g.id == gauser_extra.id %}selected{% endif %}><span
+                                    style="text-align: center;color: #008CBA;">{{ g.gauser.get_full_name }}</span>
+                            </option>
+                        {% endfor %}
+                    </select></strong></h5>
+                </div>
+
+            </div>
+        {% else %}
+            <div class="">
+                <h4 style="text-align: center;color: #008CBA;"><strong>Horarios de usuarios sin definir. Es necesario
+                    crearlos.</strong></h4>
+            </div>
+        {% endif %}
+        <input type="hidden" name="horario" id="horario" value="{{ horario.id }}">
+
+        {#        <div class="row">#}
+        {#            <div class="columns large-4">#}
+        {#                {% if request.session.gauser_extra|has_permiso:"crea_horarios2" %}#}
+        {#                    <select name="horario" id="horario">#}
+        {#                        <option value="{{ horario.id }}">{{ horario.descripcion|truncatechars:90 }}</option>#}
+        {#                        {% for h in horarios %}#}
+        {#                            <option value="{{ h.id }}">{{ h.descripcion|truncatechars:90 }}</option>#}
+        {#                        {% endfor %}#}
+        {#                    </select>#}
+        {#                {% else %}#}
+        {#                    &nbsp;<input type="hidden" name="horario" id="horario" value="{{ horario.id }}">#}
+        {#                {% endif %}#}
+        {#            </div>#}
+        {##}
+        {#            <div class="columns large-4">#}
+        {#                {% if request.session.gauser_extra|has_permiso:"crea_horarios_usuarios2" %}#}
+        {#                    Usuarios sin horario: <input type="checkbox">#}
+        {##}
+        {#                {% else %}#}
+        {#                    &nbsp;&nbsp;#}
+        {#                {% endif %}#}
+        {#            </div>#}
+        {##}
+        {#            <div class="columns large-4 end">#}
+        {#                <select name="gauser_extra" id="gauser_extra">#}
+        {#                    {% for g in g_es %}#}
+        {#                        <option value="{{ g.id }}"#}
+        {#                                {% if g.id == gauser_extra.id %}selected{% endif %}>{{ g.gauser.get_full_name }}</option>#}
+        {#                    {% endfor %}#}
+        {#                </select>#}
+        {#            </div>#}
+        {#        </div>#}
+
+        {% if gauser_extra %}
+            <div class="horario" id="div_horario_usuario">
+                {% include "horario_ge_content.html" %}
+            </div>
+
+
+
+            <div id="copy_cal" class="reveal-modal text-center medium" data-reveal aria-hidden="true" role="dialog">
+                <div class="row">
+                    <h5 style="font-weight: 800;"><i class="fa fa-copy"></i> Copiar horario</h5>
+                    <div class="columns large-12">
+                        <label>Copiar el horario (las sesiones) de <span
+                                id="nombre_usuario_seleccionado">{{ gauser_extra.gauser.get_full_name }}</span> y
+                            asignárselo
+                            a:
+                            <select id="select_user_copy"></select>
+                        </label>
+                    </div>
+                </div>
+                <hr>
+                <div class="row" style="display: none;" id="mensaje_copia_usuario">
+                    <div class="columns large-12 medium-12 small-12 text-center">
+                        <p><i class="fa fa-warning"></i> Si aceptas se copiará el horario, y se asignará a
+                            <span id="usuario_copia_horario"></span> eliminando el horario que ya tuviera
+                            asociado hasta este momento.</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns large-12 medium-12 small-12 text-right">
+                        <ul class="button-group">
+                            <li><a class="button small" id="ok_select_user_copy">Aceptar</a></li>
+                            <li><a class="button small" id="cancel_select_user_copy">Cancelar</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div id="nuevo_cal" class="reveal-modal text-center medium" data-reveal aria-hidden="true" role="dialog">
+                <div class="row">
+                    <h5 style="font-weight: 800;"><i class="fa fa-file-o"></i> Nuevo horario</h5>
+                    <div class="columns large-12">
+                        <label>Crear un nuevo horario y asignarlo a:
+                            <select id="select_user_nuevo"></select>
+                        </label>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+
+                    <div class="columns large-12 medium-12 small-12 text-right">
+                        <ul class="button-group">
+                            <li><a class="button small" id="ok_select_user_nuevo">Aceptar</a></li>
+                            <li><a class="button small" id="cancel_select_user_nuevo">Cancelar</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div id="sesion_input" class="reveal-modal text-center medium" data-reveal aria-hidden="true" role="dialog">
+                <h2>Datos de la sesión</h2>
+                <div class="row">
+                    <div class="columns large-4 medium-4 small-6 text-left">
+                        <label> Día:<select id="dia">
+                            <option value="1">Lunes</option>
+                            <option value="2">Martes</option>
+                            <option value="3">Miércoles</option>
+                            <option value="4">Jueves</option>
+                            <option value="5">Viernes</option>
+                            <option value="6">Sábado</option>
+                            <option value="7">Domingo</option>
+                        </select></label>
+                    </div>
+                    <div class="columns large-4 medium-4 small-6 text-left">
+                        <label>Hora inicio:
+                            <input type="time" id="inicio" value=""></label>
+                    </div>
+                    <div class="columns large-4 medium-4 small-6 text-left">
+                        <label>Hora fin: <input type="time" id="fin" value=""> </label>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="columns large-6 medium-6 small-6 text-right">
+                        Elige el grupo:
+                    </div>
+                    <div class="columns large-6 medium-6 small-6">
+                        <select name="grupo" id="grupo" style="width: 300px;"
+                                title="Selecciona un departamento/grupo">
+                            <option value="">No se asigna grupo</option>
+                            {% for g in grupos %}
+                                <option value="{{ g.id }}">{{ g.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns large-6 medium-6 small-6 text-right">
+                        Elige el lugar:
+                    </div>
+                    <div class="columns large-6 medium-6 small-6">
+                        <select name="dependencia" id="dependencia" style="width: 300px;"
+                                title="Selecciona una dependencia">
+                            <option value="">No se asigna dependencia</option>
+                            {% for d in dependencias %}
+                                <option value="{{ d.id }}">{{ d.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns large-6 medium-6 small-6 text-right">
+                        Elige la materia:
+                    </div>
+                    <div class="columns large-6 medium-6 small-6">
+                        <select name="materia" id="materia" style="width: 300px;" title="Selecciona una materia">
+                            <option value="">No se asigna materia</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns large-6 medium-6 small-6 text-right">
+                        Elige el tipo de actividad:
+                    </div>
+                    <div class="columns large-6 medium-6 small-6">
+                        <select name="actividad" id="actividad" style="width: 300px;" title="Actividades disponibles">
+                            <option value="">No se asigna actividad</option>
+                            {% for a in actividades %}
+                                <option value="{{ a.id }}">{{ a.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="columns large-12 medium-12 small-12 text-right">
+                        <ul class="button-group">
+                            <li><a class="button small" id="ok_sesion">Guardar</a></li>
+                            <li><a class="button small" id="cancel_sesion">Cancelar</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_user-plus', 's_calendar-plus-o', 's_copy']);
+        $('#gauser_extra').select2();
+        $('#grupo').select2();
+        $('#dependencia').select2();
+        $('#actividad').select2();
+
+        $('body').on('change', '#gauser_extra', function (e) {
+            var ge = $(this).val();
+            var h = $('#horario').val();
+            show_mensajes({title: 'Cargando horario', texto: 'En unos segundos se cargará el horario ...'});
+            $.post("/horarios_ajax/", {action: 'carga_horario_usuario', horario: h, ge: ge}, function (data) {
+                hide_mensajes();
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#div_horario_usuario').html(data.html);
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+
+        {% if request.session.gauser_extra|has_permiso:"modifica_sesiones_horario" %}
+            var sesion;
+
+            function materias(grupo) {
+                $('#materia').select2({
+                    placeholder: "Para buscar una materia, escribe parte del nombre",
+                    allowClear: true,
+                    ajax: {
+                        url: "/horarios_ajax/",
+                        type: 'POST',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {action: 'buscar_materias', q: params.term, page: params.page, grupo: grupo};
+                        },
+                        processResults: function (data, page) {
+                            return {
+                                results: $.map(data, function (item) {
+                                    return {
+                                        text: item.text,
+                                        id: item.id
+                                    }
+                                })
+                            };
+                        },
+                        cache: true
+                    },
+                    escapeMarkup: function (markup) {
+                        return markup;
+                    }, // let our custom formatter work
+                    minimumInputLength: 3,
+                    language: {
+                        inputTooShort: function () {
+                            return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                        }
+                    }
+                });
+            }
+
+            $('body').on('click', '#calendar-plus-o_sign', function (e) {
+                e.preventDefault();
+                sesion = 'nueva';
+                $('#sesion_input').foundation('reveal', 'open');
+            });
+
+            $('body').on('click', '.copiar_sesion', function (e) {
+                e.preventDefault();
+                sesion = $(this).data('sesion');
+                $('#sesion_input').foundation('reveal', 'open');
+                $.post("/horarios_ajax/", {action: 'editar_sesion', sesion: sesion}, function (data) {
+                    $('#dia').val(data['dia']).trigger('change');
+                    $('#inicio').val(data['inicio']);
+                    $('#fin').val(data['fin']);
+                    $('#grupo').val(data['grupo']).trigger('change');
+                    materias(data['grupo']);
+                    var newOption = new Option(data.materia_texto, data.materia, true, true);
+                    $('#materia').append(newOption).trigger('change');
+                    $('#dependencia').val(data['dependencia']).trigger('change');
+                    $('#actividad').val(data['actividad']).trigger('change');
+                    sesion = 'nueva';
+                });
+            });
+
+            $('body').on('click', '.editar_sesion', function (e) {
+                e.preventDefault();
+                sesion = $(this).data('sesion');
+                $('#sesion_input').foundation('reveal', 'open');
+                $.post("/horarios_ajax/", {action: 'editar_sesion', sesion: sesion}, function (data) {
+                    $('#dia').val(data['dia']).trigger('change');
+                    $('#inicio').val(data['inicio']);
+                    $('#fin').val(data['fin']);
+                    $('#grupo').val(data['grupo']).trigger('change');
+                    materias(data['grupo']);
+                    var newOption = new Option(data.materia_texto, data.materia, true, true);
+                    $('#materia').append(newOption).trigger('change');
+                    $('#dependencia').val(data['dependencia']).trigger('change');
+                    $('#actividad').val(data['actividad']).trigger('change');
+                });
+            });
+
+            $('body').on('click', '#ok_sesion', function (e) {
+                e.preventDefault();
+                var dependencia = $('#dependencia').val();
+                var grupo = $('#grupo').val();
+                var materia = $('#materia').val();
+                var actividad = $('#actividad').val();
+                var dia = $('#dia').val();
+                var inicio = $('#inicio').val();
+                var fin = $('#fin').val();
+                var horario = $('#horario').val();
+                var g_e = $('#gauser_extra').val();
+                $.post("/horarios_ajax/", {
+                    action: 'ok_sesion', dependencia: dependencia, grupo: grupo, dia: dia, inicio: inicio, fin: fin,
+                    materia: materia, sesion: sesion, actividad: actividad, g_e: g_e, horario: horario
+                }, function (data) {
+                    if (data.ok) {
+                        $('#div_horario_usuario').html(data.html);
+                        $('#sesion_input').foundation('reveal', 'close');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        show_mensajes({title: 'Error', texto: data.mensaje});
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+
+                });
+            });
+
+            $('body').on('click', '#cancel_sesion', function (e) {
+                e.preventDefault();
+                $('#sesion_input').foundation('reveal', 'close');
+            });
+
+            $('body').on('click', '.alumnos_sesion', function (e) {
+                var id = $(this).data('id');
+                $.post("/horarios_ajax/", {action: 'alumnos_sesion', id: id}, function (data) {
+                    show_mensajes({texto: data, size: 'large'});
+                });
+            });
+
+            $('body').on('click', '.asistencia_sesion', function (e) {
+                var id = $(this).data('id');
+                $.post("/horarios_ajax/", {action: 'asistencia_sesion', id: id}, function (data) {
+                    show_mensajes({texto: data, size: 'large'});
+                });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:"borra_sesiones_horario" %}
+            $('body').on('click', '#del_horario_usuario', function (e) {
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Borrado definitivo del horario',
+                    texto: 'Si aceptas, el horario se eliminará por completo y no podrá recuperarse',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            var ge = $('#gauser_extra').val();
+                            var h = $('#horario').val();
+                            $.post("/horarios_ajax/", {action: 'del_horario_usuario', ge: ge, horario: h},
+                                function (data) {
+                                    if (data.ok) {
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                        $('#div_horario_usuario').html('<br><h2>Borrando horario ...</h2>');
+                                        window.location.href = "/horario_ge/";
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+            $('body').on('click', '.borrar_sesion', function (e) {
+                e.preventDefault();
+                sesion = $(this).data('sesion');
+                $.post("/horarios_ajax/", {action: 'borrar_sesion', sesion: sesion}, function (data) {
+                    if (data.ok) {
+                        $('#a_dropdown' + sesion).remove();
+                        $('#drop' + sesion).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+        {% endif %}
+
+
+        {% if request.session.gauser_extra|has_permiso:"crea_horarios_usuarios" %}
+
+
+            function usuarios_sistema(id) {
+                $(id).select2({
+                    placeholder: "Para buscar un usuario, escribe parte del nombre",
+                    allowClear: true,
+                    ajax: {
+                        url: "/horarios_ajax/",
+                        type: 'POST',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            $('#q').val(params.term);
+                            $('#page').val(params.page);
+                            $('#action').val('buscar_usuarios');
+                            return $('#' + '{{ formname }}').serialize();
+                        },
+                        processResults: function (data, page) {
+                            return {
+                                results: $.map(data, function (item) {
+                                    return {
+                                        text: item.text,
+                                        id: item.id
+                                    }
+                                })
+                            };
+                        },
+                        cache: true
+                    },
+                    escapeMarkup: function (markup) {
+                        return markup;
+                    }, // let our custom formatter work
+                    minimumInputLength: 3,
+                    language: {
+                        inputTooShort: function () {
+                            return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                        }
+                    }
+                });
+            }
+
+            $('body').on('change', '#grupo', function (e) {
+                var grupo = $(this).val();
+                setTimeout(function () {
+                    materias(grupo);
+                }, 200);
+            });
+
+            $('body').on('click', '#user-plus_sign', function (e) {
+                e.preventDefault();
+                $('#nuevo_cal').foundation('reveal', 'open');
+                setTimeout(function () {
+                    usuarios_sistema('#select_user_nuevo');
+                }, 200);
+            });
+
+            $('body').on('click', '#ok_select_user_nuevo', function (e) {
+                var nuevo_ge = $('#select_user_nuevo').val();
+                var o = $('#gauser_extra').val();
+                var h = $('#horario').val();
+                $.post("/horarios_ajax/", {action: 'nuevo_horario_usuario', nuevo_ge: nuevo_ge, horario: h, o: o},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#copy_cal').foundation('reveal', 'close');
+                            show_mensajes({
+                                title: 'Cargando el horario de ' + data.nombre_nuevo_ge,
+                                texto: 'En unos segundos se cargará el horario que acabas de crear ...'
+                            });
+                            window.location.href = "/horario_ge/?u=" + nuevo_ge + "&h=" + h;
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+
+                    });
+            });
+
+            $('body').on('click', '#cancel_select_user_nuevo', function (e) {
+                $('#copy_cal').foundation('reveal', 'close');
+                $('#select_user_copy').val(null).trigger('change');
+                $('#mensaje_copia_usuario').hide();
+            });
+
+            {#  #######################################################  #}
+
+            $('body').on('click', '#copy_sign', function (e) {
+                e.preventDefault();
+                $('#copy_cal').foundation('reveal', 'open');
+                setTimeout(function () {
+                    usuarios_sistema('#select_user_copy');
+                }, 200);
+            });
+
+            $('body').on('change', '#select_user_copy', function (e) {
+                var usuario = $(this).val();
+                $('#mensaje_copia_usuario').show();
+                $('#usuario_copia_horario').html($('#select_user_copy').select2('data')[0].text);
+            });
+
+            $('body').on('click', '#ok_select_user_copy', function (e) {
+                var d = $('#select_user_copy').val();
+                var o = $('#gauser_extra').val();
+                var h = $('#horario').val();
+                $.post("/horarios_ajax/", {action: 'copia_horario', origen: o, destinatario: d, horario: h},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#copy_cal').foundation('reveal', 'close');
+                            show_mensajes({
+                                title: 'Cargando horario copiado',
+                                texto: 'En unos segundos se cargará el horario que acabas de copiar ...'
+                            });
+                            window.location.href = "/horario_ge/?u=" + d + "&h=" + h;
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+
+                    });
+            });
+
+            $('body').on('click', '#cancel_select_user_copy', function (e) {
+                $('#copy_cal').foundation('reveal', 'close');
+                $('#select_user_copy').val(null).trigger('change');
+                $('#mensaje_copia_usuario').hide();
+            });
+
+        {% endif %}
+
+
+        $('#Contenido').on('click', '.div_cell_sesion', function () {
+            var element = $(this);
+            if (!element.hasClass('show_complete_cell')) {
+                $('.div_cell_sesion').removeClass('show_complete_cell');
+                element.addClass('show_complete_cell');
+            } else {
+                $('.div_cell_sesion').removeClass('show_complete_cell');
+            }
+        });
+
+    </script>
+{% endblock %}

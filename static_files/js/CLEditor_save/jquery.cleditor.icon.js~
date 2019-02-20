@@ -1,0 +1,18 @@
+﻿(function($) {
+  // Define the icon button
+  $.cleditor.buttons.save = {
+    name: "save",
+    css: {
+      backgroundImage: "URL(/static/images/ico_info.gif)",
+      backgroundPosition: "2px 2px",
+      backgroundRepeat: "no-repeat",
+    },
+    title: "Guardar documento",
+    command: "insertimage",
+    buttonClick: function(e, data) { $('#save_documento').val('grabar').change();} };
+
+  // Add the button to the default controls
+  $.cleditor.defaultOptions.controls = $.cleditor.defaultOptions.controls
+    .replace("| cut", "save | cut");
+
+})(jQuery);

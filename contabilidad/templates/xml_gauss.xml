@@ -1,0 +1,94 @@
+{% load my_templatetags %}<?xml version="1.0" encoding="UTF-8" ?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<CstmrDrctDbtInitn>
+    <GrpHdr>
+        <MsgId>{{request.session.gauser_extra.ronda.entidad.nif}}-{% now "Ymd-H-i" %}</MsgId>
+        <CreDtTm>{% now "Y-m-d\TH:i:s" %}</CreDtTm>
+        <NbOfTxs>{{remesa_emitida.nboftxs}}</NbOfTxs>
+        <CtrlSum>{{remesa_emitida.ctrlsum|float2string}}</CtrlSum>
+        <InitgPty>
+            <Nm>{{request.session.gauser_extra.ronda.entidad.banco.nombre|truncatechars:69}}</Nm>
+            <Id>
+                <OrgId>
+                    <Othr>
+                        <Id>{{request.session.gauser_extra.ronda.entidad.banco.nif|at_02}}</Id>
+                    </Othr>
+                </OrgId>
+            </Id>
+        </InitgPty>
+    </GrpHdr>
+    <PmtInf>
+        <PmtInfId>{{request.session.gauser_extra.ronda.entidad.nif}}-{% now "YmdHi" %}-{% now "F" %}</PmtInfId>
+        <PmtMtd>DD</PmtMtd>
+        <NbOfTxs>{{remesa_emitida.nboftxs}}</NbOfTxs>
+        <CtrlSum>{{remesa_emitida.ctrlsum|float2string}}</CtrlSum>
+        <PmtTpInf>
+            <SvcLvl>
+                <Cd>SEPA</Cd>
+            </SvcLvl>
+            <LclInstrm>
+                <Cd>CORE</Cd>
+            </LclInstrm>
+            <SeqTp>RCUR</SeqTp>
+        </PmtTpInf>
+        <ReqdColltnDt>{{remesa_emitida.reqdcolltndt|date:"Y-m-d"}}</ReqdColltnDt>
+        <Cdtr>
+            <Nm>{{request.session.gauser_extra.ronda.entidad.name|upper}}</Nm>
+        </Cdtr>
+        <CdtrAcct>
+            <Id>
+                <IBAN>{{request.session.gauser_extra.ronda.entidad.iban}}</IBAN>
+            </Id>
+        </CdtrAcct>
+        <CdtrAgt>
+            <FinInstnId>
+                <BIC>{{request.session.gauser_extra.ronda.entidad.banco.bic}}</BIC>
+            </FinInstnId>
+        </CdtrAgt>
+        <ChrgBr>SLEV</ChrgBr>
+        <CdtrSchmeId>
+            <Id>
+                <PrvtId>
+                    <Othr>
+                        <Id>{{request.session.gauser_extra.ronda.entidad.nif|at_02}}</Id>
+                        <SchmeNm>
+                            <Prtry>SEPA</Prtry>
+                        </SchmeNm>
+                    </Othr>
+                </PrvtId>
+              </Id>
+        </CdtrSchmeId>
+        {% for remesa in remesas %}
+        <DrctDbtTxInf>
+            <PmtId>
+                <EndToEndId>{{remesa.emitida.grupo}}-{{ remesa.creado|date:"Ymd-H-i" }}-R{{remesa.counter}}</EndToEndId>
+            </PmtId>
+            <InstdAmt Ccy="EUR">{{remesa.instdamt|float2string}}</InstdAmt>
+            <ChrgBr>SLEV</ChrgBr>
+            <DrctDbtTx>
+                <MndtRltdInf>
+                    <MndtId>{{remesa.id}}</MndtId>
+                    <DtOfSgntr>{{remesa.dtofsgntr|date:"Y-m-d"}}</DtOfSgntr>
+                </MndtRltdInf>
+            </DrctDbtTx>
+            <DbtrAgt>
+                <FinInstnId>
+                    <BIC>{{remesa.banco.bic}}</BIC>
+                </FinInstnId>
+            </DbtrAgt>
+            <Dbtr>
+                <Nm>{{remesa.dbtrnm}}</Nm>
+            </Dbtr>
+            <DbtrAcct>
+                <Id>
+                    <IBAN>{{remesa.dbtriban}}</IBAN>
+                </Id>
+            </DbtrAcct>
+            <RmtInf>
+                <Ustrd>{{remesa.rmtinf}}</Ustrd>
+            </RmtInf>
+        </DrctDbtTxInf>
+        {% endfor %}
+    </PmtInf>
+</CstmrDrctDbtInitn>
+</Document>

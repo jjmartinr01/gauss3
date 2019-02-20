@@ -1,0 +1,38 @@
+{% for registro in registros %}
+    <dd class="accordion-navigation" id="accordion{{ registro.id }}" style="border-bottom: dotted 1px black">
+        <a href="#registro{{ registro.id }}">
+            <b>Nº {{ registro.num_id }}</b> -- {{ registro.asunto }} ({{ registro.fecha|date:"d-m-Y" }})
+            <i style="color:red;" class="fa fa-check"></i>
+        </a>
+
+        <div id="registro{{ registro.id }}" class="content">
+            <div class="row">
+                <div class="columns large-4">
+                    <b>Emisor:</b><br>
+
+                    {{ registro.emisor }}<br>
+
+                    <b>Receptor:</b><br>
+
+                    {{ registro.receptor }}
+                </div>
+                <div class="columns large-8">
+                    <p id="asunto_{{ registro.id }}"><b>{{ registro.asunto }}</b></p>
+
+                    {#                                <div>{{ registro.texto|safe }}</div>#}
+                    {% autoescape off %}
+                        {{ registro.texto }}
+                    {% endautoescape %}
+                    {% if registro.ficheros.all|length > 0 %}
+                        <hr>
+                        <b>Adjuntos:</b>
+                        {% for fichero in registro.ficheros.all %}
+                            <a class="ficheros" data-id="{{ fichero.id }}">{{ fichero.fichero }}</a>
+                            &nbsp;&nbsp;&nbsp;
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </dd>
+{% endfor %}

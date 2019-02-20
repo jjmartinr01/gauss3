@@ -1,0 +1,47 @@
+{% if request.POST.action == 'precio_fijo' %}
+Hola {{ comprador.articulo.vendedor.first_name }},
+{{ comprador.get_full_name }} ha visto el artículo "{{ comprador.articulo.nombre }}" que has puesto a la venta a
+    través de GAUSS y te ha dejado el siguiente mensaje:
+{{ comprador.observaciones }}
+
+Para continuar con el proceso de venta, deberías ponerte en contacto con {{ comprador.first_name }}. Sus datos son:
+Email: {{ comprador.email }}
+{% if comprador.comprador.telfij and comprador.comprador.telmov %}
+Teléfonos: {{ comprador.comprador.telfij }} / {{ comprador.comprador.telmov }}
+{% elif comprador.comprador.telfij %}
+Teléfono: {{ comprador.comprador.telfij }}
+{% elif comprador.comprador.telmov %}
+Teléfono: {{ comprador.comprador.telmov }}
+{% endif %}
+
+Si lo consideras apropiado puedes entrar en GAUSS (https://gaumentada.es) para marcar tu producto como "RESERVADO" o
+como "VENDIDO".
+{% elif request.POST.action == 'subasta' %}
+Hola {{ comprador.articulo.vendedor.first_name }},
+Han pujado por tu artículo "{{ comprador.articulo.nombre }}". La oferta que te han hecho es de {{ oferta }} €.
+Para continuar con el proceso de venta, deberías ponerte en contacto con {{ comprador.first_name }}. Sus datos son:
+Email: {{ comprador.email }}
+{% if comprador.comprador.telfij and comprador.comprador.telmov %}
+Teléfonos: {{ comprador.comprador.telfij }} / {{ comprador.comprador.telmov }}
+{% elif comprador.comprador.telfij %}
+Teléfono: {{ comprador.comprador.telfij }}
+{% elif comprador.comprador.telmov %}
+Teléfono: {{ comprador.comprador.telmov }}
+{% endif %}
+Si lo consideras apropiado puedes entrar en GAUSS (https://gaumentada.es) para marcar tu producto como "RESERVADO" o
+como "VENDIDO".
+{% elif request.POST.action == 'servicio' %}
+Hola {{ comprador.articulo.vendedor.first_name }},
+{{ comprador.get_full_name }} ha visto la oferta "{{ comprador.articulo.nombre }}" y le gustaría solicitarte más
+información. Te ha dejado el siguiente mensaje:
+{% autoescape off %}{{ comprador.observaciones }}{% endautoescape %}
+Para continuar con el proceso de venta, deberías ponerte en contacto con {{ comprador.first_name }}. Sus datos son:
+Email: {{ comprador.email }}
+{% if comprador.comprador.telfij and comprador.comprador.telmov %}
+Teléfonos: {{ comprador.comprador.telfij }} / {{ comprador.comprador.telmov }}
+{% elif comprador.comprador.telfij %}
+Teléfono: {{ comprador.comprador.telfij }}
+{% elif comprador.comprador.telmov %}
+Teléfono: {{ comprador.comprador.telmov }}
+{% endif %}
+{% endif %}

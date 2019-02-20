@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <div>
+            <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong> Domótica de las viviendas de uso
+                turístico </strong></h4>
+        </div>
+        <div id="lista_domoticas">
+            <dl class="accordion" data-accordion id="domotica_list">
+                {% for vivienda in viviendas %}
+                    {% include "domotica_vut_accordion.html" %}
+                {% endfor %}
+            </dl>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        var tiempo_entre_pulsaciones = 500;
+        {# Medido en microsegundos #}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-vivienda')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/ajax_domotica_vut/", {action: 'open_accordion', vivienda: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        $(document).foundation('dropdown', 'reflow');
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        {% if request.session.gauser_extra|has_permiso:'delete_dispositivo_domotica' %}
+            $('body').on('click', '.delete_dispositivo_domotica', function (e) {
+                e.preventDefault();
+                domotica_borrar = $(this).data('id');
+                show_mensajes({
+                    title: 'Borrar dispositivo domótico', texto: 'Si aceptas el dispositivo será eliminado' +
+                        ' de la base de datos.', buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/ajax_domotica_vut/", {
+                                    action: 'delete_dispositivo_domotica',
+                                    domotica: domotica_borrar
+                                },
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#fieldset' + domotica_borrar).remove();
+                                        {#setTimeout(function () {#}
+                                        {#    show_mensajes({title: 'domotica borrada', texto: data.mensaje});#}
+                                        {# }, 600);#}
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        setTimeout(function () {
+                                            show_mensajes({title: 'domotica no borrada', texto: data.mensaje});
+                                        }, 600);
+                                        $("#update_error").show().delay(1500).fadeOut();
+
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'add_dispositivo_domotica' %}
+            $('body').on('click', '.add_dispositivo_domotica', function (event) {
+                event.preventDefault();
+                var vivienda = $(this).data('vivienda');
+                $.post("/ajax_domotica_vut/", {action: 'add_dispositivo_domotica', vivienda: vivienda},
+                    function (data) {
+                        if (data.ok) {
+                            $("#list_dispositivos" + vivienda).append(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    }, 'json');
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'edita_dispositivo_domotica' %}
+            $("body").on('keyup change', '.campo_char', function () {
+                var domotica = $(this).data('id');
+                var valor = $(this).val();
+                var campo = $(this).data('campo');
+                initial_time = new Date();
+                setTimeout(function () {
+                    final_time = new Date();
+                    if (final_time - initial_time > tiempo_entre_pulsaciones) {
+                        $.post("/ajax_domotica_vut/", {
+                                action: 'update_campo',
+                                domotica: domotica,
+                                campo: campo,
+                                valor: valor
+                            },
+                            function (data) {
+                                if (data.ok) {
+                                    if (data.campo == 'nombre') {
+                                        $("#dispositivo" + domotica).html(data.valor);
+                                    }
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    setTimeout(function () {
+                                        show_mensajes({title: 'Error de edición', texto: data.mensaje});
+                                    }, 600);
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }, tiempo_entre_pulsaciones + 100);
+            });
+        {% endif %}
+    </script>
+{% endblock %}

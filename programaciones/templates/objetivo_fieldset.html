@@ -1,0 +1,8 @@
+<fieldset id="fieldset{{ objetivo.id }}">
+    <legend><a class="button tiny del_objetivo" data-id="{{ objetivo.id }}"><i
+            class="fa fa-trash-o"></i> Borrar objetivo</a></legend>
+    <label>Objetivo: <input type="text" value="{{ objetivo.texto }}" class="texto_objetivo"
+                            data-id="{{ objetivo.id }}"></label>
+    <label>Criterio de evaluación: <input type="text" value="{{ objetivo.crit_eval }}" class="texto_criterio"
+                                          data-id="{{ objetivo.id }}"></label>
+</fieldset>

@@ -1,0 +1,8 @@
+{% load entidades_extras %}
+{% for cargo in cargos %}
+    <div class="columns large-4"
+         title="Existen {{ cargo|cargos_ronda:ronda }} perfiles en esta ronda ({{ ronda.nombre }})">
+        <input type="checkbox" class="upgrade_usuarios" data-cargo="{{ cargo.id }}"
+               data-ronda="{{ ronda.id }}"> {{ cargo.cargo }} ({{ cargo|cargos_ronda:ronda }})
+    </div>
+{% endfor %}

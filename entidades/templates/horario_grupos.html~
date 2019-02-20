@@ -1,0 +1,128 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+<script>
+  $(function() {
+      var docente = $( "#docente" ),
+	  aula = $( "#aula" ),
+	  materia = $( "#materia" );
+
+      $( "#dialog_form" ).dialog({
+	      autoOpen: false,
+	      height: 250,
+	      width: 400,
+	      modal: true,
+	      buttons: {
+		      "Modificar sesión": function() {
+				  $('#action').val('mod_sesion');
+				  $('#mod_docente').val(docente.val());
+				  $('#mod_aula').val(aula.val());
+				  $('#mod_materia').val(materia.val());
+				  $( this ).dialog( "close" );
+				  document.{{formname}}.submit(); 
+		      },
+		      "Cancelar": function() { $( this ).dialog( "close" ); }
+	      },
+// 	      close: function() { }
+      });
+
+      $( ".modsesion" ).click(function() {
+	$("#select_materia").text( $("#materia_"+this.id).val() );
+	$("#select_aula").text( $("#aula_"+this.id).val() );
+	$("#select_docente").text( $("#docente_"+this.id).val() );
+	$("#select_materia").val( $("#materia_"+this.id).val() );
+	$("#select_aula").val( $("#aula_"+this.id).val() );
+	$("#select_docente").val( $("#docente_"+this.id).val() );
+	$( "#sesion_id" ).val(this.id);
+	$( "#dialog_form" ).dialog( "open" );
+      });
+  });
+	
+</script>
+{% endblock %}
+
+{% block ready %}
+  $('#volver').click(function () {  javascript:history.go(-1); });
+  $('#rama').change(function () {
+	  $('#rama_selected').val($('#rama').val());
+	  document.{{formname}}.submit();
+  });
+  
+{% endblock %}
+
+
+{% block navegar %}
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <img id="volver" style="rondar:pointer;" border="0" align="right" alt="Atrás" title="Atrás" src="/static/images/volver.gif">
+    Horario de ramas: <span class="info">{{rama_seleccionado}}</span>
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <div style="float:right;">
+    <select id="rama" name="rama">
+    <option value="{{rama_seleccionado}}">{{rama_seleccionado}}</option>
+    {% for rama in ramas %}
+      <option value="{{rama}}"> {{rama}} </option>
+    {% endfor %}
+    </select>
+  </div>
+{% endblock %}
+
+
+
+{% block contenido %}
+
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+<input type="hidden" id="action" name="action" value=""/>
+<input type="hidden" id="mod_docente" name="mod_docente" value=""/>
+<input type="hidden" id="mod_aula" name="mod_aula" value=""/>
+<input type="hidden" id="mod_materia" name="mod_materia" value=""/>
+<input type="hidden" id="rama_selected" name="rama_selected" value="{{rama_seleccionado}}"/>
+<input type="hidden" id="sesion_id" name="sesion_id" value=""/>
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+<tr> <td></td><td style="border: 1px solid #BFDDCB;" class="columnaFondo">Lunes</td><td style="border: 1px solid #BFDDCB;" class="columnaFondo">Martes</td><td style="border: 1px solid #BFDDCB;" class="columnaFondo">Miércoles</td><td style="border: 1px solid #BFDDCB;" class="columnaFondo">Jueves</td><td style="border: 1px solid #BFDDCB;" class="columnaFondo">Viernes</td>
+{%for horas in horario%}
+<tr>
+{% for sesions in horas %}
+  <td style="border: 1px solid #BFDDCB;max-width:100px;white-space:normal;" class="columnaFondo"> 
+    {% for sesion in sesions %}
+      {% if not forloop.first %}
+	<hr style="border:1px solid #BFDDCB;height:2px;color:#BFDDCB;"/>
+      {% endif %}
+      <div title="{{sesion.3}}" id="{{sesion.4}}" class="{{clase_permisos}}" style="rondar:pointer;"><p >{{sesion.0}}</p><p class="info">{{sesion.1}}</p><p>{{sesion.2}}</p></div>
+      <input type="hidden" id="materia_{{sesion.4}}" value="{{sesion.0}}"/>
+      <input type="hidden" id="aula_{{sesion.4}}" value="{{sesion.1}}"/>
+      <input type="hidden" id="docente_{{sesion.4}}" value="{{sesion.2}}"/>
+    {% endfor %}
+  </td>
+{% endfor %}
+</tr>
+{%endfor%}
+</table>
+
+<div id="dialog_form" title="Modificar la sesión seleccionada" style="display:none;">
+  <p class="validateTips">Todos los campos deben tener un valor</p>
+  <table><tr><td><select id="materia" name="materia">
+      <option value="" id="select_materia">Selecciona un materia</option>
+      {% for materia in materias %}
+	<option value="{{materia}}"> {{materia}} </option>
+      {% endfor %}
+      </select>
+      </td></tr><tr></tr><tr><td>
+      <select id="aula" name="aula">
+      <option value="" id="select_aula">Selecciona aula</option>
+      {% for aula in aulas %}
+	<option value="{{aula}}"> {{aula}} </option>
+      {% endfor %}
+      </select></td><td></tr><tr></tr><tr><td colspan="2">
+      <select id="docente" name="docente">
+      <option value="" id="select_docente">Selecciona docente</option>
+      {% for docente in docentes %}
+	<option value="{{docente}}"> {{docente}} </option>
+      {% endfor %}
+      </select></td></tr></table>
+</div>
+</form>
+
+
+
+{% endblock %}

@@ -1,0 +1,35 @@
+{% load entidades_extras %}
+{% if buscadas %}
+    {% if reparaciones|length == 1 %}
+        <b>Se ha encontrado {{ reparaciones|length }} solicitud de reparación</b>
+    {% else %}
+        <b>Se han encontrado {{ reparaciones|length }} solicitudes de reparación</b>
+    {% endif %}
+{% endif %}
+{% for reparacion in reparaciones %}
+    <input type="hidden" name="solicitudes_seleccionadas" value="{{ reparacion.id }}">
+
+    <dd class="accordion-navigation" id="accordion{{ reparacion.id }}"
+        style="border-bottom: dotted 1px black">
+        <a href="#panel{{ reparacion.id }}">
+            <i id="circle{{ reparacion.id }}" class="fa fa-plus-circle circle_icon"></i>
+            <b id="tipo{{ reparacion.id }}">{% if nueva %}<span style="color:red">Solicitud nueva (por defecto Informática)</span> {% else %}{{ reparacion.get_tipo_display }}{% endif %}</b> -- <span
+                id="lugar{{ reparacion.id }}">{{ reparacion.lugar }}</span>
+            ({{ reparacion.fecha_comunicado|date:"d-m-Y" }})
+            <span style="color:green;{% if not reparacion.resuelta %}display:none;{% endif %}"
+                  id="ss{{ reparacion.id }}"
+                  title="Incidencia solucionada"><i class="fa fa-thumbs-up"></i> </span>
+            <span style="color:red;{% if reparacion.resuelta %}display:none;{% endif %}" id="ns{{ reparacion.id }}"
+                  title="Incidencia no solucionada"><i class="fa fa-warning"></i> </span>
+        {% if reparacion.detecta == g_e %}
+            <span style="color: red; padding-right: 20px;"><i class="fa fa-user"></i> </span>
+        {% endif %}
+            {% if buscadas %}
+                <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
+            {% endif %}
+        </a>
+
+        <div id="panel{{ reparacion.id }}" class="content accordion-reparacion" data-id="{{ reparacion.id }}">
+        </div>
+    </dd>
+{% endfor %}

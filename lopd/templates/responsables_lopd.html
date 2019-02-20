@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="select_tipo">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Datos de los responsables de la LOPD en la
+                entidad</strong></h4>
+        </div>
+
+        {% with g_e=request.session.gauser_extra %}
+            {% if g_e|has_permiso:'modifica_responsables_fichero' or g_e|has_permiso:'modifica_responsables_seguridad' or g_e|has_permiso:'modifica_delegados_proteccion_datos' %}
+                <div class="">
+                    <h5 style="text-align: center;color: #008CBA;"><strong> El socio debe ser mayor de edad para poder ser
+                        seleccionado. Comprueba que las personas designadas tienen definida la fecha de nacimiento en
+                        sus datos personales.</strong></h5>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <div class="columns large-12">
+
+                {% if request.session.gauser_extra|has_permiso:'modifica_responsables_fichero' %}
+                    <label>Selecciona a los <b>Responsables del Fichero</b> designados por la entidad:
+                        <select name="responsables_fichero" id="id_responsables_fichero" multiple>
+                            <option></option>
+                            {% for cargo in cargos %}
+                                <option value="{{ cargo.gauser.id }}"
+                                        {% if cargo.gauser in estructura_lopd.responsables_fichero.all %}
+                                        selected {% endif %}>{{ cargo.gauser.last_name }}, {{ cargo.gauser.first_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                {% else %}
+                    <label>Los <b>Responsables del Fichero</b> designados por la entidad son:
+                        <div class="panel">
+                            {{ estructura_lopd.responsables_fichero.all|join:', ' }}
+                        </div>
+                    </label>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12">
+                {% if request.session.gauser_extra|has_permiso:'modifica_responsables_seguridad' %}
+                    <label>Selecciona a los <b>Responsables de Seguridad</b> designados por la entidad:
+                        <select name="responsables_seguridad" id="id_responsables_seguridad" multiple>
+                            <option></option>
+                            {% for cargo in cargos %}
+                                <option value="{{ cargo.gauser.id }}"
+                                        {% if cargo.gauser in estructura_lopd.responsables_seguridad.all %}
+                                        selected {% endif %}>{{ cargo.gauser.last_name }}, {{ cargo.gauser.first_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                {% else %}
+                    <label>Los <b>Responsables de Seguridad</b> designados por la entidad son:
+                        <div class="panel">
+                            {% for responsable in estructura_lopd.responsables_seguridad.all %}
+                                {{ responsable.get_full_name }},
+                            {% endfor %}
+                        </div>
+                    </label>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12">
+                {% if request.session.gauser_extra|has_permiso:'modifica_delegados_proteccion_datos' %}
+                    <label>Selecciona a los <b>Delegados de la Protección de Datos</b> designados por la entidad:
+                        <select name="delegados_proteccion" id="id_delegados_proteccion" multiple>
+                            <option></option>
+                            {% for cargo in cargos %}
+                                <option value="{{ cargo.gauser.id }}"
+                                        {% if cargo.gauser in estructura_lopd.delegados_proteccion.all %}
+                                        selected {% endif %}>{{ cargo.gauser.last_name }}, {{ cargo.gauser.first_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                {% else %}
+                    <label>Los <b>Delegados de la Protección de Datos</b> designados por la entidad son:
+                        <div class="panel">
+                            {% for delegado in estructura_lopd.delegados_proteccion.all %}
+                                {{ delegado.get_full_name }},
+                            {% endfor %}
+                        </div>
+                    </label>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        habilita(['s_check']);
+
+        $("#id_responsables_fichero").select2({placeholder: "Escribe parte del nombre para buscar coincidencias"});
+
+        $("#id_responsables_seguridad").select2({placeholder: "Escribe parte del nombre para buscar coincidencias"});
+
+        $("#id_delegados_proteccion").select2({placeholder: "Escribe parte del nombre para buscar coincidencias"});
+
+
+        $('#check_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                document.{{formname}}.submit();
+            }
+        });
+
+
+    </script>
+{% endblock %}

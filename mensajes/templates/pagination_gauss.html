@@ -1,0 +1,10 @@
+{% if pagination|length > 1 %}
+    <ul class="pagination" role="menubar" aria-label="Pagination">
+        <li class="arrow pagina_anterior_gauss"><a href="">&laquo; Anterior</a></li>
+        {% for page in pagination %}
+            <li class="{{ page.current }} paginas_gauss {% if forloop.last %}ultima{% endif %}" id="page___{{ forloop.counter }}"><a href="">
+                {{ page.first }}{% if page.last %}-{{ page.last }}{% endif %}</a></li>
+        {% endfor %}
+        <li class="arrow pagina_siguiente_gauss"><a href="">Siguiente &raquo;</a></li>
+    </ul>
+{% endif %}

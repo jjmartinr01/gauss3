@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html
+    xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+    lang="en"
+    xmlns:pdf="http://htmltopdf.org/pdf"
+    >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Parte de salida</title>
+<!--<link href="xhtml2pdf.css" type="text/css" rel="stylesheet" media="all" />
+<link href="screen.css" type="text/css" rel="stylesheet" media="screen" />-->
+<style>
+@media print {
+    @page {
+	    -pdf-page-orientation: portrait;
+	    -pdf-page-size: a4;
+	    /* background-image: url(background.pdf); */
+	    margin-top: 4.5cm;
+	    margin-left: 2cm;
+	    margin-right: 2cm;
+	    margin-bottom: 2cm;
+	    @frame footer {
+		    -pdf-frame-content: footer;
+		    bottom: 0cm;
+		    left: 2cm;
+		    right: 2cm;
+		    height: 1.5cm;
+	    }
+	    @frame header {
+		    -pdf-frame-content: header;
+		    top: 0.5cm;
+		    left: 2cm;
+		    right: 2cm;
+		    height: 3.5cm;
+	    }
+	  }
+}
+
+html {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	text-align: justify;
+}
+
+table
+{ 
+margin-left: auto;
+margin-right: auto;
+}
+p {
+	font-size: 10pt;
+	margin-top: 1px;
+	margin-bottom: 1px;
+}
+
+
+#footer {
+	text-align: left;
+}
+
+#header {
+	text-align: center;
+}
+
+.pagebreak {
+	page-break-after: always;
+}
+
+.varios_acontecimientos {
+color:gray;
+border-radius:5px;
+font-weight:900;
+}
+
+.EVT_PER {
+color:#ffa500;
+border-radius:5px;
+font-weight:900;
+}
+
+.EVT_FES {
+color:red;
+border-radius:5px;
+font-weight:900;
+}
+
+.EVT_REU {
+color:green;
+border-radius:5px;
+font-weight:900;
+}
+
+.EVT_EVA{
+color:#ff00ff;
+border-radius:5px;
+font-weight:900;
+}
+
+.EVT_EXA{
+color:#81F7BE;
+border-radius:5px;
+font-weight:900;
+}
+.dia_l {color:#623090;}
+.dia_m {color:#623090;}
+.dia_x {color:#623090;}
+.dia_j {color:#623090;}
+.dia_v {color:#623090;}
+.dia_s {color:#623090;}
+.dia_d {color:#623090;}
+.color_corp {color:#623090;}
+.mes_marco {border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:gray;border-top-style:solid;border-top-width:1px;border-top-color:gray;border-left-style:solid;border-left-width:1px;border-left-color:gray;border-right-style:solid;border-right-width:1px;border-right-color:gray;border-radius:10px;vertical-align:top;}
+.mes_texto {font-size:10pt;font-weight:800;text-align:center;border-spacing:5px;color:black;}
+</style>
+</head>
+<body>
+
+<table width="100%" style="border-spacing:20px;">
+  <tbody>
+    <tr>
+      <td colspan="4" rowspan="6" align="center"><img  border="0" src="{{MA}}asde_rioja.png"></td>
+      <td rowspan="8">&nbsp;</td>
+      <td colspan="5" rowspan="8" align="center">SCOUTS DE LA RIOJA<br>ASDE</td>
+    </tr>
+    <tr>
+      <td colspan="4" rowspan="2" align="center"><strong>PARTE DE SALIDA</strong></td>
+    </tr>
+    <tr>
+      <td colspan="2" align="center">Grupo:</td>
+      <td colspan="3">{{request.session.gauser_extra.entidad.name}}</td>
+      <td colspan="1">Nº</td>
+      <td colspan="2">{{request.session.gauser_extra.entidad.code}}</td>
+      <td colspan="1" align="center"> PARTICIPANTES </td>
+    </tr>
+    <tr>
+      <td colspan="3" align="center">Coordina la actividad:</td>
+      <td colspan="5">{{request.session.gauser_extra.gauser.get_full_name}}</td>
+      <td colspan="1">Castores:</td>
+      <td colspan="1">5</td>
+    </tr>
+	      <table class="mes_texto">
+		  <tr>
+		    <td colspan="7" style="color:#623090;">{{mes.15.0|date:"F"}}&nbsp;{{mes.15.0|date:"Y"}}</td></tr><tr><td class="dia_l">L</td><td class="dia_m">M</td><td class="dia_x">X</td><td class="dia_j">J</td><td  class="dia_v">V</td><td class="dia_s">S</td><td class="dia_d">D</td></tr><tr>
+			{% for dia in mes %}
+			    {% if dia.1|length == 0 %}
+				<td >{{dia.0|date:"j"}}</td>
+			    {% else %}
+				{% if dia.1|length == 1 %}
+				    <td id="{{dia.0|date:'dmY'}}" class="{{dia.1.0.tipo}} existe_acontecimiento">{{dia.0|date:"j"}}</td>
+				{% else %}
+				    <td id="{{dia.0|date:'dmY'}}" class="varios_acontecimientos existe_acontecimiento">{{dia.0|date:"j"}}</td>
+				{% endif %}
+			    {% endif %}
+			    {%if forloop.counter|divisibleby:"7" %}
+				</tr><tr>
+			    {% endif %}
+			{% endfor %}
+			</tr></table></td>
+			{%if forloop.counter|divisibleby:"3" %}
+				</tr><tr><td colspan="23">&nbsp;</td></tr><tr>
+			{% else %}
+			    <td>&nbsp;</td>
+			{% endif %}
+			{% endfor %}
+  </tbody></table>
+<br>
+<table>
+<tr><td colspan="3" class="color_corp"><strong>Fecha/Periodo</strong></td><td colspan="6" class="color_corp"><strong>Nombre</strong></td><td colspan="1" class="color_corp"><strong>Lugar</strong></td></tr>
+{% for acontecimiento in acontecimientos %}
+    <tr><td colspan="10" style="border-top-color:black;border-top-style:solid;"></td></tr>
+    <tr><td colspan="3" class="{{acontecimiento.tipo}}">
+    {% if acontecimiento.inicio|date:"d" == acontecimiento.fin|date:"d" %}
+      {{acontecimiento.inicio|date:"SHORT_DATE_FORMAT"}} {% if acontecimiento.inicio|date:"P" != 'media noche' %} a las {{acontecimiento.inicio|date:"P"}} {% endif %}
+    {% else %}
+      {{acontecimiento.inicio|date:"SHORT_DATE_FORMAT"}} {% if acontecimiento.inicio|date:"P" != 'media noche' %} a las {{acontecimiento.inicio|date:"P"}} {% endif %}<br> {{acontecimiento.fin|date:"SHORT_DATE_FORMAT"}} {% if acontecimiento.fin|date:"P" != 'media noche' %} a las {{acontecimiento.fin|date:"P"}} {% endif %}
+    {% endif %}
+  </td><td colspan="6">{{acontecimiento.nombre}}</td><td colspan="1">{{acontecimiento.lugar}}</td></tr>
+
+
+  {% if acontecimiento.describir|length > 5 %}
+    <tr><td colspan="10">{% autoescape off %} {{acontecimiento.describir}} {% endautoescape %}</td></tr>
+  {% endif %}
+{% endfor %}
+
+</table>
+
+</body>
+</html>
+ 

@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html style="overflow:hidden">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<style>
+    #cabecera {
+        margin-left: 0cm;
+        margin-top: 1cm;
+        padding-top: 0.5cm;
+        height: 70px;
+    }
+    div.logo_asocia1 {
+        position: fixed;
+        top: 20px;
+        left: 0cm;
+    }
+
+    #logo_asocia1 {
+        max-width: 270px;
+        max-height: 70px;
+    }
+
+    div.logo_asocia2 {
+        float:right
+    }
+
+    div.logo_asocia2_logo {
+        float: right;
+    }
+
+    #logo_asocia2_logo {
+        max-width: 150px;
+        max-height: 70px;
+    }
+
+    div.logo_asocia2_texto {
+        float: right;
+        padding-left: 10px;
+        margin-top: -8px;
+    }
+
+    p {
+        font-size: 7pt;
+        font-family: arial, sans-serif;
+        line-height: 29%;
+    }
+</style>
+
+<div id="cabecera">
+    <div class="logo_asocia1">
+        <img id="logo_asocia1" src="{{ MA }}logo_asde.png">
+    </div>
+
+
+    <div class="logo_asocia2">
+
+
+        <div class="logo_asocia2_texto">
+            <p>{{ request.session.gauser_extra.ronda.entidad.address }}</p>
+
+            <p>
+                {{ request.session.gauser_extra.ronda.entidad.postalcode }}.
+                {{ request.session.gauser_extra.ronda.entidad.localidad }}.
+                {{ request.session.gauser_extra.ronda.entidad.get_provincia_display }}
+            </p>
+
+            <p>Tel. {{ request.session.gauser_extra.ronda.entidad.tel }}</p>
+
+            <p>Fax {{ request.session.gauser_extra.ronda.entidad.fax }}</p>
+
+            <p>email: {{ request.session.gauser_extra.ronda.entidad.mail }}</p>
+
+        </div>
+        <div class="logo_asocia2_logo">
+            <img id="logo_asocia2_logo" src="{{ MA }}{{ request.session.gauser_extra.ronda.entidad.code }}_anagrama.png">
+        </div>
+    </div>
+</div>
+</html>

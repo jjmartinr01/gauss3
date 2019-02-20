@@ -1,0 +1,68 @@
+{% load my_templatetags %}
+<div class="row">
+    <div class="columns large-4">
+        <b>Nombre usuario</b>
+    </div>
+    <div class="columns large-4">
+        <b>Secciones/Departamentos</b>
+    </div>
+    <div class="columns large-2"><b>Id Asociación</b></div>
+    <div class="columns large-2"><b>Id Organización</b></div>
+</div>
+{% for ge in ges %}
+    <div class="row" style="{% if forloop.counter|divisibleby:2 %}background-color:#EEEEEE{% endif %}">
+        <div class="columns large-4">
+            <a href="/usuarios_entidad/?ge={{ ge.id }}">{{ ge.gauser.last_name|title }}, {{ ge.gauser.first_name|title }}</a>
+        </div>
+        <div class="columns large-4">
+            {% if ge.subentidades.all %}
+                {% for sub in ge.subentidades.all %}
+                    {% if forloop.last %}
+                        {{ sub.nombre }}
+                    {% else %}
+                        {{ sub.nombre }},
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                ---
+            {% endif %}
+        </div>
+        <div class="columns large-2 id_aso" contenteditable="true" data-ge="{{ ge.id }}">
+            {% if ge.id_entidad %}{{ ge.id_entidad }}{% else %}---{% endif %}</div>
+        <div class="columns large-2 id_org" contenteditable="true" data-ge="{{ ge.id }}">
+            {% if ge.id_organizacion %}{{ ge.id_organizacion }}{% else %}---{% endif %}</div>
+    </div>
+{% endfor %}
+<br>
+<div class="row">
+    <div class="columns large-12">
+        <ul class="pagination" role="menubar" aria-label="Pagination">
+            {% if ges.has_previous %}
+                <li class="arrow">
+                    <a class="go_page" data-page="{{ ges.previous_page_number }}" data-tab="tab_identificadores_entidad.html">&laquo; Anterior</a>
+                </li>
+            {% else %}
+                <li class="arrow unavailable" aria-disabled="true">
+                    <a class="go_page">&laquo; Anterior</a>
+                </li>
+            {% endif %}
+            {% for page in ges.paginator.num_pages|number_range %}
+                {% if page == ges.number %}
+                    <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
+                {% else %}
+                    <li><a class="go_page" data-page="{{ page }}" data-tab="tab_identificadores_entidad.html">{{ page }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if ges.has_next %}
+                <li class="arrow">
+                    <a class="go_page" data-page="{{ ges.next_page_number }}" data-tab="tab_identificadores_entidad.html">Siguiente &raquo;</a>
+                </li>
+                {% else %}
+                <li class="arrow unavailable" aria-disabled="true">
+                    <a class="go_page">Siguiente &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+

@@ -1,0 +1,26 @@
+{% load my_templatetags %}
+{% load vut_extras %}
+<dd class="accordion-navigation" id="accordion{{ contabilidad.id }}"
+    style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+    <a href="#panel{{ contabilidad.id }}">
+        <i id="circle{{ contabilidad.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <span id="span_contabilidad_nombre{{ contabilidad.id }}">{{ contabilidad.nombre }}</span>
+        &nbsp;&nbsp;&nbsp;
+        <span style="color:gray">
+            (
+            <span id="span_contabilidad_inicio{{ contabilidad.id }}" style="color:gray">
+                {{ contabilidad.inicio|date:'d/m/Y' }}
+            </span>
+            -
+            <span id="span_contabilidad_fin{{ contabilidad.id }}" style="color:gray">
+                {{ contabilidad.fin|date:'d/m/Y' }}
+            </span>
+            )
+        </span>
+        {% if contabilidad.archivado %} <span class="info radius label">Contabilidad archivada</span>
+        {% endif %}
+    </a>
+
+    <div id="panel{{ contabilidad.id }}" class="content accordion-contabilidad" data-id="{{ contabilidad.id }}">
+    </div>
+</dd>

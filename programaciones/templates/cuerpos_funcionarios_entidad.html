@@ -1,0 +1,204 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        .opera {
+            margin-right: 20px;
+            cursor: pointer;
+            color: #008CBA;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .opera:hover {
+            -webkit-transform: scale(1.7, 1.7);
+            -webkit-transition-timing-function: ease-out;
+            -webkit-transition-duration: 150ms;
+            -moz-transform: scale(1.7, 1.7);
+            -moz-transition-timing-function: ease-out;
+            -moz-transition-duration: 150ms;
+            position: relative;
+            z-index: 99;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_programacion" name="id_programacion" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Cuerpos y especialidades existentes en el
+                centro</strong></h4>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_cuerpos">
+            {% for c in cuerpos %}
+                <dd class="accordion-navigation cuerpo" id="accordion{{ c.id }}">
+                    <a href="#panel{{ c.id }}">
+                        <i id="circle{{ c.id }}" class="fa fa-plus-circle circle_icon"></i>
+                        <span id="span_nombre{{ c.id }}" style="font-weight: 800;">{{ c.nombre }} ({{ c.code }})</span>
+                    </a>
+
+                    <div id="panel{{ c.id }}" class="content accordion_contenido" data-id="{{ c.id }}">
+                        <div class="row">
+                            {% for e in c.especialidad_funcionario_set.all %}
+                                <div class="columns large-6">
+
+                                    <input class="especialidad" type="checkbox" data-cuerpo="{{ c.id }}"
+                                           {% if e.id in especialidades_entidad %}checked{% endif %}
+                                           data-especialidad="{{ e.id }}"> {{ e.nombre }} ({{ e.code }})
+
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </dd>
+            {% endfor %}
+        </dl>
+
+
+        {#        {% if antiguas|length > 0 %}#}
+        {#            <h3>Cuerpos de cursos anteriores</h3>#}
+        {#            <dl class="accordion" data-accordion id="list_cuerpos_antiguas">#}
+        {#                {% for programacion in antiguas %}#}
+        {#                    {% include 'programacion_append.html' %}#}
+        {#                {% endfor %}#}
+        {#            </dl>#}
+        {#        {% endif %}#}
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('.especialidad').change(function () {
+            var elemento = $(this);
+            var cuerpo = $(this).data('cuerpo');
+            var especialidad = $(this).data('especialidad');
+            $.post("/cuerpos_funcionarios_entidad/", {
+                    action: 'check_especialidad',
+                    cuerpo: cuerpo,
+                    especialidad: especialidad
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        elemento.prop('checked', data.checked);
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    var id = accordion.data('id');
+
+                    if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                        $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                        {#                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);#}
+                        $('html, body').animate({
+                            scrollTop: $('#accordion' + id).offset().top - 50
+                        }, 500);
+                        {#                            $.post("/configurar_convocatorias_ajax/", {action: 'open_accordion', configuracion: id},#}
+                        {#                                function (data) {#}
+                        {#                                    if (data.ok) {#}
+                        {#                                        $('#panel' + id).html(data.html);#}
+                        {#                                    } else {#}
+                        {#                                        show_mensajes({#}
+                        {#                                            title: "Error",#}
+                        {#                                            texto: "No se ha podido cargar el contenido de la configuración"#}
+                        {#                                        })#}
+                        {#                                    }#}
+                        {#                                });#}
+                    } else {
+                        $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        {#                            $('#panel' + id).html('');#}
+                    }
+
+
+                }
+            }
+        });
+
+        {% if request.session.gauser_extra|has_permiso:"sube_cuerpos" %}
+            habilita(['s_plus']);
+        {% endif %}
+
+        $('#plus_sign').click(function (event) {
+            event.preventDefault();
+            window.location = "/editar_programacion/";
+        });
+
+        $('body').on('click', '.edit_programacion', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            window.location = "/editar_programacion/?doc=" + id;
+        });
+
+        $('body').on('click', '.delete_programacion', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#id_programacion').val(id);
+            show_mensajes({
+                title: 'Borrar programacion', texto: 'Si aceptas la programación será eliminada' +
+                ' completamente de la base de datos.', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        var id = $('#id_programacion').val();
+                        hide_mensajes();
+                        $.post("/ajax_cuerpos/", {action: 'del_programacion', id: id}, function (data) {
+                            if (data) {
+                                $('#accordion' + id).hide();
+                                $('#prog_hidden' + id).remove();
+                            }
+                        });
+                    }
+                }
+            });
+        });
+
+        $('body').on('click', '.download_pdf', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#id_programacion').val(id);
+            $('#action').val('download_pdf');
+            document
+                .{{ formname }}.submit();
+        });
+
+        $('body').on('click', '.download_html', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#id_programacion').val(id);
+            $('#action').val('download_html');
+            document
+                .{{ formname }}.submit();
+        });
+
+        $('body').on('click', '.copy_programacion', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/ajax_cuerpos/", {action: 'copy_programacion', id: id}, function (data) {
+                if (data.ok) {
+                    $('#list_cuerpos_borradores').append(data.accordion);
+                    $('#programacion' + id).removeClass('active');
+                } else {
+                    show_mensajes({
+                        title: "<i class='fa fa-warning'></i> No se pudo realizar la copia",
+                        texto: "Ya existe una programación del módulo elegido para este curso escolar."
+                    })
+                }
+
+            }, 'json');
+        });
+    </script>
+
+{% endblock %}

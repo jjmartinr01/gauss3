@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="id_politica_cuotas" name="id_politica_cuotas" value="">
+        <input type="hidden" id="id_remesa_emitida" name="id_remesa_emitida" value="">
+
+
+        <div id="div_politicas">
+            <div>
+                <h4 style="text-align: center;color: #008CBA;"><strong> Políticas de cuotas establecidas en
+                    {{ request.session.gauser_extra.ronda.entidad.name }}</strong></h4>
+            </div>
+
+
+            <dl class="accordion" data-accordion>
+                {% for politica in politicas %}
+                    <dd class="accordion-navigation" id="accordion{{ politica.id }}"
+                        style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+                        <a href="#panel___{{ politica.id }}">
+                            <i id="circle{{ politica.id }}" class="fa fa-plus-circle circle_icon"></i>
+                            {{ politica.concepto }} ({{ politica.cargo.cargo }}). {{ politica.get_tipo_cobro_display }}
+                            de {{ politica.cantidad }}€
+                        </a>
+
+                        <div id="panel___{{ politica.id }}" class="content accordion-politica"
+                             data-id="{{ politica.id }}">
+                            {#                            <a data-dropdown="drop{{ politica.id }}" aria-controls="drop{{ politica.id }}"#}
+                            {#                               aria-expanded="false">#}
+                            {#                                <i class="fa fa-cogs"></i> Operaciones sobre esta política de cuotas#}
+                            {#                            </a>#}
+                            {#                            <hr>#}
+                            <div class="row">
+                                <div class="columns large-6">
+                                    <b>Fecha de creación:</b> {{ politica.creado|date:"d \d\e F \d\e Y" }}
+                                </div>
+                                <div class="columns large-6">
+                                    <b>Última modificación:</b> {{ politica.modificado|date:"d \d\e F \d\e Y" }}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="columns large-6"
+                                     title="Cuotas para el 2º, 3º y siguientes perfiles del mismo tipo en la familia">
+                                    <b>Descuentos:</b> {% autoescape off %}
+                                    {{ politica.descuentos|desglosar_descuentos }} {% endautoescape %}
+                                </div>
+                                <div class="columns large-6">
+                                    <b>Fecha de emisión:</b> {% if politica.dia %} Día
+                                    {{ politica.dia }} {% else %} En el mes {% endif %}
+                                    {% if politica.tipo_cobro == 'ANU' %} de
+                                        {{ politica.mes|nombre_mes }} {% else %} de cada mes {% endif %}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="columns large-12">
+                                    <dl>
+                                        <dt>Personas sujetas al pago de esta cuota
+                                            ({{ politica|number_no_exentos }})
+                                        </dt>
+                                        <dd id="lista_no_exentos{{ politica.id }}">
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row" id="lista_exentos{{ politica.id }}">
+                                {% include "exentos.html" %}
+                            </div>
+                            <hr>
+                            <div class="row" class="remesas_emitidas" id="r_e{{ politica.id }}">
+                                {% include "remesas_emitidas.html" %}
+                            </div>
+                        </div>
+                    </dd>
+                    {#                    <ul id="drop{{ politica.id }}" class="f-dropdown medium" data-dropdown-content aria-hidden="true"#}
+                    {#                        tabindex="-1">#}
+                    {#                        <li><a class="editar" id="e___{{ politica.id }}" data-id="{{ politica.id }}">#}
+                    {#                            <i class="fa fa-pencil fa-fw"></i> Editar esta política#}
+                    {#                        </a></li>#}
+                    {#                        <li><a class="remesar" id="r___{{ politica.id }}" data-id="{{ politica.id }}">#}
+                    {#                            <i class="fa fa-file-text-o fa-fw"></i> Generar remesa#}
+                    {#                        </a></li>#}
+                    {#                        <li><a class="pdf" id="p___{{ politica.id }}" data-id="{{ politica.id }}">#}
+                    {#                            <i class="fa fa-file-pdf-o fa-fw"></i> Generar pdf#}
+                    {#                        </a></li>#}
+                    {#                        <li><a class="borrar" id="b___{{ politica.id }}" data-id="{{ politica.id }}">#}
+                    {#                            <i class="fa fa-trash-o fa-fw"></i> Borrar esta política de cuotas#}
+                    {#                        </a></li>#}
+                    {#                    </ul>#}
+                {% endfor %}
+            </dl>
+
+
+        </div>
+
+        <div id="introducir_politica_cuotas" style="display: none;"></div>
+
+        <div style="position: relative;border: 1px solid #d3d3d3;display: none;padding: 10px;margin-top: 30px;"
+             id="contenido_politica_cuotas"></div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_plus', 's_file-text-o']);
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-politica')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            $('#id_politica_cuotas').val(id);
+                            habilita(['h_plus', 's_pencil', 's_trash-o', 'h_file-text-o', 's_money', 'h_check']);
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/ajax_politica_cuotas/", {
+                                action: 'cargar_no_exentos',
+                                id: id,
+                                num: 3
+                            }, function (data) {
+                                $('#lista_no_exentos' + id).html(data);
+                            });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#id_politica_cuotas').val('');
+                            habilita(['s_plus', 'h_pencil', 'h_trash-o', 's_file-text-o', 'h_money', 'h_check']);
+                        }
+                    }
+                }
+            }
+        });
+
+        {#  Dentro del accordion de la política se hacen tres acciones:  #}
+        $('body').on('click', '.borrar_remesa_emitida', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var politica = $(this).data('politica');
+            $.post("/ajax_politica_cuotas/", {action: 'borrar_remesa_emitida', id: id}, function (data) {
+                $('#r_e' + politica).html(data);
+            });
+        });
+
+        $('body').on('click', '.descarga_remesa', function (e) {
+            e.preventDefault();
+            $('#id_remesa_emitida').val($(this).data('id'));
+            $('#action').val('descarga_remesa');
+            document.{{formname}}.submit();
+        });
+
+        $('body').on('click', '.descarga_excel', function (e) {
+            e.preventDefault();
+            $('#id_remesa_emitida').val($(this).data('id'));
+            $('#action').val('descarga_excel');
+            document.{{formname}}.submit();
+        });
+
+        $('body').on('click', '.mostrar_no_exentos', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/ajax_politica_cuotas/", {action: 'cargar_no_exentos', id: id, num: 1000}, function (data) {
+                $('#lista_no_exentos' + id).html(data);
+            });
+        });
+        $('body').on('click', '.ocultar_no_exentos', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/ajax_politica_cuotas/", {action: 'cargar_no_exentos', id: id, num: 3}, function (data) {
+                $('#lista_no_exentos' + id).html(data);
+            });
+        });
+        $('body').on('click', '.mostrar_exentos', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/ajax_politica_cuotas/", {action: 'cargar_exentos', id: id, num: 1000}, function (data) {
+                $('#lista_exentos' + id).html(data);
+            });
+        });
+        $('body').on('click', '.ocultar_exentos', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/ajax_politica_cuotas/", {action: 'cargar_exentos', id: id, num: 4}, function (data) {
+                $('#lista_exentos' + id).html(data);
+            });
+        });
+
+
+        {#  Fuera del accordion de la política se hacen tres acciones:  #}
+        $('#money_sign').click(function (event) {
+            event.preventDefault();
+            $('#action').val('generar_remesas');
+            var id = $('#id_politica_cuotas').val();
+            $.post("/ajax_politica_cuotas/", {action: 'generar_remesas', id: id}, function (data) {
+                $('#r_e' + id).html(data);
+            });
+            {#            document.{{formname}}.submit();#}
+        });
+
+        $('#trash-o_sign').click(function (event) {
+            event.preventDefault();
+            $('#action').val('borrar_politica_cuotas');
+            document.{{formname}}.submit();
+        });
+
+        $('#pencil_sign').click(function (event) {
+            event.preventDefault();
+            var id = $('#id_politica_cuotas').val();
+            $('#action').val('mod_politica');
+            habilita(['h_money', 'h_file-text-o', 'h_plus', 's_check', 's_list-alt'])
+            $.post("/ajax_politica_cuotas/", {id: id, action: 'mod_politica'}, function (data) {
+                $('#introducir_politica_cuotas').show();
+                $('#div_politicas').hide();
+                $('#introducir_politica_cuotas').html(data);
+            });
+        });
+
+        $('#list-alt_sign').click(function (event) { {# En el caso de editar permite volver al listado de políticas #}
+            event.preventDefault();
+            habilita(['s_file-text-o', 's_plus', 'h_check', 'h_list-alt'])
+            $('#action').val('');
+            $('#introducir_politica_cuotas').css('display', 'none');
+            $('#div_politicas').css('display', 'block');
+        });
+
+
+        $("#file-text-o_sign").click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                $('#action').val('pdf_politicas_cuotas');
+                descarga_archivo({
+                    url: '/politica_cuotas/',
+                    formname: '{{ formname }}',
+                    pre_texto: 'Generando archivo pdf con las políticas de cuotas'
+                })
+            }
+        });
+
+
+        $('#plus_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                $('.checkboxes').attr('checked', false);
+                habilita(['h_money', 'h_file-text-o', 'h_plus', 's_check', 's_list-alt'])
+                $('#action').val('crea_politica_cuota');
+                $('#introducir_politica_cuotas').show();
+                $('#div_politicas').hide();
+                $.post("/ajax_politica_cuotas/", {action: 'crear_politica_cuota'}, function (data) {
+                    $('#introducir_politica_cuotas').html(data);
+                });
+            }
+        });
+
+
+        $('#check_sign').click(function (e) {
+            e.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                document.{{formname}}.submit();
+            }
+        });
+
+        $('#div_politicas').on('click', '.check_politica', function () {
+            var id = $(this).attr('id').split('___')[1];
+            if ($(this).hasClass('fa-check-square-o')) {
+                $(this).removeClass('fa-check-square-o').addClass('fa-square-o');
+                $('#h___' + id).val('');
+                $('#id_politica_cuotas').val('');
+            } else {
+                $('#id_politica_cuotas').val(id);
+                $(this).removeClass('fa-square-o').addClass('fa-check-square-o');
+                $('#h___' + id).val(id);
+            }
+            var num_hidden = $("input[name='politica'][value!='']").length;
+            if (num_hidden == 1) {
+                habilita(['h_plus', 's_pencil', 's_trash-o', 'h_file-text-o', 's_money', 'h_check']);
+            }
+            else if (num_hidden == 0) {
+                habilita(['s_plus', 'h_pencil', 'h_trash-o', 's_file-text-o', 'h_money', 'h_check']);
+            }
+            else {
+                habilita(['h_plus', 'h_pencil', 's_trash-o', 'h_file-text-o', 's_money', 'h_check']);
+            }
+        });
+
+
+        $('body').on('click', '.fila_politica', function (e) {
+            e.preventDefault();
+            var id = $(this).attr('id').split('___')[1];
+            habilita(['h_plus', 'h_pencil', 'h_trash-o', 'h_file-text-o', 'h_money', 'h_check']);
+            $.post("/ajax_politica_cuotas/", {id: id, action: 'contenido_politica_cuotas'}, function (data) {
+                $('#div_politicas').hide();
+                $('#introducir_politica_cuotas').hide();
+                $('#contenido_politica_cuotas').html(data).show();
+            });
+        });
+
+        $('body').on('click', '#contenido_politica_cuotas_cerrar', function (e) {
+            $('#contenido_politica_cuotas').hide();
+            $('#div_politicas').show();
+            habilita(['s_plus', 'h_pencil', 'h_trash-o', 's_file-text-o', 'h_money', 'h_check']);
+        });
+
+    </script>
+{% endblock %}

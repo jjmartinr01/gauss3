@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html style="overflow:hidden">
+<head>
+<title>GAUSS</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="shortcut icon" type="image/x-icon" href="/static/images/favicon.png">
+<link rel="stylesheet" href="/static/css/gauss.css" type="text/css">
+<script src="/static/js/jquery-1.7.2.min.js"></script>
+<script src="/static/js/jquery.cookie.js"></script>
+<script type = "text/javascript">
+    $(document).ready(function()
+    {
+      $.cookie('lateral_cookie_display', 'block', { path: '/' });
+      $.cookie('lateral_cookie_src', '/static/images/ocultar2.gif', { path: '/' });
+      $.cookie('lateral_cookie_width', '80%', { path: '/' });
+      $.cookie('cabecera_cookie_display', 'block', { path: '/' });
+      $.cookie('cabecera_cookie_src', '/static/images/ocultar.gif', { path: '/' });
+      $.cookie('cabecera_cookie_height', window.innerHeight*0.8+'px', { path: '/' });
+    });
+</script>
+</head>
+
+<form action="" method="post" id="autenticar_form">
+{% csrf_token %}
+  <br>
+  <div id="wrapper">
+	<div id="cell">
+  <div class="bgacceso" id="autenticar_main">
+    <div id="autenticar_left"><img src="/static/images/logo_gauss_acceso.png" height="76" width="273"></div>
+    <div id="autenticar_left">
+      <table cellspacing="10">
+	<tr><td><span class="campo">Usuario</span></td><td><input name="usuario" type="text" size="15" maxlength="50" value=""></td></tr>
+	<tr><td><span class="campo">Contraseña</span></td><td><input name="passusuario" type="password" size="15" maxlength="50" value=""></td></tr>
+	<tr><td colspan="2"></td><td><input class="button" value="Entrar" name="entrar" onclick="" type="submit"></td></tr>
+      </table>
+    </div>
+      <div id="autenticar_center"><a href=""> ¿Has olvidado tu contraseña?</a></div>
+  </div></div></div>
+</form>
+</html>

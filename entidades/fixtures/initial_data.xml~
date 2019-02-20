@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<django-objects version="1.0">
+<!--  -->
+<!-- Esta fixture actualiza los menues cada vez que se ejecuta syncdb -->
+<!--  -->
+    
+<!--     El acceso a los menues depende del grupo al que pertenece el usuario -->
+    <object pk="1" model="menu.menu">
+        <field type="CharField" name="textmenu">Configuración del grupo</field>
+        <!-- Asignamos los grupos que tendrán acceso a este menú -->
+	<field to="auth.group" name="grupos" rel="ManyToManyRel">
+	    <object pk="1"></object>
+	    <object pk="2"></object>
+	</field>
+    </object>
+	<object pk="11" model="menu.menu_element">
+	    <field to="menu.menu" name="menu" rel="ManyToOneRel">1</field>
+	    <field type="CharField" name="textelement">Datos del grupo</field>
+	    <field type="CharField" name="href">/datos_grupo/</field>
+	    <field to="auth.group" name="grupos" rel="ManyToManyRel">
+		<object pk="1"></object>
+		<object pk="2"></object>
+	    </field>
+	</object>
+	<object pk="12" model="menu.menu_element">
+	    <field to="menu.menu" name="menu" rel="ManyToOneRel">1</field>
+	    <field type="CharField" name="textelement">Carga masiva</field>
+	    <field type="CharField" name="href">/carga_masiva/</field>
+	    <field to="auth.group" name="grupos" rel="ManyToManyRel">
+		<object pk="1"></object>
+		<object pk="2"></object>
+	    </field>
+	</object>
+    
+    <object pk="2" model="menu.menu">
+        <field type="CharField" name="textmenu">Gestión de socios</field>
+        <field to="auth.group" name="grupos" rel="ManyToManyRel">
+	    <object pk="1"></object>
+	    <object pk="2"></object>
+	    <object pk="4"></object>
+	</field>
+    </object>
+	<object pk="21" model="menu.menu_element">
+	    <field to="menu.menu" name="menu" rel="ManyToOneRel">2</field>
+	    <field type="CharField" name="textelement">Añadir socio</field>
+	    <field type="CharField" name="href">/add_scout/</field>
+	    <field to="auth.group" name="grupos" rel="ManyToManyRel">
+		<object pk="1"></object>
+		<object pk="2"></object>
+	    </field>
+	</object>
+	<object pk="22" model="menu.menu_element">
+	    <field to="menu.menu" name="menu" rel="ManyToOneRel">2</field>
+	    <field type="CharField" name="textelement">Educandos scout</field>
+	    <field type="CharField" name="href">/scouts/</field>
+	    <field to="auth.group" name="grupos" rel="ManyToManyRel">
+		<object pk="1"></object>
+		<object pk="2"></object>
+		<object pk="4"></object>
+	    </field>
+	</object>
+	<object pk="23" model="menu.menu_element">
+	    <field to="menu.menu" name="menu" rel="ManyToOneRel">2</field>
+	    <field type="CharField" name="textelement">Scouters</field>
+	    <field type="CharField" name="href">/scouters/</field>
+	    <field to="auth.group" name="grupos" rel="ManyToManyRel">
+		<object pk="1"></object>
+		<object pk="2"></object>
+		<object pk="4"></object>
+	    </field>
+	</object>
+	<object pk="24" model="menu.menu_element">
+	    <field to="menu.menu" name="menu" rel="ManyToOneRel">2</field>
+	    <field type="CharField" name="textelement">Padres/Madres</field>
+	    <field type="CharField" name="href">/padres_madres/</field>
+	    <field to="auth.group" name="grupos" rel="ManyToManyRel">
+		<object pk="1"></object>
+		<object pk="2"></object>
+		<object pk="4"></object>
+	    </field>
+	</object>
+    
+    
+    <object pk="3" model="menu.menu">
+        <field type="CharField" name="textmenu">Acceso a scouters</field>
+        <field to="auth.group" name="grupos" rel="ManyToManyRel">
+	    <object pk="4"></object>
+	    <object pk="5"></object>
+	</field>
+    </object>
+	<object pk="31" model="menu.menu_element">
+	    <field to="menu.menu" name="menu" rel="ManyToOneRel">3</field>
+	    <field type="CharField" name="textelement">Crear actividad</field>
+	    <field type="CharField" name="href">/add_actividad/</field>
+	    <field to="auth.group" name="grupos" rel="ManyToManyRel">
+		<object pk="4"></object>
+		<object pk="5"></object>
+	    </field>
+	</object>
+    <object pk="4" model="menu.menu">
+        <field type="CharField" name="textmenu">Actividades y reuniones</field>
+        <field to="auth.group" name="grupos" rel="ManyToManyRel">
+	    <object pk="1"></object>
+	    <object pk="2"></object>
+	    <object pk="3"></object>
+	    <object pk="4"></object>
+	    <object pk="5"></object>
+	    <object pk="6"></object>
+	    <object pk="7"></object>
+	    <object pk="8"></object>
+	    <object pk="9"></object>
+	    <object pk="10"></object>
+	    <object pk="11"></object>
+	    <object pk="12"></object>
+	    <object pk="13"></object>
+	    <object pk="14"></object>    
+	</field>
+    </object>
+	<object pk="41" model="menu.menu_element">
+	    <field to="menu.menu" name="menu" rel="ManyToOneRel">4</field>
+	    <field type="CharField" name="textelement">Lista de actividades</field>
+	    <field type="CharField" name="href">/actividades/</field>
+	    <field to="auth.group" name="grupos" rel="ManyToManyRel">
+		<object pk="1"></object>
+		<object pk="2"></object>
+		<object pk="3"></object>
+		<object pk="4"></object>
+		<object pk="5"></object>
+		<object pk="6"></object>
+		<object pk="7"></object>
+		<object pk="8"></object>
+		<object pk="9"></object>
+		<object pk="10"></object>
+		<object pk="11"></object>
+		<object pk="12"></object>
+		<object pk="13"></object>
+		<object pk="14"></object>   
+	    </field>
+	</object>
+</django-objects>

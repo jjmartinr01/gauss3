@@ -1,0 +1,75 @@
+{% load informes_extras %}
+<fieldset id="pregunta{{ pregunta.id }}">
+    {% if pregunta.informe.solicitante == g_e %}
+        <legend><a class="button tiny delete_pregunta" data-id="{{ pregunta.id }}"><i
+                class="fa fa-trash-o"></i> Borrar pregunta</a></legend>
+    {% else %}
+        <legend>{{ Pregunta }}</legend>
+    {% endif %}
+    <div class="row">
+        <div class="columns large-12">
+            {% if pregunta.informe.solicitante == g_e %}
+                <input type="text" class="pregunta" data-id="{{ pregunta.id }}" data-informe="{{ pregunta.informe.id }}"
+                       value="{{ pregunta.pregunta }}" placeholder="Escribe aquí tu nueva pregunta">
+            {% else %}
+                <br>{{ pregunta.pregunta }}
+            {% endif %}
+        </div>
+    </div>
+    {% if pregunta.informe.solicitante == g_e %}
+        {% for respuesta in pregunta.respuestas %}
+            {% if respuesta.usuario != g_e %}
+                <div class="row">
+                    <div class="columns large-3" style="color:#c1e2b3">
+                        {{ respuesta.usuario.gauser.get_full_name }}
+                    </div>
+                    <div class="columns large-9">
+                        {{ respuesta.respuesta }}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+        {% if g_e in pregunta.informe.usuarios_destino.all %}
+            <div class="row">
+                <div class="columns large-3" style="color:#c1e2b3">
+                    {{ g_e.gauser.get_full_name }}
+                </div>
+                <div class="columns large-9">
+                    <textarea id="respuesta{{ pregunta.id }}" data-informe="{{ informe.id }}"
+                              data-pregunta="{{ pregunta.id }}" data-ge="{{ g_e.id }}" rows="4"
+                              placeholder="Aquí va tu respuesta"
+                              class="respuesta_a_pregunta">{{ pregunta|respuesta:g_e }}</textarea>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="row">
+            <div class="columns large-12">
+                <textarea id="respuesta{{ pregunta.id }}" data-informe="{{ informe.id }}"
+                          data-pregunta="{{ pregunta.id }}" data-ge="{{ g_e.id }}" rows="4"
+                          placeholder="Aquí va tu respuesta"
+                          class="respuesta_a_pregunta">{{ pregunta|respuesta:g_e }}</textarea>
+            </div>
+        </div>
+{#        <p>De manera excepcional, si lo deseas puedes aduntar un archivo con información extra:</p>#}
+{#        <table width="100%">#}
+{#            <tr>#}
+{#                <td>{% if respuesta.fichero_seguimiento %}#}
+{#                    <a class="descargar_fichero_respuesta" id="dfp{{ respuesta.id }}"#}
+{#                       data-id="{{ respuesta.id }}"><b>{{ respuesta.fichero_seguimiento.filename }}</b></a>#}
+{#                {% else %}#}
+{#                    <input type="file" name="fm{{ respuesta.id }}" id="fm{{ respuesta.id }}">#}
+{#                {% endif %}#}
+{#                </td>#}
+{#                <td>{% if informe %}#}
+{#                    <a class="delete_informe button tiny" id="dp{{ respuesta.id }}"#}
+{#                       data-id="{{ respuesta.id }}"><b><i class="fa fa-trash"></i> Borrar</b></a>#}
+{#                {% else %}#}
+{#                    <a class="update_informe button tiny" id="up{{ respuesta.id }}"#}
+{#                       data-id="{{ respuesta.id }}"><b><i class="fa fa-upload"></i> Cargar</b></a>#}
+{#                {% endif %}#}
+{#                </td>#}
+{#            </tr>#}
+{#        </table>#}
+    {% endif %}
+</fieldset>

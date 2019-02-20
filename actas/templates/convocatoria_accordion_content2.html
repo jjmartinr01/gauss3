@@ -1,0 +1,207 @@
+{% load my_templatetags %}
+
+<style>
+    .noeditable {
+        color: #0f74a8;
+    }
+</style>
+<div class="row">
+    <div class="columns large-5">
+        <b>Creada por:</b> {{ convocatoria.creador.get_full_name }}
+    </div>
+    <div class="columns large-7 text-right">
+        <ul class="button-group radius">
+            {% if g_e|has_permiso:'borra_convocatorias' or g_e.gauser == convocatoria.configura %}
+                <li title="Borrar la convocatoria">
+                    <a data-id="{{ convocatoria.id }}" class="button delete_convocatoria"><i
+                            class="fa fa-trash-o"></i> Borrar</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-4">
+        <label><b>Persona que hace la convocatoria</b>
+            <select id="convoca{{ convocatoria.id }}" data-id="{{ convocatoria.id }}">
+                <option value="establecida"
+                        selected="selected">{{ convocatoria.convoca.get_full_name }}</option>
+            </select> </label>
+    </div>
+    <div class="columns large-4">
+        <label><b>Cargo que hace la convocatoria</b>
+            <select class="cargo" id="cargo_convocante{{ convocatoria.id }}"
+                    data-id="{{ convocatoria.id }}">
+                {% if cargos|length > 0 %}
+                    {% for cargo in cargos %}
+                        <option value="{{ cargo.id }}"
+                                {% if cargo == convocatoria.cargo_convocante %}selected {% endif %}>
+                            {{ cargo.cargo }}</option>
+                    {% endfor %}
+                {% else %}
+                    <option value="">-------</option>
+                {% endif %}
+            </select> </label>
+    </div>
+    <div class="columns large-4">
+        <label><b>Lugar de la convocatoria</b>
+            <input type="text" class="lugar" data-id="{{ convocatoria.id }}"
+                   value="{{ convocatoria.lugar }}"></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Grupos convocados</b>
+            <select class="subentidades_convocadas" data-id="{{ convocatoria.id }}" multiple="multiple"
+                    id="subentidades_convocadas{{ convocatoria.id }}">
+                {% for subentidad in g_e.ronda.entidad.subentidad_set.all %}
+                    <option value="{{ subentidad.id }}"
+                            {% if subentidad in convocatoria.convocados.all %}selected{% endif %}>{{ subentidad.nombre }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Título de la convocatoria y texto base utilizado para crear la convocatoria</b> (texto en azul no es
+            editable)</label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <div class="nombre text-center" data-id="{{ convocatoria.id }}" contenteditable="true"
+             style="font-size: xx-large;font-weight: 800; text-align: center;border: 1px solid lightgrey">
+            {{ convocatoria.nombre }}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <div class="texto_base" id="texto_base{{ convocatoria.id }}"
+             style="border: lightgrey solid 1px; padding:10px;"
+             data-id="{{ convocatoria.id }}" contenteditable="true">
+            {% autoescape off %}
+                {{ convocatoria.texto_convocatoria }}
+            {% endautoescape %}
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#convoca{{ convocatoria.id }}').select2();
+    {#    $('#cargo_convocante{{ convocatoria.id }}').select2();#}
+    $('#subentidades_convocadas{{ convocatoria.id }}').select2();
+
+
+    var editor_contenido_convocatoria = CKEDITOR.inline('texto_base{{ convocatoria.id }}');
+    {# extraAllowedContent: entre [] los atributos, entre {} los estilos y entre () los nombres de las clases permitidas #}
+    editor_contenido_convocatoria.config.extraAllowedContent = 'li ol[id, title]; span(sub_convocadas, day_name, day_num, month_name, month_num, year, datetime_date, datetime_time, place, convocante, cargo_convocante, noeditable); h1(title, noeditable);span[id, title, contenteditable]';
+    editor_contenido_convocatoria.on('doubleclick', function (evt) {
+        show_mensajes({texto: 'No está permitido seleccionar texto usando un doble click.'});
+    });
+
+    var texto_editor;
+
+    function comprueba_cambio_texto(texto, convocatoria) {
+        if (texto == texto_editor) {
+            $.post("/convocatorias_ajax/", {
+                    action: 'update_texto_convocatoria',
+                    configuracion: convocatoria,
+                    texto: texto_editor
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        {#                        $('#texto_ejemplo_convocatoria').html(data.texto_ejemplo_convocatoria);#}
+                        {#                        editor_contenido_convocatoria.setData(data.texto_ejemplo_convocatoria)#}
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+
+                });
+        }
+    }
+
+    editor_contenido_convocatoria.on('change', function (e) {
+        var texto = e.editor.getData();
+        texto_editor = texto;
+        var convocatoria = {{ convocatoria.id }};
+        setTimeout(function () {
+            comprueba_cambio_texto(texto, convocatoria);
+        }, 1000);
+        re_adjust_check_time();
+    });
+
+    $('.texto_base').on('click', '.noeditable', function () {
+        editor_contenido_convocatoria.focusManager.blur();
+        show_mensajes({
+            title: '<i class="fa fa-warning"></i> Texto no editable',
+            texto: 'Este texto cambiará automáticamente al asignar los parámetros de la convocatoria.'
+        });
+    });
+
+    $('#convoca{{ convocatoria.id }}').select2({
+        placeholder: "Para buscar una persona, escribe parte de su nombre",
+        allowClear: true,
+        ajax: {
+            url: "/buscar_usuarios/",
+            type: 'GET',
+            dataType: 'json',
+            delay: 250,
+            data: function (params) { // page is the one-based page number tracked by Select2
+                return {
+                    action: 'select2',
+                    q: params.term, //search term
+                    page: params.page // page number
+                };
+            },
+            processResults: function (data, page) {
+                return {
+                    results: $.map(data, function (item) {
+                        return {
+                            text: item.last_name + ', ' + item.first_name + ' (' + item.perfiles + ')',
+                            id: item.id
+                        }
+                    })
+                };
+            },
+            cache: true
+        },
+        escapeMarkup: function (markup) {
+            return markup;
+        }, // let our custom formatter work
+        minimumInputLength: 3,
+        language: {
+            inputTooShort: function () {
+                return "Introduce al menos 3 caracteres para iniciar búsqueda";
+            }
+        }
+    });
+
+    $('body').on('change', '#convoca{{ convocatoria.id }}', function (e) {
+        var convoca = $(this).val();
+        var configuracion = $(this).data('id');
+        $.post("/convocatorias_ajax/", {
+                action: 'update_convoca_convocatoria',
+                configuracion: configuracion,
+                convoca: convoca
+            },
+            function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('.convocante').text(data.convocante);
+                    var options = $('.cargo').empty().prop('options');
+                    $.each(data.cargos, function (val, text) {
+                        options[options.length] = new Option(text, val);
+                    });
+                    $(".cargo").val($(".cargo option:first").val()).trigger('change');
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    });
+
+</script>

@@ -1,0 +1,40 @@
+<h2 style="text-align:center;"> Solicitud de cancelación de datos de carácter personal almacenados en la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }}</h2>
+<h5 style="text-align: center;">Petición de supresión de datos personales objeto de tratamiento por la entidad</h5>
+
+<p class="wysiwyg-text-align-justify">&nbsp;</p>
+<p class="wysiwyg-text-align-justify">DOCUMENTO DIRIGIDO {% if estructura_lopd.responsables_fichero.count > 1 %}A LOS
+    RESPONSABLES {% else %}AL RESPONSABLE {% endif %}DEL FICHERO:</p>
+<p class="wysiwyg-text-align-justify">{{ estructura_lopd.responsables_fichero.all|join:', ' }}
+<hr>
+<p class="wysiwyg-text-align-justify">&nbsp;</p>
+
+
+<p class="wysiwyg-text-align-justify">{% if request.session.gauser_extra.gauser.sexo == 'H' %}
+    D. {% elif request.session.gauser_extra.gauser.sexo == 'M' %}Dª. {% else %}
+    D./Dª. {% endif %} {{ request.session.gauser_extra.gauser.get_full_name }}, mayor de edad, con
+    domicilio
+    en {{ request.session.gauser_extra.gauser.address }}, con DNI {{ request.session.gauser_extra.gauser.dni }}, con
+    correo electrónico {{ request.session.gauser_extra.gauser.email }}, por
+    medio del presente escrito manifiesta su deseo de ejercer su derecho de CANCELACIÓN, de conformidad con el
+    artículo 16 de la Ley Orgánica 15/1999, y los artículos 27 y 28 del Real Decreto 1720/2007.</p>
+
+<p class="wysiwyg-text-align-justify">SOLICITA:</p>
+
+<ol>
+    <li><p class="wysiwyg-text-align-justify">Que se proceda a la efectiva cancelación en el plazo de diez días
+        desde la recepción de esta solicitud, de cualesquiera datos relativos a mi persona que se encuentren en su
+        fichero, en los términos previstos en la Ley Orgámncia 15/1999 de 13 de diciembre. </p></li>
+    <li><p class="wysiwyg-text-align-justify">Que el caso de que la
+        Asociación {{ request.session.gauser_extra.ronda.entidad.name }} considere que la cancelación
+        no procede, lo comunique igualmente, de forma motivada y dentro del plazo de diez días señalado.</p>
+    </li>
+</ol>
+
+<p class="wysiwyg-text-align-justify">En {{ request.session.gauser_extra.ronda.entidad.localidad }}
+    a {% now "j \d\e F \d\e Y" %}  </p>
+
+<p class="wysiwyg-text-align-justify">&nbsp;</p>
+
+<p class="wysiwyg-text-align-justify">Fdo: {{ request.session.gauser_extra.gauser.get_full_name }}</p>
+

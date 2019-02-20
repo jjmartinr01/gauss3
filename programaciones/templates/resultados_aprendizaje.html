@@ -1,0 +1,187 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="materia" value="{{ materia.materia.id }}">
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong>Resultados de aprendizaje para
+                "{{ materia.materia.nombre }}"</strong></h4>
+        </div>
+
+        <div data-alert class="alert-box success radius">
+            <span style="font-weight: 800;">En estos momentos hay {{ materia.resultado_aprendizaje_set.all|length }} resultados de aprendizaje anotados</span>
+            <a href="#" class="close">&times;</a>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_resultados" title="Lista de resultados de aprendizaje">
+            {% for r in materia.resultado_aprendizaje_set.all %}
+                {% include "resultados_aprendizaje_accordion.html" %}
+            {% endfor %}
+        </dl>
+
+
+        <hr>
+        <div class="row">
+            <div class="columns large-12">
+                <a class="button" id="add_resultado"><i class="fa fa-plus"></i> Añadir resultado</a>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_plus', 's_arrow-left']);
+
+        $("#arrow-left_sign").click(function (event) {
+            event.preventDefault();
+            parent.history.back();
+            return false;
+        });
+
+        $("#plus_sign").click(function (event) {
+            event.preventDefault();
+            $.post("/resultados_aprendizaje/", {action: 'add_resultado', id: $('#materia').val()}, function (data) {
+                if (data.ok) {
+                    $('#list_resultados').prepend(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#add_resultado').click(function (e) {
+            e.preventDefault();
+            $.post("/resultados_aprendizaje/", {action: 'add_resultado', id: $('#materia').val()}, function (data) {
+                if (data.ok) {
+                    $('#list_resultados').append(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('click', '.borrar_resultado', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/resultados_aprendizaje/", {action: 'borrar_resultado', id: id}, function (data) {
+                if (data.ok) {
+                    $('#accordion' + id).remove();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        var texto_anterior = '';
+
+        function comprueba_cambio_texto(action, texto_actual, id) {
+            if (texto_actual == texto_anterior) {
+                $.post("/resultados_aprendizaje/", {action: action, id: id, html: texto_actual},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        }
+
+        $('body').on('keyup', '.input_resultado', function (e) {
+            var id = $(this).data('id');
+            var texto_actual = $(this).val();
+            texto_anterior = texto_actual;
+            $("#span_nombre" + id).html(texto_actual);
+            setTimeout(function () {
+                comprueba_cambio_texto('change_resultado', texto_actual, id);
+            }, 1000);
+
+        });
+
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion_contenido')) {
+                        var id = accordion.data('id');
+                        console.log(id);
+                        console.log('fasdfsaf');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/resultados_aprendizaje/", {action: 'open_accordion', id: id}, function (data) {
+                                if (data.ok) {
+                                    $('#panel' + id).html(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#curso' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+
+        $('body').on('click', '.add_objetivo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/resultados_aprendizaje/", {action: 'add_objetivo', id: id}, function (data) {
+                if (data.ok) {
+                    $('#list_objetivos' + id).prepend(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+        
+        $('body').on('keyup', '.div_objetivo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var texto_actual = $(this).html();
+            texto_anterior = texto_actual;
+            setTimeout(function () {
+                comprueba_cambio_texto('mod_objetivo', texto_actual, id);
+            }, 1000);
+        });
+        
+        $('body').on('keyup', '.div_crit_eval', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var texto_actual = $(this).html();
+            texto_anterior = texto_actual;
+            setTimeout(function () {
+                comprueba_cambio_texto('mod_crit_eval', texto_actual, id);
+            }, 1000);
+        });
+
+        $('body').on('click', '.borrar_objetivo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/resultados_aprendizaje/", {action: 'borrar_objetivo', id: id}, function (data) {
+                if (data.ok) {
+                    $('#objetivo' + id).remove();
+                    $('#crit_eval' + id).remove();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+        
+
+    </script>
+{% endblock %}

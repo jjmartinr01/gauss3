@@ -1,0 +1,53 @@
+{% load my_templatetags %}
+<input type="hidden" id="acta_editada" name="acta_editada" value="{{acta.id}}">
+<script>
+$( "#input_fecha_aprobacion" ).datepicker({
+	dateFormat: "dd/mm/yy",
+	dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	firstDay: 1,
+	monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	beforeShowDay: $.datepicker.noWeekends,});
+</script>
+<table align="center" width="100%" cellspacing="3" cellpadding="3">
+  <tr><td class="cabecera" colspan="2" style="text-align:center;">
+    &nbsp;&nbsp;Formulario para la edición del acta
+  </td></tr>
+  <tr><td>
+      Introduce la fecha de aprobación si la conoces:</td><td> <input placeholder="Selecciona fecha" id="input_fecha_aprobacion" style="margin-right:-17px;width:210px;" name="fecha_aprobacion" value="{% if acta.fecha_aprobacion %}{{acta.fecha_aprobacion}}{% endif %}"/><span style="font-size:13px;"><i class="icon-calendar"></i></span>
+    </td></tr>
+  <tr><td>¿Este acta está ya aprobada?:</td><td> <input type="checkbox" name="publicar"/></td></tr>
+</table>
+  
+<div id="tot___id_asistentes" class="div_total_checkboxes">
+  <div class="div_texto_checkboxes">
+      <span class="info texto_checkboxes" id="texto___id_asistentes"><i class="icon-hand-up"></i>Selecciona a los asistentes</span>
+  </div>
+  <div class="todos_ningunos" id="todos_ningunos___id_asistentes">
+      <span id="todo___id_asistentes" class="select_todos info"><i class="icon-ok-sign"></i> Todos </span>
+      <span id="ninguno___id_asistentes" class="select_ninguno info"><i class="icon-remove-sign"></i> Ninguno</span>
+  </div>
+  <table width="100%" id="checkboxes___id_asistentes" class="multiselect2checkbox"><tbody><tr>
+      {% for profesor in asistentes %}
+	<td><input type="checkbox" name="convocados" class="check___id_asistentes" value="{{profesor.id}}">{{profesor.gauser.get_full_name}}</td>
+	{%if forloop.counter|divisibleby:"4" %}
+	    </tr><tr>
+	{% endif %}
+      {% endfor %}
+  </tbody></table>
+</div>
+
+
+<script>
+  $("#id_contenido_html").cleditor({
+	      width:        'auto',
+	      height:       450, // height not including margins, borders or padding
+	      controls:     // controls to add to the toolbar
+			    "bold italic underline strikethrough subscript superscript | " +
+			    "| bullets numbering | " +
+			    "alignleft center alignright justify | undo redo | " +
+			    "rule",
+	  });
+</script>
+
+<br><br>{{form.contenido_html}}

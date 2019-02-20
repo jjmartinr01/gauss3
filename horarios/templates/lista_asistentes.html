@@ -1,0 +1,42 @@
+{% load my_templatetags %}
+
+<style>
+    .disabled {
+        color: lightgrey;
+    }
+</style>
+<div class="row">
+    <div class="columns large-12 medium-12 small-12">
+        <h4>Asistentes asignados a la sesión</h4>
+    </div>
+</div>
+{% for ge in ges %}
+    <div class="row">
+        <div class="columns large-6 medium-6 small-6">
+            <a href="/usuarios_entidad/?ge={{ ge.id }}"><i class="fa fa-caret-right"></i> {{ ge.gauser.get_full_name }}</a>
+        </div>
+        <div class="columns large-6 medium-6 small-6">
+            <input type="checkbox" id="ge{{ ge.id }}" class="asistente" data-sesion="{{ sesion.id }}" data-ge="{{ ge.id }}"
+            {% if ge in sesion.asistentes.all %}checked{% endif %}>
+        </div>
+        <hr>
+    </div>
+{% endfor %}
+
+<script>
+
+    $('body').on('change', '.asistente', function (e) {
+        var sesion = $(this).data('sesion');
+        var ge = $(this).data('ge');
+        if ($(this).is(':checked')){
+            var action = 'add_asistente';
+        }else{
+            var action = 'del_asistente';
+        }
+        $.post("/horarios_ajax/", {action: action, sesion: sesion, ge: ge},
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+    });
+
+</script>

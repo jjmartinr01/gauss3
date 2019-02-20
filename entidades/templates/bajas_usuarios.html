@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="id_baja" name="id_baja" value="">
+        <input type="hidden" id="id_gauser" name="id_gauser" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong> Gestión de bajas en
+                {{ request.session.gauser_extra.ronda.entidad.name }}</strong></h4>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12">
+                Escribe parte del nombre para buscar posibles bajas:
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="columns large-10">
+                <input type="text" name="busca_bajas" id="busca_bajas">
+            </div>
+            <div class="columns large-2">
+                <a id="busca_bajas_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>
+            </div>
+        </div>
+        <dl class="accordion" data-accordion id="resultados">
+            {% include "bajas_accordion.html" %}
+        </dl>
+    </form>
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        $("body").on('click', '#busca_bajas_manual', function (e) {
+            var texto = $('#busca_bajas').val();
+            $.post("/bajas_usuarios/", {action: 'busca_bajas', texto: texto},
+                function (data) {
+                    $('#resultados').html(data['html']);
+                    $(document).foundation();
+                });
+        });
+        $("body").on('keyup', '#busca_bajas', function (e) {
+            var texto = $('#busca_bajas').val();
+            $.post("/bajas_usuarios/", {action: 'busca_bajas', texto: texto},
+                function (data) {
+                    $('#resultados').html(data['html']);
+                    $(document).foundation();
+                });
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-baja')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/bajas_usuarios/", {action: 'open_accordion', baja: id},
+                                function (data) {
+                                    $('#panel' + id).html(data);
+                                    $(document).foundation();
+                                });
+                        } else {
+                            $.post("/bajas_usuarios/", {action: 'close_accordion', baja: id},
+                                function (data) {
+                                    if (data['borrar']) {
+                                        $('#accordion' + id).remove();
+                                    } else {
+                                        $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                                        $('#panel' + id).html('');
+                                    }
+                                });
+
+                        }
+                    }
+                }
+            }
+        });
+
+
+        {% if request.session.gauser_extra|has_permiso:"alta_usuarios" %}
+            $("body").on('click', '.dar_alta', function (e) {
+                e.preventDefault();
+                var baja = $(this).data('baja');
+                var gauser = $(this).data('gauser');
+                $.post("/bajas_usuarios/", {action: 'dar_alta', gauser: gauser, baja: baja},
+                    function (data) {
+                        $('#panel' + baja).html(data['html']);
+                        $(document).foundation();
+                    });
+            });
+        {% else %}
+            $("body").on('click', '.dar_alta', function (e) {
+                e.preventDefault();
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Aviso', texto: 'No tienes permiso para dar de ' +
+                    'alta a un usuario'
+                });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:"baja_usuarios" %}
+            $("body").on('click', '.dar_baja', function (e) {
+                e.preventDefault();
+                var baja = $(this).data('baja');
+                var gauser = $(this).data('gauser');
+                $.post("/bajas_usuarios/", {action: 'dar_baja', gauser: gauser, baja: baja},
+                    function (data) {
+                        $('#panel' + baja).html(data['html']);
+                        $(document).foundation();
+                    });
+            });
+        {% else %}
+            $("body").on('click', '.dar_baja', function (e) {
+                e.preventDefault();
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Aviso', texto: 'No tienes permiso para dar de ' +
+                    'baja a un usuario'
+                });
+            });
+        {% endif %}
+
+
+        {% if request.session.gauser_extra|has_permiso:"borra_usuarios" %}
+            $("body").on('click', '.borrar_usuario', function (e) {
+                e.preventDefault();
+                $('#id_gauser').val($(this).data('gauser'));
+                $('#id_baja').val($(this).data('baja'));
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Cuidado!!', texto: 'Si aceptas los datos del usuario ' +
+                    'se borrarán completamente de la base de datos y no podrán ser recuperados.<br>También se ' +
+                    'borrarán aquellas actividades, eventos, ... que el usuario hubiera creado.', buttons: {
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            var baja = $('#id_baja').val();
+                            var gauser = $('#id_gauser').val();
+                            $.post("/bajas_usuarios/", {action: 'borrar_usuario', gauser: gauser, baja: baja},
+                                function (data) {
+                                    $('#panel' + baja).html(data['html']);
+                                    $(document).foundation();
+                                });
+                        },
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        }
+                    }
+                });
+            });
+
+        {% else %}
+            $("body").on('click', '.borrar_usuario', function (e) {
+                e.preventDefault();
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Aviso', texto: 'No tienes permiso para borrar los datos ' +
+                    'de un usuario'
+                });
+            });
+        {% endif %}
+
+
+    </script>
+{% endblock %}
+
+
+	
+
+
+
+
+
+
+

@@ -1,0 +1,197 @@
+{% load my_templatetags %}
+
+<div class="row">
+    <div class="columns large-6">
+        <b>Creada por:</b> {{ acta.convocatoria.convoca.get_full_name }}<br>
+        <b>Fecha de creación:</b> {{ acta.creado }}
+    </div>
+    <div class="columns large-6">
+        <ul class="button-group radius">
+            <li title="Descargar el acta en PDF">
+                <a data-id="{{ acta.id }}" class="button download_pdf"><i
+                        class="fa fa-file-pdf-o"></i> PDF</a></li>
+            {% if g_e|has_permiso:"mail_actas" %}
+            <li title="Mandar el acta por e-mail a todos los convocados">
+                <a data-id="{{ acta.id }}" class="button send_email"><i
+                        class="fa fa-envelope-o"></i> eMail</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-4">
+        <label>Fecha y hora de la convocatoria
+            <input type="text" name="fecha_hora" readonly data-id="{{ acta.id }}"
+                   value="{{ acta.convocatoria.fecha_hora|date:'d/m/Y H:i' }}"></label>
+    </div>
+    <div class="columns large-4">
+        <label>Fecha de aprobación
+            <input type="text" name="fecha_aprobacion" class="fecha_aprobacion" data-id="{{ acta.id }}"
+                   value="{% if acta.fecha_aprobacion %}{{ acta.fecha_aprobacion|date:'d/m/Y' }}{% endif %}"></label>
+    </div>
+    <div class="columns large-4">
+        <label>Hacer pública este acta</label>
+        <input type="checkbox" name="publicada" class="publicada" {% if acta.publicada %}checked{% endif %}
+               value="{{ acta.id }}" id="publicada{{ acta.id }}">
+    </div>
+</div>
+{#<div class="row">#}
+{#    <div class="columns large-6">#}
+{#        <label><b>Persona que redacta el acta</b>#}
+{#            <select id="redacta{{ acta.id }}" data-id="{{ acta.id }}">#}
+{#                <option value="establecida"#}
+{#                        selected="selected">{{ acta.redacta.get_full_name }}</option>#}
+{#            </select>#}
+{#        </label>#}
+{#    </div>#}
+{##}
+{#    <div class="columns large-6">#}
+{#        <label><b>Cargo de la persona que redacta</b>#}
+{#            <select class="cargo" id="cargo_redacta{{ configura_convocatoria.id }}"#}
+{#                    data-id="{{ configura_convocatoria.id }}">#}
+{#                {% if cargos|length > 0 %}#}
+{#                    {% for cargo in cargos %}#}
+{#                        <option value="{{ cargo.id }}"#}
+{#                                {% if cargo == configura_convocatoria.cargo_convocante %}selected {% endif %}>#}
+{#                            {{ cargo.cargo }}</option>#}
+{#                    {% endfor %}#}
+{#                {% else %}#}
+{#                    <option value="">-------</option>#}
+{#                {% endif %}#}
+{#            </select>#}
+{#        </label>#}
+{#    </div>#}
+{#</div>#}
+<div class="row">
+    <div class="columns large-12">
+        <label>Asistentes a la reunión:
+            <select name="usuarios_asistentes" id="usuarios_asistentes" multiple="multiple" data-id="{{ acta.id }}">
+                {% for asistente in acta.asistentes.all %}
+                    <option value="{{ asistente.id }}" selected="selected">{{ asistente.gauser.last_name }},
+                        {{ asistente.gauser.first_name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+</div>
+<hr>
+
+<div class="row">
+    <div class="columns large-12">
+        <div class="nombre text-center" data-id="{{ acta.id }}" contenteditable="true"
+             style="font-size: xx-large;font-weight: 800; text-align: center;border: 1px solid lightgrey">
+            {{ acta.nombre }}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <div data-id="{{ acta.id }}" contenteditable="true" id="contenido_acta{{ acta.id }}" style="border: lightgrey solid 1px; padding:10px;">
+            {% autoescape off %}
+                {{ acta.contenido_html }}
+            {% endautoescape %}
+        </div>
+    </div>
+</div>
+
+<script>
+    {% if g_e|redacta_acta:acta %}
+        var editor_contenido_acta = CKEDITOR.inline('contenido_acta{{ acta.id }}');
+        editor_contenido_acta.config.extraAllowedContent = 'p div span[id]';
+
+        editor_contenido_acta.on('change', function (e) {
+            var texto = e.editor.getData();
+            var acta = {{ acta.id }};
+            $.post("/redactar_actas_ajax/", {action: 'update_texto_acta', acta: acta, texto: texto},
+                function (data) {
+                if (data.ok){
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }else{
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+                });
+        });
+
+        $(".fecha_aprobacion").fdatepicker({
+            format: 'dd/mm/yyyy',
+            weekStart: 1
+        });
+
+        $("#usuarios_asistentes").select2({
+            placeholder: "Escribe parte del nombre",
+            minimumInputLength: 3,
+            multiple: true,
+            ajax: {
+                url: "/buscar_usuarios/",
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        action: 'select2',
+                        q: params.term, // search term
+                        page: params.page
+                    };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.last_name + ', ' + item.first_name + ' (' + item.perfiles + ')',
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            },
+            templateResult: function (a) {
+                return "<span>" + a.text + "</span>"
+            }
+        });
+
+        if ($("#usuarios_asistentes").val()) {
+            var asistentes_actuales = $("#usuarios_asistentes").val();
+        } else {
+            var asistentes_actuales = [];
+        }
+
+        function diff(A, B) {
+            if (!A) A = [];
+            if (!B) B = [];
+            return A.filter(function (a) {
+                return B.indexOf(a) == -1;
+            });
+        }
+
+        $("#usuarios_asistentes").change(function () {
+            var acta = $(this).data('id');
+            var asistentes = $(this).val();
+            var removed = diff(asistentes_actuales, asistentes);
+            var added = diff(asistentes, asistentes_actuales);
+            asistentes_actuales = asistentes;
+            $.post("/redactar_actas_ajax/", {
+                    action: 'update_usuarios_asistentes',
+                    asistentes: $(this).val(),
+                    acta: acta,
+                    removed: removed,
+                    added: added
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#attendees').html(data.ns);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        editor_contenido_acta.fire('change')
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+    {% endif %}
+
+</script>

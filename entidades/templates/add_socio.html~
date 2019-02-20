@@ -1,0 +1,168 @@
+{% extends "lateral.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+{# El siguiente js es utilizado para submit form con files en ajax #}
+<script type="text/javascript" src="/static/js/jquery.form.min.js"></script>
+<style>
+.no_form{height:25px;padding-left:5px;}
+#datos_table{display:none;}
+</style>
+{% endblock %}
+
+{% block ready %}
+  visualizar(['ok_sign',]);
+  $('#ok_sign').removeClass('no_navegar').addClass('navegar').attr('title','Grabar los datos del nuevo socio');
+
+  $('#ok_sign').click(function () {  if( $(this).hasClass('navegar') ) {
+      if ( $('#tipo_socio').val() == '70' ){
+	  var tut = $('#gauser_extra_tutor1_selected').val().length > 0 || $('#gauser_extra_tutor2_selected').val().length > 0;
+	  var nom = $('#id_first_name').val().length > 2;
+	  var ape = $('#id_last_name').val().length > 2;
+	  var mai = $('#id_email').val().length > 3;
+	  var nac = $('#id_nacimiento').val().length > 3;
+	  var eba = $('#id_entidad_bancaria').val().length > 3;
+	  var ncb = $('#id_num_cuenta_bancaria').val().length > 3;
+	  var cond = (tut && nom && ape && mai && nac && eba && ncb)
+	  if (!cond){
+	    var texto = '';
+	    if( !tut ) { texto = texto + '<li>Debes indicar al menos un tutor del educando.</li>';}
+	    if( !nom ) { texto = texto + '<li>Debes escribir el nombre del educando.</li>';}
+	    if( !ape ) { texto = texto + '<li>Debes escribir los apellidos del educando.</li>';}
+	    if( !mai ) { texto = texto + '<li>Es necesario indicar una dirección de correo electrónico.</li>';}
+	    if( !nac ) { texto = texto + '<li>Rellena el campo con la fecha de nacimiento.</li>';}
+	    if( !eba ) { texto = texto + '<li>Es necesario indicar la entidad bancaria.</li>';}
+	    if( !ncb ) { texto = texto + '<li>Es necesario indicar el número de cuenta bancaria.</li>';}}
+      }else if ( $('#tipo_socio').val() == '75' || $('#tipo_socio').val() == '85' ){
+	  var nom = $('#id_first_name').val().length > 2;
+	  var ape = $('#id_last_name').val().length > 2;
+	  var mai = $('#id_email').val().length > 3;
+	  var dni = $('#id_dni').val().length > 3;
+	  var eba = $('#id_entidad_bancaria').val().length > 3;
+	  var ncb = $('#id_num_cuenta_bancaria').val().length > 3;
+	  var cond = (nom && ape && mai && dni && eba && ncb)
+	  if (!cond){
+	    var texto = '';
+	    if( !nom ) { texto = texto + '<li>Debes escribir el nombre del socio/scouter.</li>';}
+	    if( !ape ) { texto = texto + '<li>Debes escribir los apellidos del socio/scouter.</li>';}
+	    if( !mai ) { texto = texto + '<li>Es necesario indicar una dirección de correo electrónico.</li>';}
+	    if( !dni ) { texto = texto + '<li>Es necesario indicar el dni del socio/scouter.</li>';}
+	    if( !eba ) { texto = texto + '<li>Es necesario indicar la entidad bancaria.</li>';}
+	    if( !ncb ) { texto = texto + '<li>Es necesario indicar el número de cuenta bancaria.</li>';}}
+      }else if ( $('#tipo_socio').val() == '80' ){
+	  var nom = $('#id_first_name').val().length > 2;
+	  var ape = $('#id_last_name').val().length > 2;
+	  var mai = $('#id_email').val().length > 3;
+	  var dni = $('#id_dni').val().length > 3;
+	  var dir = $('#id_address').val().length > 3;
+	  var loc = $('#id_localidad').val().length > 2;
+	  var pro = $('#id_provincia').val().length > 0;
+	  var tel = $('#id_telfij').val().length > 8 || $('#id_telmov').val().length > 8;
+	  var cond = (nom && ape && mai && dni && dir && loc && pro && tel);
+	  if (!cond){
+	    var texto = '';
+	    if( !nom ) { texto = texto + '<li>Debes escribir el nombre del tutor o tutora.</li>';}
+	    if( !ape ) { texto = texto + '<li>Debes escribir los apellidos del tutor o tutora.</li>';}
+	    if( !mai ) { texto = texto + '<li>Es necesario indicar una dirección de correo electrónico.</li>';}
+	    if( !dni ) { texto = texto + '<li>Es necesario indicar el dni del tutor o tutora.</li>';}
+	    if( !dir ) { texto = texto + '<li>Es necesario indicar la dirección postal.</li>';}
+	    if( !loc ) { texto = texto + '<li>Es necesario indicar la localidad de residencia.</li>';}
+	    if( !pro ) { texto = texto + '<li>Es necesario indicar la provincia.</li>';}
+	    if( !tel ) { texto = texto + '<li>Es necesario indicar un teléfono de contacto (móvil y/o fijo).</li>';}}}
+	  
+      if (cond){ document.{{formname}}.submit(); }
+      else {$( "#faltan_campos" ).html(texto); $( "#faltan_campos" ).dialog( "open" );} }});
+
+
+  $( "#dialog_educando" ).dialog({ autoOpen: false, resizable: false, width:600, modal: true,});
+
+  $('#Contenido').on('change', '#tipo_socio', function(event){
+      $('#datos_table').css('display','block');
+      var id = $(this).val();
+      if (id == '70'){
+	$('.form_tutores').css('display','table-cell');
+	$( "#dialog_educando" ).dialog("open");}
+      else {
+	$('.form_tutores').css('display','none');} });
+
+  {% autoescape off %}
+    var json_tutores = {{json_tutores}};
+    var json_tutores_ids = {{json_tutores_ids}};
+  {% endautoescape %}
+  $( "#tutores_list1" ).autocomplete({
+    source: json_tutores,
+    close: function() {
+	      if (json_tutores.indexOf($( "#tutores_list1" ).val()) > -1)
+	      {
+	      var id_user = json_tutores_ids[json_tutores.indexOf($( "#tutores_list1" ).val())];
+	      $('#gauser_extra_tutor1_selected').val(id_user);
+	      $('#gauser_extra_tutor1_selected').trigger('change');}} });
+  $( "#tutores_list2" ).autocomplete({
+    source: json_tutores,
+    close: function() {
+	      if (json_tutores.indexOf($( "#tutores_list2" ).val()) > -1)
+	      {
+	      var id_user = json_tutores_ids[json_tutores.indexOf($( "#tutores_list2" ).val())];
+	      $('#gauser_extra_tutor2_selected').val(id_user);
+	      $('#gauser_extra_tutor2_selected').trigger('change');}} });
+
+
+  $('#gauser_extra_tutor2_selected').change(function(){
+    var id = $('#gauser_extra_tutor2_selected').val();
+    $.post("/add_datos_tutor/", {id:id},function(data) {
+	$('#id_address').val(data.address);
+	$('#id_postalcode').val(data.postalcode);
+	$('#id_localidad').val(data.localidad);
+	$('#id_provincia').val(data.provincia);
+	$('#id_telfij').val(data.telfij);
+	$('#id_telmov').val(data.telmov);
+	$('#entidad_bancaria').val(data.entidad_bancaria);
+	$('#num_cuenta_bancaria').val(data.num_cuenta_bancaria);
+    }); });
+
+
+{% endblock %}
+
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+<input type="hidden" id="action" name="action" value="select_tipo">
+
+
+<table align="center" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="center"> Rellena los datos del nuevo socio</td></tr></table>
+<table align="CENTER" cellpadding="3" cellspacing="3" width="50%">
+  <tr>
+      <td class="no_form">Selecciona el tipo de socio:</td>
+      <td><select name="tipo_socio" id="tipo_socio"><option value="">---------</option>
+	  {% for tipo in tipos_socio %}<option value="{{tipo.id}}">{{tipo.nombre}}</option>{% endfor %}
+      </select></td>
+  </tr>
+</table>
+
+<div id="datos_table">
+  <hr class="hr1">
+  <table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+  <tr>
+      <td class="form_tutores no_form">Selecciona al primer tutor:</td>
+      <td class="form_tutores"><input placeholder="Para buscar escribe aquí parte del nombre del tutor" id="tutores_list1" style="margin-right:-25px;width:300px;"/><span style="font-size:13px;"><i class="fa fa-search"></i></i></span>
+      <input type="hidden" name="tutor1" id="gauser_extra_tutor1_selected" value="">
+      </td>
+  </tr>
+  <tr>
+      <td class="form_tutores no_form">Selecciona al segundo tutor:</td>
+      <td class="form_tutores"><input placeholder="Para buscar escribe aquí parte del nombre del tutor" id="tutores_list2" style="margin-right:-25px;width:300px;"/><span style="font-size:13px;"><i class="fa fa-search"></i></i></span>
+      <input type="hidden" name="tutor2" id="gauser_extra_tutor2_selected" value="">
+      </td>
+  </tr>
+  {{form1}}
+  {{form2}}
+  </table>
+</div>
+
+</form>
+
+<div id="dialog_educando" title="Aviso">
+  <i class="fa fa-warning"></i></i> Para añadir un nuevo educando es necesario seleccionar al menos un tutor legal. Esto exige que el tutor o tutores legales estén introducidos con anterioridad. Si esto no es así, en el selector "Selecciona tipo de socio", elige primero: "Padre/Madre".
+</div>
+{% endblock %}

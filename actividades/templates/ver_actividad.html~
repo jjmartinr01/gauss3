@@ -1,0 +1,29 @@
+{% load my_templatetags %}
+
+<table width="100%">
+<tr><td colspan="3" align="center" style="font-size:10pt;color:#623090;">
+  <div style="width:100%; float:left;"> 
+    <div style="float:left"><i class="fa fa-calendar-o fa-4x"></i></div>
+    <div style="margin-left:-40px;margin-top:17px;float:left">
+      <div class="mes">{{actividad.fecha_inicio|date:"b"}}</div>
+      <div class="dia">{{actividad.fecha_inicio|date:"j"}}</div>
+    </div>
+    <div style="float:left; margin-left:20px; height:100px; line-height:50px;">{{actividad.actividad_title}}</div>
+  </div>
+    </td></tr>
+    <tr><td> <span class="color2">Responsable:</span> {{actividad.organizador.gauser.get_full_name}} </td><td><span class="color2">Inicio:</span> {{actividad.fecha_inicio}}</td><td><span class="color2">Fin:</span> {{actividad.fecha_fin}}</td></tr>
+    <tr><td> <span class="color2">Salida:</span> {{actividad.lugar_salida}} </td><td><span class="color2">Llegada:</span> {{actividad.lugar_llegada}}</td><td><span class="color2">Fecha límite inscripción:</span> {{actividad.deadline}}</td></tr>
+    <tr><td colspan="3"> <span class="color2">Secciones que participan:</span>
+      {% for seccion in actividad.subentidades.all %}
+	  {% if forloop.last %} y {% elif forloop.first %} {% else %}, {% endif %} {{seccion.nombre}}
+      {% endfor %}
+    </td></tr>
+    <tr></tr>
+    <tr><td colspan="3"> <span class="color2">Descripción:</span> </td></tr>
+    <tr><td colspan="3" style="white-space:normal;"> {% autoescape off %}{{actividad.description}} {% endautoescape %}</td></tr>    
+    {% if request.session.gauser_extra|has_perfiles:'75' and actividad.material_scouters|length > 5 %}
+    <tr><td colspan="3"> <span class="color2">Material a preparar por Scouters:</span> </td></tr>
+    <tr><td colspan="3" style="white-space:normal;"> <div style="margin-left:35px;">{% autoescape off %}{{actividad.material_scouters}} {% endautoescape %} </td></tr>
+    {% endif %}
+    <tr><td colspan="3"> <span class="color2">Material a preparar por los Educandos:</span> </td></tr>
+    <tr><td colspan="3" style="white-space:normal;"> <div style="margin-left:35px;">{% autoescape off %}{{actividad.material_educandos}}{% endautoescape %} </div></td></tr></table>

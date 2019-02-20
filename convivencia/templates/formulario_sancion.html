@@ -1,0 +1,251 @@
+{% load my_templatetags %}
+
+<style>
+    h4 {
+        text-align: center;
+        color: #008CBA;
+    }
+
+    .heading {
+        color: #008cba;
+        font-size: 0.85rem !important;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .heading_number {
+        color: #008cba;
+        font-size: 0.85rem !important;
+        font-weight: bold;
+        text-transform: uppercase;
+        text-align: right;
+    }
+</style>
+{% if gauser_extra|has_permiso:'borra_sanciones_tipificadas' %}
+    <div class="row">
+        <div class="large-9 medium-6 small-3 columns">
+            &nbsp;
+        </div>
+        <div class="large-3 medium-6 small-9 columns" style="text-align: right;">
+            <a class="button del_sancion" data-sancion="{{ sancion.id }}"><i class="fa fa-trash-o"></i> Borrar</a>
+        </div>
+    </div>
+{% endif %}
+<div class="row">
+    <div class="large-4 columns">
+        {% if gauser_extra|has_permiso:'edita_sanciones_tipificadas' %}
+            <label title="Tipos de sanciones en función de la conducta contraria">Tipo
+                <select id="id_tipo" name="tipo" data-sancion="{{ sancion.id }}">
+                    <option value="CNC" {% if sancion.tipo == 'CNC' %}selected{% endif %}>Contraria a las normas de
+                        convivencia
+                    </option>
+                    <option value="GPC" {% if sancion.tipo == 'GPC' %}selected{% endif %}>Gravemente perjudical para la
+                        convivencia
+                    </option>
+                    <option value="ROF" {% if sancion.tipo == 'ROF' %}selected{% endif %}>Contraria a las normas del
+                        centro educativo
+                    </option>
+                </select>
+            </label>
+        {% else %}
+            <label title="Tipos de sanciones en función de la conducta contraria">Tipo
+            </label>
+            {{ sancion.get_tipo_display }}
+        {% endif %}
+    </div>
+    <div class="large-6 columns">
+        {% if gauser_extra|has_permiso:'edita_sanciones_tipificadas' %}
+            <label>Normativa en la que se apoya
+                <input id="id_norma_s" maxlength="200" name="norma_s" type="text"
+                       data-sancion="{{ sancion.id }}" value="{{ sancion.norma }}">
+            </label>
+        {% else %}
+            <label>Normativa en la que se apoya
+            </label>
+            {{ sancion.norma }}
+        {% endif %}
+    </div>
+    <div class="large-2 columns">
+        {% if gauser_extra|has_permiso:'edita_sanciones_tipificadas' %}
+            <label>Conlleva expulsión</label>
+            <a class="conlleva_expulsion" data-sancion="{{ sancion.id }}" id="conlleva_expulsion{{ sancion.id }}">
+                {% if sancion.expulsion %}Sí{% else %}No{% endif %}</a>
+        {% else %}
+            <label>Conlleva expulsión
+            </label>
+            {% if sancion.expulsion %}Sí{% else %}No{% endif %}
+        {% endif %}
+    </div>
+</div>
+<div class="row">
+    <div class="large-12 columns">
+        {% if gauser_extra|has_permiso:'edita_sanciones_tipificadas' %}
+            <label>Define la sancion
+                <textarea id="id_sancion" name="sancion" rows="4"
+                          data-sancion="{{ sancion.id }}">{{ sancion.sancion }}</textarea>
+            </label>
+        {% else %}
+            <label>Define la sancion
+            </label>
+            {{ sancion.sancion }}
+        {% endif %}
+    </div>
+</div>
+{#<div class="row">#}
+{#    <div class="large-12 columns">#}
+{#        <label>Cargos que pueden imponer esta sanción#}
+{#            {% if gauser_extra|has_permiso:'edita_sanciones_tipificadas' %}#}
+{#                <select id="cargos_sancion{{ sancion.id }}" multiple data-sancion="{{ sancion.id }}">#}
+{#                    {% for cargo in cargos %}#}
+{#                        <option value="{{ cargo.id }}"#}
+{#                                {% if cargo in sancion.cargos.all %}selected{% endif %}>{{ cargo.cargo }}</option>#}
+{#                    {% endfor %}#}
+{#                </select>#}
+{#            {% else %}#}
+{#                <span style="font-weight: 800;">{% for cargo in sancion.cargos.all %}#}
+{#                    {{ cargo.cargo }}, {% endfor %}</span>#}
+{#            {% endif %}#}
+{#        </label>#}
+{#    </div>#}
+{#</div>#}
+
+<div class="row">
+    <div class="large-12 columns">
+        <label><b>Cargo necesario para imponer esta sanción:</b><br>
+            {% if gauser_extra|has_permiso:'edita_sanciones_tipificadas' %}
+                <input type="radio" class="permiso_sancion" name="permiso_sancion" value="sancionar_nivel_director"
+                       data-id="{{ sancion.id }}"
+                       {% if sancion.permiso.code_nombre == 'sancionar_nivel_director' %}checked{% endif %}> Director
+                &nbsp;&nbsp;&nbsp;
+                <input type="radio" class="permiso_sancion" name="permiso_sancion" value="sancionar_nivel_jefe_estudios"
+                       data-id="{{ sancion.id }}"
+                       {% if sancion.permiso.code_nombre == 'sancionar_nivel_jefe_estudios' %}checked{% endif %}> Jefe
+                de estudios &nbsp;&nbsp;&nbsp;
+                <input type="radio" class="permiso_sancion" name="permiso_sancion" value="sancionar_nivel_tutor"
+                       data-id="{{ sancion.id }}"
+                       {% if sancion.permiso.code_nombre == 'sancionar_nivel_tutor' %}checked{% endif %}> Tutor &nbsp;
+                &nbsp;&nbsp;
+                <input type="radio" class="permiso_sancion" name="permiso_sancion" value="sancionar_nivel_docente"
+                       data-id="{{ sancion.id }}"
+                       {% if sancion.permiso.code_nombre == 'sancionar_nivel_docente' %}checked{% endif %}> Profesor
+            {% else %}
+                <span style="font-weight: 800;">{{ sancion.permiso.nombre }}</span>
+            {% endif %}
+        </label>
+    </div>
+</div>
+
+<script>
+    {% if gauser_extra|has_permiso:'borra_sanciones_tipificadas' %}
+        $('#Contenido').on('click', '.del_sancion', function (e) {
+            e.preventDefault();
+            var sancion = $(this).data('sancion');
+            $.post("/gestionar_conductas_ajax/", {action: 'del_sancion', sancion: sancion}, function (data) {
+                if (data['ok']) {
+                    $('#accordion_s' + data['sancion']).remove();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+
+            });
+        });
+    {% endif %}
+
+    {% if gauser_extra|has_permiso:'edita_sanciones_tipificadas' %}
+        $('#Contenido').on('click', '.conlleva_expulsion', function () {
+            var sancion = $(this).data('sancion');
+            $.post("/gestionar_conductas_ajax/", {action: 'conlleva_expulsion', 'sancion': sancion}, function (data) {
+                if (data['ok']) {
+                    $('#conlleva_expulsion' + data['sancion']).text(data['texto']);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#Contenido').on('keyup', '#id_sancion', function () {
+            var texto = $(this).val();
+            var sancion = $(this).data('sancion');
+            $.post("/gestionar_conductas_ajax/", {
+                action: 'change_texto_sancion',
+                sancion: sancion,
+                texto: texto
+            }, function (data) {
+                if (data['ok']) {
+                    $('#span_sancion' + sancion).html(data['texto']);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#Contenido').on('change', '#id_tipo', function () {
+            var tipo = $(this).val();
+            var sancion = $(this).data('sancion');
+            $.post("/gestionar_conductas_ajax/", {
+                action: 'change_tipo_sancion',
+                sancion: sancion,
+                tipo: tipo
+            }, function (data) {
+                if (data['ok']) {
+                    $('#span_tipo_s' + sancion).html(data['tipo']);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#Contenido').on('keyup', '#id_norma_s', function () {
+            var texto = $(this).val();
+            var sancion = $(this).data('sancion');
+            $.post("/gestionar_conductas_ajax/", {
+                action: 'change_texto_norma_s',
+                sancion: sancion,
+                texto: texto
+            }, function (data) {
+                if (data['ok']) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $("#cargos_sancion{{ sancion.id }}").select2();
+        $("body").on('change', '#cargos_sancion{{ sancion.id }}', function () {
+            var sancion = $(this).data('sancion');
+            var cargos = new Array();
+            $('#cargos_sancion{{ sancion.id }}').each(function () {
+                cargos.push($(this).val());
+            });
+            $.post("/gestionar_conductas_ajax/", {
+                action: 'change_cargos_s',
+                sancion: sancion,
+                cargos: cargos
+            }, function (data) {
+                if (data['ok']) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+    {% endif %}
+
+    {% if gauser_extra|has_permiso:'edita_sanciones_tipificadas' %}
+        $('#Contenido').on('change', '.permiso_sancion', function () {
+            var permiso = $(this).val();
+            var sancion = $(this).data('id');
+            $.post("/gestionar_conductas_ajax/", {
+                permiso: permiso, action: 'change_permiso_sancion',
+                sancion: sancion
+            }, function (data) {
+                $("#update_ok").show().delay(1500).fadeOut();
+            }, 'json');
+        });
+    {% endif %}
+</script>

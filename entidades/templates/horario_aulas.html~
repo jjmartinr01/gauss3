@@ -1,0 +1,63 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block ready %}
+  $('#aceptar').click(function () {  $('#action').val('aceptar'); document.{{formname}}.submit(); });
+  $('#volver').click(function () {  javascript:history.go(-1); });
+  $('#aula').change(function () {
+	  $('#aula_selected').val($('#aula').val());
+	  document.{{formname}}.submit();
+  });
+  
+{% endblock %}
+
+
+{% block navegar %}
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <img id="volver" style="rondar:pointer;" border="0" align="right" alt="Atrás" title="Atrás" src="/static/images/volver.gif">
+  <img id="aceptar" style="rondar:pointer;" border="0" align="right" alt="Aceptar" title="Aceptar" src="/static/images/aceptar.gif">
+  Horario de aulas: <span class="info">{{aula_seleccionada}}</span>
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <div style="float:right;">
+    <select id="aula" name="aula">
+    <option value="{{aula_seleccionada}}">{{aula_seleccionada}}</option>
+    <option value="libres">Aulas libres</option>
+    {% for aula in aulas %}
+      <option value="{{aula}}"> {{aula}} </option>
+    {% endfor %}
+    </select>
+  </div>
+{% endblock %}
+
+
+
+{% block contenido %}
+
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+<input type="hidden" id="aula_selected" name="aula_selected" value=""/>
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+<tr> <td></td><td style="border: 1px solid #BFDDCB;" class="columnaFondo">Lunes</td><td style="border: 1px solid #BFDDCB;" class="columnaFondo">Martes</td><td style="border: 1px solid #BFDDCB;" class="columnaFondo">Miércoles</td><td style="border: 1px solid #BFDDCB;" class="columnaFondo">Jueves</td><td style="border: 1px solid #BFDDCB;" class="columnaFondo">Viernes</td>
+{%for horas in horario%}
+<tr>
+{% for sesion in horas %}
+  {% if sesion|length > 4 %}
+    <td title="{{sesion.2}}" style="border: 1px solid #BFDDCB;max-width:100px;white-space:normal;" class="columnaFondo">
+      
+<!-- 	<p class="info">{{aula}}</p> -->
+	<p >{{sesion.0}}</p><p class="info">{{sesion.1}}</p><p>{{sesion.3}}</p>
+      
+    </td>
+  {% else %}
+    <td title="{{sesion.2}}" style="border: 1px solid #BFDDCB;max-width:100px;white-space:normal;" class="columnaFondo"><p >{{sesion.0}}</p><p class="info">{{sesion.1}}</p><p>{{sesion.3}}</p></td>
+  {% endif %}
+{% endfor %}
+</tr>
+{%endfor%}
+</table>
+</form>
+
+{% endblock %}

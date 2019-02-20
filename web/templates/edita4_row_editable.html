@@ -1,0 +1,93 @@
+<div class="row editable row_contents" data-editable="row{{ row.id }}" data-id="{{ row.id }}"
+     style="position: relative;" id="rowweb{{ row.id }}">
+    {% if row.hr_before %}
+        <div class="columns large-12">
+            <hr>
+        </div>
+    {% endif %}
+    <div id="contents_div{{ row.id }}">
+        {% for cd in row.contents_div.all %}
+{#            <div id="cd_editable{{ row.id }}___{{ cd.orden }}" class="cd_editable">#}
+            <div id="cd_editable{{ cd.id }}" class="cd_editable">
+                {% include "edita5_cd_editable.html" with cd=cd row=row %}
+            </div>
+        {% endfor %}
+    </div>
+    <div class="pencil_editar_row" data-dropdown="drop_row{{ row.id }}" id="row{{ row.id }}" data-id="{{ row.id }}"
+         aria-controls="drop_row{{ row.id }}" aria-expanded="false" {% if row.last %}data-options="align:top"{% endif %}>
+        <span class="fa-stack fa-2x">
+            <i class="fa fa-circle fa-stack-2x" style="color:green;"></i>
+            <i class="fa fa-pencil fa-stack-1x fa-inverse"></i>
+        </span>
+    </div>
+    {% if row.hr_after %}
+        <div class="columns large-12">
+            <hr>
+        </div>{% endif %}
+</div>
+
+<ul id="drop_row{{ row.id }}" class="f-dropdown medium" data-dropdown-content aria-hidden="true"
+    tabindex="-1">
+    {% if row.hr_before %}
+        <li><a class="row_options" data-action="hr_before" data-id="{{ row.id }}" data-tipo="{{ row.tipo }}">
+            <i style="text-decoration: overline;" class="fa fa-ellipsis-h fa-fw"></i> Borra la línea superior</a></li>
+    {% else %}
+        <li><a class="row_options" data-action="hr_before" data-id="{{ row.id }}" data-tipo="{{ row.tipo }}">
+            <i style="text-decoration: overline;" class="fa fa-ellipsis-h fa-fw"></i> Inserta línea superior</a></li>
+    {% endif %}
+    {% if row.hr_after %}
+        <li><a class="row_options" data-action="hr_after" data-id="{{ row.id }}" data-tipo="{{ row.tipo }}">
+            <i style="text-decoration: underline;" class="fa fa-ellipsis-h fa-fw"></i> Borra línea posterior</a></li>
+    {% else %}
+        <li><a class="row_options" data-action="hr_after" data-id="{{ row.id }}" data-tipo="{{ row.tipo }}">
+            <i style="text-decoration: underline;" class="fa fa-ellipsis-h fa-fw"></i> Inserta línea posterior</a>
+        </li>
+    {% endif %}
+    {% if not row.last %}
+        <li><a class="row_options" data-action="move_row_down" data-id="{{ row.id }}"
+               data-tipo="{{ row.tipo }}">
+            <i class="fa fa-long-arrow-down fa-fw"></i> Mover</a></li>
+    {% endif %}
+    {% if not row.first %}
+        <li><a class="row_options" data-action="move_row_up" data-id="{{ row.id }}"
+               data-tipo="{{ row.tipo }}">
+            <i class="fa fa-long-arrow-up fa-fw"></i> Mover</a></li>
+    {% endif %}
+    {% if not row.tipo == 'CABECERA' %}
+        <li><a class="row_options" data-action="convierte_row" data-id="{{ row.id }}"
+               data-tipo="CABECERA">
+            <i class="fa fa-header fa-fw"></i> Convertir en cabecera</a>
+        </li>
+    {% endif %}
+    {% if not row.tipo == 'PIE' %}
+        <li><a class="row_options" data-action="convierte_row" data-id="{{ row.id }}"
+               data-tipo="PIE">
+            <i class="fa fa-minus fa-fw"></i> Convertir en pie de página</a>
+        </li>
+    {% endif %}
+    {% if not row.tipo == 'NORMAL' %}
+        <li><a class="row_options" data-action="convierte_row" data-id="{{ row.id }}"
+               data-tipo="NORMAL">
+            <i class="fa fa-align-justify
+             fa-fw"></i> Convertir en fila normal</a>
+        </li>
+    {% endif %}
+    {% if not row.tipo == 'IZQUIERDA' %}
+        <li><a class="row_options" data-action="convierte_row" data-id="{{ row.id }}"
+               data-tipo="IZQUIERDA">
+            <i class="fa fa-outdent fa-fw"></i> Convertir en fila de lateral izquierdo</a>
+        </li>
+    {% endif %}
+    {% if not row.tipo == 'DERECHA' %}
+        <li><a class="row_options" data-action="convierte_row" data-id="{{ row.id }}"
+               data-tipo="DERECHA">
+            <i class="fa fa-indent fa-fw"></i> Convertir en fila de lateral derecho</a>
+        </li>
+    {% endif %}
+    {% if not row.contents_div.all.0.tipo in 'tipo_form_mail tipo_footer tipo_title_links' %}
+        <li><a class="row_options" data-action="add_cd" data-id="{{ row.id }}" data-tipo="{{ row.tipo }}">
+            <i class="fa fa-plus fa-fw"></i> Añadir elemento a la fila</a></li>
+    {% endif %}
+    <li><a class="row_options" data-action="delete_row" data-id="{{ row.id }}" data-tipo="{{ row.tipo }}">
+        <i class="fa fa-trash-o fa-fw"></i> Borrar fila</a></li>
+</ul>

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        .div_documentos {
+            display: none;
+        }
+    </style>
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="derecho" name="derecho" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Derechos de ARCO (Acceso, Rectificación, Cancelación
+                y Oposición)</strong></h4>
+        </div>
+
+        <div class="">
+            <h5 style="text-align: center;color: #008CBA;"><strong> Puedes hacer click sobre alguna de las siguientes
+                acciones</strong></h5>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12 derechos" id="DEAC">
+                <label data-tooltip aria-haspopup="true" class="has-tip" title="<p>El derecho de acceso es el
+                    derecho del afectado a obtener información sobre si sus propios
+                    datos de carácter personal están siendo objeto de tratamiento, la finalidad del tratamiento
+                    que, en su caso, se esté realizando, así como la información disponible sobre el origen de
+                    dichos datos y las comunicaciones realizadas o previstas de los mismos.</p>">
+                    <b><i class="fa fa-hand-o-right"></i> Ejercer el derecho de acceso</b>
+                </label>
+
+                <div class="div_documentos panel" id="div_DEAC">{% include "derecho_acceso.html" %}</div>
+            </div>
+        </div>
+        <p>&nbsp;</p>
+
+        <div class="row">
+            <div class="columns large-12 derechos" id="DERE">
+                <label data-tooltip aria-haspopup="true" class="has-tip" title="<p>El derecho de rectificación es el
+                    derecho del afectado a que se modifiquen los
+                    datos que resulten ser inexactos o incompletos, art. 32 RLOPD.</p>"><b>
+                    <i class="fa fa-hand-o-right"></i> Ejercer el derecho de rectificación</b>
+                </label>
+
+                <div class="div_documentos panel" id="div_DERE">{% include "derecho_rectificacion.html" %}</div>
+            </div>
+        </div>
+        <p>&nbsp;</p>
+
+        <div class="row">
+            <div class="columns large-12 derechos" id="DECA">
+                <label data-tooltip aria-haspopup="true" class="has-tip" title="<p>El ejercicio del derecho de cancelación
+                    dará lugar a que se supriman los datos que resulten ser inadecuados o excesivos, sin perjuicio del
+                    deber de bloqueo conforme al Reglamento de desarrollo de la LOPD. En los supuestos en que el
+                    interesado invoque el ejercicio del derecho de cancelación para revocar el consentimiento
+                    previamente prestado, se estará a lo dispuesto en la Ley Orgánica 15/1999 de Protección de Datos,
+                    de 13 de diciembre y en el Reglamento de desarrollo.</p>"><b>
+                    <i class="fa fa-hand-o-right"></i> Ejercer el derecho de cancelación</b>
+                </label>
+
+                <div class="div_documentos panel" id="div_DECA">{% include "derecho_cancelacion.html" %}</div>
+            </div>
+        </div>
+        <p>&nbsp;</p>
+
+        <div class="row">
+            <div class="columns large-12 derechos" id="DEOP">
+                <label data-tooltip aria-haspopup="true" class="has-tip"
+                       title='<p class="wysiwyg-text-align-justify">El derecho de oposición es el derecho del afectado
+                       a que no se lleve a cabo el     tratamiento de sus datos de carácter personal o se cese en el
+                       mismo en los siguientes supuestos:</p> <ol> <li><p class="wysiwyg-text-align-justify">Cuando
+                       no sea necesario su consentimiento para el tratamiento, como consecuencia de la
+                       concurrencia de un motivo legítimo y fundado, referido a su concreta situación personal,
+                       que lo justifique, siempre que una Ley no disponga lo contrario.</p></li>
+                       <li><p class="wysiwyg-text-align-justify">Cuando el tratamiento tenga por finalidad
+                       la adopción de una decisión referida al afectado y basada únicamente en un tratamiento
+                       automatizado de sus datos  de carácter personal, en los términos previstos en el artículo
+                       36 del Reglamento de desarrollo de LOPD.</p></li> </ol>'><b>
+                    <i class="fa fa-hand-o-right"></i> Ejercer el derecho de oposición</b>
+                </label>
+
+                <div class="div_documentos panel" id="div_DEOP">{% include "derecho_oposicion.html" %}</div>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script src="/static/gauss_fileupload/gauss_FileUpload.js"></script>
+
+    <script>
+        // En derecho_rectificacion.html existe la posibilidad de adjuntar ficheros. Las dos siguientes líneas son
+        // para ello:
+        $('#subir_ficheros').gaussFileUpload({
+            tag_a: '<i class="fa fa-hand-o-up"></i> Pulsa aquí para cargar archivos/documentos que verifiquen la rectificación solicitada'});
+
+        $('.derechos').click(function () {
+            var tipo = $(this).attr('id');
+            $('#derecho').val(tipo);
+            var div_display_status = $('#div_' + tipo).css('display');
+            $('.div_documentos').hide();
+            $('#div_' + tipo).show();
+            habilita(['s_check', 's_file-pdf-o']);
+            if (div_display_status == 'none') {
+                location.hash = "#" + tipo;
+            }
+            if (tipo == 'DERE'){
+                var editor1 = wysihtmleditor('datos_rectificar', {});
+            }
+        });
+
+        $('#check_sign').click(function (event) {
+            event.preventDefault();
+            $('#action').val('aceptar');
+            if (!($(this).hasClass('disabled'))) {
+                document.{{formname}}.submit();
+            }
+        });
+
+
+    </script>
+{% endblock %}

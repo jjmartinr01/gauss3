@@ -1,0 +1,17 @@
+<p>Se ha creado el usuario <strong>{{ g.get_full_name }}</strong></p>
+<p>Recuerda que deberías asignarle las secciones o departamentos a los que pertenece.</p>
+<p>De igual forma, si tuviera cargos en la entidad, es necesario asignarlos.</p>
+{% if g1 and g2 %}
+    <p>Se han creado dos usuarios (tutores legales) asociados con {{ g.get_full_name }}:
+        {{ g1.get_full_name }} y {{ g2.get_full_name }}.</p>
+    <p>Si pertenecieran a departamentos o tuvieran cargos, estos están pendientes de ser asignados.</p>
+{% elif g1 %}
+    <p>Se ha creado un usuario (tutor legal) asociado con {{ g.get_full_name }}:
+        {{ g1.get_full_name }}.</p>
+    <p>Si perteneciera a departamentos o tuviera cargos, estos están pendientes de ser asignados.</p>
+{% elif g2 %}
+    <p>Se ha creado un usuario (tutor legal) asociado con {{ g.get_full_name }}:
+        {{ g2.get_full_name }}.</p>
+    <p>Si perteneciera a departamentos o tuviera cargos, estos están pendientes de ser asignados.</p>
+{% endif %}
+

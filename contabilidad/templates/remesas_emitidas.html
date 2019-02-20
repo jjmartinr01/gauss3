@@ -1,0 +1,37 @@
+{% load my_templatetags %}
+<div class="columns large-12">
+    {% if  politica|total_remesas_emitidas > 0 %}
+        <b>Remesas emitidas:</b>
+    {% else %}
+        <b>No se ha emitido ninguna remesa</b>
+    {% endif %}
+</div>
+{% for remesa in politica|remesas_emitidas %}
+    <div class="row">
+        <div class="columns large-4">
+            {{ remesa.creado }}
+        </div>
+        <div class="columns large-3">
+            <b>SEPA:</b>&nbsp;<a class="descarga_remesa" data-id="{{ remesa.id }}">
+            <i class="fa fa-file-text-o"></i> (descarga)</a>
+        </div>
+        <div class="columns large-3">
+            <b>EXCEL:</b>&nbsp;<a class="descarga_excel" data-id="{{ remesa.id }}">
+            <i class="fa fa-file-excel-o"></i> (descarga)</a>
+
+        </div>
+        <div class="columns large-2">
+            <a class="borrar_remesa_emitida" data-id="{{ remesa.id }}" data-politica="{{ remesa.politica.id }}">
+                <i class="fa fa-trash"></i>&nbsp; Borrar</a>
+
+        </div>
+        <hr style="border: 0; height: 1px;text-align: center; background-image: -moz-linear-gradient(left, #fff, #eee, #fff);">
+    </div>
+{% endfor %}
+{% if politica|total_remesas_emitidas > 3 %}
+    <div class="row">
+        <div class="columns large-12" style="text-align: center;">
+            <a class="ver_todas_remesas_emitidas">Ver todas las remesas emitidas</a>
+        </div>
+    </div>
+{% endif %}

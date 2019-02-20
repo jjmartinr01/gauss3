@@ -1,0 +1,49 @@
+
+<style>
+.texto_checkboxes:hover {color:#E76123;}
+</style>
+
+<script>
+{% if borrar %}
+  $( "#remove_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Borrar la reunion');
+{% endif %}
+
+$.cleditor.defaultOptions.controls = "bold italic underline | bullets numbering";
+editores = $("textarea").cleditor({width:"90%", height:"150"});
+
+$( "#id_hora_fin" ).timepicker({
+	dateFormat: "dd/mm/yy",
+	dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	firstDay: 1,
+	hourText:"Hora",
+	minuteText:"Minutos",
+	timeText:"Salida:",
+	monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	});
+
+$( "#id_hora_inicio" ).datetimepicker({
+	dateFormat: "dd/mm/yy",
+	dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	firstDay: 1,
+	hourText:"Hora",
+	minuteText:"Minutos",
+	timeText:"Llegada:",
+	monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	});
+
+$( "#id_fecha" ).datepicker({
+	dateFormat: "dd/mm/yy",
+	dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	firstDay: 1,
+	monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	});
+
+</script>
+
+
+<table>
+{{form}}
+</table>

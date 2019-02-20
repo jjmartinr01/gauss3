@@ -1,0 +1,15 @@
+<dd class="accordion-navigation" id="accordion{{ departamento.id }}"
+    style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+    <a href="#panel{{ departamento.id }}">
+        <i id="circle{{ departamento.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <span id="span_nombre{{ departamento.id }}">{{ departamento.nombre }}</span>
+        <span class="gris">(</span><span id="span_edad_min{{ departamento.id }}"
+                                         class="gris">{{ departamento.edad_min }}</span>
+        <span class="gris">&#8804; <i class="fa fa-male"></i> &#8804;</span>
+        <span id="span_edad_max{{ departamento.id }}"
+              class="gris">{{ departamento.edad_max }}</span><span class="gris">)</span>
+    </a>
+
+    <div id="panel{{ departamento.id }}" class="content accordion-departamento" data-id="{{ departamento.id }}">
+    </div>
+</dd>

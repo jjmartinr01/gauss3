@@ -1,0 +1,322 @@
+{% extends "base_select2-4.html" %}
+{% load entidades_extras %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="informe_id" name="informe_id" value="">
+
+        <h4 style="text-align: center;color: #008CBA;"><strong>Informes para encomendar tareas</strong></h4>
+
+        <div class="row">
+            <div class="columns large-12">
+                <label>Busca la persona a la que quieres encomendar tareas
+                    <select id="select_usuario">
+                    </select>
+                </label>
+            </div>
+        </div>
+        <br>
+        {#        {% if g_e|has_permiso:'solicita_informes_tareas' %}#}
+        <div class="row" style="display: none;" id="button_crear_informe">
+            <div class="columns large-12"><label>Si deseas solicitar un informe para <span class="usuario_nombre">
+            </span>solo tienes que pulsar en el siguiente botón:</label>
+                <a class="button" data-id="" id="id_button_crear_informe">Solicitar nuevo informe
+                    para <span class="usuario_nombre"></span></a>
+            </div>
+        </div>
+        {#        {% endif %}#}
+        <br><br>
+        <dl class="accordion" data-accordion id="list_informes_tareas"></dl>
+        {% with informes=informes_a_rellenar %}
+            <dl class="accordion" data-accordion id="list_informes_a_rellenar">
+                {% if informes|length > 0 %}
+                    {% include 'informes_tareas_accordion.html' %}
+                {% endif %}
+            </dl>
+        {% endwith %}
+        {% with informes=informes_solicitados %}
+            <dl class="accordion" data-accordion id="list_informes_solicitados">
+                {% if informes|length > 0 %}
+                    {% include 'informes_tareas_accordion.html' %}
+                {% endif %}
+            </dl>
+        {% endwith %}
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script type="application/javascript">
+        var usuario_id;
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-informe_tareas')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/ajax_informe_tareas/", {action: 'open_accordion', informe: id},
+                                function (data) {
+                                    $('#panel' + id).html(data);
+                                    inicializar_select_usuarios_destino();
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#select_usuario').select2({
+            placeholder: "Escribe parte del nombre para buscar",
+            allowClear: true,
+            ajax: {
+                url: "/ajax_informe_tareas/",
+                type: 'POST',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    var ges_informes_abiertos = [];
+                    $('.ges_informes_abiertos').each(function () {
+                        ges_informes_abiertos.push($(this).val());
+                    });
+                    return {action: 'buscar_usuario', q: params.term, ges_informes_abiertos: ges_informes_abiertos}
+                },
+                processResults: function (data, page) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            }, // let our custom formatter work
+            minimumInputLength: 3,
+            language: {
+                inputTooShort: function () {
+                    return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                }
+            }
+        });
+
+
+        $('#select_usuario').change(function (e) {
+            e.preventDefault();
+            usuario_id = $(this).val();
+            var ges_informes_cerrados = [];
+            $('.ges_informes_cerrados').each(function () {
+                ges_informes_cerrados.push($(this).val());
+            });
+            $.post("/ajax_informe_tareas/", {
+                    action: 'get_informes_usuario',
+                    usuario: usuario_id,
+                    ges_informes_cerrados: ges_informes_cerrados
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('.usuario_nombre').html(data.usuario_nombre);
+                        if (data.crea_informe) {
+                            $('#button_crear_informe').show();
+                        }
+                        if (data.html) {
+                            $('#list_informes_tareas').prepend(data.html);
+                        } else {
+                            var texto = 'No existen informes o no tienes permiso para verlos';
+                            var title = '<i class="fa fa-warning"></i> No existen informes';
+                            show_mensajes({texto: texto, title: title});
+                        }
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+        });
+
+        $('body').on('change', '.deadline', function () {
+            var informe = $(this).data('id');
+            var deadline = $(this).val();
+            $.post("/ajax_informe_tareas/", {action: 'deadline', informe: informe, deadline: deadline},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        if (data.estado == 'closed') {
+                            $('#estado' + data.inf).removeClass('fa-unlock').addClass('fa-lock').css('color', 'red');
+                        } else {
+                            $('#estado' + data.inf).removeClass('fa-lock').addClass('fa-unlock').css('color', 'green');
+                        }
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        $('body').on('click', '.del_informe_tareas', function (e) {
+            e.preventDefault();
+            informe_del = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> Borrado de informe',
+                texto: 'Si aceptas, el informe se eliminará completamente de la base de datos.',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/ajax_informe_tareas/", {action: 'del_informe_tareas', informe: informe_del},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#accordion' + informe_del).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            }, 'json');
+                    }
+                }
+            });
+        });
+        $('body').on('keyup', '.texto_solicitud', function () {
+            var informe = $(this).data('informe');
+            var texto = $(this).val();
+            $.post("/ajax_informe_tareas/", {action: 'texto_solicitud', informe: informe, texto: texto},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.aviso_informe_tareas', function (e) {
+            e.preventDefault();
+            var informe = $(this).data('id');
+            $.post("/ajax_informe_tareas/", {action: 'aviso_informe_tareas', informe: informe},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+        {#        {% if g_e|has_permiso:'solicita_informes_tareas' %}#}
+        $('body').on('click', '#id_button_crear_informe', function (e) {
+            e.preventDefault();
+            $.post("/ajax_informe_tareas/", {
+                    action: 'solicitar_informe',
+                    usuario_id: usuario_id
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#button_crear_informe').hide();
+                        $('#list_informes_tareas').prepend(data.html);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        {#        {% endif %}#}
+
+
+        function inicializar_select_usuarios_destino() {
+            $('.usuarios_destino').select2({
+                placeholder: "Escribe parte del nombre para buscar",
+                allowClear: true,
+                ajax: {
+                    url: "/ajax_informe_tareas/",
+                    type: 'POST',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {action: 'buscar_usuarios_destino', q: params.term}
+                    },
+                    processResults: function (data, page) {
+                        return {
+                            results: $.map(data, function (item) {
+                                return {
+                                    text: item.text,
+                                    id: item.id
+                                }
+                            })
+                        };
+                    },
+                    cache: true
+                },
+                escapeMarkup: function (markup) {
+                    return markup;
+                }, // let our custom formatter work
+                minimumInputLength: 3,
+                language: {
+                    inputTooShort: function () {
+                        return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                    }
+                }
+            });
+        }
+
+        $('body').on('change', '.usuarios_destino', function (e) {
+            e.preventDefault();
+            var usuarios_destino = $(this).val();
+            var informe = $(this).data('informe');
+            var usuario_select = $(this);
+            $.post("/ajax_informe_tareas/", {
+                    action: 'mod_usuarios_destino', usuarios: usuarios_destino, informe: informe
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#n_usuarios_destino' + informe).html(data.n);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+        });
+
+
+        $('body').on('click', '.remove_file', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/ajax_informe_tareas/", {action: 'remove_file', id: id},
+                function (data) {
+                    if (data.ok) {
+                        $('.fichero' + data.id).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        {# ####################################################################### #}
+        {% if g_e|has_permiso:'solicita_informes_tareas' %}
+
+
+            $('body').on('click', '.pdf_informe_tareas', function (e) {
+                e.preventDefault();
+                $('#informe_id').val($(this).data('id'));
+                $('#action').val('pdf_informe_tareas');
+                document.informe_tareas.submit();
+            });
+
+        {% endif %}
+
+    </script>
+
+{% endblock %}

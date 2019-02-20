@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="GAUSS slider for actividades extraescolares">
+    <meta name="author" content="Juan José Martín Romero">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="shortcut icon" type="image/x-icon" href="/static/images/favicon.png">
+    <link rel="stylesheet" href="/static/css/style.css"/>
+    <link rel="stylesheet" href="/static/foundation-5.5.3/css/foundation.css"/>
+    <link rel="stylesheet" href="/static/foundation-icons/foundation-icons/foundation-icons.css"/>
+    <link rel="stylesheet" href="/static/font-awesome-4.7.0/css/font-awesome.min.css"/>
+    <title>GAUSS slider for actividades extraescolares</title>
+    <style>
+        h2 {
+            color: #008cba;
+            font-variant: small-caps;
+            text-transform: capitalize;
+        }
+
+        img {
+            height: 600px;
+            margin-left: auto;
+            margin-right: auto
+        }
+    </style>
+</head>
+<body>
+{#<div class="row">#}
+{#    <div class="columns large-12">#}
+{#        <ul class="example-orbit-content" data-orbit>#}
+{#            {% for actividad in actividades %}#}
+{#                {% if actividad.file_actividad_set.all|length == 0 %}#}
+{#                    <li data-orbit-slide="headline-{{ actividad.id }}">#}
+{#                        <div style="margin-top: 15%;text-align: center;">#}
+{#                            <h2>{{ actividad.actividad_title }} <span#}
+{#                                    style="color:red;font-size: smaller;"> {{ actividad.fecha_inicio|date:"d/m/Y" }}</span>#}
+{#                            </h2>#}
+{#                            <h3>{% autoescape off %}#}
+{#                                {{ actividad.description|truncatewords_html:50 }}{% endautoescape %}</h3>#}
+{#                            <h4>{{ actividad.nombre_grupos_incluidos|join:" - " }}</h4>#}
+{#                        </div>#}
+{#                    </li>#}
+{#                {% else %}#}
+{#                    {% for fichero in actividad.file_actividad_set.all %}#}
+{#                        <li data-orbit-slide="headline-{{ actividad.id }}-{{ fichero.id }}">#}
+{#                            <div style="text-align: center;">#}
+{#                                <h2>{{ actividad.actividad_title }} <span#}
+{#                                        style="color:red;font-size: smaller;"> {{ actividad.fecha_inicio|date:"d/m/Y" }}</span>#}
+{#                                </h2>#}
+{#                                <h3>{% autoescape off %}#}
+{#                                    {{ actividad.description|truncatewords_html:30 }}{% endautoescape %}</h3>#}
+{#                                <img src="/{{ fichero.fichero.url }}" alt="Fichero {{ fichero.id }}"/>#}
+{#                            </div>#}
+{#                        </li>#}
+{#                    {% endfor %}#}
+{#                {% endif %}#}
+{#            {% endfor %}#}
+{#        </ul>#}
+{#    </div>#}
+{#</div>#}
+
+<div class="row">
+    <div class="columns large-12">
+        <ul class="example-orbit-content" data-orbit>
+            {% for actividad in actividades %}
+                {% if actividad.file_actividad_set.all|length == 0 %}
+                    <li data-orbit-slide="headline-{{ actividad.id }}">
+                        <div style="margin-top: 15%;text-align: center;">
+                            <h2>{{ actividad.actividad_title }} <span
+                                    style="color:red;font-size: smaller;"> {{ actividad.fecha_inicio|date:"d/m/Y" }}</span>
+                            </h2>
+                            <h3>{% autoescape off %}
+                                {{ actividad.description|truncatewords_html:50 }}{% endautoescape %}</h3>
+                            <h4>{{ actividad.nombre_grupos_incluidos|join:" - " }}</h4>
+                        </div>
+                    </li>
+                {% else %}
+                    {% for fichero in actividad.file_actividad_set.all %}
+                        <li data-orbit-slide="headline-{{ actividad.id }}-{{ fichero.id }}">
+                            <div style="text-align: center;">
+                                <h2>{{ actividad.actividad_title }} <span
+                                        style="color:red;font-size: smaller;"> {{ actividad.fecha_inicio|date:"d/m/Y" }}</span>
+                                </h2>
+                                <h3>{% autoescape off %}
+                                    {{ actividad.description|truncatewords_html:30 }}{% endautoescape %}</h3>
+                                <img src="/{{ fichero.fichero.url }}" alt="Fichero {{ fichero.id }}"/>
+                            </div>
+                        </li>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+<script src="/static/foundation-5.5.3/js/vendor/jquery.js"></script>
+<script src="/static/foundation-5.5.3/js/vendor/modernizr.js"></script>
+<script src="/static/js/jquery.cookie.js"></script>
+<script src="/static/js/base_gauss_foundation.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation.min.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.orbit.js"></script>
+<script>
+    var tiempo_slide = 6000; //milisegundos
+    var num_slides = {{ num_slides }};
+    var total_time = tiempo_slide * num_slides;
+
+        $(document).foundation({
+            orbit: {
+                animation: 'slide',
+                timer_speed: tiempo_slide,
+                pause_on_hover: false,
+                animation_speed: 2000,
+                navigation_arrows: true,
+                bullets: false
+            }
+        });
+
+
+    setInterval(function () {
+        window.location.replace('/actividades2slides/?c=1')
+    }, total_time);
+
+{#    var actividades = JSON.parse('{{ actividades|safe }}');#}
+
+
+</script>
+</body>
+</html>

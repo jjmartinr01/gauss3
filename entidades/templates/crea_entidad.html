@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <div class="">
+        <h4 style="text-align: center;color: #008CBA;"><strong> Creación de una nueva entidad</strong></h4>
+    </div>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+
+        <div class="panel callout" style="position: relative;" id="datos_organizacion">
+            <h4><strong>Selecciona la organización a la que pertenece o crea una nueva</strong></h4>
+            <div class="row">
+                <div class="columns large-5">
+                    <label>Selecciona organización
+                        <select name="organization_id">
+                            <option value="">Selecciona una organización</option>
+                            {% for o in organizations %}
+                                <option value="{{ o.id }}">{{ o.organization }}</option>
+                            {% endfor %}
+                        </select></label>
+                </div>
+                <div class="columns large-7">
+                    <div class="row">
+                        {{ oform }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel callout" style="position: relative;" id="datos_ronda">
+            <h4><strong>Crea la ronda/curso escolar en la que estará activa la entidad</strong></h4>
+            <div class="row">
+                {{ rform }}
+            </div>
+        </div>
+
+        <div class="panel callout" style="position: relative;" id="datos_ronda">
+            <h4><strong>Introduce los datos de la entidad</strong></h4>
+            <div class="row">
+                {{ eform }}
+            </div>
+        </div>
+
+
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_check']);
+        $("#check_sign").click(function (e) {
+            e.preventDefault();
+            $('#action').val('aceptar');
+            document
+            .{{formname}}.
+            submit();
+        });
+
+    </script>
+{% endblock %}

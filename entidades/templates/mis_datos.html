@@ -1,0 +1,453 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <div class="">
+        <h4 style="text-align: center;color: #008CBA;"><strong> Datos de
+            {{ miembro_unidad.gauser.get_full_name }}</strong></h4>
+    </div>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="miembro_unidad" id="miembro_unidad" value="{{ miembro_unidad.id }}">
+
+        <div class="row">
+            <div class="large-2 columns">
+                <label id="fake_file_input"
+                       title="Haz click para seleccionar un archivo con la fotografía">
+                    {% if miembro_unidad.foto %}
+                        <img width="70" src="{{ miembro_unidad.foto.url }}">
+                    {% else %}
+                        {% if miembro_unidad.gauser.sexo == 'H' %}
+                            <img width="70" src="/media/fotos/general_h.png">
+                        {% else %}
+                            <img width="70" src="/media/fotos/general_m.png">
+                        {% endif %}
+                    {% endif %}
+                </label>
+            </div>
+            <div class="large-10 columns">
+                <input type="file" name="foto" id="id_foto" style="display: none;">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="large-3 columns">
+                <label>Nombre de usuario
+                    <input type="text" value="{{ miembro_unidad.gauser.username }}" data-id="{{ miembro_unidad.id }}"
+                           data-campo="username" class="campo_gauser">
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Escribe contraseña
+                    <input type="password" id="dialog_password1" name="password1"
+                           placeholder="Sólo si deseas cambiarla"/>
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Repite contraseña
+                    <input type="password" id="dialog_password2" name="password2"
+                           placeholder="Igual que anterior si deseas cambiarla"/>
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>&nbsp;
+                </label><a data-id="{{ miembro_unidad.id }}" class="button tiny change_password"><b>Cambia
+                contraseña</b></a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="large-5 columns">
+                <label>Nombre del usuario
+                    <input type="text" value="{{ miembro_unidad.gauser.first_name }}" data-id="{{ miembro_unidad.id }}"
+                           data-campo="first_name" class="campo_gauser">
+                </label>
+            </div>
+            <div class="large-5 columns">
+                <label>Apellidos del usuario
+                    <input type="text" value="{{ miembro_unidad.gauser.last_name }}" data-id="{{ miembro_unidad.id }}"
+                           data-campo="last_name" class="campo_gauser">
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>Alias/Nick:
+                    <input type="text" value="{{ miembro_unidad.alias }}" data-id="{{ miembro_unidad.id }}"
+                           data-campo="alias" class="campo_gauser_extra">
+                </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="large-3 columns">
+                <label>Sexo
+                    <select class="campo_gauser" data-campo="sexo" data-id="{{ miembro_unidad.id }}">
+                        <option value="H" {% if miembro_unidad.gauser.sexo == 'H' %}selected{% endif %}>Hombre
+                        </option>
+                        <option value="M" {% if miembro_unidad.gauser.sexo == 'M' %}selected{% endif %}>Mujer
+                        </option>
+                    </select>
+                </label>
+            </div>
+            <div class="large-4 columns">
+                <label>DNI
+                    <input type="text" value="{{ miembro_unidad.gauser.dni }}" data-id="{{ miembro_unidad.id }}"
+                           data-campo="dni" class="campo_gauser">
+                </label>
+            </div>
+            <div class="large-5 columns">
+                <label>Correo electrónico
+                    <input type="text" value="{{ miembro_unidad.gauser.email }}" data-id="{{ miembro_unidad.id }}"
+                           data-campo="email" class="campo_gauser">
+                </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="large-3 columns">
+                <label>Fecha de nacimiento
+                    <input type="text" name="nacimiento" id="id_nacimiento" placeholder="dd/mm/YYYY"
+                           title="La fecha de nacimiento debes introducirla en formato dd/mm/YYYY"
+                           value="{{ form1.nacimiento.value|default_if_none:""|date:"d/m/Y" }}"/>
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Teléfono fijo
+                    <input type="text" value="{{ miembro_unidad.gauser.telfij }}" data-id="{{ miembro_unidad.id }}"
+                           data-campo="telfij" class="campo_gauser">
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Teléfono móvil
+                    <input type="text" value="{{ miembro_unidad.gauser.telmov }}" data-id="{{ miembro_unidad.id }}"
+                           data-campo="telmov" class="campo_gauser">
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Nº ident. entidad</label>
+                {% if miembro_unidad.id_organizacion %}
+                    <span style="font-weight: 800;font-size: larger;" class="label radius">
+                            {{ miembro_unidad.id_organizacion }}</span>
+                {% else %}
+                    <span data-tooltip title="Este campo no está disponible para este tipo de perfil"
+                          class="has-tip label secondary radius">No disponible en este perfil</span>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="large-12 columns">
+                <div class="row collapse">
+                    <label>Unidad familiar:</label>
+                    {% for miembro in miembro_unidad.unidad_familiar %}
+                        {% if forloop.first %}&nbsp;{% elif forloop.last %} y {% else %}, {% endif %}
+                        {% if miembro.edad < 18 or miembro == request.session.gauser_extra %}
+                            <a data-id="{{ miembro.id }}" class="buscar_miembro">
+                                {{ miembro.gauser.get_full_name }}</a>
+                        {% else %}
+                            <a title="Usuario mayor de edad. No puedes acceder a sus datos" class="mayor_edad">
+                                {{ miembro.gauser.get_full_name }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <p></p>
+
+        <div class="row">
+            <div class="large-4 columns">
+                <label>Dirección
+                    <input type="text" value="{{ miembro_unidad.gauser.address }}" data-id="{{ miembro_unidad.id }}"
+                           data-campo="address" class="campo_gauser">
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>Codigo postal
+                    <input type="text" value="{{ miembro_unidad.gauser.postalcode }}" data-id="{{ miembro_unidad.id }}"
+                           data-campo="postalcode" class="campo_gauser">
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Localidad
+                    <input type="text" value="{{ miembro_unidad.gauser.localidad }}" data-id="{{ miembro_unidad.id }}"
+                           data-campo="localidad" class="campo_gauser">
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Provincia
+                    <select class="campo_gauser" data-campo="provincia" data-id="{{ miembro_unidad.id }}">
+                        {% for p in provincias %}
+                            <option value="{{ p.0 }}"
+                                    {% if miembro_unidad.gauser.provincia == p.0 %}selected{% endif %}>{{ p.1 }}</option>
+                        {% endfor %}
+                    </select>
+                    {#                    <input type="text" value="{{ miembro_unidad.gauser.provincia }}" data-id="{{ miembro_unidad.id }}"#}
+                    {#                           data-campo="provincia" class="campo_gauser">#}
+                </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="large-6 columns">
+                <label>IBAN (Cuenta bancaria)
+                    <input type="text" value="{{ miembro_unidad.num_cuenta_bancaria }}"
+                           data-id="{{ miembro_unidad.id }}"
+                           data-campo="num_cuenta_bancaria" class="campo_gauser_extra">
+                </label>
+            </div>
+            <div class="large-6 columns">
+                <label>Ocupación del usuario
+                    <input type="text" value="{{ miembro_unidad.ocupacion }}" data-id="{{ miembro_unidad.id }}"
+                           data-campo="ocupacion" class="campo_gauser_extra">
+                </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="large-12 columns">
+                <label>Perfiles/Cargos en la entidad:
+                    {% if miembro_unidad.cargos.all|length > 0 %}
+                        <p style="font-weight: 700;">
+                            {% for cargo in miembro_unidad.cargos.all %}
+                                {{ cargo.cargo }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </p>
+                    {% else %}
+                        <p style="font-weight: 700;">
+                            No tiene ningún cargo
+                        </p>
+                    {% endif %}
+                </label>
+            </div>
+        </div>
+        {% if usuarios_tutorados|length > 0 %}
+            <hr>
+            <div class="row">
+                <div class="columns large-12">
+                    <h5><strong>Alumnos en tutoría o co-tutoría</strong></h5>
+                </div>
+            </div>
+            <div class="row">
+                {% for usuario in usuarios_tutorados %}
+                    <div class="columns large-4">
+                        {{ usuario.ge.gauser.last_name }}, {{ usuario.ge.gauser.first_name }}
+                        ({{ usuario.grupo.nombre }})
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if miembro_unidad == request.session.gauser_extra %}
+            <hr>
+            {#        <div class="row">#}
+            {#            <div class="large-12 columns">#}
+            {#                {% if not telegram %}#}
+            {#                    <h5><strong>Cuenta de Telegram no conectada a GAUSS</strong></h5>#}
+            {#                    <p>Para cuenta tu cuenta de Telegram en GAUSS sigue los siguientes pasos:</p>#}
+            {#                    <ol>#}
+            {#                        <li>Instala Telegram en tu teléfono móvil (puedes descargarlo para#}
+            {#                            <a href="https://play.google.com/store/apps/details?id=org.telegram.messenger&hl=es">#}
+            {#                                <i class="fa fa-android"></i> Android</a>, para#}
+            {#                            <a href="https://itunes.apple.com/app/telegram-messenger/id686449807"><i#}
+            {#                                    class="fa fa-apple">#}
+            {#                            </i> iPhone/iPad</a> o para#}
+            {#                            <a href="https://www.microsoft.com/en-us/store/apps/telegram-messenger/9wzdncrdzhs0">#}
+            {#                                <i class="fa fa-windows"></i> Windows</a>)#}
+            {#                        </li>#}
+            {#                        <li>Arranca Telegram en tu móvil en el icono <i class="fa fa-search"></i> para#}
+            {#                            buscar el usuario "GAUSS Telegram". Una vez encontrado, añádelo a tu lista de contactos.#}
+            {#                        </li>#}
+            {#                        <li>Envía a "GAUSS Telegram" el texto (no te olvides la barra delante de la palabra#}
+            {#                            "identificador"):&nbsp;&nbsp;&nbsp; <b>/identificador</b></li>#}
+            {#                        <li>GAUSS Telegram te enviará un número. Este es el número que debes introducir en el campo#}
+            {#                            "identificador".#}
+            {#                        </li>#}
+            {#                    </ol>#}
+            {#                {% else %}#}
+            {#                    <h5><strong>Cuenta de Telegram conectada a GAUSS</strong></h5>#}
+            {#                    <p>Puedes actualizar tu identificador mandando <b>/identificador</b> a "GAUSS Telegram".</p>#}
+            {#                {% endif %}#}
+            {#                <div class="row">#}
+            {#                    <label>&nbsp;&nbsp;&nbsp;Identificador#}
+            {#                        <div class="columns large-12">#}
+            {#                            <div class="large-9 columns">#}
+            {#                                <input type="text" name="identificador" id="identificador">#}
+            {#                            </div>#}
+            {#                            <div class="large-3 columns">#}
+            {#                                <a class="button tiny identificador"><b>Aceptar</b></a>#}
+            {#                            </div>#}
+            {#                        </div>#}
+            {#                    </label>#}
+            {#                </div>#}
+            {#            </div>#}
+            {#        </div>#}
+            <div class="row">
+                <div class="columns large-12">
+                    <p><img src="https://telegram.org/img/t_logo.png" style="height: 75px;width: 75px;">
+                        Para conectar tu usuario de GAUSS con Telegram tienes que seguir los siguientes pasos:</p>
+                    <ol>
+                        <li>Instala Telegram en tu teléfono móvil (puedes descargarlo para
+                            <a href="https://play.google.com/store/apps/details?id=org.telegram.messenger&hl=es"
+                               target="_blank"><i class="fa fa-android"></i> Android</a>, para
+                            <a href="https://itunes.apple.com/app/telegram-messenger/id686449807" target="_blank"><i
+                                    class="fa fa-apple"> </i> iPhone/iPad</a> o para
+                            <a href="https://www.microsoft.com/en-us/store/apps/telegram-messenger/9wzdncrdzhs0"
+                               target="_blank"> <i class="fa fa-windows"></i> Windows</a>)
+                        </li>
+                        <li>Arranca Telegram en tu móvil en el icono <i class="fa fa-search"></i> para
+                            buscar el usuario "GAUSS Telegram". Una vez encontrado, añádelo a tu lista de contactos.
+                        </li>
+                        <li>Genera el código pulsando sobre <span class="label radius">Genera código</span>.</li>
+                        <li>Cópialo en la conversación de Telegram con GAUSS. Si todo va bien, se te enviará un
+                            mensaje de confirmación.
+                        </li>
+                    </ol>
+                </div>
+                <div class="columns large-6"><a class="button radius genera_code">Genera código</a></div>
+                <div id="code_telegram" class="columns large-6" style="font-weight: 800;font-size: x-large;"></div>
+            </div>
+        {% endif %}
+
+        {#        <label>Datos de interés del usuario#}
+        {#            <textarea id="id_observaciones" name="observaciones" style="height: 280px;"#}
+        {#                      placeholder="Introduce texto ...">{{ form2.observaciones.value }}</textarea>#}
+        {#        </label>#}
+    </form>
+    <hr>
+    <div class="row">
+        <div class="columns large-12">
+            <h5><strong>Ley Orgánica de Protección de Datos (LOPD)</strong></h5>
+
+            <p class="wysiwyg-text-align-justify">Los datos de carácter personal
+                del interesado serán tratados por responsable del fichero de la
+                entidad {{ request.session.gauser_extra.ronda.entidad.name }} con sede en
+                {{ request.session.gauser_extra.ronda.entidad.name }}, {{ request.session.gauser_extra.ronda.entidad.localidad }},
+                para el mantenimiento, cumplimiento y control de la relación establecida con la misma y podrán ser
+                cedidos cuando
+                dicho tratamiento implique la conexión con ficheros de terceros, lo que le será convenientemente
+                informado en el
+                momento de recogida de sus datos, solicitando su consentimiento en el caso en que éste fuese necesario
+                de acuerdo
+                con lo establecido por la Ley Orgánica 15/1999, de 13 de diciembre, de Protección de Datos de Carácter
+                Personal y su
+                Reglamento de desarrollo.</p>
+
+            <p class="wysiwyg-text-align-justify">El interesado podrá ejercitar en todo momento sus derechos de acceso,
+                rectificación, cancelación u oposición,
+                dirigiéndose al responsable del fichero de la
+                entidad {{ request.session.gauser_extra.ronda.entidad.name }}
+                a través del menú "Derechos ARCO" que proporciona la aplicación GAUSS.</p>
+        </div>
+    </div>
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        $('#Contenido').on('keyup', '.campo_gauser_extra', function () {
+            var ge_id = $(this).data('id');
+            var campo = $(this).data('campo');
+            var valor = $(this).val();
+            $.post("/mis_datos_ajax/", {
+                action: 'campo_gauser_extra',
+                ge_id: ge_id,
+                campo: campo,
+                valor: valor
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            }, 'json');
+        });
+
+        $('#Contenido').on('keyup change', '.campo_gauser', function () {
+            var ge_id = $(this).data('id');
+            var campo = $(this).data('campo');
+            var valor = $(this).val();
+            $.post("/mis_datos_ajax/", {
+                action: 'campo_gauser',
+                ge_id: ge_id,
+                campo: campo,
+                valor: valor
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            }, 'json');
+        });
+
+        $('#id_num_cuenta_bancaria').prop('title', '{{miembro_unidad.banco.nombre}}');
+
+
+        $(".change_password").on('click', function (e) {
+            e.preventDefault();
+            var ge_id = $(this).data('id');
+            $.post("/mis_datos_ajax/", {
+                action: 'change_password',
+                ge_id: ge_id,
+                password1: $('#dialog_password1').val(),
+                password2: $('#dialog_password2').val()
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    show_mensajes({title: 'Cambio de contraseña', texto: data.mensaje})
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                    show_mensajes({title: 'Error', texto: data.mensaje})
+                }
+                $('#dialog_password1').val('');
+                $('#dialog_password2').val('');
+            }, 'json');
+        });
+
+
+        $('#fake_file_input').click(function () {
+            $('#id_foto').click();
+            setTimeout(function () {
+                $('#id_foto').val($('#id_foto').val());
+            }, 1);
+        });
+        $('#id_foto').change(function () {
+            $('#action').val('aceptar');
+            document
+                .{{formname}}.submit();
+        });
+
+        $(".buscar_miembro").click(function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#miembro_unidad').val(id);
+            show_mensajes({'title': 'Cargando el usuario indicado ...'});
+            $('#action').val('miembro_unidad');
+            document
+                .{{formname}}.submit();
+        });
+
+        $('#Contenido').on('click', '.mayor_edad', function (e) {
+            e.preventDefault();
+            var texto = 'El usuario es mayor de edad y no tienes permiso para acceder a sus datos.';
+            show_mensajes({'title': 'Lo sentimos ...', 'texto': texto});
+        });
+
+        {#        $('.identificador').click(function (e) {#}
+        {#            e.preventDefault();#}
+        {#            var identificador = $('#identificador').val();#}
+        {#            $.post("/gtelegram_ajax/", {action: 'user_identificador', user_id: identificador}, function (data) {#}
+        {#                show_mensajes({'title': data.title, 'texto': data.mensaje});#}
+        {#            }, 'json');#}
+        {#        });#}
+
+        $('#Contenido').on('click', '.genera_code', function (e) {
+            e.preventDefault();
+            $.post("/gtelegram_ajax/", {action: 'genera_code'}, function (data) {
+                $('#code_telegram').html(data.code);
+                {#                show_mensajes({'title': data.title, 'texto': data.mensaje});#}
+            }, 'json');
+        });
+    </script>
+{% endblock %}

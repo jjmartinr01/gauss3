@@ -1,0 +1,84 @@
+# -*- coding: utf-8 -*-
+from django.db import models
+import os
+from itertools import chain
+from gauss.constantes import *
+from gauss.rutas import *
+from bancos.models import Banco
+
+# Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
+def update_anagrama_entidad(instance, filename):
+    nombre = filename.partition('.')
+    nombre = str(instance.code) + '_anagrama.' + nombre[2]
+    return os.path.join("anagramas/", nombre )
+
+def update_anagrama_organizacion(instance, filename):
+    nombre = filename.partition('.')
+    nombre = str(instance.iniciales) + '_anagrama.' + nombre[2]
+    return os.path.join("anagramas/", nombre )
+  
+
+class Organization(models.Model):
+    organization = models.CharField("Organización a la que pertenece el entidad", max_length=100)
+    iniciales = models.CharField("iniciales de la organización", max_length=30)
+    fecha_fundada = models.DateField("Fecha de fundación", null=True, blank=True)
+    web = models.URLField("Página web")
+    anagrama = models.ImageField("Anagrama de la organización", upload_to= update_anagrama_organizacion, null=True, blank=True)
+    def __unicode__(self):
+      return u'%s (%s)' % (self.organization, self.iniciales)
+
+
+class Ronda(models.Model):
+    entidad = models.ForeignKey('Entidad', related_name='rondas')
+    nombre = models.CharField("Ronda solar", max_length=3, choices=RONDAS)
+    inicio = models.DateField("Fecha de inicio de ronda", null=True, blank=True)
+    fin = models.DateField("Fecha de finalización de ronda", null=True, blank=True)
+    def __unicode__(self):
+      return u'Ronda solar: %s (%s)' % (self.get_nombre_display(),self.entidad.name)
+
+
+class Entidad(models.Model):
+    organization = models.ForeignKey(Organization)
+    ronda = models.ForeignKey(Ronda, related_name='entidades', null=True, blank=True)
+    code = models.IntegerField("Código de entidad", max_length=25, null=True, blank=True)
+    nif = models.CharField("NIF", max_length=20,null=True, blank=True)
+    banco = models.ForeignKey(Banco)
+    iban = models.CharField("IBAN", max_length=40,null=True, blank=True)
+    name = models.CharField("Nombre", max_length=250,null=True, blank=True)
+    address = models.CharField("Dirección", max_length=375,null=True, blank=True)
+    localidad = models.CharField("Localidad", max_length=200,null=True, blank=True)
+    provincia = models.CharField("Provincia", max_length=4, choices=PROVINCIAS, default='0')
+    postalcode = models.CharField("Código postal", max_length=20,null=True, blank=True)
+    tel = models.CharField("Teléfono", max_length=20,null=True, blank=True)
+    fax = models.CharField("Fax", max_length=20,null=True, blank=True)
+    web = models.URLField("Web", max_length=100,null=True, blank=True)
+    mail = models.EmailField("E-mail", max_length=100,null=True, blank=True)
+    anagrama = models.ImageField("Anagrama", upload_to= update_anagrama_entidad, blank=True)
+    def __unicode__(self):
+      return u'Entidad: %s (%s)' % (self.code,self.name)
+
+class Subentidad(models.Model):
+    entidad = models.ForeignKey(Entidad)
+    nombre = models.CharField("Nombre", max_length=250,null=True, blank=True)
+    edad_min = models.IntegerField("Edad de acceso", max_length=3,null=True, blank=True)
+    edad_max = models.IntegerField("Edad de finalización", max_length=3,null=True, blank=True)
+    perfil = models.ForeignKey('autenticar.Perfil', null=True, blank=True)
+    observaciones = models.TextField("Observaciones", null=True, blank=True)
+    def __unicode__(self):
+      return u'Subentidad: %s (%s)' % (self.nombre,self.entidad.name)
+
+class Subsubentidad(models.Model):
+    subentidad = models.ForeignKey(Subentidad)
+    nombre = models.CharField("Nombre", max_length=250,null=True, blank=True)
+    observaciones = models.TextField("Observaciones", null=True, blank=True)
+    def __unicode__(self):
+      return u'Subentidad: %s (%s)' % (self.nombre,self.entidad.name)
+
+class Alta_Baja(models.Model):
+    entidad = models.ForeignKey(Entidad)
+    gauser = models.ForeignKey('autenticar.Gauser')
+    observaciones = models.TextField("Observaciones", null=True, blank=True)
+    fecha_alta = models.DateField('Fecha de alta', null=True, blank=True)
+    fecha_baja = models.DateField('Fecha de baja', null=True, blank=True)
+    def __unicode__(self):
+      return u'%s (%s) - Alta: %s, Baja: %s' % (self.gauser.get_full_name(),self.entidad.name, self.fecha_alta, self.fecha_baja)

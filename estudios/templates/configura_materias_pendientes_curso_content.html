@@ -1,0 +1,94 @@
+{% load my_templatetags %}
+
+<div class="row">
+    <div class="columns large-4 medium-12 small-12"><b>Alumno</b></div>
+    <div class="columns large-4 medium-6 small-6"><b>Materia</b></div>
+    <div class="columns large-4 medium-6 small-6"><b>Profesor evaluador</b></div>
+</div>
+{% for matricula in matriculas %}
+    {% ifchanged matricula.ge %}
+        <div class="row">
+            <hr>
+        </div>
+        <div class="row">
+            <div class="columns large-4 medium-12 small-12"><span
+                    style="color:#008cba; font-weight: 800;">{{ matricula.ge.gauser.get_full_name }}</span><br><span
+                    class="label round">{{ matricula.ge.gauser_extra_estudios.grupo.nombre }}</span></div>
+            <div class="columns large-4 medium-6 small-6">{{ matricula.materia.nombre }}
+                {% if matricula.materia.curso.nombre_especifico %}
+                    <span class="label secondary round">{{ matricula.materia.curso.nombre_especifico }}</span>
+                {% else %}
+                    <span class="label secondary round">{{ matricula.materia.curso.nombre }}</span>
+                {% endif %}
+            </div>
+            <div class="columns large-4 medium-6 small-6">
+                <select class="select_profesor" data-matricula="{{ matricula.id }}">
+                    {% if matricula.evaluador %}
+                        <option value="{{ matricula.evaluador.id }}">{{ matricula.evaluador.gauser.get_full_name }}</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+    {% else %}
+        <div class="row" style="padding-bottom: 5px;">
+            <div class="columns large-4 medium-12 small-12">&nbsp;</div>
+            <div class="columns large-4 medium-6 small-6">{{ matricula.materia.nombre }}
+                {% if matricula.materia.curso.nombre_especifico %}
+                    <span class="label secondary round">{{ matricula.materia.curso.nombre_especifico }}</span>
+                {% else %}
+                    <span class="label secondary round">{{ matricula.materia.curso.nombre }}</span>
+                {% endif %}
+            </div>
+            <div class="columns large-4 medium-6 small-6">
+                <select class="select_profesor" data-matricula="{{ matricula.id }}">
+                    {% if matricula.evaluador %}
+                        <option value="{{ matricula.evaluador.id }}">{{ matricula.evaluador.gauser.get_full_name }}</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+    {% endifchanged %}
+
+{% endfor %}
+
+<script>
+    $('.select_profesor').select2({
+        minimumInputLength: 3,
+        delay: 250,
+        placeholder: 'Escribe parte del nombre para buscar',
+        language: 'es',
+        ajax: {
+            url: '/configura_materias_pendientes/',
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    type: 'public',
+                    action: 'select_profesor'
+                };
+                // Query parameters will be ?search=[term]&type=public
+                return query;
+            },
+            processResults: function (data) {
+                // Tranforms the top-level key of the response object from 'items' to 'results'
+                return {
+                    results: data.items
+                };
+            }
+        }
+    });
+
+    $('.select_profesor').change(function () {
+        var profesor = $(this).val();
+        var matricula = $(this).data('matricula');
+        $.post("/configura_materias_pendientes/", {action: 'select_profesor', profesor: profesor, matricula: matricula},
+            function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    })
+
+
+</script>

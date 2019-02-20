@@ -1,0 +1,8 @@
+<table align="center" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="center"> Rellena los datos {{texto}}</td></tr></table>
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+{{form1}}
+{{form2}}
+</table>
+<input type="hidden" name="tutor1" value="{{id_tutor1}}"/>
+<input type="hidden" name="tutor2" value="{{id_tutor2}}"/>
+

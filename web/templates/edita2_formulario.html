@@ -1,0 +1,306 @@
+<div data-alert class="alert-box alert radius" id="alerta_tipo_row" style="display: none;">
+    <i class="fa fa-warning"></i> Si seleccionas este tipo se borrarán todos los contenidos de la fila.
+    {#  <a href="#" class="close">&times;</a>#}
+</div>
+<div class="row">
+    <div class="columns large-5">
+        <label>Tipo de contenido para la fila
+            <select name="tipo" id="tipo">
+                <option value="tipo_12t" {% if cd.tipo == 'tipo_12t' %}selected="selected"{% endif %}>
+                    Texto dispuesto en una columna
+                </option>
+                <option value="tipo_6t6t" {% if cd.tipo == 'tipo_6t6t' %}selected="selected"{% endif %}>
+                    Texto dispuesto en dos columnas
+                </option>
+                <option value="tipo_tipo_4t4t4t" {% if cd.tipo == 'tipo_tipo_4t4t4t' %}selected="selected"{% endif %}>
+                    Texto dispuesto en tres columnas
+                </option>
+                <option value="tipo_12i" {% if cd.tipo == 'tipo_12i' %}selected="selected"{% endif %}>
+                    Imagen
+                </option>
+                {#                <option value="tipo_title_links" {% if cd.tipo == 'tipo_title_links' %}selected="selected"{% endif %}>#}
+                {#                    Título, subtítulo y enlaces#}
+                {#                </option>#}
+                <option value="tipo_links_tab_h" {% if cd.tipo == 'tipo_links_tab_h' %}selected="selected"{% endif %}>
+                    Lista de enlaces horizontal
+                </option>
+                <option value="tipo_links_button_h"
+                        {% if cd.tipo == 'tipo_links_button_h' %}selected="selected"{% endif %}>
+                    Lista de enlaces a través de botones horizontal
+                </option>
+                <option value="tipo_links_tab_v" {% if cd.tipo == 'tipo_links_tab_v' %}selected="selected"{% endif %}>
+                    Lista de enlaces vertical
+                </option>
+                <option value="tipo_links_button_v"
+                        {% if cd.tipo == 'tipo_links_button_v' %}selected="selected"{% endif %}>
+                    Lista de enlaces a través de botones vertical
+                </option>
+                {% if not row.row_mail_exists %}
+                    <option value="tipo_form_mail" {% if cd.tipo == 'tipo_form_mail' %}selected="selected"{% endif %}>
+                        Formulario de contacto a través de mail
+                    </option>
+                {% endif %}
+                {% if not row.row_tipo_gauss_exists %}
+                    <option value="tipo_gauss" {% if cd.tipo == 'tipo_gauss' %}selected="selected"{% endif %}>
+                        Login y password para tipo_gauss
+                    </option>
+                {% endif %}
+                {#                <option value="tipo_footer" {% if cd.tipo == 'tipo_footer' %}selected="selected"{% endif %}>#}
+                {#                    Pie de página#}
+                {#                </option>#}
+            </select> </label>
+    </div>
+    <div class="columns large-3">
+        <label>Tipo de alineación
+            <select name="align" id="align">
+                <option value="text-justify" {% if cd.align == 'text-justify' %}selected="selected"{% endif %}>
+                    Alineación justificada
+                </option>
+                <option value="text-center" {% if cd.align == 'text-center' %}selected="selected"{% endif %}>
+                    Centrado
+                </option>
+                <option value="text-left" {% if cd.align == 'text-left' %}selected="selected"{% endif %}>
+                    Alineado a la izquierda
+                </option>
+                <option value="text-right" {% if cd.align == 'text-right' %}selected="selected"{% endif %}>
+                    Alineado a la derecha
+                </option>
+            </select> </label>
+    </div>
+    <div class="columns large-2">
+        <label>Resaltado
+            <select name="panel" id="panel">
+                <option value="no-panel" {% if cd.panel == 'no-panel' %}selected="selected"{% endif %}>
+                    Sin resaltar
+                </option>
+                <option value="panel" {% if cd.panel == 'panel' %}selected="selected"{% endif %}>
+                    Panel
+                </option>
+                <option value="panel callout" {% if cd.panel == 'panel callout' %}selected="selected"{% endif %}>
+                    Panel +
+                </option>
+            </select> </label>
+    </div>
+    <div class="columns large-2">
+        <label>Esquinas
+            <select name="esquinas" id="esquinas">
+                <option value="esquina" {% if cd.esquinas == 'esquina' %}selected="selected"{% endif %}>
+                    Esquinas
+                </option>
+                <option value="radius" {% if cd.esquinas == 'radius' %}selected="selected"{% endif %}>
+                    Suavizadas
+                </option>
+                <option value="round" {% if cd.esquinas == 'round' %}selected="selected"{% endif %}>
+                    Redondas
+                </option>
+            </select> </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-4">
+        <label>Ancho para pantallas grandes
+            <div style="position: relative;" class="range-slider" data-slider
+                 data-options="start: 1; end: 12; initial: {{ cd.large_columns }}; display_selector: #sliderOutput1;">
+                <span class="range-slider-handle" role="slider" tabindex="0"></span>
+                <span class="range-slider-active-segment"></span>
+                <input name="large_columns" id="large_columns" type="hidden">
+
+                <div style="position: absolute; bottom:0px;left:20px; z-index: 1000; pointer-events: none;">
+                    <span id="sliderOutput1"></span> columnas
+                </div>
+            </div>
+{#            <select name="large_columns" id="large_columns">#}
+{#                <option value="12" {% if cd.large_columns == 12 %}selected="selected"{% endif %}>100% (12/12)</option>#}
+{#                <option value="11" {% if cd.large_columns == 11 %}selected="selected"{% endif %}>91.6% (11/12)</option>#}
+{#                <option value="10" {% if cd.large_columns == 10 %}selected="selected"{% endif %}>83.3% (10/12)#}
+{#                <option value="9" {% if cd.large_columns == 9 %}selected="selected"{% endif %}>75% (9/12)</option>#}
+{#                <option value="8" {% if cd.large_columns == 8 %}selected="selected"{% endif %}>66.6% (8/12)</option>#}
+{#                <option value="7" {% if cd.large_columns == 7 %}selected="selected"{% endif %}>58.3% (7/12)</option>#}
+{#                <option value="6" {% if cd.large_columns == 6 %}selected="selected"{% endif %}>50% (6/12)</option>#}
+{#                <option value="5" {% if cd.large_columns == 5 %}selected="selected"{% endif %}>41.6% (5/12)</option>#}
+{#                <option value="4" {% if cd.large_columns == 4 %}selected="selected"{% endif %}>33.3% (4/12)</option>#}
+{#                <option value="3" {% if cd.large_columns == 3 %}selected="selected"{% endif %}>25% (3/12)</option>#}
+{#                <option value="2" {% if cd.large_columns == 2 %}selected="selected"{% endif %}>16.6%% (2/12)</option>#}
+{#                <option value="1" {% if cd.large_columns == 1 %}selected="selected"{% endif %}>8.3% (1/12)</option>#}
+{#            </select> #}
+        </label>
+    </div>
+    <div class="columns large-4">
+        <label>Ancho para pantallas medianas
+            <div style="position: relative;" class="range-slider" data-slider
+                 data-options="start: 1; end: 12; initial: {{ cd.medium_columns }}; display_selector: #sliderOutput2;">
+                <span class="range-slider-handle" role="slider" tabindex="0"></span>
+                <span class="range-slider-active-segment"></span>
+                <input name="medium_columns" id="medium_columns" type="hidden">
+
+                <div style="position: absolute; bottom:0px;left:20px; z-index: 1000; pointer-events: none;">
+                    <span id="sliderOutput2"></span> columnas
+                </div>
+            </div>
+{#            <select name="medium_columns" id="medium_columns">#}
+{#                <option value="12" {% if cd.medium_columns == 12 %}selected="selected"{% endif %}>100% (12/12)</option>#}
+{#                <option value="11" {% if cd.medium_columns == 11 %}selected="selected"{% endif %}>91.6% (11/12)</option>#}
+{#                <option value="10" {% if cd.medium_columns == 10 %}selected="selected"{% endif %}>83.3% (10/12)#}
+{#                <option value="9" {% if cd.medium_columns == 9 %}selected="selected"{% endif %}>75% (9/12)</option>#}
+{#                <option value="8" {% if cd.medium_columns == 8 %}selected="selected"{% endif %}>66.6% (8/12)</option>#}
+{#                <option value="7" {% if cd.medium_columns == 7 %}selected="selected"{% endif %}>58.3% (7/12)</option>#}
+{#                <option value="6" {% if cd.medium_columns == 6 %}selected="selected"{% endif %}>50% (6/12)</option>#}
+{#                <option value="5" {% if cd.medium_columns == 5 %}selected="selected"{% endif %}>41.6% (5/12)</option>#}
+{#                <option value="4" {% if cd.medium_columns == 4 %}selected="selected"{% endif %}>33.3% (4/12)</option>#}
+{#                <option value="3" {% if cd.medium_columns == 3 %}selected="selected"{% endif %}>25% (3/12)</option>#}
+{#                <option value="2" {% if cd.medium_columns == 2 %}selected="selected"{% endif %}>16.6%% (2/12)</option>#}
+{#                <option value="1" {% if cd.medium_columns == 1 %}selected="selected"{% endif %}>8.3% (1/12)</option>#}
+{#            </select>#}
+        </label>
+    </div>
+    <div class="columns large-4">
+        <label>Ancho para pantallas pequeñas
+            <div style="position: relative;" class="range-slider" data-slider
+                 data-options="start: 1; end: 12; initial: {{ cd.small_columns }}; display_selector: #sliderOutput3;">
+                <span class="range-slider-handle" role="slider" tabindex="0"></span>
+                <span class="range-slider-active-segment"></span>
+                <input name="small_columns" id="small_columns" type="hidden">
+
+                <div style="position: absolute; bottom:0px;left:20px; z-index: 1000; pointer-events: none;">
+                    <span id="sliderOutput3"></span> columnas
+                </div>
+            </div>
+        </label>
+        {#        <label>Ancho para pantallas pequeñas#}
+        {#            <select name="small_columns" id="small_columns">#}
+        {#                <option value="12" {% if cd.small_columns == 12 %}selected="selected"{% endif %}>100% (12/12)</option>#}
+        {#                <option value="11" {% if cd.small_columns == 11 %}selected="selected"{% endif %}>91.6% (11/12)</option>#}
+        {#                <option value="10" {% if cd.small_columns == 10 %}selected="selected"{% endif %}>83.3% (10/12)#}
+        {#                <option value="9" {% if cd.small_columns == 9 %}selected="selected"{% endif %}>75% (9/12)</option>#}
+        {#                <option value="8" {% if cd.small_columns == 8 %}selected="selected"{% endif %}>66.6% (8/12)</option>#}
+        {#                <option value="7" {% if cd.small_columns == 7 %}selected="selected"{% endif %}>58.3% (7/12)</option>#}
+        {#                <option value="6" {% if cd.small_columns == 6 %}selected="selected"{% endif %}>50% (6/12)</option>#}
+        {#                <option value="5" {% if cd.small_columns == 5 %}selected="selected"{% endif %}>41.6% (5/12)</option>#}
+        {#                <option value="4" {% if cd.small_columns == 4 %}selected="selected"{% endif %}>33.3% (4/12)</option>#}
+        {#                <option value="3" {% if cd.small_columns == 3 %}selected="selected"{% endif %}>25% (3/12)</option>#}
+        {#                <option value="2" {% if cd.small_columns == 2 %}selected="selected"{% endif %}>16.6%% (2/12)</option>#}
+        {#                <option value="1" {% if cd.small_columns == 1 %}selected="selected"{% endif %}>8.3% (1/12)</option>#}
+        {#            </select> </label>#}
+    </div>
+</div>
+<div class="row tipo_12i ocultable">
+    <div class="columns large-6" id="imagen_web">
+        <label class="imagen_web_editada" data-cd="{{ cd.id }}" data-form="True">
+            Imagen (pulsa para seleccionar)
+            {% if cd.imagen %}
+                <img id="imagen{{ cd.id }}" src="{{ cd.imagen.fichero.url }}">
+            {% else %}
+                <img id="imagen{{ cd.id }}" src="/static/images/1000x400.gif">
+            {% endif %}
+        </label>
+    </div>
+    <div class="columns large-6">
+        <label>Texto bajo la imagen
+            <input type="text" name="caption" id="caption" value="{{ cd.caption }}">
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-5 tipo_12t tipo_6t6t tipo_tipo_4t4t4t tipo_title_links tipo_form_mail ocultable">
+        <label>Título
+            <input type="text" name="title" id="title" value="{{ cd.title }}">
+        </label>
+    </div>
+    <div class="columns large-5 tipo_12t tipo_6t6t tipo_4t4t4t tipo_title_links ocultable">
+        <label>Subtítulo
+            <input type="text" name="subtitle" id="subtitle" value="{{ cd.subtitle }}">
+        </label>
+    </div>
+    <div class="columns large-2 tipo_12t tipo_6t6t tipo_4t4t4t tipo_title_links ocultable">
+        <label>Mostrar autor y fecha</label>
+        <input type="checkbox" name="header_post" id="header_post"
+               {% if cd.header_post %}checked="checked" {% endif %}>
+    </div>
+</div>
+<div class="row tipo_12t tipo_6t6t tipo_4t4t4t ocultable">
+    <div class="columns large-12">
+        <label>Texto
+            <textarea name="texto" id="texto">{{ cd.texto }}</textarea></label>
+    </div>
+</div>
+<div class="row tipo_footer tipo_title_links tipo_links_tab_h tipo_links_button_h tipo_links_tab_v tipo_links_button_v ocultable">
+    {% for link in enlaces %}
+        <div class="large-3 columns">
+            <input type="checkbox" {% if link in cd.enlaces.all %}checked="checked" {% endif %}
+                   id="enlaces" name="enlaces" value="{{ link.id }}" title="{{ link.href }}">
+            {{ link.texto }}
+        </div>
+        {% if forloop.counter|divisibleby:"4" %}
+            </div><br>
+            <div class="row tipo_footer tipo_title_links tipo_links_tab_h tipo_links_button_h tipo_links_tab_v tipo_links_button_v ocultable">
+        {% endif %}
+    {% endfor %}
+    </div>
+<div class="row tipo_12t tipo_6t6t tipo_4t4t4t tipo_12i tipo_title_links ocultable">
+    <div class="columns large-12">
+        <label>onClick Javascript
+            <textarea name="on_click" id="on_click">{{ cd.on_click }}</textarea></label>
+    </div>
+</div>
+<input type="hidden" name="modificadores" id="modificadores" value="">
+<input type="hidden" name="orden" value="{{ cd.orden }}">
+<input type="file" name="file_web_editado" id="file_web_editado" style="position: fixed;top:-3000px;">
+<script>
+    $('body').on('click', '.imagen_web_editada', function () {
+            $('#file_web_editado').trigger('click');
+            $('#content_div').val($(this).data('cd'));
+            console.log('click imagen_web_editada');
+            console.log('cd: ' + $(this).data('cd'));
+        });
+
+    $('#file_web_editado').change(function () {
+        var data = sube_archivo({
+            gauss_file: 'file_web_editado',
+            action: 'imagen_web',
+            tipos: 'image/jpeg, image/png, image/gif',
+            ajaxFuncion: '/sube_archivos_web/',
+            data1: $('#content_div').val(),
+            data2: '',
+            onOk: function () {
+                var cd = $('#content_div').val();
+                $.post("/ajax_webs/", {action: 'url_file_web', cd: cd}, function (data) {
+                    $('#imagen' + cd).attr('src', data);
+                });
+            }
+        });
+    });
+
+
+    $('.ocultable').hide();
+    $('.' + '{{ cd.tipo }}').show();
+    tipos = 'tipo_12t tipo_6t6t tipo_4t4t4t';
+    tipos2 = 'tipo_form_mail tipo_gauss topbar tipo_title_links tipo_links_tab_h tipo_links_button_h tipo_links_tab_v tipo_links_button_v';
+    if (tipos.indexOf('{{ cd.tipo }}') > -1) {
+        editor = wysihtmleditor('texto');
+    } else {
+        editor = false;
+    }
+    habilita(['h_plus', 'h_trash-o', 's_check', 'h_list-alt', 'h_pencil', 'h_eye']);
+    $('#check_sign').click(function (e) {
+        var d = new Date();
+        $('#action').val('guardar_modificaciones');
+        $('#modificadores').val('{{ cd.modificadores }} {{ g_e.gauser.get_full_name }} (' + d.toString() + '); ');
+        e.preventDefault();
+        document.edita_web.submit();
+    });
+    $('#tipo').change(function () {
+        $('.ocultable').hide();
+        var tipo = $(this).val();
+        $('.' + tipo).show();
+        if (tipos.indexOf(tipo) > -1 && !editor) {
+            editor = wysihtmleditor('texto');
+        }
+        if (tipos2.indexOf(tipo) > -1) {
+            $('#alerta_tipo_row').show();
+        } else {
+            $('#alerta_tipo_row').hide();
+        }
+    });
+
+    $(document).foundation('slider', 'reflow');
+</script>

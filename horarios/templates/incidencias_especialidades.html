@@ -1,0 +1,33 @@
+<div class="row">
+    <b>Solucionar incidencias con la asignación de especialidades:</b>
+</div>
+{% for gep in geps %}
+    {% if not gep.especialidad or not gep.departamento %}
+        <div class="row">
+            <div class="columns large-4">
+                {{ gep.ge.gauser.last_name }}, {{ gep.ge.gauser.first_name }}
+            </div>
+            <div class="columns large-4">
+                <select class="especialidad" data-id="{{ gep.id }}">
+                    <option value="">Sin especialidad</option>
+                    {% for e in especialidades %}
+                        <option value="{{ e.id }}"
+                                {% if gep.especialidad == e %}selected{% endif %}>{{ e.especialidad.nombre }}
+                            ({{ e.especialidad.cuerpo.nombre }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="columns large-4">
+                <select class="departamento" data-id="{{ gep.id }}">
+                    <option value="">Sin departamento</option>
+                    {% for d in departamentos %}
+                        <option value="{{ d.id }}"
+                                {% if gep.departamento == d %}selected{% endif %}>{{ d.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}

@@ -1,0 +1,25 @@
+<span class="color2">Nombre: </span> {{acontecimiento.nombre}}
+<br/>
+{% if acontecimiento.inicio == acontecimiento.fin %}
+  <span class="color2">Fecha y hora: </span> {{acontecimiento.inicio}}
+{% else %}
+  <span class="color2">Comienzo: </span> {{acontecimiento.inicio}}
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <span class="color2">Fin: </span> {{acontecimiento.fin}}
+{% endif %}
+<br/>
+<span class="color2">Lugar: </span> {{acontecimiento.lugar}}
+<br/>
+{% if recordatorio|length > 0 %}
+  {% if recordatorio.0.recordar %}
+    <span class="color2">Recordartorio: </span>{{recordatorio.0.recordar}}
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <span class="color2">Recordatorio anulado: </span> {% if acontecimiento.enterado %} Sí {% else %} No {% endif %}
+  {% else %}
+    <span class="color2">Recordartorio: </span>Sin fecha
+  {% endif %}
+  <br/>
+{% endif %}
+{% autoescape off %}
+  {{acontecimiento.describir}}
+{% endautoescape %}

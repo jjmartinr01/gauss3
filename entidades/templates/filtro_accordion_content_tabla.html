@@ -1,0 +1,17 @@
+{% load my_templatetags %}
+<table>
+        <tr>
+        <th>&nbsp;</th>
+            {% for campo in filtrado.campof_set.all %}
+                <th>{{ campo.get_campo_display }}</th>
+            {% endfor %}
+        </tr>
+        {% for g_e in data %}
+            <tr>
+            <td><a href="/usuarios_entidad/?ge={{ g_e.id }}" target="_blank">{{ forloop.counter }}</a></td>
+                {% for campo in filtrado.campof_set.all %}
+                        <td>{% autoescape off %}{{ g_e|value_dict:campo.campo }}{% endautoescape %}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+</table>

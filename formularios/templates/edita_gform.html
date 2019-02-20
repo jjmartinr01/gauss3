@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% block head %}
+    <style>
+        .pencil_editar_ginput {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0.4;
+            z-index: 20;
+            cursor: pointer;
+        }
+
+        .pencil_editar_ginput:hover {
+            opacity: 1;
+        }
+    </style>
+{% endblock %}
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}"
+          xmlns="http://www.w3.org/1999/html">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="id_gform" id="id_gform" value="{{ gform.id }}">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Edición de: "{{ gform.nombre }}"</strong></h4>
+        </div>
+        <div id="div_formulario">
+            <div class="row">
+                <div class="columns large-7">
+                    <label>Nombre del formulario:
+                        <input type="text" id="nombre" name="nombre" placeholder="Un máximo de 150 caracteres"
+                               value="{{ gform.nombre }}"></label>
+                </div>
+                <div class="columns large-3">
+                    <label>Fecha máxima de rellenado:
+                        <input type="text" id="fecha_max_rellenado" name="fecha_max_rellenado"
+                               placeholder="dd/mm/YYYY HH:MM"
+                               value="{% if gform.fecha_max_rellenado %}{{ gform.fecha_max_rellenado|date:'d/m/Y H:i' }}{% endif %}">
+                    </label>
+                </div>
+                <div class="columns large-2">
+                    <label>¿Activo?</label><a id="gform_activo">{% if gform.activo %}Sí{% else %}No{% endif %}</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <label>Selecciona los cargos/perfiles que deben rellenar el formulario:
+                        <div class="columns large-12">
+                            <select id="cargos_destino" name="cargos_destino" multiple>
+                                {% for cargo in cargos %}
+                                    <option value="{{ cargo.id }}"
+                                            {% if cargo in gform.cargos_destino.all %}selected{% endif %}>
+                                        {{ cargo.cargo }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <label>Selecciona las secciones/departamentos que deben rellenar el formulario:
+                        <div class="columns large-12">
+                            <select id="subentidades_destino" name="subentidades_destino" multiple>
+                                {% for subentidad in subentidades %}
+                                    <option value="{{ subentidad.id }}"
+                                            {% if subentidad in gform.subentidades_destino.all %}selected{% endif %}>
+                                        {{ subentidad.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="columns large-12">
+                <label title="Selecciona un campo y después pulsa añadir">Selecciona el tipo de campo que quieres añadir
+                    al formulario:
+                    {{ form.tipo }}
+                </label>
+            </div>
+        </div>
+        <label id="layout" {% if gis|length == 0 %}style="display:none;"{% endif %}><strong>Esta es la distribución de
+            los campos del formulario:</strong>
+            {% if request.session.del_alert != 1 %}
+                <div data-alert class="alert-box success radius">
+                    <p class="small">Puedes arrastrar los campos para colocarlos en la posicion que desees. Puedes
+                        pulsar sobre el símbolo <i class="fa fa-pencil"></i>, encerrado en el círculo, para modificar
+                        la etiqueta, quien puede acceder al campo, borrarlo, ...</p>
+                    <a href="#" class="close">&times;</a>
+                </div>
+            {% endif %}
+            <div class="panel_campo grid-stack">{% autoescape off %}{{ gis }}{% endautoescape %}</div>
+        </label>
+
+    </form>
+
+
+{% endblock %}
+
+
+{% block final %}
+    {#    <link href="/static/jquery-ui-1.11.4/jquery-ui.min.css" rel="stylesheet"/>#}
+    <script src="/static/jquery-ui-1.11.4/jquery-ui.min.js"></script>
+    <script src="/static/js/lodash.min.js"></script>
+    <link href="/static/gridstack/gridstack.css" rel="stylesheet"/>
+    <link href="/static/gridstack/gridstack-extra.css" rel="stylesheet"/>
+    <script src="/static/gridstack/gridstack.js"></script>
+
+
+    <script type="text/javascript">
+        habilita(['s_thumbs-o-up']);
+        $('#thumbs-o-up_sign').on('click', function (e) {
+            e.preventDefault();
+            var gform = $('#id_gform').val();
+            $.post("/formulario_ajax/", {action: 'asegura_fecha_max_rellenado', id: gform},
+                    function (data) {
+                        if (data.ok) {
+                            console.log(data);
+                            window.location.href = "/formularios/?gform={{ gform.id }}";
+                        }
+                        else {
+                            console.log(data);
+                            $('#fecha_max_rellenado').val(data.fecha);
+                            show_mensajes({
+                                title: '<i class="fa fa-warning"></i> Fecha máxima establecida automáticamente',
+                                texto: 'Se ha establecido automáticamente la fecha máxima de rellenado para dentro de un mes.',
+                                buttons: {
+                                    "Aceptar": function () {
+                                        hide_mensajes();
+                                        window.location.href = "/formularios/?gform={{ gform.id }}";
+                                    },
+                                    "Cancelar": function () {
+                                        hide_mensajes();
+                                    }
+                                }
+                            });
+                        }
+                    }, 'json');
+        });
+
+        $(document).on('close.fndtn.alert', function (event) {
+            $.post("/formulario_ajax/", {action: 'del_alert'}, function (data) {
+                console.log(data);
+            });
+        });
+
+        $('#nombre').on('input', function (e) {
+            var id = $('#id_gform').val();
+            var nombre = $(this).val();
+            $.post("/formulario_ajax/", {action: 'mod_gform_nombre', nombre: nombre, id: id}, function (data) {
+                console.log(data);
+            });
+        });
+
+        $('#fecha_max_rellenado').on('input', function (e) {
+            var id = $('#id_gform').val();
+            var fecha_max = $(this).val();
+            if (fecha_max.length > 15)
+                $.post("/formulario_ajax/", {action: 'mod_fecha_max_rellenado', fecha_max: fecha_max, id: id},
+                        function (data) {
+                            if (data.ok) {
+                                console.log(data.ok);
+                            }
+                            else {
+                                show_mensajes({title: data.title, texto: data.texto})
+                            }
+                        }, 'json');
+        });
+
+        $('#gform_activo').on('click', function (e) {
+            var id = $('#id_gform').val();
+            $.post("/formulario_ajax/", {action: 'mod_gform_activo', id: id}, function (data) {
+                $('#gform_activo').html(data);
+            });
+        });
+
+        $('.tipo_select2').select2();
+
+        $('#cargos_destino').select2({placeholder: "Escribe parte de nombre para buscar coincidencias"});
+        $('#cargos_destino').on('change', function (e) {
+            var id = $('#id_gform').val();
+            var seleccionados = [];
+            $('#cargos_destino option').each(function (i) {
+                if (this.selected == true) {
+                    seleccionados.push(this.value);
+                }
+            });
+            seleccionados = JSON.stringify(seleccionados);
+            $.post("/formulario_ajax/", {action: 'mod_gform_cargos_destino', seleccionados: seleccionados, id: id},
+                    function (data) {
+                        console.log(data);
+                    });
+        });
+
+        $('#subentidades_destino').select2({placeholder: "Escribe parte de nombre para buscar coincidencias"});
+        $('#subentidades_destino').on('change', function (e) {
+            var id = $('#id_gform').val();
+            var seleccionadas = [];
+            $('#subentidades_destino option').each(function (i) {
+                if (this.selected == true) {
+                    seleccionadas.push(this.value);
+                }
+            });
+            seleccionadas = JSON.stringify(seleccionadas);
+            $.post("/formulario_ajax/", {
+                        action: 'mod_gform_subentidades_destino',
+                        seleccionadas: seleccionadas,
+                        id: id
+                    },
+                    function (data) {
+                        console.log(data);
+                    });
+        });
+
+        $('#id_tipo').select2({placeholder: "Escribe parte de nombre para buscar coincidencias"});
+        $('#id_tipo').change(function (e) {
+            e.preventDefault();
+            $('#layout').show();
+            var value = $(this).val();
+            {#            $('.panel_campo').hide();#}
+            $('#' + value).show();
+            $(this).select2("val", "");
+            var id = $('#id_gform').val();
+            $.post("/formulario_ajax/", {action: 'insert_ginput', tipo: value, id: id}, function (data) {
+                var grid = $('.grid-stack').data('gridstack');
+                grid.add_widget($(data), 0, 0, 4, 1, true);
+            });
+
+        });
+
+        $(function () {
+            var options = {
+                cell_height: 80,
+                vertical_margin: 10,
+                width: 12,
+                always_show_resize_handle: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+                resizable: {
+                    handles: 'e, se, s, sw, w'
+                }
+            };
+
+            $('.grid-stack').gridstack(options);
+        });
+
+        $('.grid-stack').on('change', function (e, items) {
+            var res = _.map($('.grid-stack .grid-stack-item:visible'), function (el) {
+                el = $(el);
+                var node = el.data('_gridstack_node');
+                return {
+                    id: el.data('id'),
+                    x: node.x,
+                    y: node.y,
+                    width: node.width,
+                    height: node.height
+                };
+            });
+            {#            $(res).each(function () {#}
+            {#                $('#infx-' + this['id']).html('x: ' + this['x']);#}
+            {#                $('#infy-' + this['id']).html('y: ' + this['y']);#}
+            {#                $('#infw-' + this['id']).html('cols: ' + this['width']);#}
+            {#            });#}
+            var gform = $('#id_gform').val();
+            $.post("/formulario_ajax/", {action: 'update_gform', ginputs: JSON.stringify(res), gform: gform},
+                    function (data) {
+                        console.log(data);
+                    });
+
+        });
+
+
+        $('body').on('click', '.pencil_editar_ginput', function (e) {
+            var ginput = $(this).data('id');
+            window.location.href = "/edita_ginput/?ginput=" + ginput;
+        });
+
+        $('body').on('click', '.gfile', function (e) {
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> Aviso',
+                texto: 'En esta pantalla no se pueden cargar archivos.'
+            })
+        });
+
+    </script>
+
+{% endblock %}

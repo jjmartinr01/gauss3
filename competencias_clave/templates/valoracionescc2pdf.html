@@ -1,0 +1,109 @@
+{% load competencias_clave_extras %}
+<style>
+    h1 {
+        text-align: center;
+        font-size: 30px;
+        line-height: 150px;
+    }
+</style>
+<h1>VALORACIONES COMPETENCIAS CLAVE</h1>
+<table width="100%">
+    {% for a in alumnos %}
+        {% ifchanged a.gauser_extra_estudios.grupo %}
+            <tr>
+                <th colspan="8">&nbsp;</th>
+            </tr>
+            <tr>
+                <th colspan="8"><i><u>{{ a.gauser_extra_estudios.grupo.nombre }}</u></i></th>
+            </tr>
+            <tr>
+                <th>Alumno</th>
+                <th>CCL</th>
+                <th>CMCT</th>
+                <th>CD</th>
+                <th>CPAA</th>
+                <th>CSC</th>
+                <th>SIE</th>
+                <th>CEC</th>
+            </tr>
+        {% endifchanged %}
+        <tr>
+            <td>{{ a.gauser.get_full_name }}</td>
+            <td>{% autoescape off %}{{ a|valorar_cc:'ccl' }}{% endautoescape %}</td>
+            <td>{% autoescape off %}{{ a|valorar_cc:'cmct' }}{% endautoescape %}</td>
+            <td>{% autoescape off %}{{ a|valorar_cc:'cd' }}{% endautoescape %}</td>
+            <td>{% autoescape off %}{{ a|valorar_cc:'cpaa' }}{% endautoescape %}</td>
+            <td>{% autoescape off %}{{ a|valorar_cc:'csc' }}{% endautoescape %}</td>
+            <td>{% autoescape off %}{{ a|valorar_cc:'sie' }}{% endautoescape %}</td>
+            <td>{% autoescape off %}{{ a|valorar_cc:'cec' }}{% endautoescape %}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+{% if profesores %}
+    <div class="pagebreak"></div>
+    <h2>Número de capacidades evaluadas</h2>
+    <table width="100%">
+        <tr>
+            <th>Profesor</th>
+            <th>CCL</th>
+            <th>CMCT</th>
+            <th>CD</th>
+            <th>CPAA</th>
+            <th>CSC</th>
+            <th>SIE</th>
+            <th>CEC</th>
+        </tr>
+        {% for p in profesores %}
+            <tr>
+                <td>{{ p.gauser.get_full_name }}</td>
+                <td>{{ p|estadistica_profesor:'ccl' }}</td>
+                <td>{{ p|estadistica_profesor:'cmct' }}</td>
+                <td>{{ p|estadistica_profesor:'cd' }}</td>
+                <td>{{ p|estadistica_profesor:'cpaa' }}</td>
+                <td>{{ p|estadistica_profesor:'csc' }}</td>
+                <td>{{ p|estadistica_profesor:'sie' }}</td>
+                <td>{{ p|estadistica_profesor:'cec' }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+
+    <div class="pagebreak"></div>
+    <h2>Peso ponderado de las competencias clave</h2>
+    <table width="100%">
+
+        {% for m in profesores|materias %}
+            {% ifchanged m.materia.curso %}
+                {% if not forloop.first %}
+                    <tr>
+                        <th colspan="8">&nbsp;<hr>
+                        </th>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <th>Materia ({{ m.materia.curso.nombre }})</th>
+                    <th>CCL</th>
+                    <th>CMCT</th>
+                    <th>CD</th>
+                    <th>CPAA</th>
+                    <th>CSC</th>
+                    <th>SIE</th>
+                    <th>CEC</th>
+                </tr>
+            {% endifchanged %}
+            <tr>
+                <td>{{ m.materia.nombre }}</td>
+                <td>{{ m.ccl }}</td>
+                <td>{{ m.cmct }}</td>
+                <td>{{ m.cd }}</td>
+                <td>{{ m.cpaa }}</td>
+                <td>{{ m.csc }}</td>
+                <td>{{ m.sie }}</td>
+                <td>{{ m.cec }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+

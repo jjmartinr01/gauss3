@@ -1,0 +1,90 @@
+{% load my_templatetags %}
+
+<div class="row">
+    <div class="columns large-4">
+        <label><b>Dado de baja por:</b>
+            <br>{{ baja.autor }}
+        </label>
+    </div>
+    <div class="columns large-6 end">
+        <label><b>Fecha de baja:</b>
+            {% if baja.fecha_baja %}
+            <br>{{ baja.fecha_baja }}
+            {% else %}
+                <br> No está dada de baja
+            {% endif %}
+        </label>
+    </div>
+</div>
+<hr style="border-color:#008CBA">
+<div class="row">
+    <div class="large-12 columns">
+        <label><b>Estado de los miembros de la unidad familiar en {{ ges.0.ronda }}</b></label>
+    </div>
+</div>
+{% for miembro in gs %}
+    <div class="row">
+        {% if miembro.is_baja %}
+            <div class="columns large-6">
+                {{ forloop.counter }}.- {{ miembro.gauser.get_full_name|title }} (<span style="color:red">Está dado de baja</span>)
+            </div>
+            <div class="columns large-3"><b>
+                <a data-gauser="{{ miembro.gauser.id }}" data-baja="{{ baja.id }}" class="dar_alta"><i
+                        class="fa fa-id-card-o"></i> Dar de alta</a>
+            </b></div>
+            <div class="columns large-3" title="Borrar los datos que GAUSS tiene del usuario">
+                <b><a data-gauser="{{ miembro.gauser.id }}" data-baja="{{ baja.id }}" class="borrar_usuario"><i
+                        class="fa fa-user-times"></i> Borrar usuario</a></b>
+            </div>
+        {% else %}
+            <div class="columns large-6">
+                {{ forloop.counter }}.- {{ miembro.gauser.get_full_name|title }} (<span style="color:green">Está dado de alta</span>)
+            </div>
+            <div class="columns large-3"><b>
+                <a data-gauser="{{ miembro.gauser.id }}" data-baja="{{ baja.id }}" class="dar_baja"><span
+                        class="fa-stack">
+            <i style="color:red" class="fa fa-times fa-stack-1x"></i><i class="fa fa-id-card-o"></i></span>Dar de
+                    baja</a>
+            </b></div>
+            <div class="columns large-3" title="Borrar los datos que GAUSS tiene del usuario">
+                <b><a data-gauser="{{ miembro.gauser.id }}" data-baja="{{ baja.id }}" class="borrar_usuario"><i
+                        class="fa fa-user-times"></i> Borrar usuario</a></b>
+            </div>
+        {% endif %}
+    </div>
+{% endfor %}
+<hr style="border-color:#008CBA">
+
+<div class="row">
+    <div class="large-12 columns">
+        <label><b>Historial en {{ baja.entidad.name }}</b></label>
+    </div>
+</div>
+<div class="row" style="border-bottom: 1px solid lightgrey">
+    <div class="columns large-3"><b>Ronda/Curso</b></div>
+    <div class="columns large-3"><b>Unidad familiar</b></div>
+    <div class="columns large-6"><b>Observaciones</b></div>
+</div>
+
+{% for ge in ges %}
+    <div class="row" style="border-bottom: 1px solid lightgrey">
+        <div class="columns large-3">{{ ge.ronda }}</div>
+        <div class="columns large-3">
+            {% for miembro in ge.unidad_familiar %}{{ forloop.counter }}.-
+                {{ miembro.gauser.get_full_name|title }}{% if not forloop.last %}<br>
+                {% endif %}{% endfor %}</div>
+        <div class="columns large-6">{% autoescape off %}{{ ge.observaciones }}{% endautoescape %}</div>
+    </div>
+{% endfor %}
+<hr style="border-color:#008CBA">
+
+<div class="row">
+    <div class="large-12 columns">
+        <label><b>Observaciones</b></label>
+    </div>
+</div>
+<div class="row">
+    <div class="large-12 columns">
+        {% autoescape off %}{{ baja.observaciones }}{% endautoescape %}
+    </div>
+</div>

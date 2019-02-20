@@ -1,0 +1,8 @@
+<dd class="accordion-navigation" id="accordion{{ r.id }}">
+    <a href="#panel{{ r.id }}">
+        <i id="circle{{ r.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <span id="span_nombre{{ r.id }}" style="font-weight: 800;">{{ r.resultado }}</span>
+    </a>
+
+    <div id="panel{{ r.id }}" class="content accordion_contenido" data-id="{{ r.id }}"></div>
+</dd>

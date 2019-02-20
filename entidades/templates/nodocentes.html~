@@ -1,0 +1,269 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+<style>
+  .ui-dialog .ui-state-error { padding: .3em; }
+  .validateTips { border: 1px solid transparent; padding: 0.3em; }
+</style>
+
+<script>
+	$(function() {
+		var cperm = $( "#id_cperm" ),
+		    cecon = $( "#id_cecon" ),
+		    cconv = $( "#id_cconv" ),
+		    cabse = $( "#id_cabse" ),
+		    cotra = $( "#id_cotra" ),
+		    ingreso = $( "#id_ingreso" ),
+		    rama_select =$("#rama_select"),
+		    allFields = $( [] ).add( ingreso ),
+		    tips = $( ".validateTips" );
+		
+		function updateTips( t ) {
+			tips
+				.text( t )
+				.addClass( "ui-state-highlight" );
+			setTimeout(function() {
+				tips.removeClass( "ui-state-highlight", 2500 );
+			}, 500 );
+		}
+
+		function checkInput( o, n ) {
+			var trozos = o.val().split("-");
+			var ntrozos = trozos.length;
+			if ( ntrozos != 3 || parseInt(trozos[0])>2100 || parseInt(trozos[0])<2000 || parseInt(trozos[1])<1 || parseInt(trozos[1])>12 || parseInt(trozos[2])<1 || parseInt(trozos[2])>31 ) {
+				o.addClass( "ui-state-error" );
+				updateTips( n );
+				return false;
+			} else {
+				return true;
+			}
+		}
+		
+		$( "#dialog_consejo" ).dialog({
+			autoOpen: false,
+// 			height: 250,
+			width: 400,
+			modal: true,
+			buttons: {
+			  "Aceptar": function() {
+			      var bValid = true;
+			      allFields.removeClass( "ui-state-error" );
+
+			      bValid = bValid && checkInput( ingreso, "El formato debe ser YYYY-mm-dd.\n 2000<YYYY<2100, 0<mm<13, 0<dd<32" );
+			      if ( bValid ) {
+				if (cperm.is (':checked')) {$('#cperm').val('True');}
+				if (cecon.is (':checked')) {$('#cecon').val('True');}
+				if (cconv.is (':checked')) {$('#cconv').val('True');}
+				if (cabse.is (':checked')) {$('#cabse').val('True');}
+				$('#cotra').val(cotra.val());
+				$('#ingreso').val(ingreso.val());
+				$( this ).dialog( "close" );
+			      }
+			  },
+// 			  Cancel: function() { $( this ).dialog( "close" ); }
+			},
+// 			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});
+		$( "#dialog_tutor" ).dialog({
+			autoOpen: false,
+// 			height: 250,
+			width: 400,
+			modal: true,
+			buttons: {
+			  "Aceptar": function() {
+			      $('#rama').val(rama_select.val());
+			      $( this ).dialog( "close" );
+			  },
+			  "Cancelar": function() { $("#id_consejero").attr("checked", false); $( this ).dialog( "close" ); }
+			},
+			close: function() { $("#id_consejero").attr("checked", false); allFields.val( "" ).removeClass( "ui-state-error" );}
+		});
+		$( "#id_consejero" ).change(function() {
+		    var thisCheck = $(this);
+		    if (thisCheck.is (':checked')) {
+		    $( "#dialog_consejo" ).dialog( "open" ); } });
+		$( "#id_tutor" ).change(function() {
+		    var thisCheck = $(this);
+		    if (thisCheck.is (':checked')) {
+		    $( "#dialog_tutor" ).dialog( "open" ); } });
+	});
+</script>
+
+{% endblock %}
+
+{% block ready %}
+  $('#aceptar').click(function () {  $('#action').val('aceptar'); document.{{formname}}.submit(); });
+  $('#volver').click(function () {  javascript:history.go(-1); });
+  $('#nodocente').change(function () {
+	  $('#action').val('nodocente_selected');
+	  $('#nodocente_selected').val($('#nodocente').val());
+	  document.{{formname}}.submit();
+  });
+  
+{% endblock %}
+
+
+{% block navegar %}
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <img id="volver" style="rondar:pointer;" border="0" align="right" alt="Atrás" title="Atrás" src="/static/images/volver.gif">
+  <img id="aceptar" style="rondar:pointer;" border="0" align="right" alt="Aceptar" title="Aceptar" src="/static/images/aceptar.gif">
+  Datos del personal no docente
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <div style="float:right;">
+    <select id="nodocente" name="nodocente">
+    <option value="">{{nodocente_user_relation.user.get_full_name}}</option>
+    {% for nodocente in nodocentes %}
+      <option value="{{nodocente.user.id}}"> {{nodocente.user.last_name}}, {{nodocente.user.first_name}} </option>
+    {% endfor %}
+    </select>
+  </div>
+{% endblock %}
+
+
+
+{% block contenido %}
+{% if error_message %}
+<div id="dialog-message" title="Errores">
+  <p>
+    <span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+    Faltan los siguientes campos:
+    {{error_message}}
+  </p>
+</div>
+<script>
+$(function() { $( "#dialog-message" ).dialog({ modal: true, buttons: { Ok: function() { $( this ).dialog( "close" ); } } }); });
+</script>
+
+{% elif datos_guardados %}
+<div id="dialog-guardados" title="Datos guardados">
+  <p>
+    <span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+    {{mensaje}}
+  </p>
+</div>
+<script>
+$(function() { $( "#dialog-guardados" ).dialog({ modal: true, buttons: { Ok: function() { $( this ).dialog( "close" ); } } }); });
+</script>
+{% endif %}
+
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+    <input type="hidden" name="action" id="action" value="">
+    <input type="hidden" name="nodocente_selected" id="nodocente_selected" value="{{nodocente_user_relation.user.id}}">
+    <input type="hidden" name="cperm" id="cperm" value="{{nodocente_user_relation.cperm}}">
+    <input type="hidden" name="cecon" id="cecon" value="{{nodocente_user_relation.cecon}}">
+    <input type="hidden" name="cconv" id="cconv" value="{{nodocente_user_relation.cconv}}">
+    <input type="hidden" name="cabse" id="cabse" value="{{nodocente_user_relation.cabse}}">
+    <input type="hidden" name="cotra" id="cotra" value="{{nodocente_user_relation.cotra}}">
+    <input type='hidden' name='ingreso' id='ingreso' value='{{nodocente_user_relation.ingreso|date:"Y-m-d"}}'>
+    <input type="hidden" name="rama" id="rama" value="{{nodocente_user_relation.rama}}">
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Datos identificativos generales</td></tr></table>
+    
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Usuario: {{ form1.username }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Contraseña: <input type="password" name="password1" value=""></td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Confirma contraseña: <input type="password" name="password2" value=""></td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap" rowspan="3"> &nbsp;&nbsp; <img width="60"  src="https://racima.larioja.org:457/racima_gescen/cec/alumnos/fotoAlumnoServlet?dniEmpleado={{nodocente_user_relation.user.get_profile.dni}}&0.29088693720745606" /></td></tr><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Nombre: {{ form1.first_name }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Apellidos: {{ form1.last_name }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Email: {{ form1.email }}</td>
+	</tr><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  DNI: {{ form2.dni }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Teléfono: {{ form2.telmov }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Sexo: {{ form2.sexo }}</td></tr></table>
+
+
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Relación con el {{request.session.grupo_scout.name}}</td></tr></table>
+    
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Especialidad: {{ form3.especialidad }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Departamento: {{ form3.departamento }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Cargo: {{ form3.cargo }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Activo: {{ form3.activo }}</td></tr></table>
+    <br/>
+    <p style="color:#00A6AC;">Indica los perfiles de trabajo para este trabajador:</p>
+    <br/>
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Director/a: {{ form3.director }}</td>    
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Jefe/a de estudios: {{ form3.jefeestudios }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Secretario/a: {{ form3.secretario }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Jefe de departamento: {{ form3.jefedepartamento }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Tutor: {{ form3.tutor }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Monitor: {{ form3.monitor }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Alumno/a: {{ form3.alumno }}</td></tr><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Padre/Madre: {{ form3.padre }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Miembro del Consejo Solar: {{ form3.consejero }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Inspector/a: {{ form3.inspector }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Subalterno: {{ form3.subalterno }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Operario: {{ form3.operario }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Auxiliar: {{ form3.auxiliar }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Empresa: {{ form3.empresa }}</td></tr>
+	  <tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap" colspan="3"> 
+	  Responsable de extrasolares: {{ form3.extrasolares }}</td>
+	</tr></table>
+    <br/>
+    <p style="color:#00A6AC;">Indica si es responsable de gestionar las reparaciones de:</p>
+    <br/>
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Informática: {{ form3.rep_informatica }}</td>    
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Electricidad: {{ form3.rep_electricidad }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Albañilería: {{ form3.rep_albanileria }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Carpintería: {{ form3.rep_carpinteria }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Fontanería: {{ form3.rep_fontaneria }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Otras: {{ form3.rep_otras }}</td></tr></table>
+</form>
+
+
+
+<div id="dialog_consejo" title="Situación en el Consejo Solar">
+  <p class="validateTips">Pertenece a las comisiones:</p>
+  <table><tr><td> Comisión permanente</td><td> {{form3.cperm}}</td><td> Comisión económica </td><td> {{form3.cecon}}</td></tr>
+  <tr><td> Comisión de convivencia</td><td> {{form3.cconv}}</td><td> Comisión de absentismo </td><td>{{form3.cabse}}</td></tr>
+  <tr><td colspan="2"> Otra comisión definida en el ROF </td><td colspan="2"> {{form3.cotra}}</td></tr>
+  <tr><td colspan="2"> Fecha de ingreso en el Consejo Solar </td><td colspan="2">{{form3.ingreso}}</td></tr></table>
+</div>
+<div id="dialog_tutor" title="Tutoría">
+  <p class="validateTips">Es tutor del rama: <select id="rama_select" name="rama_select">
+					      <option value="">{{nodocente_user_relation.rama}}</option>
+					      {% for rama in ramas %}
+						<option value="{{rama}}"> {{rama}} </option>
+					      {% endfor %}
+					      </select></p>
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,19 @@
+{% load my_templatetags %}
+<ol>
+    {% for aspecto in aspectos %}
+        <li id="aspecto{{ aspecto.id }}">
+            {{ aspecto.aspecto }} ({{ aspecto.materia.nombre }}){% if request.session.gauser_extra|has_perfiles:"4,5,6,7" %}
+            &nbsp;<a class="borrar_aspecto" data-id="{{ aspecto.id }}"><i class="fa fa-trash-o"></i></a>{% endif %}
+        </li>
+    {% endfor %}
+</ol>
+{% if request.session.gauser_extra|has_perfiles:"4,5,6,7" %}
+    <script>
+    $("body").on('click','.borrar_aspecto', function (e) {
+            var id = $(this).data('id');
+            $.post("/informe_final_aspectos/", {action: 'borrar_aspecto', id: id}, function (data) {
+                $("#aspecto" + id).hide();
+            });
+        });
+    </script>
+{% endif %}

@@ -1,0 +1,216 @@
+{% extends "base_select2-4.html" %}
+
+{% block head %}
+    <style>
+        #texto1 {
+            color: #447e9b;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong id="titulo">Valorar competencias clave de mis
+                alumnos</strong></h4>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12">
+                <label>Selecciona una materia:
+                    <select id="materia">
+                        <option value="{{ materia_seleccionada.id }}">{{ materia_seleccionada.nombre }}
+                            - {{ materia_seleccionada.curso.nombre }}</option>
+                        {% for materia in materias %}
+                            {% if materia.id != materia_seleccionada.id %}
+                                <option value="{{ materia.id }}">{{ materia.nombre }}
+                                    - {{ materia.curso.nombre }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select> </label>
+            </div>
+        </div>
+
+        {% if materia_seleccionada %}
+            <div class="row">
+                <div class="columns large-12">
+                    <label>Porcentaje de cada competencia asociado a la materia:</label>
+                    <table width="100%">
+                        <tr>
+                            <td>Competencia Lingüistica (CCL)</td>
+                            <td><input type="number" max="100" min="0" class="comclama" data-cc="ccl"
+                                       data-cm="{{ competenciasmateria.id }}" value="{{ competenciasmateria.ccl }}">
+                            </td>
+                            <td>%</td>
+                        </tr>
+                        <tr>
+                            <td>Competencia matemática y competencias básicas en ciencia y tecnología (CMCT)</td>
+                            <td><input type="number" max="100" min="0" class="comclama" data-cc="cmct"
+                                       data-cm="{{ competenciasmateria.id }}" value="{{ competenciasmateria.cmct }}">
+                            </td>
+                            <td>%</td>
+                        </tr>
+                        <tr>
+                            <td>Competencia digital (CD)</td>
+                            <td><input type="number" max="100" min="0" class="comclama" data-cc="cd"
+                                       data-cm="{{ competenciasmateria.id }}" value="{{ competenciasmateria.cd }}"></td>
+                            <td>%</td>
+                        </tr>
+                        <tr>
+                            <td>Aprender a aprender (CPAA)</td>
+                            <td><input type="number" max="100" min="0" class="comclama" data-cc="cpaa"
+                                       data-cm="{{ competenciasmateria.id }}" value="{{ competenciasmateria.cpaa }}">
+                            </td>
+                            <td>%</td>
+                        </tr>
+                        <tr>
+                            <td>Competencias sociales y cívicas (CSC)</td>
+                            <td><input type="number" max="100" min="0" class="comclama" data-cc="csc"
+                                       data-cm="{{ competenciasmateria.id }}" value="{{ competenciasmateria.csc }}">
+                            </td>
+                            <td>%</td>
+                        </tr>
+                        <tr>
+                            <td>Sentido de la iniciativa y espíritu emprendedor (SIE)</td>
+                            <td><input type="number" max="100" min="0" class="comclama" data-cc="sie"
+                                       data-cm="{{ competenciasmateria.id }}" value="{{ competenciasmateria.sie }}">
+                            </td>
+                            <td>%</td>
+
+                        </tr>
+                        <tr>
+                            <td>Conciencia y expresiones culturales (CEC)</td>
+                            <td><input type="number" max="100" min="0" class="comclama" data-cc="cec"
+                                       data-cm="{{ competenciasmateria.id }}" value="{{ competenciasmateria.cec }}">
+                            </td>
+                            <td>%</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="columns large-12">
+                    <h4>No tienes materias en las etapas en las que se requiere en Consejo Orientador</h4>
+                </div>
+            </div>
+        {% endif %}
+
+        <dl class="accordion" data-accordion id="list_grupos" title="Lista de grupos">
+            {% for grupo in grupos_materia_seleccionada %}
+                <dd class="accordion-navigation" id="accordion{{ grupo.id }}">
+                    <a href="#grupo{{ grupo.id }}">
+                        <i id="circle{{ grupo.id }}" class="fa fa-plus-circle circle_icon"></i>
+                        <span id="span_nombre{{ grupo.id }}" style="font-weight: 800;">{{ grupo.nombre }}</span>
+                    </a>
+
+                    <div id="grupo{{ grupo.id }}" class="content grupo_contenido" data-grupo="{{ grupo.id }}"
+                         data-cm="{{ competenciasmateria.id }}"></div>
+                </dd>
+            {% endfor %}
+        </dl>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_file-pdf-o']);
+
+        $('#file-pdf-o_sign').click(function (e) {
+            e.preventDefault();
+            $('#action').val('informe_pdf');
+            document.cc_valorar_mis_alumnos.submit();
+        });
+
+        $('#materia').change(function () {
+            var materia = $(this).val();
+            window.location.href = "/cc_valorar_mis_alumnos/?m=" + materia;
+        });
+
+        $('body').on('keyup change mouseup', '.comclama', function () {
+            competencia = $(this);
+            var cm = $(this).data('cm');
+            var cc = $(this).data('cc');
+            var v = $(this).val();
+            $.post("/cc_valorar_mis_alumnos/", {action: 'mod_percentage', cc: cc, cm: cm, v: v}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    if (data.total > 100) {
+                        competencia.val(data.valor);
+                        show_mensajes({
+                            title: "<i class='fa fa-warning'></i> Error en la suma de porcentajes",
+                            texto: "El valor propuesto daría una suma de porcentajes igual a " + data.total + "%<br> Se ajusta este valor a " + data.valor + "%"
+                        });
+                    }
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('keyup change mouseup', '.cma', function () {
+            var cma = $(this).data('cma');
+            var cc = $(this).data('cc');
+            var v = $(this).val();
+            $.post("/cc_valorar_mis_alumnos/", {action: 'mod_valor', cc: cc, cma: cma, v: v}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        {# Repetición de notas en cada competencia clave al escribir una calificación en el campo nota #}
+        $('body').on('keyup change mouseup', '.nota', function () {
+            var nota_input = $(this);
+            var cma = $(this).data('cma');
+            var nota = $(this).val();
+            $.post("/cc_valorar_mis_alumnos/", {action: 'nota', nota: nota, cma: cma}, function (data) {
+                if (data.ok) {
+                    nota_input.parent().parent().find('.cma').val(data.nota);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+        {# Fin de la función #}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('grupo_contenido')) {
+                        var id = accordion.data('grupo');
+                        var cm = accordion.data('cm');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/cc_valorar_mis_alumnos/", {
+                                action: 'open_accordion',
+                                id: id,
+                                cm: cm
+                            }, function (data) {
+                                if (data.ok) {
+                                    $('#grupo' + id).html(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#grupo' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+
+    </script>
+{% endblock %}

@@ -1,0 +1,75 @@
+﻿{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <div class="">
+        <h4 style="text-align: center;color: #008CBA;"><strong> Contrato entre Sistemas de Gestión Aumentada y la
+            Asociación</strong></h4>
+    </div>
+    <div class="row">
+    <div class="columns large-12">
+
+    </div>
+    </div>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="entidad" value="{{ request.session.gauser_extra.ronda.entidad.id }}">
+
+        <div id="div_form">
+            {{ form.texto }}
+        </div>
+
+        <input type="file" name="fichero" id="id_fichero" style="display: none;">
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_check', 's_file-pdf-o', 's_upload', 's_download'])
+
+        {% if request.session.gauser_extra|has_permiso:"guarda_modificaciones_contrato" %}
+            $("#check_sign").click(function (e) {
+                e.preventDefault();
+                $('#action').val('guardar_modificaciones');
+                document.{{formname}}.submit();
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:"puede_subir_contrato" %}
+            $('#upload_sign').click(function (e) {
+                e.preventDefault();
+                $('#id_fichero').click();
+                setTimeout(function () {
+                    $('#id_fichero').val($('#id_fichero').val());
+                }, 1);
+            });
+            $('#id_fichero').change(function () {
+                $('#action').val('subir_contrato');
+                document.{{formname}}.submit();
+            });
+        {% endif %}
+
+
+        {% if request.session.gauser_extra|has_permiso:"puede_descargar_contrato" %}
+            $("#download_sign").click(function (e) {
+                e.preventDefault();
+                $('#action').val('bajar_contrato');
+                document.{{formname}}.submit();
+            });
+        {% endif %}
+
+
+        $("#file-pdf-o_sign").click(function (e) {
+            e.preventDefault();
+            $('#action').val('obtener_pdf');
+            document.{{formname}}.submit();
+        });
+
+
+        editor1 = wysihtmleditor('id_texto', {height: 800, tcenter: true});
+
+
+    </script>
+{% endblock %}

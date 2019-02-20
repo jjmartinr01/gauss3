@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <style>
+
+
+        {# CSS para calendario_month.html #}
+        .pestana {
+            color: white;
+            font-weight: 800;
+            background-color: #008cba;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+        }
+
+        table.mes_calendario {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        tr.mes_calendario {
+            width: 14.2%;
+        }
+
+        td.mes_calendario {
+            width: 14.2%;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .td_dia {
+            cursor: crosshair;
+        }
+
+        th.mes_calendario {
+            width: 14.2%;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        /* Chrome, Safari, Opera */
+        @-webkit-keyframes pulsar {
+            from {
+                color: #242424;
+            }
+            to {
+                color: #ffffff;
+            }
+        }
+
+        /* Standard syntax */
+        @keyframes pulsar {
+            from {
+                color: #242424;
+            }
+            to {
+                color: #ffffff;
+            }
+        }
+
+        #contenido_evento {
+            position: relative;
+            display: none;
+            background-color: #ffffff;
+            border: solid 1px #d3d3d3;
+            padding: 10px;
+        }
+
+        .show_add_evento {
+            cursor: pointer;
+        }
+
+        .add_evento {
+            cursor: pointer;
+        }
+
+        .div_operaciones {
+            position: absolute;
+            top: 0px;
+            left: -30px;
+        {#            width: 100px;#} display: none;
+            width: auto;
+            white-space: nowrap;
+            background-color: #242424;
+        {#            color: blue;#} text-align: left;
+            z-index: 10;
+            border-radius: 5px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        {#            border: solid 1px #d3d3d3;#}
+        }
+
+        .seleccionado {
+            font-weight: 900;
+            color: #ffffff;
+            background-color: #242424;
+            border-radius: 5px;
+            display: block;
+            -webkit-animation: pulsar 1s; /* Chrome, Safari, Opera */
+            animation: pulsar 1s;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}"
+          xmlns="http://www.w3.org/1999/html">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="id_evento" id="id_evento" value="">
+        <input type="hidden" name="id_calendario" id="id_calendario" value="">
+        <input type="hidden" name="fecha_actual" id="fecha_actual" value="{% now 'd/m/Y' %}">
+        <input type="hidden" name="vista_actual" id="vista_actual" value="{{ vista_actual }}">
+        <input type="hidden" name="div_actual" id="div_actual" value="0">
+
+
+        <div id="div_vista">
+            <div class="row">
+                <div class="show-for-large-up columns large-1 medium-1 small-1">
+                    <a class="pasar_slide" data-direction="-1" data-event="slickPrev">
+                        <i class="fa fa-caret-square-o-left"></i></a>
+                </div>
+                <div class="show-for-large-up columns large-1 medium-1 small-1">
+                    <a class="pasar_slide" data-direction="1" data-event="slickNext">
+                        <i class="fa fa-caret-square-o-right"></i></a>
+                </div>
+                <div class="columns large-6 medium-3 small-4">
+                    <span class="pestana" id="div_print_fecha"
+                          style="{% if vista_actual == 'agenda' %}
+                              display: inline;{% else %}display: none;{% endif %}">{{ fecha|date:'d/m/Y' }}</span>
+                </div>
+                <div class="columns large-2 medium-3 small-3 right" style="text-align: right">
+                    <a class="tab_calendario" data-action="mes"><span class="pestana">Mes</span></a>
+                </div>
+                <div class="columns large-2 medium-4 small-4 right" style="text-align: right">
+                    <a class="tab_calendario" data-action="agenda"><span class="pestana">Agenda</span></a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="calendario_slick columns large-12" id="calendario_slick">
+                    <div class="row" id="div_0" data-div="0">
+                        <div class="large-12 columns">
+                            {{ renderizado }}
+                        </div>
+                    </div>
+                    <div class="row" id="div_1" data-div="1">
+                        <div class="large-12 columns">
+                            <h2 class="subheader">Cargando ... <i class="fa fa-refresh fa-spin"></i></h2>
+                        </div>
+                    </div>
+                    <div class="row" id="div_2" data-div="2">
+                        <div class="large-12 columns">
+                            <h2 class="subheader">Cargando ... <i class="fa fa-refresh fa-spin"></i></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="div_crea_evento" style="display: none;">
+
+        </div>
+    </form>
+
+
+
+{% endblock %}
+
+
+{% block final %}
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.min.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.min.js"></script>
+    {#        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>#}
+    <script>
+
+        habilita(['h_check', 'h_file-pdf-o', 'h_arrow-left']);
+
+        $('body').on('click', '.show_evento', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var id = $(this).data('id');
+            $('#id_evento').val(id);
+            $.post("/calendario_ajax/", {action: 'show_evento', id: id}, function (data) {
+                if (data.usuario) {
+                    show_mensajes({
+                        title: data.title, texto: data.texto, buttons: {
+                            "Eliminar": function () {
+                                $('#action').val('borrar_evento');
+                                document
+                                .{{formname}}.
+                                submit();
+                            },
+                            "Editar": function () {
+                                var id = $('#id_evento').val();
+                                var vista_actual = $('#vista_actual').val();
+                                window.location.href = "/edita_evento/?vevent=" + id + '&v=' + vista_actual;
+                            }
+                        }
+                    });
+                } else {
+                    show_mensajes({title: data.title, texto: data.texto});
+                }
+            });
+        });
+
+        $('body').on('click', '.td_dia', function (e) {
+            e.preventDefault();
+            $('#action').val('crea_evento');
+            habilita(['h_file-pdf-o', 's_check', 's_arrow-left']);
+            var fecha = $(this).data('fecha').replace(/\//g, '');
+            var vista_actual = $('#vista_actual').val();
+            window.location.href = "/crea_evento/?f=" + fecha + '&v=' + vista_actual;
+        });
+
+        $('.calendario_slick').on('beforeChange', function (event, slick, currentSlide, nextSlide) {
+            var fecha = $('#fecha_actual').val();
+            var vista = $('#vista_actual').val();
+            var d = nextSlide - currentSlide;
+            if (d == 1 || d == -2) {
+                var direction = 1;
+            } else {
+                var direction = -1;
+            }
+            $.post("/calendario_ajax/", {
+                action: 'renderizado',
+                'fecha': fecha,
+                'direction': direction,
+                'vista': vista
+            }, function (data) {
+                $('#div_print_fecha').html(data.fecha);
+                $('#fecha_actual').val(data.fecha);
+                $('#div_' + nextSlide).html(data.renderizado);
+                $('#div_actual').val(nextSlide);
+            }, 'json');
+
+        });
+
+        $('.calendario_slick').slick({arrows: false});
+
+        $('body').on('click', '.pasar_slide', function (e) {
+            e.preventDefault();
+            var fecha = $('#fecha_actual').val();
+            var vista = $('#vista_actual').val();
+            var direction = $(this).data('direction');
+            $('.calendario_slick').slick($(this).data('event'));
+            $.post("/calendario_ajax/", {
+                action: 'renderizado',
+                'fecha': fecha,
+                'direction': direction,
+                'vista': vista
+            }, function (data) {
+                var nextSlide = $('.calendario_slick').slick('slickCurrentSlide');
+                $('#div_print_fecha').html(data.fecha);
+                $('#fecha_actual').val(data.fecha);
+                $('#div_' + nextSlide).html(data.renderizado);
+                $('#div_actual').val(nextSlide);
+            }, 'json');
+        });
+
+        $('body').on('click', '.tab_calendario', function (e) {
+            e.preventDefault();
+            var action = $(this).data('action');
+            $('#vista_actual').val(action);
+            var fecha = $('#fecha_actual').val();
+            var div_actual = $('#div_actual').val();
+            if (action == 'agenda') {
+                $('#div_print_fecha').show();
+            } else {
+                $('#div_print_fecha').hide();
+            }
+            $.post("/calendario_ajax/", {'action': action, 'fecha': fecha}, function (data) {
+                $('#div_' + div_actual).html(data);
+            });
+        });
+
+        $('body').on('click', '.more_vevents', function (e) {
+            e.preventDefault();
+            var fecha = $(this).data('fecha');
+            $.post("/calendario_ajax/", {
+                action: 'more_vevents',
+                'fecha': fecha,
+            }, function (data) {
+                $('#more_vevents' + fecha.replace(/\//g, '')).hide();
+                window.console.log('#more_vevents' + fecha.replace(/\//g, ''));
+                $('#div_' + $('#div_actual').val()).append(data.renderizado);
+            }, 'json');
+        });
+
+        {#         Comienza el código de configuración de los botones top-bar #}
+
+        $('#arrow-left_sign').click(function (e) {
+            e.preventDefault();
+            habilita(['h_file-pdf-o', 'h_check', 'h_arrow-left']);
+            $('#div_vista').show();
+            $('#div_crea_evento').hide();
+        });
+
+        $('#check_sign').click(function (e) {
+            e.preventDefault();
+            if ($('#action').val() == 'crea_evento') {
+                $('#action').val('grabar_evento');
+            } else if ($('#action').val() == 'edita_evento') {
+                $('#action').val('actualizar_evento');
+            }
+            var formulario = $('#' + '{{formname}}').formSerialize();
+            $.post("/calendario_ajax/", formulario, function (data) {
+                if (data) {
+                    show_mensajes({title: 'Errores', texto: data});
+                } else {
+                    $('#action').val('recarga');
+                    {#         'recarga' no se contempla en el views.py, pero sirve para no confundir con otra action #}
+                    document
+                .{{formname}}.
+                    submit();
+                }
+            });
+        });
+
+        $("#file-pdf-o_sign").click(function (e) {
+            e.preventDefault();
+            $('#action').val('pdf_documentos');
+            {#            document.{{formname}}.submit();#}
+        });
+    </script>
+{% endblock %}

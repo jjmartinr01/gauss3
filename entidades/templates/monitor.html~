@@ -1,0 +1,98 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+<style>
+  .ui-dialog .ui-state-error { padding: .3em; }
+  .validateTips { border: 1px solid transparent; padding: 0.3em; }
+</style>
+
+{% endblock %}
+
+{% block ready %}
+  $('#aceptar').click(function () {  $('#action').val('aceptar'); document.{{formname}}.submit(); });
+  $('#volver').click(function () {  javascript:history.go(-1); });
+{% endblock %}
+
+
+{% block navegar %}
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <img id="volver" style="rondar:pointer;" border="0" align="right" alt="Atrás" title="Atrás" src="/static/images/volver.gif">
+  <img id="aceptar" style="rondar:pointer;" border="0" align="right" alt="Aceptar" title="Aceptar" src="/static/images/aceptar.gif">
+  Datos personales y relación con el grupo_scout
+{% endblock %}
+
+
+
+{% block contenido %}
+
+{% if error_message %}
+<div id="dialog-message" title="Errores">
+  <p>
+    <span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+    Error en los siguientes campos:
+    {{error_message}}
+  </p>
+</div>
+<script>
+$(function() { $( "#dialog-message" ).dialog({ modal: true, buttons: { Ok: function() { $( this ).dialog( "close" ); } } }); });
+</script>
+
+{% elif datos_guardados %}
+<div id="dialog-guardados" title="Datos guardados">
+  <p>
+    <span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+    Los datos han sido guardados correctamente. {{contrasena}}
+  </p>
+</div>
+<script>
+$(function() { $( "#dialog-guardados" ).dialog({ modal: true, buttons: { Ok: function() { $( this ).dialog( "close" ); } } }); });
+</script>
+{% endif %}
+
+
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+    <input type="hidden" name="action" id="action" value="">
+    <input type="hidden" name="rama" id="rama" value="{{monitor_user_relation.rama}}">
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Datos identificativos generales</td></tr></table>
+    
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Usuario: {{ form1.username }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Contraseña: <input type="password" name="password1" value=""></td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Confirma contraseña: <input type="password" name="password2" value=""></td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap" rowspan="3"> &nbsp;&nbsp;<img width="60" src="/static/fotos/{{foto}}"/></td></tr><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Nombre: {{ form1.first_name }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Apellidos: {{ form1.last_name }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Email: {{ form1.email }}</td>
+	</tr><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  DNI: {{ form2.dni }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Teléfono: {{ form2.telmov }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Sexo: {{ form2.sexo }}</td></tr></table>
+
+
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Relación con el {{request.session.grupo_scout.name}}</td></tr></table>
+    
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Rama: {{ form3.rama }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Responsable de rama: {{ form3.responsable_rama }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Cargo: {{ form3.cargo }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Titulación: {{ form3.titulacion }}</td></tr></table>
+
+    <br/>
+</form>
+
+
+{% endblock %}

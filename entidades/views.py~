@@ -1,0 +1,597 @@
+# -*- coding: utf-8 -*-
+from django.shortcuts import render_to_response
+from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
+from django.template import RequestContext
+from django.db import models
+from django.db.models import Q
+from django import forms
+from django.forms import ModelForm
+from autenticar.models import Menu, Menu_element, Submenu, Submenu_element, Gauser_extra, Gauser, Perfil
+from autenticar.control_acceso import access_required
+from autenticar.views import crear_nombre_usuario, asign_permisos
+from models import Entidad, Ronda, Subentidad, Subsubentidad, Alta_Baja
+from mensajes.models import Mensaje, Aviso
+from mensajes.views import crear_aviso
+from bancos.views import asocia_banco_entidad, asocia_banco_ge
+from gauss.rutas import *
+from gauss.funciones import socios_del_grupo, pass_generator
+#import xlrd #Permite leer archivos xls
+#import unicodedata
+from django.core.exceptions import  ObjectDoesNotExist
+import subprocess
+import os
+#from lxml import etree as ElementTree
+from xml.etree import ElementTree
+#from django.core.urlresolvers import reverse
+from datetime import datetime #,date,timedelta
+import string
+import random
+from django.utils import simplejson as json
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+
+
+class EntidadForm(ModelForm):
+    class Meta:
+      model = Entidad
+      exclude = ('code', 'name')
+      widgets = {
+	      'fax': forms.TextInput(attrs={'size':'9'}),
+	      'tel': forms.TextInput(attrs={'size':'9'}),
+	      'postalcode': forms.TextInput(attrs={'size':'6',}),
+	  }
+
+class Gauser_mis_datos_Form(ModelForm):
+    class Meta:
+      model = Gauser
+      fields = ('username','first_name', 'last_name','email', 'sexo', 'dni', 'address', 'postalcode', 'localidad', 'provincia', 'nacimiento', 'telfij', 'telmov')
+
+class Gauser_extra_mis_datos_Form(ModelForm):
+    class Meta:
+      model = Gauser_extra
+      fields = ('foto', 'ocupacion','alias')
+
+class GauserForm(ModelForm):
+    class Meta:
+      model = Gauser
+      fields = ('username','first_name', 'last_name','email', 'sexo', 'dni', 'address', 'postalcode', 'localidad', 'provincia', 'nacimiento', 'telfij', 'telmov', 'familia')
+      
+class Padre_extraForm(ModelForm):
+    class Meta:
+      model = Gauser_extra
+      fields = ('activo', 'observaciones', 'foto', 'ocupacion', 'perfiles')
+
+class SocioAdulto_extraForm(ModelForm):
+    class Meta:
+      model = Gauser_extra
+      fields = ('activo', 'observaciones', 'foto', 'id_scout', 'num_cuenta_bancaria', 'ocupacion', 'perfiles')
+      widgets = {'num_cuenta_bancaria': forms.TextInput(attrs={'size':'30'}),}
+
+class Scouter_extraForm(ModelForm):
+    class Meta:
+      model = Gauser_extra
+      fields = ('activo', 'observaciones', 'foto', 'cargo', 'id_scout', 'num_cuenta_bancaria', 'perfiles')
+      widgets = {'num_cuenta_bancaria': forms.TextInput(attrs={'size':'30'}),}
+
+class Educando_extraForm(ModelForm):
+    class Meta:
+      model = Gauser_extra
+      fields = ('activo', 'observaciones', 'foto', 'cargo', 'id_scout', 'num_cuenta_bancaria', 'tutor1', 'tutor2', 'perfiles')
+      widgets = {'num_cuenta_bancaria': forms.TextInput(attrs={'size':'30'}),}
+
+
+@login_required()
+def mis_datos(request):
+    g_e = request.session['gauser_extra']
+    form1 = Gauser_mis_datos_Form(instance=g_e.gauser)
+    form2 = Gauser_extra_mis_datos_Form(instance = g_e)
+    if request.method == 'POST':
+      form1 = Gauser_mis_datos_Form(request.POST, instance = g_e.gauser)
+      form2 = Gauser_extra_mis_datos_Form(request.POST, request.FILES, instance = g_e)
+      if form1.is_valid():
+	usuario = form1.save()
+      else:
+	crear_aviso(request,False,form1.errors)
+      if form2.is_valid():
+	usuario = form2.save()
+      else:
+	crear_aviso(request,False,form2.errors)
+      if request.POST['password1'] == request.POST['password2'] and request.POST['password1'] != '':
+	g_e.gauser.set_password(request.POST['password1'])
+	crear_aviso(request,False,'<p>Contraseña cambiada correctamente.</p>') 
+	g_e.gauser.save()
+      request.session['gauser_extra'] = Gauser_extra.objects.get(id=g_e.id)
+    respuesta = {
+	'formname' : 'mis_datos',
+	'form1': form1,
+	'form2': form2,
+	'avisos': Aviso.objects.filter(usuario = request.session["gauser_extra"], aceptado = False),
+      }
+    return render_to_response("mis_datos.html", respuesta, context_instance=RequestContext(request))
+
+
+
+@access_required
+@login_required()
+def scouts(request,identificador):
+    g_e = request.session["gauser_extra"]
+    perf = {'i2060':[70], 'i2040':[80], 'i2050':[75], 'i2070':[85] }
+    scouts = socios_del_grupo(g_e.entidad, perfiles = perf[identificador])
+    tutores = []
+
+    if request.method == 'POST':
+	crear_aviso(request,True,request.META['PATH_INFO'] + 'POST action: ' + request.POST['action'])
+	g_e_selected = Gauser_extra.objects.get(id=request.POST['gauser_extra_selected'])
+
+	permiso_baja = g_e.has_permiso('da_baja_socios')
+	if request.POST['action'] == 'baja_socio':
+	  if permiso_baja:
+	    g_e_selected.activo = False
+	    g_e_selected.save()
+	    try:
+	      baja = Alta_Baja.objects.get(gauser = g_e_selected.gauser)
+	      baja.fecha_baja = datetime.now().date()
+	    except:
+	      baja = Alta_Baja.objects.create(entidad = g_e.entidad, gauser = g_e_selected.gauser, fecha_baja = datetime.now().date())
+	    obs = u'<br>Con fecha %s se ha dado de baja a %s.'%(datetime.now().strftime("%d-%m-%Y"),g_e_selected)
+	    if not baja.observaciones: baja.observaciones = ''
+	    baja.observaciones = baja.observaciones + obs
+	    baja.save()
+	    crear_aviso(request, False, u'<p>Se ha dado de baja al usuario <strong> %s </strong>.</p> <p> Es posible recuperarlo a través del administrador del sistema.</p>'%g_e_selected.gauser.get_full_name())
+	    scouts = scouts.exclude(id = g_e_selected.id)
+	    g_e_selected = scouts[0]
+	    form1 = GauserForm(instance=g_e_selected.gauser)
+	    if scouts[0].has_perfiles([70,]):  
+	      form2 = Educando_extraForm(instance = g_e_selected)
+	      tutores = Gauser_extra.objects.filter(entidad = g_e_selected.entidad, ronda = g_e_selected.ronda, perfiles__in = [80,])
+	    elif scouts[0].has_perfiles([75,]):
+	      form2 = Scouter_extraForm(instance = g_e_selected)
+	    elif scouts[0].has_perfiles([85,]):
+	      form2 = SocioAdulto_extraForm(instance = g_e_selected)
+	    else:
+	      form2 = Padre_extraForm(instance = g_e_selected)
+	  else:
+	    crear_aviso(request, False, u'<p>No tienes permisos para dar de baja a los socios.</p>')
+	    
+	if request.POST['action'] == 'aceptar':
+	  form1 = GauserForm(request.POST, instance=g_e_selected.gauser)
+	  if g_e_selected.has_perfiles([70,]):  
+	    form2 = Educando_extraForm(request.POST, request.FILES, instance = g_e_selected)
+	    tutores = Gauser_extra.objects.filter(entidad = g_e_selected.entidad, ronda = g_e_selected.ronda, perfiles__in = [80,])
+	  elif g_e_selected.has_perfiles([75,]):
+	    form2 = Scouter_extraForm(request.POST, request.FILES, instance = g_e_selected)
+	  elif scouts[0].has_perfiles([85,]):
+	    form2 = SocioAdulto_extraForm(request.POST, request.FILES, instance = g_e_selected)
+	  else:
+	    form2 = Padre_extraForm(request.POST, request.FILES, instance = g_e_selected)
+	  if form1.is_valid():
+	    usuario = form1.save()
+	  else:
+	    crear_aviso(request,False,form1.errors)
+	  if form2.is_valid():
+	    form2.save()
+	    asocia_banco_ge(g_e_selected)
+	  else:
+	    crear_aviso(request,False,form2.errors)
+	    
+	  # Ajustar los permisos mínimos que va a tener el socio:
+	  asign_permisos(request,g_e_selected)
+	  
+	  
+	  if request.POST['password1'] == request.POST['password2'] and request.POST['password1'] != '':
+	    g_e_selected.gauser.set_password(request.POST['password1'])
+	    crear_aviso(request,False,'<p>Contraseña cambiada correctamente.</p>') 
+	    g_e_selected.gauser.save()
+	#else:
+	  #crear_aviso(request, False, u'<p>No tienes permisos para modificar los datos de un socio.</p>')
+
+	if request.POST['action'] == 'gauser_extra_selected':
+	  form1 = GauserForm(instance=g_e_selected.gauser)
+	  if g_e_selected.has_perfiles([70,]):  
+	    form2 = Educando_extraForm(instance = g_e_selected)
+	    tutores = Gauser_extra.objects.filter(entidad = g_e_selected.entidad, ronda = g_e_selected.ronda, perfiles__in = [80,])
+	  elif g_e_selected.has_perfiles([75,]):
+	    form2 = Scouter_extraForm(instance = g_e_selected)
+	  elif scouts[0].has_perfiles([85,]):
+	    form2 = SocioAdulto_extraForm(instance = g_e_selected)
+	  else:
+	    form2 = Padre_extraForm(instance = g_e_selected)
+
+    else:
+	crear_aviso(request,True,'Entra en ' + request.META['PATH_INFO'] + ' no POST')
+	g_e_selected = scouts[0]
+	form1 = GauserForm(instance=g_e_selected.gauser)
+	if scouts[0].has_perfiles([70,]):  
+	  form2 = Educando_extraForm(instance = g_e_selected)
+	  tutores = Gauser_extra.objects.filter(entidad = g_e_selected.entidad, ronda = g_e_selected.ronda, perfiles__in = [80,])
+	elif scouts[0].has_perfiles([75,]):
+	  form2 = Scouter_extraForm(instance = g_e_selected)
+	elif scouts[0].has_perfiles([85,]):
+	  form2 = SocioAdulto_extraForm(instance = g_e_selected)
+	else:
+	  form2 = Padre_extraForm(instance = g_e_selected)
+	
+	
+
+    respuesta = {
+	'menu': '#'+identificador,
+	'formname' : 'scouts',
+	'form1': form1,
+	'form2': form2,
+	'cliente':request.META,
+	'perfiles':Perfil.objects.filter(id__in=[20,25,30,35,40,45,50,55,60,65,70,75,80,85]),
+	'gauser_extra_selected':g_e_selected,
+	'avisos': Aviso.objects.filter(usuario = request.session["gauser_extra"], aceptado = False),
+	'json_usuarios':json.dumps([ ( u'{0}, {1}'.format( p.gauser.last_name, p.gauser.first_name )) for p in scouts ]),
+	'json_usuarios_ids':json.dumps([ ( u'{0}'.format( p.id )) for p in scouts ]),
+	'json_tutores':json.dumps([ ( u'{0}, {1}'.format( p.gauser.last_name, p.gauser.first_name )) for p in tutores ]),
+	'json_tutores_ids':json.dumps([ ( u'{0}'.format( p.id )) for p in tutores ]),
+      }
+    #return respuesta
+    
+    return render_to_response("scouts.html", respuesta, context_instance=RequestContext(request))
+
+@access_required
+@login_required()
+def scouts_rama(request,identificador):
+    g_e = request.session["gauser_extra"]
+    perf = {'i3070':[80], 'i3075':[70],}
+    scouts = socios_del_grupo(g_e.entidad, perfiles = perf[identificador])
+    tutores = []
+
+    if request.method == 'POST':
+	crear_aviso(request,True,request.META['PATH_INFO'] + 'POST action: ' + request.POST['action'])
+	g_e_selected = Gauser_extra.objects.get(id=request.POST['gauser_extra_selected'])
+
+	permiso_baja = g_e.has_permiso('da_baja_socios')
+	if request.POST['action'] == 'baja_socio':
+	  if permiso_baja:
+	    g_e_selected.activo = False
+	    g_e_selected.save()
+	    try:
+	      baja = Alta_Baja.objects.get(gauser = g_e_selected.gauser)
+	      baja.fecha_baja = datetime.now().date()
+	    except:
+	      baja = Alta_Baja.objects.create(entidad = g_e.entidad, gauser = g_e_selected.gauser, fecha_baja = datetime.now().date())
+	    obs = u'<br>Con fecha %s se ha dado de baja a %s.'%(datetime.now().strftime("%d-%m-%Y"),g_e_selected)
+	    if not baja.observaciones: baja.observaciones = ''
+	    baja.observaciones = baja.observaciones + obs
+	    baja.save()
+	    crear_aviso(request, False, u'<p>Se ha dado de baja al usuario <strong> %s </strong>.</p> <p> Es posible recuperarlo a través del administrador del sistema.</p>'%g_e_selected.gauser.get_full_name())
+	    scouts = scouts.exclude(id = g_e_selected.id)
+	    g_e_selected = scouts[0]
+	    form1 = GauserForm(instance=g_e_selected.gauser)
+	    if scouts[0].has_perfiles([70,]):  
+	      form2 = Educando_extraForm(instance = g_e_selected)
+	      tutores = Gauser_extra.objects.filter(entidad = g_e_selected.entidad, ronda = g_e_selected.ronda, perfiles__in = [80,])
+	    elif scouts[0].has_perfiles([75,]):
+	      form2 = Scouter_extraForm(instance = g_e_selected)
+	    elif scouts[0].has_perfiles([85,]):
+	      form2 = SocioAdulto_extraForm(instance = g_e_selected)
+	    else:
+	      form2 = Padre_extraForm(instance = g_e_selected)
+	  else:
+	    crear_aviso(request, False, u'<p>No tienes permisos para dar de baja a los socios.</p>')
+	    
+	if request.POST['action'] == 'aceptar':
+	  form1 = GauserForm(request.POST, instance=g_e_selected.gauser)
+	  if g_e_selected.has_perfiles([70,]):  
+	    form2 = Educando_extraForm(request.POST, request.FILES, instance = g_e_selected)
+	    tutores = Gauser_extra.objects.filter(entidad = g_e_selected.entidad, ronda = g_e_selected.ronda, perfiles__in = [80,])
+	  elif g_e_selected.has_perfiles([75,]):
+	    form2 = Scouter_extraForm(request.POST, request.FILES, instance = g_e_selected)
+	  elif scouts[0].has_perfiles([85,]):
+	    form2 = SocioAdulto_extraForm(request.POST, request.FILES, instance = g_e_selected)
+	  else:
+	    form2 = Padre_extraForm(request.POST, request.FILES, instance = g_e_selected)
+	  if form1.is_valid():
+	    usuario = form1.save()
+	  else:
+	    crear_aviso(request,False,form1.errors)
+	  if form2.is_valid():
+	    form2.save()
+	    asocia_banco_ge(g_e_selected)
+	  else:
+	    crear_aviso(request,False,form2.errors)
+	    
+	  if request.POST['password1'] == request.POST['password2'] and request.POST['password1'] != '':
+	    g_e_selected.gauser.set_password(request.POST['password1'])
+	    crear_aviso(request,False,'<p>Contraseña cambiada correctamente.</p>') 
+	    g_e_selected.gauser.save()
+	#else:
+	  #crear_aviso(request, False, u'<p>No tienes permisos para modificar los datos de un socio.</p>')
+
+	if request.POST['action'] == 'gauser_extra_selected':
+	  form1 = GauserForm(instance=g_e_selected.gauser)
+	  if g_e_selected.has_perfiles([70,]):  
+	    form2 = Educando_extraForm(instance = g_e_selected)
+	    tutores = Gauser_extra.objects.filter(entidad = g_e_selected.entidad, ronda = g_e_selected.ronda, perfiles__in = [80,])
+	  elif g_e_selected.has_perfiles([75,]):
+	    form2 = Scouter_extraForm(instance = g_e_selected)
+	  elif scouts[0].has_perfiles([85,]):
+	    form2 = SocioAdulto_extraForm(instance = g_e_selected)
+	  else:
+	    form2 = Padre_extraForm(instance = g_e_selected)
+
+    else:
+	crear_aviso(request,True,'Entra en ' + request.META['PATH_INFO'] + ' no POST')
+	g_e_selected = scouts[0]
+	form1 = GauserForm(instance=g_e_selected.gauser)
+	if scouts[0].has_perfiles([70,]):  
+	  form2 = Educando_extraForm(instance = g_e_selected)
+	  tutores = Gauser_extra.objects.filter(entidad = g_e_selected.entidad, ronda = g_e_selected.ronda, perfiles__in = [80,])
+	elif scouts[0].has_perfiles([75,]):
+	  form2 = Scouter_extraForm(instance = g_e_selected)
+	elif scouts[0].has_perfiles([85,]):
+	  form2 = SocioAdulto_extraForm(instance = g_e_selected)
+	else:
+	  form2 = Padre_extraForm(instance = g_e_selected)
+	
+	
+
+    respuesta = {
+	'menu': '#'+identificador,
+	'formname' : 'scouts',
+	'form1': form1,
+	'form2': form2,
+	'cliente':request.META,
+	'perfiles':Perfil.objects.filter(id__in=[20,25,30,35,40,45,50,55,60,65,70,75,80,85]),
+	'gauser_extra_selected':g_e_selected,
+	'avisos': Aviso.objects.filter(usuario = request.session["gauser_extra"], aceptado = False),
+	'json_usuarios':json.dumps([ ( u'{0}, {1}'.format( p.gauser.last_name, p.gauser.first_name )) for p in scouts ]),
+	'json_usuarios_ids':json.dumps([ ( u'{0}'.format( p.id )) for p in scouts ]),
+	'json_tutores':json.dumps([ ( u'{0}, {1}'.format( p.gauser.last_name, p.gauser.first_name )) for p in tutores ]),
+	'json_tutores_ids':json.dumps([ ( u'{0}'.format( p.id )) for p in tutores ]),
+      }
+    #return respuesta
+    
+    return render_to_response("scouts.html", respuesta, context_instance=RequestContext(request))
+
+
+####################################################################################f
+####################################################################################f
+####################################################################################f
+####################################################################################f
+
+
+class data_GrupoForm(ModelForm):
+    class Meta:
+      model = Entidad
+      exclude = ('organization','code','name','anagrama','banco')
+      widgets = {'iban': forms.TextInput(attrs={'size':'30'}),
+		 'address': forms.TextInput(attrs={'size':'30'}),}
+
+
+@access_required
+@login_required()
+def datos_grupo(request,identificador):
+    g_e = request.session["gauser_extra"]
+    if request.method == 'POST':
+      crear_aviso(request,True,request.META['PATH_INFO'] + ' POST')
+      form = data_GrupoForm(request.POST)
+      if form.is_valid():
+	gs = g_e.entidad
+	form = data_GrupoForm(request.POST, instance = gs)
+	form.save()
+	try:
+	  asocia_banco_entidad(request)
+	except:
+	  crear_aviso(request,False,u'<p>No se puede asociar una entidad bancaria con el IBAN del grupo.</p>')
+	crear_aviso(request,False,u'<p>Datos modificados correctamente.</p>')
+	#Las siguientes líneas son para cargar la foto, si es proporcionada
+	if 'anagrama' in request.FILES:
+	  fichero = request.FILES['anagrama']
+	  fnombre = fichero.name.partition('.')
+	  nombre_fichero = str(gs.code) + '_anagrama.png'
+	  with open(MEDIA_ANAGRAMAS+'borrar.'+fnombre[2], 'w+') as destination:
+	    for chunk in fichero.chunks():
+		destination.write(chunk)
+	  os.system('convert '+ MEDIA_ANAGRAMAS + 'borrar.' + fnombre[2] + ' -resize 300 ' + MEDIA_ANAGRAMAS + nombre_fichero)
+	  os.system('rm '+ MEDIA_ANAGRAMAS + 'borrar.' + fnombre[2])
+	  
+	  
+	  
+	  anagrama_file = MEDIA_ANAGRAMAS+str(gs.code)+'_anagrama.png'
+	  #params = ['convert', MEDIA_ANAGRAMAS+'borrar.'+fnombre[2],'-resize', 'x'+str(h_real), anagrama_file]
+	  #subprocess.call(params)
+	  ## Con estos comandos obtengo el ancho real (w_real). La altura se de antemano que es h_real (según comando anterior)
+	  params_identify = ['identify', '-format', '%[fx:w]', anagrama_file]
+	  w_real = int(subprocess.Popen(params_identify,stdout=subprocess.PIPE).communicate()[0])
+	  params_identify = ['identify', '-format', '%[fx:h]', anagrama_file]
+	  h_real = int(subprocess.Popen(params_identify,stdout=subprocess.PIPE).communicate()[0])
+	  # La altura del anagrama en la cabecera debe de ser de 123 px, por tanto una regla de tres para la anchura:
+	  w_logo_grupo = w_real*123/h_real
+	  # El tamaño de la anchura de la cabecera es 654px por tanto la x_pos del logo es esa cantidad menos su anchura: 
+	  x_pos = 654-w_logo_grupo
+	  cabecera_svg = render_to_string('cabecera_general.svg', {'w_logo_grupo':w_logo_grupo, 'x_pos':x_pos,'cabecera':anagrama_file}, context_instance=RequestContext(request))
+	  cabecera_file = MEDIA_ANAGRAMAS+str(request.session['gauser_extra'].entidad.code)+'_cabecera'
+	  svg_file = open (cabecera_file+'.svg','w')
+	  svg_file.write(cabecera_svg.encode('utf8'))
+	  svg_file.close()
+	  #params_png = ['convert','-density','144','-background','none', cabecera_file+'.svg', cabecera_file+'.png']
+	  #params_png = ['convert','-depth','16','-background','transparent', cabecera_file+'.svg', cabecera_file+'.png']
+
+	  #params_png = ['inkscape', '-z', '-e', cabecera_file+'.png', '-w', '1709', cabecera_file+'.svg']
+	  #subprocess.call(params_png)
+	  import cairosvg
+	  fout = open(cabecera_file+'.png','w')
+	  cairosvg.svg2png(bytestring=cabecera_svg.encode('utf8'),write_to=fout,dpi=200)
+	  #os.system('cairosvg '+ cabecera_file+'.svg --dpi=3 -o ' + cabecera_file+'.png')
+	  fout.close()
+      
+      
+      
+      
+      
+      
+      else:
+	crear_aviso(request,False,form.errors)
+	form = data_GrupoForm(request.POST)
+    else:
+      crear_aviso(request,True, request.META['PATH_INFO'])
+      entidad = Entidad.objects.get(id=g_e.entidad.id)
+      form = data_GrupoForm(instance = entidad)
+    
+    return render_to_response("datos_grupo.html",
+      {
+	'menu': '#'+identificador,
+	'formname' : 'datos_grupo',
+	'form': form,
+	'avisos': Aviso.objects.filter(usuario = request.session["gauser_extra"], aceptado = False),
+      },
+      context_instance=RequestContext(request))
+
+#--------------------------------------------------------------------------------#
+
+
+      
+class Socio_GauserForm(ModelForm):
+  class Meta:
+      model = Gauser
+      fields = ('first_name','last_name','email','sexo','dni','address','postalcode','localidad','provincia','nacimiento','telfij','telmov')
+
+
+class Socio_Gauser_extraForm(ModelForm):
+  class Meta:
+    model = Gauser_extra
+    fields = ('id_scout','entidad_bancaria','num_cuenta_bancaria','ocupacion')
+
+
+#class Padre_Gauser_extraForm(ModelForm):
+  #def __init__(self, *args, **kwargs):
+    #self.request = kwargs.pop("request")
+    #gauser_extra = self.request.session['gauser_extra']
+    #super(Padre_Gauser_extraForm, self).__init__(*args, **kwargs)
+    #self.fields["subentidad"].queryset = Subentidad.objects.filter(entidad = gauser_extra.entidad)
+  #class Meta:
+    #model = Gauser_extra
+    #fields = ('activo','ocupacion')
+
+
+@access_required
+@login_required()
+def add_socio(request,identificador):
+  g_e = request.session['gauser_extra']
+  tipos_socio = Perfil.objects.filter(id__in = [70,75,80,85]) #Educando(70), Scouter(75), Padre(80), Socio adulto(85)
+  tutores = Gauser_extra.objects.filter(entidad = g_e.entidad, ronda = g_e.ronda, perfiles__in = [80,])
+  if request.method == 'POST':
+    crear_aviso(request,True,request.META['PATH_INFO'] + ' POST')
+    usuario = crear_nombre_usuario(nombre=request.POST['first_name'], apellidos=request.POST['last_name'])
+    gauser = Gauser.objects.create_user(usuario, request.POST['email'], request.POST['dni'])
+    form1 = Socio_GauserForm(request.POST, instance = gauser)
+    form1.save()
+    gauser_extra = Gauser_extra.objects.create(gauser = gauser, activo = True, entidad = g_e.entidad, ronda = g_e.ronda)
+    form2 = Socio_Gauser_extraForm(request.POST, instance = gauser_extra)
+    gauser_extra = form2.save()
+    perfil = Perfil.objects.get(id = request.POST['tipo_socio'])
+    gauser_extra.perfiles.add(perfil)
+    subentidad = Subentidad.objects.filter(perfil = perfil)
+    if subentidad.count() > 0:
+      gauser_extra.subentidad = subentidad[0]
+    if perfil.id == 70:
+      hoy = datetime.today()
+      edad = hoy.year - gauser.nacimiento.year
+      mes = hoy.month > 7 #Si estamos a más de julio el educando se asocia para la próxima ronda
+      for subentidad in Subentidad.objects.filter(entidad = g_e.entidad):
+	cond = (edad > subentidad.edad_min and edad < subentidad.edad_max) or (edad == subentidad.edad_min and mes) or (edad == subentidad.edad_max and not mes)
+	if cond:
+	  gauser_extra.subentidad = subentidad
+	  gauser_extra.perfiles.add(subentidad.perfil)
+      if request.POST['tutor1'] != "" and request.POST['tutor2'] != "":
+	gauser_extra.tutor1 = Gauser_extra.objects.get(id=request.POST['tutor1'])
+	gauser_extra.tutor2 = Gauser_extra.objects.get(id=request.POST['tutor2'])
+	hermanos = Gauser_extra.objects.filter(Q(tutor1 = gauser_extra.tutor1) | Q(tutor2 = gauser_extra.tutor1) | Q(tutor1 = gauser_extra.tutor2) | Q(tutor2 = gauser_extra.tutor2))
+      elif request.POST['tutor1'] != "" and request.POST['tutor2'] == "":
+	gauser_extra.tutor1 = Gauser_extra.objects.get(id=request.POST['tutor1'])
+	hermanos = Gauser_extra.objects.filter(Q(tutor1 = gauser_extra.tutor1) | Q(tutor2 = gauser_extra.tutor1))
+      elif request.POST['tutor1'] == "" and request.POST['tutor2'] != "":
+	gauser_extra.tutor1 = Gauser_extra.objects.get(id=request.POST['tutor2'])
+	hermanos = Gauser_extra.objects.filter(Q(tutor1 = gauser_extra.tutor1) | Q(tutor2 = gauser_extra.tutor1))
+      gauser_extra.hermanos.add(*hermanos)
+      
+    gauser_extra.save()
+    crear_aviso(request,False,u'%s ha sido dado de alta correctamente y añadido a la sección de %s.'%(gauser_extra.gauser.get_full_name(), gauser_extra.subentidad.nombre))
+    asign_permisos(request,gauser_extra)
+  
+  return render_to_response("add_socio.html",
+      {
+	'menu': '#'+identificador,
+	'formname' : 'Add_socio',
+	'tipos_socio' : tipos_socio,
+	'form1':Socio_GauserForm(),
+	'form2':Socio_Gauser_extraForm(),
+	'json_tutores':json.dumps([ ( u'{0}, {1}'.format( p.gauser.last_name, p.gauser.first_name )) for p in tutores ]),
+	'json_tutores_ids':json.dumps([ ( u'{0}'.format( p.id )) for p in tutores ]),
+	'avisos': Aviso.objects.filter(usuario = request.session["gauser_extra"], aceptado = False),
+      },
+      context_instance=RequestContext(request))
+
+
+@login_required()
+def add_datos_tutor(request): #Añade los datos almacenados del tutor al educando socio que se va a crear
+  if request.is_ajax():
+    g_e = request.session['gauser_extra']
+    tutor = Gauser_extra.objects.get( id = request.POST['id'])
+    response_data = {}
+    response_data['address'] = tutor.gauser.address
+    response_data['postalcode'] = tutor.gauser.postalcode
+    response_data['localidad'] = tutor.gauser.localidad
+    response_data['provincia'] = tutor.gauser.provincia
+    response_data['telfij'] = tutor.gauser.telfij
+    response_data['telmov'] = tutor.gauser.telmov
+    response_data['entidad_bancaria'] = tutor.entidad_bancaria
+    response_data['num_cuenta_bancaria'] = tutor.num_cuenta_bancaria
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
+  else:
+    return HttpResponse(status=400)
+
+
+
+@access_required
+@login_required()
+def bajas_socios(request,identificador):
+  g_e = request.session['gauser_extra']
+  bajas = Alta_Baja.objects.filter( entidad = g_e.entidad, fecha_baja__isnull = False ).order_by('-fecha_baja')
+  
+  if request.method == 'POST':
+    crear_aviso(request,True,request.META['PATH_INFO'] + ' POST')
+    if request.POST['action'] == 'dar_altas':
+      permiso_alta = g_e.has_permiso('da_alta_socios')
+      if permiso_alta:
+	nuevas_altas = Alta_Baja.objects.filter( pk__in=request.POST['id_bajas'].split(',') )
+	for n_a in nuevas_altas:
+	  n_a.fecha_baja = None
+	  if not n_a.observaciones: n_a.observaciones = ''
+	  n_a.observaciones = n_a.observaciones + u'Anterior fecha de alta: %s<br>Con fecha %s se ha dado de alta a %s (%s).<br>'%(n_a.fecha_alta.strftime("%d-%m-%Y"),datetime.now().strftime("%d-%m-%Y"),n_a.gauser.get_full_name(),n_a.entidad)
+	  n_a.fecha_alta = datetime.now().date()
+	  n_a.save()
+	  try:
+	    g_e_selected = Gauser_extra.objects.get(gauser = n_a.gauser, entidad = n_a.entidad, ronda = n_a.entidad.ronda)
+	    crear_aviso(request,False,u'Se ha recuperado al socio %s' %(g_e_selected))
+	  except:
+	    g_e_selected = Gauser_extra.objects.create(gauser = n_a.gauser, entidad = n_a.entidad, ronda = n_a.entidad.ronda)
+	    crear_aviso(request,False,u'Se ha recuperado al socio %s creando un usuario para esta ronda. Es necesario asignar perfiles manualmente.' %(g_e_selected))
+	  g_e_selected.activo = True
+	  g_e_selected.save()
+
+    if request.POST['action'] == 'borrar_bajas2':
+      permiso_borrar = g_e.has_permiso('borrar_datos_socios')
+      if permiso_borrar:
+	usuarios_borrados = Alta_Baja.objects.filter( pk__in=request.POST['id_bajas'].split(',') )
+	for u_b in usuarios_borrados:
+	  gauser = u_b.gauser
+	  #Falta por escribir el código:
+	    # - Eliminar sólo alta_baja?
+	    # - Eliminar los gauser_extra relacionados con la entidad?
+	    # - Eliminar los gauser_extra y el gauser?
+  
+  return render_to_response("bajas_socios.html",
+      {
+	'menu': '#'+identificador,
+	'formname' : 'Bajas_socios',
+	'bajas' : bajas,
+	'avisos': Aviso.objects.filter(usuario = request.session["gauser_extra"], aceptado = False),
+      },
+      context_instance=RequestContext(request))
+      
+     

@@ -1,0 +1,118 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Alumnos con materias pendientes</strong></h4>
+        </div>
+
+        <div class="panel callout">
+            <p style="font-weight: 800;">Aquí tienes que subir el archivo obtenido de:<br> Racima -> Gestión ->
+                Seguimiento -> Catálogo de consultas -> Modulo: Matriculación, Consulta: Alumno matriculado y sus
+                materias</p>
+            <div class="row">
+                <div class="columns large-6"><input type="file" id="file_matriculas"></div>
+                <div class="columns large-3">
+                    <a class="button tiny" id="upload_file_matriculas"><i class="fa fa-upload"></i> Subir</a>
+                </div>
+                <div class="columns large-3">
+                    <span style="display: none" id="span_spin"><i class="fa fa-refresh fa-spin fa-fw"></i> Procesando...
+                    </span> <span style="display: none" id="span_porcentage"></span>
+                </div>
+            </div>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_cursos" title="Lista de cursos">
+            {% for curso in cursos %}
+                {% include "configura_materias_pendientes_curso.html" %}
+            {% endfor %}
+        </dl>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        function updateProgress(evt) {
+            if (evt.lengthComputable) {
+                var percentComplete = (evt.loaded / evt.total) * 100;
+                $('#span_porcentage').html(parseInt(percentComplete) + '%');
+                if (percentComplete == 100) {
+                    $('#span_porcentage').hide();
+                }
+                console.log(percentComplete);
+            } else {
+                console.log('No es posible calcular el porcentaje de carga en el servidor');
+            }
+        }
+
+        $('body').on('click', '#upload_file_matriculas', function () {
+            $('#span_spin').show();
+            $('#span_porcentage').show();
+            var input_files = document.getElementById('file_matriculas').files;
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('fichero_xhr' + i, input_files[i]);
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'upload_file_matriculas');
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener("progress", updateProgress, false);
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log('Terminado');
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#span_spin').hide();
+                            $('#span_porcentage').hide();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                            $('#span_spin').hide();
+                            $('#span_porcentage').hide();
+                        }
+                    }
+                }
+            };
+            xhr.open('POST', "/configura_materias_pendientes/", true);
+            xhr.send(formData);
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('curso_pendientes')) {
+                        var id = accordion.data('curso');
+                        console.log(id);
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/configura_materias_pendientes/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#curso' + id).html(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#curso' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

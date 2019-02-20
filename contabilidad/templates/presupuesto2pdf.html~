@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html
+    xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+    lang="en"
+    xmlns:pdf="http://htmltopdf.org/pdf"
+    >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Presupuesto para la ronda {{request.session.gauser_extra.entidad.ronda.nombre}}</title>
+<!--<link href="xhtml2pdf.css" type="text/css" rel="stylesheet" media="all" />
+<link href="screen.css" type="text/css" rel="stylesheet" media="screen" />-->
+<style>
+@media print {
+    @page {
+	    -pdf-page-orientation: portrait;
+	    -pdf-page-size: a4;
+	    /* background-image: url(background.pdf); */
+	    margin-top: 4.5cm;
+	    margin-left: 2cm;
+	    margin-right: 2cm;
+	    margin-bottom: 2cm;
+	    @frame footer {
+		    -pdf-frame-content: footer;
+		    bottom: 0cm;
+		    left: 2cm;
+		    right: 2cm;
+		    height: 1.5cm;
+	    }
+	    @frame header {
+		    -pdf-frame-content: header;
+		    top: 0.5cm;
+		    left: 2cm;
+		    right: 2cm;
+		    height: 3.5cm;
+	    }
+	  }
+}
+
+html {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	text-align: justify;
+}
+
+table
+{ 
+margin-left: auto;
+margin-right: auto;
+}
+p {
+	font-size: 10pt;
+	margin-top: 1px;
+	margin-bottom: 1px;
+}
+
+
+#footer {
+	text-align: left;
+}
+
+#header {
+	text-align: center;
+}
+
+.pagebreak {
+	page-break-after: always;
+}
+
+</style>
+</head>
+<body>
+<div id="footer" class="pdf">
+  <table><tr><td><img  width="50px" border="0" src="{{MA}}logo_scout.png" id="img_pie" align="left"></td><td colspan="9"><span style="font-size:9pt;color:#7f7f7f">Grupo scout {{request.session.gauser_extra.entidad.name}}<br>{{request.session.gauser_extra.entidad.address}}{% if request.session.gauser_extra.entidad.tel %}, Tel.: {{request.session.gauser_extra.entidad.tel}}{% endif %}{% if request.session.gauser_extra.entidad.fax %}, Fax: {{request.session.gauser_extra.entidad.fax}}{% endif %}{% if request.session.gauser_extra.entidad.web %}, web: {{request.session.gauser_extra.entidad.web}}{% endif %}</span></td></tr></table>
+</div>
+<div id="header" class="pdf" style="float:left;">
+  <img  border="0" src="{{MA}}{{request.session.gauser_extra.entidad.code}}_cabecera.png" id="img_cabecera" align="left">
+</div>
+<h2 style="text-align:center;"> Presupuesto del Grupo Scout {{presupuesto.entidad.name}}</h2>
+
+Ronda: <strong> {{presupuesto.ronda.get_nombre_display}}</strong>
+<br>
+Creado: <strong> {{presupuesto.creado}}</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Modificado: <strong> {{presupuesto.modificado}}</strong>
+<br><br>
+<p>{{presupuesto.describir}}</p>
+<hr>
+<br>
+
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+    <tr><td colspan="2"> <span class="color2"><strong>Nombre</strong></span></td>
+    <td style="text-align:center;"> <span class="color2"><strong>Tipo</strong></span></td>
+    <td style="text-align:center;"> <span class="color2"><strong>Cantidad</strong></span></td>
+    <td style="text-align:center;"> <span class="color2"><strong>Creado</strong></span></td>
+    <td style="text-align:center;"> <span class="color2"><strong>Últ. modif.</strong></span></td>
+    </tr>
+    {% for partida in partidas %}
+      {% if partida.tipo == 'INGRE' %}
+	<tr><td colspan="2"> {{partida.nombre}}</span></td>
+	<td style="text-align:center;"> {{partida.get_tipo_display}}</span></td>
+	<td style="text-align:center;"> {{partida.cantidad}} €</span></td>
+	<td style="text-align:center;"> {{partida.creado|date:"SHORT_DATE_FORMAT"}}</span></td>
+	<td style="text-align:center;"> {{partida.modificado|date:"SHORT_DATE_FORMAT"}}</span></td>
+	</tr>
+      {% endif %}
+    {% endfor %}
+    <tr><td colspan="2">&nbsp;</td><td style="text-align:center;background:#dcc8dc;"> <span class="color2">Total ingresos:</span></td><td style="text-align:center;background:#dcc8dc;"> <span class="color2">{{ingresos.ingreso_total}} €</span></td></tr>
+    <tr><td>&nbsp;</td></tr>
+    {% for partida in partidas %}
+      {% if partida.tipo == 'GASTO' %}
+	<tr><td colspan="2"> {{partida.nombre}}</span></td>
+	<td style="text-align:center;"> {{partida.get_tipo_display}}</span></td>
+	<td style="text-align:center;"> {{partida.cantidad}} €</span></td>
+	<td style="text-align:center;"> {{partida.creado|date:"SHORT_DATE_FORMAT"}}</span></td>
+	<td style="text-align:center;"> {{partida.modificado|date:"SHORT_DATE_FORMAT"}}</span></td>
+	</tr>
+      {% endif %}
+    {% endfor %}
+    <tr><td colspan="2">&nbsp;</td><td style="text-align:center;background:#dcc8dc;"> <span class="color2">Total gastos:</span></td><td style="text-align:center;background:#dcc8dc;"> <span class="color2">{{gastos.gasto_total}} €</span></td></tr>
+</table>
+</body>
+</html>
+ 

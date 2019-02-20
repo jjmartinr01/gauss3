@@ -1,0 +1,9 @@
+# -*- coding: utf-8 -*-
+from django import template
+
+register = template.Library()
+
+@register.filter
+def nid(value,arg):
+   """Devuelve el objecto con el número de id (nid) indicado"""
+    return value.get(id=arg)

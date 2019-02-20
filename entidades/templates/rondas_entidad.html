@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Gestión de rondas/cursos
+                {% if request.session.gauser_extra.ronda.entidad.organization.id == 1 %}
+                    del Grupo Scout
+                {% elif request.session.gauser_extra.ronda.entidad.organization.id == 7 %}
+                    del Centro de Estudios
+                {% else %} {{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}{% endif %}
+                {{ request.session.gauser_extra.ronda.entidad.name }}</strong></h4>
+        </div>
+
+        <div class="row">
+            <div class="large-12 columns">
+                <label>Selecciona la ronda o curso con el que vas a trabajar
+                    <select name="ronda" id="id_ronda">
+                        <option value="{{ request.session.ronda.id }}" selected>{{ request.session.ronda.nombre }}</option>
+                        {% for ronda in rondas %}
+                            <option value="{{ ronda.id }}">{{ ronda.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        $("#id_ronda").change(function (event) {
+            event.preventDefault();
+            $('#action').val('change_ronda');
+            document
+                .{{formname}}.submit();
+        });
+    </script>
+{% endblock %}

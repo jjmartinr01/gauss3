@@ -1,0 +1,305 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+        }
+
+        .describir_problema {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+
+        .describir_solucion {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_reparacion" name="id_reparacion" value="">
+
+        <div id="div_reparaciones_seleccionados"></div>
+
+        <div>
+            <h4 id="title_page"><strong>Reparaciones de la entidad</strong></h4>
+        </div>
+        <div id="formulario_add"></div>
+        <div id="formulario_search">
+            <div class="row">
+                <div class="columns large-4">
+                    <label>Buscar entre esta fecha ...</label>
+                    <input id="id_fecha_inicio" name="fecha_inicio" type="text" value="{{ g_e.ronda.inicio|date:'d-m-Y' }}">
+                </div>
+                <div class="columns large-4">
+                    <label>... y esta otra</label>
+                    <input id="id_fecha_fin" name="fecha_fin" type="text" value="{% now "d\-m\-Y" %}">
+                </div>
+                <div class="columns large-4">
+                    <label>Buscar en ...</label>
+                    <select id="tipo_busqueda" name="tipo_busqueda">
+                        {# Se busca en negativo, por eso SAL es para entradas y ENT para salidas. Ver el views.py #}
+                        <option value="tod">Todas las reparaciones</option>
+                        <option value="inf">Informática</option>
+                        <option value="fon">Fontanería</option>
+                        <option value="ele">Electricidad</option>
+                        <option value="car">Carpintería</option>
+                        <option value="alb">Albañiliería</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-10">
+                    <input type="text" name="busca_reparaciones" id="busca_reparaciones"
+                           placeholder="Escribe parte del texto incluido en el reparación">
+                </div>
+                <div class="columns large-2">
+                    <a id="busca_reparaciones_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>
+                </div>
+            </div>
+        </div>
+
+        <div id="listado_reparaciones">
+            <br><br>
+            <dl class="accordion" data-accordion id="list_reparaciones">
+                {% include 'reparacion_accordion.html' %}
+            </dl>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        function destroyEditorInstances() {
+            for (var instance in CKEDITOR.instances) {
+                CKEDITOR.instances[instance].destroy();
+            }
+        }
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-reparacion')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/gestionar_reparaciones_ajax/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        {#                                        destroyEditorInstances();#}
+                                        CKEDITOR.inlineAll();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('body').on('change', '.tipo', function () {
+            var valor = $(this).val();
+            var id = $(this).data('id');
+            $.post("/gestionar_reparaciones_ajax/", {
+                    action: 'update_tipo',
+                    id: id,
+                    valor: valor
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#tipo' + id).html(data.valor);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup', '.lugar', function () {
+            var valor = $(this).val();
+            var id = $(this).data('id');
+            $.post("/gestionar_reparaciones_ajax/", {
+                    action: 'update_lugar',
+                    id: id,
+                    valor: valor
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#lugar' + id).html(data.valor);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.resuelta', function () {
+            var id = $(this).data('id');
+            $.post("/gestionar_reparaciones_ajax/", {
+                    action: 'update_resuelta',
+                    id: id
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#resuelta' + id).html(data.valor);
+                        if (data.resuelta) {
+                            $('#panel' + id).html(data.html);
+                            $('#ss' + id).show();
+                            $('#ns' + id).hide();
+                        } else {
+                            $('#panel' + id).html(data.html);
+                            $('#ns' + id).show();
+                            $('#ss' + id).hide();
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup', '.describir_problema', function () {
+            var valor = $(this).html();
+            var id = $(this).data('id');
+            $.post("/gestionar_reparaciones_ajax/", {action: 'update_describir_problema', id: id, valor: valor},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup', '.describir_solucion', function () {
+            var valor = $(this).html();
+            var id = $(this).data('id');
+            $.post("/gestionar_reparaciones_ajax/", {action: 'update_describir_solucion', id: id, valor: valor},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.enviar_mensaje', function () {
+            var id = $(this).data('id');
+            $.post("/gestionar_reparaciones_ajax/", {action: 'enviar_mensaje', id: id},
+                function (data) {
+                    if (data.ok) {
+                        $('#enviar_mensaje' + id).hide();
+                        show_mensajes({
+                            title: '<i class="fa fa-info-circle"></i> Información',
+                            texto: 'Se ha enviado un mensaje al encargado de este tipo de reparaciones'
+                        });
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.borrar_solicitud', function () {
+            id = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar solicitud de reparación?',
+                texto: 'Si aceptas la solicitud se borrará por completo de la base de datos', size: 'large', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/gestionar_reparaciones_ajax/", {action: 'borrar_solicitud', id: id},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#accordion' + id).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+
+        });
+
+
+        {# ####################################################### #}
+
+        $("body").on('click', '#busca_reparaciones_manual', function (e) {
+            var texto = $('#busca_reparaciones').val();
+            var id_fecha_inicio = $('#id_fecha_inicio').val();
+            var id_fecha_fin = $('#id_fecha_fin').val();
+            var tipo_busqueda = $('#tipo_busqueda').val();
+            $.post("/gestionar_reparaciones_ajax/", {
+                    action: 'busca_reparaciones', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
+                },
+                function (data) {
+                    $('#list_reparaciones').html(data['html']);
+                    $(document).foundation();
+                });
+        });
+        $("body").on('keyup', '#busca_reparaciones', function (e) {
+            var texto = $('#busca_reparaciones').val();
+            var id_fecha_inicio = $('#id_fecha_inicio').val();
+            var id_fecha_fin = $('#id_fecha_fin').val();
+            var tipo_busqueda = $('#tipo_busqueda').val();
+            $.post("/gestionar_reparaciones_ajax/", {
+                    action: 'busca_reparaciones', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
+                },
+                function (data) {
+                    $('#list_reparaciones').html(data['html']);
+                    $(document).foundation();
+                });
+        });
+
+
+        {% if g_e|has_permiso:"crea_solicitud_reparacion" %}
+            habilita(['s_plus']);
+            $('#plus_sign').click(function (event) {
+                event.preventDefault();
+                $.post("/gestionar_reparaciones_ajax/", {action: 'crea_solicitud'}, function (data) {
+                    if (data.ok) {
+                        $('#list_reparaciones').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    {#                    $(document).scrollTop($('#title_page').offset().top - 150);#}
+                    {#                    habilita(['h_plus', 's_check', 's_search']);#}
+                });
+            });
+        {% endif %}
+        {% if g_e|has_permiso:"crea_solicitud_reparacion" %}
+            habilita(['s_file-pdf-o']);
+            $('#file-pdf-o_sign').click(function (event) {
+                event.preventDefault();
+                $('#action').val('genera_informe');
+                window.{{ formname }}.submit();
+            });
+        {% endif %}
+
+
+    </script>
+
+{% endblock %}

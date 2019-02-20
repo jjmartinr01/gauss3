@@ -1,0 +1,13 @@
+{% load entidades_extras %}
+{% if mail %}
+    <p>Estimado/a,</p>
+    <p>Alguien ha hecho una nueva solicitud para ser miembro de {{ reserva.entidad.name }}. Los datos grabados son:</p>
+{% endif %}
+{% for c in crps %}
+    {% if c.usado %}
+        <p><b>{{ c.texto }}</b>: {{ reserva|valor_campo_reserva:c.campo }}</p>
+    {% endif %}
+{% endfor %}
+{% if mail %}
+    Recibe un cordial saludo,
+{% endif %}

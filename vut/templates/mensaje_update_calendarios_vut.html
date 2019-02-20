@@ -1,0 +1,46 @@
+{% if solapadas %}
+    <li>
+        <span style="color:red;"><i
+                class="fa fa-warning"></i> Se han encontrado {{ solapadas|length }} reservas solapadas.</span>
+        <table>
+            <tbody>
+            <tr>
+                <th title="Nombre del portal en el que se ha hecho la reserva">Portal</th>
+                <th title="Nombre de la persona que ha hecho la reserva">Nombre</th>
+                <th title="Viajeros registrados">Viajeros</th>
+                <th>Entrada</th>
+                <th>Salida</th>
+                <th>Total</th>
+                <th>Borrar</th>
+            </tr>
+            {% for r in solapadas %}
+                <tr id="tr_reserva_update_calendario_vut{{ r.id }}" data-reserva="{{ r.id }}">
+                    <td>{{ r.vivienda.nombre }}<br><span class="label secondary round">{{ r.get_portal_display }}</span>
+                    </td>
+                    <td style="max-width: 225px;overflow:hidden;" title="{{ r.nombre }}">{{ r.nombre }}<br><span
+                            class="label secondary round">{{ r.code }}</span></td>
+                    <td>{{ r.viajero_set.all|length }}</td>
+                    <td>{{ r.entrada|date:'d/m/Y' }}</td>
+                    <td>{{ r.salida|date:'d/m/Y' }}</td>
+                    <td class="td_total">{{ r.total }}</td>
+                    <td class="text-center"><a class="delete_reserva_update_calendario_vut" data-id="{{ r.id }}"><i
+                            class="fa fa-trash"></i></a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </li>
+{% endif %}
+{% if nuevas %}
+    <li>Se han creado {{ nuevas }} reservas nuevas.</li>
+{% endif %}
+{% if actualizadas %}
+    <li>Se han actualizado {{ actualizadas }} reservas.</li>
+{% endif %}
+{#{% if errores %}#}
+{#    <li><span style="font-weight: 800;">Durante el proceso se han producido {{ errores }} errores.</span>#}
+{#    </li>#}
+{#{% endif %}#}
+{% if mensaje %}
+    <li>{{ mensaje }}</li>
+{% endif %}

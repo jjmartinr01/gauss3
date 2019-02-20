@@ -1,0 +1,4 @@
+<option></option>
+{% for item in items %}
+    <option value="{{ item.id }}">{{ item.gauser.get_full_name }}</option>
+{% endfor %}

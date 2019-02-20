@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+TIPO = 'selectable'  # 'basic' or 'selectable'.  'basic': necesario para el funcionamiento del programa
+#                           'selectable': No necesario. Añade nuevas funcionalidades al programa
+# Por ejemplo autenticar es 'basic', pero actas es prescindible
+
+# El code_menu debe ser único y se configurará como un permiso del sistema
+MENU_DEFAULT = [
+    {'code_menu': 'acceso_absentismo',
+     'texto_menu': 'Absentismo',
+     'href': 'gestionar_absentismo',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 1,
+     'parent': 'acceso_acciones_usuarios1'
+     },
+]
+# Se añaden otros permisos para el usuario
+
+PERMISOS = [{'code_nombre': 'crea_actuacion_absentismo',
+             'nombre': 'Tiene permiso para crear una actuación de absentismo',
+             'menu': 'acceso_absentismo'
+             },
+            {'code_nombre': 'borra_actuacion_absentismo',
+             'nombre': 'Tiene permiso para borrar una actuación de absentismo creada por otro usuario',
+             'menu': 'acceso_absentismo'
+             },
+            {'code_nombre': 'edita_actuacion_absentismo',
+             'nombre': 'Tiene permiso para editar una actuación de absentismo creada por otro usuario',
+             'menu': 'acceso_absentismo'
+             },
+            {'code_nombre': 'crea_informe_absentismo',
+             'nombre': 'Tiene permiso para crear un informe de absentismo',
+             'menu': 'acceso_absentismo'
+             },
+            {'code_nombre': 'configura_expediente_absentismo',
+             'nombre': 'Configura los datos necesarios para realizar un expediente de absentismo',
+             'menu': 'acceso_absentismo'
+             }
+            ]

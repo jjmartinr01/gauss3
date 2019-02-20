@@ -1,0 +1,107 @@
+<div class="row">
+    <div class="row">
+        <div class="columns large-3">
+            <select id="select_mes_reservas" class="change_select_reservas">
+                <option value="0" {% if mes_selected == 0 %}selected{% endif %}>Todos los meses</option>
+                <option value="1" {% if mes_selected == 1 %}selected{% endif %}>Enero</option>
+                <option value="2" {% if mes_selected == 2 %}selected{% endif %}>Febrero</option>
+                <option value="3" {% if mes_selected == 3 %}selected{% endif %}>Marzo</option>
+                <option value="4" {% if mes_selected == 4 %}selected{% endif %}>Abril</option>
+                <option value="5" {% if mes_selected == 5 %}selected{% endif %}>Mayo</option>
+                <option value="6" {% if mes_selected == 6 %}selected{% endif %}>Junio</option>
+                <option value="7" {% if mes_selected == 7 %}selected{% endif %}>Julio</option>
+                <option value="8" {% if mes_selected == 8 %}selected{% endif %}>Agosto</option>
+                <option value="9" {% if mes_selected == 9 %}selected{% endif %}>Septiembre</option>
+                <option value="10" {% if mes_selected == 10 %}selected{% endif %}>Octubre</option>
+                <option value="11" {% if mes_selected == 11 %}selected{% endif %}>Noviembre</option>
+                <option value="12" {% if mes_selected == 12 %}selected{% endif %}>Diciembre</option>
+            </select>
+        </div>
+        <div class="columns large-3">
+            <select id="select_vivienda_reservas" class="change_select_reservas">
+                <option value="todas" {% if vivienda_selected == 'todas' %}selected{% endif %}>Todas las viviendas
+                </option>
+                {% for vivienda in viviendas %}
+                    <option value="{{ vivienda.id }}"
+                            {% if vivienda_selected == vivienda.id %}selected{% endif %}>{{ vivienda.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="columns large-3">
+            <select id="select_portal_reservas" class="change_select_reservas">
+                <option value="todos" {% if portal_selected == todos %}selected{% endif %}>Todos los portales</option>
+                {% for portal in portales %}
+                    <option value="{{ portal.0 }}"
+                            {% if portal_selected == portal.0 %}selected{% endif %}>{{ portal.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="columns large-3">
+            <a class="right" id="add_next_days_reserva_vut">Ver reservas posteriores al
+                <span id="fecha_next_days_reserva_vut">{{ fecha_fin|date:'d-m-Y' }}</span></a>
+        </div>
+    </div>
+</div>
+<div id="div_reservas">
+    <table width="100%" id="list_reservas">
+        <tbody>
+        <tr>
+            <th>Vivienda</th>
+            <th>Nombre</th>
+{#            <th>URL Registro viajeros</th>#}
+            <th>Viajeros</th>
+            <th>Registros</th>
+            <th>Entrada</th>
+            <th>Salida</th>
+            <th>Total</th>
+            <th>Borrar</th>
+        </tr>
+        {% include "reservas_vut_table.html" %}
+        <tr id="tr_resultados_filtro">
+            <td><span style="color:red;font-weight: 800;">Noches de ocupación</span></td>
+            <td style="color:red;font-weight: 800;" id="num_total_noches"></td>
+            <td style="color:green;font-weight: 800;" id="num_previsto_viajeros">&nbsp;</td>
+            <td style="color:red;font-weight: 800;" id="num_total_viajeros"></td>
+            <td>&nbsp;</td>
+            <td><span style="color:red;font-weight: 800;">Total</span></td>
+            <td style="color:red;font-weight: 800;" id="cantidad_total"></td>
+            <td>&nbsp;</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <a class="right" id="add_prev_days_reserva_vut">Ver reservas anteriores al
+            <span id="fecha_prev_days_reserva_vut">{{ fecha_inicio|date:'d-m-Y' }}</span></a>
+    </div>
+</div>
+<hr>
+
+<div class="row">
+    <div class="columns large-12">
+        <b>Nueva reserva:</b>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-3"><label>Vivienda:
+        <select id="vivienda_nueva_reserva"  class="nueva_reserva">
+            <option value="">--------</option>
+            {% for v in viviendas %}
+                <option id="option_vivienda{{ v.id }}" value="{{ v.id }}">{{ v.nombre }}</option>
+            {% endfor %}
+        </select></label>
+    </div>
+    <div class="columns large-2">
+        <label>Nombre:<input type="text" value="" id="nombre_nueva_reserva" class="nueva_reserva"></label></div>
+    <div class="columns large-2">
+        <label>Entrada:<input type="text" value="" id="entrada_nueva_reserva" class="nueva_reserva"></label></div>
+    <div class="columns large-2">
+        <label>Salida:<input type="text" value="" id="salida_nueva_reserva" class="nueva_reserva"></label></div>
+    <div class="columns large-1"><label>Total:
+        <input type="text" id="total_nueva_reserva" class="nueva_reserva"> </label>
+    </div>
+    <div class="columns large-2"><label>&nbsp;</label>
+        <a class="button tiny" id="add_nueva_reserva"><i class="fa fa-plus"></i> Añadir</a>
+    </div>
+</div>

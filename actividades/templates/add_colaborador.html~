@@ -1,0 +1,92 @@
+{% load my_templatetags %}
+
+<style>
+.ver_funciones {cursor:pointer;}
+.ver_funciones:hover {color:#E76123;}
+.borra_col_par {cursor:pointer;}
+.borra_col_par:hover {color:#E76123;}
+</style>
+
+<script>
+$.cleditor.defaultOptions.controls = "bold italic underline | bullets numbering";
+editores = $("textarea").cleditor({width:"400px", height:"150"});
+
+
+  {% autoescape off %}
+    var json_usuarios = {{json_usuarios}};
+    var json_usuarios_ids = {{json_usuarios_ids}};
+  {% endautoescape %}
+  $( "#id_colaborador" ).autocomplete({
+      source: json_usuarios,
+      close: function() {
+		if (json_usuarios.indexOf($( "#id_colaborador" ).val()) > -1)
+		{
+		var id_user = json_usuarios_ids[json_usuarios.indexOf($( "#id_colaborador" ).val())];
+		$('#colaborador').val(id_user);}} });
+
+  $('.ver_funciones').click(function(){
+      var id = $(this).attr('id').split('___')[1];
+      $('#funciones___'+id).toggle();
+  });
+</script>
+
+
+
+<input type="hidden" name="colaborador" id="colaborador" value="">
+
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> {{actividad.actividad_title}}</td></tr></table>
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+  <tr><td>
+    <table>
+    <tr><td><input placeholder="Escribe parte del nombre o apellidos" id="id_colaborador" class="input_search_nodialog" style="margin-top:20px;margin-right:-25px;width:300px;"/><span style="font-size:14px;"><i class="fa fa-search"></i></i></span></td></tr>
+    <tr><td>&nbsp;</td></tr>
+    <tr><td>Describe las funciones de este colaborador:</td></tr>
+    <tr><td>{{form.funciones}}</td></tr>
+    </table>
+    </td><td>
+    <table><tr><td>
+      <table>
+	<tr><td colspan="2"> <span class="info">Responsable:</span></td></tr>
+	<tr><td>
+	    {% if gauser_extra_selected.foto %}
+	      <img  width="70" src="{{actividad.organizador.foto.url}}">
+	    {% else %}
+	      {% if gauser_extra_selected.gauser.sexo == 'H' %}
+		<img  width="70" src="/media/fotos/general_h.png">
+	      {% else %}
+		<img  width="70" src="/media/fotos/general_m.png">
+	      {% endif %}
+	    {% endif %}
+	</td><td>
+	  <span class="color2">{{actividad.organizador.gauser.get_full_name}}</span>
+	</td></tr>
+      </table></td></tr><tr></td>
+
+    <table>
+      <tr><td colspan="3"> <span class="info">Colaboradores ya inscritos:</span></td></tr>
+      {% for colaborador in colaboradores %}
+	<tr id="tr_colaborador___{{colaborador.id}}">
+	  <td style="width:50%;"> {{colaborador.colaborador.gauser.get_full_name}}</td>
+	  {% if colaborador.usuario == colaborador.colaborador or colaborador.usuario == request.session.gauser_extra %}
+	    <td style="width:10%;text-align:center;font-size:11pt;" title="Pulsa este icono para borrar colaborador">
+		<i id="colaborador___{{colaborador.id}}" class="fa fa-times-circle borra_col_par"></i>
+	    </td>
+	  {% else %}
+	    <td style="width:10%;text-align:center;font-size:11pt;" title="Pulsa este icono para borrar colaborador">
+		<i id="colaborador___{{colaborador.id}}" class="fa fa-times-circle color2_suave"></i>
+	    </td>
+	  {% endif %}
+	  <td style="width:10%;text-align:center;font-size:11pt;" title="Pulsa este icono para ver las funciones del colaborador">
+	      <i id="ver_funciones___{{colaborador.id}}" class="fa fa-question-circle ver_funciones"></i>
+	  </td>
+	</tr>
+	<tr id="funciones___{{colaborador.id}}" style="display:none;background-color:rgba(231, 97, 35, .2);">
+	  <td colspan="3">
+	    {% autoescape off %} {{colaborador.funciones}} {% endautoescape %}
+	  </td>
+	</tr>
+      {% endfor %}
+    </table></td></tr></table>
+  </td></tr>
+</table>
+

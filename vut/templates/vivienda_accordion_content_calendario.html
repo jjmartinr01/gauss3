@@ -1,0 +1,33 @@
+{% load my_templatetags %}
+<div class="row" id="div_calendario{{ calendario.id }}">
+    <div class="columns large-8">
+        <label title="URL que apunta al archivo ical que quieres importar"><b>URL del calendario a importar:</b>
+            {% if g_e|has_permiso:'add_calendario_vut' %}
+                <input type="text" class="campo_calendario_vut" data-campo="ical" data-id="{{ calendario.id }}"
+                       value="{{ calendario.ical }}">
+            {% else %}
+                <br>{{ calendario.ical }}
+            {% endif %}
+        </label>
+    </div>
+    <div class="columns large-2">
+        <label title="">&nbsp;<select class="campo_calendario_vut" data-campo="portal" data-id="{{ calendario.id }}">
+            <option value="">---------</option>
+            <option value="AIR" {% if calendario.portal == 'AIR' %}selected{% endif %}>Airbnb</option>
+            <option value="BOO" {% if calendario.portal == 'BOO' %}selected{% endif %}>Booking</option>
+            <option value="HOM" {% if calendario.portal == 'HOM' %}selected{% endif %}>Homeaway</option>
+            <option value="REN" {% if calendario.portal == 'REN' %}selected{% endif %}>Rentalia</option>
+            <option value="NIU" {% if calendario.portal == 'NIU' %}selected{% endif %}>Niumba</option>
+            <option value="OAP" {% if calendario.portal == 'OAP' %}selected{% endif %}>Only Apartments</option>
+            <option value="WIM" {% if calendario.portal == 'WIM' %}selected{% endif %}>Wimdu</option>
+        </select> </label>
+    </div>
+    <div class="columns large-2" title="Borrar este calendario">
+        <label>&nbsp;</label>
+        {% if g_e|has_permiso:'delete_calendario_vut' %}
+            <a class="button tiny delete_calendario_vut alert" data-id="{{ calendario.id }}"><i
+                    class="fa fa-calendar-times-o"></i> Borrar</a>
+        {% else %}&nbsp;
+        {% endif %}
+    </div>
+</div>

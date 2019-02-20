@@ -1,0 +1,201 @@
+{% load horarios_extras %}
+<style>
+    html {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12pt;
+        text-align: justify;
+    }
+
+    table {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    p, pre {
+        font-size: 12pt;
+        margin-top: 1em;
+        margin-bottom: 1em;
+    }
+
+    p.tabla {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    p.cargo {
+        margin-top: 0em;
+        margin-bottom: 0em;
+    }
+
+    p.tipo {
+        font-weight: bold;
+        background: #eee;
+    }
+
+    pre {
+        background: #eee;
+    }
+
+    .title {
+        font-size: 300%;
+        font-weight: bold;
+        margin-top: 20pt;
+        margin-bottom: 20pt;
+    }
+
+    .subtitle {
+        font-size: 150%;
+        font-weight: bold;
+        margin-top: 20pt;
+        margin-bottom: 20pt;
+        text-align: center;
+    }
+
+    i, em {
+        font-style: normal;
+        color: #990000;
+        font-weight: bold;
+    }
+
+    a {
+        color: #000066;
+    }
+</style>
+
+{% for grupo in grupos %}
+    <p>Curso escolar: {{ grupo.ronda.entidad.ronda.nombre }}</p>
+    <h2> ACTA DE LA EVALUACIÓN ({% now "d-m-Y" %})</h2>
+
+    {% if grupo.tutores|length > 1 %}Tutores:
+        {% else %}{% if t.gauser.sexo == 'H' %}Tutor:{% else %}Tutora:{% endif %}{% endif %}
+    <strong>{% for t in grupo.tutores %}{{ t.gauser.get_full_name }}{% if not forloop.last %},&nbsp;
+    {% endif %}{% endfor %}</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Grupo:
+    <strong>{{ grupo.nombre }}</strong>
+    {% if grupo.cotutores|length > 0 %}
+        <br>{% if grupo.cotutores|length > 1 %}Co-Tutores:
+        {% else %}{% if t.gauser.sexo == 'H' %}Co-Tutor:{% else %}Co-Tutora:{% endif %}{% endif %}
+    <strong>{% for t in grupo.cotutores %}{{ t.gauser.get_full_name }}{% if not forloop.last %},&nbsp;
+    {% endif %}{% endfor %}</strong>
+    {% endif %}
+
+    <p>DATOS ESTADÍSTICOS:</p>
+    <table style="text-align:center;">
+        <tr>
+            <td style="border: 1px solid #000000;"><p>0 Insuf.</p></td>
+            <td style="border: 1px solid #000000;"><p>1-3 Insuf.</p></td>
+            <td style="border: 1px solid #000000;"><p>4-5 Insuf.</p></td>
+            <td style="border: 1px solid #000000;"><p>6 ó más Insuf.</p></td>
+            <td style="border: 1px solid #000000;"><p>Repetidores</p></td>
+            <td style="border: 1px solid #000000;"><p>Compensatoria</p></td>
+            <td style="border: 1px solid #000000;"><p>ACNEEs</p></td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000000;"><p>&nbsp;</p></td>
+            <td style="border: 1px solid #000000;"><p>&nbsp;</p></td>
+            <td style="border: 1px solid #000000;"><p>&nbsp;</p></td>
+            <td style="border: 1px solid #000000;"><p>&nbsp;</p></td>
+            <td style="border: 1px solid #000000;"><p>&nbsp;</p></td>
+            <td style="border: 1px solid #000000;"><p>&nbsp;</p></td>
+            <td style="border: 1px solid #000000;"><p>&nbsp;</p></td>
+        </tr>
+    </table>
+    </br></br>
+    <ol>
+        <li style="margin-bottom: 8em;"><strong>Valoración global del grupo:</strong> Rendimiento académico, asistencia,
+            comportamiento, convivencia e integración del grupo, ...
+        </li>
+
+        <li style="margin-bottom: 8em;"><strong>Conclusiones de la tutoría de alumnos:</strong> Problemas y
+            dificultades, propuestas de solución y compromisos, ...
+        </li>
+        <li style="margin-bottom: 8em;"><strong>Acuerdos y toma de decisiones:</strong> Modificar la actitud del grupo o
+            mejorar su convivencia, cambios de lugar en el aula, cambios de grupo, reajustes en programaciones,
+            metodología, ...
+        </li>
+        <li style="margin-bottom: 8em;"><strong>Medidas con alumnos determinados:</strong> Modificar la actitud del
+            grupo o mejorar su convivencia, cambios de lugar en el aula, cambios de grupo, reajustes en programaciones,
+            metodología, ...
+        </li>
+        <li style="margin-bottom: 8em;"><strong>Previsión de incorporación a programas especiales</strong>
+            (Compensatoria, ACNEEs, Alfabetización, PACG, Diversificación, PCPI 1º, ...)
+        </li>
+        <li><strong>Casos particulares analizados y medidas adoptadas:</strong> ...</li>
+        <ol>
+
+{#            {% for alumno in grupo.gauser_extra_estudios_set.all %}#}
+            {% for alumno in grupo|alumnos %}
+                <li style="margin-bottom: 7em;"><strong> {{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }} </strong>
+                    ({{ alumno.ge.gauser.nacimiento }})
+                    </br> &nbsp;&nbsp;&nbsp; Repite:&#10066;&nbsp;&nbsp;&nbsp; Refuerzo:&#10066;&nbsp;&nbsp;&nbsp;
+                    ACNEE:&#10066; &nbsp;&nbsp;&nbsp; Pendientes:..................
+                </li>
+            {% endfor %}
+        </ol>
+    </ol>
+    <div style="text-align:center;padding-top:20px;">
+        <table>
+            <tr>{% now "F" as mes %}
+                <td colspan="{{ grupo.tutores|length }}">{{ grupo.ronda.entidad.localidad }}, a {% now "d" %}
+                    de {{ mes|lower }} de {% now "Y" %} </td>
+            </tr>
+            <tr></tr>
+            <tr>
+                {% for t in grupo.tutores %}
+                    <td>{{ t.gauser.get_full_name }}</td>{% endfor %}
+            </tr>
+            <tr>
+                {% for t in grupo.tutores %}
+                    <td>{% if t.gauser.sexo == 'H' %}Tutor{% else %}Tutora{% endif %} del
+                        grupo {{ grupo.nombre }}</td>{% endfor %}
+            </tr>
+        </table>
+    </div>
+    <div class="pagebreak"></div>
+
+    <h2 style="text-align:center;"> HOJA DE FIRMAS -- ACTA DE LA EVALUACIÓN</h2>
+
+    {% if grupo.tutores|length > 1 %}Tutores:
+        {% else %}{% if t.gauser.sexo == 'H' %}Tutor:{% else %}Tutora:{% endif %}{% endif %}
+    <strong>{% for t in grupo.tutores %}{{ t.gauser.get_full_name }}{% if not forloop.last %},&nbsp;
+    {% endif %}{% endfor %}</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    Grupo:
+    <strong>{{ grupo.nombre }}</strong>
+
+    <table style="text-align:center;">
+        <tr>
+            <td style="border: 1px solid #000000;padding-top:5px;"><p><strong>Materia</strong></p></td>
+            <td style="border: 1px solid #000000;padding-top:5px;"><p><strong>Nombre y firma</strong></p></td>
+        </tr>
+        {% for materia in grupo|materias_grupo %}
+            <tr>
+                <td style="border: 1px solid #000000;padding-bottom:10px;padding-top:15px;"><p
+                        class="tabla">{{ materia.nombre }}</p></td>
+                <td style="border: 1px solid #000000;"></td>
+            </tr>
+        {% endfor %}
+
+    </table>
+    <div style="text-align:center;padding-top:20px;">
+        <table>
+            <tr>{% now "F" as mes %}
+                <td colspan="{{ grupo.tutores|length }}">{{ grupo.ronda.entidad.localidad }}, a {% now "d" %}
+                    de {{ mes|lower }} de {% now "Y" %} </td>
+            </tr>
+            <tr></tr>
+            <tr>
+                {% for t in grupo.tutores %}
+                    <td>{{ t.gauser.get_full_name }}</td>{% endfor %}
+            </tr>
+            <tr>
+                {% for t in grupo.tutores %}
+                    <td>{% if t.gauser.sexo == 'H' %}Tutor{% else %}Tutora{% endif %} del
+                        grupo {{ grupo.nombre }}</td>{% endfor %}
+            </tr>
+        </table>
+    </div>
+    {% if not forloop.last %}
+        <p class="pagebreak">&nbsp;</p>
+    {% endif %}
+{% endfor %}
+
+ 

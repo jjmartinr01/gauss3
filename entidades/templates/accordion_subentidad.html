@@ -1,0 +1,19 @@
+{% load my_templatetags %}
+<dd class="accordion-navigation" id="accordion{{ subentidad.id }}"
+    style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+    <a href="#panel{{ subentidad.id }}">
+        <i id="circle{{ subentidad.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <span id="span_nombre{{ subentidad.id }}">{{ subentidad.nombre }}</span>
+        <span class="gris">(</span><span id="span_edad_min{{ subentidad.id }}"
+                                         class="gris">{{ subentidad.edad_min }}</span>
+        <span class="gris">&#8804; <i class="fa fa-male"></i> &#8804;</span>
+        <span id="span_edad_max{{ subentidad.id }}"
+              class="gris">{{ subentidad.edad_max }}</span><span class="gris">)</span>
+        {% if not subentidad|has_usuarios_ronda:request.session.gauser_extra.ronda %}
+            <span style="color:red"><i class="fa fa-warning"></i> Sin miembros</span>
+        {% endif %}
+    </a>
+
+    <div id="panel{{ subentidad.id }}" class="content accordion-subentidad" data-id="{{ subentidad.id }}">
+    </div>
+</dd>

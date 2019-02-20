@@ -1,0 +1,58 @@
+<div class="materia" data-id="{{ materia.id }}" id="div_materia{{ materia.id }}">
+    <div class="row">
+        <div class="columns large-4">
+            <input type="text" value="{{ materia.nombre|default_if_none:'' }}" class="campo" data-campo="nombre"
+                   placeholder="Nombre" title="Nombre" data-object="Materia" data-id="{{ materia.id }}">
+        </div>
+        <div class="columns large-2">
+            <input type="text" value="{{ materia.abreviatura|default_if_none:'' }}" class="campo" data-id="{{ materia.id }}"
+                   placeholder="Abreviatura" title="Abreviatura" data-object="Materia" data-campo="abreviatura">
+        </div>
+        <div class="columns large-1">
+            <input type="text" value="{{ materia.horas|default_if_none:'' }}" class="campo" data-id="{{ materia.id }}"
+                   placeholder="Horas/semana" title="Horas/semana" data-object="Materia" data-campo="horas">
+        </div>
+        <div class="columns large-1 end">
+            <input type="text" value="{{ materia.duracion|default_if_none:'' }}" class="campo" data-id="{{ materia.id }}"
+                   placeholder="Horas duración" title="Horas duración" data-object="Materia" data-campo="duracion">
+        </div>
+        {% if materia.materia_programaciones %}
+        <div class="columns large-2">
+            <input type="text"
+                   value="{{ materia.materia_programaciones.tipo|default_if_none:'' }}" class="campo" data-id="{{ materia.materia_programaciones.id }}"
+                   placeholder="Tipo" title="Tipo"  data-object="Materia_programaciones" data-campo="tipo">
+        </div>
+        <div class="columns large-1">
+            <input type="text"
+                   value="{{ materia.materia_programaciones.codigo|default_if_none:'' }}" class="campo" data-id="{{ materia.materia_programaciones.id }}"
+                   placeholder="Código" title="Código" data-object="Materia_programaciones" data-campo="codigo">
+        </div>
+        <div class="columns large-1">
+            <input type="text"
+                   value="{{ materia.materia_programaciones.ects|default_if_none:'' }}" class="campo" data-id="{{ materia.materia_programaciones.id }}"
+                   placeholder="ects" title="ects" data-object="Materia_programaciones" data-campo="ects">
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="row hide" id="actions{{ materia.id }}">
+        <div class="columns large-12">
+            <ul class="button-group" style="padding-left: 5px;">
+                <li title="Borrar esta materia"><a href="#" class="button small button_action" data-id="{{ materia.id }}"
+                       data-action="borrar_materia" data-evaluar="$('#div_materia{{ materia.id }}').hide();">Borrar materia</a></li>
+                <li title="Ir a la programación de esta materia"><a href="#" class="button small button_action" data-id="{{ materia.id }}"
+                       data-action="programacion_materia">Programación</a></li>
+                <li title="Ver los resultados de aprendizaje asociados"><a href="#" class="button small resultados_aprendizaje" data-id="{{ materia.id }}"
+                       data-action="resultados_aprendizaje">Resultados de aprendizaje</a></li>
+                <li title="Ver los objetivos asociados a la materia"><a href="#" class="button small button_action" data-id="{{ materia.id }}"
+                       data-action="objetivos_materia">Objetivos</a></li>
+                {#  <li><a href="#" class="button">Copiar</a></li>/#}
+            </ul>
+        </div>
+        <div class="columns large-10">
+            {% autoescape off %}{{ materia.observaciones }}{% endautoescape %}</div>
+        <div class="columns large-2">
+            <label>Clave externa:</label>
+            <b>{{ materia.clave_ex }}</b></div>
+    </div>
+</div>

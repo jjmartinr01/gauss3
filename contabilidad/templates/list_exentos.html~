@@ -1,0 +1,64 @@
+{% load my_templatetags %}
+
+<script>
+$('#Contenido').click(function(e) {
+    var a=false;
+    if ($(e.target).parents('.div_total_checkboxes').length<1){
+	$('.todos_ningunos').each(function(i, div){
+	    if ($(div).css('display') == 'block'){
+		var id = div.id.split('___')[1];
+		$('#checkbox_cerrado').val(id).change();}});
+	$('.todos_ningunos').hide();
+	$('.multiselect2checkbox').hide();
+	$('.ya_checked').show();}});
+
+  $('#Contenido').on('click','.texto_checkboxes',function(){
+	var id = this.id.split('___')[1];
+alert('hola');
+	$('#todos_ningunos___'+id).toggle();
+	$('#checkboxes___'+id).toggle();
+	$('#ya_checked___'+id).toggle();})
+
+  $('#Contenido').on('click', '.select_todos', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).prop('checked', true);
+    var n = $('.check___'+identificador).length;
+    $('#total_seleccionados___'+identificador).text( "(" +n + (n === 1 ? " receptor seleccionado)" : " receptores seleccionados)") );
+    });
+
+  $('#Contenido').on('click', '.select_ninguno', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).prop('checked', false);
+    $('#total_seleccionados___'+identificador).text( "(0 receptores seleccionados)");
+    });
+
+  $( "input[type=checkbox]" ).click( function(){
+      var id = $(this).attr('class').split('___')[1];
+      var $cat = $(this).closest(".multiselect2checkbox");
+      var n = $cat.find(":checkbox:checked").length;
+      $('#total_seleccionados___'+id).text( "(" +n + (n === 1 ? " receptor seleccionado)" : " receptores seleccionados)") );
+  });
+</script>
+{% for key,exentos in socios.items %}
+    <div id="tot___id_exentos_{{politica.id}}_{{key|unir:'_'}}" class="div_total_checkboxes">
+      <div class="div_texto_checkboxes">
+	  <span class="info texto_checkboxes" id="texto___id_exentos_{{politica.id}}_{{key|unir:'_'}}"><i class="fa fa-hand-o-up"></i> Selecciona socios exentos de pago de cuota pertenecientes a {{key}}</span>
+      </div>
+      <div class="ya_checked" id="ya_checked___id_exentos_{{politica.id}}_{{key|unir:'_'}}">
+	  <span class=""><i class="fa fa-eye-slash"></i></span>
+      </div>
+      <div class="todos_ningunos" id="todos_ningunos___id_exentos_{{politica.id}}_{{key|unir:'_'}}">
+	  <span id="todo___id_exentos_{{politica.id}}_{{key|unir:'_'}}" class="select_todos info"><i class="fa fa-check-circle"></i> Todos </span>
+	  <span id="ninguno___id_exentos_{{politica.id}}_{{key|unir:'_'}}" class="select_ninguno info"><i class="fa fa-times-circle"></i> Ninguno</span>
+      </div>
+      <div class="total_seleccionados" id="total_seleccionados___id_exentos_{{politica.id}}_{{key|unir:'_'}}"></div>
+      <table width="100%" id="checkboxes___id_exentos_{{politica.id}}_{{key|unir:'_'}}" class="multiselect2checkbox"><tbody><tr>
+	  {% for exento in exentos %}
+	    <td><input type="checkbox" id="exento_{{politica.id}}___{{exento.id}}" name="exentos_{{politica.id}}" class="check___id_exentos_{{key|unir:'_'}}" value="{{exento.gauser.id}}" {% if exento.gauser.id in socios_exentos %} checked {% endif %}>{{exento.gauser.get_full_name}}</td>
+	    {%if forloop.counter|divisibleby:"4" %}
+		</tr><tr>
+	    {% endif %}
+	  {% endfor %}
+      </tbody></table>
+    </div>
+  {% endfor %}

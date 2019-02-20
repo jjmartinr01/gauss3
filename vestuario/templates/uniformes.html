@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <input type="hidden" id="action" name="action" value="aceptar">
+        <input type="hidden" id="g_es_selected" name="g_es_selected" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong> Solicitud de uniformes
+                ({{ request.session.gauser_extra.ronda.entidad.name }})</strong></h4>
+        </div>
+
+        {% if request.session.gauser_extra|has_permiso:'ve_lista_uniformes' %}
+            <div id="div_uniformes" style="display: none;">
+                <label><strong>Pedidos realizados por los socios del grupo</strong></label>
+                <table align="CENTER" cellpadding="3" width="100%">
+                    <thead>
+                    <tr>
+                        <td><span class="color2"><i class="fa fa-check-square-o"></i></span></td>
+                        <td style="text-align:center;"><span class="color2">Uniforme para</span></td>
+                        <td style="text-align:center;"><span class="color2">Solicitado por</span></td>
+                        <td style="text-align:center;"><span class="color2">Entregado</span></td>
+                        <td style="text-align:center;"><span class="color2">Pagado</span></td>
+                        <td style="text-align:center;"><span class="color2">Tipo</span></td>
+                        <td style="text-align:center;"><span class="color2">Talla</span></td>
+                        <td style="text-align:center;"><span class="color2">Pedido el</span></td>
+                    </tr>
+                    </thead>
+                    {% for uniforme in uniformes %}
+                        <tr id="fila_uniforme___{{ uniforme.id }}">
+                            <td class="icono">
+                                <i style="cursor: pointer;font-size: 120%;" class="fa fa-square-o check_uniforme"
+                                   id="check___{{ uniforme.id }}"></i>
+                            </td>
+                            <input type="hidden" class="hidden_uniforme" name="uniforme_id"
+                                   value="" id="hidden_uniforme___{{ uniforme.id }}">
+                            <td style="text-align:center;"
+                                title="Nombre del socio al que va destinado el uniforme">
+                                {{ uniforme.gauser_extra.gauser.get_full_name }}
+                            </td>
+                            <td style="text-align:center;cursor: pointer;" title="Nombre de quien solicitó el uniforme">
+                                {{ uniforme.solicitante.gauser.get_full_name }}
+                            </td>
+                            {% if not uniforme.entregado %}
+                                <td style="text-align:center;"
+                                    title="Haz click/Selecciona si el uniforme está entregado">
+                                    <i style="cursor: pointer;font-size: 120%;" class="fa fa-square-o check_entregado"
+                                       id="entregado___{{ uniforme.id }}"></i>
+                                    <input type="hidden" name="entregados" id="hidden_entregados___{{ uniforme.id }}"
+                                           value="">
+                                </td>
+                            {% else %}
+                                <td style="text-align:center;" title="El uniforme está entregado">
+                                    Sí
+                                </td>
+                            {% endif %}
+                            {% if not uniforme.pagado %}
+                                <td style="text-align:center;"
+                                    title="Haz click/Selecciona si el uniforme está pagado">
+                                    <i style="cursor: pointer;font-size: 120%;" class="fa fa-square-o check_pagado"
+                                       id="pagado___{{ uniforme.id }}"></i>
+                                    <input type="hidden" name="pagados" id="hidden_pagados___{{ uniforme.id }}"
+                                           value="">
+                                </td>
+                            {% else %}
+                                <td style="text-align:center;" title="El uniforme está pagado">
+                                    Sí
+                                </td>
+                            {% endif %}
+                            <td style="text-align:center;"
+                                title="Tipo de uniforme solicitado">
+                                {{ uniforme.get_tipo_display }}
+                            </td>
+                            <td style="text-align:center;"
+                                title="Talla del uniforme solicitado">
+                                {% if uniforme.talla %}{{ uniforme.get_talla_display }}{% endif %}
+                            </td>
+                            <td style="text-align:center;"
+                                title="Fecha en la que se realizó el pedido">
+                                {{ uniforme.fecha_pedido }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endif %}
+
+        <div id="introducir_uniforme">
+            <div class="row">
+                <div class="large-4 columns">
+                    <label>Destinatario del uniforme
+                        <select name="gauser_extra" id="gauser_extra">
+                            <option selected="selected" value="">---------</option>
+                            <option value="{{ request.session.gauser_extra.id }}">
+                                {{ request.session.gauser_extra.gauser.get_full_name }}
+                            </option>
+                            {% for hijo in hijos %}
+                                <option value="{{ hijo.id }}">
+                                    {{ hijo.gauser.get_full_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+                <div class="large-3 columns">
+                    <label>Tipo
+                        {{ form.tipo }}
+                    </label>
+                </div>
+                <div class="large-2 columns">
+                    <label>Talla
+                        {{ form.talla }}
+                    </label>
+                </div>
+                <div class="large-3 columns">
+                    <label>Promoción
+                        <select name="campo1">
+                            <option selected="selected" value="">---------</option>
+                            <option value="Promoción Caja Rural">Promoción Caja Rural</option>
+                            <option value="Sin promoción">Sin promoción</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="large-12 columns">
+                    <label>Observaciones
+                        {{ form.observaciones }}
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div id="div_uniformes_solicitados">
+            <label><strong>Pedidos que has realizado</strong></label>
+            <table align="CENTER" cellpadding="3" width="100%">
+                <thead>
+                <tr>
+                    <td><span class="color2"><i class="fa fa-check-square-o"></i></span></td>
+                    <td style="text-align:center;"><span class="color2">Uniforme para</span></td>
+                    <td style="text-align:center;"><span class="color2">Solicitado por</span></td>
+                    <td style="text-align:center;"><span class="color2">Entregado</span></td>
+                    <td style="text-align:center;"><span class="color2">Pagado</span></td>
+                    <td style="text-align:center;"><span class="color2">Tipo</span></td>
+                    <td style="text-align:center;"><span class="color2">Talla</span></td>
+                    <td style="text-align:center;"><span class="color2">Pedido el</span></td>
+                </tr>
+                </thead>
+                {% for uniforme in uniformes_solicitados %}
+                    <tr id="fila_uniforme_solicitado___{{ uniforme.id }}">
+                        <td class="icono">
+                            <i style="cursor: pointer;font-size: 120%;" class="fa fa-square-o check_uniforme_solicitado"
+                               id="check_solicitado___{{ uniforme.id }}"></i>
+                        </td>
+                        <input type="hidden" class="hidden_uniforme" name="uniforme_id"
+                               value="" id="hidden_uniforme_solicitado___{{ uniforme.id }}">
+                        <td style="text-align:center;"
+                            title="Nombre del socio al que va destinado el uniforme">
+                            {{ uniforme.gauser_extra.gauser.get_full_name }}
+                        </td>
+                        <td style="text-align:center;cursor: pointer;" title="Nombre de quien solicitó el uniforme">
+                            {{ uniforme.solicitante.gauser.get_full_name }}
+                        </td>
+                        <td style="text-align:center;"
+                            title="Información de si el uniforme está entregado">
+                            {% if uniforme.entregado %}Sí{% else %}No{% endif %}
+                        </td>
+                        <td style="text-align:center;"
+                            title="Información de si el uniforme está pagado">
+                            {% if uniforme.pagado %}Sí{% else %}No{% endif %}
+                        </td>
+                        <td style="text-align:center;"
+                            title="Tipo de uniforme solicitado">
+                            {{ uniforme.get_tipo_display }}
+                        </td>
+                        <td style="text-align:center;"
+                            title="Talla del uniforme solicitado">
+                            {% if uniforme.talla %}{{ uniforme.get_talla_display }}{% endif %}
+                        </td>
+                        <td style="text-align:center;"
+                            title="Fecha en la que se realizó el pedido">
+                            {{ uniforme.fecha_pedido }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_check', 'h_file-pdf-o', 's_list-alt', 'h_trash-o', 'h_shopping-cart']);
+
+        $('.check_uniforme_solicitado').click(function () {
+            var id = $(this).attr('id').split('___')[1];
+            if ($(this).hasClass('fa-square-o')) {
+                $(this).removeClass('fa-square-o').addClass('fa-check-square-o');
+                $('#hidden_uniforme_solicitado___' + id).val(id);
+                $('#' + '{{ formname }} select, textarea').prop('disabled', true);
+                habilita(['h_check', 'h_file-pdf-o', 'h_list-alt', 's_trash-o']);
+            } else {
+                $(this).removeClass('fa-check-square-o').addClass('fa-square-o');
+                $('#hidden_uniforme_solicitado___' + id).val('');
+                if ($('.check_uniforme_solicitado.fa-check-square-o').length == 0) {
+                    $('#' + '{{ formname }} select, textarea').prop('disabled', false);
+                    habilita(['s_check', 'h_file-pdf-o', 's_list-alt', 'h_trash-o']);
+                }
+            }
+        });
+
+        $('.check_uniforme').click(function () {
+            var id = $(this).attr('id').split('___')[1];
+            if ($(this).hasClass('fa-square-o')) {
+                $(this).removeClass('fa-square-o').addClass('fa-check-square-o');
+                $('#hidden_uniforme___' + id).val(id);
+                $('#' + '{{ formname }} select, textarea').prop('disabled', true);
+                habilita(['h_check', 'h_file-pdf-o', 'h_list-alt', 's_trash-o', 'h_shopping-cart']);
+            } else {
+                $(this).removeClass('fa-check-square-o').addClass('fa-square-o');
+                $('#hidden_uniforme___' + id).val('');
+                if ($('.check_uniforme.fa-check-square-o').length == 0) {
+                    $('#' + '{{ formname }} select, textarea').prop('disabled', false);
+                    habilita(['h_check', 's_file-pdf-o', 'h_list-alt', 'h_trash-o', 's_shopping-cart']);
+                }
+            }
+        });
+
+        $('.check_entregado').click(function () {
+            var id = $(this).attr('id').split('___')[1];
+            if ($(this).hasClass('fa-square-o')) {
+                $(this).removeClass('fa-square-o').addClass('fa-check-square-o');
+                $('#action').val('mod_pedidos');
+                $('#hidden_entregados___' + id).val(id);
+                habilita(['s_check', 'h_file-pdf-o', 'h_list-alt', 'h_trash-o', 'h_shopping-cart']);
+            } else {
+                $(this).removeClass('fa-check-square-o').addClass('fa-square-o');
+                $('#hidden_entregados___' + id).val('');
+                $('#action').val('aceptar');
+                if (($('.check_entregado.fa-check-square-o').length + $('.check_pagado.fa-check-square-o').length) == 0) {
+                    $('#' + '{{ formname }} select, textarea').prop('disabled', false);
+                    habilita(['h_check', 's_file-pdf-o', 'h_list-alt', 'h_trash-o', 's_shopping-cart']);
+                }
+            }
+        });
+
+        $('.check_pagado').click(function () {
+            var id = $(this).attr('id').split('___')[1];
+            if ($(this).hasClass('fa-square-o')) {
+                $(this).removeClass('fa-square-o').addClass('fa-check-square-o');
+                $('#action').val('mod_pedidos');
+                $('#hidden_pagados___' + id).val(id);
+                habilita(['s_check', 'h_file-pdf-o', 'h_list-alt', 'h_trash-o', 'h_shopping-cart']);
+            } else {
+                $(this).removeClass('fa-check-square-o').addClass('fa-square-o');
+                $('#hidden_pagados___' + id).val('');
+                $('#action').val('aceptar');
+                if (($('.check_entregado.fa-check-square-o').length + $('.check_pagado.fa-check-square-o').length) == 0) {
+                    $('#' + '{{ formname }} select, textarea').prop('disabled', false);
+                    habilita(['h_check', 's_file-pdf-o', 'h_list-alt', 'h_trash-o', 's_shopping-cart']);
+                }
+            }
+        });
+
+        $('#list-alt_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                habilita(['h_check', 's_file-pdf-o', 'h_list-alt', 'h_trash-o', 's_shopping-cart']);
+                $('.check_uniforme').addClass('fa-square-o').removeClass('fa-check-square-o');
+                $('.check_uniforme_solicitado').addClass('fa-square-o').removeClass('fa-check-square-o');
+                $('.hidden_uniforme').val('');
+                $('#introducir_uniforme').hide();
+                $('#div_uniformes_solicitados').hide();
+                $('#div_uniformes').show();
+            }
+        });
+
+        $('#shopping-cart_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                habilita(['s_check', 'h_file-pdf-o', 's_list-alt', 'h_trash-o', 'h_shopping-cart']);
+                $('.check_uniforme').addClass('fa-square-o').removeClass('fa-check-square-o');
+                $('.check_uniforme_solicitado').addClass('fa-square-o').removeClass('fa-check-square-o');
+                $('.hidden_uniforme').val('');
+                $('#introducir_uniforme').show();
+                $('#div_uniformes_solicitados').show();
+                $('#div_uniformes').hide();
+                $('#action').val('aceptar');
+            }
+        });
+
+        $('#trash-o_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                $('#action').val('borrar_uniforme');
+                document.{{formname}}.submit();
+            }
+        });
+
+        $('#check_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                document.{{formname}}.submit();
+            }
+        });
+
+        $('#file-pdf-o_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                $('#action').val('genera_pdf');
+                document.{{formname}}.submit();
+            }
+        });
+
+    </script>
+{% endblock %}

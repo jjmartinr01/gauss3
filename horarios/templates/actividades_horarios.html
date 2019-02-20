@@ -1,0 +1,127 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        .par {
+            background-color: #f6f6f6;
+        }
+
+        .requiere_grupo, .requiere_materia {
+            margin-top: 4px;
+        }
+
+        .cabecera_title {
+            text-align: center;
+            color: #008CBA;
+            font-weight: 800;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+
+
+        <div class="">
+            <h4 class="cabecera_title"><strong>Actividades para los Horarios
+                de {{ request.session.gauser_extra.ronda.entidad.name }}</strong></h4>
+        </div>
+
+        <div class="row" style="border-bottom: 1px solid grey">
+            <div class="columns large-5 cabecera_title">
+                Actividad
+            </div>
+            <div class="columns large-1 cabecera_title" title="Requiere un grupo/subentidad para llevarla a cabo">
+                Grupo
+            </div>
+            <div class="columns large-1 cabecera_title" title="Requiere una materia para llevarla a cabo">
+                Materia
+            </div>
+            <div class="columns large-1 cabecera_title"
+                 title="Esta actividad es una guardia (esta identificación es necesaria para el módulo de guardias)">
+                Guardia
+            </div>
+            <div class="columns large-4 cabecera_title" title="Observaciones sobre la actividad">
+                Observaciones
+            </div>
+        </div>
+        <div id="actividades_list">
+            {% for a in actividades %}
+                {% include "actividad_horario_row.html" %}
+            {% endfor %}
+        </div>
+        <hr>
+        <div class="row">
+            <div class="columns large-12">
+                <a class="button" id="add_actividad"><i class="fa fa-plus"></i> Añadir actividad</a>
+            </div>
+        </div>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('#add_actividad').click(function (e) {
+            e.preventDefault();
+            $.post("/actividades_horarios/", {action: 'add_actividad'}, function (data) {
+                $('#actividades_list').append(data.actividad);
+            });
+        });
+        $('body').on('click', '.delete_actividad', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/actividades_horarios/", {action: 'delete_actividad', id: id}, function (data) {
+                $('#row' + id).remove();
+            });
+        });
+        $('body').on('click', '.duplicate_actividad', function (e) {
+            e.preventDefault();
+            var el = $(this);
+            var id = el.data('id');
+            $.post("/actividades_horarios/", {action: 'duplicate_actividad', id: id}, function (data) {
+                $('#row' + id).after(data.actividad);
+                Foundation.libs.dropdown.close($('#drop' + id));
+            });
+        });
+        $('body').on('keyup', '.ob_actividad', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/actividades_horarios/", {action: 'ob_actividad', id: id, obs: $(this).html()}, function (data) {
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+        $('body').on('keyup', '.change_nombre_actividad', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/actividades_horarios/", {action: 'change_nombre_actividad', id: id, nombre: $(this).val()},
+                function (data) {
+                    if (data.ok == true) {
+                        $('#act' + id).html(data.nombre);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.change_checkbox', function (e) {
+            e.preventDefault();
+            var el = $(this);
+            var id = $(this).data('id');
+            var attr = $(this).data('attr');
+            $.post("/actividades_horarios/", {action: 'change_checkbox', id: id, attr: attr}, function (data) {
+                if (data.ok == true) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    el.prop('checked', data.estado);
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% load entidades_extras %}
+<div class="row">
+    <div class="columns large-3">
+        <label><b>Solicitado por</b>
+        </label> {{ informe.solicitante.gauser.get_full_name }}
+    </div>
+    <div class="columns large-2">
+        <label title="Fecha en la que se ha solicitado este informe de seguimiento"><b>Fecha de solicitud</b>
+        </label>{{ informe.fecha|date:'d/m/Y' }}
+    </div>
+    <div class="columns large-2">
+        {% if informe.solicitante == g_e or g_e|has_permiso:'edita_informes_seguimiento' %}
+            <label title="Fecha límite para rellenar el informe"><b>Fecha límite</b>
+                <input type="text" class="deadline" data-id="{{ informe.id }}" id="deadline{{ informe.id }}"
+                       value="{{ informe.deadline|date:'d/m/Y' }}">
+                <script>
+                    $("#deadline" + {{ informe.id }}).fdatepicker({format: 'dd/mm/yyyy', weekStart: 1});
+                </script>
+
+
+            </label>
+        {% else %}
+            <label title="Fecha límite para rellenar el informe"><b>Fecha límite</b>
+            </label>{{ informe.deadline|date:'d/m/Y' }}
+        {% endif %}
+    </div>
+    <div class="columns large-5">
+        <ul class="button-group right">
+            {% if informe.solicitante == g_e or g_e|has_permiso:'ve_informes_seguimiento' %}
+                <li title="Generar pdf con el informe de seguimiento">
+                    <a href="#" class="button pdf_informe_seguimiento" data-id="{{ informe.id }}"><i
+                            class="fa fa-file-pdf-o"></i>
+                        PDF</a></li>
+            {% endif %}
+            {% if informe.solicitante == g_e or g_e|has_permiso:'borra_informes_seguimiento' %}
+                <li title="Borrar el informe de seguimiento de la base de datos">
+                    <a href="#" class="button del_informe_seguimiento" data-id="{{ informe.id }}"><i
+                            class="fa fa-trash-o"></i>
+                        Borrar</a></li>
+            {% endif %}
+            {% if not informe.solicitante == g_e and not g_e|has_permiso:'edita_informes_seguimiento' %}
+                <li title="Borrarme de la lista de personas que tienen que contestar el informe">
+                    <a href="#" class="button del_participacion_informe_seguimiento" data-id="{{ informe.id }}"><i
+                            class="fa fa-user-times"></i>
+                    </a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Texto de la solicitud</b></label>
+        {% if informe.solicitante == g_e or g_e|has_permiso:'edita_informes_seguimiento' %}
+            <textarea class="texto_solicitud" data-informe="{{ informe.id }}">{{ informe.texto_solicitud }}</textarea>
+        {% else %}
+            <div>
+                <b>{{ informe.texto_solicitud }}</b>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% if informe.solicitante == g_e or g_e|has_permiso:'edita_informes_seguimiento' %}
+    <br>
+    <div class="row">
+        <div class="columns large-12">
+            <label title="Personas a las que se le solicita que rellenen el informe"><b>Personas que rellenan el
+                informe</b>
+                <select class="usuarios_destino" id="usuarios_destino{{ informe.id }}" data-informe="{{ informe.id }}"
+                        multiple>
+                    {% for u in informe.usuarios_destino.all %}
+                        <option value="{{ u.id }}" selected>{{ u.gauser.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            {% if informe.solicitante == g_e %}
+                <a title="Enviar mensaje de aviso a las personas indicadas para que rellenen el informe"
+                   href="#" class="button aviso_informe_seguimiento" data-id="{{ informe.id }}"><i
+                        class="fa fa-envelope-o"></i> Enviar aviso</a>
+            {% endif %}
+        </div>
+    </div>
+    <br>
+    <p><b>Preguntas/Respuestas de las personas a las que se les ha solicitado el informe</b></p>
+    <div class="row">
+        <div class="columns large-12">
+            <select class="pregunta_action" data-informe="{{ informe.id }}">
+                <option value="hacer_nada" selected>Para añadir preguntas, selecciona una de las siguientes opciones
+                </option>
+                <option value="nueva">Añadir una nueva pregunta en la que yo decido el enunciado</option>
+                {% for p in preguntas %}
+                    <option value="{{ forloop.counter0 }}">{{ p }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+{% endif %}
+<div id="preguntas{{ informe.id }}">
+    {% for pregunta in informe.pregunta_set.all %}
+        {% include 'informe_seguimiento_accordion_content_pregunta.html' %}
+    {% endfor %}
+</div>

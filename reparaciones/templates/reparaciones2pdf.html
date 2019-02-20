@@ -1,0 +1,49 @@
+<style>
+    html {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 10pt;
+        text-align: justify;
+    }
+
+    table {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    p {
+        font-size: 10pt;
+        margin-top: 1px;
+        margin-bottom: 1px;
+    }
+</style>
+
+
+Número total de incidencias: {{ reparaciones|length }}
+<br>
+<table width="100%" style="border-spacing:20px;">
+    <tbody>
+    <tr style="background-color: lightgrey">
+        <td><strong>Detectada por</strong></td>
+        <td><strong>Lugar</strong></td>
+        <td style="text-align:center;"><strong>Fecha</strong></td>
+        <td style="text-align:center;"><strong>Resuelta</strong></td>
+    </tr>
+    {% for rep in reparaciones %}
+        <tr><td colspan="4"><hr></td></tr>
+        <tr style="font-weight: 800;">
+            <td>{{ rep.detecta.gauser.last_name }}</td>
+            <td>{{ rep.lugar }}</td>
+            <td style="text-align:center;">{{ rep.fecha_comunicado|date:"SHORT_DATE_FORMAT" }}</td>
+            <td style="text-align:center;">{% if rep.resuelta %} {{ rep.fecha_solucion|date:"SHORT_DATE_FORMAT" }}<br>
+                {{ rep.reparador.gauser.last_name }}{% else %}No{% endif %}</td>
+        </tr>
+        <tr>
+            <td colspan="4">{% autoescape off %}{{ rep.describir_problema|capfirst }}{% endautoescape %}</td>
+        </tr>
+        <tr>
+            <td colspan="4" style="color:gray;">
+                {% autoescape off %}{{ rep.describir_solucion|capfirst }}{% endautoescape %}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

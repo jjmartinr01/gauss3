@@ -1,0 +1,37 @@
+{% load my_templatetags %}
+
+<div class="row" id="row_tramo{{ t.id }}">
+    <div class="columns large-5">
+        <label>
+            Nombre del tramo:
+            <input type="text" data-id="{{ t.id }}" class="nombre_tramo" data-horario="{{ t.horario.id }}"
+                   value="{{ t.nombre }}">
+        </label>
+    </div>
+    <div class="columns large-2">
+        <label style="position: relative;">
+            Inicio:
+            <input type="text" name="inicio{{ t.id }}" id="inicio{{ t.id }}" data-horario="{{ t.horario.id }}"
+                   class="timepicker_tramo inicio" data-t="{{ t.id }}" data-id="{{ t.id }}"
+                   data-dest="pickerini{{ t.id }}" value="{{ t.inicio|time:"H:i" }}">
+            <div class="row" id="pickerini{{ t.id }}"
+                 style="z-index:200;position: absolute; top:55px;left:10px;width: 300px;"></div>
+        </label>
+    </div>
+    <div class="columns large-2">
+        <label>
+            Fin:
+            <input type="text" name="fin{{ t.id }}" id="fin{{ t.id }}"
+                   class="timepicker_tramo fin" data-id="{{ t.id }}" data-horario="{{ t.horario.id }}"
+                   data-dest="pickerfin{{ t.id }}" value="{{ t.fin|time:"H:i" }}">
+            <div class="row" id="pickerfin{{ t.id }}"
+                 style="z-index:200;position: absolute; top:55px;left:10px;width: 300px;"></div>
+        </label>
+    </div>
+    <div class="columns large-3">
+        <label>&nbsp;</label>
+        <a class="button tiny delete_tramo" data-id="{{ t.id }}" data-horario="{{ t.horario.id }}"><i
+                class="fa fa-trash-o"></i> Borrar tramo</a>
+    </div>
+    <hr>
+</div>

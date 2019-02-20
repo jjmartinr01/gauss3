@@ -1,0 +1,38 @@
+
+{% for socio in data %}
+
+    <p class="pagebreak">En {{ request.session.gauser_extra.ronda.entidad.localidad }} a {% filter lower %}
+        {% now "j \d\e F \d\e Y" %} {% endfilter %}</p>
+{#    <h1>SOCIO/ MADRE / PADRE / TUTOR LEGAL: </h1>#}
+    <h2>{{ socio.0.gauser.get_full_name }}</h2>
+
+    <p>Con esta carta nos ponemos en contacto contigo para comunicarte la implantación de la nueva plataforma web con la
+        que podrás mantener al día tu comunicación con la entidad {{ request.session.gauser_extra.ronda.entidad.name }}.</p>
+    <p>Todos los miembros de la entidad podemos usar esta aplicación para informarnos de las actividades de la
+        entidad (excursiones, reuniones, ...) así como para comunicarnos entre nosotros.</p>
+    <p>Cada uno dispondremos de un usuario personalizado para identificarnos, así como de una contraseña para
+        autenticarnos.</p>
+
+    <p>La página a la que tendrás que dirigirte es: <strong>https://asocia.gaumentada.es/</strong></p>
+
+    <p>La primera vez que accedas a la plataforma con el usuario y contraseña que se te facilita a continuación, deberás
+        modificarlos según tu criterio. Recuerda que la contraseña es personal e intransferible.</p>
+    <p>Una vez que hayas entrado en la aplicación, deberías ir a "Mis Datos" (parte superior-derecha) y comprobar los
+        datos personales de los que dispone la entidad {{ socio.0.entidad.name }} sobre ti. Si alguno de estos datos
+        no coincidiera o faltara, podrás modificarlos o actualizarlos.</p>
+
+    <p>Se respetará la privacidad y confidencialidad de todos los datos facilitados, así como de la mensajería
+        mantenida. Asimismo no se cederán a terceros los datos de carácter personal obtenidos en el cumplimiento de las
+        actividades de la entidad {{ socio.0.entidad.name }}, de conformidad con Ley Orgánica de Protección de Datos
+        de Carácter Personal y demás normativa aplicable.</p>
+
+    <p>Es fundamental que figure tu correo electrónico, para poder mantener un contacto fluido y correcto.</p>
+    <ul>
+        <li>USUARIO: {{ socio.0.gauser.username }}</li>
+        <li>CONTRASEÑA: {{ socio.1 }}</li>
+    </ul>
+    <p>Si te surge algún problema para acceder, puedes mandar un correo a:</p>
+    <p> info@gaumentada.es</p>
+    <p>Saludos cordiales.</p>
+{% endfor %}
+

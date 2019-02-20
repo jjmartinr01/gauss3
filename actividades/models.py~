@@ -1,0 +1,80 @@
+# -*- coding: utf-8 -*-
+from django.db import models
+from autenticar.models import Gauser_extra, Perfil
+from entidades.models import Entidad, Subentidad
+from datetime import datetime,date
+import os
+
+class Reunion(models.Model):
+    organizador = models.ForeignKey(Gauser_extra, related_name="organizador")
+    code = models.CharField('Código de la actividad', max_length=100)
+    subentidad = models.ForeignKey(Subentidad)
+    fecha = models.DateField("Fecha de la reunión")
+    hora_inicio = models.TimeField("Hora de inicio")
+    hora_fin = models.TimeField("Hora de finalización", null=True, blank=True)
+    describir = models.TextField("Descripción del contenido de la reunión (opcional)", null=True, blank=True)
+    asistentes = models.ManyToManyField(Gauser_extra,help_text="&nbsp;</span><span style='display:none;'>", related_name="reunion", null=True, blank=True)
+    scouters = models.ManyToManyField(Gauser_extra,help_text="&nbsp;</span><span style='display:none;'>", related_name="scouters_reunion", null=True, blank=True)
+    
+    @property
+    def is_finished(self):
+      if date.today() > self.fecha:
+	return True
+      return False
+
+    def __unicode__(self):
+      return u'Reunión de %s (%s) -- %s' % (self.subentidad.nombre, self.subentidad.entidad.name,self.fecha)
+
+class Actividad(models.Model):
+    organizador = models.ForeignKey(Gauser_extra)
+    actividad_padre = models.ForeignKey('self', null=True, blank=True, related_name='actividades')
+    actividad_title = models.CharField('Nombre de la actividad', max_length=200)
+    description = models.TextField("Descripción de la actividad", null=True, blank=True)
+    fecha_inicio = models.DateTimeField("Fecha y hora de inicio")
+    fecha_fin = models.DateTimeField("Fecha y hora de finalización")
+    deadline = models.DateField("Fecha límite de inscripción", null=True, blank=True)
+    lugar_salida = models.CharField('Lugar de partida', max_length=200)
+    lugar_llegada = models.CharField('Lugar de llegada', max_length=200)
+    subentidades = models.ManyToManyField(Subentidad,help_text="&nbsp;</span><span style='display:none;'>")
+    material_scouters = models.TextField("Material a preparar por los scouters", blank=True, null=True)
+    material_educandos = models.TextField("Cosas que deben llevar los educandos", blank=True, null=True)
+    padres = models.BooleanField("¿Es necesaria la colaboración de padres?")
+    padres_colaborar = models.TextField("Colaboración esperada de madres y padres", blank=True, null=True)
+    aprobada = models.BooleanField("Aprobada por el Consejo")
+    fecha_aprobacion = models.DateField("Fecha de aprobación por el Consejo",null=True, blank=True)
+    
+    @property
+    def perfiles_id(self):
+      return self.perfiles.all().values_list('pk',flat=True)
+    
+    @property
+    def is_deadlined(self):
+      if date.today() > self.deadline:
+	return True
+      return False
+
+    @property
+    def is_finished(self):
+      if date.today() > self.fecha_fin.date():
+	return True
+      return False
+
+    def __unicode__(self):
+      return u'Actividad del %s (%s) -- %s' % (self.organizador.entidad.name,self.fecha_inicio,self.actividad_title)
+
+
+class Colaborador(models.Model):
+    actividad = models.ForeignKey(Actividad) #Actividad dentro de la cual está enmarcada
+    usuario = models.ForeignKey(Gauser_extra, related_name = 'grabador') #El que realiza la grabación del colaborador
+    colaborador = models.ForeignKey(Gauser_extra, related_name = 'colaborador') #El que aporta su colaboración
+    funciones = models.TextField("Describe la colaboración", blank=True, null=True)
+    def __unicode__(self):
+      return u'Colaboración de %s en "%s" (%s)' % (self.colaborador.gauser.get_full_name(), self.actividad.actividad_title, self.actividad.fecha_inicio)
+
+class Participante(models.Model):
+    actividad = models.ForeignKey(Actividad) #Actividad dentro de la cual está enmarcada
+    usuario = models.ForeignKey(Gauser_extra, related_name = 'usuario') #El que realiza la grabación de la participación
+    educando = models.ForeignKey(Gauser_extra, related_name = 'educando') #El educando que va a participar
+    observaciones = models.TextField("Observaciones", blank=True, null=True, help_text = "Aquí puedes indicar alguna situación especial, alergias, toma de medicamentos, ...")
+    def __unicode__(self):
+      return u'Participación de %s en "%s" (%s)' % (self.educando.gauser.get_full_name(), self.actividad.actividad_title, self.actividad.fecha_inicio)

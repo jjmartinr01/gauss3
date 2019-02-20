@@ -1,0 +1,105 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css" />
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.min.js"></script>
+{# El siguiente js es utilizado para submit form con files en ajax #}
+<script type="text/javascript" src="/static/js/jquery.form.min.js"></script>
+<style>
+  li { margin-left:20px; }
+.ficheros_justificantes{cursor:pointer;}
+</style>
+{% endblock %}
+
+{% block ready %}
+  visualizar(['ok_sign','plus_sign','file_pdf','remove_sign']);
+  $( "#plus_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir una nueva partida al presupuesto');
+  $( "#file_pdf" ).removeClass('no_navegar').addClass('navegar').attr('title','Generar un pdf con el presupuesto');
+
+  $("#id_describir").cleditor({
+      width:        'auto', // width not including margins, borders or padding
+      height:       100, // height not including margins, borders or padding
+      controls:     // controls to add to the toolbar
+		    "bold italic underline strikethrough subscript superscript | size " +
+		    "style | bullets numbering | " +
+		    "alignleft center alignright justify | undo redo | " +
+		    "rule image link unlink",
+      });
+
+  $('#plus_sign').click(function () { if( $(this).hasClass('navegar') ) {
+    $( '#plus_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( '#ok_sign' ).removeClass('no_navegar').addClass('navegar').attr('title','Guardar la nueva partida');
+    $('#action').val('add_gasto_ingreso');
+    $.post("/add_gasto_ingreso/", {},function(data) { $('#div_asientos').html(data);});}});
+
+
+  $('#ok_sign').click(function (event) {  if( $(this).hasClass('navegar') ) {
+      
+      var par = $('#id_partida').val().length > 0;
+      var con = $('#id_concepto').val().length > 3;
+      var can = !isNaN(parseFloat($('#id_cantidad').val()));
+      if (can){ $('#id_cantidad').val(parseFloat($('#id_cantidad').val()));}
+      if (par && con && can){
+	event.preventDefault();
+	if ($('#action').val() == 'add_gasto_ingreso'){
+	    $('#{{formname}}').ajaxSubmit({
+		url: '/save_gasto_ingreso/',
+		success: function(data) {
+		    $('#div_asientos').html(data); 
+		    $( '#plus_sign' ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir una nueva partida al presupuesto');
+		    $( '#ok_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');} });
+	}
+	return false;
+      }else{
+      var texto = '';
+      if( !par ) { texto = texto + '<li>Es necesario seleccionar una partida presupuestada.</li>';}
+      if( !con ) { texto = texto + '<li>Debes escribir el concepto.</li>';}
+      if( !can ) { texto = texto + '<li>Cantidad debe ser un número real (sin letras y usa "." para los decimales).</li>';}
+      $( "#faltan_campos" ).html(texto);
+      $( "#faltan_campos" ).dialog( "open" );}}});
+
+  $('#Contenido').on('click', '.checkboxes', function(){
+      if ($('input:checkbox.checkboxes:checked').length > 0) {
+	  $( "#remove_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Borrar asientos seleccionados');}
+      else { $( "#remove_sign" ).removeClass('navegar').addClass('no_navegar').attr('title',''); } });
+
+  $('#remove_sign').click(function(){ if ( $(this).hasClass('navegar') ) {
+      var asientos=[];
+      $('input:checkbox.checkboxes:checked').each(function () {
+	  asientos.push($(this).attr('id').split('_')[1]);
+      });
+      $('#action').val('borrar_asientos');
+      $('#id_asientos').val(asientos);
+      document.{{formname}}.submit(); }});
+
+  $('#Contenido').on('click','.del_gasto_ingreso',function(){
+    var id = $(this).attr('id').split('___')[1];
+    $('#asiento_id').val(id);
+    $('#action').val('del_gasto_ingreso');
+    $.post("/del_gasto_ingreso/", {id:id,},function(data) { $('#div_asientos').html(data);});})
+  
+  $("#file_pdf").click(function() { if( $(this).hasClass('navegar') ) {
+      $('#action').val('pdf_gastos_ingresos');
+      document.{{formname}}.submit();}});
+
+  $('#Contenido').on('click','.ficheros_justificantes',function(){
+      var asiento_id = $(this).attr('id').split('___')[1];
+      $('#action').val('bajar_justificante');
+      $('#asiento_id').val(asiento_id);
+      document.{{formname}}.submit();});
+{% endblock %}
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+  <input type="hidden" name="action" id="action" value="">
+  <input type="hidden" name="asiento_id" id="asiento_id" value="">
+  <input type="hidden" name="id_asientos" id="id_asientos" value="">
+
+  <div style="float:center;" id="div_asientos">
+      {% include "list_asientos.html" %}
+  </div>
+{{remesas}}
+{{asientoform}}
+</form>
+{% endblock %}

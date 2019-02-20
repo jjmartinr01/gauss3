@@ -1,0 +1,153 @@
+{% load my_templatetags %}
+{#<style>#}
+{#    .acronimo {#}
+{#        position: absolute;#}
+{#        top: -20px;#}
+{#        right: 30px;#}
+{#        font-size: 24px;#}
+{#        background-color: gray;#}
+{#        padding-left: 5px;#}
+{#        padding-right: 4px;#}
+{#        border: 2px solid white;#}
+{#        color: white;#}
+{#    }#}
+{#</style>#}
+
+<div class="row" id="filtro{{ filtro.id }}">
+    <div class="columns large-1">
+        <b>F<span id="nq{{ filtro.id }}">{{ filtro.n_filtro }}</span></b>
+    </div>
+    <div class="columns large-5">
+        {% if g_e.gauser == filtrado.propietario.gauser %}
+        <select id="tipo_filtro{{ filtro.id }}" class="tipo_filtro" data-id="{{ filtro.id }}">
+            <option selected value="{{ filtro.filtro }}">{{ filtro.get_filtro_display }}</option>
+            <option value="gauser__first_name__icontains">El nombre contiene el texto ...</option>
+            <option value="gauser__last_name__icontains">Los apellidos contienen el texto ...</option>
+            <option value="subentidades__in">Pertenece a las Secciones/Departamentos ...</option>
+            <option value="cargos__in">Tiene alguno de los Cargos/Perfiles ...</option>
+            <option value="observaciones__icontains">En las observaciones pone ...</option>
+            <option value="ronda__id">Ha sido usuario en el año ...</option>
+            <option value="tutor1__gauser__first_name__icontains">El nombre del primer tutor contiene el texto
+                ...
+            </option>
+            <option value="tutor1__gauser__last_name__icontains">Los apellidos del primer tutor contienen el
+                texto ...
+            </option>
+            <option value="tutor2__gauser__first_name__icontains">El nombre del segundo tutor contiene el texto
+                ...
+            </option>
+            <option value="tutor2__gauser__last_name__icontains">Los apellidos del segundo tutor contienen el
+                texto ...
+            </option>
+            <option value="ocupacion__icontains">La ocupación/profesión es ...</option>
+{#            <option value="banco__id">El banco con el que trabaja es ...</option>#}
+            <option value="gauser__localidad__icontains">La localidad donde reside es ...</option>
+            <option value="gauser__provincia__icontains">La provincia donde reside es ...</option>
+            <option value="gauser__nacimiento__gt">La fecha de nacimiento es posterior a ...</option>
+            <option value="gauser__nacimiento__lt">La fecha de nacimiento es anterior a ...</option>
+            <option value="gauser_extra_estudios__grupo__nombre__icontains">El nombre del grupo del usuario contiene ...</option>
+        </select>
+        {% else %}
+            <span>{{ filtro.get_filtro_display }}</span>
+        {% endif %}
+    </div>
+    <div class="columns large-4">
+        <div id="valor_coincidencia">
+
+            <select class="subentidades__in{{ filtro.id }} posible_value{{ filtro.id }} change_option change_value"
+                    data-id="{{ filtro.id }}">
+                <option value="">Elige</option>
+                {% for subentidad in filtro.filtrado.propietario.entidad.subentidad_set.all %}
+                    <option value="{{ subentidad.id }}"
+                            {% if filtro.filtro == 'subentidades__in' and filtro.value == subentidad.id|slugify %}selected="selected"{% endif %}>{{ subentidad.nombre }}</option>
+                {% endfor %}
+            </select>
+
+            <select class="cargos__in{{ filtro.id }} posible_value{{ filtro.id }}  change_option change_value"
+                    data-id="{{ filtro.id }}">
+                <option value="">Elige</option>
+                {% for cargo in filtro.filtrado.propietario.entidad.cargo_set.all %}
+                    <option value="{{ cargo.id }}"
+                            {% if filtro.filtro == 'cargos__in' and filtro.value == cargo.id|slugify %}selected="selected"{% endif %}>{{ cargo.cargo }}</option>
+                {% endfor %}
+            </select>
+
+            <select class="ronda__id{{ filtro.id }} posible_value{{ filtro.id }} change_option change_value"
+                    data-id="{{ filtro.id }}">
+                <option value="">Elige</option>
+                {% for ronda in filtro.filtrado.propietario.entidad|rondas %}
+                    <option value="{{ ronda.id }}"
+                            {% if filtro.filtro == 'ronda__id' and filtro.value == ronda.id|slugify %}selected="selected"{% endif %}>{{ ronda.nombre }}</option>
+                {% endfor %}
+            </select>
+
+            <input class="gauser__nacimiento__gt{{ filtro.id }} posible_value{{ filtro.id }} change_fecha change_value"
+                   data-id="{{ filtro.id }}" type="text"
+                   value="{% if filtro.filtro == 'gauser__nacimiento__gt' %}{{ filtro.value }}{% endif %}">
+
+            <input class="gauser__nacimiento__lt{{ filtro.id }} posible_value{{ filtro.id }} change_fecha change_value"
+                   data-id="{{ filtro.id }}" type="text"
+                   value="{% if filtro.filtro == 'gauser__nacimiento__lt' %}{{ filtro.value }}{% endif %}">
+
+            <input type="text" class="otro_filtro{{ filtro.id }}
+                        gauser__first_name__icontains{{ filtro.id }}
+                        gauser__last_name__icontains{{ filtro.id }}
+                        observaciones__icontains{{ filtro.id }}
+                        tutor1__gauser__first_name__icontains{{ filtro.id }}
+                        tutor1__gauser__last_name__icontains{{ filtro.id }}
+                        tutor2__gauser__first_name__icontains{{ filtro.id }}
+                        tutor2__gauser__last_name__icontains{{ filtro.id }}
+                        ocupacion__icontains{{ filtro.id }}
+                        gauser__localidad__icontains{{ filtro.id }}
+                        gauser__provincia__icontains{{ filtro.id }}
+                        banco__id{{ filtro.id }}
+                        posible_value{{ filtro.id }}
+                        gauser_extra_estudios__grupo__nombre__icontains{{ filtro.id }}
+                        change_value" data-id="{{ filtro.id }}" value="{{ filtro.value }}">
+        </div>
+    </div>
+    <div class="columns large-2">
+        {% if g_e.gauser == filtrado.propietario.gauser %}
+            <a class="delete_filtro" data-id="{{ filtro.id }}">
+            <span class="fa-stack fa-lg">
+              <i class="fa fa-circle fa-stack-2x"></i>
+              <i class="fa fa-trash-o fa-stack-1x fa-inverse"></i>
+            </span>
+            </a>
+        {% else %}
+            <span title="No eres el propietario del filtro. No se admiten modificaciones." style="color:lightgrey;">
+            <span class="fa-stack fa-lg">
+              <i class="fa fa-circle fa-stack-2x"></i>
+              <i class="fa fa-trash-o fa-stack-1x fa-inverse"></i>
+            </span>
+        </span>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    $(".gauser__nacimiento__gt{{ filtro.id }}").fdatepicker({
+        format: "dd/mm/yyyy",
+        language: 'es',
+        weekStart: 1
+    });
+    $(".gauser__nacimiento__lt{{ filtro.id }}").fdatepicker({
+        format: "dd/mm/yyyy",
+        language: 'es',
+        weekStart: 1
+    });
+    $('.posible_value{{filtro.id}}').hide();
+    {% if filtro.filtro == 'subentidades__in' %}
+        $('.subentidades__in{{ filtro.id }}').show();
+    {% elif filtro.filtro == 'cargos__in' %}
+        $('.cargos__in{{ filtro.id }}').show();
+    {% elif filtro.filtro == 'ronda__id' %}
+        $('.ronda__id{{ filtro.id }}').show();
+    {% elif filtro.filtro == 'gauser__nacimiento__gt' %}
+        $('.gauser__nacimiento__gt{{ filtro.id }}').show();
+    {% elif filtro.filtro == 'gauser__nacimiento__lt' %}
+        $('.gauser__nacimiento__lt{{ filtro.id }}').show();
+    {% else %}
+        $('.otro_filtro{{ filtro.id }}').show();
+    {% endif %}
+</script>

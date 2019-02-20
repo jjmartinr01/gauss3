@@ -1,0 +1,23 @@
+{% load my_templatetags %}
+
+<h3 id="h3_concepto">
+    {% autoescape off %}
+        {{ politica.concepto }}
+    {% endautoescape %}</h3>
+<p><strong>Perfil/Cargo afectado:</strong> {{ politica.cargo }}</p>
+<p><strong>Cantidad a cobrar:</strong> {{ politica.cantidad }} €</p>
+{% if politica.tipo_cobro == 'MEN' %}
+    <p>Esta cuota es mensual y el cobro se realiza el día {{ politica.dia }} de cada mes.</p>
+{% else %}
+    <p>Esta cuota es anual y está programada para ser cobrada {% if politica.dia %} el día
+        {{ politica.dia }} {% else %} durante el mes {% endif %} de {{ politica.mes|nombre_mes }} de cada año.</p>
+{% endif %}
+<p><strong>Política de descuentos:</strong> {{ politica.descuentos }}</p>
+{% if politica.exentos|length > 0 %}
+    <strong>Exentos de pagar esta cuota: </strong>
+    {% for exento in politica.exentos.all %}
+        {{ exento.get_full_name }}{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+{% endif %}
+<a id="contenido_politica_cuotas_cerrar" style="position: absolute; top: 7px;right: 7px; font-size: 1.6em;"><strong><i
+        class="fa fa-close"></i> </strong></a>

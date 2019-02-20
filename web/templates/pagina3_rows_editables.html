@@ -1,0 +1,50 @@
+{% load my_templatetags %}
+{% for row in hw|rows_web:'CABECERA' %}
+    <div class="row">
+        <div class="columns large-12">
+            <div id="row_editable___{{ row.orden }}" class="">
+                {% include "pagina4_row_editable.html" with row=row %}
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+<div class="row">
+    {% if hw.col_izq > 0 %}
+        <div class="columns large-{{ hw.col_izq }}">
+            {% for row in hw|rows_web:'IZQUIERDA' %}
+                <div class="row " id="row_editable___{{ row.orden }}">
+                    {% include "pagina4_row_editable.html" with row=row %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% if hw.col_cen > 0 %}
+        <div class="columns large-{{ hw.col_cen }}">
+            {% for row in hw|rows_web:'NORMAL' %}
+                <div class="row " id="row_editable___{{ row.orden }}">
+                    {% include "pagina4_row_editable.html" with row=row %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% if hw.col_der > 0 %}
+        <div class="columns large-{{ hw.col_der }}">
+            {% for row in hw|rows_web:'DERECHA' %}
+                <div class="row " id="row_editable___{{ row.orden }}">
+                    {% include "pagina4_row_editable.html" with row=row %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+{% for row in hw|rows_web:'PIE' %}
+    <div class="row">
+        <div class="columns large-12">
+            <div id="row_editable___{{ row.orden }}" class="">
+                {% include "pagina4_row_editable.html" with row=row %}
+            </div>
+        </div>
+    </div>
+{% endfor %}

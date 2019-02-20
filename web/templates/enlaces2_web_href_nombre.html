@@ -1,0 +1,43 @@
+{% load my_templatetags %}
+{# Fichero empleado en enlaces1_web.html para cargar dinámicamente el nombre y enlace #}
+{% if enlace_web.hijos|length > 0 %}
+    <label>Texto del botón con subenlaces: </label>
+    <a class="href_texto" data-id="{{ enlace_web.id }}" id="href_texto{{ enlace_web.id }}">
+        <span id="texto{{ enlace_web.id }}" data-data="{{ enlace_web.texto }}">{{ enlace_web.texto }}</span>
+    </a>
+    <div id="edita_href_texto{{ enlace_web.id }}" style="display: none;">
+        <input type="text" id="input_texto{{ enlace_web.id }}" value="{{ enlace_web.texto }}" maxlength="100">
+        <input type="hidden" id="input_href{{ enlace_web.id }}" value="">
+
+        <p><a href="#" data-id="{{ enlace_web.id }}" class="secondary button ok_href_texto">Aceptar</a></p>
+    </div>
+{% else %}
+    <label>Dirección/url y texto del enlace principal: </label>
+    <a class="href_texto" data-id="{{ enlace_web.id }}" id="href_texto{{ enlace_web.id }}">
+        <span id="texto{{ enlace_web.id }}" data-data="{{ enlace_web.texto }}">{{ enlace_web.texto }}</span>
+        <i class="fa fa-long-arrow-right"></i>
+        <span id="href{{ enlace_web.id }}" data-data="{{ enlace_web.href }}">
+            {% if enlace_web.href %}{{ enlace_web|escribe_href }}{% else %}Necesita enlace a url{% endif %}
+        </span>
+    </a>
+    <div id="edita_href_texto{{ enlace_web.id }}" style="display: none;">
+        <div class="columns large-4">
+            <label id="label_input_externo{{ enlace_web.id }}"> ¿Enlace externo?</label>
+            <a class="enlace_externo" data-id="{{ enlace_web.id }}" id="enlace_externo{{ enlace_web.id }}"
+               data-externo="{% if enlace_web.externo %}Sí{% else %}No{% endif %}">
+                {% if enlace_web.externo %}Sí{% else %}No{% endif %}
+            </a>
+        </div>
+        <div class="columns large-4">
+            <label id="label_input_href{{ enlace_web.id }}"> Nombre del enlace/botón:
+                <input type="text" id="input_texto{{ enlace_web.id }}" value="{{ enlace_web.texto }}" maxlength="100">
+            </label>
+        </div>
+        <div class="columns large-4">
+            <label id="label_input_href{{ enlace_web.id }}"> Dirección url a la que apunta:
+                <input type="text" id="input_href{{ enlace_web.id }}" value="{{ enlace_web.href }}" maxlength="200">
+            </label>
+        </div>
+        <p><a href="#" data-id="{{ enlace_web.id }}" class="secondary button ok_href_texto">Aceptar</a></p>
+    </div>
+{% endif %}

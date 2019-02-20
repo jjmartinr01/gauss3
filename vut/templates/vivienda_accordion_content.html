@@ -1,0 +1,270 @@
+{% load my_templatetags %}
+{#{% load viviendas_extras %}#}
+
+<div class="row">
+    <div class="columns large-12">
+        <ul class="button-group right">
+            {% if g_e|has_permiso:'genera_libro_registro_policia' %}
+                <li><a class="button libro_registros" data-id="{{ vivienda.id }}"><i class="fa fa-book"></i> Libro de
+                    registros</a></li>
+            {% endif %}
+            {% if g_e|has_permiso:'borra_viviendas' %}
+                <li><a class="button delete_vivienda alert" data-id="{{ vivienda.id }}"><i class="fa fa-trash"></i>
+                    Borrar vivienda</a></li>{% endif %}
+            {#            {% if g_e|has_permiso:'borra_viviendas' %}#}
+            {#                <a class="button delete_vivienda alert right" data-id="{{ vivienda.id }}"><i class="fa fa-trash"></i>#}
+            {#                    Borrar vivienda</a>{% endif %}#}
+            {#            <a data-dropdown="drop{{ vivienda.id }}" aria-controls="drop{{ vivienda.id }}" aria-expanded="false"#}
+            {#               class="button dropdown right"><i class="fa fa-gears"></i> Posibles acciones</a>#}
+        </ul>
+        <ul id="drop{{ vivienda.id }}" data-dropdown-content class="f-dropdown" aria-hidden="true">
+            {% if g_e|has_permiso:'genera_libro_registro_policia' %}
+                <li><a class="libro_registros" data-id="{{ vivienda.id }}"><i class="fa fa-book fa-fw"></i> Libro de
+                    registros</a></li>
+            {% endif %}
+            {% if g_e|has_permiso:'crea_ayudantes' %}
+                <li><a class="add_ayudante" data-id="{{ vivienda.id }}"><i class="fa fa-user-plus fa-fw"></i> Añadir
+                    ayudante</a></li>
+            {% endif %}
+            {% if g_e|has_permiso:'add_calendario_vut' %}
+                <li><a class="add_calendario_vut" data-id="{{ vivienda.id }}"><i
+                        class="fa fa-calendar-plus-o fa-fw"></i>
+                    Añadir calendario</a></li>
+            {% endif %}
+            {% if g_e|has_permiso:'add_autorizado_vut' %}
+                <li><a class="add_autorizado_vut" data-id="{{ vivienda.id }}"><i
+                        class="fa fa-user-circle fa-fw"></i>
+                    Añadir autorizado</a></li>
+            {% endif %}
+            {#            {% if g_e|has_permiso:'borra_viviendas' %}#}
+            {#                <li><a class="delete_vivienda alert" style="color:red" data-id="{{ vivienda.id }}"><i class="fa fa-trash fa-fw"></i>#}
+            {#                    Borrar vivienda</a></li>{% endif %}#}
+        </ul>
+
+        {#        <ul class="button-group right">#}
+        {#            {% if g_e|has_permiso:'genera_libro_registro_policia' %}#}
+        {#                <li><a class="button libro_registros" data-id="{{ vivienda.id }}"><i class="fa fa-book"></i> Libro de#}
+        {#                    registros</a></li>#}
+        {#            {% endif %}#}
+        {#            {% if g_e|has_permiso:'crea_ayudantes' %}#}
+        {#                <li><a class="button add_ayudante" data-id="{{ vivienda.id }}"><i class="fa fa-user-plus"></i> Añadir#}
+        {#                    ayudante</a></li>#}
+        {#            {% endif %}#}
+        {#            {% if g_e|has_permiso:'add_calendario_vut' %}#}
+        {#                <li><a class="button add_calendario_vut" data-id="{{ vivienda.id }}"><i#}
+        {#                        class="fa fa-calendar-plus-o"></i>#}
+        {#                    Añadir calendario</a></li>#}
+        {#            {% endif %}#}
+        {#            {% if g_e|has_permiso:'add_autorizado_vut' %}#}
+        {#                <li><a class="button add_calendario_vut" data-id="{{ vivienda.id }}"><i#}
+        {#                        class="fa fa-user-circle"></i>#}
+        {#                    Añadir Autorizado</a></li>#}
+        {#            {% endif %}#}
+        {#            {% if g_e|has_permiso:'borra_viviendas' %} #}
+        {#                <li><a class="button delete_vivienda alert" data-id="{{ vivienda.id }}"><i class="fa fa-trash"></i>#}
+        {#                    Borrar vivienda</a></li>{% endif %} #}
+        {#        </ul>#}
+    </div>
+</div>
+<fieldset>
+    <legend>Vivienda</legend>
+    <div class="row">
+        <div class="columns large-6">
+            <label><b>Nombre de la vivienda:</b>
+                {% if g_e|has_permiso:'edita_viviendas' %}
+                    <input type="text" class="campo_char" data-campo="nombre" data-id="{{ vivienda.id }}"
+                           value="{{ vivienda.nombre }}">
+                {% else %}
+                    <br>{{ vivienda.nombre }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label><b>NIF:</b>
+                {% if g_e|has_permiso:'edita_viviendas' %}
+                    <input type="text" class="campo_char" data-campo="nif" data-id="{{ vivienda.id }}"
+                           value="{{ vivienda.nif }}">
+                {% else %}
+                    <br>{{ vivienda.nif }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label title="Cuenta bancaria en la que se hacen los cobros o pagos relacionados con la vivienda"><b>IBAN:</b>
+                {% if g_e|has_permiso:'edita_viviendas' %}
+                    <input type="text" class="campo_char" data-campo="iban" data-id="{{ vivienda.id }}"
+                           value="{{ vivienda.iban }}">
+                {% else %}
+                    <br>{{ vivienda.iban }}
+                {% endif %}
+            </label>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="columns large-6">
+            <label><b>Dirección:</b>
+                {% if g_e|has_permiso:'edita_viviendas' %}
+                    <input type="text" class="campo_char" data-campo="address" data-id="{{ vivienda.id }}"
+                           value="{{ vivienda.address }}">
+                {% else %}
+                    <br>{{ vivienda.address }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label><b>Municipio:</b>
+                {% if g_e|has_permiso:'edita_viviendas' %}
+                    <input type="text" class="campo_char" data-campo="municipio" data-id="{{ vivienda.id }}"
+                           value="{{ vivienda.municipio }}">
+                {% else %}
+                    <br>{{ vivienda.municipio }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label><b>Provincia:</b>
+                {% if g_e|has_permiso:'edita_viviendas' %}
+                    <input type="text" class="campo_char" data-campo="provincia" data-id="{{ vivienda.id }}"
+                           value="{{ vivienda.provincia }}">
+                {% else %}
+                    <br>{{ vivienda.provincia }}
+                {% endif %}
+            </label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="columns large-1">
+            <label title="Nº de habitaciones"><b>&nbsp;<i class="fa fa-building"></i> </b>
+                {% if g_e|has_permiso:'edita_viviendas' %}
+                    <input type="text" class="campo_int" data-campo="habitaciones" data-id="{{ vivienda.id }}"
+                           value="{{ vivienda.habitaciones }}">
+                {% else %}
+                    <br>{{ vivienda.habitaciones }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-1">
+            <label title="Nº de camas total"><b>&nbsp;<i class="fa fa-bed"></i> </b>
+                {% if g_e|has_permiso:'edita_viviendas' %}
+                    <input type="text" class="campo_int" data-campo="camas" data-id="{{ vivienda.id }}"
+                           value="{{ vivienda.camas }}">
+                {% else %}
+                    <br>{{ vivienda.camas }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-1">
+            <label title="Nº máximo de inquilinos"><b>&nbsp;<i class="fa fa-users"></i> </b>
+                {% if g_e|has_permiso:'edita_viviendas' %}
+                    <input type="text" class="campo_int" data-campo="inquilinos" data-id="{{ vivienda.id }}"
+                           value="{{ vivienda.inquilinos }}">
+                {% else %}
+                    <br>{{ vivienda.inquilinos }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label title="Indica a quién se deben envíar los registros de viajeros"><b>Registros a:</b>
+                {% if g_e|has_permiso:'edita_viviendas' %}
+                    <select name="police" id="police" class="campo_select" data-campo="police"
+                            data-id="{{ vivienda.id }}">
+                        <option value="">----------------</option>
+                        <option value="PN" {% if vivienda.police == 'PN' %}selected{% endif %}>Policía Nacional</option>
+                        <option value="GC" {% if vivienda.police == 'GC' %}selected{% endif %}>Guardia Civil</option>
+                    </select>
+                {% else %}
+                    <br>{{ vivienda.nif }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label title="Código proporcionado por la Policía Nacional/Guardia Civil para acceder a la web de registro"><b>Usuario:</b>
+                {% if g_e|has_permiso:'edita_viviendas' %}
+                    <input type="text" class="campo_char" data-campo="police_code" data-id="{{ vivienda.id }}"
+                           value="{{ vivienda.police_code }}">
+                {% else %}
+                    <br>{{ vivienda.police_code }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label title="Password para acceder a la web de registro de la Policía Nacional/Guardia Civil"><b>Password:</b>
+                {% if g_e|has_permiso:'edita_viviendas' %}
+                    <input type="password" class="campo_char" data-campo="police_pass" data-id="{{ vivienda.id }}"
+                           value="{{ vivienda.police_pass }}">
+                {% else %}
+                    <br>***************
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-3"
+             title="Prueba la conexión con la web de la policía utilizando el usuario y contraseña proporcionados">
+            <label>&nbsp;</label>
+            <a class="button tiny test_webpol" data-id="{{ vivienda.id }}"><i class="fa fa-external-link"></i> Prueba
+                conexión</a>
+        </div>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>Calendarios</legend>
+    <div id="calendarios{{ vivienda.id }}">
+        {% for calendario in vivienda.calendariovivienda_set.all %}
+            {% include "vivienda_accordion_content_calendario.html" %}
+        {% endfor %}
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            {% if g_e|has_permiso:'add_calendario_vut' %}
+                <a class="button add_calendario_vut" data-id="{{ vivienda.id }}"><i
+                        class="fa fa-calendar-plus-o"></i>
+                    Añadir calendario</a>
+            {% endif %}
+        </div>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>Autorizados</legend>
+    <div id="autorizados{{ vivienda.id }}">
+        {% for autorizado in vivienda.autorizado_set.all %}
+            {% if not forloop.first %}
+                <hr>
+            {% endif %}
+            {% include "vivienda_accordion_content_autorizado.html" %}
+        {% endfor %}
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            {% if g_e|has_permiso:'add_autorizado_vut' %}
+                <a class="button add_autorizado_vut" data-id="{{ vivienda.id }}"><i
+                        class="fa fa-user-circle"></i>
+                    Añadir Autorizado</a>
+            {% endif %}
+        </div>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>Ayudantes</legend>
+    <div id="ayudantes{{ vivienda.id }}">
+        {% for ayudante in vivienda.ayudante_set.all %}
+            {% if not forloop.first %}
+                <hr>
+            {% endif %}
+            {% include "vivienda_accordion_content_ayudante.html" %}
+        {% endfor %}
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            {% if g_e|has_permiso:'crea_ayudantes' %}
+                <a class="button add_ayudante" data-id="{{ vivienda.id }}"><i class="fa fa-user-plus"></i> Añadir
+                    ayudante</a>
+            {% endif %}
+        </div>
+    </div>
+</fieldset>
+

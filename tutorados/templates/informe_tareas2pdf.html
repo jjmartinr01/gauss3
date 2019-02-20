@@ -1,0 +1,55 @@
+<style>
+    h1 {
+        text-align: center;
+        font-size: 30px;
+        line-height: 150px;
+    }
+</style>
+<h1>INFORME CON TRABAJOS</h1>
+<h2>Alumno: {{ informe.usuario.gauser.get_full_name }}</h2>
+
+{% if ficheros_list|length > 0 %}
+    <p>Este documento contiene los trabajos que te han encargado tus profesores para que los realices en casa. Este
+        documento debería leerse en un ordenador ya que contiene {% if ficheros_list|length == 1 %} el siguiente fichero
+            adjunto: {% else %}los siguientes ficheros adjuntos: {% endif %}</p>
+    <ul>
+        {% for f in ficheros_list %}
+            <li>{{ f.fich_name }}</li>
+        {% endfor %}
+    </ul>
+
+    <p>Para descargar los ficheros adjuntos simplemente debes seleccionar la pestaña de adjuntos en &copy;Acrobat Reader
+        (o
+        en el lector de ficheros pdf que utilices) y a continuación descargarlos.</p>
+
+{% else %}
+    <p>Este documento contiene los trabajos que te han encargado tus profesores para que los realices en casa. Todos los
+        trabajos están contenidos en este documento y no te han adjuntado ningún archivo.</p>
+{% endif %}
+<p class="pagebreak">&nbsp;</p>
+
+{% for tarea in informe.tarea_propuesta_set.all %}
+    {% if tarea.texto_tarea %}
+        <h2>Ejercicios de {{ tarea.materias_usuario|join:", " }}</h2>
+        <p>{% if tarea.usuario.gauser.sexo == 'H' %}El profesor {% else %}La profesora {% endif %}
+            {{ tarea.usuario.gauser.get_full_name }} te ha propuesto el siguiente trabajo:</p>
+        {% autoescape off %}
+            {{ tarea.texto_tarea }}
+        {% endautoescape %}
+        {% if tarea.fichero_tarea_set.all|length > 0 %}
+            {% if tarea.fichero_tarea_set.all|length == 1 %}
+                <p>Este profesor te ha adjuntado el fichero:</p>
+            {% else %}
+                <p>Este profesor te ha adjuntado los ficheros:</p>
+            {% endif %}
+            {% for fichero in tarea.fichero_tarea_set.all %}
+                <strong>{{ fichero.fich_name }}</strong><br>
+            {% endfor %}
+        {% endif %}
+        <p>&nbsp;</p>
+    {% endif %}
+{% endfor %}
+
+
+
+

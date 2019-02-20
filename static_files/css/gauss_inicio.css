@@ -1,0 +1,16 @@
+html,body{
+font-family:Arial, Helvetica, sans-serif;
+background:#FFF;
+color:#333333;
+margin:0px;
+}
+
+input { border:1px solid #D0D0D0; }
+
+.bgacceso a{ color:#769706;text-decoration:none;font-size:90%; }
+
+.bgacceso a:hover{ color:#31859C;text-decoration:none;font-size:90%; }
+
+.bgacceso .campo{ color:#31859C;font-weight:bold;font-size:120%; }
+
+

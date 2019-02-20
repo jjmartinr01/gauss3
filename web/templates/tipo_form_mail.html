@@ -1,0 +1,35 @@
+{#<div class="section-container tabs" data-section>#}
+{#    <section class="section">#}
+        <h5 class="title"><a href="#formulario_correo">
+            {% if content_div.title %}{{ content_div.title }}{% else %}Contacta con nosotros{% endif %}</a></h5>
+
+{#        <div class="content" data-slug="panel1">#}
+            <form id="formulario_correo">
+                <div class="row" style="margin-left: 10px !important;margin-right: 10px !important;">
+                    <div class="large-12 columns">
+                        <label>Tu nombre
+                            <input type="text" id="yourName">
+                        </label>
+                    </div>
+                </div>
+                <div class="row" style="margin-left: 10px !important;margin-right: 10px !important;">
+                    <div class="large-12 columns">
+                        <label> Tu email
+                            <input type="text" id="yourEmail">
+                        </label>
+                    </div>
+                </div>
+                <div class="" style="margin-left: 10px !important;margin-right: 10px !important;">
+                    <div class="large-12 columns">
+                        <label>Escribe tu mensaje
+                            <textarea rows="4"></textarea>
+                            <button type="submit" class="radius button">
+                                <i class="fa fa-envelope-o"></i>
+                                Enviar</button>
+                        </label>
+                    </div>
+                </div>
+            </form>
+{#        </div>#}
+{#    </section>#}
+{#</div>#}

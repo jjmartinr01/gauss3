@@ -1,0 +1,214 @@
+{% load my_templatetags %}
+{% load cupo_extras %}
+
+<dd class="accordion-navigation" id="accordion{{ cupo.id }}">
+    <a href="#cupo{{ cupo.id }}">
+        <span id="span_nombre{{ cupo.id }}" style="font-weight: 800;">{{ cupo.nombre }}</span>
+        {% if cupo.bloqueado %}
+            <i id="bloqueado{{ cupo.id }}" class="fa fa-lock"></i>
+        {% else %}
+            <i id="bloqueado{{ cupo.id }}" class="fa fa-unlock"></i>
+        {% endif %}
+    </a>
+
+    <div id="cupo{{ cupo.id }}" class="content cupo_contenido" data-cupo="{{ cupo.id }}">
+        <div class="row">
+            <div class="columns large-9">
+                <ul class="button-group centered">
+                    {% if request.session.gauser_extra|has_permiso:'borra_cupo_profesorado' %}
+                        <li title="Borrar este cupo" id="borrar{{ cupo.id }}"
+                            {% if cupo.bloqueado %}style="display:none;"{% endif %}>
+                            <a href="#" class="button delete_cupo"
+                               data-cupo="{{ cupo.id }}"><i class="fa fa-trash-o"></i> Borrar</a></li>
+                    {% endif %}
+                    {% if request.session.gauser_extra|has_permiso:'copia_cupo_profesorado' %}
+                        <li title="Copiar este cupo (duplicarlo)">
+                            <a href="#" class="button copy_cupo"
+                               data-cupo="{{ cupo.id }}"><i class="fa fa-copy"></i> Copiar</a></li>
+                    {% endif %}
+                    {% if request.session.gauser_extra|has_permiso:'edita_cupos' %}
+                        <li title="Editar esta propuesta de cupo" id="editar{{ cupo.id }}"
+                            {% if cupo.bloqueado %}style="display:none;"{% endif %}>
+                            <a href="#" class="button edit_cupo"
+                               data-cupo="{{ cupo.id }}"><i class="fa fa-pencil"></i> Editar</a></li>
+                    {% endif %}
+                    {% if request.session.gauser_extra|has_permiso:'pdf_cupo' %}
+                        <li title="Generar el informe en pdf del cupo">
+                            <a href="#" class="button pdf_cupo"
+                               data-cupo="{{ cupo.id }}"><i class="fa fa-file-pdf-o"></i> PDF</a></li>
+                    {% endif %}
+                    {% if request.session.gauser_extra|has_permiso:'bloquea_cupos' %}
+                        <li title="Desbloquea el cupo para que otros puedan modificarlo" id="li_desbloquea{{ cupo.id }}"
+                            {% if not cupo.bloqueado %}style="display:none;"{% endif %}>
+                            <a href="#" class="button desbloquear_cupo"
+                               data-cupo="{{ cupo.id }}"><i class="fa fa-unlock"></i> Desbloquear</a></li>
+                        <li title="Bloquea el cupo para que no se pueda modificar" id="li_bloquea{{ cupo.id }}"
+                            {% if cupo.bloqueado %}style="display:none;"{% endif %}>
+                            <a href="#" class="button bloquear_cupo"
+                               data-cupo="{{ cupo.id }}"><i class="fa fa-lock"></i> Bloquear</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="columns large-3">
+                <div data-alert class="alert-box success radius">
+                    <span style="font-weight: 800;">{{ cupo.materia_cupo_set.all|length }} materias</span>
+                    <a href="#" class="close">&times;</a>
+                </div>
+                {#                {{ cupo.materia_cupo_set.all|length }} Materias#}
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="columns large-12">
+                <label>Escribe el nombre del cupo:
+                    <input type="text" class="change_nombre_cupo" value="{{ cupo.nombre }}" data-cupo="{{ cupo.id }}">
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Indica el número máximo y mínimo de periodos lectivos en función del tipo de jornada de
+                    trabajo:</b>
+                </label>
+            </div>
+        </div>
+        <div class="row" style="background-color: #EEEEEE;padding-top: 5px;">
+            <div class="columns large-7">
+                <p><b>Jornada completa</b> entre</p>
+            </div>
+            <div class="columns large-1" title="Mínimo número de periodos lectivos con jornada completa">
+                <input type="text" class="change_max_min_cupo" data-attr="min_completa" value="{{ cupo.min_completa }}"
+                       data-cupo="{{ cupo.id }}" placeholder="Número mínimo de peridos">
+            </div>
+            <div class="columns large-1">
+                <p>y</p>
+            </div>
+            <div class="columns large-1" title="Máximo número de periodos lectivos con jornada completa">
+                <input type="text" class="change_max_min_cupo" data-attr="max_completa" value="{{ cupo.max_completa }}"
+                       data-cupo="{{ cupo.id }}" placeholder="Número máximo de peridos">
+            </div>
+            <div class="columns large-2">
+                <p>periodos</p>
+            </div>
+        </div>
+        <div class="row" style="background-color: #FAFAFA;padding-top: 5px;">
+            <div class="columns large-7">
+                <p><b>Jornada de 2/3</b> entre</p>
+            </div>
+            <div class="columns large-1" title="Mínimo número de periodos lectivos con jornada de 2/3">
+                <input type="text" class="change_max_min_cupo" data-attr="min_dostercios"
+                       value="{{ cupo.min_dostercios }}"
+                       data-cupo="{{ cupo.id }}" placeholder="Número mínimo de peridos">
+            </div>
+            <div class="columns large-1">
+                <p>y</p>
+            </div>
+            <div class="columns large-1" title="Máximo número de periodos lectivos con jornada de 2/3">
+                <input type="text" class="change_max_min_cupo" data-attr="max_dostercios"
+                       value="{{ cupo.max_dostercios }}"
+                       data-cupo="{{ cupo.id }}" placeholder="Número máximo de peridos">
+            </div>
+            <div class="columns large-2">
+                <p>periodos</p>
+            </div>
+        </div>
+        <div class="row" style="background-color: #EEEEEE;padding-top: 5px;">
+            <div class="columns large-7">
+                <p><b>Media jornada</b> entre</p>
+            </div>
+            <div class="columns large-1" title="Mínimmo número de periodos lectivos con media jornada">
+                <input type="text" class="change_max_min_cupo" data-attr="min_media" value="{{ cupo.min_media }}"
+                       data-cupo="{{ cupo.id }}" placeholder="Número mínimo de peridos">
+            </div>
+            <div class="columns large-1">
+                <p>y</p>
+            </div>
+            <div class="columns large-1" title="Máximo número de periodos lectivos con media jornada">
+                <input type="text" class="change_max_min_cupo" data-attr="max_media" value="{{ cupo.max_media }}"
+                       data-cupo="{{ cupo.id }}" placeholder="Número máximo de peridos">
+            </div>
+            <div class="columns large-2">
+                <p>periodos</p>
+            </div>
+        </div>
+        <div class="row" style="background-color: #FAFAFA;padding-top: 5px;">
+            <div class="columns large-7">
+                <p><b>Jornada de 1/3</b> entre</p>
+            </div>
+            <div class="columns large-1" title="Mínimo número de periodos lectivos con jornada de 1/3">
+                <input type="text" class="change_max_min_cupo" data-attr="min_tercio" value="{{ cupo.min_tercio }}"
+                       data-cupo="{{ cupo.id }}" placeholder="Número mínimo de peridos">
+            </div>
+            <div class="columns large-1">
+                <p>y</p>
+            </div>
+            <div class="columns large-1" title="Máximo número de periodos lectivos con jornada de 1/3">
+                <input type="text" class="change_max_min_cupo" data-attr="max_tercio" value="{{ cupo.max_tercio }}"
+                       data-cupo="{{ cupo.id }}" placeholder="Número máximo de peridos">
+            </div>
+            <div class="columns large-2">
+                <p>periodos</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Filtros a añadir en el informe del cupo (pdf):</b>
+                </label>
+            </div>
+        </div>
+        <div id="filtros_list{{ cupo.id }}">
+            {% for filtro in cupo.filtrocupo_set.all %}
+                {% include "filtro_cupo.html" %}
+            {% endfor %}
+        </div>
+
+        <div class="row" style="padding-top: 10px;">
+            <div class="columns large-5">
+                <input type="text" id="name_filtro{{ cupo.id }}" value=""
+                       placeholder="Nombre del filtro, por ejemplo 'Tutorías'">
+            </div>
+            <div class="columns large-5">
+                <input type="text" id="filtro_filtro{{ cupo.id }}" value=""
+                       placeholder="Texto a filtrar, por ejemplo 'tut' o 'jef' o 'reduc'">
+            </div>
+            <div class="columns large-2">
+                <a class="add_filtro" data-cupo="{{ cupo.id }}"><i class="fa fa-plus"></i> Añadir</a>
+            </div>
+        </div>
+
+        <hr>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Especialidades del profesorado incluidas en el cupo:</b>
+                </label>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="columns large-6">
+                <b>Puesto de trabajo</b>
+            </div>
+            <div class="columns large-6">
+                <b>Departamento</b>
+            </div>
+        </div>
+        {% for e in cupo.especialidadcupo_set.all %}
+            <div class="row">
+                <div class="columns large-6">
+                    {{ e.nombre }}
+                </div>
+                <div class="columns large-6">
+                    <select class="departamento" data-id="{{ e.id }}" data-cupo="{{ cupo.id }}">
+                        <option value="">Sin departamento</option>
+                        {% for d in cupo|departamentos %}
+                            <option value="{{ d.id }}"
+                                    {% if e.departamento == d %}selected{% endif %}>{{ d.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</dd>

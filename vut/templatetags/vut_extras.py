@@ -1,0 +1,47 @@
+# -*- coding: utf-8 -*-
+from django.template import Library
+from datetime import datetime, timedelta
+from autenticar.models import Permiso
+from vut.models import Vivienda, ContabilidadVUT, PartidaVUT
+
+
+register = Library()
+
+
+@register.filter
+def is_today_or_yesterday(fecha):
+    hoy = datetime.today().date()
+    ayer = hoy - timedelta(1)
+    if fecha == hoy or fecha == ayer:
+        return True
+    else:
+        return False
+
+@register.filter
+def contains_hoy(reserva):
+    hoy = datetime.today().date()
+    if reserva.entrada <= hoy and reserva.salida >= hoy:
+        return True
+    else:
+        return False
+
+@register.filter
+def has_permiso_vut(autorizado, permiso):
+    permiso = Permiso.objects.get(code_nombre=permiso)
+    if permiso in autorizado.permisos.all():
+        return True
+    else:
+        return False
+
+@register.filter
+def viviendas(propietario):
+    return Vivienda.objects.filter(gpropietario=propietario)
+
+@register.filter
+def contabilidades(propietario):
+    return ContabilidadVUT.objects.filter(propietario=propietario)
+
+@register.filter
+def partidas_contabilidad(contabilidad):
+    return PartidaVUT.objects.filter(contabilidad=contabilidad)
+

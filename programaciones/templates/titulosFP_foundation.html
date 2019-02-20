@@ -1,0 +1,333 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        .opera {
+            margin-right: 20px;
+            cursor: pointer;
+            color: #008CBA;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .opera:hover {
+            -webkit-transform: scale(1.7, 1.7);
+            -webkit-transition-timing-function: ease-out;
+            -webkit-transition-duration: 150ms;
+            -moz-transform: scale(1.7, 1.7);
+            -moz-transition-timing-function: ease-out;
+            -moz-transition-duration: 150ms;
+            position: relative;
+            z-index: 99;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_titulo" name="id_titulo" value="">
+
+        <div id="div_titulos_seleccionados"></div>
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Títulos de Formación Profesional</strong></h4>
+        </div>
+        <div class="row">
+            <div class="columns large-6">
+                <label>Buscar entre esta fecha ...</label>
+                <input id="id_fecha_inicio" name="fecha_inicio" type="text" value="01-09-2010">
+            </div>
+            <div class="columns large-6">
+                <label>... y esta otra</label>
+                <input id="id_fecha_fin" name="fecha_fin" type="text" value="{% now "d-m-Y" %}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <select id="select_titulo">
+                </select>
+            </div>
+        </div>
+        <br><br>
+        <dl class="accordion" data-accordion id="list_titulos_selected"></dl>
+
+        <dl class="accordion" data-accordion id="list_titulos_borradores"
+            title="Un borrador es un titulo no finalizado porque no se ha generado el correspondiente pdf">
+            {% for titulo in borradores %}
+                <dd class="accordion-navigation" id="accordion{{ titulo.id }}">
+                    <a href="#titulo{{ titulo.id }}" style="color:red;">{{ titulo.asunto }} -- Borrador</a>
+
+                    <div id="titulo{{ titulo.id }}" class="content">
+
+                        <ul class="button-group centered">
+                            <li title="Generar pdf de esta titulo">
+                                <a href="#" class="button pdf_titulo" data-id="{{ titulo.id }}"><i
+                                        class="fa fa-file-pdf-o"></i>
+                                    PDF</a></li>
+                            <li title="Copiar esta titulo">
+                                <a href="#" class="button copy_titulo" data-id="{{ titulo.id }}"><i
+                                        class="fa fa-copy"></i>
+                                    Copiar</a></li>
+                            <li title="Editar esta titulo">
+                                <a href="#" class="button edit_titulo" data-id="{{ titulo.id }}"><i
+                                        class="fa fa-edit"></i>
+                                    Editar</a></li>
+                            <li title="Borrar esta titulo">
+                                <a href="#" class="button delete_titulo" data-id="{{ titulo.id }}"><i
+                                        class="fa fa-trash-o"></i>
+                                    Borrar</a></li>
+                        </ul>
+
+                        <div class="row">
+                            <div class="columns large-12">
+                                {% if titulo.receptores.all|length > 0 %}
+                                    {% if titulo.receptores.all|length == 1 %}
+                                        <b>Receptor:</b> {{ titulo.receptores.0.nombre }} (
+                                        {{ titulo.receptores.0.cargo }})
+                                    {% else %}
+                                        <b>Receptores:</b>
+                                        {% for receptor in titulo.receptores.all %}
+                                            {{ receptor.nombre }} ({{ receptor.cargo }}){% if not forloop.last %},
+                                        {% endif %}
+                                        {% endfor %}<br>
+                                    {% endif %}
+                                {% endif %}
+                                <b>Fecha creación:</b> {{ titulo.creado|date:"d-m-Y" }}
+                                <br><b>Fecha de última modificación:</b> {{ titulo.modificado|date:"d-m-Y" }}
+                                <br><b>Centro de envío:</b> {{ titulo.centro.name }}
+                            </div>
+                        </div>
+                        <br>
+                        {% autoescape off %}
+                            {{ titulo.texto }}
+                        {% endautoescape %}
+                    </div>
+                </dd>
+            {% endfor %}
+        </dl>
+
+        <dl class="accordion" data-accordion id="list_titulos_recientes">
+            {% for titulo in recientes %}
+                <dd class="accordion-navigation" id="accordion{{ titulo.id }}">
+                    <a href="#titulo{{ titulo.id }}">{{ titulo.nombre }}</a>
+
+                    <div id="titulo{{ titulo.id }}" class="content">
+
+                        <ul class="button-group centered">
+                            <li title="Generar pdf de este titulo">
+                                <a href="#" class="button pdf_titulo" data-id="{{ titulo.id }}"><i
+                                        class="fa fa-file-pdf-o"></i>
+                                    PDF</a></li>
+                            <li title="Copiar este titulo">
+                                <a href="#" class="button copy_titulo" data-id="{{ titulo.id }}"><i
+                                        class="fa fa-copy"></i>
+                                    Copiar</a></li>
+                            <li title="Editar este titulo">
+                                <a href="#" class="button edit_titulo" data-id="{{ titulo.id }}"><i
+                                        class="fa fa-edit"></i>
+                                    Editar</a></li>
+                            <li title="Borrar este titulo">
+                                <a href="#" class="button delete_titulo" data-id="{{ titulo.id }}"><i
+                                        class="fa fa-trash-o"></i>
+                                    Borrar</a></li>
+                        </ul>
+
+                        <div class="row">
+                            <div class="columns large-12">
+                                <label>Nombre:
+                                    <input type="text" class="nombre" data-id="{{ titulo.id }}" value="{{ titulo.nombre }}"></label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-4">
+                                <label>Nivel:
+                                    <input type="text" name="nivel" data-id="{{ titulo.id }}" value="{{ titulo.nivel }}"></label>
+                            </div>
+                            <div class="columns large-4">
+                                <label>Duración:
+                                    <input type="text" name="duracion" data-id="{{ titulo.id }}" value="{{ titulo.duracion }}"></label>
+                            </div>
+                            <div class="columns large-4">
+                                <label>Ref. europea:
+                                    <input type="text" class="ref_eu" data-id="{{ titulo.id }}" value="{{ titulo.ref_eu }}"></label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-12">
+                                <select name="cursos" multiple="multiple">
+                                    {% for curso in cursos %}
+                                        <option value="{{ curso.id }}"
+                                                {% if curso in selected_cursos %}selected{% endif %}>{{ curso.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-12">
+                                <select name="familias" multiple="multiple">
+                                    {% for familia in familias %}
+                                        <option value="{{ familia.id }}"
+                                                {% if familia in selected_familias %}selected{% endif %}>{{ familia.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <br>
+                        {% autoescape off %}
+                            {{ titulo.texto }}
+                        {% endautoescape %}
+                    </div>
+                </dd>
+            {% endfor %}
+        </dl>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('#select_titulo').select2({
+            placeholder: "Escribe parte de texto para buscar una programación",
+            allowClear: true,
+            ajax: {
+                url: "/ajax_titulos/",
+                type: 'POST',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    $('#q').val(params.term);
+                    $('#page').val(params.page);
+                    $('#action').val('busca_titulo');
+                    return $('#' + '{{ formname }}').serialize();
+                },
+                processResults: function (data, page) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            }, // let our custom formatter work
+            minimumInputLength: 3,
+            language: {
+                inputTooShort: function () {
+                    return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                }
+            }
+        });
+
+
+        $('#select_titulo').change(function (e) {
+            e.preventDefault();
+            var id = $(this).val();
+            if (id) {
+                $('#id_titulo').val(id);
+                $('#action').val('titulo_append');
+                $.post("/ajax_titulos/", $('#' + '{{ formname }}').serialize(), function (data) {
+                    var id = $('#id_titulo').val();
+                    $('#list_titulos_selected').append(data);
+                    $("#select_titulo").val(null).trigger('change');
+                    $('<input />', {type: 'hidden', name: 'titulos_seleccionados', value: id, id: 'selec' + id})
+                        .appendTo('#div_titulos_seleccionados');
+                });
+            }
+        });
+
+
+        habilita(['s_plus']);
+        {% if request.session.gauser_extra|has_permiso:"crear_titulo" %}
+            habilita(['s_plus']);
+        {% endif %}
+
+        $('#plus_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                window.location = "/editar_titulo/";
+            }
+        });
+
+        $('body').on('click', '.edit_titulo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            window.location = "/editar_titulo/?doc=" + id;
+        });
+
+        $('body').on('click', '.delete_titulo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#id_titulo').val(id);
+            show_mensajes({
+                title: 'Borrar titulo', texto: 'Si aceptas el titulo será eliminado' +
+                ' completamente de la base de datos.', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        var id = $('#id_titulo').val();
+                        $('#action').val('del_titulo');
+                        hide_mensajes();
+                        $.post("/ajax_titulos/", {action: 'delete_titulo', id: id}, function (data) {
+                            if (data) {
+                                $('#accordion' + id).hide();
+                                $('#selec' + id).remove();
+                            }
+                        });
+                    }
+                }
+            });
+        });
+
+        $('body').on('click', '.pdf_titulo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#id_titulo').val(id);
+            $('#action').val('pdf_titulo');
+            document.{{ formname }}.submit();
+        });
+
+        $('body').on('click', '.copy_titulo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#id_titulo').val(id);
+            $('#action').val('copy_titulo');
+            $.post("/ajax_titulos/", $('#' + '{{ formname }}').serialize(), function (data) {
+                $('#list_titulos_selected').append(data.accordion);
+                $("#select_titulo").val(null).trigger('change');
+                $('<input />', {type: 'hidden', name: 'titulos_seleccionados', value: data.id, id: 'selec' + data.id})
+                    .appendTo('#div_titulos_seleccionados');
+                $('#titulo' + id).removeClass('active');
+            }, 'json');
+        });
+
+        $('#check').click(function () {
+            if ($(this).hasClass('navegar')) {
+                $('#action').val('guardar');
+                $('#id_texto').val(removeWordTags($('#id_texto').val()));
+                document.{{ formname }}.submit();
+            }
+        });
+
+
+        $(".listar_contenido").click(function () {
+            id = this.id.split('___')[1];
+            if ($('#contenido_' + id).text()) {
+                $('#tr_contenido_' + id).toggle();
+            } else {
+                $.post("/contenido_titulo/", {id_titulo: JSON.stringify(id)}, function (data) {
+                    $('#contenido_' + id).html(data);
+                    $('#tr_contenido_' + id).show();
+                });
+            }
+        });
+
+    </script>
+
+{% endblock %}

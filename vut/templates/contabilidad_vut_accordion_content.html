@@ -1,0 +1,173 @@
+{% load my_templatetags %}
+{% load vut_extras %}
+<div class="row">
+    <ul class="button-group right">
+        {% if g_e|has_permiso:'borra_contabilidad_vut' %}
+            <li><a class="button borrar_contabilidad alert" data-id="{{ contabilidad.id }}"><i class="fa fa-trash"></i>
+                Borrar contabilidad</a></li>
+        {% endif %}
+        {#            {% if g_e|has_permiso:'borra_viviendas' %}#}
+        {#                <a class="button delete_vivienda alert right" data-id="{{ contabilidad.id }}"><i class="fa fa-trash"></i>#}
+        {#                    Borrar contabilidad</a>{% endif %}#}
+        {#            <a data-dropdown="drop{{ contabilidad.id }}" aria-controls="drop{{ vivienda.id }}" aria-expanded="false"#}
+        {#               class="button dropdown right"><i class="fa fa-gears"></i> Posibles acciones</a>#}
+    </ul>
+</div>
+<fieldset>
+    <legend>Información general</legend>
+    <div class="row">
+        <div class="columns large-5">
+            <label>Nombre: <input type="text" class="campo_char" data-id="{{ contabilidad.id }}" data-campo="nombre"
+                                  value="{{ contabilidad.nombre }}"></label>
+        </div>
+        <div class="columns large-2">
+            <label>Inicio: <input type="text" class="campo_char fecha" data-id="{{ contabilidad.id }}"
+                                  data-campo="inicio" value="{{ contabilidad.inicio|date:'d/m/Y' }}"></label>
+        </div>
+        <div class="columns large-2">
+            <label>Fin: <input type="text" class="campo_char fecha" data-id="{{ contabilidad.id }}"
+                               data-campo="fin" value="{{ contabilidad.fin|date:'d/m/Y' }}"></label>
+        </div>
+        <div class="columns large-3">
+            <label>Propietario: </label><b>{{ contabilidad.propietario.get_full_name }}</b>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label>Descripción/Observaciones:
+                <textarea class="campo_char" data-campo="describir"
+                          data-id="{{ contabilidad.id }}">{{ contabilidad.describir }}</textarea>
+            </label>
+        </div>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>Viviendas bajo contabilidad</legend>
+    <div class="row" id="viviendas{{ contabilidad.id }}">
+        {% for v in contabilidad.propietario|viviendas %}
+            <div class="columns large-4">
+                <input type="checkbox" data-contabilidad="{{ contabilidad.id }}" data-vivienda="{{ v.id }}"
+                       {% if v in contabilidad.viviendas.all %}checked{% endif %} class="vivienda"
+                       id="vivienda{{ v.id }}"> {{ v.nombre }}
+            </div>
+        {% endfor %}
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>Autorizados</legend>
+    <div id="autorizados{{ contabilidad.id }}">
+        {% for autorizado in contabilidad.autorizadocontabilidadvut_set.all %}
+            {% if not forloop.first %}
+                <hr>
+            {% endif %}
+            {% include "contabilidad_vut_accordion_content_autorizado.html" %}
+        {% endfor %}
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            {% if g_e|has_permiso:'add_autorizado_vut' %}
+                <a class="button add_autorizado_contabilidad_vut" data-id="{{ contabilidad.id }}"><i
+                        class="fa fa-user-circle"></i>
+                    Añadir Autorizado</a>
+            {% endif %}
+        </div>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>Partidas</legend>
+    <div id="partidas{{ contabilidad.id }}">
+        <table width="100%">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Creado</th>
+                <th>Borrar</th>
+            </tr>
+        <thead>
+        <tbody id="table_partidas{{ contabilidad.id }}">
+            {% for partida in contabilidad.partidavut_set.all %}
+                {% include  "contabilidad_vut_accordion_content_partida.html" %}
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+    <div class="row">
+        <div class="columns large-6"><label>Nombre:
+            <input type="text" value="" id="nombre_partida{{ contabilidad.id }}"></label></div>
+        <div class="columns large-3"><label>Tipo:
+            <select id="tipo_partida{{ contabilidad.id }}">
+                <option value="GASTO">Gasto</option>
+                <option value="INGRE">Ingreso</option>
+            </select></label>
+        </div>
+        <div class="columns large-3"><label>&nbsp;</label>
+            <a class="button add_partida_vut tiny" data-contabilidad="{{ contabilidad.id }}"><i class="fa fa-plus"></i>
+                Añadir</a>
+        </div>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>Ingresos y Gastos</legend>
+    <div id="ingas{{ contabilidad.id }}">
+        <table width="100%" id="table_ingre_gasto{{ contabilidad.id }}">
+        <thead id="thead_ingre_gasto{{ contabilidad.id }}">
+            <tr>
+                <th>Concepto</th>
+                <th>Vivienda</th>
+                <th>Archivo</th>
+                <th>Cantidad</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+            {% for partida in contabilidad.partidavut_set.all %}
+                {% include "contabilidad_vut_accordion_content_asiento.html" %}
+            {% endfor %}
+        </table>
+
+    </div>
+    <div class="row">
+        <div class="columns large-4"><label>Partida:
+            <select id="select_partida{{ contabilidad.id }}">
+                <option value="">--------</option>
+                {% for p in contabilidad|partidas_contabilidad %}
+                    {% include "contabilidad_vut_accordion_content_asiento_option_partida.html" %}
+                {% endfor %}
+            </select></label>
+        </div>
+        <div class="columns large-3"><label>Vivienda:
+            <select id="select_vivienda{{ contabilidad.id }}">
+                <option value="">--------</option>
+                {% for v in contabilidad.viviendas.all %}
+                    {% include "contabilidad_vut_accordion_content_asiento_option_vivienda.html" %}
+                {% endfor %}
+            </select></label>
+        </div>
+        <div class="columns large-2">
+            <label>Cantidad:<input type="text" value="" id="cantidad_asiento{{ contabilidad.id }}"></label></div>
+        <div class="columns large-3">
+            <label>Archivo:<input type="file" value="" id="file_asiento{{ contabilidad.id }}"></label></div>
+    </div>
+    <div class="row">
+        <div class="columns large-10"><label>Concepto:
+            <input type="text" id="concepto_asiento{{ contabilidad.id }}"> </label>
+        </div>
+        <div class="columns large-2"><label>&nbsp;</label>
+            <a class="button tiny add_asiento_vut" data-contabilidad="{{ contabilidad.id }}"><i class="fa fa-plus"></i> Añadir</a>
+        </div>
+    </div>
+</fieldset>
+
+<script>
+    $(".fecha").fdatepicker({
+        format: 'dd/mm/yyyy',
+        weekStart: 1,
+        leftArrow: '<<',
+        rightArrow: '>>',
+        language: 'es'
+    });
+</script>

@@ -1,0 +1,57 @@
+{% load my_templatetags %}
+
+<table align="center" width="100%" cellspacing="3" cellpadding="3">
+    <thead>
+    <tr>
+        <th style="font-size:120%;text-align:center;cursor:pointer;" id="check_todos">
+            <span class="color2"><i class="fa fa-check-square-o"></i></span>
+        </th>
+        <th><span class="color2">&nbsp;Nombre del documento</span>
+        </th>
+        <th style="text-align:center;"><span class="color2">Fichero</span>
+        </th>
+        <th style="text-align:center;" title="Fecha de creación del documento"><span
+                class="color2">Creado</span>
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for documento in request.session.gauser_extra|documentos_carpeta:carpeta_id %}
+        <tr id="fila___{{ documento.id }}">
+            {% if documento|permiso_documento:request.session.gauser_extra != 'r' or request.session.gauser_extra|has_permiso:'borra_cualquier_archivo' %}
+                <td class="check_documento"
+                    style="cursor: pointer;font-size:120%;text-align:center;"
+                    id="icono___{{ documento.id }}">
+                    <i class="fa fa-square-o" id="check___{{ documento.id }}"></i>
+                    <input type="checkbox" name="documentos" value="" id="h___{{ documento.id }}">
+                </td>
+            {% else %}
+                <td style="color: #d3d3d3;font-size:120%;text-align:center;">
+                    <i class="fa fa-square-o"></i>
+                </td>
+            {% endif %}
+            <td><a href="#" id="documento___{{ documento.id }}"
+                   data-tooltip aria-haspopup="true" class="has-tip documento_texto"
+                   title="Subido por {{ documento.propietario.gauser.get_full_name }}">
+                &nbsp;{{ documento.nombre }}</a>
+            </td>
+            <td style="text-align:center;">
+                {% if documento.fichero %}
+                    <a href="#" id="fich___{{ documento.id }}"
+                       data-tooltip aria-haspopup="true" class="has-tip descargar_fichero"
+                       title="Pulsa sobre el nombre del fichero para descargarlo">
+                        &nbsp;{{ documento.fich_name }}&nbsp;<i
+                            class="fa fa-cloud-download"></i></a>
+                {% else %}
+                    <span title="Este documento no tiene asociado un fichero para ser descargado">
+                                                    &nbsp;{{ documento.fich_name }}</span>
+                {% endif %}
+            </td>
+            <td style="text-align:center;"
+                title="El documento fue añadido el {{ documento.creado }}">
+                {{ documento.creado|date:"d/m/Y" }}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

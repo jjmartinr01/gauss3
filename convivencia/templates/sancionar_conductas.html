@@ -1,0 +1,257 @@
+{% extends "base_select2-4.html" %}
+
+{% block head %}
+    <style>
+        #texto1 {
+            color: #447e9b;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong id="titulo">Sancionar Conductas</strong></h4>
+        </div>
+        <input type="hidden" name="inf_actual" id="inf_actual" value="{{ inf_actual }}">
+        <input type="hidden" name="inf_descargar" id="inf_descargar" value="">
+        <input type="hidden" name="action" id="action" value="">
+
+        <ul class="tabs" data-tab>
+            <li class="tab-title active" data-id="0">
+                <a href="#tab1">
+                    <b id="texto0">Sancionar</b>
+                </a>
+            </li>
+            <li class="tab-title" data-id="1">
+                <a href="#tab2">
+                    <b id="texto1" style="color:#74bfdd;">Tus Informes</b>
+                </a>
+            </li>
+        </ul>
+        <div class="tabs-content">
+            <div class="content active" id="tab1">
+                <div id="summary">
+                    {% if tus_informes|length > 0 %}
+                        <div id="tus_informes">
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <th>Alumno</th>
+                                    <th>Fecha</th>
+                                    <th>Archivo</th>
+                                    <th>Expulsión</th>
+                                    <th>Borrar</th>
+                                </tr>
+                                {% for informe in tus_informes %}
+                                    <tr>
+                                        <td>{{ informe.sancionado.gauser.get_full_name }}</td>
+                                        <td>{{ informe.created }}</td>
+                                        <td>{{ informe.fichero }}</td>
+                                        <td>{% if informe.expulsion %}Sí{% else %}No{% endif %}</td>
+                                        <td><a class="del_informe" data-id="{{ informe.id }}"><i
+                                                class="fa fa-trash"></i></a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                    <div class="row">
+                        <div class="columns large-12">
+                            <label>Selecciona el alumno a sancionar:
+                                <select id="select_usuario"></select>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="datos_sancionado" style="display: none;"></div>
+            </div>
+            <div class="content" id="tab2">
+                <table width="100%">
+                    <tbody>
+                    <tr>
+                        <th>Sancionado</th>
+                        <th>Fecha</th>
+                        <th>Archivo</th>
+                        <th>Expulsión</th>
+                        <th>Borrar</th>
+                    </tr>
+                    {% for informe in informes %}
+                        <tr id="tr_informe{{ informe.id }}">
+                            <td>{{ informe.sancionado.gauser.get_full_name }}</td>
+                            <td title="La fecha y hora de creación del informe es: {{ informe.created }}">{{ informe.fecha_incidente }}</td>
+                            <td><a class="descargar_informe" data-id="{{ informe.id }}"><i class="fa fa-download"></i>
+                                Descargar</a>
+                            </td>
+                            <td>{% if informe.expulsion %}Sí{% else %}No{% endif %}</td>
+                            <td><a class="borrar_informe" data-id="{{ informe.id }}"><i class="fa fa-trash-o"></i></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            <p><b>Alumnos de los que eres tutor y han sido sancionados por otros:</b></p>
+            <table width="100%">
+                    <tbody>
+                    <tr>
+                        <th>Sancionado</th>
+                        <th>Sancionado por</th>
+                        <th>Fecha</th>
+                        <th>Archivo</th>
+                        <th>Expulsión</th>
+                    </tr>
+                    {% for informe in informes_como_tutor %}
+                        <tr id="tr_informe{{ informe.id }}">
+                            <td>{{ informe.sancionado.gauser.get_full_name }}</td>
+                        <td>{{ informe.sancionador.gauser.get_full_name }}</td>
+                            <td title="La fecha y hora de creación del informe es: {{ informe.created }}">{{ informe.fecha_incidente }}</td>
+                            <td><a class="descargar_informe" data-id="{{ informe.id }}"><i class="fa fa-download"></i>
+                                Descargar</a>
+                            </td>
+                            <td>{% if informe.expulsion %}Sí{% else %}No{% endif %}</td>
+
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $(document).foundation({
+            tab: {
+                callback: function (tab) {
+                    var id = $(tab[0]).data('id');
+                    if (id == 0) {
+                        $('#texto1').css('color', '#74bfdd');
+                        $('#texto0').css('color', 'black');
+                        $('#titulo').html('Sancionar Conductas')
+                    } else {
+                        $('#texto0').css('color', '#74bfdd');
+                        $('#texto1').css('color', 'black');
+                        $('#titulo').html('Tus Informes Sancionadores')
+                    }
+                }
+            }
+        });
+
+        habilita(['s_file-pdf-o']);
+
+        $('#select_usuario').select2({
+            placeholder: "Escribe parte del nombre",
+            allowClear: true,
+            ajax: {
+                url: "/sancionar_conductas_ajax/",
+                type: 'POST',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        action: 'buscar_usuarios',
+                        q: params.term
+                    };
+                },
+                processResults: function (data, page) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            }, // let our custom formatter work
+            minimumInputLength: 3,
+            language: {
+                inputTooShort: function () {
+                    return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                }
+            }
+        });
+
+        $("#select_usuario").change(function (e) {
+            var user = $(this).val();
+            var id = $(this).data('id');
+            $.post("/sancionar_conductas_ajax/", {
+                action: 'seleccionar_usuario',
+                user: user
+            }, function (data) {
+                if (data.ok) {
+                    $('#datos_sancionado').html(data['html']).show();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        {% if inf_actual %}
+            $.post("/sancionar_conductas_ajax/", {
+                action: 'cargar_informe',
+                informe: {{ inf_actual.id }}
+            }, function (data) {
+                if (data.ok) {
+                    $('#datos_sancionado').html(data['html']).show();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        {% endif %}
+
+        $('#file-pdf-o_sign').click(function (e) {
+            e.preventDefault();
+            $('#action').val('genera_pdf');
+            document.{{formname}}.submit();
+        });
+
+        $('body').on('click', '.descargar_informe', function (e) {
+            e.preventDefault();
+            $('#action').val('descargar_informe');
+            $('#inf_descargar').val($(this).data('id'));
+            document.{{formname}}.submit();
+        });
+
+
+        $('body').on('click', '.borrar_informe', function (e) {
+            e.preventDefault();
+            informe = $(this).data('id');
+            show_mensajes({
+                title: 'Borrar Informe Sancionador', texto: 'Si aceptas el informe será eliminado' +
+                ' completamente de la base de datos.', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/sancionar_conductas_ajax/", {action: 'borrar_informe', informe: informe},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#tr_informe' + informe).remove();
+                                    {#                                    setTimeout(function () {#}
+                                    {#                                        show_mensajes({title: 'Informe borrado', texto: data.mensaje});#}
+                                    {#                                    }, 600);#}
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+
+    </script>
+{% endblock %}

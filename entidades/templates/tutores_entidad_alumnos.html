@@ -1,0 +1,87 @@
+{% load entidades_extras %}
+
+{#<div class="row">#}
+{#    {% for alumno in alumnos %}#}
+{#        {% ifchanged alumno.grupo %}#}
+{#        <div class="row">#}
+{#            <div class="columns large-12">#}
+{#                <hr>#}
+{#                <h5>{{ alumno.grupo }} &nbsp;&nbsp;&nbsp;<a class="todos_ninguno" data-select="todos"#}
+{#                                                            data-id="{{ alumno.grupo_id }}"><i#}
+{#                        class="fa fa-check-square-o"></i> Todos</a>&nbsp;&nbsp;&nbsp;#}
+{#                    <a class="todos_ninguno" data-select="ninguno" data-id="{{ alumno.grupo_id }}"><i#}
+{#                            class="fa fa-square-o"></i> Ninguno</a></h5>#}
+{#            </div>#}
+{#        </div>#}
+{#        {% endifchanged %}#}
+{#        <div class="columns large-4"><input type="checkbox" {% if alumno.tutorado %}checked{% endif %}#}
+{#                                            class="select_alumno" data-id="{{ alumno.id }}">#}
+{#            {{ alumno.nombre }}#}
+{#        </div>#}
+{#    {% endfor %}#}
+{#</div>#}
+
+<div class="row">
+    {% for grupo in grupos %}
+        <div class="columns large-12">
+            <hr>
+            <h5>{{ grupo.nombre }} &nbsp;&nbsp;&nbsp;<a class="todos_ninguno" data-select="todos"
+                                                        data-id="{{ grupo.id }}"><i
+                    class="fa fa-check-square-o"></i> Todos</a>&nbsp;&nbsp;&nbsp;
+                <a class="todos_ninguno" data-select="ninguno" data-id="{{ grupo.id }}"><i
+                        class="fa fa-square-o"></i> Ninguno</a></h5>
+        </div>
+        {% for alumno in grupo|alumnos_in_grupo %}
+            {% if tipo == 'tutor' %}
+                <div class="columns large-4"><input type="checkbox" {% if docente and alumno.tutor == docente %}checked{% endif %}
+                                                    class="select_alumno" data-id="{{ alumno.id }}">
+                    {{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}
+                </div>
+            {% else %}
+                <div class="columns large-4"><input type="checkbox" {% if docente and alumno.cotutor == docente %}checked{% endif %}
+                                                    class="select_alumno" data-id="{{ alumno.id }}">
+                    {{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+</div>
+
+<script>
+    $('.todos_ninguno').click(function (e) {
+        e.preventDefault();
+        var docente = $('#selecciona_docente').val();
+        var tipo = $('#selecciona_tipo').val();
+        var select = $(this).data('select');
+        var grupo = $(this).data('id');
+        var grupos = new Array();
+        $('#selecciona_grupos').each(function () {
+            grupos.push($(this).val());
+        });
+        $.post("/tutores_entidad/", {
+                action: 'selecciona_todos_ninguno', docente: docente, tipo: tipo, grupo: grupo, select: select,
+                grupos: grupos
+            },
+            function (data) {
+                $('#alumnos').html(data['html']);
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+    });
+
+    $('.select_alumno').click(function (e) {
+        var docente = $('#selecciona_docente').val();
+        var tipo = $('#selecciona_tipo').val();
+        var alumno = $(this).data('id');
+        var checked = false;
+        if ($(this).prop("checked")) {
+            checked = true;
+        }
+        $.post("/tutores_entidad/", {
+                action: 'selecciona_alumno', docente: docente, tipo: tipo, alumno: alumno, checked: checked
+            },
+            function (data) {
+                $('#alumnos').html(data['html']);
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+    });
+</script>

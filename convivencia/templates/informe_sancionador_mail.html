@@ -1,0 +1,93 @@
+{% load convivencia_extras %}
+Alumno: <strong> {{ informe.sancionado.gauser.get_full_name }}</strong>
+<br/>
+Grupo: <strong> {{ informe.sancionado.gauser_extra_estudios.grupo.nombre }}</strong> (
+{% for curso in informe.sancionado.gauser_extra_estudios.grupo.cursos.all %}{{ curso.nombre }}{% if not forloop.last %},
+    &nbsp;{% endif %}{% endfor %})
+<br/>
+Tutor: <strong> {{ informe.sancionado.gauser_extra_estudios.tutor.gauser.get_full_name }}</strong>
+<br>
+Sancionado por: <strong>{% if dire %}{{ dire.gauser.get_full_name }}{% else %}
+    {{ informe.sancionador.gauser.get_full_name }}{% endif %}</strong>
+
+{% if informe.texto_motivo %}
+    <p>El comportamiento  {% if informe.sancionado.gauser.sexo == 'H' %} del alumno, {% else %} de la alumna, {% endif %}
+    ha sido: </p>
+    <i>
+        {% autoescape off %}
+            {{ informe.texto_motivo }}
+        {% endautoescape %}
+    </i>
+{% endif %}
+<p> {% if informe.conductas.all|length > 1 %} Conductas contrarias a la convivencia: {% else %}
+    Conducta contraria a la convivencia: {% endif %}</p>
+<ul>
+    {% for conducta in informe.conductas.all %}
+        <li style="margin-bottom: 1em;"><strong> {{ conducta.conducta }} </strong></li>
+    {% endfor %}
+</ul>
+
+<p> {% if informe.sanciones.all|length > 1 %} Medidas correctoras: {% else %} Medida correctora: {% endif %} </p>
+
+<ul>
+    {% for sancion in informe.sanciones.all %}
+        <li style="margin-bottom: 1em;"><strong> {{ sancion.sancion }} </strong></li>
+    {% endfor %}
+</ul>
+
+{% if informe.fechaexpulsion_set.all|length > 0 %}
+    <p><strong> Se suspende el derecho de asistencia a clase del alumno
+        {% if informe.fechaexpulsion_set.all|length == 1 %} el día: {% else %}los días:{% endif %}<br>
+        {% for fecha in informe.fechaexpulsion_set.all %}
+            {% if forloop.revcounter0 == 1 %}{{ fecha.fecha|date:"d/m/Y" }} y
+                {% elif forloop.revcounter0 > 1 %}{{ fecha.fecha|date:"d/m/Y" }},
+                {% else %}{{ fecha.fecha|date:"d/m/Y" }}
+            {% endif %}
+        {% endfor %}
+    </strong></p>
+    <p>Con el fin de que {% if informe.sancionado.gauser.sexo == 'H' %}el alumno{% else %}la alumna{% endif %}
+        no interrumpa su proceso formativo, los profesores le proporcionarán tarea para ser realizada en casa.</p>
+{% endif %}
+
+{% if listar_conductas %}
+    <p>Los informes sancionadores emitidos hasta el momento son:</p>
+    {% for informe_sancionador in informes %}
+        <p style="font-style:italic;"><strong> Informe emitido el {{ informe_sancionador.fecha_incidente|date:"d" }}
+            de {{ informe_sancionador.fecha_incidente|date:"F" }}
+            de {{ informe_sancionador.fecha_incidente|date:"Y" }}</strong></p>
+        <ul>
+            {% for conducta in informe.conductas.all %}
+                <li>{{ conducta.conducta }}</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+
+    {% if expulsiones|length > 1 %}
+        <p>{{ informe.sancionado.gauser.get_full_name }} ha sido
+            {% if informe.sancionado.gauser.sexo == 'H' %} expulsado, {% else %} expulsada, {% endif %}
+            {{ expulsiones|length }} ve{{ expulsiones|length|pluralize:"z,ces" }}:</p>
+        <ul>
+            {% for expulsion in expulsiones %}
+                <li>El {{ expulsion.fecha_incidente|date:"j" }} de {{ expulsion.fecha_incidente|date:"F" }}
+                    de {{ expulsion.fecha_incidente|date:"Y" }}. {% if expulsion.fechaexpulsion_set.all|length > 0 %}
+                        Días:
+                        {% for fecha in expulsion.fechaexpulsion_set.all %}{% if forloop.revcounter0 == 1 %}
+                            {{ fecha.fecha|date:"d/m/Y" }} y
+                            {% elif forloop.revcounter0 > 1 %}{{ fecha.fecha|date:"d/m/Y" }}, {% else %}
+                            {{ fecha.fecha|date:"d/m/Y" }}{% endif %}{% endfor %}{% endif %}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endif %}
+
+
+{% with estadistica=informe.sancionado|estadistica_informes_is2pdf %}
+    <p>{{ informe.sancionado.gauser.get_full_name }} tiene {{ estadistica.tcnc }}
+        {% if estadistica.tcnc != 1 %} conductas contrarias {% else %}
+            conducta contraria {% endif %} a la convivencia y {{ estadistica.gpc }} {% if estadistica.gpc != 1 %}
+            conductas gravemente
+            perjudiciales {% else %} conducta gravemente perjudicial {% endif %} para la convivencia, por las cuales se
+        le han emitido {{ estadistica.informes }} informes sancionadores (incluido éste).</p>
+{% endwith %}
+
+ 

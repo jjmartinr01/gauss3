@@ -1,0 +1,34 @@
+{% load my_templatetags %}
+
+
+    {% if html_web.editores.all|length > 0 %}
+{#        <dl>#}
+            <label><b>Personas autorizadas a editar esta página ({{ html_web.editores.all|length }})</b></label>
+{#            <dd>#}
+                {% if numero > 5 %}
+                    {% for editor in html_web.editores.all %}
+                        &nbsp;<span class="radius label">{{ editor.get_full_name }}</span>
+                        {% if forloop.last and forloop.counter > 10 %}
+                            &nbsp;
+                            <span class="secondary radius label"><a class="ocultar_editores" data-id="{{ html_web.id }}">
+                                ... (ocultar)</a></span>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    {% for editor in html_web.editores.all %}
+                        {% if forloop.counter < 5 %}
+                            &nbsp;<span class="radius label">{{ editor.get_full_name }}</span>
+                        {% endif %}
+                        {% if forloop.last and forloop.counter > 4 %}
+                            &nbsp;
+                            <span class="secondary radius label"><a class="mostrar_editores" data-id="{{ html_web.id }}">
+                                ... (mostrar todos)</a></span>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+        <br><br>
+{#            </dd>#}
+{#        </dl>#}
+    {% else %}
+        <b>No se han definido personas que puedan editar esta página web</b>
+    {% endif %}

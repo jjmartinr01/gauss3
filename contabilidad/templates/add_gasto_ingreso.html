@@ -1,0 +1,33 @@
+{% load my_templatetags %}
+
+<div class="row">
+    <div class="columns large-6">
+        <label>Selecciona partida:
+        {{ form1.partida }}
+            </label>
+    </div>
+    <div class="columns large-6">
+        <label>Concepto:
+        {{ form1.concepto }}
+            </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+            <label>Breve descipción:
+        {{ form1.nombre }}
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-6">
+        <label>Cantidad en euros:
+        {{ form1.cantidad }}
+            </label>
+    </div>
+    <div class="columns large-6">
+        <label>Imagen o fichero justificativo:
+            {{ form2.fichero }}
+            </label>
+    </div>
+</div>

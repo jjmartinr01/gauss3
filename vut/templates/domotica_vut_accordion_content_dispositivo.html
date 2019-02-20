@@ -1,0 +1,28 @@
+{% load my_templatetags %}
+<fieldset id="fieldset{{ domotica.id }}">
+    <legend id="dispositivo{{ domotica.id }}">{{ domotica.nombre }}</legend>
+    <div class="row">
+        <div class="columns large-4">
+            <label>Nombre: <input type="text" class="campo_char" data-id="{{ domotica.id }}" data-campo="nombre"
+                                  value="{{ domotica.nombre }}"></label>
+        </div>
+        <div class="columns large-8">
+            <label>URL: <input type="text" class="campo_char" data-id="{{ domotica.id }}" data-campo="url"
+                               value="{{ domotica.url }}"></label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label>Texto que contiene el enlace:
+                <textarea class="campo_char" data-campo="texto"
+                          data-id="{{ domotica.id }}">{{ domotica.texto }}</textarea>
+            </label>
+        </div>
+    </div>
+    <ul class="button-group right">
+        {% if g_e|has_permiso:'delete_dispositivo_domotica' %}
+            <li><a class="button delete_dispositivo_domotica alert" data-id="{{ domotica.id }}"><i class="fa fa-trash"
+            ></i> Borrar dispositivo</a></li>
+        {% endif %}
+    </ul>
+</fieldset>

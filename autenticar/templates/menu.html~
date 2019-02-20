@@ -1,0 +1,27 @@
+<div id="side">
+
+  <ul id="contenido_menu_lateral" class="accordion">
+    {% for menu in menues %}
+    <li style="display: block;" class="">{{menu.textmenu}}
+      <ul style="display: block;">
+	{% for submenu in submenues %}
+	{% if submenu.menu == menu %} 
+	<ul style="display: block;">
+	  {% for submenu_element in submenu_elements %}
+	  {% if submenu_element.submenu == submenu %}
+	  <li class="last-child" id="i{{submenu_element.id}}"><a style="display: block;" class="trigger" href="{{submenu_element.href}}i{{submenu_element.id}}">{{submenu_element.textelement}}</a></li>
+	  {% endif %}
+	  {% endfor %}
+	</ul>
+	{% endif %}
+	{% endfor %}
+	{% for menu_element in menu_elements %}
+	{% if menu_element.menu == menu %}
+	<li class="last-child" id="i{{menu_element.id}}"><a style="display: block;" class="trigger" href="{{menu_element.href}}i{{menu_element.id}}">{{menu_element.textelement}}</a></li>
+	{% endif %}
+	{% endfor %}
+      </ul>
+    </li>
+    {% endfor %}
+  </ul>
+</div>

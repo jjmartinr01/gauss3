@@ -1,0 +1,186 @@
+{% extends "lateral.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui-timepicker-addon.css" />
+<script type="text/javascript" src="/static/js/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.min.js"></script>
+
+<style>
+.icono {font-size:8pt;color:#623090;width:2%;text-align:center;}
+</style>
+{% endblock %}
+
+
+{% block ready %}
+  visualizar(['ok_sign','plus_sign','file_pdf','remove_sign','list_sign','money_sign']);
+  $( "#plus_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir una nueva politica de cuotas');
+  $( "#file_pdf" ).removeClass('no_navegar').addClass('navegar').attr('title','Genera PDF de tus politicas de cuotas');
+  
+
+  $('#list_sign').click(function () { if( $(this).hasClass('navegar') ) {
+    $( '#file_pdf' ).removeClass('no_navegar').addClass('navegar').attr('title','Genera PDF con tus eventos/politica_cuotas');
+    $( '#plus_sign' ).removeClass('no_navegar').addClass('navegar').attr('title','');
+    $( "#ok_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( "#list_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $('#action').val('');
+    $('#introducir_politica_cuotas').css('display','none');
+    $('#lista_politica_cuotas').css('display','block');}});
+
+  $("#file_pdf").click(function() { if( $(this).hasClass('navegar') ) {
+      $('#action').val('pdf_politicas_cuotas');
+      document.{{formname}}.submit();}});
+
+  
+  $('.show_hide').click(function(){
+    var id_politica_cuota = $(this).attr('id').split('_')[1];
+    if ( $("#id_politica_cuotas").val() != id_politica_cuota ){
+      $( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Grabar los socios exentos');
+      $("#id_politica_cuotas").val(id_politica_cuota);
+      $("#action").val('grabar_exentos');
+      $('.div_exentos').not("#div_"+id_politica_cuota).slideUp();
+      $("#div_"+id_politica_cuota).slideDown();
+      $.post("/lista_socios/", {id:id_politica_cuota,},function(data) { $('#div_'+id_politica_cuota).html(data);});
+    }else{
+      $("#div_"+id_politica_cuota).slideUp();
+      $("#id_politica_cuotas").val('');
+      $( "#ok_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');}});
+
+  $('.checkboxes').click(function(){
+    if ($('input:checkbox.checkboxes:checked').length > 0) {
+	$( "#remove_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Borrar politica_cuotas seleccionados');
+	$( "#money_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Generar remesas asociadas a las políticas seleccionadas');}
+    else { 
+	$( "#remove_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+	$( "#money_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');}
+    });
+
+  $('#remove_sign').click(function(){ if ( $(this).hasClass('navegar') ) {
+    var politica_cuotas=[];
+    $('input:checkbox.checkboxes:checked').each(function () {
+	politica_cuotas.push($(this).attr('id').split('_')[1]);
+    });
+    $('#action').val('borrar_politica_cuotas');
+    $('#id_politica_cuotas').val(politica_cuotas);
+    document.{{formname}}.submit();
+  }});
+
+  $('#money_sign').click(function(){ if ( $(this).hasClass('navegar') ) {
+    var politica_cuotas=[];
+    $('input:checkbox.checkboxes:checked').each(function () {
+	politica_cuotas.push($(this).attr('id').split('_')[1]);
+    });
+    $('#action').val('generar_remesas');
+    $('#id_politica_cuotas').val(politica_cuotas);
+    document.{{formname}}.submit();
+  }});
+
+
+  $('#plus_sign').click(function () { if( $(this).hasClass('navegar') ) {
+    $( '.checkboxes' ).attr('checked', false);
+    $( '#money_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( '#file_pdf' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( '#plus_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Grabar la nueva política de cuotas');
+    $( "#calendar_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Volver a ver el calendario');
+    $( "#list_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Volver a ver la lista de las políticas de cuotas');
+    $('#action').val('crea_politica_cuota');
+    $('#introducir_politica_cuotas').css('display','block');
+    $('#lista_politica_cuotas').css('display','none');
+    $.post("/crear_politica_cuota/", {},function(data) { $('#introducir_politica_cuotas').html(data);});}});
+
+  $('#ok_sign').click(function () {  if( $(this).hasClass('navegar') ) {
+    if ($('#action').val() == 'grabar_exentos') { document.{{formname}}.submit(); }else{
+      var per = $('#id_perfil').val().length > 0;
+      var tco = $('#id_tipo_cobro').val().length > 0;
+      var can = $('#id_cantidad').val().length > 0;
+      var con = $('#id_concepto').val().length > 3;
+      if (per && tco && can && con){ document.{{formname}}.submit(); }
+      else {
+	var texto = '';
+	if( !per ) { texto = texto + '<li>Es necesario seleccionar el perfil sobre el que se aplica la política.</li>';}
+	if( !tco ) { texto = texto + '<li>Debes seleccionar el tipo de cobro.</li>';}
+	if( !can ) { texto = texto + '<li>Es necesario indicar la cantidad de euros por cuota.</li>';}
+	if( !con ) { texto = texto + '<li>Debes indicar el concepto de la cuota.</li>';}
+	$( "#faltan_campos" ).html(texto);
+	$( "#faltan_campos" ).dialog( "open" );}}}});
+
+
+ 
+{# Código para los listados de exentos #}
+
+  $('#Contenido').click(function(e) {
+    var a=false;
+    if ($(e.target).parents('.div_total_checkboxes').length<1){
+	$('.todos_ningunos').each(function(i, div){
+	    if ($(div).css('display') == 'block'){
+		var id = div.id.split('___')[1];
+		$('#checkbox_cerrado').val(id).change();}});
+	$('.todos_ningunos').hide();
+	$('.multiselect2checkbox').hide();
+	$('.ya_checked').show();}});
+
+  $('#Contenido').on('click','.texto_checkboxes',function(){
+	var id = this.id.split('___')[1];
+	$('#todos_ningunos___'+id).toggle();
+	$('#checkboxes___'+id).toggle();
+	$('#ya_checked___'+id).toggle();})
+
+  $('#Contenido').on('click', '.select_todos', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).prop('checked', true);
+    var n = $('.check___'+identificador).length;
+    $('#total_seleccionados___'+identificador).text( "(" +n + (n === 1 ? " receptor seleccionado)" : " receptores seleccionados)") );
+    });
+
+  $('#Contenido').on('click', '.select_ninguno', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).prop('checked', false);
+    $('#total_seleccionados___'+identificador).text( "(0 receptores seleccionados)");
+    });
+
+  $( "input[type=checkbox]" ).click( function(){
+      var id = $(this).attr('class').split('___')[1];
+      var $cat = $(this).closest(".multiselect2checkbox");
+      var n = $cat.find(":checkbox:checked").length;
+      $('#total_seleccionados___'+id).text( "(" +n + (n === 1 ? " receptor seleccionado)" : " receptores seleccionados)") );
+  });
+{% endblock %}
+
+
+{% block navegar %}
+{% endblock %}
+
+
+
+{% block contenido %}
+a_{{hola}}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+
+<input type="hidden" id="action" name="action" value="">
+<input type="hidden" id="id_politica_cuotas" name="id_politica_cuotas" value="">
+
+<div id="lista_politica_cuotas">
+{% include "list_politicas_cuotas.html" %}
+</div>
+
+<div id="introducir_politica_cuotas">
+</div>
+
+</form>
+
+{% endblock %}
+
+
+
+
+	
+
+
+
+
+
+
+

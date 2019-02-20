@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong>Borrado de entidad y sus usuarios</strong></h4>
+        </div>
+
+
+        <div class="row">
+            <div class="columns large-8">
+                <label>
+                    Selecciona una convocatoria
+                    <select id="entidad" name="entidad">
+                        <option>------</option>
+                        {% for entidad in entidades %}
+                            <option value="{{ entidad.id }}">{{ entidad.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+            <div class="columns large-4">
+                <label>
+                    Contraseña de borrado:
+                    <input type="password" name="pass" value="">
+                </label>
+            </div>
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_check']);
+        $('#check_sign').click(function (e) {
+            e.preventDefault();
+            $('#action').val('borrar_entidad');
+            document.{{formname}}.submit();
+        });
+    </script>
+{% endblock %}

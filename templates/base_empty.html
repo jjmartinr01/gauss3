@@ -1,0 +1,182 @@
+{% load static %}
+{% load my_templatetags %}
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sistemas de gestión aumentada</title>
+    <link rel="shortcut icon" href="/static/images/favicon3.ico">
+    <link rel="stylesheet" href="/static/css/style.css"/>
+    <link rel="stylesheet" href="/static/foundation-5.5.3/css/foundation.css"/>
+    <link rel="stylesheet" href="/static/foundation-icons/foundation-icons/foundation-icons.css"/>
+    <link rel="stylesheet" href="/static/font-awesome-4.7.0/css/font-awesome.min.css"/>
+{#    <link rel="stylesheet" href="/static/foundation-datepicker/foundation-datepicker.css"/>#}
+{#    <link rel="stylesheet" href="/static/foundation-datepicker/foundation-datetimepicker.css"/>#}
+<link rel="stylesheet" href="/static/fdatepicker2018/css/foundation-datepicker.css"/>
+{#    <link rel="stylesheet" href="/static/fdatepicker2018/css/foundation-datetimepicker.css"/>#}
+    {% block head %}{% endblock %}
+</head>
+<body onload="init()">
+<style>
+    .menu_head {
+        padding: 5px 10px;
+        rondar: pointer;
+        position: relative;
+        margin: 1px;
+        font-weight: bold;
+        color: #008cba !important;
+        font-size: 0.78rem !important; /* 0.77778rem */
+        text-transform: uppercase;
+    }
+
+    .menu_element {
+        margin: 1px;
+        font-weight: bold;
+        color: #008cba !important;
+        font-size: 0.78rem !important; /* 0.77778rem */
+        text-transform: uppercase;
+        padding: 0.19375rem !important;
+        height: auto !important;
+        border-bottom: solid 1px lightgrey;
+    }
+
+    li.heading_off_canvas {
+        color: #008cba;
+        font-size: 0.85rem !important; /* 0.77778rem */
+        font-weight: bold !important;
+        text-transform: uppercase;
+    }
+
+    a.menu_nivel2 {
+        padding: 0.33333px !important;
+        line-height: inherit;
+
+    }
+</style>
+
+<div id="faltan_campos" class="reveal-modal small" data-reveal>
+    <h3>Faltan campos por rellenar</h3>
+
+    <ul class="lead" id="texto_faltan_campos"></ul>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<div id="mensajes_gauss" class="reveal-modal" data-reveal>
+    <h3 id="mensajes_gauss_title"></h3>
+
+    <ul class="lead" id="mensajes_gauss_texto"></ul>
+    <p id="mensajes_gauss_bajo_texto"></p>
+
+    <p id="mensajes_gauss_buttons"></p>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<div style="color:red;position:fixed;right: 20px;top:40px;display: none;" id="update_error">
+    <i class="fa fa-warning fa-5x"></i>
+</div>
+<div style="color:green;position:fixed;right: 20px;top:40px;display: none;" id="update_ok">
+    <i class="fa fa-check fa-5x"></i>
+</div>
+<div style="color:green;position:fixed;right: 20px;top:40px;display: none;" id="ajax-loader">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+</div>
+
+{#<div class="Principal columns large-12 medium-12 small-12" id="Principal">#}
+    <div class="Contenido" id="Contenido" style="min-height: 500px;">
+        {% block contenido %}{% endblock %}
+    </div>
+{#</div>#}
+
+<script src="/static/foundation-5.5.3/js/vendor/jquery.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui-1.10.3/js/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="/static/foundation-5.5.3/js/vendor/modernizr.js"></script>
+<script src="/static/js/jquery.cookie.js"></script>
+<script src="/static/js/base_gauss.js"></script>
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery.form.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery.fileDownload.js"></script>
+<script type="text/javascript" src="/static/js/gauss_editor.js"></script>
+{#<script src="/static/foundation-5.5.3/js/foundation.min.js"></script>#}
+<script src="/static/foundation-5.5.3/js/foundation/foundation.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.abide.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.accordion.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.alert.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.dropdown.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.offcanvas.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.reveal.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.slider.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.tab.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.tooltip.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.topbar.js"></script>
+<script src="/static/js/wysihtml5_advanced.js"></script>
+<script src="/static/js/wysihtml5-0.4.0pre.js"></script>
+{#<script src="/static/foundation-datepicker/foundation-datepicker.js"></script>#}
+{#<script src="/static/foundation-datepicker/foundation-datetimepicker.js"></script>#}
+<script src="/static/fdatepicker2018/js/foundation-datepicker.min.js"></script>
+<script src="/static/fdatepicker2018/js/locales/foundation-datepicker.es.js"></script>
+<link href="/static/select2-4.0.1/dist/css/select2-4.0-foundation5.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
+<script src="/static/select2-4.0.1/dist/js/i18n/es.js"></script>
+
+<script src="/static/js/jquery.MultiFile.js"></script>
+<script src="/static/ckeditor/ckeditor.js"></script>
+
+<script>
+    charge_on_ready();
+    CKEDITOR.disableAutoInline = true;
+    $('.ui-helper-hidden-accessible').css('display', 'none');
+    $('.ui-autocomplete').on('blur', '#barra_iconos_menu', function () {
+        this.addClass('f-dropdown')
+    });
+    $(document).foundation({
+        abide: {
+            live_validate: true,
+            focus_on_invalid: true,
+            error_labels: true, // labels with a for="inputId" will recieve an `error` class
+            timeout: 1000,
+            patterns: {
+                datetime: /([0-3][0-9])\/([0-1][0-9])\/([0-2][0-9]{3})\s([0-2][0-9])\:([0-5][0-9])/,
+                alpha_numeric: /^[a-zA-Z0-9]+$/
+            }
+        }
+    });
+
+
+    $(document)
+        .foundation({
+            abide: {
+                patterns: {
+                    dashes_only: /^[0-9-]*$/,
+                    ip_address: /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/
+                }
+            }
+        });
+
+    // Set-up the canvas and add our event handlers after the page has loaded
+        function init() {
+            // Get the specific canvas element from the HTML document
+            canvas = document.getElementById('sketchpad');
+
+            // If the browser supports the canvas tag, get the 2d drawing context for this canvas
+            if (canvas.getContext)
+                ctx = canvas.getContext('2d');
+
+            // Check that we have a valid context to draw on/with before adding event handlers
+            if (ctx) {
+                // React to mouse events on the canvas, and mouseup on the entire document
+                canvas.addEventListener('mousedown', sketchpad_mouseDown, false);
+                canvas.addEventListener('mousemove', sketchpad_mouseMove, false);
+                window.addEventListener('mouseup', sketchpad_mouseUp, false);
+
+                // React to touch events on the canvas
+                canvas.addEventListener('touchstart', sketchpad_touchStart, false);
+                canvas.addEventListener('touchend', sketchpad_touchEnd, false);
+                canvas.addEventListener('touchmove', sketchpad_touchMove, false);
+            }
+        }
+</script>
+{% block final %}{% endblock %}
+</body>
+</html>

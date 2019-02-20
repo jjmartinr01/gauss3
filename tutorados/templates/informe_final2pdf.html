@@ -1,0 +1,78 @@
+{% load my_templatetags %}
+<style>
+    h1 {
+        text-align: center;
+        font-size: 30px;
+        line-height: 50px;
+    }
+    td {
+   border: 1px solid gray;
+}
+    .centrado {text-align: center;}
+</style>
+<p>&nbsp;</p>
+<h1>INFORME INDIVIDUAL DE ASIGNATURAS CON EVALUACIÓN NEGATIVA</h1><h1>CURSO {{ alumno.curso_escolar.curso_escolar }}</h1>
+
+<p>&nbsp;</p><p>&nbsp;</p>
+{#<h2>{% if alumno.gauser.sexo == 'M' %}Alumna:{% else %}Alumno: {% endif %} {{ alumno.gauser.get_full_name }}</h2>#}
+{#<h2>Curso: {{ alumno.grupo.estudio }}</h2>#}
+<h2 class="centrado">{{ alumno.gauser.get_full_name }}</h2>
+<h2 class="centrado">{{ alumno.grupo.estudio }}</h2>
+<br><br><br><br>
+{#<h3>Evaluado por:</h3>#}
+{#{% for i_f in i_fs %}#}
+{#    {{ i_f.profesor.gauser.get_full_name }} ({{ i_f.profesor.especialidad.nombre }})<br>#}
+{#{% endfor %}#}
+<br><br><br><br><br><br><br>
+<p>En {{ request.session.gauser_extra.centro.get_localidad_display }}, a {% now "j \d\e  F \d\e Y" %}</p>
+<p>&nbsp;</p>
+<p>{% if tutor.gauser.sexo == 'H' %}El tutor: {{ tutor.gauser.get_full_name }}{% else %}
+    La tutora: {{ tutor.gauser.get_full_name }}
+{% endif %}</p>
+<p class="pagebreak">&nbsp;</p>
+{% for i_f in i_fs %}
+    <h2>Asignatura de {{ i_f.materia.nombre }}</h2>
+    <h3>Profesor: {{ i_f.profesor.gauser.get_full_name }}</h3>
+    <h3>Calificación en la materia: {{ i_f.nota }}</h3>
+    <h3>MEDIDAS DE ATENCIÓN A LA DIVERSIDAD</h3>
+    <ul>
+        <li>{{ i_f.get_adaptacion_display }}</li>
+        <li>{{ i_f.get_programa_display }}</li>
+        {% if i_f.pt %}<li>Ha tenido apoyo con un profesor de Pedagogía Terapéutica</li>{% endif %}
+    </ul>
+    <h3>CONSECUCIÓN DE LOS OBJETIVOS EDUCATIVOS</h3>
+    <h3>A. Esfuerzo e interés por las tareas escolares</h3>
+    <table width="100%">
+    {% for valoracion in i_f|valoraciones:'sin_estudio' %}
+        {% if valoracion.valoracion %}
+            <tr><td>{{ valoracion.objetivo.objetivo }}</td><td style="color:darkred;font-weight: 700;">{{ valoracion.get_valoracion_display }}</td></tr>
+        {% endif %}
+    {% endfor %}
+{#    <tr><th colspan="2"><h3>B. Aspectos específicos de la materia</h3></th></tr>#}
+{#    {% for valoracion in i_f|valoraciones:'estudio' %}#}
+{#        {% if valoracion.valoracion %}#}
+{#            <tr><td>{{ valoracion.objetivo.objetivo }}</td><td style="color:darkred;font-weight: 700;">{{ valoracion.get_valoracion_display }}</td></tr>#}
+{#        {% endif %}#}
+{#    {% endfor %}#}
+    </table>
+    <h3>B. Ha tenido dificultades en los siguientes aspectos</h3>
+    <ul>
+    {% for valoracion in i_f|valoraciones:'aspectos' %}
+        <li> {{ valoracion.aspecto.aspecto }}</li>
+    {% endfor %}
+    </ul>
+    <h3>Observaciones</h3>
+    {% if i_f.extraordinaria %}
+    <p>{% if i_f.alumno.gauser.sexo == 'H' %}El alumno {% else %}
+    La alumna {% endif %} deberá presentarse a la <strong>PRUEBA EXTRAORDINARIA</strong> que se realizará en el mes de
+    septiembre, según el caldendario que se hará público durante el mes de julio.</p>
+    {% endif %}
+    <p>{{ i_f.observaciones }}</p>
+    {% if not forloop.last %}
+        <p class="pagebreak">&nbsp;</p>
+    {% endif %}
+{% endfor %}
+
+
+
+

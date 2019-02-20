@@ -1,0 +1,664 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+
+{% block contenido %}
+    {% if request.session.gauser_extra|has_permiso:"edita_programaciones_ccff" or request.session.gauser_extra == programacion.g_e %}
+        <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}"
+              data-abide>
+            {% csrf_token %}
+            <input type="hidden" id="action" name="action" value="">
+            <input type="hidden" id="q" name="q" value="">
+            <input type="hidden" id="page" name="page" value="">
+            <input type="hidden" id="programacion" name="programacion" value="{{ programacion.id }}">
+            <input type="hidden" id="unidad_didactica" name="unidad_didactica" value="">
+
+            <div>
+                {% if not programacion.modulo %}
+                    <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong>Formulario para la elaboración
+                        de
+                        una programacion didáctica</strong></h4>
+                {% else %}
+                    <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong>Programación
+                        para "{{ programacion.modulo.materia.nombre }}"</strong></h4>
+                {% endif %}
+            </div>
+
+            <div id="div_programacion">
+                {% if not programacion.titulo %}
+                    <div class="row">
+                        <div class="columns large-12">
+                            <label>
+                                <b>Selecciona un Ciclo Formativo:</b>
+                                <select name="titulo" id="id_titulo" data-id="{{ programacion.id }}">
+                                    {% if programacion.titulo %}
+                                        <option value="{{ programacion.titulo.id }}"
+                                                selected>{{ programacion.titulo.nombre }}</option>
+                                    {% endif %}
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                {% else %}
+                    <p style="font-weight: 800;">Ciclo Formativo: {{ programacion.titulo.nombre }}</p>
+                    <input type="hidden" name="titulo" value="{{ programacion.titulo.id }}">
+                {% endif %}
+                {% if not programacion.modulo %}
+                    <div class="row">
+                        <div class="columns large-12">
+                            <label>
+                                <b>Selecciona un Módulo:</b>
+                                <select name="modulo" id="id_modulo">
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                {% else %}
+                    <input type="hidden" name="modulo" value="{{ programacion.modulo.id }}">
+                {% endif %}
+                <div id="datos_modulo" {% if programacion.modulo and programacion.titulo %}
+                     style="display: block;" {% else %} style="display: none;"{% endif %}>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <label>
+                                <b>Rellena los siguientes campos si están vacíos o son erróneos</b>
+                                <div class="row">
+                                    <div class="columns large-4">
+                                        <label title="Código dado a este módulo en el Real Decreto de creación del ciclo">
+                                            Código: <input type="text" value="{{ programacion.modulo.codigo }}"
+                                                           name="datos_modulo_codigo" id="datos_modulo_codigo"
+                                                           data-materia="{{ programacion.modulo.id }}">
+                                        </label>
+                                    </div>
+                                    <div class="columns large-4">
+                                        <label title="Número de créditos ECTS">
+                                            ECTS: <input type="text" value="{{ programacion.modulo.ects }}"
+                                                         name="datos_modulo_ects" id="datos_modulo_ects"
+                                                         data-materia="{{ programacion.modulo.id }}">
+                                        </label>
+                                    </div>
+                                    <div class="columns large-4">
+                                        <label title="Número de horas totales previstas para el módulo">
+                                            Horas totales: <input type="text"
+                                                                  value="{{ programacion.modulo.materia.duracion }}"
+                                                                  name="datos_modulo_horas" id="datos_modulo_horas"
+                                                                  data-materia="{{ programacion.modulo.id }}">
+                                        </label>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <h3>
+                            <b>Objetivos generales</b>
+                        </h3>
+                        {% if programacion.modulo and programacion.titulo %}
+                            <div class="columns large-12">
+                                <label>
+                                    <b>Selecciona los objetivos generales del Ciclo que van a ser conseguidos (total o
+                                        parcialmente) en este módulo:</b>
+                                    <div class="columns large-12" id="obj_gen_list">
+                                        <ul style="list-style-type: none;">
+                                            {% for obj in programacion.titulo.obj_general_set.all %}
+                                                <li><input type="checkbox" name="obj_generales" value="{{ obj.id }}"
+                                                        {% if obj in programacion.obj_gen.all %} checked {% endif %}
+                                                           class="obj_generales"> {{ obj.objetivo }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </label>
+                            </div>
+                        {% else %}
+                            <div class="columns large-12">
+                                <label>
+                                    <b>Selecciona los objetivos generales del Ciclo que van a ser conseguidos (total o
+                                        parcialmente) en este módulo:</b>
+                                    <div class="columns large-12" id="obj_gen_list"></div>
+                                </label>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <h3>
+                            <b>Unidades didácticas que componen la programación del módulo</b>
+                        </h3>
+                        <div class="columns large-12">
+                            <dl class="accordion" data-accordion id="list_unidades_didacticas">
+                                {% for ud in unidades %}
+                                    <dd class="accordion-navigation" id="accordion{{ ud.id }}"
+                                        style="border-bottom: dotted 1px black">
+                                        <a href="#ud{{ ud.id }}">UD <span id="orden{{ ud.id }}">{{ ud.orden }}</span>
+                                            - <span id="nombre{{ ud.id }}">{{ ud.nombre }}</span>
+                                            (<span id="duracion{{ ud.id }}">{{ ud.duracion }}</span> horas)</a>
+
+                                        <div id="ud{{ ud.id }}" class="content accordion-unidad" data-ud="{{ ud.id }}">
+                                        </div>
+                                    </dd>
+                                {% endfor %}
+                            </dl>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="columns large-12">
+                            {% if unidades|length == 0 %}
+                                <label><b>No hay creada ninguna unidad didáctica. Pulsa sobre el siguiente botón para
+                                    empezar a crear las unidades que se desarrollarán durante el curso.</b></label>
+                            {% endif %}
+                        </div>
+                        <div class="columns large-12">
+                            <a id="add_ud" class="button expand">Añadir una nueva unidad didáctica</a>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <h3 title="Actividades de refuerzo o recuperación indicando, entre otros aspectos, las actividades de recuperación de módulos pendientes.">
+                            <b>Actividades de refuerzo y/o recuperación</b>
+                        </h3>
+                        <div class="columns large-12" id="refuerzo_recuperacion" contenteditable="true"
+                             style="border: #bbbbbb solid 1px">
+                            {% autoescape off %}{{ programacion.act_refuerzo }}{% endautoescape %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <h3 title="Criterios de evaluación que serán aplicados para la verificación del progreso y la calificación de los alumnos">
+                            <b>Criterios de evaluación (verificación del progreso y la calificación)</b>
+                        </h3>
+                        <div class="columns large-12" id="progreso_calificacion" contenteditable="true"
+                             style="border: #bbbbbb solid 1px">
+                            {% autoescape off %}{{ programacion.crit_eval_gen }}{% endautoescape %}
+                        </div>
+                    </div>
+                    {##}
+                    {#            <div class="row">#}
+                    {#                <h3 title="Aquellas actividades que van a desarrollarse durante la estancia en el centro de trabajo">#}
+                    {#                    <b>Actividades que van a desarrollarse durante la estancia en el centro de trabajo</b>#}
+                    {#                </h3>#}
+                    {#                <div class="columns large-12" id="progreso_calificacion" contenteditable="true">#}
+                    {#                    {% autoescape off %}{{ programacion.act_fct }}{% endautoescape %}#}
+                    {#                </div>#}
+                    {#            </div>#}
+                    <div class="row">
+                        <h3 title="Aquellas necesidades y/o propuestas de formación para los profesores">
+                            <b>Necesidades y propuestas de formación del profesorado</b>
+                        </h3>
+                        <div class="columns large-12" id="propuesta_formacion" contenteditable="true"
+                             style="border: #bbbbbb solid 1px">
+                            {% autoescape off %}{{ programacion.pro_formacion }}{% endautoescape %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    {% endif %}
+{% endblock %}
+
+{% block final %}
+
+    <script>
+        IDLE_TIMEOUT = 4000; //seconds
+        habilita(['s_file-pdf-o', 's_list']);
+
+
+        $('body').on('propertychange input', '#datos_modulo_horas', function (e) {
+            e.preventDefault();
+            var id = $(this).data('materia');
+            var val = $(this).val();
+            $.post("/ajax_programaciones/", {action: 'guardar_datos_modulo_horas', id: id, val: val}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('propertychange input', '#datos_modulo_codigo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('materia');
+            var val = $(this).val();
+            $.post("/ajax_programaciones/", {action: 'guardar_datos_modulo_codigo', id: id, val: val}, function (data) {
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('propertychange input', '#datos_modulo_ects', function (e) {
+            e.preventDefault();
+            var id = $(this).data('materia');
+            var val = $(this).val();
+            $.post("/ajax_programaciones/", {action: 'guardar_datos_modulo_ects', id: id, val: val}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#id_titulo').select2({
+            placeholder: "Escribe parte del nombre del Ciclo Formativo",
+            allowClear: true,
+            ajax: {
+                url: "/ajax_programaciones/",
+                type: 'POST',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    $('#q').val(params.term);
+                    $('#page').val(params.page);
+                    $('#action').val('busca_ccff');
+                    return $('#' + '{{ formname }}').serialize();
+                },
+                processResults: function (data, page) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.nivel + ' ' + item.nombre + ' (' + item.familia + ')',
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            },
+            minimumInputLength: 3,
+            language: {
+                inputTooShort: function () {
+                    return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                }
+            }
+        });
+
+        $('body').on('change', '#id_titulo', function (e) {
+            e.preventDefault();
+            $("#id_modulo").select2("val", ""); //Si cambia id_titulo el módulo seleccionado debe borrarse
+            $('#datos_modulo').hide();
+            $("#update_ok").show().delay(1500).fadeOut();
+        });
+
+        $('#id_modulo').select2({
+            placeholder: "Escribe parte del nombre del Ciclo Formativo",
+            allowClear: true,
+            ajax: {
+                url: "/ajax_programaciones/",
+                type: 'POST',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    $('#q').val(params.term);
+                    $('#page').val(params.page);
+                    $('#action').val('busca_modulo');
+                    return $('#' + '{{ formname }}').serialize();
+                },
+                processResults: function (data, page) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.nombre + ' (' + item.horas + ' horas)',
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            }, // let our custom formatter work
+            minimumInputLength: 3,
+            language: {
+                inputTooShort: function () {
+                    return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                }
+            }
+        });
+
+        $('body').on('change', '#id_modulo', function (e) {
+            e.preventDefault();
+            $("#update_ok").show().delay(1500).fadeOut();
+            $.post("/ajax_programaciones/", {
+                    action: 'datos_modulo', modulo: $('#id_modulo').val(), programacion: $('#programacion').val()
+                },
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#datos_modulo').show();
+                    $('#datos_modulo_horas').val(data[2]);
+                    $('#datos_modulo_horas').data('materia', data[3]);
+                    $('#datos_modulo_ects').val(data[1]);
+                    $('#datos_modulo_ects').data('materia', data[3]);
+                    $('#datos_modulo_codigo').val(data[0]);
+                    $('#datos_modulo_codigo').data('materia', data[3]);
+                    $('#obj_gen_list').html('');
+                    var $ul = $('<ul/>').css('list-style-type', 'none').appendTo($('#obj_gen_list'));
+                    $.each(data[4], function (key, value) {
+                        var $li = $('<li/>').appendTo($ul);
+                        $('<input />', {
+                            type: 'checkbox',
+                            class: 'obj_generales',
+                            name: 'obj_generales',
+                            value: key
+                        }).appendTo($li);
+                        $('<span />', {text: ' ' + value}).appendTo($li);
+                    });
+                }, 'json');
+        });
+
+
+        $('body').on('change', '.obj_generales', function (e) {
+            var prog = $('#programacion').val();
+            var obj = $(this).val();
+            if ($(this).prop('checked') == true) {
+                $.post("/ajax_programaciones/", {action: 'save_obj_general', prog: prog, obj: obj}, function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+            } else {
+                $.post("/ajax_programaciones/", {action: 'del_obj_general', prog: prog, obj: obj}, function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+            }
+        });
+
+        $('body').on('click', '#add_ud', function (e) {
+            e.preventDefault();
+            $.post("/ajax_programaciones/", {
+                action: 'add_ud',
+                programacion: $('#programacion').val()
+            }, function (data) {
+                $('#list_unidades_didacticas').append(data);
+            });
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-unidad')) {
+                        var ud = accordion.data('ud');
+                        {#                        $(document).scrollTop($('#accordion' + ud).offset().top - 50);#}
+                        $('html, body').animate({
+                            scrollTop: $('#accordion' + ud).offset().top - 50
+                        }, 500);
+                        $.post("/ajax_programaciones/", {action: 'get_ud_contents', ud: ud}, function (data) {
+                            $('#ud' + ud).html(data);
+                        });
+                    }
+                }
+            }
+        });
+
+        $('body').on('click', '.pdf_ud', function (e) {
+            e.preventDefault();
+            var ud = $(this).data('ud');
+            $('#unidad_didactica').val(ud);
+            $('#action').val('pdf_ud');
+            document
+                .{{formname}}.submit();
+        });
+
+        $('body').on('click', '.delete_ud', function (e) {
+            e.preventDefault();
+            var ud = $(this).data('ud');
+            $.post("/ajax_programaciones/", {
+                action: 'delete_ud',
+                ud: ud
+            }, function (data) {
+                $('#accordion' + ud).hide();
+                $.each(data, function (key, value) {
+                    $('#orden' + key).html(value);
+                    $('#input_orden' + key).val(value);
+                });
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('propertychange input', '.pos_ud', function (e) {
+            e.preventDefault();
+            var ud = $(this).data('ud');
+            var orden = $(this).val();
+            $.post("/ajax_programaciones/", {action: 'update_pos_ud', ud: ud, orden: orden}, function (data) {
+                $.each(data, function (key, value) {
+                    $('#orden' + key).html(value);
+                    $('#input_orden' + key).val(value);
+                });
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('propertychange input', '.nombre_ud', function (e) {
+            e.preventDefault();
+            var ud = $(this).data('ud');
+            var nombre = $(this).val();
+            $.post("/ajax_programaciones/", {action: 'update_nombre_ud', ud: ud, nombre: nombre}, function (data) {
+                $('#nombre' + ud).html(data);
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        function aceptar(data) {
+            hide_mensajes();
+            $.each(data['uds_d'], function (key, value) {
+                var n_value = parseInt(data['mod_d'] * value / data['total_d']);
+                $('#duracion' + key).html(n_value);
+                $('#duracion_input' + key).val(n_value);
+            });
+        }
+
+        var ud_global;
+        $('body').on('propertychange input', '.duracion_ud', function (e) {
+            e.preventDefault();
+            var ud = $(this).data('ud');
+            var horas = $(this).val();
+            $.post("/ajax_programaciones/", {action: 'update_duracion_ud', ud: ud, duracion: horas}, function (data) {
+                $('#duracion' + ud).html(data['duracion']);
+                $("#update_ok").show().delay(1500).fadeOut();
+                ud_global = ud;
+                if (data['error']) {
+                    show_mensajes({
+                        title: 'Ajustar horas asignadas', texto: 'Si aceptas las horas asignadas se ajustarán ' +
+                            'proporcionalmente para ajustarse al número de horas totales del módulo.', buttons: {
+                            "Cancelar": function () {
+                                hide_mensajes();
+                            },
+                            "Aceptar": function () {
+                                hide_mensajes();
+                                $.post("/ajax_programaciones/", {
+                                    action: 'adjust_uds_duration',
+                                    ud: ud_global
+                                }, function (data) {
+                                    $.each(data, function (key, value) {
+                                        $('#duracion' + key).html(value);
+                                        $('#duracion_input' + key).val(value);
+                                    });
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                });
+
+                            }
+                        }
+                    });
+                }
+            }, 'json');
+        });
+
+        $('body').on('change', '.resultados_aprendizaje', function (e) {
+            var ra = $(this).val();
+            var ud = $(this).data('ud');
+            if ($(this).prop('checked') == true) {
+                $.post("/ajax_programaciones/", {action: 'ra_objetivos', ra: ra, ud: ud}, function (data) {
+                    var $ul = $('<ul/>').css('list-style-type', 'none').appendTo($('#objetivos' + ud + '_' + ra));
+                    $.each(data[0], function (key, value) {
+                        var $li = $('<li/>').appendTo($ul);
+                        var $input = $('<input />', {
+                            type: 'checkbox',
+                            class: 'obj_ra',
+                            name: 'obj_ra',
+                            'data-ud': ud,
+                            value: key
+                        }).appendTo($li);
+                        $('<span />', {text: ' ' + value}).appendTo($li);
+                        if ($.inArray(parseInt(key), data[1]) > -1) {
+                            $input.attr('checked', true);
+                        }
+                    });
+                });
+            } else {
+                $('#objetivos' + ud + '_' + ra).html('');
+            }
+        });
+
+        $('body').on('change', '.obj_ra', function (e) {
+            var obj = $(this).val();
+            var ud = $(this).data('ud');
+            if ($(this).prop('checked') == true) {
+                $.post("/ajax_programaciones/", {action: 'save_objetivo', obj: obj, ud: ud}, function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+            } else {
+                $.post("/ajax_programaciones/", {action: 'delete_objetivo', obj: obj, ud: ud}, function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+            }
+        });
+
+        $('body').on('click', '.add_contenido_ud', function (e) {
+            e.preventDefault();
+            var ud = $(this).data('ud');
+            $.post("/ajax_programaciones/", {action: 'add_contenido_ud', ud: ud}, function (data) {
+                $('#contenidos_unidad_didactica' + ud).append(data['html']);
+                $("#update_ok").show().delay(1500).fadeOut();
+                $('html, body').animate({
+                    scrollTop: $('#row_contenidos' + data['con_id']).offset().top - 50
+                }, 500);
+            }, 'json');
+        });
+
+        $('body').on('click', '.del_contenido_ud', function (e) {
+            e.preventDefault();
+            var con = $(this).data('contenido');
+            $.post("/ajax_programaciones/", {action: 'del_contenido_ud', con: con}, function (data) {
+                $('#row_contenidos' + con).hide();
+                $.each(data, function (key, value) {
+                    $('#pos_con' + key).val(value);
+                });
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('propertychange input', '.pos_con', function (e) {
+            e.preventDefault();
+            var con = $(this).data('con');
+            var orden = parseInt($(this).val());
+            if (orden > 0) {
+                $.post("/ajax_programaciones/", {action: 'update_pos_con', con: con, orden: orden}, function (data) {
+                    $.each(data, function (key, value) {
+                        $('#pos_con' + key).val(value);
+                    });
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+            } else {
+                $("#update_error").show().delay(1500).fadeOut();
+            }
+        });
+
+        $('body').on('propertychange input', '.nombre_con', function (e) {
+            e.preventDefault();
+            var con = $(this).data('con');
+            var nombre = $(this).val();
+            $.post("/ajax_programaciones/", {action: 'update_nombre_con', con: con, nombre: nombre}, function (data) {
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        var con_global;
+        $('body').on('propertychange input', '.duracion_con', function (e) {
+            e.preventDefault();
+            var con = $(this).data('con');
+            var horas = parseInt($(this).val());
+            if (horas > 0) {
+                $.post("/ajax_programaciones/", {
+                    action: 'update_duracion_con',
+                    con: con,
+                    duracion: horas
+                }, function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    con_global = con;
+                    if (data['error']) {
+                        show_mensajes({
+                            title: 'Ajustar horas asignadas',
+                            texto: 'Si aceptas las horas asignadas se ajustarán ' +
+                                'proporcionalmente para ajustarse al número de horas totales de esta unidad.',
+                            buttons: {
+                                "Cancelar": function () {
+                                    hide_mensajes();
+                                },
+                                "Aceptar": function () {
+                                    hide_mensajes();
+                                    $.post("/ajax_programaciones/", {
+                                        action: 'adjust_cons_duration',
+                                        con: con_global
+                                    }, function (data) {
+                                        $.each(data, function (key, value) {
+                                            $('#duracion_con' + key).val(value);
+                                        });
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    });
+
+                                }
+                            }
+                        });
+                    }
+                }, 'json');
+            } else {
+                $("#update_error").show().delay(1500).fadeOut();
+            }
+        });
+
+
+        var editor_refuerzo_recuperacion = CKEDITOR.inline('refuerzo_recuperacion');
+        var editor_progreso_calificacion = CKEDITOR.inline('progreso_calificacion');
+        var editor_propuesta_formacion = CKEDITOR.inline('propuesta_formacion');
+
+        editor_refuerzo_recuperacion.on('change', function (e) {
+            var texto = e.editor.getData();
+            var prog = {{ programacion.id }};
+            $.post("/ajax_programaciones/", {action: 'save_refuerzo_recuperacion', prog: prog, texto: texto},
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+        });
+        editor_progreso_calificacion.on('change', function (e) {
+            var texto = e.editor.getData();
+            var prog = {{ programacion.id }};
+            $.post("/ajax_programaciones/", {action: 'save_progreso_calificacion', prog: prog, texto: texto},
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+        });
+        editor_propuesta_formacion.on('change', function (e) {
+            var texto = e.editor.getData();
+            var prog = {{ programacion.id }};
+            $.post("/ajax_programaciones/", {action: 'save_propuesta_formacion', prog: prog, texto: texto},
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+        });
+
+
+        $('#file-pdf-o_sign').click(function (e) {
+            e.preventDefault();
+            $('#action').val('pdf');
+            document
+                .{{formname}}.submit();
+        });
+
+        $('#list_sign').click(function (e) {
+            e.preventDefault();
+            document.location.href = "/programaciones/";
+        });
+
+
+    </script>
+{% endblock %}

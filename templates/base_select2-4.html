@@ -1,0 +1,491 @@
+{% load static %}
+{% load my_templatetags %}
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sistemas de gestión aumentada | ASOCIA</title>
+    <link rel="shortcut icon" href="/static/images/favicon3.ico">
+    <link rel="stylesheet" href="/static/css/style.css"/>
+    <link rel="stylesheet" href="/static/foundation-5.5.3/css/foundation.css"/>
+    <link rel="stylesheet" href="/static/foundation-icons/foundation-icons/foundation-icons.css"/>
+    <link rel="stylesheet" href="/static/font-awesome-4.7.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/static/foundation-datepicker/foundation-datepicker.css"/>
+    <link rel="stylesheet" href="/static/foundation-datepicker/foundation-datetimepicker.css"/>
+    {#    <link rel="stylesheet" type="text/css" href="/static/slick/slick.css"/>#}
+
+    {#    <link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css"/>#}
+    <link rel="stylesheet" type="text/css" href="/static/css/wysiwyg-color.css"/>
+
+    {#    <link rel="stylesheet" href="/static/js/jquery-ui-1.10.3/css/custom-theme/jquery-ui-1.10.3.custom.min.css"/>#}
+    {#          type="text/css">#}
+    <link rel="stylesheet" href="/static/wysiwyg.css" type="text/css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+<style>
+    .menu_head {
+        padding: 5px 10px;
+        rondar: pointer;
+        position: relative;
+        margin: 1px;
+        font-weight: bold;
+        color: #008cba !important;
+        font-size: 0.78rem !important; /* 0.77778rem */
+        text-transform: uppercase;
+    }
+
+    .menu_element {
+        margin: 1px;
+        font-weight: bold;
+        color: #008cba !important;
+        font-size: 0.78rem !important; /* 0.77778rem */
+        text-transform: uppercase;
+        padding: 0.19375rem !important;
+        height: auto !important;
+        border-bottom: solid 1px lightgrey;
+    }
+
+    li.heading_off_canvas {
+        color: #008cba;
+        font-size: 0.85rem !important; /* 0.77778rem */
+        font-weight: bold !important;
+        text-transform: uppercase;
+    }
+
+    a.menu_nivel2 {
+        padding: 0.33333px !important;
+        line-height: inherit;
+
+    }
+</style>
+<input type="hidden" name="hay_avisos" id="hay_avisos" value="0">
+
+<div class="show-for-medium-up">
+    <div class="cabecera" id="cabecera_gauss2"> {# cabecera es la clase que pinta el fondo #}
+        <div class="columns large-3 medium-3 small-3 cabecera_personal">
+            {# Establece los tamaños de fuente para que quepan en la cabecera #}
+            <p class="cabecera">
+                {% if request.session.gauser_extra.gauser.sexo == 'H' %}
+                    <i class="fa fa-male fa-fw"></i>
+                {% else %}
+                    <i class="fa fa-female fa-fw"></i>
+                {% endif %}{{ request.session.gauser_extra.gauser.get_full_name }}</p>
+
+            <p class="cabecera" title="{% for subentidad in request.session.gauser_extra.subentidades.all %}
+                {{ subentidad.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}"><i
+                    class="fa fa-users fa-fw"></i>
+                {{ request.session.gauser_extra.subentidades.all.0.nombre }}
+                {% if request.session.gauser_extra.subentidades.all|length > 1 %}...{% endif %}</p>
+
+            {% if request.session.gauser_extra.cargos.all|length > 0 %}
+                <p class="cabecera" title="{% for cargo in request.session.gauser_extra.cargos.all %}
+                    {{ cargo.cargo }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                    <i class="fa fa-briefcase fa-fw"></i> {{ request.session.gauser_extra.cargos.all.0.cargo }}
+                    {% if request.session.gauser_extra.cargos.all|length > 1 %}...{% endif %}</p>
+            {% endif %}
+        </div>
+        <div class="columns large-6 medium-6 small-6 cabecera_gauss2" style="padding-top:3px;height:43px;">
+            <div class="row">
+                <div class="columns large-4 medium-4 small-4" style="padding-top:3px;height:43px;">
+                    <img src="/static/images/logo_gauss.png" id="logo_gauss" align="right"/>
+                </div>
+                <div class="columns large-8 medium-8 small-8">
+                    <div class="row" style="margin-top: -7px;">
+                        {% with o=request.session.gauser_extra.ronda.entidad.organization %}
+                            <span class="cabecera">Gestión Interna {% if o.id == 1 %}
+                                del Grupo Scout
+                            {% elif o.id == 7 %}
+                                del Centro de Estudios
+                            {% else %}{{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}{% endif %}</span>
+                        {% endwith %}
+                    </div>
+                    <div class="row" style="margin-top: -10px;">
+                        <p class="cabecera" title="Datos de la entidad">
+                            <a class="cabecera" href="{{ request.session.gauser_extra.ronda.entidad.web }}">
+                                <i class="fa fa-info-circle pulsar"></i>
+                                {{ request.session.gauser_extra.ronda.entidad.name }}
+                                {% if request.session.gauser_extra.ronda.entidad.code < 10000 %}
+                                    ({{ request.session.gauser_extra.ronda.entidad.code }}) {% endif %}
+                                - {{ request.session.gauser_extra.ronda.nombre }}
+                                {% if request.session.gauser_extra.ronda.entidad.ronda != request.session.ronda %}
+                                    <span style="color:red;font-weight: 800;"> <i
+                                            class="fa fa-long-arrow-right"></i> {{ request.session.ronda.nombre }}</span>
+                                {% endif %}
+                            </a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="columns large-3 medium-3 small-3" style="padding-top:3px;height:43px;">
+            <a href="{{ request.session.gauser_extra.ronda.entidad.organization.web }}">
+                <img src="/media/{{ request.session.gauser_extra.ronda.entidad.organization.anagrama }}"
+                     align="right" class="cabecera"/></a>
+        </div>
+    </div>
+</div>
+
+
+<div class="off-canvas-wrap" data-offcanvas>
+    <div class="sticky" id="barra_iconos_menu">
+        <nav class="top-bar" data-topbar>
+            <ul class="title-area">
+                <li class="name show-for-medium-down">
+                    <h1>
+                        <a class="left-off-canvas-toggle" href="#">
+                            <i style="font-size: 180%;vertical-align: middle;" class="fa fa-bars"></i>
+                        </a>
+                    </h1>
+                </li>
+                <li class="toggle-topbar">
+                    <a href=""><i style="font-size: 180%;vertical-align: middle;" class="fa fa-cogs"></i>&nbsp;</a>
+                </li>
+            </ul>
+
+            <section class="top-bar-section">
+                {#                <ul class="title-area">#}
+                {#                    <li class="name spinner" id="ajax-loader" style="display:none;">#}
+                {#                        <h1 style="color: white;">Procesando&nbsp;<i class="fa fa-spinner fa-pulse"></i></h1>#}
+                {#                    </li>#}
+                {#                </ul>#}
+                <!-- Right Nav Section -->
+                <ul class="right">
+                    <li class="has-form" style="z-index: 1000;padding-right: 100px;padding-top: 5px;">
+                        <span id="SecondsUntilExpire" style="color: #FFFFFF;font-weight: 700"></span>
+                    </li>
+                    <li class="divider"></li>
+                    {% for icono in iconos %}
+                        {% if request.session.gauser_extra|has_permiso:icono.permiso %}
+                            {% if icono.tipo == 'button' %}
+                                <li data-tooltip class="has-form has-tip hide" id="{{ icono.nombre }}_li"
+                                    data-options="disable_for_touch:true" title="{{ icono.title }}"><a
+                                        id="{{ icono.nombre }}_sign" href="#"
+                                        class="button  disabled radius"><i
+                                        class="fa fa-{{ icono.nombre }}"></i><strong> {{ icono.texto }}</strong></a>
+                                </li>
+                            {% elif icono.tipo == 'search' %}
+                                <li class="has-form">
+                                    <div class="large-12 medium-12 small-12 columns">
+                                        <input size="25" style="margin-top: 5px;" id="input_search_select2"
+                                               type="text" placeholder="<i class='fa fa-search'></i> {{ icono.title }}">
+                                    </div>
+                                </li>
+                            {% elif icono.tipo == 'button2' %}
+                                <li data-tooltip class="has-form has-tip hide" id="{{ icono.nombre }}_li"
+                                    data-options="disable_for_touch:true" title="{{ icono.title }}"><a
+                                        id="{{ icono.nombre }}_sign" href="#"
+                                        class="button disabled radius"
+                                ><i class="fa fa-{{ icono.nombre }}"><span
+                                        style="font-size:70%;"><i class="fa fa-{{ icono.nombre2 }}"></i></span></i>
+                                    <strong> {{ icono.texto }}</strong>
+                                </a>
+                                </li>
+                            {% elif icono.tipo == 'select' %}
+                                <li class="has-dropdown">
+                                    <a class="secondary button round" href="#"><i class="fa fa-filter"></i><strong>
+                                        Filtrar</strong> </a>
+                                    <ul class="dropdown">
+                                        {% for option in icono.options %}
+                                            <li><a id="option___{{ option.0 }}">{{ option.1 }}</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    <li class="divider"></li>
+                    <li><a href="/mis_datos/"><i class="fa fa-user"></i> <strong>Mis datos</strong></a></li>
+                    <li><a href="/"><i class="fa fa-sign-out"></i> <strong>Salir</strong></a></li>
+                </ul>
+            </section>
+        </nav>
+    </div>
+
+    <div class="inner-wrap">
+        <aside class="left-off-canvas-menu">
+            {% with g_e=request.session.gauser_extra %}
+                <ul class="off-canvas-list">
+                    {% if g_e.gauser.username == 'gauss' %}
+                        <li class="heading_off_canvas">GAUSS</li>
+                        <li><a class="menu_nivel2" href="/actualizar_menus_permisos/">
+                            &nbsp;&nbsp;Actualizar los configuration.py</a></li>
+                        <li><a class="menu_nivel2" href="/asignar_menus_entidad/">
+                            &nbsp;&nbsp;Menús de la entidad</a></li>
+                    {% endif %}
+                    {% for menu in g_e.ronda.entidad|menus %}
+                        {% if g_e|has_permiso:menu.menu_default.code_menu %}
+                            <li class="heading_off_canvas">{{ menu.texto_menu }}</li>
+                            {% for child in menu.children %}
+                                {% if g_e|has_permiso:child.menu_default.code_menu %}
+                                    <li><a class="menu_nivel2" href="/{{ child.menu_default.href }}">
+                                        &nbsp;&nbsp;{{ child.texto_menu }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% endwith %}
+        </aside>
+
+        <div class="columns large-2 hide-for-medium hide-for-small">
+            <nav>
+                {% with g_e=request.session.gauser_extra %}
+                    <div id="side" style="padding-top:20px;">
+
+                        <ul id="contenido_menu_lateral" class="accordion ul_menu" data-accordion>
+                            {% if g_e.gauser.username == 'gauss' %}
+                                <li class="accordion-navigation">
+                                <a href="#gauss_menu"
+                                   class="menu_head">GAUSS</a>
+
+                                <div id="gauss_menu" class="content">
+                                    <a href="/actualizar_menus_permisos/" class="">
+                                        <div class="menu_element">
+                                            Actualizar los configuration.py
+                                        </div>
+                                    </a>
+                                    <a href="/asignar_menus_entidad/" class="">
+                                        <div class="menu_element">
+                                            Menús de la entidad
+                                        </div>
+                                    </a>
+                                </div>
+                            {% endif %}
+                            {% for menu in g_e.ronda.entidad|menus %}
+                                {% if g_e|has_permiso:menu.menu_default.code_menu %}
+                                    <li class="accordion-navigation">
+                                        <a href="#{{ menu.menu_default.code_menu }}"
+                                           class="menu_head">{{ menu.texto_menu }}</a>
+
+                                        <div id="{{ menu.menu_default.code_menu }}" class="content">
+                                            {% for child in menu.children %}
+                                                {% if g_e|has_permiso:child.menu_default.code_menu %}
+                                                    <a href="/{{ child.menu_default.href }}/" class="">
+                                                        <div class="menu_element">
+                                                            {{ child.texto_menu }}
+                                                        </div>
+                                                    </a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endwith %}
+            </nav>
+        </div>
+
+        <div class="Principal columns large-10 medium-12 small-12" id="Principal">
+            <div class="Contenido" id="Contenido" style="min-height: 500px;">
+                {% block contenido %}{% endblock %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div id="f_deshabilitada" class="reveal-modal small" data-reveal>
+    <h3>Función deshabilitada</h3>
+
+    <p class="lead">Los botones con el color que acabas de pulsar están deshabilitados.</p>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<div id="reveal_modal_aviso" class="reveal-modal small" data-reveal>
+    <div id="reveal_lista_avisos"></div>
+    <a class="close-reveal-modal reveal_modal_aviso">&#215;</a>
+    <a id="aceptar_reveal_modal_aviso" class="button secondary">Aceptar</a>
+</div>
+
+<div id="faltan_campos" class="reveal-modal small" data-reveal>
+    <h3>Faltan campos por rellenar</h3>
+
+    <ul class="lead" id="texto_faltan_campos"></ul>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<div id="mensajes_gauss" class="reveal-modal" data-reveal>
+    <h3 id="mensajes_gauss_title"></h3>
+
+    <ul class="lead" id="mensajes_gauss_texto"></ul>
+    <p id="mensajes_gauss_bajo_texto"></p>
+
+    <p id="mensajes_gauss_buttons"></p>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<div style="color:red;position:fixed;right: 20px;top:40px;display: none;" id="update_error">
+    <i class="fa fa-warning fa-5x"></i>
+</div>
+<div style="color:green;position:fixed;right: 20px;top:40px;display: none;" id="update_ok">
+    <i class="fa fa-check fa-5x"></i>
+</div>
+<div style="color:green;position:fixed;right: 20px;top:40px;display: none;" id="ajax-loader">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+</div>
+
+<!-- Footer -->
+
+{#<footer class="row">#}
+{#    <div class="pagination-centered">#}
+{#        <ul class="pagination">#}
+{#            <li><a href="/politica_privacidad/">Política de privacidad</a></li>#}
+{#            <li>|</li>#}
+{#            <li><a href="/aviso_legal/">Aviso legal</a></li>#}
+{#            <li>|</li>#}
+{#            <li><a href="mailto:info@gaumentada.es"><i class="fi fi-mail"></i> info@gaumentada.es</a></li>#}
+{#        </ul>#}
+{#    </div>#}
+{#</footer>#}
+
+
+<script src="/static/foundation-5.5.3/js/vendor/jquery.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui-1.10.3/js/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="/static/foundation-5.5.3/js/vendor/modernizr.js"></script>
+<script src="/static/js/jquery.cookie.js"></script>
+<script src="/static/js/base_gauss.js"></script>
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery.form.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery.fileDownload.js"></script>
+<script type="text/javascript" src="/static/js/gauss_editor.js"></script>
+{#<script src="/static/foundation-5.5.3/js/foundation.min.js"></script>#}
+<script src="/static/foundation-5.5.3/js/foundation/foundation.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.abide.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.accordion.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.alert.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.dropdown.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.offcanvas.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.reveal.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.slider.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.tab.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.tooltip.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation/foundation.topbar.js"></script>
+<script src="/static/js/wysihtml5_advanced.js"></script>
+<script src="/static/js/wysihtml5-0.4.0pre.js"></script>
+<script src="/static/foundation-datepicker/foundation-datepicker.js"></script>
+<script src="/static/foundation-datepicker/foundation-datetimepicker.js"></script>
+
+{#<link href="/static/select2/select2-foundation5.css" rel="stylesheet"/>#}
+{#<script src="/static/select2/select2.js"></script>#}
+{#<script src="/static/select2/select2_locale_es.js"></script>#}
+
+<link href="/static/select2-4.0.1/dist/css/select2-4.0-foundation5.css" rel="stylesheet"/>
+{#<script src="/static/select2-4.0.1/dist/js/select2.full.js"></script>#}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
+<script src="/static/select2-4.0.1/dist/js/i18n/es.js"></script>
+
+
+<script src="/static/js/jquery.MultiFile.js"></script>
+<script src="/static/ckeditor/ckeditor.js"></script>
+
+<script>
+    charge_on_ready();
+    CKEDITOR.disableAutoInline = true;
+    $('.ui-helper-hidden-accessible').css('display', 'none');
+    $('.ui-autocomplete').on('blur', '#barra_iconos_menu', function () {
+        this.addClass('f-dropdown')
+    });
+    $(document).foundation({
+        abide: {
+            live_validate: true,
+            focus_on_invalid: true,
+            error_labels: true, // labels with a for="inputId" will recieve an `error` class
+            timeout: 1000,
+            patterns: {
+                datetime: /([0-3][0-9])\/([0-1][0-9])\/([0-2][0-9]{3})\s([0-2][0-9])\:([0-5][0-9])/,
+                alpha_numeric: /^[a-zA-Z0-9]+$/
+            }
+        }
+    });
+
+
+    $(document)
+        .foundation({
+            abide: {
+                patterns: {
+                    dashes_only: /^[0-9-]*$/,
+                    ip_address: /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/
+                }
+            }
+        });
+
+
+    {# $('.disabled').on('click', function () {#}
+    {#    if ($(this).hasClass('disabled')) {#}
+    {#        $('#f_deshabilitada').foundation('reveal', 'open');#}
+    {#    }#}
+    {# });#}
+
+    {# Esta función necesita del input hidden #hay_avisos #}
+    show_avisos().done(function (r) {
+        if (r) {
+            $('#hay_avisos').val(r);
+            $('#hay_avisos').trigger('change');
+        }
+    });
+
+
+    $('#aceptar_reveal_modal_aviso').click(function () {
+        $('#reveal_modal_aviso').foundation('reveal', 'close');
+        $.post("/borrar_avisos/", {}, function (data) {
+            if (data != '') {
+                $(location).attr('href', data);
+            }
+        });
+    });
+    $('.lupa_').click(function (e) {
+        e.preventDefault();
+        show_mensajes({texto: "Comienza a escribir sobre el cuadro y aparecerán los resultados de búsqueda."})
+    });
+
+    {#    --------------------------------------------------------------------------------------------   #}
+    {#    ------------------------------Control del tiempo de sesión----------------------------------   #}
+    {#    --------------------------------------------------------------------------------------------   #}
+    var IDLE_TIMEOUT = 6000; //seconds
+    var CHECK_TIME = 5000; //miliseconds
+    var ORIGINAL_CHECK_TIME = CHECK_TIME;
+    var _idleSecondsCounter = 0;
+    var set_interval_id = window.setInterval(CheckIdleTime, CHECK_TIME);
+
+    function re_adjust_check_time() {
+        _idleSecondsCounter = 0;
+        CHECK_TIME = ORIGINAL_CHECK_TIME;
+        window.clearInterval(set_interval_id);
+        set_interval_id = window.setInterval(CheckIdleTime, CHECK_TIME);
+        var oPanel = document.getElementById("SecondsUntilExpire");
+        if (oPanel) {
+            oPanel.innerHTML = "";
+        }
+    }
+
+    function CheckIdleTime() {
+        window.console.log('tiempo:' + IDLE_TIMEOUT);
+        _idleSecondsCounter = _idleSecondsCounter + CHECK_TIME / 1000;
+        var oPanel = document.getElementById("SecondsUntilExpire");
+        if (oPanel) {
+            oPanel.innerHTML = "Expira en " + (IDLE_TIMEOUT - _idleSecondsCounter) + "s";
+        }
+        if (_idleSecondsCounter >= IDLE_TIMEOUT - 11 && CHECK_TIME > 1000) {
+            CHECK_TIME = 1000;
+            window.clearInterval(set_interval_id);
+            set_interval_id = window.setInterval(CheckIdleTime, CHECK_TIME);
+            window.console.log(CHECK_TIME);
+        }
+        if (_idleSecondsCounter >= IDLE_TIMEOUT) {
+            document.location.href = "/";
+        }
+    }
+
+    document.onclick = re_adjust_check_time;
+    document.onmousemove = re_adjust_check_time;
+    document.onkeypress = re_adjust_check_time;
+</script>
+{% block final %}{% endblock %}
+</body>
+</html>
+

@@ -1,0 +1,105 @@
+{% load entidades_extras %}
+<div class="row">
+    {% if not reparacion.resuelta %}
+        {% if reparacion.detecta == g_e %}
+            <div class="columns large-2">
+                <label><b>Tipo</b><select class="tipo" data-id="{{ reparacion.id }}">
+                    <option value="inf" {% if reparacion.tipo == 'inf' %}selected{% endif %}>
+                        Informática
+                    </option>
+                    <option value="fon" {% if reparacion.tipo == 'fon' %}selected{% endif %}>
+                        Fontanería
+                    </option>
+                    <option value="ele" {% if reparacion.tipo == 'ele' %}selected{% endif %}>
+                        Electricidad
+                    </option>
+                    <option value="alb" {% if reparacion.tipo == 'alb' %}selected{% endif %}>
+                        Albañilería
+                    </option>
+                    <option value="car" {% if reparacion.tipo == 'car' %}selected{% endif %}>
+                        Carpintería
+                    </option>
+                    <option value="gen" {% if reparacion.tipo == 'gen' %}selected{% endif %}>
+                        General
+                    </option>
+                </select> </label>
+            </div>
+        {% endif %}
+    {% endif %}
+    <div class="columns large-6">
+        {% if reparacion.detecta == g_e and not reparacion.resuelta %}
+            <label><b>Lugar</b><input type="text" class="lugar" data-id="{{ reparacion.id }}"
+                                      value="{{ reparacion.lugar }}"> </label>
+        {% else %}
+            <label><b>Lugar </b></label> {{ reparacion.lugar }}
+        {% endif %}
+    </div>
+    <div class="columns large-2 end" style="text-align: center;">
+        <label><b>¿Solucionado?</b></label>
+        {% with permiso="controla_reparaciones_"|add:reparacion.tipo %}
+            {% if g_e|has_permiso:permiso or g_e|has_permiso:"controla_reparaciones" %}
+                <b class="center"><a class="resuelta" data-id="{{ reparacion.id }}"
+                                     id="resuelta{{ reparacion.id }}">{% if reparacion.resuelta %}Sí{% else %}
+                    No{% endif %}</a></b>
+            {% else %}
+                <b>{% if reparacion.resuelta %}Sí{% else %}No{% endif %}</b>
+            {% endif %}
+        {% endwith %}
+
+    </div>
+    {% if not reparacion.resuelta %}
+        {% if reparacion.detecta == g_e or g_e|has_permiso:'borra_solicitud_reparacion' %}
+            <div class="columns large-2">
+                <a class="button borrar_solicitud" data-id="{{ reparacion.id }}">Borrar</a>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        {% if reparacion.detecta == g_e and not reparacion.resuelta %}
+            <label><b>Descripción del problema</b>
+                <div contenteditable="true" class="ckeditor describir_problema"
+                     data-id="{{ reparacion.id }}">
+                    {% autoescape off %}{{ reparacion.describir_problema }}{% endautoescape %}
+                </div>
+            </label>
+        {% else %}
+            <hr>
+            <label><b>Descripción del problema</b></label> {% autoescape off %}
+            {{ reparacion.describir_problema }}
+        {% endautoescape %}
+        {% endif %}
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="columns large-12">
+        {% with permiso="controla_reparaciones_"|add:reparacion.tipo %}
+            {% if g_e|has_permiso:permiso and not reparacion.resuelta %}
+                <label><b>Descripción de la solución</b>
+                    <div contenteditable="true" class="ckeditor describir_solucion"
+                         data-id="{{ reparacion.id }}">
+                        {% autoescape off %}{{ reparacion.describir_solucion }}{% endautoescape %}
+                    </div>
+                </label>
+            {% else %}
+                <label><b>Descripción de la solución</b></label> {% autoescape off %}
+                {{ reparacion.describir_solucion }}
+            {% endautoescape %}
+            {% endif %}
+        {% endwith %}
+    </div>
+</div>
+<br>
+{% if reparacion.detecta == g_e and not reparacion.comunicado_a_reparador %}
+    <div class="row" id="enviar_mensaje{{ reparacion.id }}">
+    <div class="columns large-12">
+            <b>Esta solicitud de reparación se borrará automáticamente si no pulsas "Aceptar"</b>
+        </div>
+        <div class="columns large-12">
+            <a class="button enviar_mensaje" data-id="{{ reparacion.id }}">Aceptar</a>
+        </div>
+    </div>
+{% endif %}

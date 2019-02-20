@@ -1,0 +1,36 @@
+{% load my_templatetags %}
+
+
+<script>
+$(".dialog_funciones").live('mouseover', function (){
+    var id = $(this).attr('id').split('___')[1]
+    $( "#dialog_funciones___"+id ).dialog("open"); });
+$(".dialog_funciones").live('mouseout', function (){
+    var id = $(this).attr('id').split('___')[1]
+    $( "#dialog_funciones___"+id ).dialog("close"); });
+</script>
+
+
+<p class="color2">Participantes:</p>
+  <p>
+    {% for participante in participantes %}
+      {% if forloop.last %} y {% elif forloop.first %} {% else %}, {% endif %}
+      {{participante.educando.gauser.get_full_name}} {% if participante.observaciones and request.session.gauser_extra|has_perfiles:'75' and request.session.gauser_extra.subentidad in participante.actividad.subentidades.all %} ({% autoescape off %}{{participante.observaciones}}{% endautoescape %}) {% endif %}
+    {% endfor %}
+  </p>
+
+<p class="color2">Colaboradores:</p>
+  <p>
+    {% for colaborador in colaboradores %}
+      {% if forloop.last %} y {% elif forloop.first %} {% else %}, {% endif %}      
+	{% if colaborador.funciones %}
+	  <div id="dialog_funciones___{{colaborador.id}}" title="Funciones asignadas a {{colaborador.colaborador.gauser.get_full_name}}">
+	    {% autoescape off %}{{colaborador.funciones}}{% endautoescape %}
+	  </div>
+	  <script> $( "#dialog_funciones___{{colaborador.id}}" ).dialog({ autoOpen: false, resizable: false, width:'auto',});</script>
+	{% endif %}
+      <span id="colaborador_funciones___{{colaborador.id}}" class="dialog_funciones">{{colaborador.colaborador.gauser.get_full_name}}</span>
+    {% endfor %}
+  </p>
+</table>
+

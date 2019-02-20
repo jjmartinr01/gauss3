@@ -1,0 +1,25 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sistemas de gestión aumentada | ASOCIA</title>
+    <link rel="shortcut icon" href="/static/images/favicon3.ico">
+</head>
+<body>
+
+<div style="margin-left:auto;margin-right: auto;margin-top: 100px;">
+    <h1 style="text-align: center;">La página web solicitada no existe</h1>
+    {% if posibles|length > 0 %}
+        <h3 style="text-align: center;">A lo mejor quisiste escribir:</h3>
+        {% for posible in posibles %}
+            <h3 style="text-align: center;">
+                <a href="{% if request.is_secure %}https{% else %}http{% endif %}://{{ request.META.HTTP_HOST }}/{{ posible }}">
+                    {% if request.is_secure %}https{% else %}http{% endif %}://{{ request.META.HTTP_HOST }}/{{ posible }}</a>
+            </h3>
+        {% endfor %}
+    {% endif %}
+</div>
+
+</body>
+</html>

@@ -1,0 +1,105 @@
+{% load entidades_extras %}
+<div class="row">
+    <div class="columns large-3">
+        <label><b>Tutor</b>
+            <select class="tutor" id="tutor{{ expediente.id }}" data-id="{{ expediente.id }}">
+                <option value="">--------</option>
+                {% for d in docentes %}
+                    <option value="{{ d.id }}"
+                            {% if d == expediente.expedientado.gauser_extra_estudios.tutor %}selected{% endif %}>{{ d.gauser.last_name }}, {{ d.gauser.first_name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+<div class="columns large-3">
+        <label title="Director del centro educativo"><b>Director</b>
+            <input type="text" class="configura" data-campo="director" data-id="{{ expediente.id }}"
+                   value="{{ expediente.director }}">
+        </label>
+    </div>
+    <div class="columns large-3">
+        <label title="Presidente de la comisión de absentismo"><b>Presidente</b>
+            <input type="text" class="configura" data-campo="presidente" data-id="{{ expediente.id }}"
+                   value="{{ expediente.presidente }}">
+        </label>
+    </div>
+    <div class="columns large-3">
+        <ul class="button-group right">
+            <li title="Generar pdf con el informe de absentismo">
+                <a href="#" class="button pdf_absentismo" data-id="{{ expediente.id }}"><i
+                        class="fa fa-file-pdf-o"></i>
+                    PDF</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+
+
+{#    <div class="columns large-4">#}
+{#        <label title="Curso en el que está matriculado el alumno/a">Curso#}
+{#            <input type="text" class="configura" data-campo="curso" data-id="{{ expediente.id }}"#}
+{#                   value="{{ expediente.curso }}">#}
+{#        </label>#}
+{#    </div>#}
+</div>
+
+<div class="row">
+    <div class="columns large-3">
+        <label title="¿Está matriculado/a este año?">¿Está matriculado/a?</label>
+        <a class="matricula" data-id="{{ expediente.id }}" id="matricula{{ expediente.id }}">
+            {% if expediente.matricula %}Sí{% else %}No{% endif %}
+        </a>
+    </div>
+    <div class="columns large-3">
+        <label title="Curso escolar en el que estuvo matriculado/a por última vez">Curso última matrícula
+            <input type="text" class="configura" data-campo="uce" data-id="{{ expediente.id }}"
+                   value="{{ expediente.uce }}" placeholder="2016/2017">
+        </label>
+    </div>
+    <div class="columns large-3">
+        <label title="Etapa educativa en el que estuvo matriculado el alumno por última vez">Última etapa
+            <input type="text" class="configura" data-campo="etapa_uce" data-id="{{ expediente.id }}"
+                   value="{{ expediente.etapa_uce }}">
+        </label>
+    </div>
+<div class="columns large-3">
+        <label title="Último curso en el que estuvo matriculado. Ejemplo: 1º ESO">Curso matriculado
+            <input type="text" class="configura" data-campo="curso_uce" data-id="{{ expediente.id }}"
+                   value="{{ expediente.curso_uce }}">
+        </label>
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="columns large-6">
+        <label title="Centro escolar en el que estuvo matriculado/a por última vez">Centro última matrícula
+            <input type="text" class="configura" data-campo="centro_uce" data-id="{{ expediente.id }}"
+                   value="{{ expediente.centro_uce }}">
+        </label>
+    </div>
+    <div class="columns large-6">
+        <label title="Localidad en la que se encuentra el centro donde estuvo matriculado el alumno por última vez">Localidad
+            última etapa
+            <input type="text" class="configura" data-campo="localidad_uce" data-id="{{ expediente.id }}"
+                   value="{{ expediente.localidad_uce }}">
+        </label>
+    </div>
+</div>
+
+<p><b>Actuaciones del tutor/a, orientador/a y jefatura de estudios:</b></p>
+<div id="actuaciones{{ expediente.id }}">
+    {% for actuacion in expediente.actuacion_set.all %}
+        {#        {% if not forloop.first %}<hr>{% endif %}#}
+        {% include 'absentismo_accordion_content_actuacion.html' %}
+    {% endfor %}
+</div>
+<div class="row">
+    <div class="columns large-5">
+        {% if g_e|has_permiso:'crea_actuacion_absentismo' %}
+            <a href="#" class="button add_actuacion_absentismo" data-id="{{ expediente.id }}"><i class="fa fa-plus"></i>
+                Añadir actuación</a>
+        {% endif %}
+    </div>
+</div>

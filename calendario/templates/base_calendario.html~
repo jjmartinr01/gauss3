@@ -1,0 +1,72 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css" />
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui-timepicker-addon.css" />
+<script type="text/javascript" src="/static/js/jquery-ui-timepicker-addon.js"></script>
+<style>
+  li { margin-left:20px; }
+</style>
+{% endblock %}
+
+{% block ready %}
+  visualizar(['ok_sign','plus_sign','calendar_sign','file_pdf']);
+  $( "#plus_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Crear un nuevo evento');
+  $( "#file_pdf" ).removeClass('no_navegar').addClass('navegar').attr('title','Genera PDF con tus eventos');
+
+  $.cleditor.defaultOptions.controls = "bold underline italic strikethrough | bullets numbering  | undo redo";
+  
+  $('#plus_sign').click(function () { if( $(this).hasClass('navegar') ) {
+    $( '#file_pdf' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( '#plus_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Grabar el nuevo evento');
+    $( "#calendar_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Volver a ver el calendario');
+    $('#action').val('crea_acontecimiento');
+    $.post("/crear_acontecimiento/", {},function(data) { $('#div_calendario').html(data);});}});
+
+  $('#calendar_sign').click(function () { if( $(this).hasClass('navegar') ) {
+    $( '#file_pdf' ).removeClass('no_navegar').addClass('navegar').attr('title','Genera PDF con tus eventos');
+    $( '#plus_sign' ).removeClass('no_navegar').addClass('navegar').attr('title','');
+    $( "#ok_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( "#calendar_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $('#action').val('muestra_calendario');
+    $.post("/muestra_calendario/", {},function(data) { $('#div_calendario').html(data);});}});
+
+
+  $('#ok_sign').click(function () {  if( $(this).hasClass('navegar') ) {
+      if ($('#action').val() == 'mod_recordatorio'){
+	  document.{{formname}}.submit();
+      }else{
+	  var nom = $('#id_nombre').val().length > 3;
+	  var ini = $('#id_inicio').val().length > 3;
+	  var fin = $('#id_fin').val().length > 3;
+	  if (nom && ini && fin){
+	    $('#id_describir').val(removeWordTags ($('#id_describir').val()));
+	    document.{{formname}}.submit();}
+	  else {
+	    var texto = '';
+	    if( !nom ) { texto = texto + '<li>Es necesario escribir un nombre para el evento.</li>';}
+	    if( !ini ) { texto = texto + '<li>Debes señalar la fecha de inicio.</li>';}
+	    if( !fin ) { texto = texto + '<li>Debes señalar la fecha de finalización.</li>';}
+	    $( "#faltan_campos" ).html(texto);
+	    $( "#faltan_campos" ).dialog( "open" );}}}});
+
+
+
+  $("#file_pdf").click(function() { if( $(this).hasClass('navegar') ) {
+      $('#action').val('pdf_documentos');
+      document.{{formname}}.submit();}});
+
+{% endblock %}
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+{{cal}}
+    <input type="hidden" name="action" id="action" value="">
+    <div style="float:center;" id="div_calendario">
+	{% include "calendario.html" %} 
+    </div>
+</form>
+{% endblock %}

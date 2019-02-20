@@ -1,0 +1,249 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        .opera {
+            margin-right: 20px;
+            cursor: pointer;
+            color: #008CBA;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .opera:hover {
+            -webkit-transform: scale(1.7, 1.7);
+            -webkit-transition-timing-function: ease-out;
+            -webkit-transition-duration: 150ms;
+            -moz-transform: scale(1.7, 1.7);
+            -moz-transition-timing-function: ease-out;
+            -moz-transition-duration: 150ms;
+            position: relative;
+            z-index: 99;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_programacion" name="id_programacion" value="">
+
+        <div id="div_programaciones_seleccionadas"></div>
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Programaciones Didácticas</strong></h4>
+        </div>
+
+        <div class="row">
+            <div class="columns large-6">
+                <label>Programaciones de:</label>
+                <select name="curso" id="curso">
+                    {% for c in cursos %}
+                        <option value="{{ c.id }}" {% if c.clave_ex == curso_clave_ex %}selected{% endif %}>{{ c.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="columns large-6">
+                <label>Creadas en el curso escolar:</label>
+                <select name="ronda" id="ronda">
+{#                    <option value="">Elige un curso</option>#}
+                    {% for r in rondas %}
+                        <option value="{{ r.id }}" {% if r == ronda %}selected{% endif %}>{{ r.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+{#            <div class="columns large-2">#}
+{#                <label>&nbsp;</label>#}
+{#                <a class="button tiny" id="fasdfaf"><i class="fa fa-search"></i> Buscar</a>#}
+{#            </div>#}
+        </div>
+
+        <br><br>
+{#        <dl class="accordion" data-accordion id="list_programaciones_selected"></dl>#}
+
+{#        <dl class="accordion" data-accordion id="list_programaciones_borradores">#}
+{#            {% for programacion in borradores %}#}
+{#                {% include 'programacion_append.html' %}#}
+{#            {% endfor %}#}
+{#        </dl>#}
+
+        <dl class="accordion" data-accordion id="list_programaciones">
+            {% for programacion in programaciones %}
+                {% include 'programacion_append.html' %}
+            {% endfor %}
+        </dl>
+{#        {% if antiguas|length > 0 %}#}
+{#            <h3>Programaciones de cursos anteriores</h3>#}
+{#            <dl class="accordion" data-accordion id="list_programaciones_antiguas">#}
+{#                {% for programacion in antiguas %}#}
+{#                    {% include 'programacion_append.html' %}#}
+{#                {% endfor %}#}
+{#            </dl>#}
+{#        {% endif %}#}
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('#curso').change(function () {
+            var curso = $(this).val();
+            var ronda = $('#ronda').val();
+            if (parseInt(curso) > 0) {
+                window.location.href = "/programaciones/?curso=" + curso + "&ronda=" + ronda;
+            }
+        });
+
+        $('#ronda').change(function () {
+            var curso = $('#curso').val();
+            var ronda = $(this).val();
+            if (parseInt(ronda) > 0) {
+                window.location.href = "/programaciones/?curso=" + curso + "&ronda=" + ronda;
+            }
+        });
+
+        {#$('#select_programacion').select2({#}
+        {#    placeholder: "Escribe parte de texto para buscar una programación",#}
+        {#    allowClear: true,#}
+        {#    ajax: {#}
+        {#        url: "/ajax_programaciones/",#}
+        {#        type: 'POST',#}
+        {#        dataType: 'json',#}
+        {#        delay: 250,#}
+        {#        data: function (params) {#}
+        {#            $('#q').val(params.term);#}
+        {#            $('#page').val(params.page);#}
+        {#            $('#action').val('busca_programacion');#}
+        {#            return $('#' + '{{ formname }}').serialize();#}
+        {#        },#}
+        {#        processResults: function (data, page) {#}
+        {#            return {#}
+        {#                results: $.map(data, function (item) {#}
+        {#                    return {#}
+        {#                        text: item.text,#}
+        {#                        id: item.id#}
+        {#                    }#}
+        {#                })#}
+        {#            };#}
+        {#        },#}
+        {#        cache: true#}
+        {#    },#}
+        {#    escapeMarkup: function (markup) {#}
+        {#        return markup;#}
+        {#    }, // let our custom formatter work#}
+        {#    minimumInputLength: 3,#}
+        {#    language: {#}
+        {#        inputTooShort: function () {#}
+        {#            return "Introduce al menos 3 caracteres para iniciar búsqueda";#}
+        {#        }#}
+        {#    }#}
+        {#            });#}
+
+
+        {#$('#select_programacion').change(function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var id = $(this).val();#}
+        {#    if (id) {#}
+        {#        $('#id_programacion').val(id);#}
+        {#        $('#action').val('programacion_append');#}
+        {#        $.post("/ajax_programaciones/", $('#' + '{{ formname }}').serialize(), function (data) {#}
+        {#            var id = $('#id_programacion').val();#}
+        {#            $('#list_programaciones_selected').append(data);#}
+        {#            $("#select_programacion").val(null).trigger('change');#}
+        {#            $('<input />', {#}
+        {#                type: 'hidden',#}
+        {#                name: 'programaciones_seleccionadas',#}
+        {#                value: id,#}
+        {#                id: 'prog_hidden' + id#}
+        {#            })#}
+        {#                .appendTo('#div_programaciones_seleccionadas');#}
+        {#        });#}
+        {#    }#}
+        {#            });#}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('prog_contenido')) {
+                        var prog = accordion.data('prog');
+                        $('html, body').animate({
+                            scrollTop: $('#accordion' + prog).offset().top - 50
+                        }, 500);
+                    }
+                }
+            }
+        });
+
+        {% if request.session.gauser_extra|has_permiso:"crea_programaciones_ccff" %}
+            habilita(['s_plus']);
+        {% endif %}
+
+        $('#plus_sign').click(function (event) {
+            event.preventDefault();
+            window.location = "/editar_programacion/";
+        });
+
+        $('body').on('click', '.edit_programacion', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            window.location = "/editar_programacion/?doc=" + id;
+        });
+
+        $('body').on('click', '.delete_programacion', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#id_programacion').val(id);
+            show_mensajes({
+                title: 'Borrar programacion', texto: 'Si aceptas la programación será eliminada' +
+                ' completamente de la base de datos.', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        var id = $('#id_programacion').val();
+                        hide_mensajes();
+                        $.post("/ajax_programaciones/", {action: 'del_programacion', id: id}, function (data) {
+                            if (data) {
+                                $('#accordion' + id).hide();
+                                $('#prog_hidden' + id).remove();
+                            }
+                        });
+                    }
+                }
+            });
+        });
+
+        $('body').on('click', '.download_pdf', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#id_programacion').val(id);
+            $('#action').val('download_pdf');
+            document
+                .{{ formname }}.submit();
+        });
+
+        $('body').on('click', '.download_html', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#id_programacion').val(id);
+            $('#action').val('download_html');
+            document
+                .{{ formname }}.submit();
+        });
+
+        $('body').on('click', '.copy_programacion', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/ajax_programaciones/", {action: 'copy_programacion', id: id}, function (data) {
+                if (data.ok){$('#list_programaciones_borradores').append(data.accordion);
+                $('#programacion' + id).removeClass('active');
+                }else{
+                    show_mensajes({title: "<i class='fa fa-warning'></i> No se pudo realizar la copia",
+                    texto: "Ya existe una programación del módulo elegido para este curso escolar."})
+                }
+
+            }, 'json');
+        });
+    </script>
+
+{% endblock %}

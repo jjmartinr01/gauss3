@@ -1,0 +1,85 @@
+{% load my_templatetags %}
+
+<dd class="accordion-navigation" id="accordion{{ horario.id }}">
+    <a href="#horario{{ horario.id }}">
+        <span id="span_descripcion{{ horario.id }}">{{ horario.descripcion|truncatechars:90 }}</span>
+    </a>
+
+    <div id="horario{{ horario.id }}" class="content horario_contenido"
+         data-horario="{{ horario.id }}">
+
+        <ul class="button-group centered">
+            <li title="Borrar este horario">
+                <a href="#" class="button delete_horario"
+                   data-id="{{ horario.id }}"><i
+                        class="fa fa-trash-o"></i>
+                    Borrar</a></li>
+        </ul>
+        <div class="row">
+            <div class="columns large-9">
+                <label>Breve descripción del nuevo horario:
+                    <textarea class="descripcion" data-id="{{ horario.id }}">{{ horario.descripcion }}</textarea>
+                </label>
+            </div>
+            <div class="columns large-3 text-center"
+                 title="Indica si este es el horario que se carga por defecto">
+                <label>Horario predeterminado:
+                </label>
+                <span class="ok_predeterminado" id="ok_predeterminado{{ horario.id }}"
+                      {% if not horario.predeterminado %}style="display: none;"{% endif %}><b>Sí</b></span>
+                <span class="ok_checkbox" id="ok_checkbox{{ horario.id }}"
+                      {% if horario.predeterminado %}style="display: none;"{% endif %}>
+                    <input type="checkbox" data-id="{{ horario.id }}" class="predeterminado"></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12">
+                <label>Días a tener en cuenta en el horario: </label>
+                <table>
+                    <tr>
+                        <th>Lunes</th>
+                        <th>Martes</th>
+                        <th>Miércoles</th>
+                        <th>Jueves</th>
+                        <th>Viernes</th>
+                        <th>Sábado</th>
+                        <th>Domingo</th>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><input type="checkbox" data-id="{{ horario.id }}" data-dia="lunes"
+                                                       class="dia" {% if horario.lunes %}checked{% endif %}></td>
+                        <td class="text-center"><input type="checkbox" data-id="{{ horario.id }}" data-dia="martes"
+                                                       class="dia" {% if horario.martes %}checked{% endif %}></td>
+                        <td class="text-center"><input type="checkbox" data-id="{{ horario.id }}" data-dia="miercoles"
+                                                       class="dia" {% if horario.miercoles %}checked{% endif %}></td>
+                        <td class="text-center"><input type="checkbox" data-id="{{ horario.id }}" data-dia="jueves"
+                                                       class="dia" {% if horario.jueves %}checked{% endif %}></td>
+                        <td class="text-center"><input type="checkbox" data-id="{{ horario.id }}" data-dia="viernes"
+                                                       class="dia" {% if horario.viernes %}checked{% endif %}></td>
+                        <td class="text-center"><input type="checkbox" data-id="{{ horario.id }}" data-dia="sabado"
+                                                       class="dia" {% if horario.sabado %}checked{% endif %}></td>
+                        <td class="text-center"><input type="checkbox" data-id="{{ horario.id }}" data-dia="domingo"
+                                                       class="dia" {% if horario.domingo %}checked{% endif %}></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div>
+            <div class="row">
+                <div class="columns large-12" id="tramos_list{{ horario.id }}">
+                    <label><strong>Define los tramos horarios que tiene este horario cada día:</strong></label>
+                        {% for t in horario.tramo_horario_set.all %}
+                            {% include "formulario_tramo.html" %}
+                        {% endfor %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <a class="button add_tramo" data-id="{{ horario.id }}"><i class="fa fa-plus"></i> Añadir tramo</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</dd>

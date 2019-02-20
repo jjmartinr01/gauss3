@@ -1,0 +1,231 @@
+{% extends "base_foundation.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="alumno_elegido" id="alumno_elegido" value="">
+        <input type="hidden" name="materia_elegida" id="materia_elegida" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Informe final de curso</strong></h4>
+        </div>
+        <div class="row">
+            <div class="columns large-6">
+                <label><strong>Puedes abrir un informe, seleccionando a un alumno:</strong>
+                    <input type="hidden" name="elegir_alumno" id="elegir_alumno" value="">
+                </label>
+            </div>
+            <div class="columns large-6">
+                <label><strong>Selecciona una materia:</strong> <span id="materia-check"
+                                                                      style="color:red;display: none;"><i
+                        class="fa fa-check"></i></span>
+                    <input type="hidden" name="elegir_materia" id="elegir_materia" value="">
+                </label>
+            </div>
+        </div>
+        <div id="informe_final_formulario"></div>
+
+    </form>
+{% endblock %}
+
+{% block final %}
+    <link href="/static/select2/select2-foundation5.css" rel="stylesheet"/>
+    <script src="/static/select2/select2.js"></script>
+    <script>
+        habilita(['s_th-list']);
+        $("#th-list_sign").click(function (e) {
+            e.preventDefault();
+            window.location.href = '/informe_final_aspectos/';
+        });
+        $("#file-pdf-o_sign").click(function (e) {
+            e.preventDefault();
+            $('#action').val('genera_pdf');
+            document.{{formname}}.submit();
+        });
+        $('body').on('change', '.objetivos', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var val = $(this).val();
+            $.post("/informe_final/", {action: 'guardar_valoracion', id: id, val: val}, function (data) {
+                $("#aviso" + id).show().delay(1500).fadeOut();
+                if (data == 'correcto') {
+                    $("#aviso" + id).show().delay(1500).fadeOut();
+                }
+            });
+        });
+        $('body').on('click', '.aspectos', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/informe_final/", {action: 'guardar_valoracion_aspecto', id: id}, function (data) {
+                $("#avisoaspecto" + id).show().delay(1500).fadeOut();
+                window.console.log(data);
+                window.console.log(data == 'check');
+                if (data == 'check') {
+                    $('#check' + id).removeClass('fa-square-o').addClass('fa-check-square-o');
+                } else {
+                    $('#check' + id).removeClass('fa-check-square-o').addClass('fa-square-o');
+                }
+            });
+        });
+        $('body').on('change', '#id_adaptacion', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var val = $(this).val();
+            $.post("/informe_final/", {action: 'guardar_adaptacion', id: id, val: val}, function (data) {
+                $("#adapta-check").show().delay(1500).fadeOut();
+            });
+        });
+        $('body').on('click', '#id_extraordinaria', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var val = $(this).val();
+            $.post("/informe_final/", {action: 'guardar_extraordinaria', id: id, val: val}, function (data) {
+                $("#id_extraordinaria").html(data);
+                $("#extraordinaria-check").show().delay(1500).fadeOut();
+            });
+        });
+        $('body').on('change', '#id_nota', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var val = $(this).val();
+            $.post("/informe_final/", {action: 'guardar_nota', id: id, val: val}, function (data) {
+                $("#nota-check").show().delay(1500).fadeOut();
+            });
+        });
+        $('body').on('change', '#id_programa', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var val = $(this).val();
+            $.post("/informe_final/", {action: 'guardar_programa', id: id, val: val}, function (data) {
+                $("#programa-check").show().delay(1500).fadeOut();
+            });
+        });
+        $('body').on('click', '#id_pt', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/informe_final/", {action: 'guardar_pt', id: id}, function (data) {
+                $("#id_pt").html(data);
+                $("#pt-check").show().delay(1500).fadeOut();
+            });
+        });
+        $('body').on('input propertychange', '#id_observaciones', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var val = $(this).val();
+            $.post("/informe_final/", {action: 'guardar_observaciones', id: id, val: val}, function (data) {
+                $("#id_observaciones").html(data);
+                $("#observaciones-check").show().delay(1500).fadeOut();
+            });
+        });
+
+        $("#elegir_alumno").select2({
+            placeholder: "Escribe parte del nombre del alumno",
+            minimumInputLength: 3,
+            ajax: {
+                url: "/informe_final/",
+                type: 'POST',
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (term, page) { // page is the one-based page number tracked by Select2
+                    return {
+                        action: 'busca_alumno',
+                        q: term, //search term
+                        page_limit: 10, // page size
+                        page: page // page number
+                    };
+                },
+                results: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                }
+            },
+            formatResult: function (resultado) {
+                return '<div class="select2-user-result">' + resultado.text + '</div>';
+            },
+            formatSelection: function (resultado) {
+                $('#alumno_elegido').val(resultado.id);
+                $('#alumno_elegido').trigger('change');
+                habilita(['s_file-pdf-o']);
+                return resultado.text;
+            },
+            dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
+            escapeMarkup: function (m) {
+                return m;
+            } // we do not want to escape markup since we are displaying html in results
+        });
+
+        $("#alumno_elegido").change(function () {
+            window.console.log('Alumno elegido: ' + $('#alumno_elegido').val());
+            var id = $(this).val();
+            $.post("/informe_final/", {action: 'buscar_informes', id: id}, function (data) {
+                $('#informe_final_formulario').html(data);
+            });
+            $('#elegir_materia').select2("val", "");
+        });
+
+        $("#elegir_materia").select2({
+            placeholder: "Escribe parte del nombre de la materia",
+            minimumInputLength: 3,
+            ajax: {
+                url: "/informe_final/",
+                type: 'POST',
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (term, page) { // page is the one-based page number tracked by Select2
+                    return {
+                        action: 'busca_materia',
+                        q: term, //search term
+                        alumno: $('#alumno_elegido').val(),
+                        page_limit: 10, // page size
+                        page: page // page number
+                    };
+                },
+                results: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                }
+            },
+            formatResult: function (resultado) {
+                return '<div class="select2-user-result">' + resultado.text + '</div>';
+            },
+            formatSelection: function (resultado) {
+                $('#materia_elegida').val(resultado.id);
+                $('#materia_elegida').trigger('change');
+                return resultado.text;
+            },
+            dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
+            escapeMarkup: function (m) {
+                return m;
+            } // we do not want to escape markup since we are displaying html in results
+        });
+
+        $("#materia_elegida").change(function () {
+            window.console.log('Materia elegida: ' + $('#materia_elegida').val());
+            var materia = $('#materia_elegida').val();
+            var alumno = $('#alumno_elegido').val();
+            $.post("/informe_final/", {
+                action: 'formulario_informe',
+                materia: materia,
+                alumno: alumno
+            }, function (data) {
+                $('#informe_final_formulario').html(data);
+                window.console.log('informe final: ' + $('#informe_final').val());
+                $("#materia-check").show().delay(1500).fadeOut();
+            });
+        });
+    </script>
+{% endblock %}

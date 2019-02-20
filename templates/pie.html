@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html style="overflow:hidden">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style>
+        img.center {
+            margin-left: 0cm;
+        }
+
+        div.logo {
+            position: fixed;
+            top: 20px;
+            left: 11.7cm;
+        }
+    </style>
+    <script>
+        function subst() {
+            var vars = {};
+            var x = window.location.search.substring(1).split('&');
+            for (var i in x) {
+                var z = x[i].split('=', 2);
+                vars[z[0]] = decodeURI(z[1]); //decodeURIComponent()
+            }
+            var x = ['frompage', 'topage', 'page', 'webpage', 'section', 'subsection', 'subsubsection'];
+            for (var i in x) {
+                var y = document.getElementsByClassName(x[i]);
+                for (var j = 0; j < y.length; ++j) y[j].textContent = vars[x[i]];
+            }
+        }
+    </script>
+</head>
+<body onload="subst()">
+<table width="100%">
+    <tr>
+        <td colspan="9"><span style="font-family: arial, sans-serif;font-size:9pt;color:#333333">{{ entidad.name }}</span>
+            {% if entidad.web %}
+                <br><span style="font-family: arial, sans-serif;font-size:9pt;color:#333333">{{ entidad.web }}</span>
+            {% endif %}</td>
+        <td style="text-align:right;font-size:9pt;font-family: arial, sans-serif;">Página <span class="page"></span> de <span
+                class="topage"></span></td>
+    </tr>
+</table>
+</body>
+</html>

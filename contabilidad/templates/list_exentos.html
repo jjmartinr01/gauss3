@@ -1,0 +1,43 @@
+{% load my_templatetags %}
+
+{% for key,exentos in socios.items %}
+    <div>
+        <h5><i class="fa fa-hand-o-up" id="{{ politica.id }}___{{ key|unir:'_' }}"></i> <strong>Selecciona exentos de
+            pago de cuota pertenecientes a {{ key }}</strong></h5>
+        <ul class="inline-list">
+            <li><a id="{{ politica.id }}___{{ key|unir:'_' }}___todos" href="#{{ politica.id }}___{{ key|unir:'_' }}">
+                &nbsp;&nbsp;<i class="fa fa-check-circle"></i> Todos</a>
+            </li>
+            <li><a id="{{ politica.id }}___{{ key|unir:'_' }}___ninguno" href="#{{ politica.id }}___{{ key|unir:'_' }}">
+                &nbsp;&nbsp;<i class="fa fa-times-circle"></i>
+                Ninguno</a></li>
+        </ul>
+    </div>
+    <div class="panel ">
+        <div class="row">
+            {% for exento in exentos %}
+                <div class="large-3 columns" id="div_exentos___{{ politica.id }}___{{ key|unir:'_' }}">
+                    <input type="checkbox" id="exento_{{ politica.id }}___{{ exento.id }}"
+                           name="exentos_{{ politica.id }}"
+                           class="check___exentos_{{ politica.id }}___{{ key|unir:'_' }}" value="{{ exento.gauser.id }}"
+                            {% if exento.gauser.id in socios_exentos %}
+                           checked="checked" {% endif %}>{{ exento.gauser.get_full_name }}
+                </div>
+                {% if forloop.counter|divisibleby:"4" %}
+                    </div><br>
+                    <div class="row">
+                {% endif %}
+            {% endfor %}
+            </div>
+    </div>
+    <script>
+        $('#'+'{{ politica.id }}___{{ key|unir:'_' }}___todos').click(function (e) {
+            $('.'+'check___exentos_{{ politica.id }}___{{ key|unir:'_' }}').prop('checked', true);
+            e.preventDefault();
+        });
+        $('#'+'{{ politica.id }}___{{ key|unir:'_' }}___ninguno').click(function (e) {
+            $('.'+'check___exentos_{{ politica.id }}___{{ key|unir:'_' }}').prop('checked', false);
+            e.preventDefault();
+        });
+    </script>
+{% endfor %}

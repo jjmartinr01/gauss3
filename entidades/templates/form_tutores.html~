@@ -1,0 +1,36 @@
+<script>
+{% autoescape off %}
+    var json_tutores = {{json_tutores}};
+    var json_tutores_ids = {{json_tutores_ids}};
+  {% endautoescape %}
+  $( "#tutores_list1" ).autocomplete({
+    source: json_tutores,
+    close: function() {
+	      if (json_tutores.indexOf($( "#tutores_list1" ).val()) > -1)
+	      {
+	      var id_user = json_tutores_ids[json_tutores.indexOf($( "#tutores_list1" ).val())];
+	      $('#gauser_extra_tutor1_selected').val(id_user);}} });
+  $( "#tutores_list2" ).autocomplete({
+    source: json_tutores,
+    close: function() {
+	      if (json_tutores.indexOf($( "#tutores_list2" ).val()) > -1)
+	      {
+	      var id_user = json_tutores_ids[json_tutores.indexOf($( "#tutores_list2" ).val())];
+	      $('#gauser_extra_tutor2_selected').val(id_user);}} });
+</script>
+<tr>
+  <th>
+    <label for="tutores_list1">Selecciona al primer tutor:</label>
+  </th>
+    <td><input placeholder="Escribe parte del nombre" id="tutores_list1" style="margin-right:-25px;width:300px;"/><span style="font-size:13px;"><i class="fa fa-search"></i></i></span>
+    <input type="hidden" name="tutor1" id="gauser_extra_tutor1_selected" value="">
+    </td>
+</tr>
+<tr>
+  <th>
+    <label for="tutores_list1">Selecciona al segundo tutor:</label>
+  </th>
+    <td><input placeholder="Escribe parte del nombre" id="tutores_list2" style="margin-right:-25px;width:300px;"/><span style="font-size:13px;"><i class="fa fa-search"></i></i></span>
+    <input type="hidden" name="tutor2" id="gauser_extra_tutor2_selected" value="">
+    </td>
+</tr>

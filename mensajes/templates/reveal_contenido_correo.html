@@ -1,0 +1,151 @@
+{% load my_templatetags %}
+
+<h3 id="h3_asunto">
+    {% autoescape off %}
+        {{ mensaje.asunto }}
+    {% endautoescape %}</h3>
+<p><strong>Emisor:</strong> {{ mensaje.emisor.gauser.get_full_name }},
+    <strong>Fecha:</strong> {{ mensaje.fecha|date:"j \d\e F \d\e Y" }}
+    <br>
+    <span id="listado_receptores_completo" {% if mensaje.receptores.all|length > 3 %}style="display: none;"{% endif %}>
+        <strong>Receptores: </strong>
+        {% for receptor in mensaje.receptores.all %}
+        {{ receptor.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %} <a id="receptores_ocultar">
+        (ocultar)
+        </a> </span>
+    {% if mensaje.receptores.all|length > 3 %}
+    <span id="listado_receptores_truncado">
+        <strong>Receptores: </strong>
+        {{ mensaje.receptores.all.0.get_full_name }}, {{ mensaje.receptores.all.1.get_full_name }},
+        <a id="mostrar_listado_receptores_completo"> ... (mostrar todos)</a>
+    </span>
+    {% endif %}
+<p>{% autoescape off %}{{ mensaje.mensaje }}{% endautoescape %}</p>
+<p>
+    {% for adjunto in mensaje.adjuntos.all %}
+        <a class="mensaje_ficheros_adjuntos" id="fichadjunto_mensaje__{{ mensaje.id }}___{{ adjunto.id }}">
+            {{ adjunto|get_adjunto_name }}
+        </a> {% if not forloop.last %}, {% endif %}
+    {% endfor %}
+</p>
+<a id="reveal_contenido_correo_cerrar" style="position: absolute; top: 7px;right: 7px; font-size: 1.6em;"><strong><i
+        class="fa fa-close"></i> </strong></a>
+
+{% if numero == 1 %}
+    <a id="reveal_contenido_correo_anterior___{{ numero }}" class="secondary button">
+        <i style="color: #d3d3d3;" class="fa fa-arrow-left"></i>
+    </a>
+    <a id="reveal_contenido_correo_siguiente___{{ numero }}" class="secondary button siguiente">
+        <i class="fa fa-arrow-right"></i>
+    </a>
+{% elif numero == numero_max %}
+    <a id="reveal_contenido_correo_anterior___{{ numero }}" class="secondary button anterior">
+        <i class="fa fa-arrow-left"></i>
+    </a>
+    <a id="reveal_contenido_correo_siguiente___{{ numero }}" class="secondary button">
+        <i style="color: #d3d3d3;" class="fa fa-arrow-right"></i>
+    </a>
+{% else %}
+    <a id="reveal_contenido_correo_anterior___{{ numero }}" class="secondary button anterior">
+        <i class="fa fa-arrow-left"></i>
+    </a>
+    <a id="reveal_contenido_correo_siguiente___{{ numero }}" class="secondary button siguiente">
+        <i class="fa fa-arrow-right"></i>
+    </a>
+{% endif %}
+{% if tipo == 'enviado' %}
+    <a id="reveal_contenido_correo_reenviar" class="secondary button">
+        Reenviar
+    </a>
+{% elif tipo == 'recibido' %}
+    <a id="reveal_contenido_correo_responder" class="secondary button">
+        Responder
+    </a>
+    {% if mensaje.receptores.all|length > 1 %}
+        <a id="reveal_contenido_correo_responder_todos" class="secondary button">
+            Responder a todos
+        </a>
+    {% endif %}
+{% endif %}
+<a id="reveal_contenido_correo_borrar" class="secondary button">
+    Borrar
+</a>
+<a id="reveal_contenido_correo_pdf" class="secondary button">
+    PDF
+</a>
+{% if mensaje.adjuntos.all|length > 1 %}
+    <a id="reveal_contenido_correo_zip" class="secondary button">
+        Adjuntos (zip) <i class="fa fa-arrow-down"></i>
+    </a>
+{% endif %}
+<script>
+    $('.mensaje_ficheros_adjuntos').on('click', function (e) {
+        e.preventDefault();
+        var id_adjunto = $(this).attr('id').split('___')[1];
+        $('#action').val('bajar_adjunto');
+        $('#id_adjunto').val(id_adjunto);
+        document.{{formname}}.submit();
+    });
+
+    $("#reveal_contenido_correo_reenviar").on('click', function (e) {
+        e.preventDefault();
+        window.location.href = "/correo/?t=reenviar&m={{ mensaje.id }}";
+    });
+
+    $("#reveal_contenido_correo_responder").on('click', function (e) {
+        e.preventDefault();
+        window.location.href = "/correo/?t=responder&m={{ mensaje.id }}";
+    });
+
+    $("#reveal_contenido_correo_responder_todos").on('click', function (e) {
+        e.preventDefault();
+        window.location.href = "/correo/?t=responder_todos&m={{ mensaje.id }}";
+    });
+
+    $("#reveal_contenido_correo_borrar").on('click', function (e) {
+        e.preventDefault();
+        $('#fila_mesaje___' + '{{ mensaje.id }}').hide()
+        $.post("/ajax_mensajes/", { ids: {{ mensaje.id }}, action: 'borrar_mensajes'}, function () {
+            return false;
+        });
+        $('#reveal_contenido_correo').removeClass('visible_mensaje').addClass('hidden_mensaje');
+    });
+
+    $("#reveal_contenido_correo_pdf").on('click', function (e) {
+        e.preventDefault();
+        $('#action').val('mensajes_pdf');
+        $('.check_mensaje').removeClass('fa-check-square-o').addClass('fa-square-o');
+        $('#id_mensajes').val('{{ mensaje.id }}');
+        document.{{formname}}.submit();
+    });
+
+    $("#reveal_contenido_correo_cerrar").on('click', function (e) {
+        e.preventDefault();
+        $('#reveal_contenido_correo').hide();
+        $('#correos_list').show('fast');
+        {#        $('#reveal_contenido_correo').removeClass('visible_mensaje').addClass('hidden_mensaje');#}
+    });
+
+    $("#reveal_contenido_correo_zip").on('click', function (e) {
+        e.preventDefault();
+        $('#action').val('adjuntos_zip');
+        $('.check_mensaje').removeClass('fa-check-square-o').addClass('fa-square-o');
+        $('#id_mensajes').val('{{ mensaje.id }}')
+        document.{{formname}}.submit();
+    });
+
+    $("#listado_receptores_truncado").on('click', function (e) {
+        e.preventDefault();
+        $(this).hide();
+        $("#listado_receptores_completo").show();
+    });
+
+    $("#receptores_ocultar").on('click', function (e) {
+        e.preventDefault();
+        $("#listado_receptores_completo").hide();
+        $("#listado_receptores_truncado").show();
+        $(document).scrollTop( $('#h3_asunto').offset().top - 150 );
+    });
+
+</script>
+

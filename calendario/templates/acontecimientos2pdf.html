@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html
+    xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+    lang="en"
+    xmlns:pdf="http://htmltopdf.org/pdf"
+    >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Lista de acontecimientos o acontecimientos</title>
+<!--<link href="xhtml2pdf.css" type="text/css" rel="stylesheet" media="all" />
+<link href="screen.css" type="text/css" rel="stylesheet" media="screen" />-->
+<style>
+@media print {
+    @page {
+	    -pdf-page-orientation: portrait;
+	    -pdf-page-size: a4;
+	    /* background-image: url(background.pdf); */
+	    margin-top: 4.5cm;
+	    margin-left: 2cm;
+	    margin-right: 2cm;
+	    margin-bottom: 2cm;
+	    @frame footer {
+		    -pdf-frame-content: footer;
+		    bottom: 0cm;
+		    left: 2cm;
+		    right: 2cm;
+		    height: 1.5cm;
+	    }
+	    @frame header {
+		    -pdf-frame-content: header;
+		    top: 0.5cm;
+		    left: 2cm;
+		    right: 2cm;
+		    height: 3.5cm;
+	    }
+	  }
+}
+
+html {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	text-align: justify;
+}
+
+table
+{ 
+margin-left: auto;
+margin-right: auto;
+}
+p {
+	font-size: 10pt;
+	margin-top: 1px;
+	margin-bottom: 1px;
+}
+
+
+#footer {
+	text-align: left;
+}
+
+#header {
+	text-align: center;
+}
+
+.pagebreak {
+	page-break-after: always;
+}
+
+</style>
+</head>
+<body>
+<div id="footer" class="pdf">
+  <table><tr><td><img  width="50px" border="0" src="{{MA}}logo_ampa.png" id="img_pie" align="left"></td><td colspan="9"><span style="font-size:9pt;color:#7f7f7f">Asociación de Padres de Alumnos {{request.session.gauser_extra.ronda.entidad.name}}<br>{{request.session.gauser_extra.ronda.entidad.address}}{% if request.session.gauser_extra.ronda.entidad.tel %}, Tel.: {{request.session.gauser_extra.ronda.entidad.tel}}{% endif %}{% if request.session.gauser_extra.ronda.entidad.fax %}, Fax: {{request.session.gauser_extra.ronda.entidad.fax}}{% endif %}{% if request.session.gauser_extra.ronda.entidad.web %}, web: {{request.session.gauser_extra.ronda.entidad.web}}{% endif %}</span></td></tr></table>
+</div>
+<div id="header" class="pdf" style="float:left;">
+  <img  border="0" src="{{MA}}{{request.session.gauser_extra.ronda.entidad.code}}_cabecera.png" id="img_cabecera" align="left">
+</div>
+<h2 style="text-align:center;"> RELACIÓN DE FECHAS Y EVENTOS</h2>
+
+Nombre: <strong> {{request.session.gauser_extra.gauser.get_full_name}} ({{request.session.gauser_extra.ronda.entidad.ronda.nombre}})</strong>
+<hr/>
+
+
+<table>
+<tr><td colspan="3"><strong>Fecha/Periodo</strong></td><td colspan="6"><strong>Nombre</strong></td><td colspan="1"><strong>Lugar</strong></td></tr>
+{% for acontecimiento in acontecimientos %}
+    <tr><td colspan="10" style="border-top-color:black;border-top-style:solid;"></td></tr>
+    <tr><td colspan="3">
+    {% if acontecimiento.inicio|date:"d" == acontecimiento.fin|date:"d" %}
+      {{acontecimiento.inicio|date:"SHORT_DATE_FORMAT"}} {% if acontecimiento.inicio|date:"P" != 'media noche' %} a las {{acontecimiento.inicio|date:"P"}} {% endif %}
+    {% else %}
+      {{acontecimiento.inicio|date:"SHORT_DATE_FORMAT"}} {% if acontecimiento.inicio|date:"P" != 'media noche' %} a las {{acontecimiento.inicio|date:"P"}} {% endif %}<br> {{acontecimiento.fin|date:"SHORT_DATE_FORMAT"}} {% if acontecimiento.fin|date:"P" != 'media noche' %} a las {{acontecimiento.fin|date:"P"}} {% endif %}
+    {% endif %}
+  </td><td colspan="6">{{acontecimiento.nombre}}</td><td colspan="1">{{acontecimiento.lugar}}</td></tr>
+
+
+  {% if acontecimiento.describir|length > 5 %}
+    <tr><td colspan="10">{% autoescape off %} {{acontecimiento.describir}} {% endautoescape %}</td></tr>
+  {% endif %}
+{% endfor %}
+
+</table>
+
+</body>
+</html>
+ 

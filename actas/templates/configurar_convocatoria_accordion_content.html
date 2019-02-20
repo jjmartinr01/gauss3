@@ -1,0 +1,396 @@
+{% load my_templatetags %}
+
+<style>
+    .noeditable {
+        color: #0f74a8;
+    }
+</style>
+<input type="hidden" id="plantilla{{ configura_convocatoria.id }}" value="{{ configura_convocatoria.plantilla }}">
+<div class="row">
+    <div class="columns large-5">
+        <b>Creada por:</b> {{ configura_convocatoria.creador.get_full_name }}
+    </div>
+    {% if configura_convocatoria.plantilla %}
+        <div class="columns large-7 text-right">
+            <ul class="button-group radius">
+                {% if g_e|has_permiso:'borra_configuraciones_convocatorias' or g_e.gauser == configura_convocatoria.configura %}
+                    <li title="Borrar la configuración de convocatoria">
+                        <a data-id="{{ configura_convocatoria.id }}" class="button delete_configura_convocatoria"
+                           data-plantilla="{{ configura_convocatoria.plantilla }}"><i
+                                class="fa fa-trash-o"></i> Borrar</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    {% else %}
+        <div class="columns large-7">
+            <ul class="button-group radius">
+                <li title="Descargar la convocatoria en PDF">
+                    <a data-id="{{ configura_convocatoria.id }}" class="button download_pdf"><i
+                            class="fa fa-file-pdf-o"></i> PDF</a></li>
+                {% if g_e|edita_convocatoria:configura_convocatoria %}
+                    {% if g_e|has_permiso:'mail_convocatorias' %}
+                        <li title="Mandar la convocatoria por e-mail a todos los convocados">
+                            <a data-id="{{ configura_convocatoria.id }}" class="button send_email"><i
+                                    class="fa fa-envelope-o"></i> eMail</a></li>
+                    {% endif %}
+                    {% if g_e|has_permiso:'evento_convocatorias' %}
+                        {% if configura_convocatoria|evento_convocatoria %}
+                            <li title="Actualiza el evento existente en el calendario">
+                                <a data-id="{{ configura_convocatoria.id }}" class="button crea_evento"><i
+                                        class="fa fa-calendar-check-o"></i> Actualiza</a></li>
+                        {% else %}
+                            <li title="Crea un evento en el calendario">
+                                <a data-id="{{ configura_convocatoria.id }}" class="button crea_evento"><i
+                                        class="fa fa-calendar-check-o"></i> Evento</a></li>
+                        {% endif %}
+                    {% endif %}
+                    {% if g_e|has_permiso:'borra_convocatorias' or g_e.gauser == configura_convocatoria.configura %}
+                        <li title="Borrar la convocatoria">
+                            <a data-id="{{ configura_convocatoria.id }}" class="button delete_configura_convocatoria"><i
+                                    data-plantilla="{{ configura_convocatoria.plantilla }}" class="fa fa-trash-o"></i>
+                                Borrar</a></li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+<input id="perder_focus_editor" type="text" style="position: fixed;top:-3000px;">
+{% if configura_convocatoria.plantilla %}
+    <div class="row">
+        <div class="columns large-4">
+            <label><b>Persona que hace la convocatoria</b>
+                <select id="convoca{{ configura_convocatoria.id }}" data-id="{{ configura_convocatoria.id }}">
+                    <option value="establecida"
+                            selected="selected">{{ configura_convocatoria.convoca.get_full_name }}</option>
+                </select> </label>
+        </div>
+        <div class="columns large-4">
+            <label><b>Cargo que hace la convocatoria</b>
+                <select class="cargo" id="cargo_convocante{{ configura_convocatoria.id }}"
+                        data-id="{{ configura_convocatoria.id }}">
+                    {% if cargos|length > 0 %}
+                        {% for cargo in cargos %}
+                            <option value="{{ cargo.id }}"
+                                    {% if cargo == configura_convocatoria.cargo_convocante %}selected {% endif %}>
+                                {{ cargo.cargo }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="">-------</option>
+                    {% endif %}
+                </select> </label>
+        </div>
+        <div class="columns large-4">
+            <label><b>Lugar de la convocatoria</b>
+                <input type="text" class="lugar" data-id="{{ configura_convocatoria.id }}"
+                       value="{{ configura_convocatoria.lugar }}"></label>
+        </div>
+    </div>
+{% else %}
+    <div class="row">
+        <div class="columns large-4">
+            <label><b>Plantilla</b>
+                <select name="plantila" class="plantilla" data-id="{{ configura_convocatoria.id }}">
+                    <option value="">No utilizar plantilla</option>
+                    {% for p in plantillas %}
+                        <option value="{{ p.id }}">{{ p.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <div class="columns large-4">
+            <label><b>Fecha y hora de la convocatoria</b>
+                <input type="text" name="fecha_hora" class="fecha_hora" data-id="{{ configura_convocatoria.id }}"
+                       value="{{ configura_convocatoria.fecha_hora|date:'d/m/Y H:i' }}"></label>
+        </div>
+        <div class="columns large-4">
+            <label><b>Lugar de la convocatoria</b>
+                <input type="text" class="lugar" data-id="{{ configura_convocatoria.id }}"
+                       value="{{ configura_convocatoria.lugar }}"></label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="columns large-4">
+            <label><b>Persona que convoca</b>
+                <select id="convoca{{ configura_convocatoria.id }}" data-id="{{ configura_convocatoria.id }}">
+                    <option value="establecida"
+                            selected="selected">{{ configura_convocatoria.convoca.get_full_name }}</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="columns large-4">
+            <label><b>Cargo del convocante</b>
+                <select class="cargo" id="cargo_convocante{{ configura_convocatoria.id }}"
+                        data-id="{{ configura_convocatoria.id }}">
+                    {% if cargos|length > 0 %}
+                        {% for cargo in cargos %}
+                            <option value="{{ cargo.id }}"
+                                    {% if cargo == configura_convocatoria.cargo_convocante %}selected {% endif %}>
+                                {{ cargo.cargo }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="">-------</option>
+                    {% endif %}
+                </select>
+            </label>
+        </div>
+        <div class="columns large-4">
+            <label><b>Persona que redacta el acta</b>
+                <select id="redacta{{ configura_convocatoria.id }}" data-id="{{ configura_convocatoria.id }}">
+                    <option value="establecida"
+                            selected="selected">{{ configura_convocatoria.acta_set.all.0.redacta.get_full_name }}</option>
+                </select>
+            </label>
+        </div>
+    </div>
+{% endif %}
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Grupos convocados</b>
+            <select class="subentidades_convocadas" data-id="{{ configura_convocatoria.id }}" multiple="multiple"
+                    id="subentidades_convocadas{{ configura_convocatoria.id }}">
+                {% for subentidad in g_e.ronda.entidad.subentidad_set.all %}
+                    <option value="{{ subentidad.id }}"
+                            {% if subentidad in configura_convocatoria.convocados.all %}selected{% endif %}>{{ subentidad.nombre }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Cargos convocados</b>
+            <select class="cargos_convocados" data-id="{{ configura_convocatoria.id }}" multiple="multiple"
+                    id="cargos_convocados{{ configura_convocatoria.id }}">
+                {% for cargo in g_e.ronda.entidad.cargo_set.all %}
+                    <option value="{{ cargo.id }}"
+                            {% if cargo in configura_convocatoria.cargos_convocados.all %}selected{% endif %}>{{ cargo.cargo }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Título de la convocatoria y texto base utilizado para crear la convocatoria</b> (texto en azul no es
+            editable)</label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <div class="nombre text-center" data-id="{{ configura_convocatoria.id }}" contenteditable="true"
+             style="font-size: xx-large;font-weight: 800; text-align: center;border: 1px solid lightgrey">
+            {{ configura_convocatoria.nombre }}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <div class="texto_base" id="texto_base{{ configura_convocatoria.id }}"
+             style="border: lightgrey solid 1px; padding:10px;"
+             data-id="{{ configura_convocatoria.id }}" contenteditable="true">
+            {% autoescape off %}
+                {{ configura_convocatoria.texto_convocatoria }}
+            {% endautoescape %}
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#convoca{{ configura_convocatoria.id }}').select2();
+    {#    $('#cargo_convocante{{ configura_convocatoria.id }}').select2();#}
+    $('#subentidades_convocadas{{ configura_convocatoria.id }}').select2();
+    $('#cargos_convocados{{ configura_convocatoria.id }}').select2();
+
+
+    var editor_contenido_convocatoria = CKEDITOR.inline('texto_base{{ configura_convocatoria.id }}');
+    {# extraAllowedContent: entre [] los atributos, entre {} los estilos y entre () los nombres de las clases permitidas #}
+    editor_contenido_convocatoria.config.extraAllowedContent = 'li ol[id, title]; span(sub_convocadas, day_name, day_num, month_name, month_num, year, datetime_date, datetime_time, place, convocante, cargo_convocante, noeditable); h1(title, noeditable);span[id, title, contenteditable]';
+    editor_contenido_convocatoria.on('doubleclick', function (evt) {
+        show_mensajes({texto: 'No está permitido seleccionar texto usando un doble click.'});
+    });
+
+    $(".fecha_hora").fdatetimepicker({
+        format: 'dd/mm/yyyy hh:ii',
+        weekStart: 1
+    });
+
+    var texto_editor;
+
+    function comprueba_cambio_texto(texto, configura_convocatoria) {
+        if (texto == texto_editor) {
+            var puntos = [];
+            $('#conv_points').children().each(function (index) {
+                puntos.push($(this).text());
+            });
+            console.log(puntos);
+            $.post("/configurar_convocatorias_ajax/", {
+                    action: 'update_texto_configura_convocatoria',
+                    configuracion: configura_convocatoria,
+                    texto: texto_editor,
+                    puntos: puntos
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+
+                });
+        }
+    }
+
+    editor_contenido_convocatoria.on('change', function (e) {
+        var texto = e.editor.getData();
+        texto_editor = texto;
+        var configura_convocatoria = {{ configura_convocatoria.id }};
+        setTimeout(function () {
+            comprueba_cambio_texto(texto, configura_convocatoria);
+        }, 1000);
+        re_adjust_check_time();
+    });
+
+    $('.texto_base').on('click', '.noeditable', function () {
+        if ($(this).prop('id') == 'datetime_now') {
+            $("#datetime_now").fdatepicker({
+                weekStart: 1
+            }).fdatepicker('show').on('changeDate', function (ev) {
+                var M = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre',
+                    'octubre', 'noviembre', 'diciembre'];
+                var cDate = new Date(ev.date);
+                $('#datetime_now').text(cDate.getDate() + ' de ' + M[cDate.getMonth()] + ' de ' + cDate.getFullYear());
+                $('#datetime_now').fdatepicker('hide');
+                editor_contenido_convocatoria.fire('change');
+            });
+            $('#perder_focus_editor').focus();
+        } else {
+            editor_contenido_convocatoria.focusManager.blur();
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> Texto no editable',
+                texto: 'Este texto cambiará automáticamente al asignar los parámetros de la convocatoria.'
+            });
+        }
+    });
+
+    $('#convoca{{ configura_convocatoria.id }}').select2({
+        placeholder: "Para buscar una persona, escribe parte de su nombre",
+        allowClear: true,
+        ajax: {
+            url: "/buscar_usuarios/",
+            type: 'GET',
+            dataType: 'json',
+            delay: 250,
+            data: function (params) { // page is the one-based page number tracked by Select2
+                return {
+                    action: 'select2',
+                    q: params.term, //search term
+                    page: params.page // page number
+                };
+            },
+            processResults: function (data, page) {
+                return {
+                    results: $.map(data, function (item) {
+                        return {
+                            text: item.last_name + ', ' + item.first_name + ' (' + item.perfiles + ')',
+                            id: item.id
+                        }
+                    })
+                };
+            },
+            cache: true
+        },
+        escapeMarkup: function (markup) {
+            return markup;
+        }, // let our custom formatter work
+        minimumInputLength: 3,
+        language: {
+            inputTooShort: function () {
+                return "Introduce al menos 3 caracteres para iniciar búsqueda";
+            }
+        }
+    });
+
+    $('body').on('change', '#convoca{{ configura_convocatoria.id }}', function (e) {
+        var convoca = $(this).val();
+        var configuracion = $(this).data('id');
+        $.post("/configurar_convocatorias_ajax/", {
+                action: 'update_convoca_configura_convocatoria',
+                configuracion: configuracion,
+                convoca: convoca
+            },
+            function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('.convocante').text(data.convocante);
+                    var options = $('.cargo').empty().prop('options');
+                    $.each(data.cargos, function (val, text) {
+                        options[options.length] = new Option(text, val);
+                    });
+                    $(".cargo").val($(".cargo option:first").val()).trigger('change');
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    });
+
+    $('#redacta{{ configura_convocatoria.id }}').select2({
+        placeholder: "Para buscar una persona, escribe parte de su nombre",
+        allowClear: true,
+        ajax: {
+            url: "/buscar_usuarios/",
+            type: 'GET',
+            dataType: 'json',
+            delay: 250,
+            data: function (params) { // page is the one-based page number tracked by Select2
+                return {
+                    action: 'select2',
+                    q: params.term, //search term
+                    page: params.page // page number
+                };
+            },
+            processResults: function (data, page) {
+                return {
+                    results: $.map(data, function (item) {
+                        return {
+                            text: item.last_name + ', ' + item.first_name + ' (' + item.perfiles + ')',
+                            id: item.id
+                        }
+                    })
+                };
+            },
+            cache: true
+        },
+        escapeMarkup: function (markup) {
+            return markup;
+        }, // let our custom formatter work
+        minimumInputLength: 3,
+        language: {
+            inputTooShort: function () {
+                return "Introduce al menos 3 caracteres para iniciar búsqueda";
+            }
+        }
+    });
+
+    $('body').on('change', '#redacta{{ configura_convocatoria.id }}', function (e) {
+        var redacta = $(this).val();
+        var configuracion = $(this).data('id');
+        $.post("/configurar_convocatorias_ajax/", {
+                action: 'update_redacta_acta',
+                configuracion: configuracion,
+                redacta: redacta
+            },
+            function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    });
+
+</script>

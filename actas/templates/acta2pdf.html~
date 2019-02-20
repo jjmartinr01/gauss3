@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html
+    xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+    lang="en"
+    xmlns:pdf="http://htmltopdf.org/pdf"
+    >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Convocatoria de reunión</title>
+<!--<link href="xhtml2pdf.css" type="text/css" rel="stylesheet" media="all" />
+<link href="screen.css" type="text/css" rel="stylesheet" media="screen" />-->
+<style>
+@media print {
+    @page {
+	    -pdf-page-orientation: portrait;
+	    -pdf-page-size: a4;
+	    /* background-image: url(background.pdf); */
+	    margin-top: 5.5cm;
+	    margin-left: 2cm;
+	    margin-right: 2cm;
+	    margin-bottom: 2cm;
+	    @frame footer {
+		    -pdf-frame-content: footer;
+		    bottom: 0cm;
+/* 		    left: 6.15cm; */
+		    left: 2cm;
+		    right: 2cm;
+		    height: 0.98cm;
+	    }
+	    @frame header {
+		    -pdf-frame-content: header;
+		    top: 0.01cm;
+		    left: 2cm;
+		    right: 2cm;
+		    height: 4.63cm;
+	    }
+	  }
+}
+
+html {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12pt;
+	text-align: justify;
+}
+
+table
+{ 
+margin-left: auto;
+margin-right: auto;
+}
+p {
+	font-size: 12pt;
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+
+#footer {
+	text-align: center;
+}
+
+#header {
+	text-align: center;
+}
+
+.pagebreak {
+	page-break-after: always;
+}
+
+</style>
+</head>
+<body>
+<div id="footer" class="pdf">
+  <img  border="0" src="{{MEDIA_ANAGRAMAS}}pie.png" id="img_pie" align="left">
+</div>
+<div id="header" class="pdf" style="float:left;">
+  <img  border="0" src="{{MEDIA_ANAGRAMAS}}{{request.session.gauser_extra.centro.code}}_cabecera.png" id="img_cabecera" align="left">
+</div>
+<h2 style="text-align:center;"> Convocatoria de {{convocatoria.get_tipo_display}}</h2>
+
+{% autoescape off %}
+    {{convocatoria.texto_convocatoria}}
+{% endautoescape %}
+
+</body>
+</html>
+ 

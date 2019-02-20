@@ -1,0 +1,10 @@
+{% load my_templatetags %}
+  <table align="center" width="100%" cellspacing="3" cellpadding="3"><tr>
+  {% for grupo in grupos %}
+      </tr><tr><td colspan="4"><span class="info" style="padding:10px;">Grupo: {{grupo.nombre}} <span id="todo___{{grupo.id}}" class="select_todos"><i class="icon-ok-sign"></i> Todos </span> <span id="ninguno___{{grupo.id}}" class="select_ninguno"><i class="icon-remove-sign"></i> Ninguno</span></span></td></tr><tr>
+      {% for alumno in grupo|alumnos_in_grupo %}
+	  <td><input type="checkbox" name="alumnos_incluidos" class="check___{{grupo.id}}" {% if alumno in alumnos %} checked="checked" {% endif %} value="{{alumno.id}}">{{alumno.gauser.get_full_name}}</td>
+	  {%if forloop.counter|divisibleby:"4" %}</tr><tr>{% endif %}
+      {% endfor %}
+  {% endfor %}
+  </tr></table>

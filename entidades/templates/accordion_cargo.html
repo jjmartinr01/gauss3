@@ -1,0 +1,12 @@
+<dd class="accordion-navigation" id="accordion{{ cargo.id }}"
+    style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+    <a href="#panel{{ cargo.id }}">
+        <i id="circle{{ cargo.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <span id="span_cargo{{ cargo.id }}">{{ cargo.cargo }}</span> <span
+            id="span_nivel{{ cargo.id }}"
+            style="color: #a3a3a3">{{ cargo.get_nivel_display }}</span>
+    </a>
+
+    <div id="panel{{ cargo.id }}" class="content accordion-cargo" data-id="{{ cargo.id }}">
+    </div>
+</dd>

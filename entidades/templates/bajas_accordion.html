@@ -1,0 +1,14 @@
+{% load my_templatetags %}
+
+{% for baja in bajas %}
+    <dd class="accordion-navigation" id="accordion{{ baja.id }}">
+        <a href="#panel{{ baja.id }}">
+            <i id="circle{{ baja.id }}" class="fa fa-plus-circle circle_icon"></i>
+            <b><span id="span_nombre_baja{{ baja.id }}">{{ baja.gauser.get_full_name|title }}</span></b>
+            <span style="color:lightgrey">({{ baja.fecha_baja }})</span> </a>
+
+        <div id="panel{{ baja.id }}" class="content accordion-baja"
+             data-id="{{ baja.id }}">
+        </div>
+    </dd>
+{% endfor %}

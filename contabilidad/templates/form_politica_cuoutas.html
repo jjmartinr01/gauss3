@@ -1,0 +1,104 @@
+{% load my_templatetags %}
+
+<div class="">
+    <h4 style="text-align: center;color: #008CBA;"><strong> Datos de la nueva política de cuotas</strong></h4>
+</div>
+
+
+<div class="row">
+    <div class="large-6 columns">
+        <label>Concepto
+            {{ form.concepto }}
+        </label>
+    </div>
+    <div class="large-6 columns">
+        <label>Perfil al que se aplica el cobro
+            {{ form.cargo }}
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="large-3 columns">
+        <label>Tipo de cobro
+            {{ form.tipo_cobro }}
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label>Mes de cobro
+            {{ form.mes }}
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label>Día de cobro
+            {{ form.dia }}
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label>Cantidad (euros)
+            {{ form.cantidad }}
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="large-12 columns">
+        <label>Exentos de pagar esta cuota
+            <input type="hidden" name="exentos" id="id_exentos" value="">
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="large-12 columns">
+        <label> Política de descuentos
+            {{ form.descuentos }}
+        </label>
+    </div>
+</div>
+
+<script>
+    $('#id_tipo_cobro').select2();
+    $('#id_cargo').select2();
+    $("#id_exentos").select2({
+        placeholder: "Escribe parte del nombre",
+        minimumInputLength: 3,
+        multiple: true,
+        ajax: {
+            url: "/ajax_politica_cuotas/",
+            dataType: 'json',
+            quietMillis: 100,
+            data: function (term, page) { // page is the one-based page number tracked by Select2
+                return {
+                    action: 'exentos',
+                    cargo: $('#id_cargo').val(),
+                    q: term, //search term
+                    page_limit: 10, // page size
+                    page: page // page number
+                };
+            },
+            results: function (data) {
+                return {
+                    results: $.map(data, function (item) {
+                        return {
+                            text: item.text,
+                            id: item.id
+                        }
+                    })
+                };
+            }
+        },
+        formatResult: function (resultado) {
+            return '<div class="select2-user-result">' + resultado.text + '</div>';
+        },
+        formatSelection: function (resultado) {
+            $('#gauser_extra_selected').val(resultado.id);
+            return resultado.text;
+        },
+        dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
+        escapeMarkup: function (m) {
+            return m;
+        } // we do not want to escape markup since we are displaying html in results
+    });
+
+    {% if exentos %}
+        $("#id_exentos").select2("data", {% autoescape off %}{{exentos}} {% endautoescape %});
+    {% endif %}
+</script>

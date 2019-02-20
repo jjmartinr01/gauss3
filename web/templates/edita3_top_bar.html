@@ -1,0 +1,33 @@
+{#<div class="columns large-12">#}
+<div class="{% if top_bar.contain_to_grid %}contain-to-grid {% endif %} {{ top_bar.tipo }}"
+     data-id="{{ top_bar.id }}" id="top_bar___{{ top_bar.id }}">
+    <nav class="top-bar" data-topbar role="navigation">
+        <ul class="title-area">
+            <li class="name"><h1><a href="{% if top_bar.href_nombre %}{{ top_bar.href_nombre }}{% else %}#{% endif %}">
+                {{ top_bar.nombre }}</a></h1></li>
+            {# Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone #}
+            {# <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li> #}
+            <li class="toggle-topbar menu-icon"><a href="#"><span></span></a></li>
+        </ul>
+        <section class="top-bar-section"> {# Right Nav Section #}
+            <ul class="right">
+                {% for b in top_bar.buttons_web.all %}
+                    {% if b.sub_enlaces %}
+                        <li class="has-dropdown"><a href="#">{{ b.texto }}</a>
+                            <ul class="dropdown">
+                                {% for sub_b in b.hijos %}
+                                    <li><a href="{% if sub_b.0 %}{{ sub_b.0 }}{% else %}#{% endif %}">
+                                        {{ sub_b.1 }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li {% if b.activo %}class="active"{% endif %}>
+                            <a href="{% if b.href %}{{ b.href }}{% else %}#{% endif %}">{{ b.texto }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </section>
+    </nav>
+</div>
+{#</div>#}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Documento de seguridad de la
+                entidad {{ estructura_lopd.entidad.name }}</strong></h4>
+        </div>
+
+        <div class="row">
+            <div id="id_documento_seguridad" class="large-12 columns">
+                {% autoescape off %}
+                    {{ estructura_lopd.doc_seguridad }}
+                {% endautoescape %}
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_file-pdf-o']);
+
+        $('#file-pdf-o_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                $('#action').val('genera_pdf')
+                document.{{formname}}.submit();
+            }
+        });
+    </script>
+{% endblock %}

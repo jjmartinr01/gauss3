@@ -1,0 +1,451 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="asiento" id="asiento" value="">
+
+
+        <div>
+            <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong> Contabilidad de las viviendas de uso
+                turístico </strong></h4>
+        </div>
+        <div id="lista_contabilidades">
+            <dl class="accordion" data-accordion id="contabilidad_list">
+                {% for contabilidad in contabilidades %}
+                    {% include "contabilidad_vut_accordion.html" %}
+                {% endfor %}
+            </dl>
+        </div>
+    </form>
+    <div id="div_select_autorizado" class="reveal-modal small" data-reveal>
+        <h3>Selecciona la persona autorizada</h3>
+        <select id="select_autorizado">
+            {% for u in usuarios %}
+                <option value="{{ u.gauser.id }}">{{ u.gauser.get_full_name }}</option>
+            {% endfor %}
+        </select>
+
+        <a class="close-reveal-modal">&#215;</a>
+    </div>
+{% endblock %}
+
+{% block final %}
+    <script>
+        var tiempo_entre_pulsaciones = 500;
+        {# Medido en microsegundos #}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-contabilidad')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/ajax_contabilidad_vut/", {action: 'open_accordion', contabilidad: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        $(document).foundation('dropdown', 'reflow');
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        {% if request.session.gauser_extra|has_permiso:'borra_contabilidad_vut' %}
+            $('body').on('click', '.borrar_contabilidad', function (e) {
+                e.preventDefault();
+                contabilidad_borrar = $(this).data('id');
+                show_mensajes({
+                    title: 'Borrar contabilidad', texto: 'Si aceptas la contabilidad será eliminada' +
+                        ' de la base de datos.', buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/ajax_contabilidad_vut/", {
+                                    action: 'borra_contabilidad_vut',
+                                    contabilidad: contabilidad_borrar
+                                },
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#accordion' + contabilidad_borrar).remove();
+                                        setTimeout(function () {
+                                            show_mensajes({title: 'Contabilidad borrada', texto: data.mensaje});
+                                        }, 600);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        setTimeout(function () {
+                                            show_mensajes({title: 'Contabilidad no borrada', texto: data.mensaje});
+                                        }, 600);
+                                        $("#update_error").show().delay(1500).fadeOut();
+
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'crea_contabilidad_vut' %}
+            habilita(['s_plus']);
+
+            $('#plus_sign').click(function (event) {
+                event.preventDefault();
+                $.post("/ajax_contabilidad_vut/", {action: 'crea_contabilidad_vut'}, function (data) {
+                    if (data.ok) {
+                        $("#contabilidad_list").prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'edita_contabilidad_vut' %}
+            $("body").on('keyup change', '.campo_char', function () {
+                var contabilidad = $(this).data('id');
+                var valor = $(this).val();
+                var campo = $(this).data('campo');
+                initial_time = new Date();
+                setTimeout(function () {
+                    final_time = new Date();
+                    if (final_time - initial_time > tiempo_entre_pulsaciones) {
+                        $.post("/ajax_contabilidad_vut/", {
+                                action: 'update_campo',
+                                contabilidad: contabilidad,
+                                campo: campo,
+                                valor: valor
+                            },
+                            function (data) {
+                                if (data.ok) {
+                                    if (data.campo == 'nombre') {
+                                        $("#span_contabilidad_nombre" + contabilidad).html(data.valor);
+                                    } else if (data.campo == 'inicio') {
+                                        $("#span_contabilidad_inicio" + contabilidad).html(data.valor);
+                                    } else if (data.campo == 'fin') {
+                                        $("#span_contabilidad_fin" + contabilidad).html(data.valor);
+                                    }
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    setTimeout(function () {
+                                        show_mensajes({title: 'Error de edición', texto: data.mensaje});
+                                    }, 600);
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }, tiempo_entre_pulsaciones + 100);
+            });
+
+            $("body").on('click', '.vivienda', function () {
+                var contabilidad = $(this).data('contabilidad');
+                var vivienda = $(this).data('vivienda');
+                var checked = $(this).prop('checked');
+                $.post("/ajax_contabilidad_vut/", {
+                        action: 'update_vivienda_contabilidad',
+                        contabilidad: contabilidad,
+                        vivienda: vivienda,
+                        checked: checked
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            if (data.html3) {
+                                $('#select_vivienda' + contabilidad).append(data.html3);
+                                $('#table_ingre_gasto' + contabilidad).append(data.html2);
+                                $('#table_partidas' + contabilidad).append(data.html1);
+                            } else {
+                                $('#option_vivienda' + vivienda).remove();
+                                $.each(data.partidas_borrar, function (index, value) {
+                                    $('#tbody' + value).remove();
+                                    $('#partida_tr' + value).remove();
+                                });
+                            }
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'crea_partida_vut' %}
+            $("body").on('click', '.add_partida_vut', function () {
+                var contabilidad = $(this).data('contabilidad');
+                var nombre = $('#nombre_partida' + contabilidad).val();
+                var tipo = $('#tipo_partida' + contabilidad).val();
+                $.post("/ajax_contabilidad_vut/", {
+                        action: 'add_partida_vut',
+                        contabilidad: contabilidad,
+                        nombre: nombre,
+                        tipo: tipo
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#table_partidas' + data.contabilidad).prepend(data.html1);
+                            $('#thead_ingre_gasto' + data.contabilidad).after(data.html2);
+                            $('#select_partida' + data.contabilidad).append(data.html3);
+                            $('#nombre_partida' + contabilidad).val('');
+                            $('#tipo_partida' + contabilidad).val('');
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'borra_partida_vut' %}
+            $('body').on('click', '.borrar_partida', function (e) {
+                e.preventDefault();
+                partida_borrar = $(this).data('partida');
+                show_mensajes({
+                    title: 'Borrar Partida', texto: 'Si aceptas la partida será eliminada' +
+                        ' de la base de datos.', buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/ajax_contabilidad_vut/", {
+                                    action: 'borrar_partida',
+                                    partida: partida_borrar
+                                },
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#partida_tr' + partida_borrar).remove();
+                                        $('#tbody' + partida_borrar).remove();
+                                        $('#option_partida' + partida_borrar).remove();
+                                        setTimeout(function () {
+                                            show_mensajes({title: 'Partida borrada', texto: data.mensaje});
+                                        }, 600);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        setTimeout(function () {
+                                            show_mensajes({title: 'Partida no borrada', texto: data.mensaje});
+                                        }, 600);
+                                        $("#update_error").show().delay(1500).fadeOut();
+
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'crea_asiento_vut' %}
+            $('body').on('click', '.add_asiento_vut', function (e) {
+                console.log($(this));
+                e.preventDefault();
+                var contabilidad = $(this).data('contabilidad');
+                var cantidad = $('#cantidad_asiento' + contabilidad).val().replace(',', '.').replace(' ', '');
+                if (parseFloat(cantidad)) {
+                    console.log(contabilidad);
+                    var input_file = document.getElementById('file_asiento' + contabilidad).files[0];
+                    var formData = new FormData();
+                    formData.append('contabilidad', contabilidad);
+                    formData.append('file_asiento', input_file);
+                    formData.append('concepto', $('#concepto_asiento' + contabilidad).val());
+                    formData.append('cantidad', parseFloat(cantidad));
+                    formData.append('vivienda', $('#select_vivienda' + contabilidad).val());
+                    formData.append('partida', $('#select_partida' + contabilidad).val());
+                    formData.append('action', 'add_asiento_vut');
+                    formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+                    var xhr = new XMLHttpRequest();
+                    {#xhr.upload.addEventListener("progress", updateProgress, false);#}
+                    xhr.onload = function () {
+                        if (xhr.readyState === xhr.DONE) {
+                            if (xhr.status === 200) {
+                                console.log('Terminado');
+                                var data = JSON.parse(xhr.responseText);
+                                if (data.ok) {
+                                    $('#tbody' + data.partida).append(data.html);
+                                    $('#select_partida' + contabilidad).val('');
+                                    $('#select_vivienda' + contabilidad).val('');
+                                    $('#cantidad_asiento' + contabilidad).val('');
+                                    $('#file_asiento' + contabilidad).val('');
+                                    $('#concepto_asiento' + contabilidad).val('');
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            }
+                        }
+                    };
+                    xhr.open('POST', "/ajax_contabilidad_vut/", true);
+                    xhr.send(formData);
+                } else {
+                    show_mensajes({
+                        title: '<i class="fa fa-warning"></i> Error',
+                        texto: '"Cantidad" debe ser un número.'
+                    });
+                }
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'edita_asiento_vut' %}
+            $('body').on('click', '.download_file_asiento_vut', function (e) {
+                var asiento = $(this).data('asiento');
+                $('#asiento').val(asiento);
+                $('#action').val('download_file_asiento');
+                document.getElementById("{{ formname }}").submit();
+            });
+
+            $('body').on('click', '.actualizar_asientos', function (e) {
+                var partida = $(this).data('partida');
+                $.post("/ajax_contabilidad_vut/", {action: 'actualizar_asientos', partida: partida}, function (data) {
+                    if (data.ok) {
+                        $("#tbody" + partida).replaceWith(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+            });
+
+        {% endif %}
+
+
+        {% if request.session.gauser_extra|has_permiso:'borra_asiento_vut' %}
+            $('body').on('click', '.borrar_asiento_vut', function (e) {
+                e.preventDefault();
+                asiento_borrar = $(this).data('asiento');
+                show_mensajes({
+                    title: 'Borrar Asiento', texto: 'Si aceptas el asiento será eliminado' +
+                        ' de la base de datos.', buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/ajax_contabilidad_vut/", {
+                                    action: 'borrar_asiento',
+                                    asiento: asiento_borrar
+                                },
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#asiento_tr' + asiento_borrar).remove();
+                                        {#setTimeout(function () {#}
+                                        {#    show_mensajes({title: 'Asiento borrada', texto: data.mensaje});#}
+                                        {# }, 600);#}
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        setTimeout(function () {
+                                            show_mensajes({title: 'Asiento no borrado', texto: data.mensaje});
+                                        }, 600);
+                                        $("#update_error").show().delay(1500).fadeOut();
+
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'add_autorizado_contabilidad_vut' %}
+            var contabilidad_id = null;
+            $('body').on('click', '.add_autorizado_contabilidad_vut', function (e) {
+                e.preventDefault();
+                contabilidad_id = $(this).data('id');
+                $('#div_select_autorizado').foundation('reveal', 'open');
+                setTimeout(function () {
+                    $('#select_autorizado').select2();
+                }, 500);
+            });
+
+            $('body').on('change', '#select_autorizado', function (e) {
+                var autorizado = $(this).val();
+                $.post("/ajax_contabilidad_vut/", {
+                        action: 'add_autorizado_contabilidad_vut', contabilidad: contabilidad_id, autorizado: autorizado
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#autorizados' + data.contabilidad).append(data.html);
+                            $('#div_select_autorizado').foundation('reveal', 'close');
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            contabilidad_id = null;
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'delete_autorizado_contabilidad_vut' %}
+            $('body').on('click', '.delete_autorizado_contabilidad_vut', function (e) {
+                e.preventDefault();
+                autorizado_borrar = $(this).data('id');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Borrar a persona autorizada',
+                    texto: 'Si aceptas, esta persona dejará de estar autorizada para gestionar la contabilidad.',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/ajax_contabilidad_vut/", {
+                                    action: 'delete_autorizado_contabilidad_vut',
+                                    autorizado: autorizado_borrar
+                                },
+                                function (data) {
+                                    if (data.ok) {
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                        $('#div_autorizado' + autorizado_borrar).remove();
+                                        {#setTimeout(function () {#}
+                                        {#    show_mensajes({title: 'Persona autorizada borrada', texto: data.mensaje});#}
+                                        {# }, 600);#}
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                        show_mensajes({title: 'Persona autorizada no borrada', texto: data.mensaje})
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'edita_autorizado_contabilidad_vut' %}
+            $('body').on('click', '.permiso_autorizado_contabilidad_vut', function (e) {
+                var autorizado = $(this).data('id');
+                var permisos = [];
+                $('.permiso_autorizado_contabilidad_vut:checkbox:checked').each(function () {
+                    permisos.push($(this).data('code'));
+                });
+                $.post("/ajax_contabilidad_vut/", {
+                        action: 'edita_autorizado_contabilidad_vut',
+                        autorizado: autorizado,
+                        permisos: permisos
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+
+    </script>
+{% endblock %}

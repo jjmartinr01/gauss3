@@ -1,0 +1,115 @@
+{#{% load my_templatetags %}#}
+
+{% if ginput.tipo == 'gselect' %}
+    <div class="grid-stack-item" data-gs-x="{{ ginput.col }}" data-gs-y="{{ ginput.row }}" data-gs-height="1"
+         data-gs-width="{{ ginput.ancho }}" data-gs-max-height="1" style="position:absolute;" data-id="{{ ginput.id }}">
+        <div class="grid-stack-item-content" style="padding: 0 10px 0 10px;">
+            <span>{{ ginput.label }}</span><br>
+            <select name="ginput{{ ginput.id }}" id="ginput{{ ginput.id }}" data-id="{{ ginput.id }}"
+                    {% if ginput.select %}multiple{% endif %} class="tipo_select2">
+                {% for goption in ginput.goption_set.all reversed %}
+                    <option value="{{ goption.value }}" {% if goption.selected %}selected{% endif %}>{{ goption.text }}
+                    </option>
+                {% endfor %}
+            </select>
+            {#            <div style="position: absolute; bottom:5px;">#}
+            {#                <span id="infx-{{ ginput.id }}" style="color: gray;">{{ ginput.col }}</span>#}
+            {#                <span id="infy-{{ ginput.id }}" style="color: gray;">{{ ginput.row }}</span>#}
+            {#                <span id="infw-{{ ginput.id }}" style="color: gray;">{{ ginput.ancho }}</span>#}
+            {#            </div>#}
+            <div class="pencil_editar_ginput" data-id="{{ ginput.id }}">
+                <span class="fa-stack fa-2x">
+                    <i class="fa fa-circle fa-stack-2x" style="color:green;"></i>
+                    <i class="fa fa-pencil fa-stack-1x fa-inverse"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+{% elif ginput.tipo == 'gbool' %}
+    <div class="grid-stack-item" data-gs-x="{{ ginput.col }}" data-gs-y="{{ ginput.row }}"
+         data-gs-width="{{ ginput.ancho }}" data-gs-height="1"
+         data-gs-max-height="1" style="position:absolute;" data-id="{{ ginput.id }}">
+        <div class="grid-stack-item-content" style="padding: 0 10px 0 10px;">
+            <span>{{ ginput.label }}</span><br>
+            <input type="checkbox" id="ginput{{ ginput.id }}" data-id="{{ ginput.id }}">
+            {#            <div style="position: absolute; bottom:5px;">#}
+            {#                <span id="infx-{{ ginput.id }}" style="color: gray;">{{ ginput.col }}</span>#}
+            {#                <span id="infy-{{ ginput.id }}" style="color: gray;">{{ ginput.row }}</span>#}
+            {#                <span id="infw-{{ ginput.id }}" style="color: gray;">{{ ginput.ancho }}</span>#}
+            {#            </div>#}
+
+            <div class="pencil_editar_ginput" data-id="{{ ginput.id }}">
+                <span class="fa-stack fa-2x">
+                    <i class="fa fa-circle fa-stack-2x" style="color:green;"></i>
+                    <i class="fa fa-pencil fa-stack-1x fa-inverse"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+{% elif ginput.tipo == 'gtext' %}
+    <div class="grid-stack-item" data-gs-x="{{ ginput.col }}" data-gs-y="{{ ginput.row }}"
+         data-gs-width="{{ ginput.ancho }}" data-gs-height="2"
+         data-gs-max-height="2" style="position:absolute;" data-id="{{ ginput.id }}">
+        <div class="grid-stack-item-content" style="padding: 0 10px 0 10px;">
+            <span>{{ ginput.label }}</span><br>
+            <textarea rows="4" class="ginput" id="ginput{{ ginput.id }}" data-id="{{ ginput.id }}"></textarea>
+            {#            <div style="position: absolute; bottom:5px;">#}
+            {#                <span id="infx-{{ ginput.id }}" style="color: gray;">{{ ginput.col }}</span>#}
+            {#                <span id="infy-{{ ginput.id }}" style="color: gray;">{{ ginput.row }}</span>#}
+            {#                <span id="infw-{{ ginput.id }}" style="color: gray;">{{ ginput.ancho }}</span>#}
+            {#            </div>#}
+
+            <div class="pencil_editar_ginput" data-id="{{ ginput.id }}">
+                <span class="fa-stack fa-2x">
+                    <i class="fa fa-circle fa-stack-2x" style="color:green;"></i>
+                    <i class="fa fa-pencil fa-stack-1x fa-inverse"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+{% elif ginput.tipo == 'gfile' %}
+    <div class="grid-stack-item" data-gs-x="{{ ginput.col }}" data-gs-y="{{ ginput.row }}"
+         data-gs-width="{{ ginput.ancho }}" data-gs-height="1"
+         data-gs-max-height="1" style="position:absolute;" data-id="{{ ginput.id }}">
+        <div class="grid-stack-item-content" style="padding: 0 10px 0 10px;">
+            <span>{{ ginput.label }}</span><br>
+            <a class="gfile">Click aquí para cargar un archivo</a>
+
+            <div class="pencil_editar_ginput" data-id="{{ ginput.id }}">
+                <span class="fa-stack fa-2x">
+                    <i class="fa fa-circle fa-stack-2x" style="color:green;"></i>
+                    <i class="fa fa-pencil fa-stack-1x fa-inverse"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="grid-stack-item" data-gs-x="{{ ginput.col }}" data-gs-y="{{ ginput.row }}"
+         data-gs-width="{{ ginput.ancho }}" data-gs-height="1"
+         data-gs-max-height="1" style="position:absolute;" data-id="{{ ginput.id }}">
+        <div class="grid-stack-item-content" style="padding: 0 10px 0 10px;">
+            <span>{{ ginput.label }}</span><br>
+            <input type="text" class="ginput" id="ginput{{ ginput.id }}" data-id="{{ ginput.id }}"
+                   placeholder="{{ ginput.get_tipo_display }}">
+            {#            <div style="position: absolute; bottom:5px;">#}
+            {#                <span id="infx-{{ ginput.id }}" style="color: gray;">{{ ginput.col }}</span>#}
+            {#                <span id="infy-{{ ginput.id }}" style="color: gray;">{{ ginput.row }}</span>#}
+            {#                <span id="infw-{{ ginput.id }}" style="color: gray;">{{ ginput.ancho }}</span>#}
+            {#            </div>#}
+
+            <div class="pencil_editar_ginput" data-id="{{ ginput.id }}">
+                <span class="fa-stack fa-2x">
+                    <i class="fa fa-circle fa-stack-2x" style="color:green;"></i>
+                    <i class="fa fa-pencil fa-stack-1x fa-inverse"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+    {#{% elif ginput.tipo == 'gint' %}#}
+    {#{% elif ginput.tipo == 'gfloat' %}#}
+    {##}
+    {#{% elif ginput.tipo == 'gdatetime' %}#}
+    {#{% elif ginput.tipo == 'gdate' %}#}
+
+
+{% endif %}

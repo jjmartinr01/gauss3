@@ -1,0 +1,244 @@
+{% load mathfilters my_templatetags %}
+
+<style>
+    html {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 10pt;
+        text-align: justify;
+    }
+
+    h1 {
+        text-align: center
+    }
+
+    table {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .pri {
+        line-height: 12px;
+        padding: 2px 0px 2px 0px;
+        text-align: center;
+        font-weight: bold;
+        background: #B4B5B0;
+    }
+
+    .pri2 {
+        text-align: center;
+        font-weight: bold;
+        background: #B4B5B0;
+    }
+</style>
+<h1>&nbsp;</h1><h1>&nbsp;</h1><h1>&nbsp;</h1>
+<h1>INFORME CUPO</h1>
+<h1>{{ cupo.ronda.entidad.name }}</h1>
+<h1>{{ cupo.nombre }}</h1>
+
+{% for filtro in cupo.filtrocupo_set.all %}
+    <h1 class="pagebreak" style="padding-bottom: -15px;text-align: center">{{ filtro.nombre }}</h1>
+    <table>
+        <tr>
+            <td colspan="10" class="pri">Materia - Curso</td>
+            <td class="pri"></td>
+            <td class="pri">Period.</td>
+            <td colspan="5" class="pri">Especialidad</td>
+        </tr>
+        <tr>
+            <td colspan="17"></td>
+        </tr>
+        {% for m in filtro|materias_filtro %}
+            {% for a in m.num_grupos|get_range %}
+                <tr>
+                    <td colspan="10">{{ m.nombre }} {% if m.curso %}- {{ m.curso.nombre }}{% endif %}</td>
+                    <td></td>
+                    <td style="text-align:center;">{{ m.periodos }}</td>
+                    <td colspan="5">{{ m.especialidad.nombre }}</td>
+                </tr>
+                <tr>
+                    <td colspan="17" style="border-top: solid 1px #B4B5B0;"></td>
+                </tr>
+
+            {% endfor %}
+        {% endfor %}
+    </table>
+{% endfor %}
+
+
+<h1 class="pagebreak" style="padding-bottom: -15px;text-align: center"> Resumen de horas por departamento</h1>
+<table style="width:100%;" border="1">
+    <tr>
+        <td style="text-align:center;padding-top:2px;" colspan="4"><strong>Especialidad</strong>
+        </td>
+        <td style="text-align:center;padding-top:2px;"><strong> horas</strong></td>
+        <td style="text-align:center;padding-top:2px;font-weight: 700;">JC</td>
+        <td style="text-align:center;padding-top:2px;font-weight: 700;">2/3</td>
+        <td style="text-align:center;padding-top:2px;font-weight: 700;">1/2</td>
+        <td style="text-align:center;padding-top:2px;font-weight: 700;">1/3</td>
+        <td></td>
+    </tr>
+    {% for p in cupo.profesores_cupo_set.all %}
+        {% if p.num_periodos > 0 %}
+            <tr>
+                <td style="text-align:center;padding-top:2px;" colspan="4">{{ p.especialidad.nombre }}
+                </td>
+                <td style="padding-top:2px;padding-left: 50px;"><strong> {{ p.num_periodos }}</strong></td>
+                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_completos }}</td>
+                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_dostercios }}</td>
+                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_media }}</td>
+                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_tercio }}</td>
+                <td>{% if p.reparto_profes.periodos_sobrantes > 0 %}<span style="color:red;">*</span> {% endif %}</td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+</table>
+
+<h1 class="pagebreak" style="padding-bottom: -15px;text-align: center"> Solicitud de profesores interinos de cupo</h1>
+<table style="width:100%;">
+{#    <tr>#}
+{#        <td style="text-align:center;padding-top:2px;" colspan="4"><strong>Especialidad</strong></td>#}
+{#        <td style="text-align:center;padding-top:2px;"><strong>Jornada</strong></td>#}
+{#        <td style="text-align:center;padding-top:2px;font-weight: 700;">Bilingüe</td>#}
+{#        <td style="text-align:center;padding-top:2px;font-weight: 700;">Observaciones</td>#}
+{#    </tr>#}
+    {% for p in cupo|interinos %}
+        {% ifchanged p.profesorado.especialidad %}
+            <tr>
+                <td style="border-top: solid 1px darkgray;font-weight: 800;" colspan="3">{{ p.profesorado.especialidad.nombre }}</td>
+            </tr>
+        {% endifchanged %}
+        <tr>
+{#            <td style="text-align:center;padding-top:2px;" colspan="4">{{ p.profesorado.especialidad.nombre }}</td>#}
+            <td style="padding-top:2px;padding-left: 25px;width: 24%;">1 {{ p.get_jornada_display }}</td>
+            <td style="text-align:center;padding-top:2px;font-weight: 700;width: 15%;">{% if p.bilingue %}Bilingüe{% endif %}</td>
+            <td style="padding-top:2px;width: 57%;">{{ p.observaciones }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+
+<h1 class="pagebreak">INFORME CUPO PROFESORES POR DEPARTAMENTO</h1>
+{% for p in cupo.profesores_cupo_set.all %}
+    {% if p.num_periodos > 0 %}
+        {#    <h2 class="pagebreak" style="text-align:center;"> INFORME CUPO ({{ cupo.nombre }})</h2>#}
+        {#    Especialidad: <strong> {{ p.especialidad.nombre }}</strong><br/>#}
+        <h2 class="pagebreak" style="padding-bottom: -15px;text-align: center"> {{ p.especialidad.nombre }}</h2>
+        INFORME CUPO ({{ cupo.nombre }})<br>
+        Total de horas que deben asignarse: <strong> {{ p.num_periodos }}</strong>
+        <table style="width:100%;" border="1">
+            <tr>
+                <td style="text-align:center;padding-top:2px;" colspan="4">Plazas para la especialidad tras
+                    asignar {{ p.num_periodos|sub:p.reparto_profes.periodos_sobrantes }} periodos lectivos
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:center;padding-top:2px;">J. completa</td>
+                <td style="text-align:center;padding-top:2px;">A 2/3</td>
+                <td style="text-align:center;padding-top:2px;">A media J.</td>
+                <td style="text-align:center;padding-top:2px;">A 1/3</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_completos }}</td>
+                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_dostercios }}</td>
+                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_media }}</td>
+                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_tercio }}</td>
+            </tr>
+        </table>
+        <br/>
+        Periodos sobrantes sin asignar a ninguna de las plazas:
+        <strong> {{ p.reparto_profes.periodos_sobrantes }}</strong><br/>
+        <hr/><br/>
+        <table>
+            <tr>
+                <td class="pri2" colspan="4">Profesores de cupo</td>
+                {#                <td></td>#}
+            </tr>
+            <tr>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Jornada</th>
+                <th>Bilingüe</th>
+            </tr>
+            {% for profesor in p.especialidad|profesores_especialidad %}
+
+                {% if profesor.observaciones %}
+                    <tr>
+                        <td>{{ profesor.nombre }}</td>
+                        <td>{{ profesor.get_tipo_display }}</td>
+                        <td>{{ profesor.get_jornada_display }}</td>
+                        <td>{% if profesor.bilingue %}Sí{% else %}No{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <td style="border-bottom: solid 1px darkgray" colspan="4"><i>{{ profesor.observaciones }}</i>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td style="border-bottom: solid 1px darkgray">{{ profesor.nombre }}</td>
+                        <td style="border-bottom: solid 1px darkgray">{{ profesor.get_tipo_display }}</td>
+                        <td style="border-bottom: solid 1px darkgray">{{ profesor.get_jornada_display }}</td>
+                        <td style="border-bottom: solid 1px darkgray">{% if profesor.bilingue %}Sí{% else %}
+                            No{% endif %}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endfor %}
+
+<h1 class="pagebreak">INFORME CUPO CON MATERIAS</h1>
+{% for p in cupo.profesores_cupo_set.all %}
+    {% if p.num_periodos > 0 %}
+        <h2 class="pagebreak" style="padding-bottom: -15px;text-align: center"> {{ p.especialidad.nombre }}</h2>
+        INFORME CUPO ({{ cupo.nombre }})<br>
+        Total de horas que deben asignarse: <strong> {{ p.num_periodos }}</strong>
+        <table style="width:100%;" border="1">
+            <tr>
+                <td style="text-align:center;padding-top:2px;" colspan="4">Plazas para la especialidad tras
+                    asignar {{ p.num_periodos|sub:p.reparto_profes.periodos_sobrantes }} periodos lectivos
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:center;padding-top:2px;">J. completa</td>
+                <td style="text-align:center;padding-top:2px;">A 2/3</td>
+                <td style="text-align:center;padding-top:2px;">A media J.</td>
+                <td style="text-align:center;padding-top:2px;">A 1/3</td>
+            </tr>
+            <tr>
+                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_completos }}</td>
+                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_dostercios }}</td>
+                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_media }}</td>
+                <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_tercio }}</td>
+            </tr>
+        </table>
+        <br/>
+        Periodos sobrantes sin asignar a ninguna de las plazas:
+        <strong> {{ p.reparto_profes.periodos_sobrantes }}</strong><br/>
+        <hr/><br/>
+        <table>
+            <tr>
+                <td colspan="10" class="pri">Materia - Curso</td>
+                <td class="pri"></td>
+                <td class="pri">Period.</td>
+                <td colspan="5" class="pri">Profesor</td>
+            </tr>
+            <tr>
+                <td colspan="17"></td>
+            </tr>
+            {% for m in p.materias %}
+                {% for a in m.num_grupos|get_range %}
+                    <tr>
+                        <td colspan="10">{{ m.nombre }} {% if m.curso %}- {{ m.curso.nombre }}{% endif %}</td>
+                        <td></td>
+                        <td style="text-align:center;">{{ m.periodos }}</td>
+                        <td colspan="5"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="17" style="border-top: solid 1px #B4B5B0;"></td>
+                    </tr>
+
+                {% endfor %}
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endfor %}

@@ -1,0 +1,170 @@
+{% load static %}
+{% load foundation_tags %}
+<!DOCTYPE HTML>
+<html style="overflow:hidden">
+  <head>
+    <title>GAUSS</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Pragma" content="no-cache" >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Programa de Gestión Aumentada" />
+    <meta name="author" content="Sistemas de Gestión Aumentada" />
+    <meta name=keywords content="scout,gestión,gestion,asde,msc,ASDE,MSC">
+
+    
+
+    <link rel="shortcut icon" type="image/x-icon" href="/static/images/favicon.png">
+    <link rel="stylesheet" href="/static/js/jquery-ui-1.10.3/css/custom-theme/jquery-ui-1.10.3.custom.min.css" type="text/css">
+    <link rel="stylesheet" href="/static/css/jquery.multiselect.css" type="text/css">
+    <link rel="stylesheet" href="/static/font-awesome-4.0.0/css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="/static/css/gauss.css" type="text/css">
+   
+    <!--<script src="/static/js/jquery-1.7.2.min.js"></script> -->
+    <script src="/static/js/jquery-1.10.2.min.js"></script>
+    <script src="/static/js/jquery.cookie.js"></script>
+    <!--<script type="text/javascript" src="/static/js/jquery-ui-1.8.21.custom.min.js"></script>-->
+    <script type="text/javascript" src="/static/js/jquery-ui-1.10.3/js/jquery-ui-1.10.3.custom.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.multiselect.min.js"></script>
+    <script src="/static/js/nestedAccordion.js"></script>
+    <script src="/static/js/base_gauss.js"></script>
+    <script>
+//     // Edit to suit your needs.
+//     var ADAPT_CONFIG = {
+//       // Where is your CSS?
+//       path: '/static/css/',
+// 
+//       // false = Only run once, when page first loads.
+//       // true = Change on window resize and page tilt.
+//       dynamic: true,
+// 
+//       // First range entry is the minimum.
+//       // Last range entry is the maximum.
+//       // Separate ranges by "to" keyword.
+//       range: [
+// 	'0px    to 760px  = gauss_mobile.css',
+// 	'760px  to 980px  = gauss_760.css',
+// 	'980px  to 1280px = gauss_980.css',
+// 	'1280px to 1600px = 1200.min.css',
+// 	'1600px to 1940px = 1560.min.css',
+// 	'1940px to 2540px = 1920.min.css',
+// 	'2540px           = 2520.min.css'
+//       ]
+//     };
+    </script>
+<!--     <script src="/static/js/adapt.min.js"></script> -->
+
+
+    {% block head %}{% endblock %}
+
+    <script type = "text/javascript">
+      $(document).ready(function() {
+	charge_on_ready();
+	$("#contenido_menu_lateral").nestedaccordion({initShow : "{{menu}}"});
+	{% block ready %}{% endblock %}
+      });
+    </script>
+  </head>
+  {% load my_templatetags %}
+  <body leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" rightmargin="0">
+  <div>
+    <div class="cabecera" style="leftmargin:0px;" id="cabecera_gauss">
+      <div class="cabecera_personal">
+	  <p class="cabecera"><i class="fa fa-user"></i> {{request.session.gauser_extra.gauser.get_full_name}}</p>
+	  <p class="cabecera"><i class="fa fa-briefcase"></i> {%if request.session.gauser_extra.cargo %} {{request.session.gauser_extra.cargo}} {% else %} {{request.session.gauser_extra.perfiles.all.0}} {% endif %}</p>
+	  <p class="cabecera">{% if request.session.gauser_extra|has_perfiles:'11' %}<i class="fa fa-group"></i> {{request.session.gauser_extra.grupo.nombre}}{% endif %}</p>
+      </div>
+      <div class="cabecera_gauss">
+	  <div style="padding-top:3px;float:left;height:43px;">
+	    <img src="/static/images/logo_gauss.png" id="logo_gauss" />
+	  </div>
+	  <div style="padding-top:0px;float:left;height:43px;">
+	    <p><span id="texto_cabecera" style="font-size:26px;font-weight:bold;color:white;font-family:Arial;vertical-align:top;white-space:nowrap;">&nbsp; Gestión Interna de la APA</span></p>
+	    <p class="cabecera">
+	      <a style="float:left;padding-left:5px;padding-top:-5px;" href="{{request.session.gauser_extra.entidad.web}}">
+		<i class="fa fa-info-circle pulsar" style="padding-left:1px;" title="Datos de la entidad"></i> {{request.session.gauser_extra.entidad.name}} ({{request.session.gauser_extra.entidad.code}}) {{request.session.gauser_extra.ronda.get_nombre_display}}
+	      </a>
+	    </p>
+	  </div>
+      </div>
+      <div class="cabecera_institucional">
+	<div style="padding-top:3px;float:right;height:43px;">
+	    <a href="{{request.session.gauser_extra.entidad.organization.web}}"><img height="45px" src="/media/{{request.session.gauser_extra.entidad.organization.anagrama}}" align="right"/></a>
+	</div>
+      </div>
+    </div>  
+  </div>
+  
+ 
+
+  <div class="MenuCabecera" id="menucabecera">
+    <div class="ocultar_mostrar" id="img_lateral" style="float:left;position:relative;left:12%;top:3px;"><i id="icono_lateral" class="fa fa-angle-double-left" ></i>&nbsp;Ocultar menú</div>
+    <div class="ocultar_mostrar hide-for-medium" id="img_cabecera" style="float:left;position:relative;left:15%;top:3px;"><i id="icono_cabecera" class="fa fa-angle-double-up" ></i> &nbsp;Ocultar cabecera</div>
+    <div class="spinner" id="ajax-loader" style="float:left;display:none;position:relative;left:17%;"><i class="fa fa-spinner fa-spin navegar"></i></div>
+    <div id="menu_iconos" style="float:right;">
+      
+      {% block navegar %}{% endblock %}
+
+      <i id="money_sign" class="fa fa-money no_navegar oculto"></i>
+      <i id="ok_sign_plus" class="fa fa-check no_navegar oculto"><span style="font-size:9pt;"><i class="fa fa-plus"></i></span></i>
+      <i id="actividades_sign" class="fa fa-tags no_navegar oculto"></i>
+      <i id="actividad_sign" class="fa fa-tag no_navegar oculto"></i>
+      <i id="list_sign" title="" class="fa fa-list-alt no_navegar oculto"></i>
+      <i id="clip_sign" title="" class="fa fa-paperclip no_navegar oculto"></i>
+      <i id="alta_sign" class="fa fa-male no_navegar oculto"><span style="font-size:9pt;"><i class="fa fa-check"></i></span></i>
+      <i id="baja_sign" class="fa fa-male no_navegar oculto"><span style="font-size:9pt;"><i class="fa fa-times"></i></span></i>
+      <i id="sobre_sign" title="" class="fa fa-envelope-o no_navegar oculto"><span style="font-size:11pt;margin-left:-6px;"><i class="fa fa-mail-forward"></i></span></i>
+      <i id="save_sign" title="" class="fa fa-save no_navegar oculto"></i>
+      <i id="th_sign" title="" class="fa fa-th no_navegar oculto"></i>
+      <i id="off_sign" title="" class="fa fa-power-off no_navegar oculto"></i>
+      <i id="chincheta_sign" title="" class="fa fa-thumb-tack no_navegar oculto"></i>
+      <i id="cogs_sign" title="" class="fa fa-cogs no_navegar oculto"></i>
+      <i id="light_sign" title="" class="fa fa-lightbulb-o no_navegar oculto"></i>
+      <i id="computer_sign" title="" class="fa fa-laptop no_navegar oculto"></i>
+      <i id="water_sign" title="" class="fa fa-tint no_navegar oculto"></i>
+      <i id="build_sign" title="" class="fa fa-building no_navegar oculto"></i>
+      <i id="left_sign" title="" class="fa fa-arrow-left no_navegar oculto"></i>
+      <i id="search_sign" title="" class="fa fa-search no_navegar oculto"></i>
+      <i id="calendar_sign" title="" class="fa fa-calendar no_navegar oculto"></i>
+      <i id="right_sign" title="" class="fa fa-arrow-right no_navegar oculto"></i>
+      <i id="expulsar_sign" class="fa fa-male no_navegar oculto"><span style="font-size:9pt;"><i class="fa fa-hand-right"></i></span></i>
+      <i id="delete_sign" title="" class="fa fa-times no_navegar oculto"></i>
+      <i id="file_xls" title="" class="fa fa-file-o no_navegar oculto"><span class="text_overlap_navegar">XLS</span></i>
+      <i id="file_pdf" title="" class="fa fa-file-o no_navegar oculto"><span class="text_overlap_navegar">PDF</span></i>
+      <i id="file_odt" title="" class="fa fa-file-o no_navegar oculto"><span class="text_overlap_navegar">ODT</span></i>
+      <i id="book_sign" title="" class="fa fa-book no_navegar oculto"></i>
+      <i id="file-alt_sign" title="" class="fa fa-file-o no_navegar oculto"></i>
+      <i id="file_text" title="" class="fa fa-file-text-o no_navegar oculto"></i>
+      <i id="pencil_sign" title="" class="fa fa-pencil no_navegar oculto"></i>
+      <i id="file_sign" title="" class="fa fa-file-o no_navegar oculto"></i>
+      <i id="certificate_sign" title="" class="fa fa-certificate no_navegar oculto"></i>
+      <i id="remove_sign" title="" class="fa fa-trash-o no_navegar oculto"></i>
+      <i id="plus_sign" title="" class="fa fa-plus no_navegar oculto"></i>
+      <i id="ok_sign" title="" class="fa fa-check no_navegar oculto"></i>
+      <i id="question_sign" title="Ayuda" class="fa fa-question-circle no_navegar oculto"></i>
+      <i id="volver" title="Volver a la página anterior" class="fa fa-arrow-circle-left navegar"></i>
+      <span style="color:#03764E;background:#03764E;">|</span>
+     
+      <a style="text-align:right;margin-right:10px;" href="/mis_datos/"><i class="fa fa-user pulsar"></i><b id="mis_datos">Mis datos</b></a>
+      <a style="text-align:right;margin-right:10px;" href="/"><i class="fa fa-sign-out pulsar"></i><b id="salir_gauss">Salir de GAUSS</b></a>
+    </div>
+  </div>
+
+
+<div class="Principal" id="Principal">
+  <div class="MenuLateral" id="menu_lateral" style="display:block;">
+    <h3 class="MenuLateral"> <i class="fa fa-youtube-play"></i> Menú</h3>
+    {% block lateral %}{% endblock %}
+  </div>
+  <div class="Contenido" id="Contenido">
+  <table class="tablaFondo" align="center" cellpadding="0" cellspacing="0" width="100%" id="general"><tr><td class="columnaFondo" align="LEFT" nowrap="nowrap">
+  {% if avisos %}
+    {% include "avisos.html" %}
+  {% endif %}
+  {% block contenido %}{% endblock %}
+  </table>
+  </div>
+</div>
+<div id="faltan_campos" title="Faltan campos por rellenar"></div>
+</body>
+</html>
+

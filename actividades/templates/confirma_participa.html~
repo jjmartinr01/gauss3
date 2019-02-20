@@ -1,0 +1,79 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_3_0/jquery.cleditor.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui-timepicker-addon.css" />
+<script type="text/javascript" src="/static/js/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="/static/js/CLEditor1_3_0/jquery.cleditor.min.js"></script>
+{% endblock %}
+
+
+{% block ready %}
+  $('#aceptar').click(function () {  $('#action').val('aceptar'); document.{{formname}}.submit(); });
+  $('#volver').click(function () {  javascript:history.go(-1); });
+  
+     
+$.cleditor.defaultOptions.controls = "bold italic underline | bullets numbering";
+editores = $("textarea").cleditor({width:"100%", height:"150"});
+
+
+
+
+$(document).ajaxStart(function() { $('#ajax-loader').show();}).ajaxStop(function() {$('#ajax-loader').hide();});
+
+{% endblock %}
+
+
+{% block navegar %}
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <img id="volver" style="cursor:pointer;" border="0" align="right" alt="Atrás" title="Atrás" src="/static/images/volver.gif">
+  <img id="aceptar" style="cursor:pointer;" border="0" align="right" alt="Aceptar" title="Aceptar" src="/static/images/aceptar.gif"/>  
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <img id="ajax-loader" style="display:none;" border="0" align="right" alt="ajax-loader" title="ajax-loader" src="/static/images/ajax-loader.gif">
+  Participación en actividades del grupo
+{% endblock %}
+
+
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+<input type="hidden" id="action" name="action" value="">
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> {{actividad.actividad_title}}</td></tr></table>
+<p class="info">&nbsp;&nbsp;Selecciona al educando que deseas que participe en la actividad del grupo y rellena los datos que consideres de interés. </p>
+
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+<tr><td>
+<table>
+{{form}}
+</table>
+</td><td>
+<table>
+<tr><td> <span class="info">Organizador:</span></td></tr>
+<tr><td><img align="center" width="55" src="/media/fotos/{{actividad.user.foto}}"/></td></tr>
+<tr><td> {{actividad.user.user.get_full_name}}</td></tr>
+<tr><td> <span class="info">Colaboradores:</span></td></tr>
+{% for colaborador in colaboradores %}
+<tr><td> {{colaborador.user.get_full_name}}</td></tr>
+{% endfor %}
+</table>
+</td></tr>
+</table>
+</form>
+</form>
+
+
+
+{% endblock %}
+
+
+
+
+	
+
+
+
+
+
+
+

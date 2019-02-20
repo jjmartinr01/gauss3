@@ -1,0 +1,10 @@
+<div class="cd_contents" data-editable="cd{{ cd.id }}" data-id="{{ cd.id }}">
+    <div id="cd_contents{{ cd.id }}" class="columns {% if cd.large_columns %}large-{{ cd.large_columns }} {% endif %}
+                        {% if cd.medium_columns %}medium-{{ cd.medium_columns }} {% endif %}
+                        {% if cd.small_columns %}small-{{ cd.small_columns }} {% endif %} {{ cd.align }}
+                        {% if cd.tipo == 'tipo_12i' %}figura-{{ cd.esquinas }}{% else %}{{ cd.esquinas }}{% endif %} {{ cd.panel }}" style="position: relative;">
+        {% with template=""|add:cd.tipo|add:".html" content_div=cd row=row %}
+            {% include template %}
+        {% endwith %}
+    </div>
+</div>

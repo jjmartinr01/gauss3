@@ -1,0 +1,235 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Lista cursos que contienen programaciones</strong>
+            </h4>
+        </div>
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="programacion" name="programacion" value="">
+
+        <dl class="accordion" data-accordion id="list_cursos" title="Lista de cursos">
+            {% for curso in cursos %}
+                {% include "cargar_programaciones_formulario.html" %}
+            {% endfor %}
+        </dl>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_check']);
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('curso_contenido')) {
+                        var id = accordion.data('curso');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/cargar_programaciones_ajax/", {action: 'open_accordion', id: id}, function (data) {
+                                if (data.ok) {
+                                    $('#curso' + id).html(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#curso' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('body').on('click', '.descargar_fichero_programacion', function (e) {
+            e.preventDefault();
+            $('#action').val('descargar_fichero_programacion');
+            $('#programacion').val($(this).data('id'));
+            document.{{formname}}.submit();
+        });
+
+        $('body').on('click', '.delete_programacion', function (e) {
+            e.preventDefault();
+            programacion = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> Borrar programación', texto: 'Si aceptas la programación será' +
+                    ' eliminada completamente de la base de datos.', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/cargar_programaciones_ajax/", {
+                            action: 'delete_programacion',
+                            programacion: programacion
+                        }, function (data) {
+                            if (data.ok) {
+                                $('#curso' + data.curso).html(data.html);
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                                window.console.log(data.mensaje);
+                            }
+                        });
+                    }
+                }
+            });
+        });
+
+        $('body').on('click', '.update_programacion', function () {
+            var id = $(this).data('id');
+            var input_files = document.getElementById('fm' + id).files;
+
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('fichero_xhr' + i, input_files[i]);
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'upload_programacion_file');
+            formData.append('materia', id);
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log('Terminado');
+                        var data = JSON.parse(xhr.responseText);
+                        $('#curso' + data.curso).html(data.html);
+                        if (data.mensaje){
+                            show_mensajes({title: 'Error', texto: data.mensaje})
+                        }
+                    }
+                }
+            };
+            xhr.open('POST', "/cargar_programaciones_ajax/", true);
+            xhr.send(formData);
+        });
+
+        $("#check_sign").click(function (event) {
+            event.preventDefault();
+            $('#action').val('generar_zip_pga');
+            document.getElementById("{{ formname }}").submit();
+         });
+
+
+        {##}
+        {#$('#add_curso').click(function (e) {#}
+        {#    e.preventDefault();#}
+        {#    $.post("/cargar_programaciones_ajax/", {action: 'add_curso'}, function (data) {#}
+        {#        if (data.ok) {#}
+        {#            $('#list_cursos').prepend(data.accordion);#}
+        {#            $("#update_ok").show().delay(1500).fadeOut();#}
+        {#        } else {#}
+        {#            $("#update_error").show().delay(1500).fadeOut();#}
+        {#        }#}
+        {#    });#}
+        {# })  ;   #}
+        {##}
+        {#$('body').on('click', '.delete_curso', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var curso = $(this).data('curso');#}
+        {#    $.post("/cargar_programaciones_ajax/", {action: 'delete_curso', curso: curso}, function (data) {#}
+        {#        if (data.ok) {#}
+        {#            $('#accordion' + curso).hide();#}
+        {#            $("#update_ok").show().delay(1500).fadeOut();#}
+        {#        } else {#}
+        {#            $("#update_error").show().delay(1500).fadeOut();#}
+        {#        }#}
+        {#    });#}
+        {# });         #}
+        {##}
+        {#$('body').on('click', '.add_materia_curso', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var id_curso = $(this).data('curso');#}
+        {#    $.post("/cargar_programaciones_ajax/", {action: 'add_materia_curso', id_curso: id_curso}, function (data) {#}
+        {#        if (data.ok) {#}
+        {#            $('#list_materias' + id_curso).prepend(data.html);#}
+        {#            $("#update_ok").show().delay(1500).fadeOut();#}
+        {#        } else {#}
+        {#            $("#update_error").show().delay(1500).fadeOut();#}
+        {#        }#}
+        {#    });#}
+        {# })      ;        #}
+        {##}
+        {#$('body').on('propertychange input change', '.campo', function (e) {#}
+        {#    var campo = $(this).data('campo');#}
+        {#    var value = $(this).val();#}
+        {#    var id = $(this).data('id');#}
+        {#    var object = $(this).data('object');#}
+        {#    $.post("/cargar_programaciones_ajax/", {#}
+        {#            action: 'change_campo',#}
+        {#            id: id,#}
+        {#            value: value,#}
+        {#            campo: campo,#}
+        {#            object: object#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                if (campo == 'nombre') {#}
+        {#                    $('#span_nombre' + id).html(data.valor);#}
+        {#                }#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $("#update_error").show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# })        ;        #}
+        {##}
+        {##}
+        {##}
+        {#$('body').on('click', '.button_action', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var id = $(this).data('id');#}
+        {#    var action = $(this).data('action');#}
+        {#    var evaluar = $(this).data('evaluar');#}
+        {#    $.post("/cargar_programaciones_ajax/", {action: action, id: id}, function (data) {#}
+        {#        if (data.ok) {#}
+        {#            eval(evaluar);#}
+        {#            $("#update_ok").show().delay(1500).fadeOut();#}
+        {#        } else {#}
+        {#            $("#update_error").show().delay(1500).fadeOut();#}
+        {#        }#}
+        {#    });#}
+        {# })        ;        #}
+        {##}
+        {#$('body').on('click', '.resultados_aprendizaje', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var id = $(this).data('id');#}
+        {#    window.location.href ='/resultados_aprendizaje/?m='+id;#}
+        {# })        ;        #}
+        {##}
+        {#$('body').on('click', '.programacion_materia', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var id = $(this).data('id');#}
+        {#    var action = $(this).data('action');#}
+        {#    $.post("/cargar_programaciones_ajax/", {action: action, id: id}, function (data) {#}
+        {#        if (data.ok) {#}
+        {#            if (action == 'borrar_materia'){#}
+        {##}
+        {#    }#}
+        {#            eval(data.evaluar);#}
+        {#            $('#accordion' + curso).hide();#}
+        {#            $("#update_ok").show().delay(1500).fadeOut();#}
+        {#        } else {#}
+        {#            $("#update_error").show().delay(1500).fadeOut();#}
+        {#        }#}
+        {#    });#}
+        {# });#}
+
+
+    </script>
+{% endblock %}

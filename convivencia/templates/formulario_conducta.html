@@ -1,0 +1,277 @@
+{% load my_templatetags %}
+
+{#<style>#}
+{#    h4 {#}
+{#        text-align: center;#}
+{#        color: #008CBA;#}
+{#    }#}
+{##}
+{#    .heading {#}
+{#        color: #008cba;#}
+{#        font-size: 0.85rem !important;#}
+{#        font-weight: bold;#}
+{#        text-transform: uppercase;#}
+{#    }#}
+{##}
+{#    .heading_number {#}
+{#        color: #008cba;#}
+{#        font-size: 0.85rem !important;#}
+{#        font-weight: bold;#}
+{#        text-transform: uppercase;#}
+{#        text-align: right;#}
+{#    }#}
+{#</style>#}
+
+{% if gauser_extra|has_permiso:'borra_conductas_tipificadas' %}
+    <div class="row">
+        <div class="large-9 medium-6 small-3 columns">
+            &nbsp;
+        </div>
+        <div class="large-3 medium-6 small-9 columns" style="text-align: right;">
+            <a class="button del_conducta" data-conducta="{{ conducta.id }}"><i class="fa fa-trash-o"></i> Borrar</a>
+        </div>
+    </div>
+{% endif %}
+<div class="row">
+    <div class="large-4 columns">
+        {% if gauser_extra|has_permiso:'edita_conductas_tipificadas' %}
+            <label title="Tipos de conductas en función de la conducta contraria">Tipo
+                <select class="tipo_c" data-conducta="{{ conducta.id }}">
+                    <option value="CNC" {% if conducta.tipo == 'CNC' %}selected{% endif %}>Contraria a las normas de
+                        convivencia
+                    </option>
+                    <option value="GPC" {% if conducta.tipo == 'GPC' %}selected{% endif %}>Gravemente perjudical para la
+                        convivencia
+                    </option>
+                    <option value="ROF" {% if conducta.tipo == 'ROF' %}selected{% endif %}>Contraria a las normas del
+                        centro educativo
+                    </option>
+                </select>
+            </label>
+        {% else %}
+            <label title="Tipos de conductas en función de la conducta contraria">Tipo
+            </label>
+            {{ conducta.get_tipo_display }}
+        {% endif %}
+    </div>
+    <div class="large-6 columns">
+        {% if gauser_extra|has_permiso:'edita_conductas_tipificadas' %}
+            <label>Normativa en la que se apoya
+                <input class="norma_c" maxlength="200"
+                       data-conducta="{{ conducta.id }}" value="{{ conducta.norma }}">
+            </label>
+        {% else %}
+            <label>Normativa en la que se apoya
+            </label>
+            {{ conducta.norma }}
+        {% endif %}
+    </div>
+    <div class="large-2 columns">
+        {% if gauser_extra|has_permiso:'edita_conductas_tipificadas' %}
+            <label title="Número de días que tarda en prescribir esta conducta">Prescribe en
+                <input class="prescribe_c" type="number" min="1" max="365"
+                       data-conducta="{{ conducta.id }}" value="{{ conducta.prescribe }}">
+            </label>
+        {% else %}
+            <label>Prescribe en
+            </label>
+            {{ conducta.prescribe }} días
+        {% endif %}
+    </div>
+</div>
+<div class="row">
+    <div class="large-12 columns">
+        {% if gauser_extra|has_permiso:'edita_conductas_tipificadas' %}
+            <label>Define la conducta
+                <textarea class="texto_conducta" rows="4"
+                          data-conducta="{{ conducta.id }}">{{ conducta.conducta }}</textarea>
+            </label>
+        {% else %}
+            <label>Define la conducta
+            </label>
+            {{ conducta.conducta }}
+        {% endif %}
+    </div>
+</div>
+{#<div class="row">#}
+{#    <div class="large-12 columns">#}
+{#        <label>Cargos que pueden imponer esta sanción#}
+{#            {% if gauser_extra|has_permiso:'edita_conductas_tipificadas' %}#}
+{#                <select id="cargos_conducta{{ conducta.id }}" multiple data-conducta="{{ conducta.id }}">#}
+{#                    {% for cargo in cargos %}#}
+{#                        <option value="{{ cargo.id }}"#}
+{#                                {% if cargo in conducta.cargos.all %}selected{% endif %}>{{ cargo.cargo }}</option>#}
+{#                    {% endfor %}#}
+{#                </select>#}
+{#            {% else %}#}
+{#                <span id="cargos_conducta{{ conducta.id }}" style="font-weight: 800;">{% for cargo in conducta.cargos.all %}#}
+{#                    {{ cargo.cargo }}, {% endfor %}</span>#}
+{#            {% endif %}#}
+{#        </label>#}
+{#    </div>#}
+{#</div>#}
+
+{#<div class="row">#}
+{#    <div class="large-12 columns">#}
+{#        <label>Sanciones asociadas a esta conducta#}
+{#            {% if gauser_extra|has_permiso:'edita_conductas_tipificadas' %}#}
+{#                <select id="sanciones_conducta{{ conducta.id }}" multiple data-conducta="{{ conducta.id }}">#}
+{#                    {% for sancion in sanciones %}#}
+{#                        <option value="{{ sancion.id }}" title="{{ sancion.sancion }}"#}
+{#                                {% if sancion in conducta.sanciones.all %}selected{% endif %}>{{ sancion.sancion|truncatechars:200 }}</option>#}
+{#                    {% endfor %}#}
+{#                </select>#}
+{#            {% else %}#}
+{#                <ul>{% for sancion in conducta.sanciones.all %}<li>{{ sancion.sancion }}</li>{% endfor %}</ul>#}
+{#            {% endif %}#}
+{#        </label>#}
+{#    </div>#}
+{#</div>#}
+
+
+<script>
+    {% if gauser_extra|has_permiso:'borra_conductas_tipificadas' %}
+        $('#Contenido').on('click', '.del_conducta', function (e) {
+            e.preventDefault();
+            var conducta = $(this).data('conducta');
+            $.post("/gestionar_conductas/", {action: 'del_conducta', conducta: conducta}, function (data) {
+                if (data['ok']) {
+                    $('#accordion_c' + data['conducta']).remove();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+
+            });
+        });
+    {% endif %}
+
+    {% if gauser_extra|has_permiso:'edita_conductas_tipificadas' %}
+        $('#Contenido').on('keyup', '.texto_conducta', function () {
+            var texto = $(this).val();
+            var conducta = $(this).data('conducta');
+            $.post("/gestionar_conductas/", {
+                action: 'change_texto_conducta',
+                conducta: conducta,
+                texto: texto
+            }, function (data) {
+                if (data['ok']) {
+                    $('#span_conducta' + conducta).html(data['texto']);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#Contenido').on('change', '.tipo_c', function () {
+            var tipo = $(this).val();
+            var conducta = $(this).data('conducta');
+            $.post("/gestionar_conductas/", {
+                action: 'change_tipo_conducta',
+                conducta: conducta,
+                tipo: tipo
+            }, function (data) {
+                if (data['ok']) {
+                    $('#span_tipo_c' + conducta).html(data['tipo']);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#Contenido').on('keyup', '.norma_c', function () {
+            var texto = $(this).val();
+            var conducta = $(this).data('conducta');
+            $.post("/gestionar_conductas/", {
+                action: 'change_texto_norma_c',
+                conducta: conducta,
+                texto: texto
+            }, function (data) {
+                if (data['ok']) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#Contenido').on('change', '.prescribe_c', function () {
+            var dias = $(this).val();
+            var conducta = $(this).data('conducta');
+            $.post("/gestionar_conductas/", {
+                action: 'change_prescribe_c',
+                conducta: conducta,
+                dias: dias
+            }, function (data) {
+                if (data['ok']) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $("#sanciones_conducta{{ conducta.id }}").select2();
+        $("body").on('change', '#sanciones_conducta{{ conducta.id }}', function () {
+            var conducta = $(this).data('conducta');
+            var sanciones = new Array();
+            $('#sanciones_conducta{{ conducta.id }}').each(function () {
+                sanciones.push($(this).val());
+            });
+            $.post("/gestionar_conductas/", {
+                action: 'change_sanciones_conductas',
+                conducta: conducta,
+                sanciones: sanciones
+            }, function (data) {
+                if (data['ok']) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $("#cargos_conducta{{ conducta.id }}").select2();
+        $("body").on('change', '#cargos_conducta{{ conducta.id }}', function () {
+            var conducta = $(this).data('conducta');
+            var cargos = new Array();
+            $('#cargos_conducta{{ conducta.id }}').each(function () {
+                cargos.push($(this).val());
+            });
+            $.post("/gestionar_conductas/", {
+                action: 'change_cargos_c',
+                conducta: conducta,
+                cargos: cargos
+            }, function (data) {
+                if (data['ok']) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+    {% endif %}
+
+{#    {% if gauser_extra|has_permiso:'edita_conductas_tipificadas' %}#}
+{#        $('#Contenido').on('change', '.permiso_conducta', function () {#}
+{#            var permiso = $(this).val();#}
+{#            var conducta = $(this).data('conducta');#}
+{#            if ($(this).is(':checked')) {#}
+{#                var action = 'add_permiso';#}
+{#            } else {#}
+{#                var action = 'del_permiso';#}
+{#            }#}
+{#            $.post("/gestionar_conductas/", {permiso: permiso, action: action, conducta: conducta}, function (data) {#}
+{#                $("#update_ok").show().delay(1500).fadeOut();#}
+{#            }, 'json');#}
+{#        });#}
+{#    {% else %}#}
+{#        $('.permiso_conducta').prop('disabled', true);#}
+{#    {% endif %}#}
+
+
+
+
+</script>

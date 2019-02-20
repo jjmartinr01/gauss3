@@ -1,0 +1,70 @@
+{% extends "lateral.html" %}
+
+
+{% block ready %}
+  $('#aceptar').click(function () {  document.{{formname}}.submit(); });
+  $('#volver').click(function () {  javascript:history.go(-1); });
+{% endblock %}
+
+
+{% block navegar %}
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <img id="volver" style="cursor:pointer;" border="0" align="right" alt="Atrás" title="Atrás" src="/static/images/volver.gif">
+  <img id="aceptar" style="cursor:pointer;" border="0" align="right" alt="Aceptar" title="Aceptar" src="/static/images/aceptar.gif">
+  Configuración de datos del Grupo
+{% endblock %}
+
+
+
+{% block contenido %}
+
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+    <input type="hidden" name="borrar_tipo_guardia" id="borrar_tipo_guardia" value="">
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Datos identificativos </td></tr></table>
+    
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+		<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+		  Grupo: <span class="normaltext">{{ request.session.grupo_scout.name }}</span></td>
+		<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+		  Código: <span class="normaltext">{{ request.session.grupo_scout.code }}</span></td>
+		<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+		  Ronda actual: <select name="ronda_actual">
+		  <option value="{{request.session.grupo_scout.ronda_actual.id}}">{{request.session.grupo_scout.ronda_actual.ronda}}</option>
+		  {% for ronda in rondas %}
+		      <option value="{{ ronda.ronda_solar.ronda }}">{{ ronda.ronda_solar.ronda }}</option>
+		  {% endfor %}
+		  </select></td>
+		<td class="columnaFondo" align="LEFT" nowrap="nowrap">Logo: (png){{form.anagrama}}</td>
+		<td class="columnaFondo" align="RIGHT" nowrap="nowrap">
+		<img src="/static/files/{{request.session.grupo_scout.code}}_anagrama.png" height="50" width="50"></td></tr></table>
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+		<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+		  Dirección del Grupo: {{form.address}}</td>
+		<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+		  Localidad: {{form.localidad}}</td>
+		<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+		  Código Postal: {{form.postalcode}}</td></tr></table>
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+		<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+		  Teléfono: {{form.tel}}</td>    
+		<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+		  Fax: {{form.fax}}</td>
+		<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+		  Página Web: {{form.web}}</td>
+		<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+		  E-mail del Grupo: {{form.mail}}</td></tr></table>
+
+		
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Añadir miembros a la comunidad del grupo scout (scouts, monitores, padres, ...) </td></tr></table>
+    
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+		<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+ 		  Fichero datos de usuarios de GAUSS (Obtenido de Racima .xls): </td><td>{{form.file_usuarios}}</td></tr></table> 
+
+      
+    
+  
+    
+  </form>
+{% endblock %}

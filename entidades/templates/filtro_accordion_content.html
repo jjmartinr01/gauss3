@@ -1,0 +1,121 @@
+{% load my_templatetags %}
+
+<div class="row">
+    <div class="columns large-4">
+        <label><b>Creador:</b>
+            <br>{{ filtrado.propietario.gauser.get_full_name }}
+        </label>
+    </div>
+    <div class="columns large-8">
+        <label><b>Nombre de la operación de filtrado:</b>
+            {% if g_e.gauser == filtrado.propietario.gauser %}
+            <input type="text" class="nombre_filtrado" data-id="{{ filtrado.id }}"
+                   value="{{ filtrado.nombre }}">
+        {% else %}
+                <br>{{ filtrado.nombre }}
+            {% endif %}
+        </label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-9">
+        <p><b>Filtros que se aplican a la búsqueda de usuarios:</b></p>
+    </div>
+    <div class="columns large-3" title="Añadir un nuevo filtro">
+        {% if g_e.gauser == filtrado.propietario.gauser %}
+        <a href="#" class="add_filtro" data-id="{{ filtrado.id }}">
+            <span class="fa-stack fa-lg">
+              <i class="fa fa-circle fa-stack-2x"></i>
+              <i class="fa fa-plus fa-stack-1x fa-inverse"></i>
+            </span>
+            Añadir filtro
+        </a>
+            {% else %}
+            <span style="color:lightgrey;" title="No eres el propietario del filtro. No se admiten modificaciones.">
+            <span class="fa-stack fa-lg">
+              <i class="fa fa-circle fa-stack-2x"></i>
+              <i class="fa fa-plus fa-stack-1x fa-inverse"></i>
+            </span>
+            Añadir filtro
+        </span>
+        {% endif %}
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-1" title="Nombre del filtro para ser usado en la fórmula del campo 'Operaciones con filtros'">
+        <span style="color: darkgray;">Filtro</span>
+    </div>
+    <div class="columns large-5" title="Tipo de filtro a aplicar sobre los usuarios de la entidad">
+        <span style="color: darkgray;">Tipo</span>
+    </div>
+    <div class="columns large-4" title="Valor que deseas hacer coincidir según el tipo de filtro seleccionado">
+        <span style="color: darkgray;">Valor de coincidencia</span>
+    </div>
+    <div class="columns large-2" title="Pulsar sobre el símbolo de la papelera para borrar el filtro">
+        <span style="color: darkgray;">Borrar</span>
+    </div>
+</div>
+<div id="filtros{{ filtrado.id }}">
+    {% for filtro in filtrado.filtroq_set.all %}
+        {% if not forloop.first %}
+            {% endif %}
+        {% include 'filtro_accordion_content_q.html' %}
+    {% endfor %}
+</div>
+
+<div class="row">
+    <div class="columns large-9">
+        {% if g_e.gauser == filtrado.propietario.gauser %}
+            <label data-tooltip aria-haspopup="true" class="has-tip tip-top" title="<p>El símbolo | es el operador O
+            lógico, el símbolo & es el operador Y lógico.</p>Ejemplo: Obtener los usuarios que cumplen el filtro 1 o
+            el filtro 2 y de entre los cuales, cumplen también el filtro 3 se escribiría:<br><br>(F1 | F2) & F3">
+            <b>Operaciones con los filtros:</b>
+            <input type="text" id="operacion{{ filtrado.id }}" class="operacion" data-id="{{ filtrado.id }}"
+                   value="{{ filtrado.operacion }}">
+            </label>
+        {% else %}
+            <b>Operaciones con los filtros:</b>
+            <br><span>{{ filtrado.operacion }}</span>
+        {% endif %}
+    </div>
+    <div class="columns large-3 right" title="Descargar un fichero excel con los datos filtrados">
+        <label>&nbsp;</label>
+        <a href="#" class="download_file" data-id="{{ filtrado.id }}">
+            <span class="fa-stack fa-lg">
+              <i class="fa fa-circle fa-stack-2x"></i>
+              <i class="fa fa-file-excel-o fa-stack-1x fa-inverse"></i>
+            </span>
+            Descargar
+        </a>
+{#        <a class="button" data-id="{{ filtrado.id }}"><i class="fa fa-file-excel-o"></i> Descargar</a>#}
+    </div>
+</div>
+
+{#<div class="row">#}
+{#    <div class="columns large-5">#}
+{#        <a href="#" class="button add_filtro small" data-id="{{ filtrado.id }}"><i class="fa fa-plus"></i>#}
+{#            Añadir filtro</a>#}
+{#    </div>#}
+{#</div>#}
+
+<div class="row">
+    <div class="columns large-12">
+        <label title="En este apartado debes seleccionar los campos que se mostrarán en el listado">
+            <b>Campos a mostrar:</b>
+        </label>
+    </div>
+</div>
+
+<div class="row">
+    {% for campo in campos %}
+        <div class="columns large-4 {% if forloop.last %}end{% endif %}">
+            <input type="checkbox" class="campo" value="{{ campo.0 }}" {{ filtrado|is_campo_checked:campo.0 }} data-id="{{ filtrado.id }}"> {{ campo.1 }}
+        </div>
+    {% endfor %}
+</div>
+
+<div class="row">
+    <div class="columns large-12" id="resultados{{ filtrado.id }}">
+    </div>
+</div>

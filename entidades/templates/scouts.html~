@@ -1,0 +1,283 @@
+{% extends "lateral.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css" />
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.js"></script>
+<style>
+  .passwords {color:red;display:none;}
+  .ver_passwords { color:red;cursor:pointer;margin-bottom:100px;text-align:left;}
+  .ver_passwords:hover { color:#672296;cursor:pointer;margin-bottom:100px;text-align:left;}
+</style>
+{% endblock %}
+
+{% block ready %}
+  
+  visualizar(['search_sign','baja_sign','ok_sign','left_sign','right_sign']);
+  
+  $( "#search_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Buscar por nombre');
+
+  {% if request.session.gauser_extra|has_perfiles:"30,5,20" %}
+    $( "#right_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Ir al siguiente socio por orden alfabético');
+    $( "#left_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Ir al anterior socio por orden alfabético');
+    $( "#plus_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir un nuevo socio');
+    $( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Guardar las modificaciones');
+    $( "#ok_sign" ).click(function () {
+	$('#action').val('aceptar');
+	document.{{formname}}.submit(); });
+  {% endif %}
+ 
+ {% if request.session.gauser_extra|has_permiso:"da_baja_socios" %}
+    $( "#baja_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Dar a este socio de baja');
+    $( "#baja_sign" ).click(function () {
+	$('#action').val('baja_socio');
+	$('#dialog_baja').dialog('open'); });
+    $( "#dialog_baja" ).dialog({ autoOpen: false, modal: true,
+        buttons: { Cancelar: function() { $( this ).dialog( "close" ); }, Ok: function() { document.{{formname}}.submit(); } } });
+  {% endif %}
+ 
+  $( "#dialog_buscar" ).dialog({autoOpen: false, resizable: false, height:115, width:350, modal: true});
+  
+  $( "#search_sign" ).click(function () { $( "#dialog_buscar" ).dialog("open"); });
+
+
+  {% autoescape off %}
+    var json_usuarios = {{json_usuarios}};
+    var json_usuarios_ids = {{json_usuarios_ids}};
+  {% endautoescape %}
+  $( "#usuarios_list" ).autocomplete({
+    source: json_usuarios,
+    close: function() {
+	      if (json_usuarios.indexOf($( "#usuarios_list" ).val()) > -1)
+	      {
+	      var id_user = json_usuarios_ids[json_usuarios.indexOf($( "#usuarios_list" ).val())];
+	      $('#action').val('gauser_extra_selected');
+	      $('#gauser_extra_selected').val(id_user);
+	      document.{{formname}}.submit();}}
+    });
+
+
+  {% autoescape off %}
+  var json_tutores = {{json_tutores}};
+  var json_tutores_ids = {{json_tutores_ids}};
+  {% endautoescape %}
+  $( "#tutores_list1" ).autocomplete({
+    source: json_tutores,
+    close: function() {
+	      if (json_tutores.indexOf($( "#tutores_list1" ).val()) > -1)
+	      {
+	      var id_user = json_tutores_ids[json_tutores.indexOf($( "#tutores_list1" ).val())];
+	      $('#gauser_extra_tutor1_selected').val(id_user);}} });
+  $( "#tutores_list2" ).autocomplete({
+    source: json_tutores,
+    close: function() {
+	      if (json_tutores.indexOf($( "#tutores_list2" ).val()) > -1)
+	      {
+	      var id_user = json_tutores_ids[json_tutores.indexOf($( "#tutores_list2" ).val())];
+	      $('#gauser_extra_tutor2_selected').val(id_user);}} });
+
+  $( "#dialog_password" ).dialog({
+      autoOpen: false,
+      resizable: false,
+      width:'auto',
+      modal: true,
+      buttons: { Cancelar: function() { $( this ).dialog( "close" ); }, Ok: function() {
+	  $('#password1').val($('#dialog_password1').val())
+	  $('#password2').val($('#dialog_password2').val())
+	  document.{{formname}}.submit(); }  }});
+  
+  $(".ver_passwords").click(function (){
+      $('#action').val('aceptar');
+      $( "#dialog_password" ).dialog("open");
+  });
+
+  $( "#right_sign" ).click(function(){
+      var id_user = json_usuarios_ids.indexOf($('#gauser_extra_selected').val()) + 1;
+      if (id_user == json_usuarios_ids.length) { id_user = 0; }
+      $('#gauser_extra_selected').val(json_usuarios_ids[id_user]);
+      $('#action').val('gauser_extra_selected');
+      document.{{formname}}.submit(); });
+
+  $( "#left_sign" ).click(function(){
+      var id_user = json_usuarios_ids.indexOf($('#gauser_extra_selected').val()) - 1;
+      if (id_user == -1) { id_user = json_usuarios_ids.length - 1; }
+      $('#gauser_extra_selected').val(json_usuarios_ids[id_user]);
+      $('#action').val('gauser_extra_selected');
+      document.{{formname}}.submit(); });
+
+  $("#id_observaciones").cleditor({
+	    width:        'auto', // width not including margins, borders or padding
+	    height:       250, // height not including margins, borders or padding
+	    controls:     // controls to add to the toolbar
+			  "bold italic underline strikethrough subscript superscript | size " +
+			  "style | bullets numbering | " +
+			  "alignleft center alignright justify | undo redo | " +
+			  "rule image link unlink",
+        });
+
+  
+
+  
+  $( "#id_nacimiento" ).datepicker({
+	  dateFormat: "dd/mm/yy",
+	  dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	  dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	  firstDay: 1,
+	  changeMonth: true,
+	  changeYear: true,
+	  yearRange: "1950:2012",
+	  monthNamesShort: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	  monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	  onClose: function(dateText, inst) { } });
+
+  $( "#id_fecha_baja" ).datepicker({
+	  dateFormat: "dd/mm/yy",
+	  dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	  dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	  firstDay: 1,
+	  changeMonth: true,
+	  changeYear: true,
+	  yearRange: "1970:2012",
+	  monthNamesShort: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	  monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	  onClose: function(dateText, inst) { } });
+
+  $( "#id_fecha_alta" ).datepicker({
+	  dateFormat: "dd/mm/yy",
+	  dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	  dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	  firstDay: 1,
+	  changeMonth: true,
+	  changeYear: true,
+	  yearRange: "1970:2012",
+	  monthNamesShort: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	  monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	  onClose: function(dateText, inst) { } });
+
+
+  $('#Contenido').click(function(e) {
+    var a=false;
+    if ($(e.target).parents('.div_total_checkboxes').length<1){
+	$('.todos_ningunos').each(function(i, div){
+	    if ($(div).css('display') == 'block'){
+		var id = div.id.split('___')[1];
+		$('#checkbox_cerrado').val(id).change();}});
+	$('.todos_ningunos').hide();
+	$('.multiselect2checkbox').hide();
+	$('.ya_checked').show();}});
+
+  $('.texto_checkboxes').click(function(){
+	var id = this.id.split('___')[1];
+	$('#todos_ningunos___'+id).toggle();
+	$('#checkboxes___'+id).toggle();
+	$('#ya_checked___'+id).toggle();})
+
+  $('.select_todos').on('click', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).attr('checked', 'checked'); });
+
+  $('.select_ninguno').on('click', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).attr('checked', false); });
+
+  $('#id_num_cuenta_bancaria').prop('title','{{gauser_extra_selected.banco.nombre}}');
+{% endblock %}
+
+
+{% block navegar %}
+{% endblock %}
+
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+    <input type="hidden" name="action" id="action" value="">
+    <input type="hidden" name="gauser_extra_selected" id="gauser_extra_selected" value="{{gauser_extra_selected.id}}">
+    <input type="hidden" name="password1" id="password1" value="">
+    <input type="hidden" name="password2" id="password2" value="">
+   
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Datos del usuario de GAUSS en el grupo {{gauser_extra_selected.entidad.name}}</td></tr></table>
+
+    <table align="CENTER" style="border-spacing:8px;padding-left:10px;" width="100%">
+      {% for form in form1 %}
+	  {% if forloop.first %}
+	    <tr><td>{{form.label_tag}}</td><td>{{form}}</td><td rowspan="10" align="center"><div class="ver_passwords"><i class="fa fa-shield"></i>&nbsp;Pulsa aquí para cambiar contraseña <i class="fa fa-puzzle-piece"></i></div><br><div>
+	    {% if gauser_extra_selected.foto %}
+	      <img  width="70" src="{{gauser_extra_selected.foto.url}}">
+	    {% else %}
+	      {% if gauser_extra_selected.gauser.sexo == 'H' %}
+		<img  width="70" src="/media/fotos/general_h.png">
+	      {% else %}
+		<img  width="70" src="/media/fotos/general_m.png">
+	      {% endif %}
+	    {% endif %}
+	    <br>Fotografía:
+	    <br>{{form2.foto}}</div></td> </tr>
+	  {% else %}
+	    <tr><td>{{form.label_tag}}</td><td>{{form}}</td> </tr>
+	  {% endif %}
+      {% endfor %}
+
+      {% for form in form2 %}
+	{% if not forloop.last %}
+	  {% if forloop.counter == 2 %}
+	    <tr><td colspan="3">Datos de interés sobre {{gauser_extra_selected.gauser.get_full_name}}:</td> </tr>
+	    <tr><td colspan="3">{{form}}</td> </tr>
+	  {% elif forloop.counter == 3 %}
+	    {# Es la foto y por tanto no hay que hacer nada #}
+	  {% elif forloop.counter == 7 %}
+	      <tr><td>Selecciona al primer tutor</td><td>
+		<input placeholder="{{gauser_extra_selected.tutor1.gauser.get_full_name}}" id="tutores_list1" style="margin-right:-25px;width:300px;"/><span style="font-size:13px;"><i class="fa fa-search"></i></i></span>
+		<input type="hidden" name="tutor1" id="gauser_extra_tutor1_selected" value="{{gauser_extra_selected.tutor1.id}}">
+	      </td> </tr>
+	  {% elif forloop.counter == 8 %}
+	      <tr><td>Selecciona al primer tutor</td><td>
+		<input placeholder="{{gauser_extra_selected.tutor2.gauser.get_full_name}}" id="tutores_list2" style="margin-right:-25px;width:300px;"/><span style="font-size:13px;"><i class="fa fa-search"></i></i></span>
+		<input type="hidden" name="tutor2" id="gauser_extra_tutor2_selected" value="{{gauser_extra_selected.tutor2.id}}">
+	      </td> </tr>
+	  {% else %}
+	    <tr><td>{{form.label_tag}}</td><td>{{form}}</td> </tr>
+	  {% endif %}
+	{% endif %}
+      {% endfor %}
+    </table>
+
+    <div id="tot___id_perfiles" class="div_total_checkboxes">
+      <div class="div_texto_checkboxes">
+	  <span class="info texto_checkboxes" id="texto___id_perfiles"><i class="fa fa-hand-o-up"></i> Selecciona perfiles</span>
+      </div>
+      <div class="ya_checked" id="ya_checked___id_perfiles">
+	  <span class=""><i class="fa fa-eye-slash"></i> (Ya asignados: {% for perfil_asignado in gauser_extra_selected.perfiles.all %} {{perfil_asignado}}{% if not forloop.last %}, {% endif %} {% endfor %})</span>
+      </div>
+      <div class="todos_ningunos" id="todos_ningunos___id_perfiles">
+	  <span id="todo___id_perfiles" class="select_todos info"><i class="fa fa-check-circle"></i> Todos </span>
+	  <span id="ninguno___id_perfiles" class="select_ninguno info"><i class="fa fa-times-circle"></i> Ninguno</span>
+      </div>
+      <table width="100%" id="checkboxes___id_perfiles" class="multiselect2checkbox"><tbody><tr>
+	  {% for perfil in perfiles %}
+	    <td><input type="checkbox" id="perfil___{{perfil.id}}" name="perfiles" class="check___id_perfiles" value="{{perfil.id}}" {% if perfil in gauser_extra_selected.perfiles.all %} checked="checked" {% endif %}>{{perfil.nombre}}</td>
+	    {%if forloop.counter|divisibleby:"4" %}
+		</tr><tr>
+	    {% endif %}
+	  {% endfor %}
+      </tbody></table>
+    </div>
+</form>
+
+
+{% if request.session.gauser_extra|has_permiso:"da_baja_socios" %}
+  <div id="dialog_baja" title="Dar de baja al socio">
+    ¿Estás seguro de querer dar de baja a este socio?
+  </div>
+{% endif %}
+
+<div id="dialog_buscar" title="Búsqueda de usuarios de GAUSS">
+  <input placeholder="Buscar por nombre" class="input_search" id="usuarios_list" style="margin-top:20px;margin-right:-25px;width:300px;"/><span style="font-size:16px;"><i class="fa fa-search"></i></i></span>
+</div>
+
+<div id="dialog_password" title="Cambio de contraseña">
+  <table><tr>
+  <td>Contraseña:</td><td> <input type="password" id="dialog_password1"/></td></tr><tr>
+  <td>Confirma contraseña:</td><td> <input type="password" id="dialog_password2"/></td></tr>
+</div>
+{% endblock %}

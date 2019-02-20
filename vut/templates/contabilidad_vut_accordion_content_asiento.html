@@ -1,0 +1,15 @@
+<tbody id="tbody{{ partida.id }}">
+<tr>
+    {% if partida.tipo == 'INGRE' or partida.tipo == 'GASTO' %}
+        <th colspan="5"><span
+                style="color:blue">{{ partida.nombre }} ({{ partida.get_tipo_display }})</span></th>
+    {% else %}
+        <th colspan="4"><span
+                style="color:blue">{{ partida.nombre }} ({{ partida.get_tipo_display }})</span></th>
+        <th><a class="actualizar_asientos" data-partida="{{ partida.id }}"><i class="fa fa-refresh"></i> Actualizar</a></th>
+    {% endif %}
+</tr>
+{% for asiento in partida.asientovut_set.all %}
+    {% include "contabilidad_vut_accordion_content_asiento_tr.html" %}
+{% endfor %}
+</tbody>

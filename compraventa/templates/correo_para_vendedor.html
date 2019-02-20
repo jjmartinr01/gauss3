@@ -1,0 +1,55 @@
+{% if request.POST.action == 'precio_fijo' %}
+    <p>Hola {{ comprador.articulo.vendedor.first_name }},</p>
+    <p>{{ comprador.get_full_name }} ha visto el artículo "{{ comprador.articulo.nombre }}" que has puesto a la venta a
+        través de GAUSS y te ha dejado el siguiente mensaje:</p>
+    {% autoescape off %}{{ comprador.observaciones }}{% endautoescape %}
+    <p>Para continuar con el proceso de venta, deberías ponerte en contacto con {{ comprador.first_name }}. Sus datos
+        son:</p> <p>Email: <strong>{{ comprador.email }}</strong></p>
+    {% if comprador.comprador.telfij and comprador.comprador.telmov %}
+        <p>Teléfonos: <strong>{{ comprador.comprador.telfij }}</strong> /
+            <strong>{{ comprador.comprador.telmov }}</strong></p>
+    {% elif comprador.comprador.telfij %}
+        <p>Teléfono: <strong>{{ comprador.comprador.telfij }}</strong></p>
+    {% elif comprador.comprador.telmov %}
+        <p>Teléfono: <strong>{{ comprador.comprador.telmov }}</strong></p>
+    {% endif %}
+    <p>Si lo consideras apropiado puedes marcar tu producto como
+        "<a href="{% if request.is_secure %}https{% else %}http{% endif %}://{{ request.META.HTTP_HOST }}/estado_articulo/?id={{ comprador.articulo.codigo }}&estado=RESERVADO">
+        RESERVADO</a>" o como
+        "<a href="{% if request.is_secure %}https{% else %}http{% endif %}://{{ request.META.HTTP_HOST }}/estado_articulo/?id={{ comprador.articulo.codigo }}&estado=VENDIDO">
+        VENDIDO</a>", haciendo click sobre los enlaces mostrados.</p>
+{% elif request.POST.action == 'subasta' %}
+    <p>Hola {{ comprador.articulo.vendedor.first_name }},</p>
+    <p>Han pujado por tu artículo "{{ comprador.articulo.nombre }}". La oferta que te han hecho es de {{ oferta }}
+        €.</p>
+    <p>Para continuar con el proceso de venta, deberías ponerte en contacto con {{ comprador.first_name }}. Sus datos
+        son:</p> <p>Email: <strong>{{ comprador.email }}</strong></p>
+    {% if comprador.comprador.telfij and comprador.comprador.telmov %}
+        <p>Teléfonos: <strong>{{ comprador.comprador.telfij }}</strong> /
+            <strong>{{ comprador.comprador.telmov }}</strong></p>
+    {% elif comprador.comprador.telfij %}
+        <p>Teléfono: <strong>{{ comprador.comprador.telfij }}</strong></p>
+    {% elif comprador.comprador.telmov %}
+        <p>Teléfono: <strong>{{ comprador.comprador.telmov }}</strong></p>
+    {% endif %}
+    <p>Si lo consideras apropiado puedes marcar tu producto como
+        "<a href="{% if request.is_secure %}https{% else %}http{% endif %}://{{ request.META.HTTP_HOST }}/estado_articulo/?id={{ comprador.articulo.codigo }}&estado=RESERVADO">
+        RESERVADO</a>" o como
+        "<a href="{% if request.is_secure %}https{% else %}http{% endif %}://{{ request.META.HTTP_HOST }}/estado_articulo/?id={{ comprador.articulo.codigo }}&estado=VENDIDO">
+        VENDIDO</a>", haciendo click sobre los enlaces mostrados.</p>
+{% elif request.POST.action == 'servicio' %}
+    <p>Hola {{ comprador.articulo.vendedor.first_name }},</p>
+    <p>{{ comprador.get_full_name }} ha visto la oferta "{{ comprador.articulo.nombre }}" y le gustaría solicitarte más
+        información</p> <p>Te ha dejado el siguiente mensaje:</p>
+    {% autoescape off %}{{ comprador.observaciones }}{% endautoescape %}
+    <p>Para continuar con el proceso de venta, deberías ponerte en contacto con {{ comprador.first_name }}. Sus datos
+        son:</p> <p>Email: <strong>{{ comprador.email }}</strong></p>
+    {% if comprador.comprador.telfij and comprador.comprador.telmov %}
+        <p>Teléfonos: <strong>{{ comprador.comprador.telfij }}</strong> /
+            <strong>{{ comprador.comprador.telmov }}</strong></p>
+    {% elif comprador.comprador.telfij %}
+        <p>Teléfono: <strong>{{ comprador.comprador.telfij }}</strong></p>
+    {% elif comprador.comprador.telmov %}
+        <p>Teléfono: <strong>{{ comprador.comprador.telmov }}</strong></p>
+    {% endif %}
+{% endif %}

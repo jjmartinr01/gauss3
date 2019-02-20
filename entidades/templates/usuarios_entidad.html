@@ -1,0 +1,354 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <div class="row">
+        <div class="columns large-12">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Datos de usuarios en
+                {{ gauser_extra_selected.entidad.name }}</strong></h4>
+        </div>
+    </div>
+
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <div class="panel callout" style="display: none;position: relative;" id="buscar_en_listado_ajax">
+            <div class="row">
+                <p><strong>Búsqueda de usuario por nombre y/o apellidos</strong></p>
+                <select class="select_user select_buscar" id="select_buscar"></select>
+            </div>
+            <a id="buscar_en_listado_ajax_cerrar"
+               style="position: absolute; top: 7px;right: 7px; font-size: 1.6em;"><strong><i
+                    class="fa fa-close"></i> </strong></a>
+            <p>&nbsp;</p>
+            <p>&nbsp;</p>
+        </div>
+        <div id="div_formulario_usuario"></div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_arrow-left', 's_arrow-right', 's_search', 's_list']);
+
+        function load_user(user) {
+            $.post("/usuarios_entidad_ajax/", {
+                action: 'load_user',
+                ge: user
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#div_formulario_usuario').html(data.html);
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        }
+
+        function load_select2(selector) {
+            $(selector).select2({
+                minimumInputLength: 3,
+                delay: 250,
+                placeholder: 'Escribe parte del nombre para buscar',
+                language: 'es',
+                ajax: {
+                    url: '/usuarios_entidad_ajax/',
+                    data: function (params) {
+                        var query = {
+                            search: params.term,
+                            type: 'public',
+                            action: 'select_user'
+                        };
+                        // Query parameters will be ?search=[term]&type=public
+                        return query;
+                    },
+                    processResults: function (data) {
+                        // Tranforms the top-level key of the response object from 'items' to 'results'
+                        return {
+                            results: data.items
+                        };
+                    }
+                }
+            });
+        }
+
+        {% if request.session.gauser_extra|has_permiso:'modifica_datos_usuarios' %}
+            function post_change(action, campo, ge, valor) {
+                $.post("/usuarios_entidad_ajax/", {
+                    action: action,
+                    campo: campo,
+                    ge: ge,
+                    valor: valor
+                }, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        if (data.mensaje) {
+                            setTimeout(function () {
+                                show_mensajes({
+                                    title: '<i class="fa fa-info-circle"></i> Información',
+                                    texto: data.mensaje
+                                })
+                            }, 200);
+                        }
+                        return true;
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                        return false;
+                    }
+                });
+            }
+
+            $('#Contenido').on('keyup change', '.gauser', function (e) {
+                var elemento = $(this);
+                var campo = elemento.data('campo');
+                var valor = elemento.val();
+                var ge = $('#gauser_extra_selected').val();
+                setTimeout(function () {
+                    if (valor == elemento.val()) {
+                        post_change('mod_gauser_data', campo, ge, valor);
+                    }
+                }, 750);
+            });
+
+            $('#Contenido').on('keyup change', '.gauser_extra', function (e) {
+                var elemento = $(this);
+                var campo = elemento.data('campo');
+                var valor = elemento.val();
+                var ge = $('#gauser_extra_selected').val();
+                setTimeout(function () {
+                    if (valor == elemento.val()) {
+                        post_change('mod_gauser_extra_data', campo, ge, valor);
+                    }
+                }, 750);
+            });
+
+            $('#Contenido').on('click', '.ge_activo', function (e) {
+                var ge = $('#gauser_extra_selected').val();
+                if ($(this).prop('checked')) {
+                    post_change('mod_gauser_extra_data', 'activo', ge, 1);
+                } else {
+                    post_change('mod_gauser_extra_data', 'activo', ge, 0);
+                }
+            });
+
+            $('#Contenido').on('click', '.subentidades', function (e) {
+                var ge = $('#gauser_extra_selected').val();
+                var subentidad = $(this).val();
+                if ($(this).prop('checked')) {
+                    post_change('mod_subentidades', subentidad, ge, 1);
+                } else {
+                    post_change('mod_subentidades', subentidad, ge, 0);
+                }
+            });
+
+            $('#Contenido').on('click', '.cargos', function (e) {
+                var ge = $('#gauser_extra_selected').val();
+                var cargo = $(this).val();
+                if ($(this).prop('checked')) {
+                    post_change('mod_cargos', cargo, ge, 1);
+                } else {
+                    post_change('mod_cargos', cargo, ge, 0);
+                }
+            });
+
+            $('#Contenido').on('keyup change', '.change_password', function (e) {
+                var pass1 = $('#password1').val();
+                var pass2 = $('#password2').val();
+                var no_coinciden = false;
+                var no_length = false;
+                var no_upper = false;
+                var no_lower = false;
+                var no_digit = false;
+                var warning = false;
+                var lower = /[a-z]/;
+                var upper = /[A-Z]/;
+                var digit = /[0-9]/;
+                if (pass1.length < 6 && pass1.length > 0) {
+                    $('#no_length').show();
+                    no_length = true;
+                } else {
+                    $('#no_length').hide();
+                    no_length = false;
+                }
+                if (pass1 != pass2) {
+                    $('#no_coinciden').show();
+                    no_coinciden = true;
+                } else {
+                    $('#no_coinciden').hide();
+                    no_coinciden = false;
+                }
+                if (!lower.test(pass1)) {
+                    $('#no_lower').show();
+                    no_lower = true;
+                }else{
+                    $('#no_lower').hide();
+                    no_lower = false;
+                }
+                if (!upper.test(pass1)) {
+                    $('#no_upper').show();
+                    no_upper = true;
+                }else{
+                    $('#no_upper').hide();
+                    no_upper = false;
+                }
+                if (!digit.test(pass1)) {
+                    $('#no_digit').show();
+                    no_digit = true;
+                }else{
+                    $('#no_digit').hide();
+                    no_digit = false;
+                }
+                warning = no_coinciden || no_length || no_upper || no_lower || no_digit;
+                console.log(no_coinciden, no_length, no_upper, no_lower, no_digit);
+                if (warning){
+                    $('#pass_warning').show();
+                    $('#boton_password').addClass('disabled').addClass('secondary');
+                }else{
+                    $('#pass_warning').hide();
+                    $('#boton_password').removeClass('disabled').removeClass('secondary');
+                }
+                if (pass1.length == 0 && pass2.length == 0) {
+                    $('#pass_warning').hide();
+                    $('#boton_password').addClass('disabled').addClass('secondary');
+                    $('.warnings').hide();
+                }
+            });
+
+            $('#Contenido').on('click', '#boton_password', function (e) {
+                var pass1 = $('#password1').val();
+                var pass2 = $('#password2').val();
+                if ((pass1 == pass2) && pass1.length > 4) {
+                    var ge = $('#gauser_extra_selected').val();
+                    post_change('mod_password', pass1, ge, pass2);
+                }
+            });
+
+            $('#Contenido').on('change', '.select_tutor', function (e) {
+                var ge = $('#gauser_extra_selected').val();
+                var tutor = $(this).data('tutor');
+                var valor = $(this).val();
+                post_change('mod_tutor', tutor, ge, valor);
+            });
+
+            $('#Contenido').on('click', '#fake_file_input', function () {
+               $('#id_foto').click();
+                setTimeout(function () {
+                    $('#id_foto').val($('#id_foto').val());
+                }, 1);
+            });
+
+            $('#Contenido').on('change', '#id_foto', function () {
+                $('#span_spin').show();
+                var input_files = document.getElementById('id_foto').files;
+                var formData = new FormData();
+                for (var i = 0; i < input_files.length; i++) {
+                    formData.append('fichero_xhr' + i, input_files[i]);
+                }
+                formData.append('n_files', input_files.length);
+                formData.append('action', 'upload_file_foto');
+                formData.append('ge', $('#gauser_extra_selected').val());
+                formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+                var xhr = new XMLHttpRequest();
+                xhr.onload = function () {
+                    if (xhr.readyState === xhr.DONE) {
+                        if (xhr.status === 200) {
+                            console.log('Terminado');
+                            var data = JSON.parse(xhr.responseText);
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                                document.getElementById("foto_user").src = data.url;
+                                $('#span_spin').hide();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                                $('#span_spin').hide();
+                            }
+                        }
+                    }
+                };
+                xhr.open('POST', "/usuarios_entidad_ajax/", true);
+                xhr.send(formData);
+            });
+        {% endif %}
+
+        {% if not gauser_extra_selected %}
+            window.location.href = '/add_usuario/';
+        {% endif %}
+
+        $('#Contenido').on('click', '.buscar_miembro', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            load_user(id);
+        });
+
+        {# Búsqueda de usuarios #}
+
+        $("#search_sign").click(function (e) {
+            e.preventDefault();
+            $('#buscar_en_listado_ajax').show();
+            $('.formulario_socio').fadeTo('fast', 0.3);
+            $(document).scrollTop($('#buscar_en_listado_ajax').offset().top - 150);
+            load_select2('#select_buscar');
+        });
+
+        $('#buscar_en_listado_ajax_cerrar').click(function (e) {
+            e.preventDefault();
+            $('#buscar_en_listado_ajax').hide();
+            $('.formulario_socio').fadeTo('fast', 1);
+        });
+
+        $('#Contenido').on('change', '.select_buscar', function (e) {
+            var id = $(this).val();
+            load_user(id);
+            $('#buscar_en_listado_ajax').hide();
+        });
+
+        {% if request.session.gauser_extra|has_permiso:"baja_usuarios" %}
+            habilita(['s_male']);
+            $("#male_sign").click(function (e) {
+                e.preventDefault();
+                var ge = $('#gauser_extra_selected').val();
+                $.post("/usuarios_entidad_ajax/", {action: 'baja_socio', ge: ge}, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        if (data.mensaje) {
+                            setTimeout(function () {
+                                show_mensajes({
+                                    title: '<i class="fa fa-info-circle"></i> Información',
+                                    texto: data.mensaje
+                                })
+                            }, 200);
+                        }
+                        load_user($('#prox_g_e_selected').val());
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+        {% endif %}
+
+        $("#arrow-right_sign").click(function (e) {
+            e.preventDefault();
+            var ge = $('#prox_g_e_selected').val();
+            load_user(ge);
+        });
+
+        $("#arrow-left_sign").click(function (e) {
+            e.preventDefault();
+            var ge = $('#prev_g_e_selected').val();
+            load_user(ge);
+        });
+
+        {# Instrucciones para generar listados #}
+
+        {% if request.session.gauser_extra|has_permiso:"acceso_listados_usuarios" %}
+            $("#list_sign").click(function (e) {
+                e.preventDefault();
+                window.location.href = '/listados_usuarios_entidad/';
+            });
+        {% endif %}
+
+        load_user({{ gauser_extra_selected.id }});
+    </script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% load my_templatetags %}
+
+<style>
+.no_puede_asistir {font-size:12pt;opacity:0.4;}
+.puede_asistir {font-size:12pt;cursor:pointer;}
+.puede_asistir:hover {font-size:12pt;cursor:pointer;color:#E76123;}
+.fa-bookmark {font-size:12pt;}
+.fa-star {color:#e76123;}
+</style>
+
+<table align="CENTER" cellpadding="3" width="100%">
+  {% for reunion in reuniones %}
+    {% ifchanged reunion.fecha_inicio.month %}
+      </table>
+      <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap">
+      Actividades programadas para el mes de {{ reunion.fecha|date:"F" }}
+      </td></tr></table>
+      <table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+    {% endifchanged %}
+      <tr><td colspan="7" style="height:1px;background-color:#623090;"></td></tr>
+      <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}">
+      
+      <td style="font-size:8pt;color:#623090;width:20%;text-align:center;" class="tabla_reunions">
+	  <span title="Se realiza el {{reunion.fecha_inicio}}">{{reunion.fecha|date}}</span>
+      </td>
+
+      <td id="reunion_{{reunion.id}}" class="reunion_texto" style="font-size:8pt;color:#623090;width:57%;white-space:normal;cursor:pointer;"> <span class="color2">&nbsp;Reunión de {{reunion.subentidad.nombre}}</span>
+      </td>
+
+      <td style="font-size:8pt;color:#623090;width:3%;text-align:center;">
+<!--       <i  class="fa fa-group show_hide_participantes" id="subentidad_{{reunion.id}}" style="cursor:pointer;font-size:15px;" title="{{reunion.subentidad.nombre}}"></i> -->
+	  <i  class="fa fa-group" id="subentidad_{{reunion.id}}" style="cursor:pointer;font-size:15px;" title="{{reunion.subentidad.nombre}}"></i>
+      </td>
+
+      
+      <td style="width:3%;text-align:center;">
+	  {% if reunion|puede_asistir:request.session.gauser_extra %}
+	      <!--<i title="Puedes incluirte como participante en la reunion o incluir a otros educandos dependiendo de tu perfil" id="add_participante___{{reunion.id}}" class="fa fa-user puede_asistir add_participante"><span style="font-size:8pt;"><i class="fa fa-plus-circle"></i></span></i> -->
+	      <i title="Puedes incluirte como participante en la reunion o incluir a otros educandos dependiendo de tu perfil" id="add_participante___{{reunion.id}}" class="fa fa-user puede_asistir"><span style="font-size:8pt;"><i class="fa fa-plus-circle"></i></span></i> 
+	  {% else %}
+	      <i title="No puedes incluirte como participante en la reunion o incluir a otros educandos" id="add_participante___{{reunion.id}}" class="fa fa-user no_puede_asistir"><span style="font-size:8pt;"><i class="fa fa-plus-circle"></i></span></i> 
+	  {% endif %}
+      </td>
+
+      <td style="width:3%;text-align:center;">
+	  {% if reunion.organizador == request.session.gauser_extra or request.session.gauser_extra|has_permiso:'mod_reuniones_grupo' %}
+	      <i title="Pulsando en este icono puedes modificar el contenido de la reunion o incluso borrarla" id="mod_reunion___{{reunion.id}}" class="fa fa-pencil puede_asistir modificar_reunion"></i> 
+	  {% else %}
+	      <i title="No tienes permiso para modificar el contenido de la reunion" id="mod_reunion___{{reunion.id}}" class="fa fa-pencil no_puede_asistir"></i> 
+	  {% endif %}
+      </td>
+      </tr>
+
+      <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}"><td colspan="7"> <div id="div_{{reunion.id}}" style="padding-left:35px;padding-right:35px;white-space:normal;display:none;"></div> </td></tr>
+
+      <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}"><td colspan="7"> <div id="participantes_{{reunion.id}}" style="padding-left:35px;padding-right:35px;white-space:normal;display:none;"></div> </td></tr>
+  
+{% endfor %}
+</table>
+

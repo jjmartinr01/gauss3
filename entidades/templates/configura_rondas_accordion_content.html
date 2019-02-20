@@ -1,0 +1,94 @@
+{% load entidades_extras %}
+
+{% if ronda_actual.id < ronda.id %}
+    <ul class="button-group centered">
+        <li title="Borrar este ronda">
+            <a href="#" class="button delete_ronda"
+               data-ronda="{{ ronda.id }}"><i class="fa fa-trash-o"></i> Borrar</a></li>
+    </ul>
+{% endif %}
+
+{% if ronda_actual.id <= ronda.id %}
+    <div class="row">
+        <div class="columns large-4">
+            <label>Nombre del ronda:
+                <input type="text" class="campo_texto" data-campo="nombre" value="{{ ronda.nombre }}"
+                       data-ronda="{{ ronda.id }}">
+            </label>
+        </div>
+
+        <div class="columns large-4">
+            <label>Inicio:
+                <input type="text" class="campo_texto fecha" data-campo="inicio" value="{{ ronda.inicio|date:"d/m/Y" }}"
+                       data-ronda="{{ ronda.id }}">
+            </label>
+        </div>
+
+        <div class="columns large-4">
+            <label>Fin:
+                <input type="text" class="campo_texto fecha" data-campo="fin" value="{{ ronda.fin|date:"d/m/Y" }}"
+                       data-ronda="{{ ronda.id }}">
+            </label>
+        </div>
+    </div>
+{% else %}
+    <div class="row">
+        <div class="columns large-4">
+            <label>Nombre del ronda:
+                <b>{{ ronda.nombre }}</b>
+            </label>
+        </div>
+
+        <div class="columns large-4">
+            <label>Inicio:
+                <b>{{ ronda.inicio|date:"d/m/Y" }}</b>
+            </label>
+        </div>
+
+        <div class="columns large-4">
+            <label>Fin:
+                <b>{{ ronda.fin|date:"d/m/Y" }}</b>
+            </label>
+        </div>
+    </div>
+{% endif %}
+
+{% if ronda_actual.id < ronda.id %}
+    <div class="row">
+        <div class="columns large-12">
+            <b>Esta configuración es posterior a la que actualmente tiene asociada la entidad. Por esta razón es posible
+                cargar datos de la configuración actual ({{ ronda_actual.nombre }}) a esta. Selecciona la información
+                a copiar.
+            </b>
+        </div>
+    </div>
+    <br><br>
+
+    <div class="row">
+        <div class="columns large-12">
+            <label>Los usuarios con los perfiles seleccionados se añadirán al nuevo periodo de configuración:
+            </label>
+            <br>
+            <div id="cargos{{ ronda.id }}">
+                {% include "configura_rondas_accordion_content_cargos.html" %}
+{#                {% for cargo in cargos %}#}
+{#                    <div class="columns large-4"#}
+{#                         title="Existen {{ cargo|cargos_ronda:ronda }} perfiles en esta ronda ({{ ronda.nombre }})">#}
+{#                        <input type="checkbox" class="upgrade_usuarios" data-cargo="{{ cargo.id }}"#}
+{#                               data-ronda="{{ ronda.id }}"> {{ cargo.cargo }} ({{ cargo|cargos_ronda:ronda }})#}
+{#                    </div>#}
+{#                {% endfor %}#}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+
+<script>
+    $(".fecha").fdatepicker({
+        format: "dd/mm/yyyy",
+        language: 'es',
+        weekStart: 1
+    });
+</script>

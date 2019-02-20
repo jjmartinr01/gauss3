@@ -1,0 +1,327 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        .check_departamento {
+            text-align: center;
+            cursor: pointer;
+            font-size: 120%;
+        }
+
+        #check_todos {
+            text-align: center;
+            cursor: pointer;
+            font-size: 120%;
+        }
+
+        .gris {
+            color: #a3a3a3;
+        }
+
+    </style>
+{% endblock %}
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}" data-abide>
+        {% csrf_token %}
+
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="id_departamento_selected" name="id_departamento_selected" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong> Departamentos/Secciones de la entidad</strong></h4>
+        </div>
+
+        <div id="div_departamentos">
+            <dl class="accordion" data-accordion id="list_departamentos">
+                {% for departamento in departamentos %}
+                    {% include "accordion_departamento.html" %}
+                {% endfor %}
+            </dl>
+        </div>
+        {% if request.session.gauser_extra|has_permiso:'crea_departamentos' %}
+            <hr>
+            <div class="row">
+                <div class="columns large-12">
+                    <a class="button add_departamento"><i class="fa fa-plus"></i> Crear departamento</a>
+                </div>
+            </div>
+        {% endif %}
+
+
+
+
+
+
+
+
+        {#        <div id="div_departamentos">#}
+        {#            {% include 'list_departamentos.html' %}#}
+        {#        </div>#}
+        {##}
+        {#        <div id="introducir_departamento" style="display: none;">#}
+        {#            #}
+        {#        </div>#}
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        {% if request.session.gauser_extra|has_permiso:'crea_departamentos' %}
+            $('#Contenido').on('click', '.add_departamento', function (e) {
+                e.preventDefault();
+                var departamento = $(this).data('departamento');
+                $.post("/departamentos_ajax/", {action: 'add_departamento'}, function (data) {
+                    $('#list_departamentos').append(data);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'borra_departamentos' %}
+            $('#Contenido').on('click', '.del_departamento', function (e) {
+                e.preventDefault();
+                var departamento = $(this).data('departamento');
+                $.post("/departamentos_ajax/", {action: 'del_departamento', id: departamento}, function (data) {
+                    $('#accordion' + departamento).remove();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'edita_departamentos' %}
+            $('#Contenido').on('keyup', '.nombre_departamento', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var nombre = $(this).val();
+                $.post("/departamentos_ajax/", {action: 'nombre_departamento', id: id, nombre: nombre}, function (data) {
+                    if (data.ok) {
+                        $("#span_nombre" + id).html(data.nombre);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+            $('#Contenido').on('keyup', '.edad_min_departamento', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var edad_min = $(this).val();
+                $.post("/departamentos_ajax/", {
+                    action: 'edad_min_departamento',
+                    id: id,
+                    edad_min: edad_min
+                }, function (data) {
+                    if (data.ok) {
+                        $("#span_edad_min" + id).html(data.edad_min);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+            $('#Contenido').on('keyup', '.edad_max_departamento', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var edad_max = $(this).val();
+                $.post("/departamentos_ajax/", {
+                    action: 'edad_max_departamento',
+                    id: id,
+                    edad_max: edad_max
+                }, function (data) {
+                    if (data.ok) {
+                        $("#span_edad_max" + id).html(data.edad_max);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+            $('#Contenido').on('click', '.mensajes', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                $.post("/departamentos_ajax/", {action: 'mensajes', id: id}, function (data) {
+                    if (data.ok) {
+                        $("#mensajes" + id).html(data.mensajes);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+            $('#Contenido').on('keyup', '.observaciones', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var observaciones = $(this).val();
+                $.post("/departamentos_ajax/", {
+                    action: 'observaciones',
+                    id: id,
+                    observaciones: observaciones
+                }, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+            $('#Contenido').on('change', '.sub_padre', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var sub_padre = $(this).val();
+                $.post("/departamentos_ajax/", {
+                    action: 'sub_padre',
+                    id: id,
+                    sub_padre: sub_padre
+                }, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+            $('#Contenido').on('keyup', '.clave_ex', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var clave_ex = $(this).val();
+                $.post("/departamentos_ajax/", {
+                    action: 'clave_ex',
+                    id: id,
+                    clave_ex: clave_ex
+                }, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+
+        {% endif %}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-departamento')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            $('#id_departamento_selected').val(id);
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/departamentos_ajax/", {action: 'open_accordion', id: id}, function (data) {
+                                $('#panel' + id).html(data);
+                            });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#id_departamento_selected').val('');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+
+        {#        {% if request.session.gauser_extra|has_permiso:'edita_departamentos' %}#}
+        {#            habilita(['s_plus', 'h_trash-o', 'h_check', 'h_pencil', 'h_list-alt']);#}
+        {#            $(document).foundation({#}
+        {#                accordion: {#}
+        {#                    callback: function (accordion) {#}
+        {#                        if (accordion.hasClass('accordion-departamento')) {#}
+        {#                            var id = accordion.data('id');#}
+        {#                            if ($('#circle' + id).hasClass('fa-plus-circle')) {#}
+        {#                                $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');#}
+        {#                                $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');#}
+        {#                                $('#id_departamento_selected').val(id);#}
+        {#                                habilita(['h_plus', 's_trash-o', 'h_check', 's_pencil', 'h_list-alt']);#}
+        {#                                window.scrollTo(0, $('#accordion' + id).offset().top - 50);#}
+        {#                            } else {#}
+        {#                                $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');#}
+        {#                                $('#id_departamento_selected').val('');#}
+        {#                                habilita(['s_plus', 'h_trash-o', 'h_check', 'h_pencil', 'h_list-alt']);#}
+        {#                            }#}
+        {#                        }#}
+        {#                    }#}
+        {#                }#}
+        {#            });#}
+        {##}
+        {#            $('#list-alt_sign').click(function (event) {#}
+        {#                event.preventDefault();#}
+        {#                $('#action').val('');#}
+        {#                $('#introducir_departamento').hide();#}
+        {#                $('#div_departamentos').show();#}
+        {#                $('.content').removeClass('active');#}
+        {#                $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');#}
+        {#                $('#id_departamento_selected').val('');#}
+        {#                habilita(['s_plus', 'h_trash-o', 'h_check', 'h_pencil', 'h_list-alt']);#}
+        {#            });#}
+        {##}
+        {#            $('#trash-o_sign').click(function (event) {#}
+        {#                event.preventDefault();#}
+        {#                $('#action').val('borrar_departamento');#}
+        {#                var id = $('#id_departamento_selected').val();#}
+        {#                $('#accordion' + id).hide();#}
+        {#                $.post("/departamentos/", {action: 'borrar_departamento', id: id}, function (data) {#}
+        {#                    habilita(['s_plus', 'h_trash-o', 'h_check', 'h_pencil', 'h_list-alt']);#}
+        {#                    show_mensajes({title: '<i class="fa fa-warning"></i> Aviso', texto: data});#}
+        {#                    window.scrollTo(0,0);#}
+        {#                });#}
+        {#            });#}
+        {##}
+        {#            $('#pencil_sign, #plus_sign').click(function (event) {#}
+        {#                event.preventDefault();#}
+        {#                var id = $('#id_departamento_selected').val();#}
+        {#                $('#action').val('guardar_departamento');#}
+        {#                habilita(['s_check', 'h_plus', 'h_pencil', 'h_trash-o', 's_list-alt']);#}
+        {#                $.post("/departamentos/", {id: id, action: 'formulario_departamento'}, function (data) {#}
+        {#                    $('#div_departamentos').hide();#}
+        {#                    $('#introducir_departamento').html(data);#}
+        {#                    $('#introducir_departamento').show();#}
+        {#                    window.scrollTo(0, 0);#}
+        {#                    $(document).foundation();#}
+        {#                });#}
+        {#            });#}
+        {##}
+        {#            $('#check_sign').click(function (e) {#}
+        {#                e.preventDefault();#}
+        {#                habilita(['s_plus', 'h_trash-o', 'h_check', 'h_pencil', 'h_list-alt']);#}
+        {#                if ($('#id_departamento').val() != '') {#}
+        {#                    $('#' + '{{formname}}').ajaxSubmit({#}
+        {#                            url: '/departamentos/',#}
+        {#                        success: function (data) {#}
+        {#                            $('#introducir_departamento').hide();#}
+        {#                            $('#div_departamentos').show();#}
+        {#                            $('#div_departamentos').html(data);#}
+        {#                            $(document).foundation('reflow');#}
+        {#                        }#}
+        {#                    });#}
+        {#                } else {#}
+        {#                    show_mensajes({#}
+        {#                        texto: '<li>Indica el nombre de la departamento que vas a crear.</li>',#}
+        {#                        title: 'Faltan datos'#}
+        {#                    });#}
+        {#                }#}
+        {#            });#}
+        {#        {% endif %}#}
+        {#        $('body').on('click', '.mostrar_usuarios', function (e) {#}
+        {#            e.preventDefault();#}
+        {#            var id = $(this).data('id');#}
+        {#            $.post("/departamentos/", {id: id, action: 'mostrar_usuarios'}, function (data) {#}
+        {#                $('#lista_usuarios' + id).html(data);#}
+        {#            });#}
+        {#        });#}
+        {#        $('body').on('click', '.ocultar_usuarios', function (e) {#}
+        {#            e.preventDefault();#}
+        {#            var id = $(this).data('id');#}
+        {#            $.post("/departamentos/", {id: id, action: 'ocultar_usuarios'}, function (data) {#}
+        {#                $('#lista_usuarios' + id).html(data);#}
+        {#                window.scrollTo(0, $('#accordion' + id).offset().top - 50);#}
+        {#            });#}
+        {#        });#}
+    </script>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Datos
+                {% if request.session.gauser_extra.ronda.entidad.organization.id == 1 %}
+                    del Grupo Scout
+                {% elif request.session.gauser_extra.ronda.entidad.organization.id == 7 %}
+                    del Centro de Estudios
+                {% else %} {{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}{% endif %}
+                {{ request.session.gauser_extra.ronda.entidad.name }}</strong></h4>
+        </div>
+
+        <div class="row">
+            <div class="large-4 columns">
+                <label>Ronda o curso
+                    <select name="ronda" id="id_ronda">
+                        {% for ronda in rondas %}
+                            <option value="{{ ronda.id }}"
+                                    {% if request.session.gauser_extra.ronda.entidad.ronda.id == ronda.id %}selected{% endif %}>{{ ronda.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>NIF {{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}
+                    {{ form.nif }}
+                </label>
+            </div>
+            <div class="large-4 columns">
+                <label>IBAN (Identificación bancaria)
+                    {{ form.iban }}
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>Subdominio
+                    {{ form.dominio }}
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="large-4 columns">
+                <label>Dirección {{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}
+                    {{ form.address }}
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>Código postal
+                    {{ form.postalcode }}
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Localidad
+                    {{ form.localidad }}
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Provincia
+                    {{ form.provincia }}
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="large-4 columns">
+                <label>Página web {{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}
+                    {{ form.web }}
+                </label>
+            </div>
+            <div class="large-4 columns">
+                <label>E-mail de contacto
+                    {{ form.mail }}
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>Teléfono
+                    {{ form.tel }}
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>Fax
+                    {{ form.fax }}
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="large-6 columns">
+                <label>Anagrama o logotipo {{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}
+                    <input id="file_anagrama" type="file" name="file_anagrama" style="position: fixed; top: -3000px">
+                </label>
+            </div>
+            <div class="large-6 columns">
+                {% if entidad.anagrama %}
+                    <img id="image_anagrama"
+                            {#                     src="/media/anagramas/{{ request.session.gauser_extra.ronda.entidad.code }}_anagrama.png">#}
+                         src="{{ entidad.anagrama.url }}">
+                {% else %}
+                    <a id="image_anagrama">Click para cargar imagen</a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        habilita(['s_check']);
+
+        $("#check_sign").click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                $('#action').val('aceptar');
+                document
+                    .{{formname}}.submit();
+            }
+        });
+
+        $('#id_iban').attr('title', '{{request.session.gauser_extra.ronda.entidad.banco.nombre}}');
+
+
+        $('body').on('click', '#image_anagrama', function () {
+            $('#file_anagrama').trigger('click');
+            console.log('click imagen_anagrama');
+        });
+
+
+        $('#file_anagrama').change(function () {
+            var data = sube_archivo({
+                gauss_file: 'file_anagrama',
+                action: 'imagen_anagrama',
+                tipos: 'image/jpeg, image/png, image/gif',
+                ajaxFuncion: '/datos_entidad/',
+                data1: '',
+                data2: '',
+                onOk: function (data) {
+                    $('#image_anagrama').attr('src', data);
+                    hide_mensajes();
+                }
+            });
+        });
+    </script>
+{% endblock %}

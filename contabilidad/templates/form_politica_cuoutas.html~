@@ -1,0 +1,44 @@
+{% load my_templatetags %}
+<script>
+$('#Contenido').click(function(e) {
+    var a=false;
+    if ($(e.target).parents('.div_total_checkboxes').length<1){
+	$('.todos_ningunos').each(function(i, div){
+	    if ($(div).css('display') == 'block'){
+		var id = div.id.split('___')[1];
+		$('#checkbox_cerrado').val(id).change();}});
+	$('.todos_ningunos').hide();
+	$('.multiselect2checkbox').hide();
+	$('.ya_checked').show();}});
+
+  $('.texto_checkboxes').click(function(){
+	var id = this.id.split('___')[1];
+	$('#todos_ningunos___'+id).toggle();
+	$('#checkboxes___'+id).toggle();
+	$('#ya_checked___'+id).toggle();})
+
+  $('#Contenido').on('click', '.select_todos', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).prop('checked', true);
+    var n = $('.check___'+identificador).length;
+    $('#total_seleccionados___'+identificador).text( "(" +n + (n === 1 ? " receptor seleccionado)" : " receptores seleccionados)") );
+    });
+
+  $('#Contenido').on('click', '.select_ninguno', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).prop('checked', false);
+    $('#total_seleccionados___'+identificador).text( "(0 receptores seleccionados)");
+    });
+
+  $( "input[type=checkbox]" ).click( function(){
+      var id = $(this).attr('class').split('___')[1];
+      var $cat = $(this).closest(".multiselect2checkbox");
+      var n = $cat.find(":checkbox:checked").length;
+      $('#total_seleccionados___'+id).text( "(" +n + (n === 1 ? " receptor seleccionado)" : " receptores seleccionados)") );
+  });
+</script>
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap">Indica los datos de la nueva política de cuotas del {{request.session.gauser_extra.entidad.name}} </td></tr></table>
+
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+    {{form}}
+</table>

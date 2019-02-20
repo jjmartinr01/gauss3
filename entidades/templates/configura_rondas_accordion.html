@@ -1,0 +1,19 @@
+{% load my_templatetags %}
+
+<dd class="accordion-navigation" id="accordion{{ ronda.id }}">
+    <a href="#panel{{ ronda.id }}">
+        <i id="circle{{ ronda.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <span id="span_nombre{{ ronda.id }}" style="font-weight: 800;">{{ ronda.nombre }}</span>
+        <span style="font-weight: 800;color:grey">
+            <i class="fa fa-long-arrow-right"></i>
+            <span id="span_inicio{{ ronda.id }}">{{ ronda.inicio|date:"d/m/Y" }}</span> -
+            <span id="span_fin{{ ronda.id }}">{{ ronda.fin|date:"d/m/Y" }}</span></span>
+        {% if request.session.gauser_extra.ronda.entidad.ronda.id == ronda.id %}
+            &nbsp;&nbsp;&nbsp;(<span style="font-weight: 800;color:red">Actual</span>)
+        {% endif %}
+
+    </a>
+
+    <div id="panel{{ ronda.id }}" class="content ronda_contenido" data-ronda="{{ ronda.id }}">
+    </div>
+</dd>

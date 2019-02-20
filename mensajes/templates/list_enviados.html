@@ -1,0 +1,44 @@
+{% load my_templatetags %}
+<div class="columns large-12">
+    <table align="CENTER" cellpadding="3" width="100%" class="table_enviados">
+        {% for mensaje in mensajes %}
+            <tr id="fila_mensaje___{{ mensaje.id }}">
+                <td class="icono">
+                    <i style="cursor: pointer;font-size: 120%;" class="fa fa-square-o check_mensaje"
+                       id="check___{{ mensaje.id }}"></i>
+                </td>
+                {% if mensaje.receptores.all|length > 1 %}
+                    <td title="{% for receptor in mensaje.receptores.all %}{{ receptor.get_full_name }} ({{ receptor.email }}){% if not forloop.last %}, {% endif %} {% endfor %}">
+                        Para: {{ mensaje.receptores.all.0.get_full_name }},
+                        ...({{ mensaje.receptores.all|length }})
+                    </td>
+                {% else %}
+                    <td>Para: {{ mensaje.receptores.all.0.get_full_name }}</td>
+                {% endif %}
+                <td title="Haz click sobre el texto para ver el mensaje completo"
+                    id="mensaje___{{ mensaje.id }}" class="mensaje_texto"
+                    data-numero="{{ forloop.counter }}"
+                    style="white-space:normal;cursor:pointer;">{{ mensaje.asunto }}:
+                    <span style="color:gray;">{{ mensaje.men_ini }}</span>
+                </td>
+                <td>
+                    {% if mensaje.adjuntos.all|length > 0 %}
+                        <i class="fa fa-paperclip show_hide" id="clip_{{ mensaje.id }}"
+                           data-tooltip aria-haspopup="true" data-options="disable_for_touch:true"
+                           class="has-tip"
+                           style="cursor:pointer;font-size:25px;"
+                           title="{% for adjunto in mensaje.adjuntos.all %} {{ adjunto.filename }} {% if not forloop.last %}, {% endif %} {% endfor %}"></i> {% endif %}
+                </td>
+                <td>
+                    {{ mensaje.fecha|date }}<br>{{ mensaje.fecha|date:"H:i" }}
+                </td>
+            </tr>
+            {% if forloop.last %}
+                <input type="hidden" name="numero_max" id="numero_max" value="{{ forloop.counter }}">
+            {% endif %}
+        {% endfor %}
+    </table>
+</div>
+<div class="pagination-centered" id="pagination_gauss">
+    {% include 'pagination_gauss.html' %}
+</div>

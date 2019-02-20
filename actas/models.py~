@@ -1,0 +1,55 @@
+# -*- coding: utf-8 -*-
+from django.db import models
+from entidades.models import Entidad, Ronda
+from autenticar.models import Perfil, Gauser
+import os
+
+
+def iniciales(s): #Función para devolver las iniciales de una cadena
+  s=s.split()
+  iniciales=''
+  for e in s:
+    if len(e)>2: iniciales+=e[0].upper()
+  return iniciales
+
+# Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
+def update_fichero(instance, filename):
+    fichero = 'Acta_escaneada_' + '_'.join(instance.convocatoria.tipo.entidad.name.split()) + '_' + iniciales(instance.convocatoria.tipo.nombre) + '_' + str(instance.fecha_aprobacion.year) + '-' + str(instance.fecha_aprobacion.month) + '-' + str(instance.fecha_aprobacion.day) +  '.pdf'
+    return os.path.join("actas/", fichero)
+    
+
+class Tipo_convocatoria(models.Model):
+    entidad = models.ForeignKey(Entidad)
+    nombre = models.CharField("Texto identificativo", max_length=70)
+    perfiles = models.ManyToManyField(Perfil, blank=True, null=True) #Perfiles que son convocados bajo este tipo
+    subentidades = models.ManyToManyField(Subentidad, blank=True, null=True) #Subentidades que son convocadas bajo este tipo
+    autorizados = models.ManyToManyField(Gauser, blank=True, null=True) #Autorizados a usar este tipo de convocatoria
+    text_init = models.TextField("Texto base")
+    def __unicode__(self):
+      return u'Tipo: %s (%s) -- %s' % (self.nombre,self.entidad.name)
+
+
+class Convocatoria(models.Model):
+    convocante = models.ForeignKey(Gauser, related_name = 'convocatorias')
+    tipo = models.ForeignKey(Tipo_convocatoria)
+    fecha_hora = models.DateTimeField("Fecha en la que se convoca la reunión")
+    texto_convocatoria = models.TextField("Redacción del acta")
+    creado = models.DateField("Fecha de creación",auto_now_add=True) #carga automaticamente la fecha al crearse
+    modificado = models.DateField("Fecha de modificación",auto_now=True) #carga automaticamente la fecha al modificarse
+    def __unicode__(self):
+      return u'Convocatoria de %s (%s) -- %s' % (self.tipo,self.fecha_hora,self.convocante.centro.code)
+      
+      
+class Acta(models.Model):
+    convocatoria = models.ForeignKey(Convocatoria, blank=True, null=True)
+    autor = models.ForeignKey(Gauser, related_name = 'actas')
+    contenido_html = models.TextField("Texto del acta")
+    pdf_escaneado = models.FileField("Subir el fichero escaneado", upload_to= update_fichero, blank=True)
+    publicar = models.BooleanField("Publicar para lectura antes de aprobar")
+    fecha_aprobacion = models.DateField("Fecha en la que se aprobó el acta",null=True, blank=True)
+    asistentes = models.ManyToManyField(Gauser, blank=True, null=True)
+    creado = models.DateField("Fecha de creación",auto_now_add=True) #carga automaticamente la fecha al crearse
+    modificado = models.DateField("Fecha de modificación",auto_now=True) #carga automaticamente la fecha al modificarse
+    def __unicode__(self):
+      return u'Acta del %s (%s) -- %s' % (self.centro.name,self.fecha_reunion,self.tipo)
+

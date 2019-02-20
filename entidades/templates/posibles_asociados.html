@@ -1,0 +1,38 @@
+<div>
+    <h5><i class="fa fa-hand-o-up" id="select_socios_{{ sub.id }}"></i> <strong>Selecciona usuarios para la sección/departamento: {{ sub.nombre }}</strong></h5>
+    <small>Es posible que aquí no se muestren todos los posibles candidatos porque la búsqueda se hace por edades. Asegúrate que todos los candidatos tienen establecida una fecha de nacimiento.</small>
+    <ul class="inline-list">
+        <li><a id="socios_todos___{{sub.id}}">&nbsp;&nbsp;<i class="fa fa-check-circle"></i> Todos</a>
+        </li>
+        <li><a id="socios_ninguno___{{sub.id}}">&nbsp;&nbsp;<i class="fa fa-times-circle"></i>
+            Ninguno</a></li>
+    </ul>
+</div>
+<div class="panel ">
+    <div class="row">
+        {% for socio in socios %}
+            <div class="large-3 columns">
+                <input type="checkbox" id="socio___{{ socio.id }}" name="socios"
+                       class="check___id_socios" value="{{ socio.id }}"
+                        {% if socio in socios_seleccionados %}
+                       checked="checked" {% endif %}>
+                {{ socio.gauser.get_full_name }} ({{ socio.cargos.all|join:', ' }})
+            </div>
+            {% if forloop.counter|divisibleby:"4" %}
+                </div><br>
+                <div class="row">
+            {% endif %}
+        {% endfor %}
+        </div>
+</div>
+
+<script>
+    $('#socios_todos___'+'{{sub.id}}').click(function (e) {
+        e.preventDefault();
+        $('.check___id_socios').prop('checked', true);
+    });
+    $('#socios_ninguno___'+'{{sub.id}}').click(function (e) {
+        e.preventDefault();
+        $('.check___id_socios').prop('checked', false);
+    });
+</script>

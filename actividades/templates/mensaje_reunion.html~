@@ -1,0 +1,23 @@
+{% load my_templatetags %}
+<h2 style="text-align:center;"> REUNIÓN DEL GRUPO SCOUT</h2>
+
+<p>Hola {% if interesado.alias %} {{interesado.alias}}{% else %} {{interesado.gauser.first_name}}{% endif %},</p>
+<p>{% if request.session.gauser_extra.alias %} {{request.session.gauser_extra.alias}}{% else %} {{request.session.gauser_extra.gauser.first_name}}{% endif %} ha grabado una reunión de {{reunion.subentidad.nombre}}.</p>
+<p>Dicha reunión tendrá lugar el día {{reunion.fecha|date:"l, j"}} de {{reunion.fecha|date:"F"}} de {{reunion.fecha|date:"Y"}}, comenzará a las {{reunion.hora_inicio|time:"H:i"}} y se prevé finalizar a las {{reunion.hora_fin|time:"H:i"}}.</p>
+<p>Lo que {% if request.session.gauser_extra.alias %} {{request.session.gauser_extra.alias}}{% else %} {{request.session.gauser_extra.gauser.first_name}}{% endif %} ha escrito sobre la reunión es:</p>
+<p>{% autoescape off %} {{reunion.describir}} {% endautoescape %}</p>
+{% if interesado|has_perfiles:"80" %}<p>Puedes confirmar la participación de {% for hijo in hijos %} {% if forloop.first %} {{hijo.gauser.first_name}}{% elif forloop.last %} y {{hijo.gauser.first_name}}{% else %}, {{hijo.gauser.first_name}} {% endif %} {% endfor %} haciendo click en en siguiente enlace antes del {{reunion.fecha}}:</p>
+  <p style="text-align:center;">
+    {% if '8000' in http_referer %}
+      <a href="http://localhost:8000/enlazar/?u={{interesado.id}}&c={{code}}">Confirmar la asistencia a la reunión</a>
+    {% else %}
+      <a href="https://scout.gaumentada.es/enlazar/?u={{interesado.id}}&c={{code}}">Confirmar la asistencia a la reunión</a>
+    {% endif %}
+  </p>
+<br/>
+Grupo Scout {{request.session.gauser_extra.entidad.name}}
+<br/>
+<br/>
+<hr/>
+<p style="font-size:8;color:gray;">Has recibido este mensaje porque estás registrado como socio del grupo scout {{request.session.gauser_extra.entidad.name}}. Este correo se ha enviado de forma automática por un ordenador; por favor no contestes al mismo porque nadie leerá tu respuesta.</p>
+ 

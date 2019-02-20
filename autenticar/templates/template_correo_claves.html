@@ -1,0 +1,9 @@
+{% load my_templatetags %}
+<p>Hola {{ g_e.gauser.first_name }}:</p>
+
+<p>Este correo te informa de que tu acceso a GAUSS es el siguiente:</p>
+
+<p><strong>Usuario:</strong> {{ g_e.gauser.username }}</p>
+<p><strong>Contraseña:</strong> {{ password }}</p>
+
+<p>Una vez que hayas entrado en GAUSS dirígete a la parte superior derecha de la pantalla y pulsa sobre "Mis datos". Se desplegará un formulario en el que podrás ver los datos que la entidad de padres de alumnos {{ g_e.ronda.entidad.name }} tiene sobre tu persona. Por favor, actualizalos si ves que alguno de ellos no es correcto, para ello debes pulsar el icono "Guardar las modificaciones" después de realizar los cambios. Es muy importante que cambies la contraseña de acceso que te facilitamos en este correo.</p>

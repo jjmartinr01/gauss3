@@ -1,0 +1,19 @@
+<div class="row row_contents" data-editable="row{{ row.id }}" data-id="{{ row.id }}"
+     style="position: relative;" id="rowweb{{ row.id }}">
+    {% if row.hr_before %}
+        <div class="columns large-12">
+            <hr>
+        </div>
+    {% endif %}
+    <div id="contents_div{{ row.id }}">
+        {% for cd in row.contents_div.all %}
+            <div id="cd_editable{{ cd.id }}" class="cd_editable">
+                {% include "pagina5_cd_editable.html" with cd=cd row=row %}
+            </div>
+        {% endfor %}
+    </div>
+    {% if row.hr_after %}
+        <div class="columns large-12">
+            <hr>
+        </div>{% endif %}
+</div>

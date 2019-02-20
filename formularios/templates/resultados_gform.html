@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}"
+          xmlns="http://www.w3.org/1999/html">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="id_gform" id="id_gform" value="{{ ginputs.0.gform.id }}">
+        <input type="hidden" name="id_ginput" id="id_ginput" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong>{{ ginputs.0.gform.nombre }}</strong></h4>
+        </div>
+    <div style="overflow: auto;">
+        <table align="CENTER" cellpadding="3" width="100%">
+            <thead>
+            <tr>
+                <td><span class="color2"><i class="fa fa-check-square-o"></i></span></td>
+                <td style="text-align:center;"><span class="color2">Nombre</span></td>
+                {% for original_input in original_ginputs %}
+                    <td style="text-align:center;"><span class="color2">{{ original_input.label }}</span></td>
+                {% endfor %}
+            </tr>
+            </thead>
+            {% for ginput in ginputs %}
+                {% ifchanged ginput.rellenador %}
+                    {% if not forloop.first %}
+                        </tr>
+                    {% endif %}
+                    <tr id="row{{ ginput.rellenador.id }}">
+                    <td><i data-id="{{ ginput.rellenador.id }}" class="check_respuestas fa fa-square-o"
+                           style="cursor:pointer;"></i>
+                    </td>
+                    <input type="hidden" name="check_respuestas" id="check_respuestas{{ ginput.rellenador.id }}"
+                           data-id={{ ginput.rellenador.id }} value="">
+                    <td>{{ ginput.rellenador.gauser.get_full_name }}</td>
+                {% endifchanged %}
+                <td>
+                    {% if ginput.tipo == 'gselect' %}
+                        {% for goption in ginput.goption_set.all %}
+                            {% if goption.selected %}
+                                {{ goption.value }}{% if not forloop.last %}, {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    {% elif ginput.tipo == 'gfile' %}
+                        {% if ginput.archivo %}<a class="gfile" data-id="{{ ginput.id }}">{{ ginput.fich_name }}</a>{% endif %}
+                    {% elif ginput.tipo == 'gtext' %}
+                        {% if ginput.gtext %}{{ ginput.gtext|truncatechars:100 }}{% endif %}
+                    {% elif ginput.tipo == 'gdate' %}
+                        {% if ginput.gdate %}{{ ginput.gdate }}{% endif %}
+                    {% elif ginput.tipo == 'gdatetime' %}
+                        {% if ginput.gdatetime %}{{ ginput.gdatetime }}{% endif %}
+                    {% elif ginput.tipo == 'gchar' %}
+                        {% if ginput.gchar %}{{ ginput.gchar }}{% endif %}
+                    {% elif ginput.tipo == 'gint' %}
+                        {% if ginput.gint %}{{ ginput.gint }}{% endif %}
+                    {% elif ginput.tipo == 'gfloat' %}
+                        {% if ginput.gfloat %}{{ ginput.gfloat }}{% endif %}
+                    {% elif ginput.tipo == 'gbool' %}
+                        {% if ginput.gbool %}Sí{% else %}No{% endif %}
+                    {% endif %}
+                </td>
+
+            {% endfor %}
+            </tr>
+        </table>
+</div>
+
+    </form>
+
+
+{% endblock %}
+
+
+{% block final %}
+
+    <script type="text/javascript">
+        habilita(['s_arrow-left']);
+
+        $('#arrow-left_sign').on('click', function (e) {
+            e.preventDefault();
+            var gform = $('#id_gform').val();
+            window.location.href = "/formularios/?gform={{ gform.id }}";
+        });
+
+
+        var seleccionadas = 0;
+
+        $('.gfile').click(function (e) {
+            e.preventDefault();
+            $('#action').val('descarga_gfile');
+            $('#id_ginput').val($(this).data('id'));
+            document.{{formname}}.submit();
+        });
+
+        $('.check_respuestas').click(function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            if ($(this).hasClass('fa-square-o')) {
+                $(this).removeClass('fa-square-o').addClass('fa-check-square-o');
+                $('#check_respuestas' + id).val(id).addClass('hidden_selected');
+                seleccionadas = seleccionadas + 1;
+                habilita(['s_trash-o']);
+            } else {
+                $(this).removeClass('fa-check-square-o').addClass('fa-square-o');
+                $('#check_respuestas' + id).val('').removeClass('hidden_selected');
+                seleccionadas = seleccionadas - 1;
+                if (seleccionadas == 0) {
+                    habilita(['h_trash-o']);
+                }
+            }
+        });
+
+        $('#trash-o_sign').click(function (e) {
+            e.preventDefault();
+            var selected = [];
+            var hidden_selected = $('.hidden_selected');
+            hidden_selected.each(function (e) {
+                selected.push($(this).data('id'));
+            });
+            var gform = $('#id_gform').val();
+            console.log(selected);
+            $.post("/formulario_ajax/", {action: 'delete_ginputs', ids: JSON.stringify(selected), gform: gform},
+                    function (data) {
+                        if (data != 'True') {
+                            console.log(data);
+                            show_mensajes({title: "<i class='fa fa-warning'></i> Error", texto: data});
+                        } else {
+                            hidden_selected.each(function (e) {
+                                $('#row' + $(this).data('id')).hide();
+                                show_mensajes({
+                                    title: "<i class='fa fa-warning'></i> Respuestas borradas",
+                                    texto: 'Los cuestionarios señalados han sido borrados.'
+                                });
+                            });
+                            habilita(['h_trash-o']);
+                        }
+                    });
+        });
+
+
+    </script>
+
+{% endblock %}

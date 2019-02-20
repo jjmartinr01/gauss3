@@ -1,0 +1,207 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+<style>
+  .ui-dialog .ui-state-error { padding: .3em; }
+  .validateTips { border: 1px solid transparent; padding: 0.3em; }
+</style>
+
+<script>
+	$(function() {
+		var rama_select =$("#rama_select");
+		$( "#dialog_tutor" ).dialog({
+			autoOpen: false,
+// 			height: 250,
+			width: 400,
+			modal: true,
+			buttons: {
+			  "Aceptar": function() {
+			      $('#rama').val(rama_select.val());
+			      $( this ).dialog( "close" );
+			  },
+// 			  Cancel: function() { $( this ).dialog( "close" ); }
+			},
+// 			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});
+		$( "#id_tutor" ).change(function() {
+		    var thisCheck = $(this);
+		    if (thisCheck.is (':checked')) {
+		    $( "#dialog_tutor" ).dialog( "open" ); } });
+	});
+
+    $(function() {
+        $( "#dialog_informe_sancionador" ).dialog({
+            autoOpen: false,
+            resizable: false,
+            height:140,
+            modal: true,
+            buttons: {
+                "Borrar": function() {
+                    document.{{formname}}.submit();
+                },
+                Cancel: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
+        $( ".informes_sancionadores" ).click(function() {
+		    $('#action').val('borrar_informe_sancionador');
+		    $('#informe_sancionador_id').val($(this).attr('id'));
+		    $( "#dialog_informe_sancionador" ).dialog( "open" ); });
+    });
+</script>
+
+{% endblock %}
+
+{% block ready %}
+  $('#aceptar').click(function () {  $('#action').val('aceptar'); document.{{formname}}.submit(); });
+  $('#volver').click(function () {  javascript:history.go(-1); });
+{% endblock %}
+
+
+{% block navegar %}
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <img id="volver" style="rondar:pointer;" border="0" align="right" alt="Atrás" title="Atrás" src="/static/images/volver.gif">
+  <img id="aceptar" style="rondar:pointer;" border="0" align="right" alt="Aceptar" title="Aceptar" src="/static/images/aceptar.gif">
+  Datos personales y relación con el grupo_scout
+{% endblock %}
+
+
+
+{% block contenido %}
+
+{% if error_message %}
+<div id="dialog-message" title="Errores">
+  <p>
+    <span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+    Error en los siguientes campos:
+    {{error_message}}
+  </p>
+</div>
+<script>
+$(function() { $( "#dialog-message" ).dialog({ modal: true, buttons: { Ok: function() { $( this ).dialog( "close" ); } } }); });
+</script>
+
+{% elif datos_guardados %}
+<div id="dialog-guardados" title="Datos guardados">
+  <p>
+    <span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+    Los datos han sido guardados correctamente. {{contrasena}}
+  </p>
+</div>
+<script>
+$(function() { $( "#dialog-guardados" ).dialog({ modal: true, buttons: { Ok: function() { $( this ).dialog( "close" ); } } }); });
+</script>
+{% endif %}
+
+
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+    <input type="hidden" name="action" id="action" value="">
+    <input type="hidden" name="informe_sancionador_id" id="informe_sancionador_id" value="">
+    <input type="hidden" name="rama" id="rama" value="{{monitor_user_relation.rama}}">
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Datos identificativos generales</td></tr></table>
+    
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Usuario: {{ form1.username }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Contraseña: <input type="password" name="password1" value=""></td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Confirma contraseña: <input type="password" name="password2" value=""></td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap" rowspan="3"> &nbsp;&nbsp; <img width="60"  src="https://racima.larioja.org:457/racima_gescen/cec/alumnos/fotoAlumnoServlet?dniEmpleado={{monitor_user_relation.user.get_profile.dni}}&0.29088693720745606" /></td></tr><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Nombre: {{ form1.first_name }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Apellidos: {{ form1.last_name }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Email: {{ form1.email }}</td>
+	</tr><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  DNI: {{ form2.dni }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Teléfono: {{ form2.telmov }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Sexo: {{ form2.sexo }}</td></tr></table>
+
+
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Relación con el {{request.session.grupo_scout.name}}</td></tr></table>
+    
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Especialidad: {{ form3.especialidad }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Departamento: {{ form3.departamento }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Cargo: {{ form3.cargo }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  Tutor: {{ form3.tutor }}</td></tr></table>
+
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Conductas contrarias y perjudiciales sancionadas ({{informes_sancionadores|length}})</td></tr></table>
+
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+      <tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  <span class="info" >Alumno</span></td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  <span class="info" >Fecha</span></td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  <span class="info" >Fichero</span></td>
+      </tr>
+      {% for informe_sancionador in informes_sancionadores %}
+      <tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  <span class="informes_sancionadores" id="{{ informe_sancionador.id }}" style="rondar:pointer;">{{ informe_sancionador.user.user.get_full_name }}</span></td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  {{ informe_sancionador.fecha|date:"d M Y"  }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  <a href="/static/informes_sancionadores/{{ informe_sancionador.fichero }}">{{ informe_sancionador.fichero }}</a></td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Sanciones a alumnos tutorados ({{tutorados|length}})</td></tr></table>
+{{tutorados}}
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+      <tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  <span class="info" >Alumno</span></td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  <span class="info" >Fecha</span></td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  <span class="info" >Monitor</span></td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  <span class="info" >Fichero</span></td>
+      </tr>
+      {% for tutorado in tutorados %}
+      <tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  {{ tutorado.user.user.get_full_name }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  {{ tutorado.fecha|date:"d M Y"  }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  {{ tutorado.sancionador.user.get_full_name  }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> 
+	  <a href="/static/informes_sancionadores/{{ informe_sancionador.fichero }}">{{ tutorado.fichero }}</a></td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <br/>
+</form>
+
+<div id="dialog_tutor" title="Tutoría">
+  <p class="validateTips">Es tutor del rama: <select id="rama_select" name="rama_select">
+					      <option value="">{{monitor_user_relation.rama}}</option>
+					      {% for rama in ramas %}
+						<option value="{{rama}}"> {{rama}} </option>
+					      {% endfor %}
+					      </select></p>
+</div>
+
+<div id="dialog_informe_sancionador" title="Borrar conducta y sanción">
+  <p> ¿Estás seguro/a de querer borrar esta conducta contraria y la sanción o sanciones impuestas?</p>
+</div>
+
+
+{% endblock %}

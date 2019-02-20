@@ -1,0 +1,179 @@
+{#{% load staticfiles %}#}
+<!DOCTYPE HTML>
+<html style="overflow:hidden">
+<head>
+    <title>GAUSS - Identificación</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" type="image/x-icon" href="/static/images/favicon3.ico">
+    <link rel="stylesheet" href="/static/foundation-5.5.3/css/foundation.css"/>
+    <link rel="stylesheet" href="/static/font-awesome-4.2.0/css/font-awesome.min.css"/>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="robots" content="all"/>
+    <meta name="B-verify" content="d56bcfcd8bbd7ec711d93f32af87428f5e57e11e" />
+</head>
+
+<form action="" method="post" data-abide id="autenticar_form">
+    {% csrf_token %}
+
+    {% if tipo == 'introduce_mail' or tipo == 'introduce_captcha' %}
+        <input type="hidden" name="action" id="action" value="solicita_pass">
+    {% else %}
+        <input type="hidden" name="action" id="action" value="acceso">
+    {% endif %}
+
+    <div class="row">&nbsp;</div>
+    <div class="panel">
+        <div class="row">
+            <div class="large-6 small-6 medium-6 columns end text-right">
+                <img src="/static/images/logo_gauss_acceso.png" height="76" width="273">
+{#                <img src="{% static "images/logo_gauss_acceso.png" %}" height="76" width="273" alt="My image"/>#}
+            </div>
+        </div>
+        <div id="introduce_user_pass" style="display:{% if tipo == 'acceso' %}block{% else %}none{% endif %};">
+            <div class="row">
+                <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+                <div class="large-3 medium-4 small-5 columns text-right">
+                    <label class="right inline">
+                        <span style="font-size: 12pt;font-weight: 700;color: #31859c">Usuario</span>
+                    </label>
+                </div>
+                <div class="large-3 medium-4 small-5 columns">
+                    <input name="usuario" type="text" size="15" maxlength="50" value="">
+                </div>
+                <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+            </div>
+            <div class="row">
+                <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+                <div class="large-3 medium-4 small-5 columns text-right">
+                    <label for="right-label" class="right inline">
+                        <span style="font-size: 12pt;font-weight: 700;color: #31859c">Contraseña</span>
+                    </label>
+                </div>
+                <div class="large-3 medium-4 small-5 columns">
+                    <input name="passusuario" type="password" size="15" maxlength="50" value="">
+                </div>
+                <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+            </div>
+            <div class="row">
+                <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+                <div class="large-3 medium-4 small-5 columns text-right">&nbsp;</div>
+                <div class="large-3 medium-4 small-5 columns text-right">
+                    <input class="button" value="Entrar" name="entrar" id="login_button" type="submit">
+                </div>
+                <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+            </div>
+            <div class="row">
+                <div class=" text-center">
+                    <a href="" id="pass_olvidada"> Haz click aquí si has olvidado tu contraseña</a>
+                </div>
+            </div>
+        </div>
+        <div id="introduce_mail" style="display:{% if tipo == 'introduce_captcha' or tipo == 'introduce_mail' %}block{% else %}none{% endif %};">
+            <div class="row">
+                <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+                <div class="large-9 medium-10 small-11 columns">
+                    <ol style="font-size:0.9em;color:#31859c;">
+                        <li>Introduce tu correo electrónico</li>
+                        <li>Introduce las letras mostradas en la imagen</li>
+                        <li>Pulsa en el botón "Solicitar contraseña"</li>
+                        <li>Recibirás un mail de acceso a GAUSS</li>
+                    </ol>
+                </div>
+            </div>
+            {% if tipo == 'introduce_mail' %}
+                <div class="row text-center">
+                    <h5 style="color:red">El correo electrónico no pertenece a ningún socio</h5>
+                </div>
+            {% endif %}
+            <div class="row">
+                <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+                <div class="large-3 medium-4 small-5 columns text-right">
+                    <label class="right inline">
+                        <span style="font-size: 12pt;font-weight: 700;color: #31859c">E-mail</span>
+                    </label>
+                </div>
+                <div class="large-3 medium-4 small-5 columns">
+                    <label>
+                        <input id="email" name="email" type="email" required maxlength="100" value="{{ email }}">
+                    </label>
+                    <small class="error">Es necesario introducir una dirección de correo válida.</small>
+                </div>
+                <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+            </div>
+
+            {% if tipo == 'introduce_captcha' %}
+                <div class="row text-center">
+                    <h5 style="color:red">Error al introducir las letras de la imagen</h5>
+                </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+                <div class="large-3 medium-4 small-5 columns text-right">
+                    <label class="right inline">
+                        <span style="font-size: 12pt;font-weight: 700;color: #31859c">¿Eres humano?</span>
+                        <br>
+                        <span style="font-size: 12pt;font-weight: 700;color: #31859c"><a id="recarga_captcha">Recargar
+                            <i class="fa fa-refresh"></i> </a></span>
+                    </label>
+                </div>
+                <div class="large-3 medium-4 small-5 columns">
+                    <label id="captcha">
+                        {{ form.captcha }}
+                    </label>
+                </div>
+                <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+            </div>
+
+            <div class="row">
+                <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+                <div class="large-6 medium-8 small-10 columns text-right">
+                    <input class="button" value="Solicitar contraseña" name="submit_mail" type="submit">
+                </div>
+                <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script src="/static/foundation-5.5.3/js/vendor/jquery.js"></script>
+<script src="/static/foundation-5.5.3/js/vendor/modernizr.js"></script>
+<script src="/static/js/jquery.cookie.js"></script>
+<script src="/static/foundation-5.5.3/js/foundation.min.js"></script>
+
+<script>
+    var csrftoken = $.cookie('csrftoken');
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+
+    $('#pass_olvidada').click(function (e) {
+        e.preventDefault();
+        $('#email').val('');
+        $('#introduce_user_pass').hide('slow');
+        $('#introduce_mail').show('slow');
+        $('#action').val('solicita_pass');
+    });
+    $('#recarga_captcha').click(function (e) {
+        e.preventDefault();
+        $.post("/recarga_captcha/", {action: 'recarga_captcha'}, function (data) {
+            $('#captcha').html(data);
+        });
+    });
+
+    $('#login_button').click(function (e) {
+        e.preventDefault();
+        document.getElementById("autenticar_form").submit();
+    });
+</script>
+</html>

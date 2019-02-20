@@ -1,0 +1,192 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Lista y creación de nuevos cursos</strong></h4>
+        </div>
+
+        <div data-alert class="alert-box success radius">
+            <span style="font-weight: 800;">En estos momentos hay {{ cursos|length }} cursos creados</span>
+            <a href="#" class="close">&times;</a>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_cursos" title="Lista de cursos">
+            {% for curso in cursos %}
+                {% include "configura_cursos_formulario.html" %}
+            {% endfor %}
+        </dl>
+        <hr>
+        <div class="row">
+            <div class="columns large-12">
+                <a class="button" id="add_curso"><i class="fa fa-plus"></i> Añadir curso</a>
+            </div>
+        </div>
+
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_plus']);
+
+        $("#plus_sign").click(function (event) {
+            event.preventDefault();
+            $.post("/configura_cursos/", {action: 'add_curso'}, function (data) {
+                if (data.ok) {
+                    $('#list_cursos').prepend(data.accordion);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#add_curso').click(function (e) {
+            e.preventDefault();
+            $.post("/configura_cursos/", {action: 'add_curso'}, function (data) {
+                if (data.ok) {
+                    $('#list_cursos').prepend(data.accordion);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('click', '.delete_curso', function (e) {
+            e.preventDefault();
+            var curso = $(this).data('curso');
+            $.post("/configura_cursos/", {action: 'delete_curso', curso: curso}, function (data) {
+                if (data.ok) {
+                    $('#accordion' + curso).hide();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('click', '.add_materia_curso', function (e) {
+            e.preventDefault();
+            var id_curso = $(this).data('curso');
+            $.post("/configura_cursos/", {action: 'add_materia_curso', id_curso: id_curso}, function (data) {
+                if (data.ok) {
+                    $('#list_materias' + id_curso).prepend(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('propertychange input change', '.campo', function (e) {
+            var campo = $(this).data('campo');
+            var value = $(this).val();
+            var id = $(this).data('id');
+            var object = $(this).data('object');
+            $.post("/configura_cursos/", {
+                    action: 'change_campo',
+                    id: id,
+                    value: value,
+                    campo: campo,
+                    object: object
+                },
+                function (data) {
+                    if (data.ok) {
+                        if (campo == 'nombre') {
+                            $('#span_nombre' + id).html(data.valor);
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('mouseenter', '.materia', function (e) {
+            e.preventDefault();
+            $(this).css('background-color', '#fcfcfc');
+            var id = $(this).data('id');
+            $('#actions' + id).show();
+        });
+        $('body').on('mouseleave', '.materia', function (e) {
+            e.preventDefault();
+            $(this).css('background-color', 'white');
+            var id = $(this).data('id');
+            $('#actions' + id).hide();
+        });
+
+        $('body').on('click', '.button_action', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var action = $(this).data('action');
+            var evaluar = $(this).data('evaluar');
+            $.post("/configura_cursos/", {action: action, id: id}, function (data) {
+                if (data.ok) {
+                    eval(evaluar);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('click', '.resultados_aprendizaje', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            window.location.href ='/resultados_aprendizaje/?m='+id;
+        });
+
+        $('body').on('click', '.programacion_materia', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var action = $(this).data('action');
+            $.post("/configura_cursos/", {action: action, id: id}, function (data) {
+                if (data.ok) {
+                    if (action == 'borrar_materia'){
+
+            }
+                    eval(data.evaluar);
+                    $('#accordion' + curso).hide();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('curso_contenido')) {
+                        var id = accordion.data('curso');
+                        console.log(id);
+                        console.log('fasdfsaf');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/configura_cursos/", {action: 'open_accordion', id: id}, function (data) {
+                                if (data.ok) {
+                                    $('#curso' + id).html(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#curso' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,250 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+{% load horarios_extras %}
+
+{% block contenido %}
+    <style xmlns="http://www.w3.org/1999/html">
+        h4.titulo {
+            text-align: center;
+            color: #008CBA;
+        }
+
+        #barra_iconos_menu {
+            z-index: 2000000 !important;
+        }
+
+        div.horario {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            height: {{ horario.horario_height }}px;
+            border: 1px solid grey;
+        }
+
+        div.dia_horario {
+            display: table-cell;
+            text-align: center;
+            height: {{ horario.horario_height }}px;
+            position: relative;
+        }
+
+        div.div_cell_sesion {
+            position: absolute;
+            border-left: 1px solid #BFDDCB;
+            border-top: 1px solid #BFDDCB;
+            border-right: 1px solid #BFDDCB;
+            background-color: white;
+            opacity: 1;
+            z-index: 1;
+            width: 100%;
+        }
+
+        div.div_cell_sesion:hover {
+            z-index: 100000 !important;
+            background-color: #ffd3e8;
+        }
+
+        .show_complete_cell {
+            z-index: 100000 !important;
+            background-color: #ffd3e8 !important;
+        }
+
+        #horas {
+            border-right: 1px solid grey;
+        }
+
+        div.horas {
+            position: absolute;
+            padding-left: 5px;
+            border-top: 1px solid #BFDDCB;
+            width: 100%;
+        }
+
+        .dependencia {
+            color: #117700;
+        }
+
+        .materia {
+            color: #008CBA;
+        }
+
+        .profesor {
+            color: #888888;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="gauser_extra" name="gauser_extra" value="{{ gauser_extra.id }}">
+
+        <div class="row">
+            <div class="columns large-6"><h4 class="titulo right"><strong>Datos del alumno</strong>
+            </h4></div>
+            <div class="columns large-6">
+                <select name="alumno" id="alumno" class="left">
+                    {% for a in alumnos %}
+                        <option value="{{ a.id }}"
+                                {% if a == alumno %}selected{% endif %}> {{ a.ge.gauser.last_name }}, {{ a.ge.gauser.first_name }}
+                            ({{ a.grupo.nombre }})
+                        </option>
+                    {% endfor %}
+                </select></div>
+
+        </div>
+        <div class="row">
+            <div class="columns large-4">
+                <label><b>Nombre:</b></label>{{ alumno.ge.gauser.get_full_name }}
+            </div>
+            <div class="columns large-4">
+                <label><b>Teléfonos:</b></label>{{ alumno.ge.gauser.telfij }} - {{ alumno.ge.gauser.telmov }}
+            </div>
+            <div class="columns large-4">
+                <label><b>Dirección:</b></label>{{ alumno.ge.gauser.address }}
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="columns large-6">
+                <label><b>Tutor legal 1:</b></label>{{ alumno.ge.tutor1.gauser.get_full_name }}
+                ({{ alumno.ge.tutor1.gauser.telfij }} - {{ alumno.ge.tutor1.gauser.telmov }})
+            </div>
+            <div class="columns large-6">
+                <label><b>Tutor legal 2:</b></label>{{ alumno.ge.tutor2.gauser.get_full_name }}
+                ({{ alumno.ge.tutor2.gauser.telfij }} - {{ alumno.ge.tutor2.gauser.telmov }})
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="columns large-4">
+                {% if request.session.gauser_extra|has_permiso:'asigna_grupo_alumnos' %}
+                    <label><b>Grupo:</b>
+                        <select id="grupo_alumno" data-alumno="{{ alumno.id }}">
+                            {% for grupo in grupos %}
+                                <option value="{{ grupo.id }}"
+                                        {% if grupo.id == alumno.grupo.id %} selected {% endif %}>{{ grupo.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                {% else %}
+                    <label><b>Grupo:</b></label>{{ alumno.grupo.nombre }}
+                {% endif %}
+            </div>
+            <div class="columns large-4">
+                {% if request.session.gauser_extra|has_permiso:'asigna_tutor_alumnos' %}
+                    <label><b>Tutor:</b>
+                        <select id="tutor_alumno" data-alumno="{{ alumno.id }}">
+                            <option value="">------</option>
+                            {% for tutor in tutores %}
+                                <option value="{{ tutor.id }}"
+                                        {% if tutor.id == alumno.tutor.id %}
+                                        selected {% endif %}>{{ tutor.gauser.get_full_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                {% else %}
+                    <label><b>Tutor:</b></label>{{ alumno.tutor.gauser.get_full_name }}
+                {% endif %}
+            </div>
+            <div class="columns large-4">
+                {% if request.session.gauser_extra|has_permiso:'asigna_tutor_alumnos' %}
+                    <label><b>Co-Tutor:</b>
+                        <select id="cotutor_alumno" data-alumno="{{ alumno.id }}">
+                            <option value="">------</option>
+                            {% for cotutor in cotutores %}
+                                <option value="{{ cotutor.id }}"
+                                        {% if cotutor.id == alumno.cotutor.id %}
+                                        selected {% endif %}>{{ cotutor.gauser.get_full_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                {% else %}
+                    <label><b>Co-Tutor:</b></label>{{ alumno.cotutor.gauser.get_full_name }}
+                {% endif %}
+            </div>
+        </div>
+        <hr>
+
+        <div class="horario">
+            <div class="dia_horario" id="horas">
+                {% for hora in horas_grupo %}
+                    <div class="horas" style="top:{{ hora.top }}px;"><b>{{ hora.inicio }}-{{ hora.fin }}</b></div>
+                {% endfor %}
+            </div>
+            {% for info_dia in sesiones %}
+                <div class="dia_horario" id="dia{{ info_dia.dia_num }}">
+                    <b>{{ info_dia.dia_nombre }}</b>
+                    {% for sesiones_hora in info_dia.sesiones_dia %}
+                        <div class="div_cell_sesion"
+                             style="z-index: {{ sesiones_hora.0.top }}; top:{{ sesiones_hora.0.top }}px;max-height: {{ sesiones_hora.0.height }}px;min-height: {{ sesiones_hora.0.height }}px;">
+                            {% for s in sesiones_hora %}
+                                <span class="dependencia">{{ s.dependencia.nombre }}</span><br>
+                                <span class="materia">{{ s.materia.nombre }}</span><br>
+                                <span class="profesor">{{ s.g_e.gauser.get_full_name }}</span>
+                                {% if not forloop.last %}<br><span class="materia">-------</span><br>{% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('#alumno').select2();
+
+        $('body').on('change', '#alumno', function (e) {
+            var geh = $(this).val();
+            window.location.href = "/alumnos_horarios/?g=" + geh;
+        });
+
+        $('body').on('change', '#grupo_alumno', function (e) {
+            var grupo = $(this).val();
+            var alumo = $(this).data('alumno');
+            $.post("/alumnos_horarios_ajax/", {action: 'grupo_alumno', grupo: grupo, alumno: alumo}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('change', '#tutor_alumno', function (e) {
+            var tutor = $(this).val();
+            var alumo = $(this).data('alumno');
+            $.post("/alumnos_horarios_ajax/", {action: 'tutor_alumno', tutor: tutor, alumno: alumo}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('change', '#cotutor_alumno', function (e) {
+            var cotutor = $(this).val();
+            var alumo = $(this).data('alumno');
+            $.post("/alumnos_horarios_ajax/", {action: 'cotutor_alumno', cotutor: cotutor, alumno: alumo}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#Contenido').on('click', '.div_cell_sesion', function () {
+            var element = $(this);
+            if (!element.hasClass('show_complete_cell')) {
+                $('.div_cell_sesion').removeClass('show_complete_cell');
+                element.addClass('show_complete_cell');
+            } else {
+                $('.div_cell_sesion').removeClass('show_complete_cell');
+            }
+        });
+    </script>
+{% endblock %}

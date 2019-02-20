@@ -1,0 +1,129 @@
+<div class="">
+    <h4 style="text-align: center;color: #008CBA;"><strong> Datos almacenados de la persona que reserva la
+        plaza</strong>
+    </h4>
+</div>
+<div id="datos_contenido_reserva">
+    <div class="row">
+        <div class="large-5 columns">
+            <label>Nombre:
+                <strong>{{ reserva.first_name }}</strong>
+            </label>
+        </div>
+        <div class="large-5 columns">
+            <label>Apellidos:
+                <strong>{{ reserva.last_name }}</strong>
+            </label>
+        </div>
+        <div class="large-2 columns">
+            <label>Sexo:
+                <strong>{{ reserva.get_sexo_display }}</strong>
+            </label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="large-9 columns">
+            <label>Dirección postal:
+                <strong>{{ reserva.address }}</strong>
+            </label>
+        </div>
+        <div class="large-3 columns">
+            <label>E-mail:
+                <strong>{{ reserva.email }}</strong>
+            </label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="large-4 columns">
+            <label>Fecha de nacimiento:
+                <strong>{{ reserva.nacimiento|date }}</strong>
+            </label>
+        </div>
+        <div class="large-4 columns">
+            <label>Teléfono fijo:
+                <strong>{{ reserva.telfij }}</strong>
+            </label>
+        </div>
+        <div class="large-4 columns">
+            <label>Teléfono móvil:
+                <strong>{{ reserva.telmov }}</strong>
+            </label>
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="large-6 columns">
+            <label>Nombre primer tutor:
+                <strong>{{ reserva.first_name_tutor1 }}</strong>
+            </label>
+        </div>
+        <div class="large-6 columns">
+            <label>Apellidos primer tutor:
+                <strong>{{ reserva.last_name_tutor1 }}</strong>
+            </label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="large-4 columns">
+            <label>Teléfono fijo primer tutor:
+                <strong>{{ reserva.telfij_tutor1 }}</strong>
+            </label>
+        </div>
+        <div class="large-4 columns">
+            <label>Teléfono móvil primer tutor:
+                <strong>{{ reserva.telmov_tutor1 }}</strong>
+            </label>
+        </div>
+        <div class="large-4 columns">
+            <label>E-mail del primer tutor:
+                <strong>{{ reserva.email_tutor1 }}</strong>
+            </label>
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="large-6 columns">
+            <label>Nombre segundo tutor:
+                <strong>{{ reserva.first_name_tutor2 }}</strong>
+            </label>
+        </div>
+        <div class="large-6 columns">
+            <label>Apellidos segundo tutor:
+                <strong>{{ reserva.last_name_tutor2 }}</strong>
+            </label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="large-4 columns">
+            <label>Teléfono fijo segundo tutor:
+                <strong>{{ reserva.telfij_tutor2 }}</strong>
+            </label>
+        </div>
+        <div class="large-4 columns">
+            <label>Teléfono móvil segundo tutor:
+                <strong>{{ reserva.telmov_tutor2 }}</strong>
+            </label>
+        </div>
+        <div class="large-4 columns">
+            <label>E-mail del segundo tutor:
+                <strong>{{ reserva.email_tutor2 }}</strong>
+            </label>
+        </div>
+    </div>
+
+    <a id="contenido_reserva_cerrar" style="position: absolute; top: 7px;right: 7px; font-size: 1.6em;"><strong><i
+            class="fa fa-close"></i> </strong></a>
+</div>
+<script>
+    $("#contenido_reserva_cerrar").on('click', function (e) {
+        e.preventDefault();
+        $('#lista_reservas').show('fast');
+        $('#formulario_datos').hide();
+        $('#contenido_reserva').hide();
+        habilita(['h_check', 's_plus', 'h_trash-o', 'h_group', 'h_list-alt']);
+    });
+</script>

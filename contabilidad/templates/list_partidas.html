@@ -1,0 +1,59 @@
+{% load my_templatetags %}
+
+<div id="list_partidas">
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+        <thead>
+        <tr>
+            <td style="font-size:120%;text-align:center;"><span class="color2"><i class="fa fa-check-square-o"></i></span></td>
+            <td><span class="color2">Nombre de la partida</span></td>
+            <td style="text-align:center;"><span class="color2">Tipo</span></td>
+            <td style="text-align:center;"><span class="color2">Cantidad</span></td>
+            <td style="text-align:center;"><span class="color2">Creado</span></td>
+            <td style="text-align:center;"><span class="color2">Últ. modif.</span></td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for partida in partidas %}
+            {% if partida.tipo == 'INGRE' %}
+                <tr>
+                    <td style="text-align:center;font-size: 120%;"> <i style="cursor: pointer;" class="fa fa-square-o check_partida" id="part___{{ partida.id }}"></i> </td>
+                    <td> {{ partida.nombre }} ({{ partida.id }})</td>
+                    <td style="text-align:center;"> {{ partida.get_tipo_display }}</td>
+                    <td style="text-align:center;"> {{ partida.cantidad }} €</td>
+                    <td style="text-align:center;"> {{ partida.creado }}</td>
+                    <td style="text-align:center;"> {{ partida.modificado }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+        <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td style="text-align:center;background:#dcc8dc;"><span class="color2">Total ingresos:</span></td>
+            <td style="text-align:center;background:#dcc8dc;"><span class="color2">{{ ingresos.ingreso_total }} €</span>
+            </td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+        {% for partida in partidas %}
+            {% if partida.tipo == 'GASTO' %}
+                <tr>
+                    <td style="text-align:center;font-size: 120%;"> <i style="cursor: pointer;" class="fa fa-square-o check_partida" id="part___{{ partida.id }}"></i> </td>
+                    <td> {{ partida.nombre }} ({{ partida.id }})</td>
+                    <td style="text-align:center;"> {{ partida.get_tipo_display }}</td>
+                    <td style="text-align:center;"> {{ partida.cantidad }} €</td>
+                    <td style="text-align:center;"> {{ partida.creado }}</td>
+                    <td style="text-align:center;"> {{ partida.modificado }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+        <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td style="text-align:center;background:#dcc8dc;"><span class="color2">Total gastos:</span></td>
+            <td style="text-align:center;background:#dcc8dc;"><span class="color2">{{ gastos.gasto_total }} €</span>
+            </td>
+        </tr>
+    </tbody>
+    </table>
+</div>

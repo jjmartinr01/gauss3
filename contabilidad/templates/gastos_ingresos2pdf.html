@@ -1,0 +1,131 @@
+<h2 style="text-align:center;"> Desglose de ingresos y gastos de la
+    entidad {{ asientos.0.partida.presupuesto.entidad.name }}</h2>
+
+<strong> {{ gi_ingresos.0.0.presupuesto.entidad.ronda.nombre }}</strong>
+<br>
+Creado: <strong> {{ gi_ingresos.0.0.presupuesto.creado }}</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Modificado:
+<strong> {{ gi_ingresos.0.0.presupuesto.modificado }}</strong><span class="color2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Generado: <strong> {% now "j/m/Y" %}</strong></span>
+<br>
+<hr>
+<br>
+
+
+<table align="CENTER" cellpadding="2" cellspacing="2" width="100%">
+    <tr>
+        <td colspan="22"><span style="font-size:13pt;font-weight:800;">INGRESOS:</span></td>
+    </tr>
+    <tr>
+        <td colspan="14" class="color2"><span><strong>Partida/Concepto</strong></span></td>
+        <td class="color2" style="text-align:right;" colspan="4"><strong>Presupuestado</strong></td>
+        <td class="color2" style="text-align:right;" colspan="4"><strong>Ingresado</strong></td>
+    </tr>
+    {% for g_i in gi_ingresos %}
+        <tr>
+            <td colspan="14"><span><strong>{{ g_i.0.nombre }}</strong></span></td>
+            <td style="text-align:right;" colspan="4">{{ g_i.0.cantidad }}€&nbsp;&nbsp;</td>
+            <td style="text-align:right;" colspan="4">{% if g_i.2 %} {{ g_i.2 }}€{% else %} 0€{% endif %}&nbsp;&nbsp;</td>
+        </tr>
+    {% endfor %}
+    <tr>
+        <td colspan="14" style="text-align:right;background:#dcc8dc;"><span class="color2">Total ingresos (Presupuestado y real):&nbsp;&nbsp;</span>
+        </td>
+        <td style="text-align:right;background:#dcc8dc;" colspan="4">{% if pi_total %} {{ pi_total }}€{% else %} 0€{% endif %}&nbsp;&nbsp;</td>
+        <td style="text-align:right;background:#dcc8dc;" colspan="4">{% if i_total %}{{ i_total }}€{% else %} 0€{% endif %}&nbsp;&nbsp;</td>
+    </tr>
+
+    <tr>
+        <td colspan="22">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="22"><span style="font-size:13pt;font-weight:800;">GASTOS:</span></td>
+    </tr>
+
+    <tr>
+        <td colspan="14" class="color2"><span><strong>Partida/Concepto</strong></span></td>
+        <td class="color2" style="text-align:right;" colspan="4"><strong>Presupuestado</strong></td>
+        <td class="color2" style="text-align:right;" colspan="4"><strong>Gastado</strong></td>
+    </tr>
+    {% for g_i in gi_gastos %}
+        <tr>
+            <td colspan="14"><span><strong>{{ g_i.0.nombre }}</strong></span></td>
+            <td style="text-align:right;" colspan="4">{{ g_i.0.cantidad }}€&nbsp;&nbsp;</td>
+            <td style="text-align:right;" colspan="4">{% if g_i.2 %} {{ g_i.2 }}€{% else %} 0€{% endif %}&nbsp;&nbsp;</td>
+        </tr>
+    {% endfor %}
+    <tr>
+        <td colspan="14" style="text-align:right;background:#dcc8dc;"><span class="color2">Total gastos (Presupuestado y real):&nbsp;&nbsp;</span>
+        </td>
+        <td style="text-align:right;background:#dcc8dc;" colspan="4">{% if pg_total %}{{ pg_total }}€{% else %} 0€{% endif %}&nbsp;&nbsp;</td>
+        <td style="text-align:right;background:#dcc8dc;" colspan="4">{% if g_total %}{{ g_total }}€{% else %} 0€{% endif %}&nbsp;&nbsp;</td>
+    </tr>
+</table>
+
+<table class="pagebreak" align="CENTER" cellpadding="2" cellspacing="2" width="100%">
+    <tr>
+        <td colspan="22"><span style="font-size:13pt;font-weight:800;">INGRESOS:</span></td>
+    </tr>
+    <tr>
+        <td colspan="14" class="color2"><span><strong>Partida/Concepto</strong></span></td>
+        <td class="color2" style="text-align:right;" colspan="4"><strong>Presupuestado</strong></td>
+        <td class="color2" style="text-align:right;" colspan="4"><strong>Ingresado</strong></td>
+    </tr>
+    {% for g_i in gi_ingresos %}
+        <tr>
+            <td colspan="14"><span><strong>{{ g_i.0.nombre }}</strong></span></td>
+            <td style="text-align:right;" colspan="4">{{ g_i.0.cantidad }}€&nbsp;&nbsp;</td>
+            <td style="text-align:right;" colspan="4">{% if g_i.2 %} {{ g_i.2 }}€{% else %} 0€{% endif %}&nbsp;&nbsp;</td>
+        </tr>
+        {% for asiento in g_i.1 %}
+            <tr>
+                <td>&nbsp;</td>
+                <td colspan="7"><span style="padding-left:10px;" class="color3">{{ asiento.concepto }}
+                    ({% if asiento.escaneo %}Just.{% else %}Sin just.{% endif %})</span></td>
+                <td>&nbsp;</td>
+                <td colspan="3" style="text-align:center;"><span class="color3">{{ asiento.cantidad }}€</span></td>
+                <td colspan="2" style="text-align:center;"><span class="color3">{{ asiento.modificado|date:"d/m/y" }}</span></td>
+            </tr>
+        {% endfor %}
+    {% endfor %}
+    <tr>
+        <td colspan="14" style="text-align:right;background:#dcc8dc;"><span class="color2">Total ingresos (Presupuestado y real):&nbsp;&nbsp;</span>
+        </td>
+        <td style="text-align:right;background:#dcc8dc;" colspan="4">{% if pi_total %}{{ pi_total }}€{% else %} 0€{% endif %}&nbsp;&nbsp;</td>
+        <td style="text-align:right;background:#dcc8dc;" colspan="4">{% if i_total %}{{ i_total }}€{% else %} 0€{% endif %}&nbsp;&nbsp;</td>
+    </tr>
+
+    <tr>
+        <td colspan="22">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="22"><span style="font-size:13pt;font-weight:800;">GASTOS:</span></td>
+    </tr>
+
+    <tr>
+        <td colspan="14" class="color2"><span><strong>Partida/Concepto</strong></span></td>
+        <td class="color2" style="text-align:right;" colspan="4"><strong>Presupuestado</strong></td>
+        <td class="color2" style="text-align:right;" colspan="4"><strong>Gastado</strong></td>
+    </tr>
+    {% for g_i in gi_gastos %}
+        <tr>
+            <td colspan="14"><span><strong>{{ g_i.0.nombre }}</strong></span></td>
+            <td style="text-align:right;" colspan="4">{{ g_i.0.cantidad }}€&nbsp;&nbsp;</td>
+            <td style="text-align:right;" colspan="4">{% if g_i.2 %} {{ g_i.2 }}€{% else %} 0€{% endif %}&nbsp;&nbsp;</td>
+        </tr>
+        {% for asiento in g_i.1 %}
+            <tr>
+                <td>&nbsp;</td>
+                <td colspan="7"><span style="padding-left:10px;" class="color3">{{ asiento.concepto }} (
+                    {% if asiento.escaneo %}Just.{% else %}Sin just.{% endif %})</span></td>
+                <td>&nbsp;</td>
+                <td colspan="3" style="text-align:center;"><span class="color3">{{ asiento.cantidad }}€</span></td>
+                <td colspan="2" style="text-align:center;"><span class="color3">{{ asiento.modificado|date:"d/m/y" }}</span></td>
+            </tr>
+        {% endfor %}
+    {% endfor %}
+    <tr>
+        <td colspan="14" style="text-align:right;background:#dcc8dc;"><span class="color2">Total gastos (Presupuestado y real):&nbsp;&nbsp;</span></td>
+        <td style="text-align:right;background:#dcc8dc;" colspan="4">{% if pg_total %}{{ pg_total }}€{% else %} 0€{% endif %}&nbsp;&nbsp;</td>
+        <td style="text-align:right;background:#dcc8dc;" colspan="4">{% if g_total %}{{ g_total }}€{% else %} 0€{% endif %}&nbsp;&nbsp;</td>
+    </tr>
+</table>
+

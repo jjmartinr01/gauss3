@@ -1,0 +1,291 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        h6 {
+            font-weight: 800
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" name="reserva_id" id="reserva_id" value="">
+        <input type="text" value="" id="text_to_be_copied" style="position:fixed;top:-3000px;">
+
+
+        <ul class="tabs" data-tab role="tablist">
+            <li class="tab-title active" role="presentation" data-id="0">
+                <a href="#tab1" role="tab" tabindex="0" aria-selected="true" aria-controls="tab1">
+                    <b id="texto0">Reservas</b></a>
+            </li>
+            <li class="tab-title" role="presentation" data-id="1">
+                <a href="#tab2" role="tab" tabindex="0" aria-selected="false" aria-controls="tab2">
+                    <b id="texto1" style="color:#74bfdd;">Nueva reserva</b></a>
+            </li>
+            <li class="tab-title" role="presentation" data-id="2">
+                <a href="#tab3" role="tab" tabindex="0" aria-selected="false" aria-controls="tab3">
+                    <b id="texto2" style="color:#74bfdd;">Configuración</b></a>
+            </li>
+        </ul>
+        <div class="tabs-content">
+            <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
+                <div class="">
+                    <h4 style="text-align: center;color: #008CBA;"><strong> Lista de las personas que tienen reservada
+                        plaza</strong>
+                    </h4>
+                </div>
+                <table align="CENTER" cellpadding="3" width="100%" id="tabla_reservas_espera">
+                    {% include "reserva_plazas_tabla_espera.html" %}
+                </table>
+            </section>
+            <section role="tabpanel" aria-hidden="true" class="content" id="tab2">
+                <div class="">
+                    <h4 style="text-align: center;color: #008CBA;"><strong> Datos de la persona que reserva la
+                        plaza</strong>
+                    </h4>
+                </div>
+                <div id="formulario_reserva_plaza">
+                    {% include "formulario_reserva_plaza.html" %}
+                </div>
+                <a class="button" id="add_reserva"><i class="fa fa-plus"></i> Añadir reserva</a>
+            </section>
+            <section role="tabpanel" aria-hidden="true" class="content" id="tab3">
+                <h4 style="text-align: center;color: #008CBA;"><b> Configuración para gestionar las solicitudes de
+                    reserva en {{ entidad.name }}</b>
+                </h4>
+                <h6>1. A través de la siguiente dirección, cualquier persona podrá hacer una
+                    solicitud para ser un usuario de la aplicación. Pulsa sobre el botón para copiarla.</h6>
+                Dirección para reservas externas:
+                <a class="button copy_url_reservas"
+                   data-url="https://gaumentada.es/formulario_ext_reserva_plaza?c={{ entidad.secret }}">https://gaumentada.es/formulario_ext_reserva_plaza?c={{ entidad.secret }}</a>
+                <h6>2. Selecciona las personas que recibirán un aviso tras producirse una solicitud.</h6>
+                <div class="row">
+                    <div class="large-12 columns">
+                        <select id="usuarios_aviso_reserva" multiple="multiple">
+                            {% for u in usuarios %}
+                                <option value="{{ u.id }}"
+                                        {% if u|has_permiso:'recibe_aviso_reserva' %}selected{% endif %}>{{ u.gauser.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <h6>3. Configura en qué orden y cómo se verán los posibles campos del formulario de inscripción.</h6>
+                <table width="100%" id="tabla_configuraciones">
+                    {% include "reserva_plazas_tabla_configuraciones.html" %}
+                </table>
+            </section>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        $(document).foundation({
+            tab: {
+                callback: function (tab) {
+                    var id = $(tab[0]).data('id');
+                    if (id == 0) {
+                        $('#texto0').css('color', 'black');
+                        $('#texto1').css('color', '#74bfdd');
+                        $('#texto2').css('color', '#74bfdd');
+                        $.post("/ajax_entidades/", {action: 'change_tab_reservas_espera'},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#tabla_reservas_espera').html(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                    } else if (id == 1) {
+                        $('#texto0').css('color', '#74bfdd');
+                        $('#texto1').css('color', 'black');
+                        $('#texto2').css('color', '#74bfdd');
+                        $.post("/ajax_entidades/", {action: 'change_tab_formulario_reserva'},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#formulario_reserva_plaza').html(data.html);
+                                    setTimeout(function () {
+                                        $(".fdatepicker").fdatepicker({
+                                            format: 'dd/mm/yyyy',
+                                            weekStart: 1,
+                                            endDate: new Date(),
+                                            initialDate: '02/12/1989',
+                                            leftArrow: '<<',
+                                            rightArrow: '>>',
+                                            language: 'es'
+                                        });
+                                    }, 500);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                    } else {
+                        $('#texto0').css('color', '#74bfdd');
+                        $('#texto1').css('color', '#74bfdd');
+                        $('#texto2').css('color', 'black');
+                        $("#usuarios_aviso_reserva").select2();
+                    }
+                }
+            }
+        });
+
+        $('#Contenido').on('click', '.configura_reservas_check', function (e) {
+            var campo = $(this).data('campo');
+            var id = $(this).data('id');
+            var valor = '';
+            if ($(this).prop('checked')) {
+                valor = 1;
+            } else {
+                valor = 0;
+            }
+            $.post("/ajax_entidades/", {
+                id: id,
+                action: 'configura_reservas',
+                campo: campo,
+                valor: valor
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    if (data.html) {
+                        $('#tabla_configuraciones').html(data.html);
+                    }
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            }, 'json');
+        });
+
+        $('#Contenido').on('keyup change', '.configura_reservas_num', function (e) {
+            var campo = $(this).data('campo');
+            var id = $(this).data('id');
+            var valor = $(this).val();
+            $.post("/ajax_entidades/", {
+                id: id,
+                action: 'configura_reservas',
+                campo: campo,
+                valor: valor
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    if (data.html) {
+                        $('#tabla_configuraciones').html(data.html);
+                    }
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            }, 'json');
+        });
+
+        $('#add_reserva').click(function (event) {
+            event.preventDefault();
+            $('#action').val('add_reserva');
+            $.post("/ajax_entidades/", $('#' + '{{ formname }}').serialize(), function (data) {
+                if (data.ok) {
+                    show_mensajes({
+                        title: 'Reserva guardada',
+                        texto: 'Los datos de la reserva se han guardado correctamente.'
+                    });
+                    $('#formulario_reserva_plaza').html(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                    show_mensajes({
+                        title: '<i class="fa fa-warning"></i> Error',
+                        texto: data.errores
+                    });
+                }
+            });
+        });
+
+        $('#Contenido').on('click', '.borrar_reserva', function (e) {
+            e.preventDefault();
+            reserva_borrar = $(this).data('id');
+            show_mensajes({
+                title: 'Borrar reserva', texto: 'Si aceptas la reserva será eliminada' +
+                    ' completamente de la base de datos.', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/ajax_entidades/", {action: 'borrar_reserva', id: reserva_borrar},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#reserva' + reserva_borrar).remove();
+                                    var mensaje = 'La reserva se ha eliminado correctamente.';
+                                    setTimeout(function () {
+                                        show_mensajes({title: 'Reserva borrada', texto: mensaje});
+                                    }, 600);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    var mensaje = 'Ha ocurrido un error y no se ha podido borrar la reserva.';
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                    show_mensajes({title: 'Reserva no borrada', texto: mensaje})
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+        $('#Contenido').on('click', '.dar_alta', function (e) {
+            e.preventDefault();
+            var reserva = $(this).data('id');
+            $.post("/ajax_entidades/", {reserva: reserva, action: 'reserva2usuario'}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#reserva' + reserva).remove();
+                    show_mensajes({title: 'Usuario dado de alta', texto: data.mensaje});
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#Contenido').on('click', '.info_reserva', function (e) {
+            e.preventDefault();
+            var reserva = $(this).data('id');
+            $.post("/ajax_entidades/", {reserva: reserva, action: 'info_reserva'}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    show_mensajes({
+                        title: '<i class="fa fa-info-circle"> Información sobre la reserva',
+                        texto: data.mensaje
+                    });
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+
+        $('#Contenido').on('click', '.copy_url_reservas', function () {
+            $('#text_to_be_copied').val($(this).data('url'));
+            $('#text_to_be_copied').select();
+            document.execCommand("copy");
+            show_mensajes({
+                title: 'URL copiada',
+                texto: 'Se ha copiado en el portapapeles la dirección en la que pueden darse solicitar plaza personas ajenas a la entidad'
+            });
+        });
+
+        $("#Contenido").on('change', '#usuarios_aviso_reserva', function (e) {
+            var seleccionados = $(this).val();
+            $.post("/ajax_entidades/", {seleccionados: seleccionados, action: 'usuarios_aviso_reserva'},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+    </script>
+{% endblock %}

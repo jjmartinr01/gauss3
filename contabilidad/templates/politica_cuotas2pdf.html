@@ -1,0 +1,48 @@
+{% load my_templatetags %}
+<h2 style="text-align:center;"> Política de cuotas de la entidad {{ politicas.0.entidad.name }}</h2>
+
+<strong> {{ politicas.0.entidad.ronda.nombre }}</strong>
+<br>
+<strong> {% now "j \d\e F \d\e Y" %}</strong>
+<br>
+<hr>
+<br>
+
+<table align="CENTER" cellpadding="2" cellspacing="2" width="100%">
+    <tr>
+        <td colspan="14"><span><strong>Concepto</strong></span></td>
+        <td style="text-align:center;" colspan="3"><strong>Tipo</strong></td>
+        <td>&nbsp;</td>
+        <td style="text-align:center;" colspan="6"><strong>Cantidad (€)</strong>&nbsp;&nbsp;</td>
+        <td style="text-align:right;" colspan="10"><strong>Descuentos familiares</strong>&nbsp;&nbsp;</td>
+    </tr>
+    {% for politica in politicas %}
+        <tr>
+            <td colspan="14"><span>{{ politica.concepto }}</span></td>
+            <td style="text-align:center;" colspan="3">{{ politica.get_tipo_cobro_display }}</td>
+            <td>&nbsp;</td>
+            <td style="text-align:center;" colspan="6">{{ politica.cantidad }}€&nbsp;&nbsp;</td>
+            <td style="text-align:right;" colspan="10">{% autoescape off %}
+                {{ politica.descuentos|desglosar_descuentos }} {% endautoescape %}&nbsp;&nbsp;</td>
+        </tr>
+        {% if politica.exentos.all|length > 0 %}
+            {% if politica.exentos.all|length > 1 %}
+                <tr>
+                    <td colspan="2">&nbsp;</td>
+                    <td colspan="32"><span
+                            style="color:gray;"><strong>Exentos:</strong>&nbsp;&nbsp;{% for exento in politica.exentos.all %}
+                        {% if forloop.first %} {% elif forloop.last %} y {% else %}, {% endif %}
+                        {{ exento.get_full_name }}{% endfor %}</span></td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="2">&nbsp;</td>
+                    <td colspan="32"><span
+                            style="color:gray;"><strong>Exento:</strong>&nbsp;&nbsp;{{ politica.exentos.all.0.get_full_name }}</span>
+                    </td>
+                </tr>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+
+</table>

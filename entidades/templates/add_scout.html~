@@ -1,0 +1,65 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block ready %}
+  $('#aceptar').click(function () {
+	$('#action').val('aceptar');
+	document.{{formname}}.submit(); });
+  $('#volver').click(function () {  javascript:history.go(-1); });
+  
+$("#id_secciones").multiselect({
+      noneSelectedText: 'Secciones/Ramas a las que pertenece',
+      selectedText: "# de # seleccionados",
+      checkAllText: "Todos",
+      uncheckAllText: "Quitar selección"  });
+
+$("#id_tipos").multiselect({
+      noneSelectedText: 'Tipo de socio',
+      selectedText: "# de # seleccionados",
+      checkAllText: "Todos",
+      uncheckAllText: "Quitar selección"  });
+
+  
+  $( ".helptext" ).each(function() { var helptext = $(this).text().split("**"); $(this).text(helptext[0]) ; });
+
+  $(document).ajaxStart(function() { $('#ajax-loader').show(); }).ajaxStop(function() { $('#ajax-loader').hide(); });
+
+  $('.ui-widget-header').css("color","#672296")
+{% endblock %}
+
+
+{% block navegar %}
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <img id="volver" style="rondar:pointer;" border="0" align="right" alt="Atrás" title="Atrás" src="/static/images/volver.gif">
+  <img id="aceptar" style="rondar:pointer;" border="0" align="right" alt="Aceptar" title="Aceptar" src="/static/images/aceptar.gif">
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <img id="ajax-loader" style="display:none;" border="0" align="right" alt="ajax-loader" title="ajax-loader" src="/static/images/ajax-loader.gif">
+    Añadir un nuevo socio
+{% endblock %}
+
+
+
+{% block contenido %}
+{% if form %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+    <input type="hidden" name="action" id="action" value="">
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Datos básicos del usuario GAUSS Scout</td></tr></table> 
+
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+{{form}}
+{{form2}}
+</table>
+
+</form>
+{% else %}
+<div class="noacceso" style="text-align:center;">
+  <h1 style="text-align:center;">Estás siendo redireccionado para completar los datos del usuario</h1>
+  <img style="padding-top:100px;text-align:center;" src="/static/images/logo_gauss_acceso.png" width="200"/>
+</div>
+{% endif %}
+
+{% endblock %}

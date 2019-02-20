@@ -1,0 +1,54 @@
+{% load entidades_extras %}
+{% load informes_extras %}
+{% for informe in informes %}
+    <dd class="accordion-navigation" id="accordion{{ informe.id }}">
+        {% if not informe.esta_cerrado %}
+            <input type="hidden" class="ges_informes_abiertos" value="{{ informe.usuario.id }}">
+        {% else %}
+            <input type="hidden" class="ges_informes_cerrados" value="{{ informe.usuario.id }}">
+        {% endif %}
+        <a href="#panel{{ informe.id }}">
+            <i id="circle{{ informe.id }}" class="fa fa-plus-circle circle_icon"></i>
+            {% if not informe.solicitante == g_e %}
+                {% if informe|rellenado:g_e %}
+                    <span style="color:green;"><i class="fa fa-thumbs-up"></i></span> <b>Ya has rellenado el informe para
+                        <span id="span_informe_tareas_title{{ informe.id }}"
+                              style="color: red;">{{ informe.usuario.gauser.get_full_name }}</span>&nbsp;
+                        &nbsp;&nbsp;{{ informe.fecha|date:'d/m/Y' }}</b>
+                {% else %}
+                    <b>Debes rellenar informe para <span id="span_informe_tareas_title{{ informe.id }}"
+                                                         style="color: red;">{{ informe.usuario.gauser.get_full_name }}</span>&nbsp;
+                        &nbsp;&nbsp;{{ informe.fecha|date:'d/m/Y' }}</b>
+                    {% if informe.num_usuarios_respondido == 1 %}
+                        (Hasta el momento lo ha respondido <span id="n_usuarios_respondido{{ informe.id }}">1</span>
+                        persona)
+                    {% else %}
+                        (Hasta el momento lo han respondido
+                        <span id="n_usuarios_respondido{{ informe.id }}">{{ informe.tarea_propuesta_set.all|length }}</span>
+                        personas)
+                    {% endif %}
+                {% endif %}
+
+                {% if informe.esta_cerrado %}
+                    <i id="estado{{ informe.id }}" style="color:red" class="fa fa-lock"></i>
+                {% else %}
+                    <i id="estado{{ informe.id }}" style="color:green" class="fa fa-unlock"></i>
+                {% endif %}
+            {% else %}
+                <b><span id="span_informe_tareas_title{{ informe.id }}">{{ informe.usuario.gauser.get_full_name }}
+                    </span>&nbsp;&nbsp;&nbsp;{{ informe.fecha|date:'d/m/Y' }}</b>&nbsp;
+                (Enviado a <span id="n_usuarios_destino{{ informe.id }}">{{ informe.usuarios_destino.all|length }}
+                    </span> personas y rellenado por <span id="n_usuarios_respondido{{ informe.id }}">
+                    {{ informe.tarea_propuesta_set.all|length }}</span>)
+                {% if informe.esta_cerrado %}
+                    <i id="estado{{ informe.id }}" style="color:red" class="fa fa-lock"></i>
+                {% else %}
+                    <i id="estado{{ informe.id }}" style="color:green" class="fa fa-unlock"></i>
+                {% endif %}
+            {% endif %}
+        </a>
+
+        <div id="panel{{ informe.id }}" class="content accordion-informe_tareas" data-id="{{ informe.id }}">
+        </div>
+    </dd>
+{% endfor %}

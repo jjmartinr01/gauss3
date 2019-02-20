@@ -1,0 +1,12 @@
+<dd class="accordion-navigation" id="accordion_c{{ conducta.id }}"
+    style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+    <a href="#panel_c{{ conducta.id }}">
+        <i id="circle_c{{ conducta.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <span id="span_conducta{{ conducta.id }}">{{ conducta.conducta|truncatechars:93 }}</span> <span
+            id="span_tipo_c{{ conducta.id }}" title="{{ conducta.get_tipo_display }}"
+            style="color: #a3a3a3">{{ conducta.tipo }}</span>
+    </a>
+
+    <div id="panel_c{{ conducta.id }}" class="content accordion-conducta" data-id="{{ conducta.id }}">
+    </div>
+</dd>

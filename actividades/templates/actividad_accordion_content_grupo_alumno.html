@@ -1,0 +1,17 @@
+<div class="columns large-12 div_grupo{{ grupo.id }}">
+    <b>Alumnos del grupo: {{ grupo.nombre }}</b> &nbsp;&nbsp;&nbsp;
+    <a class="select_ninguno" data-g="{{ grupo.id }}"
+       data-actividad="{{ actividad.id }}"> <i class="fa fa-square-o"></i> Ninguno
+    </a>&nbsp;&nbsp;&nbsp;
+    <a class="select_todos" data-g="{{ grupo.id }}"
+       data-actividad="{{ actividad.id }}"> <i class="fa fa-check-square-o"></i> Todos
+    </a>
+</div>
+{% for alumno in grupo.gausers_extra_horarios %}
+    <div class="columns large-3 div_grupo{{ grupo.id }}">
+        <input type="checkbox" {% if alumno.ge in actividad.alumnos_incluidos.all %}checked{% endif %}
+               class="alumnos_incluidos" data-id="{{ actividad.id }}" id="alumno{{ alumno.ge.id }}"
+               value="{{ alumno.ge.id }}" data-grupo="{{ grupo.id }}"> {{ alumno.ge.gauser.last_name }},
+        {{ alumno.ge.gauser.first_name }}
+    </div>
+{% endfor %}

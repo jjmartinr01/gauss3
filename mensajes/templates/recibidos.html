@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        #reveal_contenido_correo {
+            position: relative;
+            display: none;
+            background-color: #ffffff;
+            border: solid 1px #d3d3d3;
+            padding: 10px;
+        }
+
+        .no_leido {
+            font-weight: 700;
+        }
+    </style>
+{% endblock %}
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="id_adjunto" name="id_adjunto" value="">
+        <input type="hidden" id="id_mensajes" name="id_mensajes" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;" id="h4_title"><strong>Correos/Mensajes recibidos</strong></h4>
+        </div>
+
+        <div class="row"  id="correos_list">
+            {% include 'list_recibidos.html' %}
+        </div>
+    </form>
+    <div id="reveal_contenido_correo">
+    </div>
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        habilita(['h_trash-o']);
+
+        //Con esta función detectar el click y por medio de ajax imprimir el texto del correo
+        $("body").on('click','.mensaje_texto', function () {
+            var id = $(this).attr('id').split('___')[1]
+            $.post("/ajax_mensajes/", {
+                        id: id,
+                        action: 'ver_mensaje',
+                        formname: '{{ formname }}',
+                        tipo: 'recibido',
+                        numero: $(this).data('numero'),
+                        numero_max: $('#numero_max').val()},
+                    function (data) {
+                        $('#reveal_contenido_correo').html(data);
+                        $('#correos_list').hide();
+                        $('#reveal_contenido_correo').show('fast');
+                        window.scrollTo(0,0);
+{#                        location.hash = '#h4_titulo';#}
+                        return false;
+                    });
+            $('.nl_' + id).removeClass('no_leido');
+        });
+
+        $("body").on('click', '.siguiente', function (e) {
+            e.preventDefault();
+            var siguiente = parseInt($(this).attr('id').split('___')[1]) + 1;
+            var id = $('*[data-numero="' + siguiente + '"]').attr('id').split('___')[1];
+            $('.nl_' + id).removeClass('no_leido');
+            $.post("/ajax_mensajes/", {
+                        id: id,
+                        action: 'ver_mensaje',
+                        formname: '{{ formname }}',
+                        tipo: 'enviado',
+                        numero: siguiente,
+                        numero_max: $('#numero_max').val()},
+                    function (data) {
+                        $('#reveal_contenido_correo').html(data);
+                        $('#correos_list').hide();
+                        $('#reveal_contenido_correo').show('fast');
+                        window.scrollTo(0,0);
+{#                        location.hash = '#h4_titulo';#}
+                        return false;
+                    });
+        });
+
+        $("body").on('click', '.anterior', function (e) {
+            e.preventDefault();
+            var siguiente = parseInt($(this).attr('id').split('___')[1]) - 1;
+            var id = $('*[data-numero="' + siguiente + '"]').attr('id').split('___')[1];
+            $('.nl_' + id).removeClass('no_leido');
+            $.post("/ajax_mensajes/", {
+                        id: id,
+                        action: 'ver_mensaje',
+                        formname: '{{ formname }}',
+                        tipo: 'enviado',
+                        numero: siguiente,
+                        numero_max: $('#numero_max').val()},
+                    function (data) {
+                        $('#reveal_contenido_correo').html(data);
+                        $('#correos_list').hide();
+                        $('#reveal_contenido_correo').show('fast');
+                        window.scrollTo(0,0);
+{#                        location.hash = '#h4_titulo';#}
+                        return false;
+                    });
+        });
+
+        $("body").on('click','.check_mensaje', function () {
+            var id = $(this).attr('id').split('___')[1];
+            if ($('#check___' + id).hasClass('fa-square-o')) {
+                $(this).removeClass('fa-square-o').addClass('fa-check-square-o');
+                var str_list = $('#id_mensajes').val()
+                $('#id_mensajes').val(str_list + ',' + id)
+            } else {
+                $(this).removeClass('fa-check-square-o').addClass('fa-square-o');
+                var vec_list = $('#id_mensajes').val().split(',')
+                var index = vec_list.indexOf(id);
+                if (index > -1) {
+                    vec_list.splice(index, 1);
+                }
+                $('#id_mensajes').val(vec_list.join());
+            }
+            if ($('#id_mensajes').val().length > 0) {
+                habilita(['s_trash-o']);
+            } else {
+                habilita(['h_trash-o']);
+            }
+        });
+
+        $('#trash-o_sign').click(function (e) {
+            e.preventDefault();
+            var vec_list = $('#id_mensajes').val().split(',')
+            for (indice in vec_list) {
+                $('#fila_mesaje___' + vec_list[indice]).hide()
+            }
+            $.post("/ajax_mensajes/", { ids: $('#id_mensajes').val(), action: 'borrar_mensajes'}, function () {
+                return false;
+            });
+        });
+
+        $('body').on('click', '.paginas_gauss', function (e) {
+            e.preventDefault();
+            var id = $(this).attr('id').split('___')[1];
+            $.post("/ajax_mensajes/", { id: id, action: 'pagination_recibidos'}, function (data) {
+                $('#correos_list').html(data);
+                $(document).scrollTop($('#h4_title').offset().top - 150);
+            });
+        });
+        $('body').on('click', '.pagina_anterior_gauss', function (e) {
+            e.preventDefault();
+            var id = parseInt($('.paginas_gauss.current').attr('id').split('___')[1]) - 1;
+            if (id > 0) {
+                $.post("/ajax_mensajes/", { id: id, action: 'pagination_recibidos'}, function (data) {
+                    $('#correos_list').html(data);
+                    $(document).scrollTop($('#h4_title').offset().top - 150);
+                });
+            }
+        });
+        $('body').on('click', '.pagina_siguiente_gauss', function (e) {
+            e.preventDefault();
+            if ($('.paginas_gauss.current.ultima').length != 1) {
+                var id = parseInt($('.paginas_gauss.current').attr('id').split('___')[1]) + 1;
+                $.post("/ajax_mensajes/", { id: id, action: 'pagination_recibidos'}, function (data) {
+                    $('#correos_list').html(data);
+                    $(document).scrollTop($('#h4_title').offset().top - 150);
+                });
+            }
+        });
+    </script>
+{% endblock %}
+
+	
+
+
+
+
+
+
+

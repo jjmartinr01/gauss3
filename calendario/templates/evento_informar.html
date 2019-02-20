@@ -1,0 +1,35 @@
+{% if vevent.dtend %}
+    {% if vevent.dtstart == vevent.dtend %}
+        <p>El {{ vevent.dtstart|date:'l\, j \d\e F \a \l\a\s H:i'|lower }}</p>
+    {% elif vevent.dtstart|date:'dmY' == vevent.dtend|date:'dmY' %}
+        <p>El {{ vevent.dtstart|date:'l\, j \d\e F, \d\e\s\d\e \l\a\s H:i'|lower }} hasta
+            las {{ vevent.dtend|date:'H:i' }}</p>
+    {% else %}
+        <p>Desde el {{ vevent.dtstart|date:'l\, j \d\e F, \a \l\a\s H:i'|lower }} hasta
+            el {{ vevent.dtend|date:'l\, j \d\e F, \a \l\a\s H:i'|lower }}</p>
+    {% endif %}
+{% else %}
+    <p>El {{ vevent.dtstart|date:'l\, j \d\e F \a \l\a\s H:i'|lower }}</p>
+{% endif %}
+{% if vevent.location %}
+    <p>Lugar: <b>{{ vevent.location }}</b></p>
+{% endif %}
+<p>
+    {% autoescape off %}
+        {{ vevent.description }}
+    {% endautoescape %}
+</p>
+<hr>
+{% if usuario == 'Propietario' %}
+    <p class="radius alert label">Eres propietario de este evento. <br>Si lo eliminas se borrarán todas la invitaciones.
+    </p>
+{% elif usuario == 'Cargo' %}
+    <p class="radius alert label">Tienes un cargo/perfil de primer nivel y puedes eliminar este evento. <br>Si lo
+        eliminas se borrarán todas la invitaciones.</p>
+{% elif usuario == 'Invitado' %}
+    <p class="radius success label">Lees esto porque te han invitado personalmente a este evento. <br>Si lo eliminas se
+        borrará únicamente tu invitación.</p>
+{% else %}
+    <p class="radius secondary label">Lees este evento porque perteneces a una sección o departamento al que fue
+        inviado.</p>
+{% endif %}

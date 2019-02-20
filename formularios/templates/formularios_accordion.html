@@ -1,0 +1,59 @@
+<dl class="accordion" data-accordion>
+    {% for gform in gforms %}
+        <dd class="accordion-navigation"
+            style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+            <a href="#panel___{{ gform.id }}">
+                <i id="circle{{ gform.id }}" class="fa fa-plus-circle circle_icon"></i>
+                {{ gform.nombre }}
+                {% if not gform.activo %} <span class="info radius label">(desactivado)</span>
+                {% endif %}
+            </a>
+
+            <div id="panel___{{ gform.id }}" class="content {% if id_gform == gform.id %}active{% endif %}">
+                <ul class="button-group radius">
+                    <li><a data-id="{{ gform.id }}" class="button editar"><i class="fa fa-pencil"></i>
+                        Editar</a></li>
+                    <li><a data-id="{{ gform.id }}" class="button ver"><i class="fa fa-th"></i>
+                        Ejemplo</a></li>
+                    {% if gform.contestados %}
+                        <li><a data-id="{{ gform.id }}" href="#" class="button excel"><i
+                                class="fa fa-file-excel-o"></i> Excel</a></li>
+                        <li><a data-id="{{ gform.id }}" href="#" class="button resultados"><i
+                                class="fa fa-line-chart"></i> Resultados</a></li>
+                    {% endif %}
+                    {% if not gform.activo %}
+                        <li><a data-id="{{ gform.id }}" href="#" class="button borrar"><i
+                                class="fa fa-trash-o"></i> Borrar</a></li>
+                    {% endif %}
+                </ul>
+                <p><b>Fecha de creación:</b> {{ gform.creado|date:"d \d\e F \d\e Y" }}</p>
+                <p><b>Fecha máxima para ser rellenado:</b> {{ gform.fecha_max_rellenado|date:"d \d\e F \d\e Y" }}</p>
+
+                <p>Este formulario consta de <b>{{ gform.num_preguntas }}</b> preguntas.</p>
+                {% if gform.num_preguntas > 0 %}
+                    <p>Hasta el momento, {% if gform.contestados == 0 %}no lo ha rellenado nadie.
+                    {% elif gform.contestados == 1 %} lo ha rellenado una única persona.
+                    {% else %} lo han rellenado {{ gform.contestados }} personas.{% endif %}</p>
+                    <hr>
+                    {% if gform.activo %}
+                        <p>Este formulario está activo. Esto quiere decir que aquellos a los que va destinado
+                            pueden rellenarlo. Mientras esté activo no puede ser borrado.</p>
+                        <p>Puedes desactivarlo a través del menú editar
+                            (Pulsando el botón que tiene este símbolo: <i class="fa fa-pencil"></i>).</p>
+                    {% else %}
+                        <p>Este formulario está desactivado. Esto quiere decir que nadie
+                            puede rellenarlo. Mientras esté desactivado puede ser borrado.</p>
+                        <p>Puedes activarlo a través del menú editar
+                            (Pulsando el botón que tiene este símbolo: <i class="fa fa-pencil"></i>).</p>
+                    {% endif %}
+                {% else %}
+                    <p>Este formulario todavía no está en funcionamiento. Es necesario
+                        crear con las preguntas que los usuarios deberán rellenar.</p>
+                    <p>Para hacer esto debes editar el formulario
+                        (Pulsando el botón que tiene este símbolo: <i class="fa fa-pencil"></i>) y después hacer las
+                        configuraciones oportunas.</p>
+                {% endif %}
+            </div>
+        </dd>
+    {% endfor %}
+</dl>

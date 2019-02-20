@@ -1,0 +1,69 @@
+{#<div class="row">#}
+{#    <div class="columns large-12">#}
+{#        <table width="100%">#}
+{#            <tbody>#}
+{#            <tr>#}
+{#                <th>Enviado</th>#}
+{#                <th>Entrada</th>#}
+{#                <th>NDI</th>#}
+{#                <th>Tipo</th>#}
+{#                <th>Fecha Exp.</th>#}
+{#                <th>Nombre</th>#}
+{#                <th>Sexo</th>#}
+{#                <th>Nacimiento</th>#}
+{#                <th>Pais</th>#}
+{#                <th>Firma</th>#}
+{#            </tr>#}
+{#            {% for v in viajeros %}#}
+{#                {% if forloop.first %}#}
+{#                    <input type="hidden" value="{{ v.num }}" id="last_viajero">#}
+{#                {% endif %}#}
+{#                {% if forloop.counter|divisibleby:10 %}#}
+{#                    <tr>#}
+{#                        <th>Enviado</th>#}
+{#                        <th>Entrada</th>#}
+{#                        <th>NDI</th>#}
+{#                        <th>Tipo</th>#}
+{#                        <th>Fecha Exp.</th>#}
+{#                        <th>Nombre</th>#}
+{#                        <th>Sexo</th>#}
+{#                        <th>Nacimiento</th>#}
+{#                        <th>Pais</th>#}
+{#                        <th>Firma</th>#}
+{#                    </tr>#}
+{#                {% endif %}#}
+{#                <tr title="{{ v.reserva.vivienda }} -- {{ v.observaciones }}">#}
+{#                    <td id="registro_policia{{ v.id }}">{% if v.fichero_policia %}#}
+{#                        <span style="color:green"><i class="fa fa-check"></i> </span>{% else %}#}
+{#                        <a class="activar_registro" data-id="{{ v.id }}" style="color:red">No</a> {% endif %}</td>#}
+{#                    <td>{{ v.reserva.entrada|date:'d/m/Y' }}</td>#}
+{#                    <td>{{ v.ndi }}</td>#}
+{#                    <td>{{ v.tipo_ndi }}</td>#}
+{#                    <td>{{ v.fecha_exp|date:'d/m/Y' }}</td>#}
+{#                    <td>{{ v.apellido1 }} {{ v.apellido2 }}, {{ v.nombre }}</td>#}
+{#                    <td>{{ v.sexo }}</td>#}
+{#                    <td>{{ v.nacimiento|date:'d/m/Y' }}</td>#}
+{#                    <td>{{ v.get_pais_display }}</td>#}
+{#                    <td><img src="{{ v.firma.url }}" width="60px"/></td>#}
+{#                </tr>#}
+{#            {% endfor %}#}
+{#            </tbody>#}
+{#        </table>#}
+{#    </div>#}
+{#</div>#}
+
+<dl class="accordion" data-accordion id="accordion_registros">
+    {% for v in viajeros %}
+        <dd class="accordion-navigation" id="accordion{{ v.id }}">
+            <a href="#panel{{ v.id }}">
+                <i id="circle{{ v.id }}" class="fa fa-plus-circle circle_icon"></i>
+                <b>{{ v.reserva.vivienda.nombre }} &nbsp;&nbsp; {{ v.nombre }} {{ v.apellido1 }} {{ v.apellido2 }}
+                    &nbsp;&nbsp;<span style="color:gray">(Creado: {{ v.creado|date:'d-m-Y \a \l\a\s H:i' }})</span> </b>
+                <span style="font-weight: 800;" id="estado_registro{{ v.id }}">{% if v.fichero_policia %}
+                    <span style="color:green"><i class="fa fa-check"></i> </span>{% else %}
+                    <span style="color:red"><i class="fa fa-warning"></i> Sin registrar</span> {% endif %}</span>
+            </a>
+            <div id="panel{{ v.id }}" class="content accordion-registro" data-id="{{ v.id }}"></div>
+        </dd>
+    {% endfor %}
+</dl>

@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <style>
+        .reveal-modal {
+            position: fixed;
+            overflow: scroll;
+        }
+
+        .reveal-modal-bg {
+            position: fixed;
+            overflow: scroll;
+        }
+
+        .columnas2 {
+            -moz-column-count: 2;
+            -webkit-column-count: 2;
+            column-count: 2;
+        }
+
+        .columnas3 {
+            -moz-column-count: 3;
+            -webkit-column-count: 3;
+            column-count: 3;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}" data-abide>
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="enlace_id" name="enlace_id" value="">
+
+        <div>
+            <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong> Enlaces web creados para
+                {{ request.session.gauser_extra.ronda.entidad.name }} </strong></h4>
+        </div>
+
+        <div id="lista_ews">
+            <dl class="accordion" data-accordion>
+                {% for enlace_web in ews %}
+                    <dd class="accordion-navigation" id="accordion{{ enlace_web.id }}"
+                        style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+                        <a href="#panel___{{ enlace_web.id }}">
+                            <i id="circle{{ enlace_web.id }}" class="fa fa-plus-circle circle_icon"></i>
+                            <span id="href_nombre_title_dinamico{{ enlace_web.id }}">
+                                {% include "enlaces2_web_href_nombre_title.html" %}
+                            </span>
+                        </a>
+
+                        <div id="panel___{{ enlace_web.id }}" class="content" data-id="{{ enlace_web.id }}">
+                        </div>
+                    </dd>
+                {% endfor %}
+            </dl>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        var hws = {% autoescape off %}{{hws}} {% endautoescape %};
+        habilita(['s_plus']);
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    var id = accordion.data('id');
+                    window.console.log(id);
+                    if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                        $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                        $('#enlace_id').val(id);
+                        window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                        $.post("/enlaces_web/", {action: 'contenido_accordion', id: id}, function (data) {
+                            $('#panel___' + id).html(data);
+                        });
+                    } else {
+                        $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#enlace_id').val('');
+                        $('#panel___' + id).html('');
+                    }
+                }
+            }
+        });
+
+        $('body').on('click', '.activar', function (e) {
+            e.preventDefault();
+            var id = $('#enlace_id').val();
+            $.post("/enlaces_web/", {id: id, action: 'cambia_activo'}, function (data) {
+                $('#activar' + id).text(data);
+            });
+        });
+
+        $('body').on('click', '.href_texto', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#href_texto' + id).hide();
+            $('#edita_href_texto' + id).show();
+            $('#input_href' + id).select2({data: hws});
+        });
+        $('body').on('click', '.ok_href_texto', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var href = $('#input_href' + id).val();
+            var texto = $('#input_texto' + id).val();
+            $.post("/enlaces_web/", {id: id, action: 'cambia_enlace', href: href, texto: texto},
+                    function (data) {
+                        $('#edita_href_texto' + id).hide();
+                        $('#href_texto' + id).show();
+                        $('#texto' + id).html(texto);
+                        if ($('#enlace_externo' + id).data('externo') == 'No') {
+                            $('#href' + id).html('hw-' + href);
+                        } else {
+                            $('#href' + id).html(href);
+                        }
+                        $('#href_nombre_title_dinamico' + id).html(data);
+                    });
+            return false;
+        });
+
+
+        $('body').on('click', '.enlace_externo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/enlaces_web/", {id: id, action: 'enlace_externo'},
+                    function (data) {
+                        if (data == 'True') {
+                            $('#enlace_externo' + id).html('Sí');
+                            $('#input_href' + id).select2('destroy');
+                            $('#input_href' + id).val('');
+                            $('#enlace_externo' + id).data('externo', 'Sí');
+                            $('#input_href' + id).attr('placeholder', 'https://www.miweb.es');
+                        } else {
+                            $('#enlace_externo' + id).html('No');
+                            $('#enlace_externo' + id).data('externo', 'No');
+                            $('#input_href' + id).attr('placeholder', 'Escribe parte de la web a enlazar');
+                            $('#input_href' + id).select2({data: hws});
+                        }
+                    });
+            return false;
+        });
+
+        $('body').on('click', '.descripcion', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#descripcion' + id).hide();
+            $('#edita_descripcion' + id).show();
+        });
+        $('body').on('click', '.ok_descripcion', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var des = $('#input_descripcion' + id).val();
+            $.post("/enlaces_web/", {id: id, action: 'cambia_descripcion', descripcion: des}, function (data) {
+                $('#descripcion' + id).show().text(data);
+            });
+            $('#edita_descripcion' + id).hide();
+            $('#descripcion' + id).show();
+        });
+
+        $('body').on('click', '.orden', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var orden = $('#orden' + id).val();
+            $.post("/enlaces_web/", {id: id, action: 'cambia_orden', orden: orden}, function (data) {
+                $('#orden' + id).val(orden);
+            });
+        });
+
+        $('#plus_sign').click(function (e) {
+            e.preventDefault();
+            $('#action').val('add_enlace');
+            document.{{formname}}.submit();
+        });
+
+        $('body').on('click', '.borrar', function (e) {
+            e.preventDefault();
+            $('#enlace_id').val($(this).data('id'));
+            $('#action').val('borra_enlace');
+            document.{{formname}}.submit();
+        });
+    </script>
+{% endblock %}

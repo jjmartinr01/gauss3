@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        h4 {
+            text-align: center;
+            color: #008CBA;
+        }
+
+        .heading {
+            color: #008cba;
+            font-size: 0.85rem !important;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="gauser_extra_selected" id="gauser_extra_selected" value="{{ gauser_extra.id }}">
+
+        <div class="">
+            <h4><strong> Modificación de perfiles y permisos</strong></h4>
+        </div>
+
+
+        <div class="panel callout">
+            <div class="row">
+                <div class="large-2 columns">
+                    {% if gauser_extra.foto %}
+                        <img width="70" src="{{ gauser_extra.foto.url }}">
+                    {% else %}
+                        {% if gauser_extra.gauser.sexo == 'H' %}
+                            <img width="70" src="/media/fotos/general_h.png">
+                        {% else %}
+                            <img width="70" src="/media/fotos/general_m.png">
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div class="large-10 columns">
+                    <div class="row">
+                        {% if gauser_extra.gauser.sexo == 'H' %}
+                            <i class="fa fa-male fa-fw"></i>
+                        {% else %}
+                            <i class="fa fa-female fa-fw"></i>
+                        {% endif %}{{ gauser_extra.gauser.get_full_name }}
+                    </div>
+                    <div class="row">
+                        <i class="fa fa-users fa-fw"></i>
+                        {% for subentidad in gauser_extra.subentidades.all %}
+                            {{ subentidad.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                    </div>
+                    <div class="row">
+                        {% if gauser_extra.cargos.all|length > 0 %}
+                            <i class="fa fa-briefcase fa-fw"></i>
+                            {% for cargo in gauser_extra.cargos.all %}
+                                {{ cargo.cargo }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h5><i class="fa fa-hand-o-up"></i> <strong>Selecciona cargos</strong></h5>
+        </div>
+        <div class="panel ">
+            <div class="row">
+                {% for cargo in cargos %}
+                    <div class="large-3 columns" id="div_cargos">
+                        <input type="checkbox" name="cargos" class="cargos" value="{{ cargo.id }}"
+                                {% if cargo in gauser_extra.cargos.all %}checked="checked"{% endif %}>{{ cargo.cargo }}
+                    </div>
+                    {% if forloop.counter|divisibleby:"4" %}
+                        </div><br>
+                        <div class="row">
+                    {% endif %}
+                {% endfor %}
+                </div>
+        </div>
+        {% with entidad=gauser_extra.ronda.entidad %}
+            <div>
+                <h5><i class="fa fa-hand-o-up" id="select_permisos"></i> <strong>Selecciona permisos asociados al menú
+                    de cada módulo</strong></h5>
+            </div>
+            <dl class="accordion" data-accordion>
+                {% for menu in entidad|menus %}
+                    <dd class="accordion-navigation" id="accordion{{ menu.id }}">
+                        <a href="#panel_{{ menu.id }}" style="padding-left: {{ menu.menu_default.nivel }}em;">
+                            <span class="heading pos{{ menu.id }}">{{ menu.pos }}</span>
+                            <span class="heading" id="texto_menu{{ menu.id }}"> {{ menu.texto_menu }}</span>
+                        </a>
+
+                        <div id="panel_{{ menu.id }}" class="content accordion-menu" data-id="{{ menu.id }}">
+                            <div class="row">
+                                <div class="columns large-1 position heading pos{{ menu.id }}" id="pos{{ menu.id }}"
+                                     data-menu="{{ menu.id }}" contenteditable="true" style="text-align: right;">
+                                    {{ menu.pos }}
+                                </div>
+                                <div class="columns large-8 end nombre heading" data-menu="{{ menu.id }}"
+                                     contenteditable="true">{{ menu.texto_menu }}
+                                </div>
+                            </div>
+                            {% for p in menu.permisos %}
+                                <div class="row">
+                                    <div class="columns large-2">
+                                        &nbsp;
+                                    </div>
+                                    <div class="columns large-10">
+                                        <input type="checkbox" class="permiso_cargo" id="pc{{ p.id }}"
+                                               title="Permiso según cargo" disabled
+                                                {% if p in gauser_extra.permisos_cargos %} checked{% endif %}>
+                                        <input type="checkbox" class="permiso" id="p{{ p.id }}"
+                                               title="Permiso asignado al usuario" value="{{ p.id }}"
+                                                {% if p in gauser_extra.permisos.all %} checked{% endif %}>
+                                        {{ p.nombre }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            <hr>
+                            {% for m in menu.children %}
+                                <div id="child{{ m.id }}">
+                                    <div class="row">
+                                        <div class="columns large-1 heading" style="text-align: right;">
+                                        <span class="pos{{ menu.id }}"
+                                              style="text-align: right;">{{ menu.pos }}</span>.
+                                        </div>
+                                        <div class="columns large-1 position2 heading" data-menu="{{ m.id }}"
+                                             contenteditable="true" id="pos{{ m.id }}">{{ m.pos }}
+                                        </div>
+
+                                        <div class="columns large-8 end nombre heading" data-menu="{{ m.id }}"
+                                             contenteditable="true">{{ m.texto_menu }}
+                                        </div>
+                                    </div>
+                                    {% for p in m.permisos %}
+                                        <div class="row">
+                                            <div class="columns large-3">
+                                                &nbsp;
+                                            </div>
+                                            <div class="columns large-9">
+                                                <input type="checkbox" class="permiso_cargo" id="pc{{ p.id }}"
+                                                       title="Permiso según cargo" disabled
+                                                        {% if p in gauser_extra.permisos_cargos %}
+                                                       checked{% endif %}>
+                                                <input type="checkbox" class="permiso" id="p{{ p.id }}"
+                                                       title="Permiso asignado al usuario" value="{{ p.id }}"
+                                                        {% if p in gauser_extra.permisos.all %}
+                                                       checked{% endif %}> {{ p.nombre }}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </dd>
+                {% endfor %}
+            </dl>
+        {% endwith %}
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        {% if request.session.gauser_extra|has_permiso:'asigna_permisos' %}
+            $('#Contenido').on('change', '.permiso', function () {
+                var permiso = $(this).val();
+                var ge = $('#gauser_extra_selected').val();
+                if ($(this).is(':checked')) {
+                    var action = 'add_permiso';
+                } else {
+                    var action = 'del_permiso';
+                }
+                $.post("/perfiles_permisos/", {permiso: permiso, action: action, ge: ge}, function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }, 'json');
+            });
+            {% else %}
+            $('.permiso').hide();
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'modifica_texto_menu' %}
+            $('body').on('keyup', '.nombre', function () {
+                var menu = $(this).data('menu');
+                var nombre = $(this).text();
+                $.post("/perfiles_permisos/", {menu: menu, action: 'change_nombre', nombre: nombre}, function (data) {
+                    $('#texto_menu' + menu).html(data.texto_menu);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }, 'json');
+            });
+        {% endif %}
+
+
+        {% if request.session.gauser_extra|has_permiso:'modifica_pos_menu' %}
+            $('body').on('keyup', '.position2', function () {
+                var menu = $(this).data('menu');
+                var pos = parseInt($(this).text());
+                if (pos > 0) {
+                    $.post("/perfiles_permisos/", {menu: menu, action: 'change_pos', pos: pos}, function (data) {
+                        var after = -1;
+                        var before = -1;
+                        $.each(data, function (key, value) {
+                            $('#pos' + key).html(value);
+                            if (value == (pos - 1)) {
+                                before = key;
+                            }
+                            if (value == (pos + 1)) {
+                                after = key;
+                            }
+                        });
+                        if (after > 0) {
+                            $('#child' + menu).insertBefore($('#child' + after));
+                        } else {
+                            $('#child' + menu).insertAfter($('#child' + before));
+                        }
+                        window.scrollTo(0, $('#child' + menu).offset().top - 150);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    }, 'json');
+                }
+            });
+
+
+            $('body').on('keyup', '.position', function () {
+                var menu = $(this).data('menu');
+                var pos = parseInt($(this).text());
+                if (pos > 0) {
+                    $.post("/perfiles_permisos/", {menu: menu, action: 'change_pos', pos: pos}, function (data) {
+                        var after = -1;
+                        var before = -1;
+                        $.each(data, function (key, value) {
+                            $('.pos' + key).html(value);
+                            if (value == (pos - 1)) {
+                                before = key;
+                            }
+                            if (value == (pos + 1)) {
+                                after = key;
+                            }
+                        });
+                        if (after > 0) {
+                            $('#accordion' + menu).insertBefore($('#accordion' + after));
+                        } else {
+                            $('#accordion' + menu).insertAfter($('#accordion' + before));
+                        }
+                        window.scrollTo(0, $('#accordion' + menu).offset().top - 50);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    }, 'json');
+                }
+            });
+        {% endif %}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-menu')) {
+                        var id = accordion.data('id');
+                        window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                    }
+                }
+            }
+        });
+
+
+        {% if request.session.gauser_extra|has_permiso:'asigna_perfiles' %}
+            $('#Contenido').on('change', '.cargos', function () {
+                var cargo = $(this).val();
+                var ge = $('#gauser_extra_selected').val();
+                if ($(this).is(':checked')) {
+                    var action = 'add_cargo';
+                } else {
+                    var action = 'del_cargo';
+                }
+                $.post("/perfiles_permisos/", {cargo: cargo, action: action, ge: ge}, function (data) {
+                    $('.permiso_cargo').prop('checked', false);
+                    $.each(data, function (key, value) {
+                        $('#pc' + value).prop('checked', true);
+                    });
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }, 'json');
+            });
+            {% else %}
+            $('.cargos').prop('disabled', true);
+        {% endif %}
+
+
+        $("#input_search_select2").select2({
+            placeholder: "Escribe parte del nombre",
+            minimumInputLength: 3,
+            ajax: {
+                url: "/buscar_usuarios/",
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (term, page) { // page is the one-based page number tracked by Select2
+                    return {
+                        action: 'select2',
+                        q: term, //search term
+                        page_limit: 10, // page size
+                        page: page // page number
+                    };
+                },
+                results: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.last_name + ', ' + item.first_name + ' (' + item.perfiles + ')',
+                                id: item.id
+                            }
+                        })
+                    };
+                }
+            },
+            formatResult: function (resultado) {
+                return '<div class="select2-user-result">' + resultado.text + '</div>';
+            },
+            formatSelection: function (resultado) {
+                $('#gauser_extra_selected').val(resultado.id);
+                return resultado.text;
+            },
+            dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
+            escapeMarkup: function (m) {
+                return m;
+            } // we do not want to escape markup since we are displaying html in results
+        });
+
+        $("#input_search_select2").change(function () {
+            $('#action').val('gauser_extra_selected');
+            document
+            .{{formname}}.
+            submit();
+        });
+
+    </script>
+{% endblock %}

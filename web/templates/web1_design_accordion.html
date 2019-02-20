@@ -1,0 +1,205 @@
+<div class="row" id="row1{{ html_web.id }}">
+    <div class="columns large-4">
+        <label><b>Fecha de
+            creación:</b></label> {{ html_web.creado|date:"d \d\e F \d\e Y" }}
+    </div>
+    <div class="columns large-4">
+        <label><b>Última
+            modificación:</b></label> {{ html_web.modificado|date:"d \d\e F \d\e Y" }}
+    </div>
+    <div class="columns large-4">
+        <label><b>Identificador:</b></label>
+        hw-{{ html_web.id }}
+    </div>
+</div>
+<hr>
+<div class="columns large-12 cambia_nombre" data-id="{{ html_web.id }}" id="row2{{ html_web.id }}"
+     data-nombre="{{ html_web.nombre }}">
+    {% include "web1_design_editores.html" %}
+</div>
+<hr>
+<div class="row" id="row3{{ html_web.id }}">
+    <div class="columns large-4" id="html_div{{ html_web.id }}" data-id="{{ html_web.id }}">
+{#        <label><b>Fichero html:</b> </label>#}
+    </div>
+    <div class="columns large-4">
+        <label><b>Nombre:</b></label>
+        <a id="nombre{{ html_web.id }}" class="cambia_nombre" data-id="{{ html_web.id }}"
+           data-nombre="{{ html_web.nombre }}">{{ html_web.nombre }}</a>
+    </div>
+    <div class="columns large-4">
+        <label><b>Tipo de página:</b></label>
+        <a data-dropdown="drop_tipo{{ html_web.id }}" aria-controls="drop_tipo{{ html_web.id }}"
+           aria-expanded="false"
+           id="tipo___{{ html_web.id }}">
+            {{ html_web.get_tipo_display }}</a>
+        <ul id="drop_tipo{{ html_web.id }}" class="f-dropdown" data-dropdown-content
+            aria-hidden="true"
+            tabindex="-1">
+            <li>
+                <a id="NORMAL___{{ html_web.id }}" class="cambia_tipo">Página normal</a>
+            </li>
+            <li>
+                <a id="POST___{{ html_web.id }}" class="cambia_tipo">Es un post</a>
+            </li>
+            <li>
+                <a id="POST_LIST___{{ html_web.id }}" class="cambia_tipo">Es la lista de post</a>
+            </li>
+            <li>
+                <a id="COMPRAVENTA___{{ html_web.id }}" class="cambia_tipo">Venta de productos</a>
+            </li>
+        </ul>
+        {#        <select name="tipo{{ html_web.id }}" id="tipo{{ html_web.id }}">#}
+        {#            <option value="{{ html_web.tipo }}">{{ html_web.get_tipo_display }}</option>#}
+        {#            <option value="NORMAL">Página normal</option>#}
+        {#            <option value="POST">Es un post</option>#}
+        {#            <option value="POST_LIST">Es la lista de post</option>#}
+        {#            <option value="COMPRAVENTA">Venta de productos</option>#}
+        {#        </select>#}
+    </div>
+</div>
+<hr>
+<div class="row" id="row4{{ html_web.id }}">
+    <div class="columns large-4">
+        <label><b>Distribución:</b>
+            <a href="#" id="distribucion___{{ html_web.id }}" class="cambia_distribucion"
+               data-col_izq="{{ html_web.col_izq }}" data-col_cen="{{ html_web.col_cen }}"
+               data-col_der="{{ html_web.col_der }}" data-id="{{ html_web.id }}">
+                {{ html_web.col_izq }}-{{ html_web.col_cen }}-{{ html_web.col_der }}
+            </a></label>
+    </div>
+    <div class="columns large-4">
+        <label><b>Es la página de inicio:</b>
+            <a id="cambia_home{{ html_web.id }}" data-id="{{ html_web.id }}" class="cambia_home">
+                {% if html_web.home %}Sí{% else %}No{% endif %}</a></label>
+    </div>
+    <div class="columns large-4">
+        <label><b>Página publicada:</b>
+            <a id="cambia_publicar{{ html_web.id }}" data-id="{{ html_web.id }}"
+               class="cambia_publicar"> {% if html_web.publicar %}Sí{% else %}No{% endif %}</a></label>
+    </div>
+</div>
+<hr>
+<div class="row" id="row5{{ html_web.id }}">
+    <div class="columns large-6">
+{#        <label class="sube_css" data-id="{{ html_web.id }}"><b>Archivos CSS ({{ html_web.css.all|length }})</b></label>#}
+
+        <div class="row">
+            <div class="columns large-12" id="css_div{{ html_web.id }}" data-id="{{ html_web.id }}"></div>
+        </div>
+    </div>
+
+    <div class="columns large-6">
+{#        <label><b>Archivos JS ({{ html_web.js.all|length }})</b></label>#}
+
+        <div class="row">
+            <div class="columns large-12" id="js_div{{ html_web.id }}" data-id="{{ html_web.id }}"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).foundation('dropdown', 'reflow');
+
+    $('body').on('click', '.sube_css', function (e) {
+        e.preventDefault();
+        $('#id_tag').val($(this).attr('id'));
+        var id = $(this).data('id');
+        $('#id_web').val(id);
+        $('#tipo_fichero_xhr').val('text/css');
+        $('#action').val('sube_css');
+        $('#fichero_xhr').trigger('click');
+    });
+
+    $('body').on('change', '#fichero_xhr', function (e) {
+        e.preventDefault();
+        var fun = '/web_design/';
+        var action = $('#action').val();
+        var tipo = $('#tipo_fichero_xhr');
+        var es_tipo = true;
+        var id = $('#id_web').val();
+        var id_tag = $('#id_tag').val();
+        var texto_tag = $('#' + id_tag).html();
+        $('#' + id_tag).html('Cargando ...');
+        var files_xhr = document.getElementById('fichero_xhr').files;
+        window.console.log(files_xhr[0].type);
+        for (var i = 0; i < files_xhr.length; i++) {
+            var file_xhr = files_xhr[i];
+            if (file_xhr.type == tipo) {
+                var formData = new FormData();
+                formData.append('fichero_xhr', file_xhr);
+                formData.append('action', action);
+                formData.append('id', id);
+                formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', fun, true);
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        $('#' + id_tag).html(texto_tag);
+                        {#                                file_xhr.name);#}
+                        alert('Fichero cargado');
+                    } else {
+                        alert('No se ha podido cargar el archivo');
+                    }
+                };
+                xhr.send(formData);
+            } else {
+                $('#h3_modal_aviso').html('Error');
+                $('#span_modal_aviso').html('El archivo debe ser ' + tipo);
+                $('#a_fichero_xhr').html(texto_tag);
+                $('#modal_aviso').foundation('reveal', 'open');
+            }
+        }
+    });
+
+
+    $('#css_div' + {{ html_web.id }}).gaussFileAjaxUpload({
+        texto_a: '<i class="fa fa-cloud-upload"></i> Cargar archivos css',
+        title_a: 'Los archivos .css cargados definen estilos en {{ html_web.nombre }}',
+        tipos: 'text/css',
+        ajaxFuncion: '/web_design/',
+        action: 'sube_fileweb',
+        data1: $('#id_web').val(),
+        data2: 'css'
+    });
+    $('#js_div' + {{ html_web.id }}).gaussFileAjaxUpload({
+        texto_a: '<i class="fa fa-cloud-upload"></i> Cargar archivos js',
+        title_a: 'Los archivos .js cargados son utilizados en {{ html_web.nombre }}',
+        tipos: 'application/javascript',
+        ajaxFuncion: '/web_design/',
+        action: 'sube_fileweb',
+        data1: $('#id_web').val(),
+        data2: 'js'
+    });
+
+    {% if html_web.html %}
+        var texto_a = '{{ html_web.html.fich_name }}';
+    {% else %}
+        var texto_a = 'No se ha cargado';
+    {% endif %}
+
+    $('#html_div' + {{ html_web.id }}).gaussFileAjaxUpload({
+        texto_a: '<i class="fa fa-cloud-upload"></i> Carga archivo html',
+        title_a: 'Este será el archivo que se muestre en esta web. Debe estar vacío si quieres diseñar la página desde GAUSS',
+{#        dinamic_a: true,#}
+        tipos: 'text/html',
+        ajaxFuncion: '/web_design/',
+        action: 'sube_fileweb',
+        data1: $('#id_web').val(),
+        data2: 'html'
+    });
+    {# Las anteriores funciones habilitan la subida de archivos ajax, pero si ya hubiera subidos no se mostrarían #}
+    {# Es por esto que llamamos a estas funciones para que rellenen los div con los archivos anteriormente subidos #}
+    $.post("/web_design/", {action: 'lista_fileweb', hw: $('#id_web').val(), field: 'css'}, function (data) {
+        var gauss_fileList = '#css_div' + {{ html_web.id }} +'gaussFileList';
+        $(gauss_fileList).html(data);
+    });
+    $.post("/web_design/", {action: 'lista_fileweb', hw: $('#id_web').val(), field: 'js'}, function (data) {
+        var gauss_fileList = '#js_div' + {{ html_web.id }} +'gaussFileList';
+        $(gauss_fileList).html(data);
+    });
+    $.post("/web_design/", {action: 'lista_fileweb', hw: $('#id_web').val(), field: 'html'}, function (data) {
+        var gauss_fileList = '#html_div' + {{ html_web.id }} +'gaussFileList';
+        $(gauss_fileList).html(data);
+    });
+</script>

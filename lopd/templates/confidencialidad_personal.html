@@ -1,0 +1,66 @@
+<h2 style="text-align:center;"> COMPROMISO DE CONFIDENCIALIDAD</h2>
+<p class="wysiwyg-text-align-justify">&nbsp;</p>
+
+<p class="wysiwyg-text-align-justify">
+    {% if request.session.gauser_extra.gauser.sexo == 'H' %}
+        D. {% elif request.session.gauser_extra.gauser.sexo == 'M' %}Dª. {% else %}
+        D./Dª. {% endif %} {{ request.session.gauser_extra.gauser.get_full_name }} con
+    DNI {{ request.session.gauser_extra.gauser.dni }} en calidad de miembro de la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }} se compromete a cumplir el presente Compromiso de
+    Confidencialidad.</p>
+<p class="wysiwyg-text-align-justify">El desarrollo de las funciones que le han sido asignadas en la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }} supone el acceso y uso de información confidencial
+    propiedad de la Asociación.</p><p class="wysiwyg-text-align-justify">
+    Se entiende por información confidencial toda la información que resulte identificada como tal o que por su propia
+    naturaleza ostente de manera evidente tal carácter, cualquiera que fuere el soporte en que se encuentre, incluso si
+    hubiese sido comunicada verbalmente. En todo caso tendrá dicha condición toda información que contenga datos de
+    carácter personal, entendidos estos como cualquier información numérica, alfabética, gráfica, fotográfica, acústica
+    o de cualquier otro tipo concerniente a personas físicas identificadas o identificables.</p>
+<p class="wysiwyg-text-align-justify">La información no tendrá carácter confidencial cuando:</p>
+<ol>
+    <li>Fuese conocida por el interesado con anterioridad.</li>
+    <li>Fuese de dominio público.</li>
+    <li>Su divulgación fuese requerida legalmente o mediante requerimiento
+        judicial o administrativo.</li>
+</ol><p class="wysiwyg-text-align-justify">Los datos de carácter personal
+    serán objeto de protección en todo caso limitándose su divulgación, cuando esta sea necesaria, a los fines concretos
+    para los que se hubiese requerido la misma. El carácter público de los datos de carácter personal no se considerará
+    una autorización para que los mismos sean tratados con cualquier fin.</p><p class="wysiwyg-text-align-justify">
+    El interesado mantendrá como información confidencial aquella que reciba de la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }}, a la que tenga acceso o que elabore en el desarrollo de
+    sus funciones. No la divulgará ni cederá a terceros salvo que fuese necesario para dichas funciones, de acuerdo con
+    las instrucciones recibidas al efecto, las competencias propias de su cargo, o cuando hubiese obtenido el
+    consentimiento de la Asociación. </p><p
+        class="wysiwyg-text-align-justify">Únicamente permitirá el acceso a la misma a personas autorizadas por la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }} y siempre que éste sea necesario, estando obligado al
+    secreto profesional respecto de los datos de carácter personal y al deber de guardarlos.</p>
+<p class="wysiwyg-text-align-justify">La información será utilizada
+    por el interesado en el marco del ejercicio de las funciones propias del servicio que corresponde a la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }}, no permitiéndose su uso para otros fines. </p>
+<p class="wysiwyg-text-align-justify">Mientras la información
+    confidencial esté en poder del interesado, será responsable de su custodia.</p>
+<p class="wysiwyg-text-align-justify">Al término de su relación con la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }}, el interesado deberá devolver todos los soportes que se
+    encuentren en su poder y puedan contener información confidencial, inclusive las fotocopias que se hubiesen
+    realizado, así como cualquier otro tipo de reproducción.</p>
+<p class="wysiwyg-text-align-justify">El presente compromiso de confidencialidad subsistirá de forma indefinida
+    incluso una vez finalizada su relación con la entidad {{ request.session.gauser_extra.ronda.entidad.name }}.</p>
+<p class="wysiwyg-text-align-justify">Los datos de carácter personal
+    del interesado serán tratados por responsable del fichero de la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }} con sede en
+    {{ request.session.gauser_extra.ronda.entidad.name }}, {{ request.session.gauser_extra.ronda.entidad.localidad }},
+    para el mantenimiento, cumplimiento y control de la relación establecida con la misma y podrán ser cedidos cuando
+    dicho tratamiento implique la conexión con ficheros de terceros, lo que le será convenientemente informado en el
+    momento de recogida de sus datos, solicitando su consentimiento en el caso en que éste fuese necesario de acuerdo
+    con lo establecido por la Ley Orgánica 15/1999, de 13 de diciembre, de Protección de Datos de Carácter Personal y su
+    Reglamento de desarrollo.</p>
+<p class="wysiwyg-text-align-justify">El interesado podrá ejercitar en todo momento sus derechos de acceso,
+    rectificación, cancelación u oposición,
+    dirigiéndose al responsable del fichero de la entidad {{ request.session.gauser_extra.ronda.entidad.name }} a través
+    del menú "Derechos ARCO" que proporciona la aplicación GAUSS.</p>
+<p class="wysiwyg-text-align-justify">En prueba de conformidad firma el presente compromiso en
+    {{ request.session.gauser_extra.ronda.entidad.localidad }}
+    a {% now "j \d\e F \d\e Y" %}, </p>
+<p class="wysiwyg-text-align-justify">&nbsp;</p>
+
+<p class="wysiwyg-text-align-justify">Fdo: {{ request.session.gauser_extra.gauser.get_full_name }}</p>

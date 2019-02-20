@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <meta name="_csrf" content="fc66ef1b-a220-4bc5-b6f7-46f4a0f1b6bb">
+
+    <meta name="_csrf_header" content="X-CSRF-TOKEN">
+    <link rel="shortcut icon" type="image/x-icon" href="https://webpol.policia.es/e-hotel/recursos/img/favicon.ico">
+    <!-- JQUERY -->
+    <script type="text/javascript"
+            src="https://webpol.policia.es/e-hotel/recursos/argos/js/jquery-1.11.1.min.js"></script>
+    <!-- JQUERYUI -->
+    <link rel="stylesheet" href="https://webpol.policia.es/e-hotel/recursos/jQueryUI/css/jquery-ui.css">
+    <script type="text/javascript"
+            src="https://webpol.policia.es/e-hotel/recursos/jQueryUI/js/jquery-ui.min.js"></script>
+    <!-- BOOTSTRAP-->
+    <link rel="stylesheet" href="https://webpol.policia.es/e-hotel/recursos/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="https://webpol.policia.es/e-hotel/recursos/bootstrap/css/bootstrap-theme.css">
+    <script type="text/javascript" src="https://webpol.policia.es/e-hotel/recursos/bootstrap/js/bootstrap.js"></script>
+    <!--FONT AWESOME-->
+    <link rel="stylesheet" href="https://webpol.policia.es/e-hotel/recursos/font-awesome-4.5.0/css/font-awesome.css">
+    <!-- CSS ARGOS-->
+    <link href="https://webpol.policia.es/e-hotel/recursos/argos/css/estilos.css" rel="stylesheet" type="text/css">
+    <!-- CSS ARREGLOS PARA IE10 -->
+    <link href="https://webpol.policia.es/e-hotel/recursos/argos/css/estilos-ie10.css" rel="stylesheet">
+    <!--[if IE 9]>
+            <link rel="stylesheet" href="https://webpol.policia.es/e-hotel/recursos/argos/css/estilos-ie9.css">
+        <![endif]-->
+    <!--[if IE 8]>
+            <link rel="stylesheet" href="https://webpol.policia.es/e-hotel/recursos/argos/css/estilos-ie8.css">
+        <![endif]-->
+    <!--[if lt IE 9]>
+            <script src="https://webpol.policia.es/e-hotel/recursos/argos/js/compatibilidadIE/html5shiv.js"></script>
+            <script src="https://webpol.policia.es/e-hotel/recursos/argos/js/compatibilidadIE/respond.js"></script>
+            <script src="https://webpol.policia.es/e-hotel/recursos/argos/js/compatibilidadIE/jquery.placeholder.js"></script>
+            <script src="https://webpol.policia.es/e-hotel/recursos/argos/js/compatibilidadIE/json2.js"></script>
+        <![endif]-->
+    <!-- JQGRID -->
+    <script type="text/javascript"
+            src="https://webpol.policia.es/e-hotel/recursos/argos/js/datosTablas.min.js"></script>
+    <link rel="stylesheet" type="text/css" media="screen"
+          href="https://webpol.policia.es/e-hotel/recursos/jqGrid-4.7.0/css/ui.jqgrid.css">
+    <link rel="stylesheet" type="text/css"
+          href="https://webpol.policia.es/e-hotel/recursos/jqGrid-4.7.0/plugins/jQuery.jqGrid.fontAwesome4.css">
+    <link rel="stylesheet" type="text/css"
+          href="https://webpol.policia.es/e-hotel/recursos/jqGrid-4.7.0/plugins/jQuery.jqGrid.bootstrap-fixes.css">
+    <script src="https://webpol.policia.es/e-hotel/recursos/jqGrid-4.7.0/js/i18n/grid.locale-es.js"
+            type="text/javascript"></script>
+    <script src="https://webpol.policia.es/e-hotel/recursos/jqGrid-4.7.0/js/jquery.jqGrid.js"
+            type="text/javascript"></script>
+    <script src="https://webpol.policia.es/e-hotel/recursos/jqGrid-4.7.0/plugins/jQuery.jqGrid.fontAwesome4.js"
+            type="text/javascript"></script>
+    <!-- DATEPICKER -->
+    <link rel="stylesheet" type="text/css"
+          href="https://webpol.policia.es/e-hotel/recursos/datePicker/css/bootstrap-datepicker.css">
+    <script type="text/javascript"
+            src="https://webpol.policia.es/e-hotel/recursos/datePicker/js/bootstrap-datepicker.js"></script>
+    <script type="text/javascript"
+            src="https://webpol.policia.es/e-hotel/recursos/datePicker/js/bootstrap-datepicker.es.min.js"></script>
+    <!-- MASK -->
+    <script type="text/javascript" src="https://webpol.policia.es/e-hotel/recursos/mask/jqueryMask.js"></script>
+    <!-- CHOSEN -->
+    <link rel="stylesheet" type="text/css" href="https://webpol.policia.es/e-hotel/recursos/chosen/css/chosen.css">
+    <script type="text/javascript" src="https://webpol.policia.es/e-hotel/recursos/chosen/js/chosen.jquery.js"></script>
+    <!-- TYPEAHEAD -->
+    <link rel="stylesheet" type="text/css"
+          href="https://webpol.policia.es/e-hotel/recursos/typeahead/css/typeahead.bundle.css">
+    <script type="text/javascript"
+            src="https://webpol.policia.es/e-hotel/recursos/typeahead/js/typeahead.bundle.js"></script>
+    <!-- BOOTBOX PARA MODALES DE CONFIRMACION -->
+    <script type="text/javascript" src="https://webpol.policia.es/e-hotel/recursos/bootbox/bootbox.min.js"></script>
+    <!-- FILEUPLOAD -->
+    <script type="text/javascript"
+            src="https://webpol.policia.es/e-hotel/recursos/fileupload/jquery.iframe-transport.js"></script>
+    <script type="text/javascript"
+            src="https://webpol.policia.es/e-hotel/recursos/fileupload/jquery.fileupload.js"></script>
+    <script type="text/javascript"
+            src="https://webpol.policia.es/e-hotel/recursos/fileupload/jquery.fileupload-process.js"></script>
+    <script type="text/javascript"
+            src="https://webpol.policia.es/e-hotel/recursos/fileupload/jquery.fileupload-validate.js"></script>
+    <script type="text/javascript"
+            src="https://webpol.policia.es/e-hotel/recursos/fileupload/jquery.fileupload-ui.js"></script>
+    <!-- JS ARGOS -->
+    <script type="text/javascript" src="https://webpol.policia.es/e-hotel/recursos/argos/js/utilidades.min.js"></script>
+    <script type="text/javascript"
+            src="https://webpol.policia.es/e-hotel/recursos/argos/js/validaciones.min.js"></script>
+    <script type="text/javascript" src="https://webpol.policia.es/e-hotel/recursos/argos/js/argos.min.js"></script>
+    <script type="text/javascript"
+            src="https://webpol.policia.es/e-hotel/recursos/argos/js/controlInterfaz.min.js"></script>
+    <!-- VRIABLES DEL SISTEMA-->
+    <script type="text/javascript">
+        var contextPath = "/e-hotel";
+    </script>
+    <title>Principal</title>
+
+</head>
+<body>
+
+
+<!-- Incluimos el cargando para que se muestra cuando estamos iniciando la aplicacion desde el login -->
+
+<!-- INCLUIMOS LOS CAMPOS QUE INDICAN LOS DATOS DEL USUARIO -->
+<div class="banner navbar-fixed-top">
+    <a href="#" tabindex="-1">
+        <img class="img-responsive" src="https://webpol.policia.es/e-hotel/recursos/img/banner.jpg">
+    </a>
+    <div id="datosUsuarioBanner" class="datosUsuarioBanner text-right">
+        <div class="col-md-12">
+            <p>
+                <strong><span class="fa fa-building fa-fw font13"></span>&nbsp;: &nbsp;<em>PISO TURÍSTICO MANZANERA</em>
+                    &nbsp;|&nbsp;
+                    <span class="fa fa-user fa-fw font13"></span>&nbsp;: &nbsp;<em>H26441AAV4L</em>
+                    &nbsp;|&nbsp;
+                    <span class="fa fa-info-circle fa-fw font13"></span>&nbsp;: &nbsp;<em>Versión: 001_005_20171214</em>
+                    &nbsp;|&nbsp;
+                    <span class="fa fa-clock-o fa-fw font13"></span>&nbsp;: &nbsp;<em><span id="fechaPie">03/10/2018 15:36:37</span></em>
+                </strong>
+            </p>
+        </div>
+    </div>
+</div>
+<!-- INCLUIMOS EL MENU -->
+
+
+<div class="menuGlobal container-fluid ">
+    <form id="menuForm" action="" method="POST">
+        <div class="navbar navbar-fixed-top navbar-inverse" id="menuPrincipal">
+            <div class="col-sm-9 col-xs-12">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle absolute right bottom" data-toggle="collapse"
+                            data-target="#menuPrincipal-collapse">
+                        <span class="sr-only">{{ Lang::get('mensajesHeader.desplegar')}}</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                </div>
+                <div id="menuPrincipal-collapse" class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+
+
+                        <li class="menuPrincipal dropdown"><a href="#" id="envioFicherosPrueba"
+                                                              name="envioFicherosPrueba" class="menu"
+                                                              data-url="/hospederia/pruebas/vista/envioFicheros">
+                            Envío Ficheros Prueba</a></li>
+
+
+                        <li class="menuPrincipal dropdown"><a href="#" id="grabadorManual" name="grabadorManual"
+                                                              class="menu menuSeleccionado"
+                                                              data-url="/hospederia/manual/vista/grabadorManual">
+                            Grabación Manual</a></li>
+
+
+                        <!--SEGUIMIENTO-->
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Seguimiento&nbsp;
+                                <span class="fa fa-caret-down"></span></a>
+                            <ul class="dropdown-menu " role="menu">
+
+                                <!--SEGUIMIENTO HUESPEDES TRANSMITIDOS-->
+                                <li class="dropdown">
+                                    <a id="segAgrHuespedes" class="menu" data-url="/hospederia/vista/consultaHuespedes">
+                                        Consulta Partes Viajeros Transmitidos&nbsp;
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+
+                    </ul>
+                </div>
+            </div>
+            <div class="col-sm-3 col-xs-12 text-right iconosMenu">
+                <i class="fa fa-home fa-fw home" title="Inicio"></i>
+
+                <i class="fa fa-sign-out fa-fw sumbmit-form" title="Desconectar" data-formulario="#menuForm"
+                   data-action="/e-hotel/execute_logout"></i>
+                <i class="fa fa-question-circle fa-fw contenido" title="Informacion"
+                   data-url="/hospederia/manualUsuario"></i>
+            </div>
+        </div>
+        <input name="_csrf" value="fc66ef1b-a220-4bc5-b6f7-46f4a0f1b6bb" type="hidden">
+    </form>
+</div>
+<!-- INCLUIMOS EL CONTENEDOR QUE CONTIENE EL CUERPO DEL CONTENIDO -->
+<div class="gifImgLoading"></div>
+<div id="contenedor" class="col-md-12">
+    <div id="contenedorPpa" class="container-fluid contenedor">
+        <div id="contenedorPpaHtml">
+
+
+            <form id="grabadorManualForm"
+                  action="" method="post"
+                  autocomplete="off">
+                <div class="divContenido">
+                    <fieldset>
+
+                        <legend class="titulo tit-lg bold">
+                            Grabación Manual de Huésped
+                        </legend>
+
+                        <div id="divMensajeGenerico" class="mensajeGenerico"></div>
+
+                        <input id="jsonHiddenComunes" name="jsonHiddenComunes" value="" type="hidden">
+
+                        <!--Comprobamos si tiene role agrupacion-->
+
+
+                        <div class="contenido-body">
+                            <div class="divBloqueContenido">
+                                <!--Incluimos los datos a rellenar para el viajero-->
+
+
+                                <input name="idHospederia" id="idHospederia" value="32294" type="hidden">
+                                <fieldset>
+                                    <legend class="titulo bold">
+                                        Datos del Huésped
+                                    </legend>
+                                    <div class="row">
+                                        <div class="col-lg-4 col-md-5 col-sm-6">
+                                            <label class="control-label  loadedTooltip" data-original-title="" title="">*
+                                                Nombre</label>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i class="fa fa-user"></i></span>
+                                                <input id="nombre" name="nombre"
+                                                       class="form-control input-sm loadedBlur" data-obligatorio="true"
+                                                       data-tipo-validacion="fonetico" maxlength="25" value="">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4 col-md-5 col-sm-6">
+                                            <label class="control-label  loadedTooltip" data-original-title="" title="">*
+                                                Primer Apellido</label>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i class="fa fa-user"></i></span>
+                                                <input id="apellido1" name="apellido1"
+                                                       class="form-control input-sm loadedBlur" data-obligatorio="true"
+                                                       data-tipo-validacion="fonetico" maxlength="25" value="">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-4 col-sm-6">
+                                            <label class="control-label  loadedTooltip" data-original-title="" title="">Segundo
+                                                Apellido</label>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i class="fa fa-user fa-fw"></i></span>
+                                                <input id="apellido2" name="apellido2"
+                                                       class="form-control input-sm loadedBlur"
+                                                       data-tipo-validacion="fonetico" maxlength="24" value="">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 col-lg-3">
+                                            <label for="nacionalidad" class="control-label loadedTooltip"
+                                                   data-original-title="" title="">* Nacionalidad</label>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i class="fa fa-flag"></i></span>
+
+
+                                                <select id="nacionalidad" name="nacionalidad"
+                                                        class="form-control input-sm chosen  dependiente loaded"
+                                                        data-obligatorio="true" data-no-limpiar="true"
+                                                        data-valor-ini="A9109AAAAA"
+                                                        data-control-borrar-campos="#numIdentificacion,#fechaExpedicionDoc"
+                                                        data-target="#tipoDocumento"
+                                                        data-url="/combo/tipoDocumentoNacionalidad"
+                                                        data-json-otros-val="" data-nueva-key="" style="display: none;">
+
+
+                                                    <option value="">SELECCIONAR...</option>
+
+
+                                                    <option value="A9401AAAAA">AFGANISTAN</option>
+
+
+                                                    <option value="A9399AAAAA">AFRICA</option>
+
+
+                                                    <option value="A9102AAAAA">ALBANIA</option>
+
+
+                                                    <option value="A9103AAAAA">ALEMANIA</option>
+
+
+                                                    <option value="A9299AAAAA">AMERICA</option>
+
+
+                                                    <option value="A9133AAAAA">ANDORRA</option>
+
+
+                                                    <option value="A9301AAAAA">ANGOLA</option>
+
+
+                                                    <option value="A9255AAAAA">ANTIGUA BARBUDA</option>
+
+
+                                                    <option value="A9200AAAAA">ANTILLAS NEERLANDESAS</option>
+
+
+                                                    <option value="A9600AAAAA">APATRIDA</option>
+
+
+                                                    <option value="A9403AAA1A">ARABIA SAUDITA</option>
+
+
+                                                    <option value="A9304AAAAA">ARGELIA</option>
+
+
+                                                    <option value="A9202AAAAA">ARGENTINA</option>
+
+
+                                                    <option value="A9142AAAAA">ARMENIA</option>
+
+
+                                                    <option value="A9257AAAAA">ARUBA</option>
+
+
+                                                    <option value="A9499AAAAA">ASIA</option>
+
+
+                                                    <option value="A9500AAAAA">AUSTRALIA</option>
+
+
+                                                    <option value="A9104AAAAA">AUSTRIA</option>
+
+
+                                                    <option value="A9143AAA2A">AZERBAYAN</option>
+
+
+                                                    <option value="A9203AAAAA">BAHAMAS</option>
+
+
+                                                    <option value="A9405AAAAA">BAHREIN</option>
+
+
+                                                    <option value="A9432AAAAA">BANGLADESH</option>
+
+
+                                                    <option value="A9205AAAAA">BARBADOS</option>
+
+
+                                                    <option value="A9105AAAAA">BELGICA</option>
+
+
+                                                    <option value="A9207AAAAA">BELICE</option>
+
+
+                                                    <option value="A9407AAAAA">BHUTAN</option>
+
+
+                                                    <option value="A9144AAAAA">BIELORRUSIA</option>
+
+
+                                                    <option value="A9204AAAAA">BOLIVIA</option>
+
+
+                                                    <option value="A9156AAAAA">BOSNIA HERZEGOVINA</option>
+
+
+                                                    <option value="A9305AAAAA">BOTSWANA</option>
+
+
+                                                    <option value="A9206AAAAA">BRASIL</option>
+
+
+                                                    <option value="A9409AAAAA">BRUNEI</option>
+
+
+                                                    <option value="A9134AAAAA">BULGARIA</option>
+
+
+                                                    <option value="A9303AAAAA">BURKINA FASO</option>
+
+
+                                                    <option value="A9321AAAAA">BURUNDI</option>
+
+
+                                                    <option value="A9315AAAAA">CABO VERDE</option>
+
+
+                                                    <option value="A9402AAAAA">CAMBOYA</option>
+
+
+                                                    <option value="A9308AAAAA">CAMERUN</option>
+
+
+                                                    <option value="A9208AAAAA">CANADA</option>
+
+
+                                                    <option value="A9372AAAAA">CHAD</option>
+
+
+                                                    <option value="A9106AAAAD">CHECOSLOVAQUIA</option>
+
+
+                                                    <option value="A9210AAAAA">CHILE</option>
+
+
+                                                    <option value="A9406AAAAA">CHINA</option>
+
+
+                                                    <option value="A9107AAAAA">CHIPRE</option>
+
+
+                                                    <option value="A9212AAAAA">COLOMBIA</option>
+
+
+                                                    <option value="A9311AAAAA">COMORES</option>
+
+
+                                                    <option value="A9460AAAAA">COREA NORTE</option>
+
+
+                                                    <option value="A9410AAAAA">COREA SUR</option>
+
+
+                                                    <option value="A9314AAAAA">COSTA MARFIL</option>
+
+
+                                                    <option value="A9214AAAAA">COSTA RICA</option>
+
+
+                                                    <option value="A9140AAAAA">CROACIA</option>
+
+
+                                                    <option value="A9216AAAAA">CUBA</option>
+
+
+                                                    <option value="A9258AAAAA">CURAÇAO</option>
+
+
+                                                    <option value="A9108AAAAA">DINAMARCA</option>
+
+
+                                                    <option value="A9317AAAAA">DJIBOUTI</option>
+
+
+                                                    <option value="A9217AAAAA">DOMINICA</option>
+
+
+                                                    <option value="A9222AAAAA">ECUADOR</option>
+
+
+                                                    <option value="A9300AAAAA">EGIPTO</option>
+
+
+                                                    <option value="A9429AAAAA">EMIRATOS ARABES UNIDOS</option>
+
+
+                                                    <option value="A9384AAAAA">ERITREA</option>
+
+
+                                                    <option value="A9158AAAAA">ESLOVAQUIA</option>
+
+
+                                                    <option value="A9141AAAAA">ESLOVENIA</option>
+
+
+                                                    <option value="A9109AAAAA" selected="">ESPAÑA</option>
+
+
+                                                    <option value="A9525AAA1A">ESTADOS FEDERADOS MICRONESIA</option>
+
+
+                                                    <option value="A9224AAA1A">ESTADOS UNIDOS AMERICA</option>
+
+
+                                                    <option value="A9137AAAAA">ESTONIA</option>
+
+
+                                                    <option value="A9318AAAAA">ETIOPIA</option>
+
+
+                                                    <option value="A9199AAAAA">EUROPA</option>
+
+
+                                                    <option value="A9396AAAAA">FERNANDO POO</option>
+
+
+                                                    <option value="A9550AAAAA">FIDJI</option>
+
+
+                                                    <option value="A9411AAAAA">FILIPINAS</option>
+
+
+                                                    <option value="A9110AAAAA">FINLANDIA</option>
+
+
+                                                    <option value="A9111AAAAA">FRANCIA</option>
+
+
+                                                    <option value="A9320AAAAA">GABON</option>
+
+
+                                                    <option value="A9323AAAAA">GAMBIA</option>
+
+
+                                                    <option value="A9145AAAAA">GEORGIA</option>
+
+
+                                                    <option value="A9322AAAAA">GHANA</option>
+
+
+                                                    <option value="A9113AAAAA">GRECIA</option>
+
+
+                                                    <option value="A9228AAAAA">GUATEMALA</option>
+
+
+                                                    <option value="A9325AAA3A">GUINEA</option>
+
+
+                                                    <option value="A9328AAA1A">GUINEA BISSAU</option>
+
+
+                                                    <option value="A9324AAAAA">GUINEA ECUATORIAL</option>
+
+
+                                                    <option value="A9225AAAAA">GUYANA</option>
+
+
+                                                    <option value="A9230AAAAA">HAITI</option>
+
+
+                                                    <option value="A9232AAAAA">HONDURAS</option>
+
+
+                                                    <option value="A9462AAAAA">HONG KONG CHINO</option>
+
+
+                                                    <option value="A9114AAAAA">HUNGRIA</option>
+
+
+                                                    <option value="A9395AAAAA">IFNI</option>
+
+
+                                                    <option value="A9412AAAAA">INDIA</option>
+
+
+                                                    <option value="A9414AAAAA">INDONESIA</option>
+
+
+                                                    <option value="A9413AAAAA">IRAK</option>
+
+
+                                                    <option value="A9415AAAAA">IRAN</option>
+
+
+                                                    <option value="A9115AAAAA">IRLANDA</option>
+
+
+                                                    <option value="A9116AAAAA">ISLANDIA</option>
+
+
+                                                    <option value="A9518AAAAA">ISLAS MARIANAS NORTE</option>
+
+
+                                                    <option value="A9520AAAAA">ISLAS MARSHALL</option>
+
+
+                                                    <option value="A9551AAA1A">ISLAS SALOMON</option>
+
+
+                                                    <option value="A9417AAAAA">ISRAEL</option>
+
+
+                                                    <option value="A9117AAAAA">ITALIA</option>
+
+
+                                                    <option value="A9233AAAAA">JAMAICA</option>
+
+
+                                                    <option value="A9416AAAAA">JAPON</option>
+
+
+                                                    <option value="A9419AAAAA">JORDANIA</option>
+
+
+                                                    <option value="A9465AAAAA">KAZAJSTAN</option>
+
+
+                                                    <option value="A9336AAAAA">KENIA</option>
+
+
+                                                    <option value="A9501AAAAA">KIRIBATI</option>
+
+
+                                                    <option value="A9421AAAAA">KUWAIT</option>
+
+
+                                                    <option value="A9418AAAAA">LAOS</option>
+
+
+                                                    <option value="A9337AAAAA">LESOTHO</option>
+
+
+                                                    <option value="A9138AAAAA">LETONIA</option>
+
+
+                                                    <option value="A9423AAAAA">LIBANO</option>
+
+
+                                                    <option value="A9342AAAAA">LIBERIA</option>
+
+
+                                                    <option value="A9344AAAAA">LIBIA</option>
+
+
+                                                    <option value="A9118AAAAA">LIECHTENSTEIN</option>
+
+
+                                                    <option value="A9139AAAAA">LITUANIA</option>
+
+
+                                                    <option value="A9119AAAAA">LUXEMBURGO</option>
+
+
+                                                    <option value="A9463AAAAA">MACAO</option>
+
+
+                                                    <option value="A9159AAAAA">MACEDONIA</option>
+
+
+                                                    <option value="A9354AAAAA">MADAGASCAR</option>
+
+
+                                                    <option value="A9425AAAAA">MALASIA</option>
+
+
+                                                    <option value="A9346AAAAA">MALAWI</option>
+
+
+                                                    <option value="A9436AAAAA">MALDIVAS</option>
+
+
+                                                    <option value="A9347AAAAA">MALI</option>
+
+
+                                                    <option value="A9120AAAAA">MALTA</option>
+
+
+                                                    <option value="A9348AAAAA">MARRUECOS</option>
+
+
+                                                    <option value="A9349AAAAA">MAURICIO</option>
+
+
+                                                    <option value="A9350AAAAA">MAURITANIA</option>
+
+
+                                                    <option value="A9234AAA1A">MEXICO</option>
+
+
+                                                    <option value="A9148AAAAA">MOLDAVIA</option>
+
+
+                                                    <option value="A9121AAAAA">MONACO</option>
+
+
+                                                    <option value="A9427AAAAA">MONGOLIA</option>
+
+
+                                                    <option value="A9160AAAAA">MONTENEGRO</option>
+
+
+                                                    <option value="A9351AAAAA">MOZAMBIQUE</option>
+
+
+                                                    <option value="A9400AAAAA">MYANMAR</option>
+
+
+                                                    <option value="A9353AAAAA">NAMIBIA</option>
+
+
+                                                    <option value="A9541AAAAA">NAURU</option>
+
+
+                                                    <option value="A9420AAAAA">NEPAL</option>
+
+
+                                                    <option value="A9236AAAAA">NICARAGUA</option>
+
+
+                                                    <option value="A9360AAAAA">NIGER</option>
+
+
+                                                    <option value="A9352AAAAA">NIGERIA</option>
+
+
+                                                    <option value="A9122AAAAA">NORUEGA</option>
+
+
+                                                    <option value="A9540AAAAA">NUEVA ZELANDA</option>
+
+
+                                                    <option value="A9599AAAAA">OCEANIA</option>
+
+
+                                                    <option value="A9444AAAAA">OMAN</option>
+
+
+                                                    <option value="A9123AAA1A">PAISES BAJOS</option>
+
+
+                                                    <option value="A9424AAA1A">PAKISTAN</option>
+
+
+                                                    <option value="A9440AAAAA">PALESTINA</option>
+
+
+                                                    <option value="A9238AAAAA">PANAMA</option>
+
+
+                                                    <option value="A9542AAAAA">PAPUA NUEVA GUINEA</option>
+
+
+                                                    <option value="A9240AAAAA">PARAGUAY</option>
+
+
+                                                    <option value="A9242AAAAA">PERU</option>
+
+
+                                                    <option value="A9124AAAAA">POLONIA</option>
+
+
+                                                    <option value="A9125AAAAA">PORTUGAL</option>
+
+
+                                                    <option value="A9244AAAAA">PUERTO RICO</option>
+
+
+                                                    <option value="A9431AAAAA">QATAR</option>
+
+
+                                                    <option value="A9112AAA1A">REINO UNIDO</option>
+
+
+                                                    <option value="A9302AAA1A">REPUBLICA BENIN</option>
+
+
+                                                    <option value="A9310AAA1A">REPUBLICA CENTROAFRICANA</option>
+
+
+                                                    <option value="A9157AAAAA">REPUBLICA CHECA</option>
+
+
+                                                    <option value="A9312AAA1A">REPUBLICA CONGO</option>
+
+
+                                                    <option value="A9380AAAAA">REPUBLICA DEMOCRATICA CONGO</option>
+
+
+                                                    <option value="A9218AAA1A">REPUBLICA DOMINICANA</option>
+
+
+                                                    <option value="A9229AAAAA">REPUBLICA GRANADA</option>
+
+
+                                                    <option value="A9466AAA1A">REPUBLICA KIRGUISTAN</option>
+
+
+                                                    <option value="A9369AAAAA">REPUBLICA SUDAN SUR</option>
+
+
+                                                    <option value="A9397AAAAA">RIO MUNI</option>
+
+
+                                                    <option value="A9306AAAAA">RUANDA</option>
+
+
+                                                    <option value="A9127AAAAA">RUMANIA</option>
+
+
+                                                    <option value="A9149AAAAA">RUSIA</option>
+
+
+                                                    <option value="A9398AAAAA">SAHARA</option>
+
+
+                                                    <option value="A9256AAA1A">SAINT KITTS NEVIS</option>
+
+
+                                                    <option value="A9220AAAAA">SALVADOR</option>
+
+
+                                                    <option value="A9552AAAAA">SAMOA OCCIDENTAL</option>
+
+
+                                                    <option value="A9135AAAAA">SAN MARINO</option>
+
+
+                                                    <option value="A9259AAAAA">SAN MARTIN</option>
+
+
+                                                    <option value="A9254AAA1A">SAN VICENTE GRANADINAS</option>
+
+
+                                                    <option value="A9253AAAAA">SANTA LUCIA</option>
+
+
+                                                    <option value="A9136AAA2A">SANTA SEDE</option>
+
+
+                                                    <option value="A9361AAAAA">SANTO TOME PRINCIPE</option>
+
+
+                                                    <option value="A9362AAAAA">SENEGAL</option>
+
+
+                                                    <option value="A9155AAAAA">SERBIA</option>
+
+
+                                                    <option value="A9363AAAAA">SEYCHELLES</option>
+
+
+                                                    <option value="A9364AAAAA">SIERRA LEONA</option>
+
+
+                                                    <option value="A9426AAAAA">SINGAPUR</option>
+
+
+                                                    <option value="A9433AAAAA">SIRIA</option>
+
+
+                                                    <option value="A9365AAAAA">SOMALIA</option>
+
+
+                                                    <option value="A9404AAAAA">SRI LANKA</option>
+
+
+                                                    <option value="A9367AAAAA">SUDAFRICA</option>
+
+
+                                                    <option value="A9368AAAAA">SUDAN</option>
+
+
+                                                    <option value="A9128AAAAA">SUECIA</option>
+
+
+                                                    <option value="A9129AAAAA">SUIZA</option>
+
+
+                                                    <option value="A9250AAAAA">SURINAM</option>
+
+
+                                                    <option value="A9371AAAAA">SWAZILANDIA</option>
+
+
+                                                    <option value="A9469AAAAA">TADJIKISTAN</option>
+
+
+                                                    <option value="A9408AAA3A">TAIWAN TAIPEI</option>
+
+
+                                                    <option value="A9370AAAAA">TANZANIA</option>
+
+
+                                                    <option value="A9428AAAAA">THAILANDIA</option>
+
+
+                                                    <option value="A9464AAAAA">TIMOR ORIENTAL</option>
+
+
+                                                    <option value="A9374AAAAA">TOGO</option>
+
+
+                                                    <option value="A9554AAAAA">TONGA</option>
+
+
+                                                    <option value="A9245AAAAA">TRINIDAD TOBAGO</option>
+
+
+                                                    <option value="A9378AAAAA">TUNEZ</option>
+
+
+                                                    <option value="A9467AAAAA">TURKMENIA</option>
+
+
+                                                    <option value="A9130AAAAA">TURQUIA</option>
+
+
+                                                    <option value="A9560AAAAA">TUVALU</option>
+
+
+                                                    <option value="A9152AAAAA">UCRANIA</option>
+
+
+                                                    <option value="A9358AAAAA">UGANDA</option>
+
+
+                                                    <option value="A9190AAA1A">UNION EUROPEA</option>
+
+
+                                                    <option value="A9246AAAAA">URUGUAY</option>
+
+
+                                                    <option value="A9468AAAAA">UZBEKISTAN</option>
+
+
+                                                    <option value="A9565AAAAA">VANUATU</option>
+
+
+                                                    <option value="A9248AAAAA">VENEZUELA</option>
+
+
+                                                    <option value="A9430AAAAA">VIETNAM</option>
+
+
+                                                    <option value="A9434AAAAA">YEMEN</option>
+
+
+                                                    <option value="A9132AAAAD">YUGOSLAVIA</option>
+
+
+                                                    <option value="A9382AAAAA">ZAMBIA</option>
+
+
+                                                    <option value="A9357AAAAA">ZIMBABWE</option>
+
+                                                </select>
+                                                <div class="chosen-container chosen-container-single"
+                                                     style="width: 233px;" title="" id="nacionalidad_chosen"><a
+                                                        class="chosen-single" tabindex="-1"><span>ESPAÑA</span>
+                                                    <div><b></b></div>
+                                                </a>
+                                                    <div class="chosen-drop">
+                                                        <div class="chosen-search"><input autocomplete="off"
+                                                                                          class="loadedBlur"
+                                                                                          type="text"></div>
+                                                        <ul class="chosen-results">
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="0">SELECCIONAR...
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="1">AFGANISTAN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="2">AFRICA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="3">ALBANIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="4">ALEMANIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="5">AMERICA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="6">ANDORRA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="7">ANGOLA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="8">ANTIGUA BARBUDA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="9">ANTILLAS NEERLANDESAS
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="10">APATRIDA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="11">ARABIA SAUDITA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="12">ARGELIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="13">ARGENTINA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="14">ARMENIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="15">ARUBA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="16">ASIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="17">AUSTRALIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="18">AUSTRIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="19">AZERBAYAN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="20">BAHAMAS
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="21">BAHREIN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="22">BANGLADESH
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="23">BARBADOS
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="24">BELGICA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="25">BELICE
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="26">BHUTAN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="27">BIELORRUSIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="28">BOLIVIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="29">BOSNIA HERZEGOVINA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="30">BOTSWANA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="31">BRASIL
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="32">BRUNEI
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="33">BULGARIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="34">BURKINA FASO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="35">BURUNDI
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="36">CABO VERDE
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="37">CAMBOYA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="38">CAMERUN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="39">CANADA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="40">CHAD
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="41">CHECOSLOVAQUIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="42">CHILE
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="43">CHINA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="44">CHIPRE
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="45">COLOMBIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="46">COMORES
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="47">COREA NORTE
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="48">COREA SUR
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="49">COSTA MARFIL
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="50">COSTA RICA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="51">CROACIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="52">CUBA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="53">CURAÇAO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="54">DINAMARCA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="55">DJIBOUTI
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="56">DOMINICA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="57">ECUADOR
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="58">EGIPTO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="59">EMIRATOS ARABES UNIDOS
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="60">ERITREA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="61">ESLOVAQUIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="62">ESLOVENIA
+                                                            </li>
+                                                            <li class="active-result result-selected" style=""
+                                                                data-option-array-index="63">ESPAÑA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="64">ESTADOS FEDERADOS
+                                                                MICRONESIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="65">ESTADOS UNIDOS AMERICA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="66">ESTONIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="67">ETIOPIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="68">EUROPA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="69">FERNANDO POO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="70">FIDJI
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="71">FILIPINAS
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="72">FINLANDIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="73">FRANCIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="74">GABON
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="75">GAMBIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="76">GEORGIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="77">GHANA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="78">GRECIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="79">GUATEMALA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="80">GUINEA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="81">GUINEA BISSAU
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="82">GUINEA ECUATORIAL
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="83">GUYANA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="84">HAITI
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="85">HONDURAS
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="86">HONG KONG CHINO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="87">HUNGRIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="88">IFNI
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="89">INDIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="90">INDONESIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="91">IRAK
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="92">IRAN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="93">IRLANDA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="94">ISLANDIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="95">ISLAS MARIANAS NORTE
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="96">ISLAS MARSHALL
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="97">ISLAS SALOMON
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="98">ISRAEL
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="99">ITALIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="100">JAMAICA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="101">JAPON
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="102">JORDANIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="103">KAZAJSTAN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="104">KENIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="105">KIRIBATI
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="106">KUWAIT
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="107">LAOS
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="108">LESOTHO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="109">LETONIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="110">LIBANO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="111">LIBERIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="112">LIBIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="113">LIECHTENSTEIN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="114">LITUANIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="115">LUXEMBURGO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="116">MACAO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="117">MACEDONIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="118">MADAGASCAR
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="119">MALASIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="120">MALAWI
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="121">MALDIVAS
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="122">MALI
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="123">MALTA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="124">MARRUECOS
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="125">MAURICIO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="126">MAURITANIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="127">MEXICO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="128">MOLDAVIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="129">MONACO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="130">MONGOLIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="131">MONTENEGRO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="132">MOZAMBIQUE
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="133">MYANMAR
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="134">NAMIBIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="135">NAURU
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="136">NEPAL
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="137">NICARAGUA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="138">NIGER
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="139">NIGERIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="140">NORUEGA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="141">NUEVA ZELANDA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="142">OCEANIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="143">OMAN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="144">PAISES BAJOS
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="145">PAKISTAN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="146">PALESTINA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="147">PANAMA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="148">PAPUA NUEVA GUINEA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="149">PARAGUAY
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="150">PERU
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="151">POLONIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="152">PORTUGAL
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="153">PUERTO RICO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="154">QATAR
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="155">REINO UNIDO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="156">REPUBLICA BENIN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="157">REPUBLICA CENTROAFRICANA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="158">REPUBLICA CHECA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="159">REPUBLICA CONGO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="160">REPUBLICA DEMOCRATICA
+                                                                CONGO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="161">REPUBLICA DOMINICANA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="162">REPUBLICA GRANADA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="163">REPUBLICA KIRGUISTAN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="164">REPUBLICA SUDAN SUR
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="165">RIO MUNI
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="166">RUANDA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="167">RUMANIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="168">RUSIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="169">SAHARA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="170">SAINT KITTS NEVIS
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="171">SALVADOR
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="172">SAMOA OCCIDENTAL
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="173">SAN MARINO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="174">SAN MARTIN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="175">SAN VICENTE GRANADINAS
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="176">SANTA LUCIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="177">SANTA SEDE
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="178">SANTO TOME PRINCIPE
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="179">SENEGAL
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="180">SERBIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="181">SEYCHELLES
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="182">SIERRA LEONA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="183">SINGAPUR
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="184">SIRIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="185">SOMALIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="186">SRI LANKA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="187">SUDAFRICA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="188">SUDAN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="189">SUECIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="190">SUIZA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="191">SURINAM
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="192">SWAZILANDIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="193">TADJIKISTAN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="194">TAIWAN TAIPEI
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="195">TANZANIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="196">THAILANDIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="197">TIMOR ORIENTAL
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="198">TOGO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="199">TONGA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="200">TRINIDAD TOBAGO
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="201">TUNEZ
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="202">TURKMENIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="203">TURQUIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="204">TUVALU
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="205">UCRANIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="206">UGANDA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="207">UNION EUROPEA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="208">URUGUAY
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="209">UZBEKISTAN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="210">VANUATU
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="211">VENEZUELA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="212">VIETNAM
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="213">YEMEN
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="214">YUGOSLAVIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="215">ZAMBIA
+                                                            </li>
+                                                            <li class="active-result" style=""
+                                                                data-option-array-index="216">ZIMBABWE
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 col-lg-3">
+                                            <label for="tipoDocumento" class="control-label  loadedTooltip"
+                                                   data-original-title="" title="">* Tipo de Documento</label>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i class="fa fa-credit-card"></i></span>
+
+
+                                                <select id="tipoDocumento" name="tipoDocumento"
+                                                        class="form-control input-sm chosen   loaded"
+                                                        data-obligatorio="true" style="display: none;">
+
+
+                                                    <option value="">SELECCIONAR...</option>
+
+
+                                                    <option value="D">DNI</option>
+
+
+                                                    <option value="P">PASAPORTE</option>
+
+
+                                                    <option value="C">PERMISO CONDUCIR ESPAÑOL</option>
+
+                                                </select>
+                                                <div class="chosen-container chosen-container-single chosen-container-single-nosearch"
+                                                     style="width: 232px;" title="" id="tipoDocumento_chosen"><a
+                                                        class="chosen-single" tabindex="-1"><span>SELECCIONAR...</span>
+                                                    <div><b></b></div>
+                                                </a>
+                                                    <div class="chosen-drop">
+                                                        <div class="chosen-search"><input autocomplete="off" readonly=""
+                                                                                          class="loadedBlur"
+                                                                                          type="text"></div>
+                                                        <ul class="chosen-results"></ul>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 col-lg-3">
+                                            <label for="numeroDocumento" class="control-label loadedTooltip"
+                                                   data-original-title="" title="">* Nº documento</label>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i class="fa fa-credit-card"></i></span>
+                                                <input id="numIdentificacion" name="numIdentificacion"
+                                                       class="form-control input-sm loadedBlur" maxlength="14"
+                                                       data-obligatorio="true" data-tipo-validacion="docTipoDoc"
+                                                       data-combo-tipo-doc="#tipoDocumento"
+                                                       data-combo-nacionalidad="#nacionalidad" value="">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-3 col-sm-6">
+                                            <label class="control-label  loadedTooltip" data-original-title="" title="">*
+                                                F. Expedición</label>
+                                            <div class="input-group date">
+                                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                                <input id="fechaExpedicionDoc" name="fechaExpedicionDoc"
+                                                       class="form-control input-sm calendario loaded loadedBlur"
+                                                       data-obligatorio="true" data-rango-fecha="desde" value=""
+                                                       type="text">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3 form-group">
+
+
+                                            <label class="control-label  loadedTooltip" data-original-title="" title="">*
+                                                F. Nacimiento (dd/mm/aaaa)</label>
+                                            <i class="fa fa-info-circle fa-lg ayuda-icono loadedTooltipIcono"
+                                               data-key-mensaje="argos.literal.info.solo.ano.obligatorio"
+                                               data-original-title="" title=""></i>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><span
+                                                        class="fa fa-calendar fa-fw"></span></span>
+                                                <input value="" size="2" maxlength="2"
+                                                       class="form-control input-sm text-center fechaCompuesta loadedBlur"
+                                                       data-obligatorio="false" data-entero-min="1" data-entero-max="31"
+                                                       id="dia" name="dia" placeholder="Día" type="text">
+                                                <span class="input-group-addon">/</span>
+                                                <input value="" size="2" maxlength="2"
+                                                       class="form-control input-sm text-center fechaCompuesta loadedBlur"
+                                                       data-obligatorio="false" data-entero-min="1" data-entero-max="12"
+                                                       id="mes" name="mes" placeholder="Mes" type="text">
+                                                <span class="input-group-addon">/</span>
+                                                <input value="" size="4" maxlength="4"
+                                                       class="form-control input-sm text-center fechaCompuesta loadedBlur"
+                                                       data-obligatorio="true" data-tipo-validacion="fechaOanno"
+                                                       id="ano" name="ano" data-nombre-fecha-completa="#fechaNacimiento"
+                                                       data-dia-mes="{&quot;dia&quot;:&quot;#dia&quot;,&quot;mes&quot;:&quot;#mes&quot;}"
+                                                       data-fecha-hasta-maximo="#fechaEntrada,#fechaExpedicionDoc"
+                                                       placeholder="Año" type="text">
+                                            </div>
+                                            <input name="fechaNacimiento" id="fechaNacimiento" value="" type="hidden">
+                                        </div>
+                                        <div class="col-lg-2 col-md-3 col-sm-6">
+                                            <label for="sexo" class="control-label  loadedTooltip"
+                                                   data-original-title="" title="">* Sexo</label>
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i
+                                                        class="fa fa-fw fa-venus-mars"></i></span>
+
+
+                                                <select id="sexo" name="sexo"
+                                                        class="form-control input-sm chosen   loaded"
+                                                        data-obligatorio="true" style="display: none;">
+
+
+                                                    <option value="">SELECCIONAR...</option>
+
+
+                                                    <option value="M">MASCULINO</option>
+
+
+                                                    <option value="F">FEMENINO</option>
+
+                                                </select>
+                                                <div class="chosen-container chosen-container-single chosen-container-single-nosearch"
+                                                     style="width: 129px;" title="" id="sexo_chosen"><a
+                                                        class="chosen-single" tabindex="-1"><span>SELECCIONAR...</span>
+                                                    <div><b></b></div>
+                                                </a>
+                                                    <div class="chosen-drop">
+                                                        <div class="chosen-search"><input autocomplete="off" readonly=""
+                                                                                          class="loadedBlur"
+                                                                                          type="text"></div>
+                                                        <ul class="chosen-results"></ul>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-3 col-sm-6">
+                                            <label class="control-label  loadedTooltip" data-original-title="" title="">*
+                                                Fecha Entrada</label>
+                                            <div class="input-group date">
+                                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                                <input id="fechaEntrada" name="fechaEntrada"
+                                                       class="form-control input-sm calendario loaded loadedBlur"
+                                                       data-obligatorio="true" data-mostrar-fechas-futuras="false"
+                                                       data-rango-fecha="hasta" value="" type="text">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                            </div>
+                        </div>
+                        <div class="form-group botonera-drch">
+                            <button id="btnGuardar" type="button" class="btn btn-default btn-sm contenido"
+                                    data-url="/hospederia/manual/insertar/huesped" data-formulario="#grabadorManualForm"
+                                    data-control-limpiar-formulario="#grabadorManualForm">
+                                <i class="fa fa-search fa-fw"></i><span class="hidden-sm hidden-xs">Grabar</span>
+                            </button>
+                            <button type="button" class="btn btn-default btn-sm limpiar"
+                                    data-formulario="#grabadorManualForm">
+                                <i class="fa fa-trash"></i>Limpiar
+                            </button>
+                        </div>
+
+
+                    </fieldset>
+                </div>
+                <input name="_csrf" value="fc66ef1b-a220-4bc5-b6f7-46f4a0f1b6bb" type="hidden">
+            </form>
+
+        </div>
+        <input id="urlFenix" name="urlFenix" value="" type="hidden">
+        <input id="urlActual" name="urlActual" value="" type="hidden">
+        <input id="subMenuFenix" name="subMenuFenix" value="" type="hidden">
+        <input id="esRolFenixInput" name="esRolFenixInput" value="false" type="hidden">
+    </div>
+</div>
+<div class="logoFondoGeneral"></div>
+
+
+
+
+</body>
+</html>

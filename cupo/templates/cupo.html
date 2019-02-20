@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        .fa-lock {
+            color: red;
+        }
+
+        .fa-unlock {
+            color: green;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value=""/>
+        <input type="hidden" id="cupo" name="cupo" value=""/>
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Lista y creación de nuevos cupos</strong></h4>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_cupos" title="Lista de cupos">
+            {% for cupo in cupos %}
+                {% include "formulario_cupo.html" %}
+            {% endfor %}
+        </dl>
+        {% if request.session.gauser_extra|has_permiso:'crea_cupos' %}
+            <hr>
+            <div class="row">
+                <div class="columns large-12">
+                    <a class="button" id="add_cupo"><i class="fa fa-plus"></i> Crear un nuevo cupo</a>
+                </div>
+            </div>
+        {% endif %}
+
+
+        <div id="especialidad_data"></div>
+    </form>
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        {% if request.session.gauser_extra|has_permiso:'crea_cupos' %}
+            $('#add_cupo').click(function (e) {
+                e.preventDefault();
+                $.post("/ajax_cupo/", {action: 'add_cupo'}, function (data) {
+                    if (data.ok) {
+                        $('#list_cupos').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+        {% endif %}
+        {% if request.session.gauser_extra|has_permiso:'borra_cupo_profesorado' %}
+            $('body').on('click', '.delete_cupo', function (e) {
+                e.preventDefault();
+                var cupo = $(this).data('cupo');
+                $.post("/ajax_cupo/", {action: 'delete_cupo', cupo: cupo}, function (data) {
+                    if (data.ok) {
+                        $('#accordion' + cupo).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+            });
+        {% endif %}
+        {% if request.session.gauser_extra|has_permiso:'copia_cupo_profesorado' %}
+            $('body').on('click', '.copy_cupo', function (e) {
+                e.preventDefault();
+                var cupo = $(this).data('cupo');
+                $.post("/ajax_cupo/", {action: 'copy_cupo', cupo: cupo}, function (data) {
+                    if (data.ok) {
+                        $('#list_cupos').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    show_avisos();
+                });
+            });
+        {% endif %}
+        {% if request.session.gauser_extra|has_permiso:'edita_cupos' %}
+            $('body').on('click', '.edit_cupo', function (e) {
+                e.preventDefault();
+                var cupo = $(this).data('cupo');
+                window.location.href = '/edit_cupo/' + cupo;
+            });
+
+            $('body').on('keyup', '.change_nombre_cupo', function (e) {
+                e.preventDefault();
+                var cupo = $(this).data('cupo');
+                var nombre = $(this).val();
+                $.post("/ajax_cupo/", {action: 'change_nombre_cupo', cupo: cupo, nombre: nombre}, function (data) {
+                    if (data.ok) {
+                        $('#span_nombre' + cupo).html(data.nombre);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+            });
+
+            $('body').on('keyup', '.change_max_min_cupo', function (e) {
+                e.preventDefault();
+                var cupo = $(this).data('cupo');
+                var attr = $(this).data('attr');
+                var valor = $(this).val();
+                $.post("/ajax_cupo/", {action: 'change_max_min_cupo', cupo: cupo, attr: attr, valor: valor},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('change', '.departamento', function () {
+                var especialidad = $(this).data('id');
+                var departamento = $(this).val();
+                var cupo = $(this).data('cupo');
+                $.post("/ajax_cupo/", {
+                        action: 'update_departamento',
+                        especialidad: especialidad,
+                        departamento: departamento,
+                        cupo: cupo
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'pdf_cupo' %}
+            $('body').on('click', '.pdf_cupo', function (e) {
+                e.preventDefault();
+                $('#action').val('genera_informe');
+                $('#cupo').val($(this).data('cupo'));
+                console.log('cupo', $('#cupo').val(), $(this).data('cupo'));
+                window.{{ formname }}.submit();
+            });
+            $('body').on('click', '.add_filtro', function (e) {
+                e.preventDefault();
+                var cupo = $(this).data('cupo');
+                var nombre = $('#name_filtro' + cupo).val();
+                var filtro = $('#filtro_filtro' + cupo).val();
+                $.post("/ajax_cupo/", {action: 'add_filtro', cupo: cupo, nombre: nombre, filtro: filtro},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#filtros_list' + data.cupo).append(data.filtro);
+                            $('#name_filtro' + cupo).val('');
+                            $('#filtro_filtro' + cupo).val('');
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            $('body').on('click', '.delete_filtro', function (e) {
+                e.preventDefault();
+                var filtro = $(this).data('id');
+                var cupo = $(this).data('cupo');
+                $.post("/ajax_cupo/", {action: 'delete_filtro', cupo: cupo, filtro: filtro},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#filtro' + data.filtro).remove();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'bloquea_cupos' %}
+            $('body').on('click', '.desbloquear_cupo', function (e) {
+                e.preventDefault();
+                var cupo = $(this).data('cupo');
+                $('#editar' + cupo).show();
+                $('#borrar' + cupo).show();
+                $('#bloqueado' + cupo).removeClass('fa-lock').addClass('fa-unlock');
+                $('#li_desbloquea' + cupo).hide();
+                $('#li_bloquea' + cupo).show();
+                $.post("/ajax_cupo/", {action: 'bloquea_cupo', cupo: cupo, bloquear: false},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('click', '.bloquear_cupo', function (e) {
+                e.preventDefault();
+                var cupo = $(this).data('cupo');
+                $('#editar' + cupo).hide();
+                $('#borrar' + cupo).hide();
+                $('#bloqueado' + cupo).removeClass('fa-unlock').addClass('fa-lock');
+                $('#li_desbloquea' + cupo).show();
+                $('#li_bloquea' + cupo).hide();
+                $.post("/ajax_cupo/", {action: 'bloquea_cupo', cupo: cupo, bloquear: true},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+    </script>
+{% endblock %}

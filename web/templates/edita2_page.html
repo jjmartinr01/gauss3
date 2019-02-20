@@ -1,0 +1,74 @@
+{% load my_templatetags %}
+{% for row in hw|rows_web:'CABECERA' %}
+    <div class="row">
+        <div class="columns large-12">
+            <div id="row_editable___{{ row.orden }}" class="row_editable">
+                {% include "edita4_row_editable.html" with row=row %}
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+<div class="row">
+    {% if hw.col_izq > 0 %}
+        <div class="columns large-{{ hw.col_izq }}">
+            {% for row in hw|rows_web:'IZQUIERDA' %}
+                <div class="row row_editable" id="row_editable___{{ row.orden }}">
+                    {% include "edita4_row_editable.html" with row=row %}
+                </div>
+            {% endfor %}
+            <div class="row editable">
+                <div class="columns large-3 medium-3 small-3">&nbsp;</div>
+                <div class="columns large-6 medium-6 small-6">
+                    <a class="button radius add_row" data-action="add_row" data-id="{{ hw.id }}" data-tipo="IZQUIERDA">
+                        <i class="fa fa-plus"></i> Fila izquierda</a>
+                </div>
+                <div class="columns large-3 medium-3 small-3">&nbsp;</div>
+            </div>
+        </div>
+    {% endif %}
+    {% if hw.col_cen > 0 %}
+        <div class="columns large-{{ hw.col_cen }}">
+            {% for row in hw|rows_web:'NORMAL' %}
+                <div class="row row_editable" id="row_editable___{{ row.orden }}">
+                    {% include "edita4_row_editable.html" with row=row %}
+                </div>
+            {% endfor %}
+            <div class="row editable">
+                <div class="columns large-3 medium-3 small-3">&nbsp;</div>
+                <div class="columns large-6 medium-6 small-6">
+                    <a class="button radius add_row" data-action="add_row" data-id="{{ hw.id }}" data-tipo="NORMAL">
+                        <i class="fa fa-plus"></i> Fila central</a>
+                </div>
+                <div class="columns large-3 medium-3 small-3">&nbsp;</div>
+            </div>
+        </div>
+    {% endif %}
+    {% if hw.col_der > 0 %}
+        <div class="columns large-{{ hw.col_der }}">
+            {% for row in hw|rows_web:'DERECHA' %}
+                <div class="row row_editable" id="row_editable___{{ row.orden }}">
+                    {% include "edita4_row_editable.html" with row=row %}
+                </div>
+            {% endfor %}
+            <div class="row editable">
+                <div class="columns large-3 medium-3 small-3">&nbsp;</div>
+                <div class="columns large-6 medium-6 small-6">
+                    <a class="button radius add_row" data-action="add_row" data-id="{{ hw.id }}" data-tipo="DERECHA">
+                        <i class="fa fa-plus"></i> Fila derecha</a>
+                </div>
+                <div class="columns large-3 medium-3 small-3">&nbsp;</div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% for row in hw|rows_web:'PIE' %}
+    <div class="row">
+        <div class="columns large-12">
+            <div id="row_editable___{{ row.orden }}" class="row_editable">
+                {% include "edita4_row_editable.html" with row=row %}
+            </div>
+        </div>
+    </div>
+{% endfor %}

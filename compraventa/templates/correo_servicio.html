@@ -1,0 +1,8 @@
+<p>Hola {{ articulo.vendedor.first_name }},</p>
+<p>He visto en GAUSS que ofreces el servicio/trabajo "{{ articulo.nombre }}" y me gustaría
+    contratarlo.</p>
+<p>Por favor, ponte en contacto conmigo para cerrar la contratación.</p>
+---
+<br>{{ request.session.gauser_extra.gauser.get_full_name }}
+<br>{{ request.session.gauser_extra.gauser.email }}
+<br>{{ request.session.gauser_extra.ronda.entidad.name }}

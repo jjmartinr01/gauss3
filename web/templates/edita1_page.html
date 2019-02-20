@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <style>
+        .pencil_editar_cd {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0.4;
+            z-index: 20;
+            cursor: pointer;
+        }
+
+        .pencil_editar_cd:hover {
+            opacity: 1;
+        }
+
+        .pencil_editar_row {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            opacity: 0.4;
+            z-index: 20;
+            cursor: pointer;
+        }
+
+        .imagen_web {
+            cursor: pointer;
+        }
+
+        .pencil_editar_row:hover {
+            opacity: 1;
+        }
+
+        .columnas2 {
+            -moz-column-count: 2;
+            -webkit-column-count: 2;
+            column-count: 2;
+        }
+
+        .columnas3 {
+            -moz-column-count: 3;
+            -webkit-column-count: 3;
+            column-count: 3;
+        }
+
+        .botton_add_row {
+            display: block;
+            margin: 15px auto;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}" data-abide>
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+        <br>
+
+        <div class="off-canvas-wrap" id="contenidos_web">
+            <div class="inner-wrap">
+                <nav class="left-off-canvas-menu"><!-- put your links in here --></nav>
+                <div id="web_contents">
+                    {#                {% if hw.top_bar %}#}
+                    {#                    <div class="editable row" data-editable="t_b{{ hw.top_bar.id }}">#}
+                    {#                        {% with top_bar=hw.top_bar %}#}
+                    {#                            {% include 'edita3_top_bar.html' %}#}
+                    {#                        {% endwith %}#}
+                    {#                    </div>#}
+                    {#                {% endif %}#}
+                    {##}
+                    {#                <div id="rows_web" class="row">#}
+                    {#                    {% include "edita3_rows_editables.html" with hw=hw %}#}
+                    {#                </div>#}
+                    {% include "edita2_hw.html" %}
+                </div>
+            </div>
+        </div>
+
+        <input type="file" name="file_web" id="file_web" style="position: fixed; top: -3000px">
+        <input type="hidden" name="content_div" id="content_div" value="">
+        <input type="hidden" name="row_id" id="row_id" value="">
+        <input type="hidden" name="cd_orden" id="cd_orden" value="">
+        <input type="hidden" name="row_orden" id="row_orden" value="">
+        <input type="hidden" name="id" id="id" value="">
+
+
+        <div id="form_content_div">
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script src="/static/gauss_fileupload/gauss_FileAjaxUpload.js"></script>
+    <script>
+        {% if not hw.top_bar %}
+            habilita(['s_plus']);
+        {% endif %}
+        $('#plus_sign').click(function (e) {
+            e.preventDefault();
+            $.post("/ajax_webs/", {action: 'add_topbar', id: '{{hw.id}}'}, function (data) {
+                $('#rows_web').html(data['rows']);
+                $(document).foundation();
+            }, 'json');
+        });
+
+        {# Funciones de edición para ayudar al usuario elegit el elemento a editar #}
+        $('body').on('mouseover', '.pencil_editar_cd', function (e) {
+            var cd_id = $(this).data('cd');
+            $('#cd_contents' + cd_id).css('border', '1px dashed red');
+        });
+        $('body').on('mouseout', '.pencil_editar_cd', function (e) {
+            var cd_id = $(this).data('cd');
+            $('#cd_contents' + cd_id).css('border', 'none');
+        });
+        $('body').on('mouseover', '.pencil_editar_row', function (e) {
+            var cd_id = $(this).data('id');
+            $('#rowweb' + cd_id).css('border', '1px dashed green');
+        });
+        $('body').on('mouseout', '.pencil_editar_row', function (e) {
+            var cd_id = $(this).data('id');
+            $('#rowweb' + cd_id).css('border', 'none');
+        });
+
+        {# Habilitación de funciones para la página #}
+        $('body').on('click', '.row_options,.add_row', function (e) {
+            e.preventDefault();
+            var action = $(this).data('action');
+            var id = $(this).data('id');
+            var tipo = $(this).data('tipo');
+            $.post("/ajax_webs/", {action: action, id: id, tipo: tipo}, function (data) {
+                $('#rows_web').html(data['rows']);
+                if (data['mensaje']) {
+                    alert(data['mensaje']);
+                }
+                $(document).foundation();
+            }, 'json');
+        });
+        $('body').on('click', '.cd_options', function (e) {
+            e.preventDefault();
+            var roworden = $(this).data('roworden');
+            var orden = $(this).data('orden');
+            var action = $(this).data('action');
+            var id = $(this).data('cd');
+            $('#content_div').val(id);
+            $.post("/ajax_webs/", {action: action, id: id}, function (data) {
+                if (action == 'edita_cd') {
+                    $('#form_content_div').html(data);
+                    $('#contenidos_web').hide();
+                    window.scrollTo(0, 60);
+                } else {
+                    $('#row_editable___' + roworden).html(data);
+                    $(document).foundation();
+                }
+            }, 'json');
+        });
+
+
+        $('body').on('click', '.h1_title', function (e) {
+            e.preventDefault();
+            $('#h1_title').hide();
+            $('#h1_title_editable').show();
+        });
+        $('body').on('click', '#cambia_h1_title', function (e) {
+            e.preventDefault();
+            var h1_title = $('#id_h1_title').val();
+            var h1_subtitle = $('#id_h1_subtitle').val();
+            $.post("/ajax_webs/", {
+                        action: 'cambia_h1_title',
+                        id: '{{ pag.template_web.id }}',
+                        h1_title: h1_title,
+                        h1_subtitle: h1_subtitle
+                    },
+                    function (data) {
+                        $('#h1_title').html(data);
+                        $('#h1_title').show();
+                        $('#h1_title_editable').hide();
+                    });
+        });
+
+
+        $('body').on('click', '.imagen_web', function () {
+            $('#file_web').trigger('click').data('id', $(this).data('cd')).data('form', $(this).data('form'));
+            $('#content_div').val($(this).data('cd'));
+            $('#cd_orden').val($(this).data('orden'));
+            console.log('click imagen_web');
+            console.log('cd: ' + $(this).data('cd'));
+        });
+
+
+        $('#file_web').change(function () {
+            var data = sube_archivo({
+                gauss_file: 'file_web',
+                action: 'imagen_web',
+                tipos: 'image/jpeg, image/png, image/gif',
+                ajaxFuncion: '/sube_archivos_web/',
+                data1: $('#content_div').val(),
+                data2: '',
+                onOk: function () {
+                    var cd = $('#content_div').val();
+                    $.post("/ajax_webs/", {action: 'url_file_web', cd: cd}, function (data) {
+                        $('#imagen_web' + cd).attr('src', data);
+                    });
+                }
+            });
+        });
+
+        $('body').on('click', '.link_html_web', function (e) {
+            e.preventDefault();
+            var externo = $(this).data('externo');
+            var href = $(this).data('href');
+            if (externo == 'True'){
+                window.location.href = href;
+            }else{
+                window.location.href = location.protocol + '//' + location.host + location.pathname +'?id=' + href;
+            }
+        });
+
+        $(document).foundation();
+    </script>
+
+{% endblock %}

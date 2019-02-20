@@ -1,0 +1,77 @@
+{% load entidades_extras %}
+<fieldset id="actuacion{{ actuacion.id }}">
+    {% if g_e|has_permiso:'crea_actuacion_absentismo' %}
+        <legend><a class="button tiny delete_actuacion" data-id="{{ actuacion.id }}"><i
+                class="fa fa-trash-o"></i> Borrar actuación</a></legend>
+    {% else %}
+        <legend>Actuación {{ forloop.counter }}</legend>
+    {% endif %}
+    <div class="row">
+        <div class="columns large-2">
+            <label title="Fecha en la que se realizó la actuación"><b>Fecha:</b>
+                {% if g_e|has_permiso:'crea_actuacion_absentismo' %}
+                    <input type="text" class="fecha" data-id="{{ actuacion.id }}" id="fecha{{ actuacion.id }}"
+                           value="{{ actuacion.fecha|date:'d-m-Y' }}">
+                    <script>
+                        $("#fecha" + {{ actuacion.id }}).fdatepicker({format: 'dd-mm-yyyy', weekStart: 1});
+                    </script>
+                {% else %}
+                    <br>{{ actuacion.fecha|date:'d-m-Y' }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label title="Número de faltas del alumno en el momento de realizar la actuación"><b>Faltas</b>
+                {% if g_e|has_permiso:'crea_actuacion_absentismo' %}
+                    <input type="text" data-id="{{ actuacion.id }}" class="faltas" value="{{ actuacion.faltas }}">
+                {% else %}
+                    <br>{{ actuacion.faltas }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-8">
+            <label title="Persona con la que has contactado o intentado contactar para solucionar la situación de absentismo de {{ actuacion.actuado.gauser.get_full_name }}">
+                <b>Persona con la que has contactado para solucionar el absentismo:</b>
+                {% if g_e|has_permiso:'crea_actuacion_absentismo' %}
+                    <input type="text" class="contacto" data-id="{{ actuacion.id }}"
+                           value="{{ actuacion.contacto }}">
+                {% else %}
+                    <br>{{ actuacion.contacto }}
+                {% endif %}
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12"><label><b>Descripción de la absentismo</b></label>
+            {% if g_e|has_permiso:'crea_actuacion_absentismo' %}
+                <div contenteditable="true" id="observaciones{{ actuacion.id }}" class="observaciones"
+                     data-id="{{ actuacion.id }}">
+                    {% autoescape off %} {{ actuacion.observaciones }} {% endautoescape %}
+                    {#                    <script>CKEDITOR.inline('observaciones' + {{ actuacion.id }});</script>#}
+
+                </div>
+            {% else %}
+                <div>
+                    {% autoescape off %} {{ actuacion.observaciones }} {% endautoescape %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</fieldset>
+
+<script>
+    var editor{{ actuacion.id }} = CKEDITOR.replace('observaciones' + {{ actuacion.id }});
+    editor{{ actuacion.id }}.on('change', function (e) {
+        var texto = e.editor.getData();
+        var actuacion = {{ actuacion.id }};
+        $.post("/ajax_absentismo/", {action: 'update_observaciones', actuacion: actuacion, texto: texto},
+            function (data) {
+                if (data == 'True') {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $('#update_error').show().delay(1500).fadeOut();
+                }
+            });
+    });
+</script>
+

@@ -1,0 +1,16 @@
+{% load my_templatetags %}
+
+{% if tipo == 'mostrar' %}
+    {% for permiso in cargo.permisos.all %}
+        &nbsp;<span class="secondary radius label">{{ permiso.nombre }}</span>
+    {% endfor %}
+    &nbsp;<span class="secondary radius label"><a class="ocultar_permisos" data-id="{{ cargo.id }}">(ocultar)</a></span>
+{% else %}
+    &nbsp;<span class="secondary radius label">{{ cargo.permisos.all.0.nombre }}</span>
+    &nbsp;<span class="secondary radius label">{{ cargo.permisos.all.1.nombre }}</span>
+    &nbsp;<span class="secondary radius label">{{ cargo.permisos.all.2.nombre }}</span>
+    &nbsp;<span class="secondary radius label">{{ cargo.permisos.all.3.nombre }}</span>
+    &nbsp;<span class="secondary radius label">{{ cargo.permisos.all.4.nombre }}</span>
+    &nbsp;<span class="secondary radius label">
+                                    <a class="mostrar_permisos" data-id="{{ cargo.id }}">... (mostrar todos)</a></span>
+{% endif %}

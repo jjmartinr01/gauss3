@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<django-objects version="1.0">
+<!--  -->
+<!-- Esta fixture actualiza los menues cada vez que se ejecuta syncdb -->
+<!--  -->
+    
+<!--     El acceso a los menues depende del grupo al que pertenece el usuario -->
+    <object pk="1" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Configuración del grupo</field>
+        <!-- Asignamos los usuarios que tendrán acceso a este menú -->
+	<field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	    <object pk="1"></object>
+	    <object pk="2"></object>
+	    <object pk="3"></object>
+	</field>
+    </object>
+	<object pk="11" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">1</field>
+	    <field type="CharField" name="textelement">Datos del grupo</field>
+	    <field type="CharField" name="href">/datos_grupo/</field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+	<object pk="12" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">1</field>
+	    <field type="CharField" name="textelement">Carga masiva</field>
+	    <field type="CharField" name="href">/carga_masiva/</field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+    
+    <object pk="2" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Gestión de socios</field>
+        <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	  <object pk="1"></object>
+	  <object pk="2"></object>
+	  <object pk="3"></object>
+	</field>
+    </object>
+	<object pk="21" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">2</field>
+	    <field type="CharField" name="textelement">Añadir socio</field>
+	    <field type="CharField" name="href">/add_scout/</field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+	<object pk="22" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">2</field>
+	    <field type="CharField" name="textelement">Educandos scout</field>
+	    <field type="CharField" name="href">/scouts/</field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+	<object pk="23" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">2</field>
+	    <field type="CharField" name="textelement">Scouters</field>
+	    <field type="CharField" name="href">/scouters/</field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+	<object pk="24" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">2</field>
+	    <field type="CharField" name="textelement">Padres/Madres</field>
+	    <field type="CharField" name="href">/padres_madres/</field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+    
+    
+    <object pk="3" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Acceso a scouters</field>
+        <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	  <object pk="1"></object>
+	  <object pk="2"></object>
+	  <object pk="3"></object>
+	</field>
+    </object>
+	<object pk="31" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">3</field>
+	    <field type="CharField" name="textelement">Crear actividad</field>
+	    <field type="CharField" name="href">/add_actividad/</field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+    <object pk="4" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Actividades y reuniones</field>
+        <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	  <object pk="1"></object>
+	  <object pk="2"></object>
+	  <object pk="3"></object>
+	</field>
+    </object>
+	<object pk="41" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">4</field>
+	    <field type="CharField" name="textelement">Lista de actividades</field>
+	    <field type="CharField" name="href">/actividades/</field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+    <object pk="5" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Correo y mensajería</field>
+        <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	  <object pk="1"></object>
+	  <object pk="2"></object>
+	  <object pk="3"></object>
+	</field>
+    </object>
+	<object pk="51" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">5</field>
+	    <field type="CharField" name="textelement">Enviar correo</field>
+	    <field type="CharField" name="href">/correo/</field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+	<object pk="52" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">5</field>
+	    <field type="CharField" name="textelement">Mensajes/Correos enviados</field>
+	    <field type="CharField" name="href">/enviados/</field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+	<object pk="53" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">5</field>
+	    <field type="CharField" name="textelement">Mensajes/Correos recibidos</field>
+	    <field type="CharField" name="href">/recibidos/</field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+
+    <object pk="6" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Correo y mensajería</field>
+        <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	  <object pk="1"></object>
+	  <object pk="2"></object>
+	  <object pk="3"></object>
+	</field>
+    </object>
+	<object pk="61" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">6</field>
+	    <field type="CharField" name="textelement">Enviar correo</field>
+	    <field type="CharField" name="href"></field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+	<object pk="62" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">6</field>
+	    <field type="CharField" name="textelement">Mensajes/Correos enviados</field>
+	    <field type="CharField" name="href"></field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+	<object pk="63" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">6</field>
+	    <field type="CharField" name="textelement">Mensajes/Correos recibidos</field>
+	    <field type="CharField" name="href"></field>
+	    <field to="grupos_scout.scout_usuario" name="usuarios" rel="ManyToManyRel">
+	      <object pk="1"></object>
+	      <object pk="2"></object>
+	      <object pk="3"></object>
+	    </field>
+	</object>
+</django-objects>

@@ -1,0 +1,10 @@
+# -*- coding: utf-8 -*-
+
+#1  -> Configuración del grupo | 11 -> Datos del grupo | 12 -> Carga masiva
+#2  -> Gestión de socios | 21 -> Añadir socios | 22 -> Educandos scout | 23 -> Scouters | 24 -> Padres/Madres
+#3  -> Acceso a scouters | 31 -> Crear actividades
+#4  -> Actividades y reuniones | 41 -> Lista de actividades
+
+#MENU_SOCIO = [[lista vacía de pk=0],[EDUCANDO],[SCOUTER],[PADRES]] #MENU_ASOCIADO[pk_tipo_miembro] = permisos de ese tipo de miembro
+MENU_SOCIO = [[],[4],[3,4],[4]]
+TEXT_MENU_SOCIO = [[],[41],[31,41],[41]]

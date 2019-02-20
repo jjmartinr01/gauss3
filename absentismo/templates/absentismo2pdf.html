@@ -1,0 +1,74 @@
+<br><br><br><br><br>
+<h1 style="text-align:center;"> EXPEDIENTE </h1>
+<h1 style="text-align:center;"> SOBRE </h1>
+<h1 style="text-align:center;"> ABSENTISMO ESCOLAR </h1>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+<span style="font-size:14pt;">{% if actuado.gauser.sexo == 'H' %}Alumno: {% else %} Alumna: {% endif %} <strong> {{expediente.expedientado.gauser.get_full_name}}</strong></span>
+<br/>
+<span style="font-size:14pt;">Centro: <strong> {{expediente.expedientado.entidad.name}}</strong></span>
+<br/>
+<span style="font-size:14pt;">Localidad: <strong> {{expediente.expedientado.entidad.localidad }}</strong></span>
+
+
+<h2 class="pagebreak"> DATOS PERSONALES </h2>
+<p>Nº DE RACIMA:&nbsp;&nbsp; <strong>{{expediente.expedientado.id_entidad}}</strong></p>
+<p>APELLIDOS:&nbsp;&nbsp; <strong>{{expediente.expedientado.gauser.last_name}}</strong></p>
+<p>NOMBRE:&nbsp;&nbsp; <strong>{{expediente.expedientado.gauser.first_name}}</strong></p>
+<p>FECHA DE NACIMIENTO:&nbsp;&nbsp; <strong>{{expediente.expedientado.gauser.nacimiento}}</strong>&nbsp;&nbsp;&nbsp;&nbsp;DNI:&nbsp;&nbsp; <strong>{{expediente.expedientado.gauser.dni}}</strong></p>
+<p>DOMICILIO:&nbsp;&nbsp; <strong>{{expediente.expedientado.gauser.address}}</strong></p>
+<p>LOCALIDAD:&nbsp;&nbsp; <strong>{{expediente.expedientado.gauser.localidad}}</strong></p>
+<p>TELÉFONO FIJO:&nbsp;&nbsp; <strong>{{expediente.expedientado.gauser.telfij}}</strong>&nbsp;&nbsp;&nbsp;&nbsp;TELÉFONO MÓVIL:&nbsp;&nbsp; <strong>{{expediente.expedientado.gauser.telmov}}</strong></p>
+<p>NOMBRE Y APELLIDOS DEL PRIMER TUTOR:&nbsp;&nbsp; <strong>{{expediente.expedientado.tutor1.gauser.get_full_name}}</strong></p>
+<p>DNI DEL PRIMER TUTOR:&nbsp;&nbsp; <strong>{{expediente.expedientado.tutor1.gauser.dni}}</strong></p>
+<p>NOMBRE Y APELLIDOS DEL SEGUNDO TUTOR:&nbsp;&nbsp; <strong>{{expediente.expedientado.tutor2.gauser.get_full_name}}</strong></p>
+<p>DNI DEL SEGUNDO TUTOR:&nbsp;&nbsp; <strong>{{expediente.expedientado.tutor2.gauser.dni}}</strong></p>
+
+<br>
+<h2> DATOS ACADÉMICOS </h2>
+<p>ALUMNO CON PLAZA PARA EL CURSO:&nbsp;&nbsp; <strong>{{expediente.expedientado.entidad.ronda.nombre}}</strong></p>
+<p>{% if expediente.expedientado.grupo.estudio.etapa %} ETAPA:&nbsp;&nbsp; <strong>{{expediente.expedientado.grupo.estudio.etapa}}</strong>&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}CURSO:&nbsp;&nbsp; <strong>{% for curso in expediente.expedientado.gauser_extra_estudios.grupo.cursos.all %}{{ curso.nombre }} {% endfor %}</strong></p>
+<p>EFECTUÓ MATRÍCULA:&nbsp;&nbsp; <strong>{% if expediente.matricula %}Sí{% else %}No{% endif %}</strong></p>
+<hr>
+<p>ÚLTIMOS ESTUDIOS REALIZADOS EN EL CURSO:&nbsp;&nbsp;{% if expediente.uce %}<b>{{ expediente.uce }}</b>{% else %}....................................................{% endif %} </p>
+<p>ETAPA: {% if expediente.etapa_uce %}<b>{{ expediente.etapa_uce }}</b>{% else %}....................................................{% endif %} &nbsp;&nbsp;&nbsp;&nbsp;CURSO: {% if expediente.curso_uce %}<b>{{ expediente.curso_uce }}</b>{% else %}....................................................{% endif %}</p>
+<p>CENTRO: {% if expediente.centro_uce %}<b>{{ expediente.centro_uce }}</b>{% else %}....................................................{% endif %}
+&nbsp;&nbsp;&nbsp;LOCALIDAD: {% if expediente.localidad_uce %}<b>{{ expediente.localidad_uce }}</b>{% else %}....................................................{% endif %}</p>
+
+{#<table>#}
+{#<tr><td width="150px">ETAPA:</td><td>{% if expediente.etapa_uce %}{{ expediente.etapa_uce }}{% else %}....................................................{% endif %}</td><td width="100px">CURSO:</td><td>{% if expediente.expedientado.curso_uce %}{{ expediente.expedientado.curso_uce }}{% else %}....................................................{% endif %}</td></tr>#}
+{#<tr><td>CENTRO:</td><td>{% if expediente.centro_uce %}{{ expediente.centro_uce }}{% else %}....................................................{% endif %}</td><td></td><td></td></tr>#}
+{#<tr><td>LOCALIDAD:</td><td>{% if expediente.localidad_uce %}{{ expediente.localidad_uce }}{% else %}....................................................{% endif %}</td><td></td><td></td></tr>#}
+{#</table>#}
+
+
+
+<h2  class="pagebreak"> ACTUACIONES REALIZADAS POR EL CENTRO</h2>
+{% for actuacion in expediente.actuacion_set.all %}
+<table>
+<tr><td><strong>Fecha:</strong>&nbsp;&nbsp;{{actuacion.fecha}}</td><td>{% if actuacion.faltas %}<strong> Nº de faltas acumuladas:</strong>&nbsp;&nbsp;{{actuacion.faltas}} {% endif %}</td></tr>
+<tr><td colspan="2"><strong>Persona que realiza la actuación:</strong> {{actuacion.realizada_por.gauser.get_full_name}}</td></tr>
+<tr><td colspan="2"><strong>Persona de contacto:</strong> {{actuacion.contacto}}</td></tr>
+</table>
+{% autoescape off %}
+  {{actuacion.observaciones}}
+  {% endautoescape %}
+  <hr>
+{% endfor %}
+<br>
+<p>Este expediente ha sido revisado por la Comisión de Absentismo del Consejo Escolar del centro para ser remitido a la Inspección Técnica Educativa.</p>
+
+<div style="text-align:center;">
+<table>
+<tr><td>En {{expediente.expedientado.entidad.localidad }}, a {% now "j" %} de {% now "F" %} de {% now "Y" %}</td></tr>
+</table>
+<br>
+
+<table>
+<tr><td>Presidente de la Comisión de Absentismo</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>VºBº <br> El Director </td></tr>
+<tr></tr><tr></tr><tr></tr><tr></tr>
+<tr><td>Fdo. {{ expediente.presidente }}</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>Fdo. {{ expediente.director }}</td></tr>
+</table>
+</div>
+
+

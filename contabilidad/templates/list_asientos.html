@@ -1,0 +1,179 @@
+{% load my_templatetags %}
+<input type="hidden" name="num_gastos" id="num_gastos"
+       value="{% if gi_gastos|length > 30 %}30{% else %}{{ gi_gastos|length }}{% endif %}">
+<input type="hidden" name="num_gastos_total" id="num_gastos_total" value="{{ gi_gastos|length }}">
+<input type="hidden" name="num_ingresos" id="num_ingresos"
+       value="{% if num_ingresos|length > 30 %}30{% else %}{{ num_ingresos|length }}{% endif %}">
+<input type="hidden" name="num_ingresos_total" id="num_ingresos_total" value="{{ gi_ingresos|length }}">
+<input type="hidden" name="ordenado_por" id="ordenado_por" value="modificado">
+
+<table align="CENTER" cellpadding="3" width="100%">
+    <thead>
+    <tr>
+        <td id="check_todos_i"><span class="color2"><i class="fa fa-check-square-o"></i></span></td>
+        <td style="text-align:center;"><span class="color2">Concepto</span></td>
+        <td style="text-align:center;"><span class="color2">Partida (Ingresos)</span></td>
+        <td style="text-align:center;"><span class="color2">Cantidad</span></td>
+        <td style="text-align:center;"><span class="color2">Justificante</span></td>
+        <td style="text-align:center;"><span class="color2">Modificado</span></td>
+    </tr>
+    </thead>
+    <tbody id="tabla_ingresos">
+    {% for asiento in gi_ingresos %}
+        <input type="hidden" class="id_asientos" name="id_asientos" id="id_asiento___{{ asiento.id }}" value="">
+        <tr id="fila___{{ asiento.id }}">
+            <td class="check_asiento" id="td___{{ asiento.id }}">
+                <i class="fa fa-square-o tipo_i" id="part___{{ asiento.id }}"></i></td>
+            <td title="{{ asiento.nombre }}"
+                style="text-align:center;"
+                    >&nbsp;{{ asiento.concepto }}</td>
+            <td style="text-align:center;"
+                title="Partida a la que está asociada este ingreso"> {{ asiento.partida.nombre }} </td>
+            <td style="text-align:center;"
+                title="Cantidad monetaria asociada a este ingreso">{{ asiento.cantidad }} €
+            </td>
+            {% if asiento.escaneo %}
+                <td style="text-align:center; cursor:pointer;"
+                    class="ficheros_justificantes"
+                    id="justificante___{{ asiento.id }}"
+                    title="Hacer click para descargar el archivo ({{ asiento.escaneo.fich_name }}) con el justificante">
+                    <i class="fa fa-cloud-download"></i> ({{ asiento.escaneo.fich_name }})
+                </td>
+            {% else %}
+                <td style="text-align:center;" class="sin_justificantes"
+                    id="sinjustificante___{{ asiento.id }}"
+                    title="No existe ningún justificante. Edita el ingreso para incluir uno.">
+                    <i class="fa fa-exclamation-triangle"></i>
+                </td>
+            {% endif %}
+            <td style="text-align:center;"
+                title="Fecha de la última modificación. Fue creado el {{ asiento.creado }}">
+                {{ asiento.modificado }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+{#    <tbody id="tabla_mostrar_ingresos" style="display: none;">#}
+{#    <tr>#}
+{#        <td style="color: red;" colspan="6">Se están mostrando <span id="span_num_ingresos"></span> ingresos#}
+{#            de los <span id="span_num_ingresos_total"></span> almacenados <span#}
+{#                    id="span_mostrar_ingresos">(<a id="mostrar_ingresos">Mostrar todo</a>)</span></td>#}
+{#    </tr>#}
+{#    </tbody>#}
+    <tbody id="tabla_total_ingresos">
+    <tr style="background-color: #ffffff;">
+        <td></td>
+        <td></td>
+        <td style="text-align:center;background:#dcc8dc;"><span class="color2"><strong>Total
+            ingresos:</strong></span></td>
+        <td style="text-align:center;background:#dcc8dc;"><span class="color2"><strong>{% if i_total %}
+            {{ i_total }}{% else %}0{% endif %} €</strong></span></td>
+    </tr>
+    <tr>
+        <td colspan="6"></td>
+    </tr>
+    </tbody>
+    <tbody id="tabla_gastos">
+    <thead>
+    <tr>
+        <td id="check_todos_g"><span class="color2"><i class="fa fa-check-square-o"></i></span></td>
+        <td style="text-align:center;"><span class="color2">Concepto</span></td>
+        <td style="text-align:center;"><span class="color2">Partida (Gastos)</span></td>
+        <td style="text-align:center;"><span class="color2">Cantidad</span></td>
+        <td style="text-align:center;"><span class="color2">Justificante</span></td>
+        <td style="text-align:center;"><span class="color2">Modificado</span></td>
+    </tr>
+    </thead>
+
+    {% for asiento in gi_gastos %}
+        <input type="hidden" class="id_asientos" name="id_asientos" id="id_asiento___{{ asiento.id }}" value="">
+        <tr id="fila___{{ asiento.id }}">
+            <td class="check_asiento" id="td___{{ asiento.id }}">
+                <i class="fa fa-square-o tipo_g" id="part___{{ asiento.id }}"></i></td>
+            <td title="{{ asiento.nombre }}"
+                style="text-align:center;"
+                    >&nbsp;{{ asiento.concepto }}</td>
+            <td style="text-align:center;"
+
+                title="Partida a la que está asociada este ingreso"> {{ asiento.partida.nombre }} </td>
+            <td style="text-align:center;"
+                title="Cantidad monetaria asociada a este ingreso">{{ asiento.cantidad }} €
+            </td>
+            {% if asiento.escaneo %}
+                <td style="text-align:center; cursor:pointer;"
+                    class="ficheros_justificantes"
+                    id="justificante___{{ asiento.id }}"
+                    title="Hacer click para descargar el archivo ({{ asiento.escaneo.fich_name }}) con el justificante">
+                    <i class="fa fa-cloud-download"></i> ({{ asiento.escaneo.fich_name }})
+                </td>
+            {% else %}
+                <td style="text-align:center;" class="sin_justificantes"
+                    id="sinjustificante___{{ asiento.id }}"
+                    title="No existe ningún justificante. Edita el gasto para incluir uno.">
+                    <i class="fa fa-exclamation-triangle"></i>
+                </td>
+            {% endif %}
+            <td style="text-align:center;"
+                title="Fecha de la última modificación. Fue creado el {{ asiento.creado }}">
+                {{ asiento.modificado }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+{#    <tbody id="tabla_mostrar_gastos" style="display: none;">#}
+{#    <tr>#}
+{#        <td style="color: red;" colspan="6">Se están mostrando <span id="span_num_gastos"></span> gastos de#}
+{#            los#}
+{#            <span id="span_num_gastos_total"></span> almacenados <span#}
+{#                    id="span_mostrar_gastos">(<a id="mostrar_gastos">Mostrar todo</a>)</span></td>#}
+{#    </tr>#}
+{#    </tbody>#}
+    <tbody id="tabla_total_gastos">
+    <tr style="background-color: #ffffff;">
+        <td></td>
+        <td></td>
+        <td style="text-align:center;background:#dcc8dc;"><span class="color2"><strong>Total
+            gastos:</strong></span>
+        </td>
+        <td style="text-align:center;background:#dcc8dc;"><span class="color2"><strong>{% if g_total %}
+            {{ g_total }}{% else %}0{% endif %} €</strong></span></td>
+    </tr>
+    </tbody>
+</table>
+<script>
+    {#    $(document).foundation();#}
+{#    if (parseInt($('#num_gastos').val()) < parseInt($('#num_gastos_total').val())) {#}
+{#        $('#span_num_gastos').text($('#num_gastos').val());#}
+{#        $('#span_num_gastos_total').text($('#num_gastos_total').val());#}
+{#        $('#tabla_mostrar_gastos').show();#}
+{#    }#}
+{#    if (parseInt($('#num_ingresos').val()) < parseInt($('#num_ingresos_total').val())) {#}
+{#        $('#span_num_ingresos').html($('#num_ingresos').val());#}
+{#        $('#span_num_ingresos_total').html($('#num_ingresos_total').val());#}
+{#        $('#tabla_mostrar_ingresos').show();#}
+{#    }#}
+{#    $('#mostrar_ingresos').click(function (e) {#}
+{#        e.preventDefault();#}
+{#        $.post("/gastos_ingresos_ajax/",#}
+{#            {#}
+{#                action: 'mostrar_ingresos',#}
+{#                num_ingresos: $('#num_ingresos').val(),#}
+{#                ordenado_por: $('#ordenado_por').val(),#}
+{#                id_presupuesto: $('#id_presupuesto').val()#}
+{#            },#}
+{#            function (data) {#}
+{#                $('#tabla_mostrar_ingresos').html(data);#}
+{#            });#}
+{#    });#}
+{#    $('#mostrar_gastos').click(function (e) {#}
+{#        e.preventDefault();#}
+{#        $.post("/gastos_ingresos_ajax/",#}
+{#            {#}
+{#                action: 'mostrar_gastos',#}
+{#                num_gastos: $('#num_gastos').val(),#}
+{#                ordenado_por: $('#ordenado_por').val(),#}
+{#                id_presupuesto: $('#id_presupuesto').val()#}
+{#            },#}
+{#            function (data) {#}
+{#                $('#tabla_mostrar_gastos').html(data);#}
+{#            });#}
+{#    });#}
+</script>

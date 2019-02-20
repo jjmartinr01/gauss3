@@ -1,0 +1,71 @@
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Organizador:</b>
+            <br>{{ actividad.organizador.gauser.get_full_name }}
+        </label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Colaboradores:</b>
+            <br> {% for colaborador in actividad.colaboradores.all %}
+                {% if not forloop.last %}
+                    {{ colaborador.gauser.get_full_name }},
+                {% else %}
+                    {{ colaborador.gauser.get_full_name }}
+                {% endif %}
+            {% endfor %}
+        </label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12"><label><b>Comienzo y fin:</b>
+        {% if actividad.fecha_hora_inicio|date:"dmY" == actividad.fecha_hora_fin|date:"dmY" %}
+            <br>Desde las {{ actividad.fecha_hora_inicio|date:"H:i" }} hasta las
+            {{ actividad.fecha_hora_fin|date:"H:i" }}
+        {% else %}
+            <br>Desde el {{ actividad.fecha_hora_inicio|date:"d/m/Y" }} a las
+            {{ actividad.fecha_hora_inicio|date:"H:i" }} hasta el {{ actividad.fecha_hora_fin|date:"d/m/Y" }} a las
+            {{ actividad.fecha_hora_fin|date:"H:i" }}
+        {% endif %}
+    </label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12"><label><b>Descripción de la actividad</b></label>
+        <div>
+            {% autoescape off %} {{ actividad.description }} {% endautoescape %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <p><b>El listado de los alumnos que participan en la actividad y de aquellos que no lo hacen, y por
+            tanto hay que pasarles lista en clase, lo puedes descargar pinchando
+            <a href="/gestionar_actividades/?act={{ actividad.id }}&pdf=yes">aquí</a> </b></p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12"><label><b>Grupos y alumnos que participan en la actividad:</b>
+        {{ actividad.nombre_grupos_incluidos|join:", " }}
+        {#        {% for grupo in actividad.grupos_actividad.grupos_incluidos %}#}
+        {#            <b>{{ grupo.nombre }}</b>,#}
+        {#        {% endfor %}#}
+    </label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12"><label><b>Alumnos que participan en la actividad:</b><br/>
+        {% for alumno in actividad.alumnos_incluidos.all %}
+            {{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }} (
+            {{ alumno.gauser_extra_estudios.grupo.nombre }});
+        {% endfor %}
+    </label>
+    </div>
+</div>

@@ -1,0 +1,111 @@
+{% load my_templatetags %}
+
+<style>
+    td {
+        text-align: center;
+    }
+</style>
+<input type="hidden" name="num_eventos" id="num_eventos" value="{{ calendario.eventos.all|length }}">
+<a id="contenido_evento_cerrar"
+   style="position: absolute; top: 7px;right: 7px; font-size: 1.6em;"><strong><i
+        class="fa fa-close"></i> </strong></a>
+
+{% for evento in calendario.eventos.all %}
+    <div id="div_contenido_evento___{{ evento.id }}">
+        <h3>
+            {% autoescape off %}
+                {{ evento.nombre }}
+            {% endautoescape %}</h3>
+
+        <table width="100%" style="border: none;">
+            <tr>
+                <th>Creado por</th>
+                <th>Lugar</th>
+                <th>Inicio</th>
+                <th>Fin</th>
+            </tr>
+            <tr>
+                <td>{{ evento.gauser_extra.gauser.get_full_name }}</td>
+                <td>{{ evento.lugar }}</td>
+                <td>{{ evento.inicio|date:"j \d\e F \d\e Y" }}
+                    {% if evento.inicio|date:"H" != "00" and evento.inicio|date:"i" != "00" %}
+                        {{ evento.inicio|date:" \a \l\a\s H\:i" }} {% endif %}</td>
+                <td>{{ evento.fin|date:"j \d\e F \d\e Y" }}
+                    {% if evento.fin|date:"H" != "00" and evento.fin|date:"i" != "00" %}
+                        {{ evento.fin|date:" \a \l\a\s H\:i" }} {% endif %}</td>
+            </tr>
+        </table>
+
+        {% if evento.subentidades.all|length > 0 %}
+            <div class="row">
+                <div class="large-12 medium-12 columns">
+                    <p><strong>Secciones/Departamentos invitados: </strong>
+                        {% for subentidad in evento.subentidades.all %}
+                            <span style="color:blue"> {{ subentidad.nombre }}</span>{% if not forloop.last %},
+                        {% endif %}{% endfor %}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if evento.invitados.all|length > 0 %}
+            <div class="row">
+                <div class="large-12 medium-12 columns">
+                    <p><strong>Otros invitados: </strong> {% for invitado in evento.invitados.all %}
+                        {{ invitado.gauser.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                </div>
+            </div>
+        {% endif %}
+
+        <p>{% autoescape off %}{{ evento.descripcion }}{% endautoescape %}</p>
+
+        {% if request.session.gauser_extra|modifica_eventos:evento.id %}
+            <a id="contenido_evento_editar___{{ evento.id }}" class="secondary button editar_evento">
+                Editar
+            </a>
+            <a id="contenido_evento_borrar___{{ evento.id }}" class="secondary button borrar_evento">
+                Borrar
+            </a>
+        {% endif %}
+        <a id="contenido_evento_pdf___{{ evento.id }}" class="secondary button pdf_evento">
+            PDF
+        </a>
+        {% if not forloop.last %}
+            <hr>
+        {% endif %}
+    </div>
+{% endfor %}
+<script>
+    $(".borrar_evento").on('click', function (e) {
+        e.preventDefault();
+        var id = $(this).attr('id').split('___')[1];
+        $('#fila_mesaje___' + '{{ evento.id }}').hide();
+        $.post("/calendario_ajax/", { id: id, action: 'borrar_evento'}, function (data) {
+            $('#num_eventos').val(parseInt($('#num_eventos').val()) - 1);
+            if (parseInt($('#num_eventos').val()) == 0) {
+                $('#contenido_evento').hide();
+                $.post("/calendario_ajax/", { id: {{ calendario.id }}, action: 'clases_calendario'}, function (data) {
+                    $('#div_calendario').show('fast');
+                    $('#' + {{ calendario.id }}).removeClass('EVT_MUL EVT_UNI EVT_PRI').addClass(data);
+                });
+            }
+        });
+        $('#div_contenido_evento___' + id).hide();
+    });
+
+    $(".pdf_evento").on('click', function (e) {
+        e.preventDefault();
+        var id = $(this).attr('id').split('___')[1];
+        $('#id_evento').val(id);
+        $('#action').val('pdf_evento');
+        document.{{formname}}.submit();
+    });
+
+    $("#contenido_evento_cerrar").on('click', function (e) {
+        e.preventDefault();
+        $('#contenido_evento').hide();
+        $.post("/calendario_ajax/", { id: {{ calendario.id }}, action: 'clases_calendario'}, function (data) {
+            $('#div_calendario').show('fast');
+            $('#' + {{ calendario.id }}).removeClass('EVT_MUL EVT_UNI EVT_PRI').addClass(data);
+        });
+    });
+</script>
+

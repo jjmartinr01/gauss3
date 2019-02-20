@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<django-objects version="1.0">
+<!--  -->
+<!-- Para cargar esta fixture es necesario ejecutar el comando: -->
+<!-- python manage.py loaddata ./grupos_scout/fixtures/permisos_data.xml -->
+<!--  -->
+
+   
+<!--  ************************************************************************  -->
+<!--  ************************************************************************  -->
+
+<!--     Definimos los tipos de miembros que tendrán los grupos scout -->
+    <object pk="1" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Modificar datos de un socio</field>
+	<field type="CharField" name="code_nombre">mod_socio</field>
+    </object>
+    <object pk="2" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Dar de baja a un socio</field>
+	<field type="CharField" name="code_nombre">baja_socio</field>
+    </object>
+    <object pk="3" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Borrar de la base de datos a un socio</field>
+	<field type="CharField" name="code_nombre">del_socio</field>
+    </object>
+    
+    <object pk="11" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Mandar correo a todos los socios</field>
+	<field type="CharField" name="code_nombre">correo_socios</field>
+    </object>
+    <object pk="12" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Mandar correo a los scouters</field>
+	<field type="CharField" name="code_nombre">correo_scouters</field>
+    </object>
+    <object pk="13" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Mandar correo a los padres/madres</field>
+	<field type="CharField" name="code_nombre">correo_padres</field>
+    </object>
+    <object pk="14" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Mandar correo a castores</field>
+	<field type="CharField" name="code_nombre">correo_padres_castores</field>
+    </object>
+    <object pk="15" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Mandar correo a lobatos</field>
+	<field type="CharField" name="code_nombre">correo_padres_lobatos</field>
+    </object>
+    <object pk="16" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Mandar correo a tropa</field>
+	<field type="CharField" name="code_nombre">correo_padres_tropa</field>
+    </object>
+    <object pk="17" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Mandar correo a escultas/pioneros</field>
+	<field type="CharField" name="code_nombre">correo_padres_escultas</field>
+    </object>
+    <object pk="18" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Mandar correo a rovers</field>
+	<field type="CharField" name="code_nombre">correo_padres_rovers</field>
+    </object>
+    <object pk="19" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Mandar correo a castores</field>
+	<field type="CharField" name="code_nombre">correo_castores</field>
+    </object>
+    <object pk="20" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Mandar correo a lobatos</field>
+	<field type="CharField" name="code_nombre">correo_lobatos</field>
+    </object>
+    <object pk="21" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Mandar correo a tropa</field>
+	<field type="CharField" name="code_nombre">correo_tropa</field>
+    </object>
+    <object pk="22" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Mandar correo a escultas/pioneros</field>
+	<field type="CharField" name="code_nombre">correo_escultas</field>
+    </object>
+    <object pk="23" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Mandar correo a rovers</field>
+	<field type="CharField" name="code_nombre">correo_rovers</field>
+    </object>
+    
+    
+    <object pk="31" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Añadir a scouters y padres como colaboradores en actividades</field>
+	<field type="CharField" name="code_nombre">add_colabora</field>
+    </object>
+    <object pk="32" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Añadir a scouters como colaboradores en actividades</field>
+	<field type="CharField" name="code_nombre">add_colabora_scouters</field>
+    </object>
+    <object pk="33" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Añadir a padres/madres como colaboradores en actividades</field>
+	<field type="CharField" name="code_nombre">add_colabora_padres</field>
+    </object>
+    <object pk="34" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Añadir castores como participantes de una actividad</field>
+	<field type="CharField" name="code_nombre">add_participante_castor</field>
+    </object>
+    <object pk="35" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Añadir lobatos como participantes de una actividad</field>
+	<field type="CharField" name="code_nombre">add_participante_lobato</field>
+    </object>
+    <object pk="36" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Añadir troperos como participantes de una actividad</field>
+	<field type="CharField" name="code_nombre">add_participante_tropa</field>
+    </object>
+    <object pk="37" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Añadir escultas como participantes de una actividad</field>
+	<field type="CharField" name="code_nombre">add_participante_esculta</field>
+    </object>
+    <object pk="38" model="grupos_scout.permiso">
+	<field type="CharField" name="nombre">Añadir rovers como participantes de una actividad</field>
+	<field type="CharField" name="code_nombre">add_participante_rover</field>
+    </object>
+        
+    
+<!--  ************************************************************************  -->
+<!--  ************************************************************************  -->
+
+  
+
+    
+</django-objects>
+

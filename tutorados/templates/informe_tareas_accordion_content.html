@@ -1,0 +1,193 @@
+{% load entidades_extras %}
+{% load informes_extras %}
+<div class="row">
+    <div class="columns large-3">
+        <label><b>Solicitado por</b>
+        </label> {{ informe.solicitante.gauser.get_full_name }}
+    </div>
+    <div class="columns large-2">
+        <label title="Fecha en la que se ha solicitado este informe de tareas"><b>Fecha de solicitud</b>
+        </label>{{ informe.fecha|date:'d/m/Y' }}
+    </div>
+    <div class="columns large-2">
+        {% if informe.solicitante == g_e or g_e|has_permiso:'edita_informes_tareas' %}
+            <label title="Fecha límite para rellenar el informe"><b>Fecha límite</b>
+                <input type="text" class="deadline" data-id="{{ informe.id }}" id="deadline{{ informe.id }}"
+                       value="{{ informe.deadline|date:'d/m/Y' }}">
+                <script>
+                    $("#deadline" + {{ informe.id }}).fdatepicker({format: 'dd/mm/yyyy', weekStart: 1});
+                </script>
+
+
+            </label>
+        {% else %}
+            <label title="Fecha límite para rellenar el informe"><b>Fecha límite</b>
+            </label>{{ informe.deadline|date:'d/m/Y' }}
+        {% endif %}
+    </div>
+    <div class="columns large-5">
+        <ul class="button-group right">
+            {% if informe.solicitante == g_e or g_e|has_permiso:'ve_informes_tareas' %}
+                <li title="Generar pdf con el informe de tareas">
+                    <a href="#" class="button pdf_informe_tareas" data-id="{{ informe.id }}"><i
+                            class="fa fa-file-pdf-o"></i>
+                        PDF</a></li>
+            {% endif %}
+            {% if informe.solicitante == g_e or g_e|has_permiso:'borra_informes_tareas' %}
+                <li title="Borrar el informe de tareas de la base de datos">
+                    <a href="#" class="button del_informe_tareas" data-id="{{ informe.id }}"><i
+                            class="fa fa-trash-o"></i>
+                        Borrar</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Texto de la solicitud</b></label>
+        {% if informe.solicitante == g_e or g_e|has_permiso:'edita_informes_tareas' %}
+            <textarea class="texto_solicitud" data-informe="{{ informe.id }}">{{ informe.texto_solicitud }}</textarea>
+        {% else %}
+            <div>
+                <b>{{ informe.texto_solicitud }}</b>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% if informe.solicitante == g_e or g_e|has_permiso:'edita_informes_tareas' %}
+    <br>
+    <div class="row">
+        <div class="columns large-12">
+            <label title="Personas a las que se le solicita que rellenen el informe"><b>Personas que rellenan el
+                informe</b>
+                <select class="usuarios_destino" id="usuarios_destino{{ informe.id }}" data-informe="{{ informe.id }}"
+                        multiple>
+                    {% for u in informe.usuarios_destino.all %}
+                        <option value="{{ u.id }}" selected>{{ u.gauser.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            {% if informe.solicitante == g_e %}
+                <a title="Enviar mensaje de aviso a las personas indicadas para que rellenen el informe"
+                   href="#" class="button aviso_informe_tareas" data-id="{{ informe.id }}"><i
+                        class="fa fa-envelope-o"></i> Enviar aviso</a>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+
+{% if g_e in informe.usuarios_destino.all %}
+    <br>
+    <div class="row">
+        <div class="columns large-12">
+            <label><b>Escribe el texto explicando la tarea y en su caso los archivos </b>(esto es lo que recibirá
+                {{ informe.usuario.gauser.get_full_name }})
+                <textarea class="texto_tarea" id="texto_tarea{{ informe.id }}"
+                          data-informe="{{ informe.id }}">{{ g_e|texto_tarea:informe }}</textarea>
+            </label>
+        </div>
+    </div>
+    {# Aquí comienzan las líneas para subir archivos vía ajax #}
+    <div class="row">
+        <div class="columns large-12" id="subir_ficheros" style="position:relative;">
+            <input type="file" name="gauss_file" id="gauss_file" multiple="multiple"
+                   style="position:absolute;top: -3000px;left:-3000px;"/>
+            <a id="a_subir_ficheros"><i class="fa fa-hand-o-up"></i> Pulsa aquí para subir archivos <span
+                    style="display: none" id="span_spin"><i class="fa fa-refresh fa-spin fa-fw"></i> Cargando... </span>
+                <span style="display: none" id="span_porcentage"></span></a>
+            <ul id="lista_ficheros" style="list-style: none;">
+                {% for fichero in g_e|ficheros_tarea:informe %}
+                    <li data-id="{{ fichero.id }}" class="li_fichero fichero{{ fichero.id }}"><a class="remove_file"
+                                                                                                 data-id="{{ fichero.id }}"><i
+                            class="fa fa-times"></i> </a>
+                        {{ fichero.fich_name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+    {% if g_e in informe.usuarios_destino.all %}
+        var loading_file = true;
+        $('#a_subir_ficheros').on("click", function (e) {
+            e.preventDefault();
+            if (loading_file) {
+                $('#gauss_file').trigger('click');
+                loading_file = false;
+            }
+        });
+
+        function updateProgress(evt) {
+            if (evt.lengthComputable) {
+                var percentComplete = (evt.loaded / evt.total) * 100;
+                $('#span_porcentage').html(parseInt(percentComplete) + '%');
+                console.log(percentComplete);
+            } else {
+                console.log('No es posible calcular el porcentaje de carga en el servidor');
+            }
+        }
+
+        $('body').on('change', '#gauss_file', function () {
+            var input_files = document.getElementById('gauss_file').files;
+            $('#span_spin').show();
+            $('#span_porcentage').show();
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('fichero_xhr' + i, input_files[i]);
+            }
+            formData.append('n_files', input_files.length);
+
+            formData.append('action', 'upload_fichero_tarea');
+            formData.append('informe', {{ informe.id }});
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener("progress", updateProgress, false);
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log('Terminado');
+                        var data = JSON.parse(xhr.responseText);
+                        $.each(data.ficheros, function (i, el) {
+                            var $a = $('<a/>').attr('data-id', el.id)
+                                .attr('class', 'remove_file')
+                                .html('<i class="fa fa-times"></i> ');
+                            var $li = $('<li/>').attr('data-id', el.id)
+                                .attr('class', 'li_fichero').addClass('fichero' + el.id)
+                                .append($a).append(el.file_name);
+                            $('#lista_ficheros').append($li);
+                        });
+                        loading_file = true;
+                        $('#span_spin').hide();
+                        $('#span_porcentage').hide();
+                    }
+                }
+            };
+            xhr.open('POST', "/ajax_informe_tareas/", true);
+            xhr.send(formData);
+        });
+
+        {# Aquí terminan las líneas para subir archivos vía ajax #}
+
+        var editor = CKEDITOR.replace('texto_tarea{{ informe.id }}');
+        editor.on('change', function (e) {
+            var texto = e.editor.getData();
+            var informe = {{ informe.id }};
+            $.post("/ajax_informe_tareas/", {action: 'update_texto_tarea', informe: informe, texto: texto},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $("#n_usuarios_respondido" + informe).html(data.respuestas);
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+    {% endif %}
+</script>

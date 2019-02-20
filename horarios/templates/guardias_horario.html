@@ -1,0 +1,353 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+{% load horarios_extras %}
+
+{% block contenido %}
+    <style>
+        .title {
+            text-align: center;
+            color: #008CBA;
+            font-weight: 800;
+        }
+
+        .cell_guardia {
+            border: 1px solid #BFDDCB;
+            position: relative;
+        }
+
+        .texto-horas {
+            text-align: center;
+            font-weight: 800;
+            color: #dc322f;
+        }
+
+        .hr {
+            display: none;
+        }
+
+        .impar {
+            background-color: white;
+        }
+
+        .par {
+            background-color: #f6f6f6;
+        }
+
+        .periodo {
+            border-bottom: 1px gray dashed;
+            overflow: auto;
+        }
+
+        .guardia_input {
+            padding-left: 5%;
+        }
+
+        .nombres {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .observaciones {
+            min-height: 90px;
+        }
+
+        .span_add_guardia {
+            display: none;
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            z-index: 1000;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="guardia_id" name="guardia_id" value="">
+
+        <input type="hidden" id="q" name="q" value="">
+        <input type="hidden" id="page" name="page" value="">
+
+        <div class="">
+            <h4 class="title">Guardias {{ request.session.gauser_extra.ronda.entidad.name }}</h4>
+        </div>
+        <div class="row">
+            <div class="columns large-8">
+                {#                <select name="horario" id="horario">#}
+                {#                    <option value="{{ horario.id }}">{{ horario.descripcion|truncatechars:90 }}</option>#}
+                {#                    {% for h in horarios %}#}
+                {#                        <option value="{{ h.id }}">{{ h.descripcion|truncatechars:90 }}</option>#}
+                {#                    {% endfor %}#}
+                {#                </select>#}
+                &nbsp;
+            </div>
+            <div class="columns large-4">
+                <input style="font-weight: 800;" readonly=readonly type="text" id="fecha_guardia"
+                       value="{{ fecha|date:"l     d/m/Y" }}">
+            </div>
+        </div>
+
+
+        {% for t in horario_guardias %}
+            <div class="row {% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}">
+                <div class="columns large-5 nombres">
+                    <div class="texto-horas">{{ t.hora.0|date:"H:i" }}-{{ t.hora.1|date:"H:i" }}</div>
+                    {% for s in t.sesiones %}
+                        <div style="display: block;white-space: nowrap;"
+                             title="{{ s.g_e.gauser.get_full_name }} - {{ s.actividad.nombre }}">{{ s.g_e.gauser.get_full_name }}
+                            <span style="color:#00ac00;font-weight: 800;">{{ s.actividad.nombre }}</span></div>
+                    {% endfor %}
+                </div>
+                <div class="columns large-7 {% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %} observaciones">
+                    <span class="span_add_guardia" id="span_add_guardia{{ t.hora.0|date:"H-i" }}">
+                            <a class="add_guardia" data-inicio_hora="{{ t.hora.0|date:"H" }}"
+                               data-inicio_minutos="{{ t.hora.0|date:"i" }}" data-fin_hora="{{ t.hora.1|date:"H" }}"
+                               data-fin_minutos="{{ t.hora.1|date:"i" }}" data-fecha="{{ fecha|date:"d/m/Y" }}"
+                               data-horario="{{ horario.id }}"><i class="fa fa-plus-circle"></i> Añadir</a> </span>
+                    <div id="g{{ t.hora.0|date:"H-i" }}">
+                        {% for g in guardias %}
+                            {% if g.sesion.inicio == t.hora.0 and g.sesion.fin == t.hora.1 %}
+                                {% include "guardias_horario_content.html" %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="row periodo" id="row{{ t.hora.0|date:"H-i" }}"></div>
+        {% endfor %}
+
+        <div id="container_guardia_input" style="display: none;">
+            <div id="guardia_input" class="row">
+                <div class="columns large-6 guardia_input">
+                    {% if request.session.gauser_extra|has_permiso:'crea_guardias_horario' %}
+                        <label><b>Guardia para:</b><br>
+                            <select name="usuario" id="usuario" style="width: 300px;">
+                                <option value="">Usuario</option>
+                                {% for u in usuarios %}
+                                    <option value="{{ u.id }}">{{ u.gauser.get_full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                    {% else %}
+                        <label><b>Guardia para:</b><br>
+                            <select name="usuario" id="usuario" style="width: 300px;">
+                                <option value="{{ request.session.gauser_extra.id }}">{{ request.session.gauser_extra.gauser.get_full_name }}</option>
+                            </select>
+                        </label>
+                    {% endif %}
+                </div>
+                <div class="columns large-6 guardia_input">
+                    <label><b>Tarea en archivo:</b><br>
+                        <input type="file" id="tarea_guardia">
+                    </label>
+                </div>
+                <div class="columns large-12 guardia_input">
+                    <label><b>Observaciones:</b><br>
+                        <textarea name="observaciones" id="observaciones">Los alumnos ...</textarea>
+                    </label>
+                </div>
+                <div class="columns large-12 guardia_input">
+                    <ul class="button-group" style="margin-left:7%;">
+                        <li><a class="button small" id="ok_guardia">Guardar</a></li>
+                        <li><a class="button small" id="cancel_guardia">Cancelar</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        var guardia_is_edited;
+        var inicio_hora;
+        var inicio_minutos;
+        var fin_hora;
+        var fin_minutos;
+        var fecha;
+        var horario;
+
+        {# Estas líneas se ejecutan al cargar la página y sirven para centrar las horas #}
+        $.each($('.texto-vertical'), function (el) {
+            var h1 = $(this).parent().parent().outerHeight();
+            var h2 = $(this).parent().outerHeight();
+            $(this).parent().css('padding-top', (h1 - h2) / 2);
+        });
+        $.each($('.nombres'), function (el) {
+            var h1 = $(this).parent().outerHeight();
+            var h2 = $(this).outerHeight();
+            $(this).css('padding-top', (h1 - h2) / 2);
+        });
+
+        $('.observaciones').mouseenter(function () {
+            if (!guardia_is_edited) {
+                $(this).addClass('is-hover');
+                $(this).find('.span_add_guardia').show();
+            }
+        });
+
+        $('.observaciones').mouseleave(function () {
+            $(this).removeClass('is-hover');
+            $(this).find('.span_add_guardia').hide();
+        });
+
+        $('#fecha_guardia').fdatepicker({
+            format: "dd/mm/yyyy",
+            language: 'es',
+            weekStart: 1
+        });
+        $('body').on('change', '#fecha_guardia', function (e) {
+            var fecha = $(this).val().split('/').join('');
+            window.location.href = "/guardias_horario/?d=" + fecha;
+        });
+
+        $('body').on('click', '.add_guardia', function (e) {
+            guardia_is_edited = true;
+            inicio_hora = $(this).data('inicio_hora');
+            inicio_minutos = $(this).data('inicio_minutos');
+            fin_hora = $(this).data('fin_hora');
+            fin_minutos = $(this).data('fin_minutos');
+            fecha = $(this).data('fecha');
+            horario = $(this).data('horario');
+            $('#row' + inicio_hora + '-' + inicio_minutos).append($('.guardia_input'));
+            $('#usuario').select2();
+            if ($('#usuario').find("option[value='" + {{ request.session.gauser_extra.id }} +"']").length) {
+                $('#usuario').val({{ request.session.gauser_extra.id }}).trigger('change');
+            }
+        });
+
+        $('body').on('click', '#ok_guardia2', function (e) {
+            var g_e = $('#usuario').val();
+            var observaciones = $('#observaciones').val();
+            $.post("/guardias_ajax/",
+                {
+                    action: 'add_guardia',
+                    inicio_hora: inicio_hora,
+                    inicio_minutos: inicio_minutos,
+                    fin_hora: fin_hora,
+                    fin_minutos: fin_minutos,
+                    fecha: fecha,
+                    horario: horario,
+                    g_e: g_e,
+                    observaciones: observaciones
+                },
+                function (data) {
+                    if (data['ok']) {
+                        if (data['texto']) {
+                            $('#g' + inicio_hora + '-' + inicio_minutos).append(data['texto']);
+                            $("#update_ok").show().delay(1500).fadeOut().css("z-index", 1000);
+                        }
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
+                        show_mensajes({
+                            title: '<i class="fa fa-warning"></i> No existe sesión en horario',
+                            texto: data['usuario'] + ' tiene libre este tramo en su horario y por tanto no es necesaria una guardia.'
+                        });
+                    }
+                    $('#container_guardia_input').append($('.guardia_input'));
+                    guardia_is_edited = false;
+                });
+        });
+
+        $('#Contenido').on('click', '#ok_guardia', function () {
+            $('#span_spin').show();
+            var g_e = $('#usuario').val();
+            var observaciones = $('#observaciones').val();
+            var input_files = document.getElementById('tarea_guardia').files;
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('fichero_xhr' + i, input_files[i]);
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'add_guardia');
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            formData.append('inicio_hora', inicio_hora);
+            formData.append('inicio_minutos', inicio_minutos);
+            formData.append('fin_hora', fin_hora);
+            formData.append('fin_minutos', fin_minutos);
+            formData.append('fecha', fecha);
+            formData.append('horario', horario);
+            formData.append('g_e', g_e);
+            formData.append('observaciones', observaciones);
+            var xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log('Terminado');
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.ok) {
+                            if (data['texto']) {
+                                $('#g' + inicio_hora + '-' + inicio_minutos).append(data['texto']);
+                                $("#update_ok").show().delay(1500).fadeOut().css("z-index", 1000);
+                            }
+                            $('#span_spin').hide();
+                        } else {
+                            $('#span_spin').hide();
+                            $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
+                            show_mensajes({
+                                title: '<i class="fa fa-warning"></i> No existe sesión en horario',
+                                texto: data['usuario'] + ' tiene libre este tramo en su horario y por tanto no es necesaria una guardia.'
+                            });
+                        }
+                        $('#container_guardia_input').append($('.guardia_input'));
+                        guardia_is_edited = false;
+                        $('#tarea_guardia').val('');
+                        $('#observaciones').val('Los alumnos ...');
+                    }
+                }
+            };
+            xhr.open('POST', "/guardias_ajax/", true);
+            xhr.send(formData);
+        });
+
+        $('#Contenido').on('click', '.download_tarea', function (e) {
+            e.preventDefault();
+            $('#guardia_id').val($(this).data('id'));
+            $('#action').val('download_tarea');
+            document.getElementById("{{ formname }}").submit();
+        });
+
+        $('body').on('click', '#cancel_guardia', function (e) {
+            $('#container_guardia_input').append($('.guardia_input'));
+            guardia_is_edited = false;
+            inicio_hora = null;
+            inicio_minutos = null;
+            fin_hora = null;
+            fin_minutos = null;
+        });
+
+        $(document).keyup(function (e) {
+            if (e.keyCode == 27 && guardia_is_edited) { // escape key maps to keycode `27`
+                $('#container_guardia_input').append($('.guardia_input'));
+                guardia_is_edited = false;
+                inicio_hora = null;
+                inicio_minutos = null;
+                fin_hora = null;
+                fin_minutos = null;
+            }
+        });
+
+        $('body').on('click', '.del_guardia', function (e) {
+            guardia = $(this).data('guardia');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar la guardia?',
+                texto: 'Confirma que quieres borrar esta guardia.',
+                buttons: {
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/guardias_ajax/", {action: 'del_guardia', guardia: guardia}, function (data) {
+                            if (data['ok']) {
+                                $("#update_ok").show().delay(1500).fadeOut().css("z-index", 1000);
+                                $('#guardia' + guardia).remove();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
+                            }
+                        });
+                    },
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {% trans 'Página de administración de GAUSS' %}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">{% trans 'Administración de GAUSS' %}</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

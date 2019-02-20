@@ -1,0 +1,19 @@
+{% for goption in ginput.goption_set.all reversed %}
+    <div class="row">
+        <div class="columns large-6 medium-6">
+            <label>Texto de la opción:
+                <input class="opciones_texto" type="text" data-id="{{ goption.id }}" value="{{ goption.text }}">
+            </label>
+        </div>
+        <div class="columns large-4 medium-4">
+            <label>Valor asociado a la opción:
+                <input class="opciones_valor" type="text" data-id="{{ goption.id }}"
+                       value="{{ goption.value }}">
+            </label>
+        </div>
+        <div class="columns large-2 medium-2">
+            <a title="Eliminar esta opcion" class="button del_goption radius" data-id="{{ goption.id }}"><i
+                    class="fa fa-trash-o"></i> </a>
+        </div>
+    </div>
+{% endfor %}

@@ -1,0 +1,158 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+{% load horarios_extras %}
+
+{% block contenido %}
+    <style>
+        #barra_iconos_menu {
+            z-index: 2000000 !important;
+        }
+
+        div.horario {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            height: {{ horario.horario_height }}px;
+            border: 1px solid grey;
+        }
+
+        div.dia_horario {
+            display: table-cell;
+            text-align: center;
+            height: {{ horario.horario_height }}px;
+            position: relative;
+        }
+
+        div.div_cell_sesion {
+            position: absolute;
+            border-left: 1px solid #BFDDCB;
+            border-top: 1px solid #BFDDCB;
+            border-right: 1px solid #BFDDCB;
+            background-color: white;
+            opacity: 1;
+            z-index: 1;
+            width: 100%;
+        }
+
+        .show_complete_cell {
+            z-index: 100000 !important;
+            background-color: #ffd3e8 !important;
+        }
+
+        div.div_cell_sesion:hover {
+            z-index: 100000 !important;
+            background-color: #ffd3e8;
+        }
+
+        #horas {
+            border-right: 1px solid grey;
+        }
+
+        div.horas {
+            position: absolute;
+            padding-left: 5px;
+            border-top: 1px solid #BFDDCB;
+            width: 100%;
+        }
+
+        .dependencia {
+            color: #117700;
+        }
+
+        .materia {
+            color: #008CBA;
+        }
+
+        .profesor {
+            color: #888888;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="graba_horario">
+        <input type="hidden" id="q" name="q" value="">
+        <input type="hidden" id="page" name="page" value="">
+        {% if grupo %}
+            <div class="row">
+                <div class="columns large-6 text-right"><h4 style="color: #008CBA;"><strong>Horario
+                    de </strong></h4>
+                </div>
+                <div class="columns large-6">
+                    <h5 style="text-align: center;"><strong> <select name="grupo" id="grupo">
+                        {% for g in grupos %}
+                            <option value="{{ g.id }}"
+                                    {% if g.id == grupo.id %}selected{% endif %}><span
+                                    style="text-align: center;color: #008CBA;">{{ g.nombre }}</span>
+                            </option>
+                        {% endfor %}
+                    </select></strong></h5>
+                </div>
+
+            </div>
+        {% else %}
+            <div class="">
+                <h4 style="text-align: center;color: #008CBA;"><strong>Horarios de usuarios sin definir. Es necesario
+                    crearlos.</strong></h4>
+            </div>
+        {% endif %}
+        <input type="hidden" name="horario" id="horario" value="{{ horario.id }}">
+        {% if grupo %}
+            <div class="horario" id="div_horario_grupo">
+            {% include "horario_grupos_content.html" %}
+{#                <div class="dia_horario" id="horas">#}
+{#                    {% for hora in horas_grupo %}#}
+{#                        <div class="horas" style="top:{{ hora.top }}px;"><b>{{ hora.inicio }}-{{ hora.fin }}</b></div>#}
+{#                    {% endfor %}#}
+{#                </div>#}
+{#                {% for info_dia in sesiones %}#}
+{#                    <div class="dia_horario" id="dia{{ info_dia.dia_num }}">#}
+{#                        <b>{{ info_dia.dia_nombre }}</b>#}
+{#                        {% for sesiones_hora in info_dia.sesiones_dia %}#}
+{#                            <div class="div_cell_sesion"#}
+{#                                 style="z-index: {{ sesiones_hora.0.top }}; top:{{ sesiones_hora.0.top }}px;max-height: {{ sesiones_hora.0.height }}px;min-height: {{ sesiones_hora.0.height }}px;">#}
+{#                                {% for s in sesiones_hora %}#}
+{#                                    <span class="dependencia">{{ s.dependencia.nombre }}</span><br>#}
+{#                                    <span class="materia">{{ s.materia.nombre }}</span><br>#}
+{#                                    <span class="profesor">{{ s.g_e.gauser.get_full_name }}</span>#}
+{#                                    {% if not forloop.last %}<br><span class="materia">-------</span><br>{% endif %}#}
+{#                                {% endfor %}#}
+{#                            </div>#}
+{#                        {% endfor %}#}
+{#                    </div>#}
+{#                {% endfor %}#}
+            </div>
+        {% endif %}
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('#grupo').select2();
+        $('body').on('change', '#grupo', function (e) {
+            var grupo = $(this).val();
+            $.post("/horarios_ajax/", {
+                action: 'carga_horario_grupo',
+                grupo: grupo,
+                horario: $('#horario').val()
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#div_horario_grupo').html(data.html);
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#Contenido').on('click', '.div_cell_sesion', function () {
+            var element = $(this);
+            if (!element.hasClass('show_complete_cell')) {
+                $('.div_cell_sesion').removeClass('show_complete_cell');
+                element.addClass('show_complete_cell');
+            } else {
+                $('.div_cell_sesion').removeClass('show_complete_cell');
+            }
+        });
+    </script>
+{% endblock %}

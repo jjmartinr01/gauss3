@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        .div_documentos {
+            display: none;
+        }
+
+        h5,h4 {
+            text-align: center;
+            color: #008CBA;
+            font-weight: 700;
+        }
+    </style>
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="contrato" name="contrato" value="">
+
+        <div class="">
+            <h4>Contratos y confidencialidad de la entidad {{ request.session.gauser_extra.ronda.entidad.name }}</h4>
+        </div>
+
+        <div class="">
+            <h5>Puedes hacer click sobre alguna de las siguientes acciones</h5>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12 contratos" id="CONF">
+                <label data-tooltip aria-haspopup="true" class="has-tip" title="<p>Contrato de confidencialidad entre
+                la entidad {{ request.session.gauser_extra.ronda.entidad.name }} y el trabajador o voluntario para
+                preservar la privacidad de los datos a los que este tiene acceso.</p><p>Este documento se almacenará
+                como parte de la gestión documental de la entidad y será visto por los cargos/perfiles de
+                niveles 1 y 2.</p>">
+                    <b><i class="fa fa-hand-o-right"></i> Compromiso de confidencialidad de trabajadores y voluntarios
+                    de la entidad</b>
+                </label>
+
+                <div class="div_documentos panel" id="div_CONF">{% include "confidencialidad_personal.html" %}</div>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script src="/static/gauss_fileupload/gauss_FileUpload.js"></script>
+
+    <script>
+        // En contrato_rectificacion.html existe la posibilidad de adjuntar ficheros. Las dos siguientes líneas son
+        // para ello:
+        $('#subir_ficheros').gaussFileUpload({
+            tag_a: '<i class="fa fa-hand-o-up"></i> Pulsa aquí para cargar archivos/documentos que verifiquen la rectificación solicitada'});
+
+        $('.contratos').click(function () {
+            var tipo = $(this).attr('id');
+            $('#contrato').val(tipo);
+            var div_display_status = $('#div_' + tipo).css('display');
+            $('.div_documentos').hide();
+            $('#div_' + tipo).show();
+            habilita(['s_check', 's_file-pdf-o']);
+            if (div_display_status == 'none') {
+                location.hash = "#" + tipo;
+            }
+            if (tipo == 'DERE') {
+                var editor1 = wysihtmleditor('datos_rectificar', {});
+            }
+        });
+
+        $('#check_sign').click(function (event) {
+            event.preventDefault();
+            $('#action').val('aceptar');
+            if (!($(this).hasClass('disabled'))) {
+                document.{{formname}}.submit();
+            }
+        });
+
+
+    </script>
+{% endblock %}

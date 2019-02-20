@@ -1,0 +1,162 @@
+{% load my_templatetags %}
+<label><strong>Medidas de atención a la diversidad:</strong></label>
+<div class="row">
+    <div class="columns large-6">
+        <label>Adaptación curricular en {{ i_f.materia.nombre }} <span id="adapta-check"
+                                                                       style="color:red;display: none;"><i
+                class="fa fa-check"></i></span>
+            <select name="adaptacion" id="id_adaptacion" data-id="{{ i_f.id }}">
+                <option value="SIN" {% if i_f.adaptacion == 'SIN' %}selected{% endif %}>
+                    Sin adaptación curricular
+                </option>
+                <option value="NOSIG" {% if i_f.adaptacion == 'NOSIG' %}selected{% endif %}>
+                    Adaptación curricular no significativa
+                </option>
+                <option value="SIG" {% if i_f.adaptacion == 'SIG' %}selected{% endif %}>
+                    Adaptación curricular significativa
+                </option>
+            </select></label>
+    </div>
+    <div class="columns large-6">
+        <label>Ha tenido apoyo PT en {{ i_f.materia.nombre }} <span id="pt-check" style="color:red;display: none;"><i
+                class="fa fa-check"></i></span>
+        </label><a id="id_pt" data-id="{{ i_f.id }}">{% if i_f.pt %}Sí{% else %}No{% endif %}</a>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-10">
+        <label>Selecciona el programa en el que ha estado el alumno/a: <span id="programa-check"
+                                                                             style="color:red;display: none;"><i
+                class="fa fa-check"></i></span>
+            <select name="programa" id="id_programa" data-id="{{ i_f.id }}">
+                <option value="NP" {% if i_f.programa == 'NP' %}selected{% endif %}>
+                    No está matriculado/a en un programa especial
+                </option>
+                <option value="PRC1" {% if i_f.programa == 'PRC1' %}selected{% endif %}>Programa de refuerzo
+                    curricular de primer curso
+                </option>
+                <option value="PRC2" {% if i_f.programa == 'PRC2' %}selected{% endif %}>Programa de refuerzo
+                    curricular de segundo curso
+                </option>
+                <option value="PMAR1" {% if i_f.programa == 'PMAR1' %}selected{% endif %}>Programa de mejora del
+                    aprendizaje y del rendimiento de primer curso
+                </option>
+                <option value="PMAR2" {% if i_f.programa == 'PMAR2' %}selected{% endif %}>Programa de mejora del
+                    aprendizaje y del rendimiento de segundo curso
+                </option>
+                <option value="PDIV1" {% if i_f.programa == 'PDIV1' %}selected{% endif %}>Programa de diversificación
+                    curricular primer curso (3º ESO)
+                </option>
+                <option value="PDIV2" {% if i_f.programa == 'PDIV2' %}selected{% endif %}>Programa de diversificación
+                    curricular segundo curso (4º ESO)
+                </option>
+                <option value="PACG" {% if i_f.programa == 'PACG' %}selected{% endif %}>Programa de adaptación
+                    curricular en grupo
+                </option>
+                <option value="COMP" {% if i_f.programa == 'COMP' %}selected{% endif %}>Programa de compensatoria
+                </option>
+            </select></label>
+    </div>
+<div class="row">
+    <div class="columns large-2">
+        <label>Calificación <span id="nota-check" style="color:red;display: none;"><i
+                class="fa fa-check"></i></span>
+{#        <input type="text" name="nota" id="id_nota" data-id="{{ i_f.id }}" value="{{ i_f.nota }}">#}
+        <select name="nota" id="id_nota" data-id="{{ i_f.id }}">
+            <option value="1">Elige</option>
+            <option value="PS" {% if i_f.nota == 'PS' %}selected{% endif %}>PS</option>
+            <option value="1" {% if i_f.nota == '1' %}selected{% endif %}>1</option>
+            <option value="2" {% if i_f.nota == '2' %}selected{% endif %}>2</option>
+            <option value="3" {% if i_f.nota == '3' %}selected{% endif %}>3</option>
+            <option value="4" {% if i_f.nota == '4' %}selected{% endif %}>4</option>
+            <option value="5" {% if i_f.nota == '5' %}selected{% endif %}>5</option>
+            <option value="6" {% if i_f.nota == '6' %}selected{% endif %}>6</option>
+            <option value="7" {% if i_f.nota == '7' %}selected{% endif %}>7</option>
+            <option value="8" {% if i_f.nota == '8' %}selected{% endif %}>8</option>
+            <option value="9" {% if i_f.nota == '9' %}selected{% endif %}>9</option>
+            <option value="10" {% if i_f.nota == '10' %}selected{% endif %}>10</option>
+        </select></label>
+    </div>
+</div>
+</div>
+
+<label><strong>Consecución de los objetivos educativos:</strong></label>
+<table width="100%">
+    <tr>
+        <th colspan="2">Esfuerzo e interés por las tareas escolares</th>
+    </tr>
+    <tr>
+        <th>Objetivo</th>
+        <th>Valoración</th>
+    </tr>
+    {% for valora_ob in valora_gen %}
+        <tr>
+            <td>{{ valora_ob.objetivo.objetivo }} <span id="aviso{{ valora_ob.id }}" style="display: none;color:red">
+                    <i class="fa fa-check"></i> </span></td>
+            <td><select class="objetivos" id="objetivo{{ valora_ob.id }}" name="objetivo{{ valora_ob.id }}"
+                        data-id="{{ valora_ob.id }}">
+                <option value="">Elige valoración</option>
+                {% with opciones=valora_ob.objetivo.get_valorable_display|split:'/' %}
+                    {% for opcion in opciones %}
+                        {% with valor=valora_ob.objetivo.valorable|concatena:forloop.counter0 %}
+                            <option value="{{ valor }}" {% if valora_ob.valoracion == valor %} selected{% endif %}>
+                                {{ opcion }}
+                            </option>
+                        {% endwith %}
+                    {% endfor %}
+                {% endwith %}
+            </select></td>
+        </tr>
+    {% endfor %}
+    <tr>
+        <th colspan="2">Aspectos a mejorar, específicos de {{ i_f.materia.nombre }}</th>
+    </tr>
+{#    {% for valora_ob in valora_esp %}#}
+{#        <tr>#}
+{#            <td>{{ valora_ob.objetivo.objetivo }} <span id="aviso{{ valora_ob.id }}" style="display: none;color:red">#}
+{#                    <i class="fa fa-check"></i> </span></td>#}
+{#            <td><select class="objetivos" id="objetivo{{ valora_ob.id }}" name="objetivo{{ valora_ob.id }}"#}
+{#                        data-id="{{ valora_ob.id }}">#}
+{#                <option value="">Elige valoración</option>#}
+{#                {% with opciones=valora_ob.objetivo.get_valorable_display|split:'/' %}#}
+{#                    {% for opcion in opciones %}#}
+{#                        {% with valor=valora_ob.objetivo.valorable|concatena:forloop.counter0 %}#}
+{#                            <option value="{{ valor }}" {% if valora_ob.valoracion == valor %} selected{% endif %}>#}
+{#                                {{ opcion }}#}
+{#                            </option>#}
+{#                        {% endwith %}#}
+{#                    {% endfor %}#}
+{#                {% endwith %}#}
+{#            </select></td>#}
+{#        </tr>#}
+{#    {% endfor %}#}
+    {% for valora_ob in valora_asp %}
+        <tr>
+            <td>{{ valora_ob.aspecto.aspecto }} <span id="avisoaspecto{{ valora_ob.id }}" style="display: none;color:red">
+                    <i class="fa fa-check"></i> </span></td>
+            <td align="center"><a class="aspectos" data-id="{{ valora_ob.id }}">
+                {% if valora_ob.necesita_mejorar %}<i class="fa fa-check-square-o" id="check{{ valora_ob.id }}"></i>
+                {% else %}<i class="fa fa-square-o" id="check{{ valora_ob.id }}"></i> {% endif %}</a></td>
+        </tr>
+    {% endfor %}
+</table>
+
+<div class="row">
+    <div class="columns large-12">
+        <label><strong>Debe realizar la prueba extraordinaria de septiembre:</strong>
+            <span id="extraordinaria-check" style="color:red;display: none;"><i class="fa fa-check"></i></span></label>
+        <a id="id_extraordinaria" data-id="{{ i_f.id }}">{% if i_f.extraordinaria %}Sí{% else %}No{% endif %}</a>
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="columns large-12">
+        <label><strong>Observaciones como profesor de {{ i_f.materia.nombre }}:</strong> <span id="observaciones-check"
+                                                                                               style="color:red;display: none;"><i
+                class="fa fa-check"></i></span>
+            <textarea rows="6" name="observaciones" id="id_observaciones" data-id="{{ i_f.id }}">{{ i_f.observaciones }}
+            </textarea>
+        </label>
+    </div>
+</div>
+

@@ -1,0 +1,116 @@
+# -*- coding: utf-8 -*-
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+from mensajes.views import crear_aviso
+from functools import wraps
+from models import Submenu_element, Menu_element
+import string
+
+#Obtención de los socios del grupo que no están de baja:
+def socios_del_grupo(entidad, perfiles = False):
+    bajas = Alta_Baja.objects.filter( entidad = entidad, fecha_baja__isnull = False ).values_list('gauser__id',flat=True)
+    if perfiles:
+      scouts = Gauser_extra.objects.filter( Q(entidad = entidad) & Q(ronda = entidad.ronda) & ~Q(gauser__id__in = bajas) & Q(perfiles__in = perfiles) & ~Q(gauser__username = 'gauss') ).order_by('gauser__last_name','gauser__first_name')
+    else:
+      scouts = Gauser_extra.objects.filter( Q(entidad = entidad) & Q(ronda = entidad.ronda) & ~Q(gauser__id__in = bajas) & ~Q(gauser__username = 'gauss') ).order_by('gauser__last_name','gauser__first_name')
+    return scouts
+
+
+def permiso_required(permisos):
+    def wrap(f):
+        def wrapped_f(request,*args):
+            permisos_usuario = request.session['gauser_extra'].permisos.all().values_list('code_nombre',flat=True)
+	    if len(set(permisos_usuario).intersection( set(permisos) )) > 0:
+	      return f(request, *args)
+            else:
+	      crear_aviso(request,False,'No tienes acceso a la página solicitada')
+	      return render_to_response("enlazar.html", {'page':'/calendario/',},context_instance=RequestContext(request))
+        return wrapped_f
+    return wrap
+    
+    
+#La definición del decorator anterior a través de clases:    
+class permiso_required2(object):
+    def __init__(self, permisos):  
+        """
+        El decorator tiene un argumento 'permisos' que contiene un iterable
+        con alguno de los permisos necesarios para poder ejecutar la función
+        """
+        self.permisos = permisos
+    def __call__(self, f):
+        """
+        If there are decorator arguments, __call__() is only called
+        once, as part of the decoration process! You can only give
+        it a single argument, which is the function object.
+        """
+        def wrapped_f(request, *args, **kwargs):
+            permisos_usuario = request.session['gauser_extra'].permisos.all().values_list('code_nombre',flat=True)
+	    if len(set(permisos_usuario).intersection( set(self.permisos) )) > 0:
+	      return f(request, *args, **kwargs)
+            else:
+	      crear_aviso(request,False,'No tienes acceso al sitio solicitado')
+	      return render_to_response("enlazar.html", {'page':'/calendario/',},context_instance=RequestContext(request))
+        return wrapped_f
+        
+
+def access_required(func):
+  def decorator(request, *args, **kwargs):
+    pk = request.META['PATH_INFO'].split('/i')[1].split('/')[0]
+    href = request.META['PATH_INFO'].split('/i')[0]+'/'
+    crear_aviso(request,True,href+pk)
+    try:
+      req_perm = Menu_element.objects.get(href = href, pk = pk).req_perm
+    except:
+      try:
+	req_perm = Submenu_element.objects.get(href = href, pk = pk).req_perm
+      except:
+	aviso = crear_aviso(request,False,'No debes modificar manualmente la URL del navegador')
+	return render_to_response("enlazar.html", {'page':'/principal/',},context_instance=RequestContext(request))
+    if req_perm in request.session["gauser_extra"].permisos.all():
+      return func(request, *args, **kwargs)
+    else:
+      aviso = crear_aviso(request,False,'No tienes acceso a la página indicada')
+      return render_to_response("enlazar.html", {'page':'/principal/',},context_instance=RequestContext(request))
+  return decorator
+    
+	  
+
+def access_required3(func):
+    def decorator(request, *args, **kwargs):
+	pk = request.META['PATH_INFO'].split('/i')[1].split('/')[0]
+	href = request.META['PATH_INFO'].split('/i')[0]+'/'
+	crear_aviso(request,True,pk+href)
+	try:
+	  element = Menu_element.objects.get(href = href, pk = pk).usuarios_id
+	  if request.session["scout_usuario"].pk in element:
+	      return func(request, *args, **kwargs)
+	  else:
+	      aviso = crear_aviso(request,False,'No tienes acceso a la página indicada')
+	      return render_to_response("enlazar.html", {'page':'/principal/',},context_instance=RequestContext(request))
+	except:
+	  aviso = crear_aviso(request,False,'No debes modificar manualmente la URL del navegador')
+	  return render_to_response("enlazar.html", {'page':'/principal/',},context_instance=RequestContext(request))
+    return decorator
+
+
+def access_required2(permission):
+    def decorator(func):
+        def inner_decorator(request, *args, **kwargs):
+	  pk = request.META['PATH_INFO'].split('/i')[1].split('/')[0]
+	  href = request.META['PATH_INFO'].split('/i')[0]+'/'
+	  try:
+	    element = Menu_element.objects.get(href = href, pk = pk).usuarios_id
+	    if request.session["scout_usuario"].pk in element:
+		return func(request, *args, **kwargs)
+	    else:
+		crear_aviso(request,False,'No tienes acceso a la página indicada',link='/principal/')
+		return render_to_response("principal.html", {},context_instance=RequestContext(request))
+	  except:
+	    crear_aviso(request,False,'Ruta no permitida',link='./')
+	    return render_to_response("principal.html", {},context_instance=RequestContext(request))
+        return wraps(func)(inner_decorator)
+    return decorator
+
+#Generador de contraseñas
+def pass_generator(size=6, chars=string.ascii_lowercase + string.digits):
+  return ''.join(random.choice(chars) for x in range(size))

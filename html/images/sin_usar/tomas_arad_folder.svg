@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://web.resource.org/cc/" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:svg="http://www.w3.org/2000/svg" id="svg2377" viewBox="0 0 64 64" version="1.0">
+  <defs id="defs2379">
+    <linearGradient id="linearGradient3165" x1="-289.56" xlink:href="#linearGradient3082" gradientUnits="userSpaceOnUse" y1="672.04" gradientTransform="translate(12.46 152.39)" x2="-313.12" y2="718.62"/>
+    <linearGradient id="linearGradient3163" x1="-327.78" gradientUnits="userSpaceOnUse" y1="669.71" gradientTransform="matrix(.98780 0 0 1 7.5739 152.39)" x2="-309.09" y2="643.83">
+      <stop id="stop3098" stop-color="aqua" offset="0"/>
+      <stop id="stop3100" stop-color="#00baff" offset="1"/>
+    </linearGradient>
+    <linearGradient id="linearGradient3161" y2="873.59" gradientUnits="userSpaceOnUse" y1="815.13" x2="-270.4" x1="-235.81">
+      <stop id="stop3124" stop-color="#3098e5" offset="0"/>
+      <stop id="stop3126" stop-color="#3098e5" stop-opacity="0" offset="1"/>
+    </linearGradient>
+    <radialGradient id="radialGradient3159" gradientUnits="userSpaceOnUse" cy="839.3" cx="-254.97" gradientTransform="matrix(2.0904 .86933 -.15859 .38135 387.08 710.49)" r="79.462">
+      <stop id="stop3132" stop-color="#f9f9f9" offset="0"/>
+      <stop id="stop3134" stop-color="#9bbead" offset="1"/>
+    </radialGradient>
+    <linearGradient id="linearGradient3082">
+      <stop id="stop3084" stop-color="navy" offset="0"/>
+      <stop id="stop3086" stop-color="#0087ff" offset="1"/>
+    </linearGradient>
+    <linearGradient id="linearGradient3157" x1="-300.1" xlink:href="#linearGradient3082" gradientUnits="userSpaceOnUse" y1="810.06" gradientTransform="translate(21.085 132.26)" x2="-218.71" y2="635.24"/>
+  </defs>
+  <g id="layer1">
+    <g id="g3151" transform="matrix(.29681 0 0 .29681 117.29 -218.46)" fill-rule="evenodd">
+      <path id="path3108" style="color:black" fill="url(#linearGradient3157)" d="m-349.94 771.15c21.63 15.61 67.04 24.5 104.63 33.25 4.42 1.03 9.7-6.1 13.86-5.08 20.21 4.99 39.56 9.2 49.97 15.53-24.55 28.75-35.85 56.17-35.85 87.86 1.11 21.06-71.31-48.7-124.62-48.7 0-31.7-18.94-35.6-7.99-82.86z"/>
+      <path id="path3120" stroke-linejoin="round" style="color:black" d="m-340.4 778.84c56.51 6.23 74.23 37 149.16 40.33-26.33 3.83-27.81 38.9-28.52 84.96-51.28-12.96-65.94-30.01-129.64-30.01-1.2-31.68 11.98-81.58 9-95.28z" stroke="url(#linearGradient3161)" stroke-linecap="round" stroke-width=".60113" fill="url(#radialGradient3159)"/>
+      <path id="path3110" fill="url(#linearGradient3163)" d="m-388.16 781.61c55.25 5.75 113.46 33.54 156.7 55.58l-44.94 2.88-111.76-58.46z"/>
+      <path id="path3112" stroke-linejoin="round" style="color:black" d="m-391.63 781.21c53.3 0 96.76 35.57 114.79 57.12 70.33-24.92 53.76 36.52 53.76 68.22-42.5-12.97-74.19-32.42-127.49-32.42 0-31.69-6.49-67.7-41.06-92.92z" stroke="#3098e5" stroke-linecap="round" stroke-width=".55" fill="url(#linearGradient3165)"/>
+    </g>
+  </g>
+  <metadata>
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <cc:license rdf:resource="http://creativecommons.org/licenses/publicdomain/"/>
+        <dc:publisher>
+          <cc:Agent rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:title>folder</dc:title>
+        <dc:date>2006-09-21T01:43:46</dc:date>
+        <dc:description>blue folder icon</dc:description>
+        <dc:source>http://openclipart.org/detail/175/folder-by-tomas_arad</dc:source>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>tomas_arad</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>blue</rdf:li>
+            <rdf:li>clip art</rdf:li>
+            <rdf:li>clipart</rdf:li>
+            <rdf:li>computer</rdf:li>
+            <rdf:li>folder</rdf:li>
+            <rdf:li>icon</rdf:li>
+            <rdf:li>office</rdf:li>
+            <rdf:li>software</rdf:li>
+            <rdf:li>work</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+      </cc:Work>
+      <cc:License rdf:about="http://creativecommons.org/licenses/publicdomain/">
+        <cc:permits rdf:resource="http://creativecommons.org/ns#Reproduction"/>
+        <cc:permits rdf:resource="http://creativecommons.org/ns#Distribution"/>
+        <cc:permits rdf:resource="http://creativecommons.org/ns#DerivativeWorks"/>
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

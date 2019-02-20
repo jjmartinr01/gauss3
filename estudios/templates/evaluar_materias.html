@@ -1,0 +1,74 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Evaluar materias pendientes</strong></h4>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_cursos" title="Lista de cursos">
+            {% for curso in cursos %}
+                {% include "evaluar_materias_curso.html" %}
+            {% endfor %}
+        </dl>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('curso_pendientes')) {
+                        var id = accordion.data('curso');
+                        console.log(id);
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/evaluar_materias/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#curso' + id).html(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#curso' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#Contenido').on('keyup change', '.nota', function (e) {
+            var elemento = $(this);
+            var matricula = elemento.data('matricula');
+            var nota = elemento.data('nota');
+            var valor = elemento.val();
+            setTimeout(function () {
+                if (valor == elemento.val()) {
+                    $.post("/evaluar_materias/", {
+                        action: 'change_nota',
+                        matricula: matricula,
+                        nota: nota,
+                        valor: valor
+                    }, function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+                }
+            }, 750);
+        });
+    </script>
+{% endblock %}

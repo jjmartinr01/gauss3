@@ -1,0 +1,87 @@
+<div class="row" id="row_contenidos{{ con.id }}">
+    <div class="columns large-12">
+        <fieldset>
+            <legend><a class="button tiny del_contenido_ud" data-contenido="{{ con.id }}"><i
+                    class="fa fa-trash-o"></i> Borrar contenidos</a></legend>
+            <div class="row">
+                <div class="columns large-12">
+                    <div class="row">
+                        <div class="columns large-2">
+                            <label title="Posición dentro de la unidad didáctica. Orden en el que se imprimirá">
+                                Posición:
+                                <input type="text" name="pos_con" class="pos_con" value="{{ con.orden }}"
+                                       data-con="{{ con.id }}" id="pos_con{{ con.id }}">
+                            </label>
+                        </div>
+                        <div class="columns large-8">
+                            <label title="Nombre/Título opcional de estos contenidos">
+                                Nombre:
+                                <input type="text" name="nombre_con" class="nombre_con" value="{{ con.nombre }}"
+                                       maxlength="290"
+                                       data-con="{{ con.id }}" placeholder="Opcional">
+                            </label>
+                        </div>
+                        <div class="columns large-2">
+                            <label title="Número de horas lectivas que se van a emplear para desarrollar estos contenidos">
+                                Horas:
+                                <input type="text" name="duracion_con" value="{{ con.duracion }}" id="duracion_con{{ con.id }}"
+                                       class="duracion_con" data-con="{{ con.id }}">
+                            </label>
+                        </div>
+                    </div>
+                <div class="row">
+                        <label>Objetivos específicos
+                            <div class="columns large-12 objetivos" contenteditable="true" id="objetivos{{ con.id }}"
+                                 style="border: #bbbbbb solid 1px" data-ud="{{ ud.id }}">
+                                {% autoescape off %}{{ con.objetivos }}{% endautoescape %}</div>
+                        </label>
+                    </div>
+                    <div class="row">
+                        <label>Contenidos
+                            <div class="columns large-12 contenidos" contenteditable="true" id="contenidos{{ con.id }}"
+                                 style="border: #bbbbbb solid 1px" data-ud="{{ ud.id }}">
+                                {% autoescape off %}{{ con.contenido }}{% endautoescape %}</div>
+                        </label>
+                    </div>
+                    <div class="row">
+                        <label>Actividades de enseñanza-aprendizaje</label>
+                        <div class="columns large-12 aprendizajes" contenteditable="true"
+                             id="aprendizajes{{ con.id }}"
+                             style="border: #bbbbbb solid 1px" data-ud="{{ ud.id }}">
+                            {% autoescape off %}{{ con.actividades }}{% endautoescape %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+</div>
+
+
+<script>
+    var editor_objetivos{{ con.id }} = CKEDITOR.inline('objetivos{{ con.id }}');
+    var editor_contenidos{{ con.id }} = CKEDITOR.inline('contenidos{{ con.id }}');
+    var editor_aprendizajes{{ con.id }} = CKEDITOR.inline('aprendizajes{{ con.id }}');
+
+    editor_objetivos{{ con.id }}.on('change', function (e) {
+        var texto = e.editor.getData();
+        var con = {{ con.id }};
+        $.post("/ajax_programaciones/", {action: 'guarda_objetivos_ud', con: con, texto: texto}, function (data) {
+            $("#update_ok").show().delay(1500).fadeOut();
+        });
+    });
+    editor_contenidos{{ con.id }}.on('change', function (e) {
+        var texto = e.editor.getData();
+        var con = {{ con.id }};
+        $.post("/ajax_programaciones/", {action: 'guarda_contenidos_ud', con: con, texto: texto}, function (data) {
+            $("#update_ok").show().delay(1500).fadeOut();
+        });
+    });
+    editor_aprendizajes{{ con.id }}.on('change', function (e) {
+        var texto = e.editor.getData();
+        var con = {{ con.id }};
+        $.post("/ajax_programaciones/", {action: 'guarda_actividades_ud', con: con, texto: texto}, function (data) {
+            $("#update_ok").show().delay(1500).fadeOut();
+        });
+    });
+</script>

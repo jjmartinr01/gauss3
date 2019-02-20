@@ -1,0 +1,68 @@
+<div class="row">
+    <div class="columns large-5">
+        <b>Creada por:</b> {{ configura_convocatoria.creador.get_full_name }}
+    </div>
+    <div class="columns large-7 text-right">
+        <ul class="button-group radius">
+            {% if g_e|has_permiso:'borra_configuraciones_convocatorias' or g_e.gauser == configura_convocatoria.configura %}
+                <li title="Borrar la configuración de convocatoria">
+                    <a data-id="{{ configura_convocatoria.id }}" class="button delete_configura_convocatoria"><i
+                            class="fa fa-trash-o"></i> Borrar</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Nombre de la convocatoria</b>
+            <input type="text" class="nombre" data-id="{{ configura_convocatoria.id }}"
+                   value="{{ configura_convocatoria.nombre }}"></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-6">
+        <label><b>Lugar de la convocatoria</b>
+            <input type="text" class="lugar" data-id="{{ configura_convocatoria.id }}"
+                   value="{{ configura_convocatoria.lugar }}"></label>
+    </div>
+    <div class="columns large-6">
+        <label><b>Cargo que hace la convocatoria</b>
+            <select class="cargo" data-id="{{ configura_convocatoria.id }}">
+                <option value="">-------</option>
+                {% for cargo in g_e.ronda.entidad.cargo_set.all %}
+                    <option value="{{ cargo.id }}"
+                            {% if cargo == configura_convocatoria.cargo_convocante %}selected{% endif %}>{{ cargo.cargo }}</option>
+                {% endfor %}
+            </select> </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Grupos convocados</b>
+            <select class="subentidades_convocadas" data-id="{{ configura_convocatoria.id }}" multiple="multiple"
+                    id="subentidades_convocadas{{ configura_convocatoria.id }}">
+                {% for subentidad in g_e.ronda.entidad.subentidad_set.all %}
+                    <option value="{{ subentidad.id }}"
+                            {% if subentidad in configura_convocatoria.convocados.all %}selected{% endif %}>{{ subentidad.nombre }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Texto base utilizado para crear la convocatoria</b> (texto en azul no es editable)</label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <div class="texto_base" id="texto_base{{ configura_convocatoria.id }}"
+             style="border: lightgrey solid 1px; padding:10px;"
+             data-id="{{ configura_convocatoria.id }}" contenteditable="true">
+            {% autoescape off %}
+                {{ configura_convocatoria.texto_convocatoria }}
+            {% endautoescape %}
+        </div>
+    </div>
+</div>

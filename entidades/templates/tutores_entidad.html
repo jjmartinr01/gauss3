@@ -1,0 +1,95 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+{% endblock %}
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Tutores y asignación de alumnos</strong></h4>
+        </div>
+
+        <div class="row">
+            <div class="columns large-7">
+                <label>Selecciona el docente que será tutor:
+                    <select id="selecciona_docente">
+                        <option value="">--------</option>
+                        {% for docente in docentes %}
+                            <option value="{{ docente.id }}">{{ docente.gauser.last_name }}, {{ docente.gauser.first_name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+            <div class="columns large-5">
+                <label>Actuando como:
+                    <select id="selecciona_tipo">
+                        <option value="tutor" selected>Tutor</option>
+                        <option value="cotutor">Co-Tutor</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12">
+                <label>Indica los grupos en los que tiene alumnos <span id="span_tutorados">tutorados</span>:
+                    <select id="selecciona_grupos" multiple>
+                        <option value="">--------</option>
+                        {% for grupo in grupos %}
+                            <option value="{{ grupo.id }}">{{ grupo.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        </div>
+
+        <div id="alumnos"></div>
+
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('#selecciona_docente').select2();
+        $('#selecciona_grupos').select2();
+
+        $('body').on('change', '#selecciona_docente, #selecciona_tipo', function () {
+            var docente = $('#selecciona_docente').val();
+            var tipo = $('#selecciona_tipo').val();
+            $.post("/tutores_entidad/", {action: 'selecciona_docente', docente: docente, tipo: tipo}, function (data) {
+                if (data['ok']) {
+                    if (data.grupos) {
+                        $('#selecciona_grupos').val(data['grupos']).trigger('change');
+                    }
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $('#update_error').show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('change', '#selecciona_grupos', function (e) {
+            e.preventDefault();
+            var docente = $('#selecciona_docente').val();
+            var tipo = $('#selecciona_tipo').val();
+            var grupos = new Array();
+            $('#selecciona_grupos').each(function () {
+                grupos.push($(this).val());
+            });
+            $.post("/tutores_entidad/", {action: 'selecciona_grupos', docente: docente, tipo: tipo, grupos: grupos},
+                function (data) {
+                    if (data['ok']) {
+                        $('#alumnos').html(data['html']);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+    </script>
+{% endblock %}

@@ -1,0 +1,4 @@
+{% load my_templatetags %}
+El usuario {{ reparacion.detecta.gauser.get_full_name }} ha grabado una incidencia de reparación. Los datos
+significativos son:<br><strong>Lugar:</strong><em>{{ reparacion.lugar }}</em> <br><strong>Descripción:</strong>
+<em>{% autoescape off %}{{ reparacion.describir_problema }}{% endautoescape %}</em> <br>Gracias por tu atención.

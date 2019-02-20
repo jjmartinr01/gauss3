@@ -1,0 +1,13 @@
+<table>
+    <tbody>
+    {% for conducta in conductas %}
+        <tr>
+            <td><input type="checkbox" data-id="{{ conducta.id }}"
+                       class="conductas_checkbox {{ conducta.tipo }}"
+                       data-inf_actual="{{ inf_actual.id }}" data-tipo="{{ conducta.tipo }}"
+                       {% if conducta in inf_actual.conductas.all %}checked="checked"{% endif %}></td>
+            <td>{{ conducta.conducta }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

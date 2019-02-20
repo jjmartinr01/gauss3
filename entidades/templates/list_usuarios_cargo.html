@@ -1,0 +1,18 @@
+{% load my_templatetags %}
+
+{% if tipo == 'mostrar' %}
+    {% for usuario in cargo|usuarios_con_cargo %}
+        &nbsp;<span class="radius label">{{ usuario.gauser.get_full_name }}</span>
+    {% endfor %}
+    &nbsp;<span class="secondary radius label"><a class="ocultar_usuarios" data-id="{{ cargo.id }}">(ocultar)</a></span>
+{% else %}
+    {% for usuario in cargo|usuarios_con_cargo %}
+        {% if forloop.counter < 6 %}
+            &nbsp;<span class="radius label">{{ usuario.gauser.get_full_name }}</span>
+        {% endif %}
+        {% if forloop.last and forloop.counter > 5 %}
+            &nbsp;<span class="secondary radius label">
+                            <a class="mostrar_usuarios" data-id="{{ cargo.id }}">... (mostrar todos)</a></span>
+        {% endif %}
+    {% endfor %}
+{% endif %}

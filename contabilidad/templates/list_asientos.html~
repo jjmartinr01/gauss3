@@ -1,0 +1,63 @@
+{% load my_templatetags %}
+
+<style>
+.puede_borrar {font-size:12pt;cursor:pointer;}
+.puede_borrar:hover {font-size:12pt;cursor:pointer;color:#E76123;}
+</style>
+
+<div style="float:center;" id="div_presupuesto">
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Ingresos y gastos del grupo {{request.session.gauser_extra.entidad.name}} para la {{request.session.gauser_extra.ronda.get_nombre_display}}</td></tr></table>
+<table align="CENTER" cellpadding="3" width="100%">
+  <tr><td>&nbsp;</td>
+  <td style="text-align:center;"><span class="color2">Concepto</span></td>
+  <td style="text-align:center;"> <span class="color2">Partida (Ingresos)</span></td>
+  <td style="text-align:center;"> <span class="color2">Cantidad</span></td>
+  <td style="text-align:center;"> <span class="color2">Justificante</span></td>
+  <td style="text-align:center;"> <span class="color2">Creado</span></td>
+  <td style="text-align:center;">&nbsp;</td></tr>
+
+  {% for gi in gi_ingresos %}
+    {% for asiento in gi.1 %}
+      <tr><td colspan="6" style="height:1px;background-color:#623090;"></td></tr>
+      <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}">
+      <td style="font-size:8pt;color:#623090;width:2%;text-align:center;"><input type="checkbox" class="checkboxes" id="check_{{asiento.id}}"/></td>
+      <td title="{{asiento.nombre}}" style="font-size:8pt;color:#623090;width:30%;text-align:center;white-space:normal;" class="tabla_asientos">&nbsp;{{asiento.concepto}}</td>
+      <td style="font-size:8pt;color:#623090;width:27%;text-align:center;white-space:normal;" class="tabla_asientos" title="Partida a la que está asociada este ingreso"> {{asiento.partida.nombre}} </td>
+      <td style="font-size:8pt;color:#623090;width:8%;text-align:center;" class="tabla_asientos" title="Cantidad monetaria asociada a este ingreso">{{asiento.cantidad}} €</td>
+      <td style="font-size:8pt;color:#623090;width:16%;text-align:center;">
+      {% if asiento.escaneo %} <span class="ficheros_justificantes" id="justificante___{{asiento.id}}">Ver/Descargar ({{asiento.fileextension}})</span> {% else %} Sin justificante {% endif %}</td>
+      <td style="font-size:8pt;color:#623090;width:17%;text-align:center;" title="Fecha en la que se realizó el ingreso">
+      {{asiento.creado}}</td>
+      </tr>
+      <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}"><td colspan="6"> <div id="div_{{asiento.id}}" style="padding-left:1px;padding-right:1px;white-space:normal;display:none;" class="div_exentos"></div> </td></tr>
+    {% endfor %}
+  {% endfor %}
+  <tr><td></td><td></td><td style="text-align:center;background:#dcc8dc;"> <span class="color2">Total ingresos:</span></td><td style="text-align:center;background:#dcc8dc;"> <span class="color2">{{i_total}} €</span></td></tr>
+  <tr><td>&nbsp;</td></tr>
+  <tr><td>&nbsp;</td>
+  <td style="text-align:center;"><span class="color2">Concepto</span></td>
+  <td style="text-align:center;"> <span class="color2">Partida (Gastos)</span></td>
+  <td style="text-align:center;"> <span class="color2">Cantidad</span></td>
+  <td style="text-align:center;"> <span class="color2">Justificante</span></td>
+  <td style="text-align:center;"> <span class="color2">Creado</span></td>
+  <td style="text-align:center;">&nbsp;</td></tr>
+
+  {% for gi in gi_gastos %}
+    {% for asiento in gi.1 %}
+      <tr><td colspan="6" style="height:1px;background-color:#623090;"></td></tr>
+      <tr class="{% if forloop.parentloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}">
+      <td style="font-size:8pt;color:#623090;width:2%;text-align:center;"><input type="checkbox" class="checkboxes" id="check_{{asiento.id}}"/></td>
+      <td title="{{asiento.nombre}}" style="font-size:8pt;color:#623090;width:30%;text-align:center;white-space:normal;" class="tabla_asientos">&nbsp;{{asiento.concepto}}</td>
+      <td style="font-size:8pt;color:#623090;width:27%;text-align:center;white-space:normal;" class="tabla_asientos" title="Partida a la que está asociada este ingreso"> {{asiento.partida.nombre}} </td>
+      <td style="font-size:8pt;color:#623090;width:8%;text-align:center;" class="tabla_asientos" title="Cantidad monetaria asociada a este ingreso">{{asiento.cantidad}} €</td>
+      <td style="font-size:8pt;color:#623090;width:16%;text-align:center;">
+      {% if asiento.escaneo %} <span class="ficheros_justificantes" id="justificante___{{asiento.id}}">Ver/Descargar ({{asiento.fileextension}})</span> {% else %} Sin justificante {% endif %}</td>
+      <td style="font-size:8pt;color:#623090;width:17%;text-align:center;" title="Fecha en la que se realizó el ingreso">
+      {{asiento.creado}}</td>
+      </tr>
+      <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}"><td colspan="6"> <div id="div_{{asiento.id}}" style="padding-left:1px;padding-right:1px;white-space:normal;display:none;" class="div_exentos"></div> </td></tr>
+    {% endfor %}
+  {% endfor %}
+  <tr><td></td><td></td><td style="text-align:center;background:#dcc8dc;"> <span class="color2">Total gastos:</span></td><td style="text-align:center;background:#dcc8dc;"> <span class="color2">{{g_total}} €</span></td></tr>
+</table>
+</div>

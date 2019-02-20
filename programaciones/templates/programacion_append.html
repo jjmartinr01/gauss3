@@ -1,0 +1,121 @@
+{% load programaciones_extras %}
+{% load my_templatetags %}
+<input type="hidden" name="programaciones_listadas" id="prog_hidden{{ programacion.id }}" value="{{ programacion.id }}">
+<dd class="accordion-navigation" id="accordion{{ programacion.id }}">
+    <a href="#programacion{{ programacion.id }}">
+        {% if programacion.modulo.materia.nombre and programacion.file_path %}
+            {{ programacion.modulo.materia.nombre }} ({{ programacion.g_e.ronda.nombre }})
+        {% elif not programacion.modulo.materia.nombre %}
+            <span style="color: red" title="Esta programación no se puede editar. Debe borrarse">
+                <i fa fa-warning></i> Borra esta programación -
+                {{ programacion.g_e.gauser.get_full_name }} ({{ programacion.g_e.ronda.nombre }})</span>
+        {% else %}
+            <span style="color: red" title="Considerado borrador porque no se ha generado el pdf de esta programación">
+                Borrador - {{ programacion.modulo.materia.nombre }} ({{ programacion.g_e.ronda.nombre }})</span>
+        {% endif %}
+    </a>
+
+    <div id="programacion{{ programacion.id }}" class="content prog_contenido" data-prog="{{ programacion.id }}">
+
+        <ul class="button-group centered">
+            {% with g_e=request.session.gauser_extra %}
+                {% if programacion.modulo %}
+                    {% if programacion.file_path %}
+                        <li title="Descargar el pdf de esta programación (último pdf generado por el propietario)">
+                            <a href="#" class="button download_pdf" data-id="{{ programacion.id }}"><i
+                                    class="fa fa-file-pdf-o"></i>
+                                PDF</a></li>
+                        <li title="Descargar el html de esta programación (último html generado por el propietario)">
+                            <a href="#" class="button download_html" data-id="{{ programacion.id }}"><i
+                                    class="fa fa-file-code-o"></i>
+                                HTML</a></li>
+                    {% endif %}
+                    {% if programacion.g_e.ronda != g_e.ronda or g_e|has_permiso:'copia_programaciones_ccff' %}
+                        <li title="Copiar esta programacion">
+                            <a href="#" class="button copy_programacion" data-id="{{ programacion.id }}"><i
+                                    class="fa fa-copy"></i>
+                                Copiar</a></li>
+                    {% endif %}
+                {% endif %}
+                {% if programacion.g_e == g_e or g_e|has_permiso:'edita_programaciones_ccff' %}
+                    <li title="Editar este programacion">
+                        <a href="/editar_programacion/?prog={{ programacion.id }}" class="button"><i
+                                class="fa fa-edit"></i>
+                            Editar</a></li>
+                {% endif %}
+                {% if programacion.g_e == g_e or not programacion.modulo or g_e|has_permiso:'borra_programaciones_ccff' %}
+                    <li title="Borrar este programacion">
+                        <a href="#" class="button delete_programacion" data-id="{{ programacion.id }}"><i
+                                class="fa fa-trash-o"></i>
+                            Borrar</a></li>
+                {% endif %}
+            {% endwith %}
+
+        </ul>
+
+        <div class="row">
+            <div class="columns large-12">
+                <b>Fecha creación:</b> {{ programacion.creado|date:"d-m-Y" }}
+                <br><b>Fecha de última modificación:</b> {{ programacion.modificado|date:"d-m-Y" }}
+                <br><b>Propietario:</b> {{ programacion.g_e.gauser.get_full_name }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <p>Esta programación consta de {{ programacion.ud_modulo_set.all|length }}
+                    unidad{{ programacion.ud_modulo_set.all|length|pluralize:'es' }}
+                    didáctica{{ programacion.ud_modulo_set.all|length|pluralize }}:</p>
+                <ol>
+                    {% for u in programacion.ud_modulo_set.all %}
+                        <li>{{ u.nombre }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+        {% with ra_m=programacion.modulo.resultado_aprendizaje_set.all ra_p=programacion.resultados_aprendizaje_aplicados os_p=programacion.objetivos_aplicados %}
+            <div class="row">
+                <div class="columns large-12">
+                    <h4>Avisos:</h4>
+                    <p>Este módulo tiene {{ ra_m|length }} resultados de aprendizaje que deben alcanzarse. A
+                        continuación se detallan aquellos resultados de aprendizaje (subrayados) y objetivos que han
+                        sidos elegidos hasta el momento en las unidades didácticas de esta programación:<br>
+                        <span style="color:darkgrey">(En verde los definidos en alguna unidad didáctica (UD) y en rojo
+                            los que faltan por definir)</span>
+                    </p>
+                    <ul style="list-style: none;">
+                        {% for ra in ra_m %}
+                            {% if ra in ra_p %}
+                                <li style="color:darkgreen;"><i class="fa fa-check"></i>
+                                    <span style="text-decoration: underline;"> {{ ra.resultado }} (
+                                        {% for u in programacion|unidades_ra:ra %}UD
+                                            {{ u }}{% if not forloop.last %}, {% endif %}{% endfor %})</span>
+                                    <ul style="margin-left: 20px;list-style: none;">
+                                        {% for o in ra.objetivo_set.all %}
+                                            {% if o in os_p %}
+                                                <li style="color:darkgreen;"><i class="fa fa-check">
+                                                </i> {{ o.texto }}</li>
+                                            {% else %}
+                                                <li style="color:red"><i class="fa fa-times"></i> {{ o.texto }}
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% else %}
+                                <li style="color:red"><i class="fa fa-times"></i> <span
+                                        style="text-decoration: underline;">{{ ra.resultado }}</span>
+                                    <ul style="margin-left: 20px;list-style: none;">
+                                        {% for o in ra.objetivo_set.all %}
+                                            <li style="color:red"><i class="fa fa-times"></i>{{ o.texto }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endwith %}
+    </div>
+</dd>

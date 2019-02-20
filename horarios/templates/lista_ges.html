@@ -1,0 +1,69 @@
+{% load my_templatetags %}
+
+<style>
+    .disabled {
+        color: lightgrey;
+    }
+</style>
+<div class="row">
+    <div class="columns large-6 medium-6 small-6">
+        <h4>Control de asistencia</h4>
+    </div>
+    <div class="columns large-3 medium-6 small-6 end">
+        <input type="text" id="fecha_falta" value="{{ fecha_falta|date:'d/m/Y' }}" data-sesion="{{ sesion.id }}" readonly>
+    </div>
+</div>
+{% for ge in sesion.asistentes.all %}
+    <div class="row">
+        <div class="columns large-6 medium-6 small-6">
+            <a href="/usuarios_entidad/?ge={{ ge.id }}"><i class="fa fa-caret-right"></i> {{ ge.gauser.get_full_name }}</a>
+        </div>
+        <div class="columns large-6 medium-6 small-6">
+            <input type="checkbox" id="ge{{ ge.id }}" class="falta" data-sesion="{{ sesion.id }}" data-ge="{{ ge.id }}"
+            {% if ge.id in ge_faltas %}checked{% endif %}>
+        </div>
+        <hr>
+    </div>
+{% endfor %}
+
+<script>
+    $("#fecha_falta").fdatepicker({
+        format: 'dd/mm/yyyy',
+        autoclose: true,
+        language: 'es',
+        pickerPosition: "bottom-left",
+        weekStart: 1,
+        daysOfWeekDisabled:{{disabled|safe}}
+    });
+
+    $('body').on('change', '.falta', function (e) {
+        var sesion = $(this).data('sesion');
+        var fecha_falta = $('#fecha_falta').val();
+        var ge = $(this).data('ge');
+        if ($(this).is(':checked')){
+            var action = 'add_falta';
+        }else{
+            var action = 'del_falta';
+        }
+        $.post("/horarios_ajax/", {action: action, sesion: sesion, fecha_falta: fecha_falta, ge: ge},
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+    });
+
+    $('body').on('change', '#fecha_falta', function (e) {
+        var sesion = $(this).data('sesion');
+        var fecha_falta = $('#fecha_falta').val();
+        $.post("/horarios_ajax/", {action: 'change_fecha_alta', sesion: sesion, fecha_falta: fecha_falta},
+                function (data) {
+                    $.each($('.falta'), function(index,element){
+                        if ($.inArray($(this).data('ge'), data) > -1){
+                            $(this).prop('checked', true);
+                        }else{
+                            $(this).prop('checked', false);
+                        }
+                    });
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }, 'json');
+    });
+</script>

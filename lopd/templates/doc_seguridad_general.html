@@ -1,0 +1,2388 @@
+{% load my_templatetags %}
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Documento de seguridad para la entidad {{ request.session.gauser_extra.ronda.entidad.name }}</title>
+    <style>
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11pt;
+            text-align: justify;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+        p {
+            font-size: 11pt;
+            margin-top: 1em;
+            margin-bottom: 1em;
+        }
+
+        .pagebreak {
+            page-break-before: always;
+        }
+
+        .wysiwyg-font-size-smaller {
+            font-size: smaller;
+        }
+
+        .wysiwyg-font-size-larger {
+            font-size: larger;
+        }
+
+        .wysiwyg-font-size-xx-large {
+            font-size: xx-large;
+        }
+
+        .wysiwyg-font-size-x-large {
+            font-size: x-large;
+        }
+
+        .wysiwyg-font-size-large {
+            font-size: large;
+        }
+
+        .wysiwyg-font-size-medium {
+            font-size: medium;
+        }
+
+        .wysiwyg-font-size-small {
+            font-size: small;
+        }
+
+        .wysiwyg-font-size-x-small {
+            font-size: x-small;
+        }
+
+        .wysiwyg-font-size-xx-small {
+            font-size: xx-small;
+        }
+
+        .wysiwyg-color-black {
+            color: black;
+        }
+
+        .wysiwyg-color-silver {
+            color: silver;
+        }
+
+        .wysiwyg-color-gray {
+            color: gray;
+        }
+
+        .wysiwyg-color-white {
+            color: white;
+        }
+
+        .wysiwyg-color-maroon {
+            color: maroon;
+        }
+
+        .wysiwyg-color-red {
+            color: red;
+        }
+
+        .wysiwyg-color-purple {
+            color: purple;
+        }
+
+        .wysiwyg-color-fuchsia {
+            color: fuchsia;
+        }
+
+        .wysiwyg-color-green {
+            color: green;
+        }
+
+        .wysiwyg-color-lime {
+            color: lime;
+        }
+
+        .wysiwyg-color-olive {
+            color: olive;
+        }
+
+        .wysiwyg-color-yellow {
+            color: yellow;
+        }
+
+        .wysiwyg-color-navy {
+            color: navy;
+        }
+
+        .wysiwyg-color-blue {
+            color: blue;
+        }
+
+        .wysiwyg-color-teal {
+            color: teal;
+        }
+
+        .wysiwyg-color-aqua {
+            color: aqua;
+        }
+
+        .wysiwyg-text-align-right {
+            text-align: right;
+        }
+
+        .wysiwyg-text-align-center {
+            text-align: center;
+        }
+
+        .wysiwyg-text-align-left {
+            text-align: left;
+        }
+
+        .wysiwyg-text-align-justify {
+            text-align: justify;
+        }
+
+        .wysiwyg-float-left {
+            float: left;
+            margin: 0 8px 8px 0;
+        }
+
+        .wysiwyg-float-right {
+            float: right;
+            margin: 0 0 8px 8px;
+        }
+
+        .wysiwyg-clear-right {
+            clear: right;
+        }
+
+        .wysiwyg-clear-left {
+            clear: left;
+        }
+    </style>
+</head>
+<body id="body_documento_seguridad"><p class="wysiwyg-text-align-justify">El presente Documento y sus Anexos, han sido
+    redactados en cumplimiento de
+    lo dispuesto en la Ley Orgánica 15/1999 de 13 de diciembre, de Protección de Datos de Carácter Personal, y su
+    Reglamento de desarrollo Real Decreto 1720/2007, de 21 de diciembre, donde se recogen las medidas de índole técnica
+    y organizativa necesarias para garantizar la protección, confidencialidad, integridad y disponibilidad de los
+    recursos afectados por lo dispuesto en dicha normativa.</p>
+
+<p class="wysiwyg-text-align-justify">Este documento deberá mantenerse permanentemente actualizado. Cualquier
+    modificación relevante en los sistemas de información automatizados, en la organización de los mismos, o en las
+    disposiciones vigentes, en materia de seguridad de datos de carácter personal conllevará la revisión de la normativa
+    incluida, y si procede, su modificación parcial o total. De igual forma, el Documento de seguridad se adecuará, en
+    todo momento, a la normativa vigente. </p>
+
+<p class="wysiwyg-text-align-justify"><br><br></p>
+
+<h1>1.- DOCUMENTOS DE REFERENCIA Y DEFINICIONES</h1>
+
+<h2>1.1.- Conceptos y Definiciones</h2>
+
+<p class="wysiwyg-text-align-justify"><b>LOPD:</b> Ley Orgánica 15/1999 de 13 de
+    diciembre, de Protección de Datos de Carácter Personal, en transposición de la normativa europea de la Directiva
+    1995/46/CE del Parlamento Europeo y del Consejo, de 24 de octubre de 1995, relativa a la protección de las personas
+    físicas en lo que respecta al tratamiento de datos personales y a la libre circulación de estos datos. </p>
+
+<p class="wysiwyg-text-align-justify"><b>RDLOPD: </b>Real Decreto 1720/2007 de 21 de diciembre, por el que se aprueba el
+    Reglamento de desarrollo de la LOPD.</p>
+
+<p class="wysiwyg-text-align-justify"><b>RD 994/1999: </b>Real Decreto 994/1999, de 11 de junio, que aprueba el
+    Reglamento de Medidas de
+    Seguridad para los Ficheros automatizados de Datos de Carácter Personal.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Responsable del Fichero o tratamiento:</b> La
+    Ley Orgánica 15/1999, de 13 de diciembre, de Protección de los Datos de Carácter
+    Personal en su artículo 3, apartado d), y el art. 5 q), define al responsable del fichero o tratamiento a aquella
+    persona física o jurídica, de naturaleza pública o privada, u órgano administrativo, que decida sobre la finalidad,
+    contenido y uso del tratamiento, aunque no lo realizase materialmente. En el caso de la
+    Asociación {{ request.session.gauser_extra.ronda.entidad.name }}, el responsable
+    del fichero será la persona o personas nombradas por el equipo gestor de la propia entidad. </p>
+
+<p class="wysiwyg-text-align-justify"><b>Encargado del tratamiento:</b> La persona
+    física o jurídica, pública o privada, que solo o conjuntamente con otros, trate datos personales por cuenta del
+    responsable del fichero, como consecuencia de la existencia de una relación jurídica que le vincula con el mismo y
+    delimita el ámbito de su actuación para la prestación de un servicio. De acuerdo a los art. 3 g) de la LOPD, y art.
+    5 i) del Reglamento. La realización de tratamientos por cuenta de terceros, para la prestación de un servicio al
+    responsable de los datos, deberá estar regulada en un contrato, con los requisitos del artículo 12 de
+    la LOPD. Contrato que deberá constar por escrito o en alguna otra forma que permita acreditar su celebración y
+    contenido, estableciéndose expresamente que el encargado del tratamiento únicamente tratará los datos conforme a las
+    instrucciones del responsable del tratamiento, que no los aplicará o utilizará con fin distinto al que figure en
+    dicho contrato, ni los comunicará, ni siquiera para su conservación, a otras personas. En el contrato se
+    estipularán, las medidas de seguridad a que se refiere el artículo 9 de la Ley Ley Orgánica 15/1999 de 13 de
+    diciembre, de Protección de Datos de Carácter Personal, que el encargado del tratamiento está obligado a
+    implementar.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Usuarios del Fichero:</b> Sujetos autorizados para acceder a los datos o
+    recursos.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Fichero:</b>
+    Todo conjunto organizado de datos de carácter personal, que permita el acceso a los
+    datos con arreglo a criterios determinados, cualquiera que fuere la forma o modalidad de su creación almacenamiento,
+    organización y acceso. Art. 3 b) LOPD, y art. 5 k) Reglamento. </p>
+
+<p class="wysiwyg-text-align-justify"><b>Afectado o interesado:</b> Persona física titular de los datos que sean objeto
+    del tratamiento. Art. 3 e) LOPD, y art. 5.1 a) Reglamento.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Autenticación:</b>
+    Procedimiento de comprobación de la identidad de un usuario. </p>
+
+<p class="wysiwyg-text-align-justify"><b>Datos de carácter personal:</b> Cualquier información numérica, alfabética,
+    gráfica, fotográfica, acústica o de cualquier otro tipo concerniente a personas físicas identificadas o
+    identificables. Art. 3 a) de la LOPD, y art. 5.1 f) Reglamento. </p>
+
+<p class="wysiwyg-text-align-justify"><b>Accesos autorizados:</b> Autorizaciones concedidas a un usuario para la
+    utilización de los diversos recursos de la entidad. En su caso, incluirán las autorizaciones o funciones que
+    tenga
+    atribuidas un usuario por delegación del responsable del fichero o tratamiento o del responsable de seguridad. Art.
+    5.2 R LOPD.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Contraseña:</b> Información confidencial,
+    frecuentemente constituida por una cadena de caracteres, que puede ser usada en la autenticación de un usuario o en
+    el acceso a un recurso.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Incidencia:</b> Cualquier anomalía que afecte
+    o pudiera afectar a la seguridad de los datos.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Perfil de usuario:</b> Accesos autorizados a un grupo de usuarios.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Recurso:</b> Cualquier parte componente de un
+    sistema de información.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Responsable de seguridad:</b> Persona o personas físicas a las que el
+    responsable del fichero puede asignar formalmente
+    la función de coordinar y controlar las medidas de seguridad aplicables. En ningún caso esta designación supone una
+    exoneración de la responsabilidad que corresponde al responsable del fichero. En los art. 89 a 94 del RLOPD, no está
+    especificada esta figura para los datos definidos como de nivel básico. </p>
+
+<p class="wysiwyg-text-align-justify"><b>Sistema de información:</b> Conjunto de ficheros, tratamientos, programas,
+    soportes y en su caso, equipos empleados para el tratamiento de datos de carácter personal. </p>
+
+<p class="wysiwyg-text-align-justify"><b>Sistema de tratamiento:</b> Modo en que se organiza o utiliza un sistema de
+    información. Atendiendo al sistema de tratamiento, los sistemas de información podrán ser automatizados, no
+    automatizados o parcialmente automatizados.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Transmisión de documentos:</b> Cualquier traslado, comunicación, envío, entrega
+    o divulgación de la información contenida en el mismo.</p>
+
+<h2>1.2.- Normativa y Legislación</h2>
+
+<p class="wysiwyg-text-align-justify">Directiva 95/46/CE del Parlamento Europeo y del Consejo de 24 de octubre de 1995
+    relativa la Protección de las Personas Físicas en lo que respecta al tratamiento de datos personales y a la libre
+    circulación de estos datos. </p>
+
+<p class="wysiwyg-text-align-justify">Ley Orgánica 15/1999 de 13 de diciembre de Protección de datos de Carácter
+    Personal (LOPD).</p>
+
+<p class="wysiwyg-text-align-justify">Real Decreto 1720/2007 de 21 de diciembre, por el que se aprueba el Reglamento de
+    desarrollo de la Ley Orgánica 15/1999 de 13 de diciembre de protección de datos de Carácter Personal. </p>
+
+<p class="wysiwyg-text-align-justify">LSSI Ley 34/2002, de 11 de julio de Servicios de la Sociedad de información y
+    Comercio Electrónico. </p>
+
+<p class="wysiwyg-text-align-justify">Real Decreto 994/1999, de 11 de junio, que aprueba el Reglamento de Medidas de
+    Seguridad para los Ficheros automatizados de Datos de Carácter Personal.</p>
+
+<h2>1.3.- Niveles de Seguridad</h2>
+
+<p class="wysiwyg-text-align-justify">En el Reglamento de desarrollo de la LOPD, se clasifican tres niveles distintos de
+    seguridad a aplicar sobre la protección de datos y que dependen de la naturaleza de la información tratada. Estos
+    niveles, de acuerdo con los artículos 80 y 81 del RDLOPD son básico, medio y alto.
+    En el presente documento de seguridad se redactan unas medidas de seguridad de índole
+    técnica y organizativa a instaurar en la Asociación, de <b>nivel básico</b>, dada la naturaleza de sus datos. </p>
+
+<p class="wysiwyg-text-align-justify">En el caso de que los ficheros o tratamiento de datos de ideología, planificación
+    sindical, religión, creencias, origen racial, salud o vida sexual bastará la implantación de las medidas de
+    seguridad de nivel básico cuando :</p>
+
+<ul>
+    <li>Los datos se utilicen con la única finalidad de
+        realizar una transferencia dineraria a las entidades de las que los afectados sean asociados o miembros.
+    </li>
+    <li>Se trate de fichero o tratamientos no
+        automatizados en los que de forma incidental o accesoria se contengan aquellos datos sin guardar relación con su
+        finalidad.
+    </li>
+</ul>
+
+<p class="wysiwyg-text-align-justify">También podrán implantarse las medidas de seguridad de nivel básico en los
+    ficheros o tratamientos que contengan datos relativos a la salud, referentes exclusivamente al grado de discapacidad
+    o la simple declaración de la condición de discapacidad o invalidez del afectado, como motivo del cumplimiento de
+    deberes públicos. </p>
+
+<p class="wysiwyg-text-align-justify">En concreto, los ficheros y tratamientos responsabilidad de esta Asociación,
+    sujetos a las medidas de seguridad establecidas en este documento, con indicación del nivel de seguridad
+    correspondiente, son los descritos en la tabla del ANEXO I.</p>
+
+<h1>2.- OBJETO DEL DOCUMENTO</h1>
+
+<p class="wysiwyg-text-align-justify">El presente documento de seguridad comprende todos los ficheros y tratamientos con
+    datos personales de los que es responsable la entidad {{ request.session.gauser_extra.ronda.entidad.name }} y además
+    describe por un lado, las
+    medidas que afectan a todos los sistemas de información de forma común con independencia del sistema de tratamiento
+    utilizado (informatizado, manual o mixto).</p>
+
+<p class="wysiwyg-text-align-justify">Mediante el presente documento de seguridad y los anexos que lo componen,
+    la entidad {{ request.session.gauser_extra.ronda.entidad.name }}, da cumplimiento a las exigencias de lo
+    dispuesto en el artículo 9 de la Ley Orgánica 15/1999 de 13 de diciembre, de Protección de Datos de Carácter
+    Personal (en adelante LOPD) y el Título VIII del Real Decreto 1720/2007 de 21 de diciembre, por el que se aprueba el
+    Reglamento de desarrollo de la LOPD (en adelante RDLOP D ). En el artículo 79, y siguientes del RDLOPD se describen
+    las medidas de seguridad, fundamentalmente de índole técnica y organizativa necesarias, que la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }}, ha implantado para garantizar la protección,
+    confidencialidad, integridad y
+    disponibilidad de los recursos de tratamiento de datos personales que maneja.</p>
+
+
+<h1>3.- ÁMBITO DE APLICACIÓN DEL DOCUMENTO</h1>
+
+<p class="wysiwyg-text-align-justify">La entidad {{ request.session.gauser_extra.ronda.entidad.name }}, como consecuencia
+    de las actividades
+    desarrolladas dentro de su objeto social trata información y datos de carácter personal en su Fichero.</p>
+
+<p class="wysiwyg-text-align-justify">Las medidas de seguridad definidas en el presente documento
+    van encaminadas a proteger todos los ficheros
+    (automatizados y en soporte papel), aplicaciones y herramientas de actualización y consulta, recursos del sistema
+    operativo, redes de telecomunicaciones, soportes y equipos informáticos, gestionados
+    por {{ request.session.gauser_extra.ronda.entidad.name }} o por
+    cualquier otra empresa con la que haya sido suscrito un contrato de prestación de servicios que conlleve el
+    tratamiento de datos de carácter personal.</p>
+
+<h2>3.1.- Datos de la Organización</h2>
+
+<p class="wysiwyg-text-align-justify">Datos de la Organización</p>
+
+<p class="wysiwyg-text-align-justify">Nombre o razón social: {{ request.session.gauser_extra.ronda.entidad.name }}</p>
+
+<p class="wysiwyg-text-align-justify">Dirección social: {{ request.session.gauser_extra.ronda.entidad.address }}</p>
+
+<p class="wysiwyg-text-align-justify">Teléfono: {{ request.session.gauser_extra.ronda.entidad.tel }}</p>
+
+<p class="wysiwyg-text-align-justify">Fax: {{ request.session.gauser_extra.ronda.entidad.fax }} </p>
+
+<p class="wysiwyg-text-align-justify">Email: {{ request.session.gauser_extra.ronda.entidad.mail }} </p>
+
+<p class="wysiwyg-text-align-justify">Sitio WEB: <a href="http://{{ request.session.gauser_extra.ronda.entidad.web }}"
+                                                    target="_blank"
+                                                    rel="nofollow">{{ request.session.gauser_extra.ronda.entidad.web }}</a>
+</p>
+
+<h1>4.- RESPONSABLES DEL FICHERO Y RESPONSABLES DE SEGURIDAD</h1>
+
+<p class="wysiwyg-text-align-justify">El Equipo Gestor de la entidad nombrará uno o varios responsables del fichero.
+    Este nombramiento quedará reflejado en GAUSS a través del menú "Responsables LOPD". El responsable del fichero,
+    será a su vez quien realice todas las autorizaciones relativas al cumplimiento de la LOPD en la entidad. La
+    formalización de estas autorizaciones se llevará a cabo a través del correo electrónico con el fin de que dichas
+    autorizaciones queden almacenadas y se pueda realizar un seguimiento en caso de que fuera necesario. </p>
+
+<p class="wysiwyg-text-align-justify">El Equipo Gestor de la entidad, o el propio responsable del fichero podrá
+    nombrar a una o varias personas como responsables de Seguridad, que se ocupará de la coordinación de todos los
+    asuntos relacionados con esta materia dentro de la organización.</p>
+
+
+<p class="wysiwyg-text-align-justify">La entidad nombra
+    formalmente a una persona encargada del Fichero de
+    la entidad, al responsable de seguridad, y demás personal que entienda necesario para la supervisión y control de
+    acceso a los sistemas de información (delegados de seguridad). Estos nombramientos se reflejarán
+    en GAUSS a través del menú "Responsables LOPD"</p>
+
+<h1>5.- NORMATIVA DE SEGURIDAD PARA SISTEMAS AUTOMATIZADOS</h1>
+
+<p class="wysiwyg-text-align-justify">Para garantizar el nivel de protección exigido en el RDLOPD 1720/2007, son
+    de aplicación el siguiente conjunto de normas, procedimiento y estándares relacionados con la seguridad de los
+    sistemas de la entidad {{ request.session.gauser_extra.ronda.entidad.name }}.</p>
+
+<h2>5.1.- Acceso a datos a través de redes de comunicaciones</h2>
+
+<p class="wysiwyg-text-align-justify">Todos los usuarios de GAUSS
+    deben identificarse y autenticarse para el acceso remoto a los recursos y a la aplicación web.</p>
+
+<p class="wysiwyg-text-align-justify">El sitio web utiliza técnicas de seguridad de la información, tales como
+    procedimientos de control de acceso y mecanismos criptográficos, encriptación, gestión de logs o archivos de
+    registro, copias de seguridad, todo ello con el objeto de evitar el acceso no autorizado a los datos.</p>
+
+<h2>5.2.- Régimen de trabajo fuera de los locales de
+    ubicación del fichero</h2>
+
+<h3>5.2.1.- Acceso remoto a los sistemas de información</h3>
+
+<p class="wysiwyg-text-align-justify">Todos los accesos remotos a los sistemas de información de la Asociación deben
+    de ser autorizados por el Responsable del Fichero, salvo autorización expresa del
+    mismo, está terminante prohibido grabar en un sistema externo cualquier dato accedido remotamente.</p>
+
+<h3>5.2.2.- Ordenadores y dispositivos portátiles</h3>
+
+<p class="wysiwyg-text-align-justify">Los usuarios de la entidad {{ request.session.gauser_extra.ronda.entidad.name }},
+    que dispongan de ordenador portátil, serán
+    informados de la prohibición, salvo excepciones autorizadas, de almacenar datos de
+    carácter personal en los discos duros de los mismos y de la obligación de trabajar
+    con datos de carácter personal únicamente a través de la aplicación web
+    proporcionada por Sistemas de Gestión Aumentada. Además deberán cumplir con las
+    medidas de seguridad implantadas en la entidad
+    y que quedan definidas en este documento. </p>
+
+<p class="wysiwyg-text-align-justify">Por parte de los usuarios, también será obligatorio que en los portátiles se
+    habiliten los criterios establecidos
+    sobre identificación y autenticación y control de accesos.</p>
+
+<h3>5.2.3.- Procedimiento para autorizar el trabajo fuera de los locales del fichero</h3>
+
+<p class="wysiwyg-text-align-justify">Fuera de los locales de la entidad se puede trabajar con el fichero de la
+    entidad a través de la aplicación web GAUSS, siempre que se tenga acceso a internet y el usuario esté autorizado.
+    En el caso de que sea
+    necesario descargar archivos de datos en un disco duro, papel u otro medio de almacenamiento, es necesario obtener
+    la autorización del responsable del fichero.</p>
+
+<h3>5.2.4.- Ficheros temporales</h3>
+
+<p class="wysiwyg-text-align-justify">De acuerdo con la definición dada por el RDLOPD 1720/2007, art. 5.2 g), son
+    <i>ficheros temporales</i> aquellos ficheros de trabajo creados por usuarios o procesos que son necesarios
+    para un tratamiento ocasional o como paso intermedio durante la realización de un tratamiento de los datos. </p>
+
+<p class="wysiwyg-text-align-justify">Con carácter general el Responsable de
+    seguridad velará porque los usuarios no generen ficheros temporales de forma innecesaria.</p>
+
+<p class="wysiwyg-text-align-justify">Tal y como se establece en el RDLOPD art. 87.2, todo fichero temporal o copia de
+    trabajo así creado será borrado o destruido una vez que haya dejado de ser necesario para los fines que motivaron su
+    creación. </p>
+
+<p class="wysiwyg-text-align-justify">Los ficheros con datos de carácter personal que se reciban por correo
+    electrónico deberán ser borrados cuando hayan dejado de ser necesarios. </p>
+
+<h3>5.2.5.- Ficheros gestionados por las aplicaciones</h3>
+
+<p class="wysiwyg-text-align-justify">Los ficheros temporales generados por la aplicación GAUSS son gestionados por
+    la propia aplicación, de modo que el nivel de seguridad existente sobre estos ficheros garantiza que personas o
+    procesos no autorizados no puedan acceder a los mismos. </p>
+
+<h2>5.3.- IDENTIFICACIÓN Y AUTENTICACIÓN</h2>
+
+<p class="wysiwyg-text-align-justify">El procedimiento seguido en la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }}, para la
+    identificación y autenticación de los usuarios cuando intentan acceder a la aplicación web, está basada en la
+    combinación de un código de identificación de usuario y una contraseña. A cada usuario le ha sido asignado un
+    identificador único. </p>
+
+<p class="wysiwyg-text-align-justify">Se recomienda cambiar las contraseñas, como mínimo, con una periodicidad anual.
+    Mientras estén vigentes
+    se almacenarán de forma ininteligible, artículo 93 LOPD.</p>
+
+<p class="wysiwyg-text-align-justify">El menú "Usuarios Autorizados" de GAUSS proporciona la relación de
+    usuarios de la aplicación web con los derechos de acceso que tienen concedidos. </p>
+
+<h3>5.3.1.- Control de Acceso</h3>
+
+<p class="wysiwyg-text-align-justify">Los usuarios, tanto en la red como en los puestos individuales, deben
+    identificarse para acceder a GAUSS, mediante clave
+    de usuario y contraseña. El Equipo Gestor de la Asociación determinará los criterios para definir los perfiles y
+    permisos de acceso de los usuarios. </p>
+
+<p class="wysiwyg-text-align-justify">Tal y como se ha indicado anteriormente el menú "Usuarios Autorizados" de GAUSS
+    puede mostrar la lista de usuarios que tienen acceso a la aplicación web.</p>
+
+<h3>5.3.2.- Gestión de soportes y documentos</h3>
+
+<p class="wysiwyg-text-align-justify">Se define soporte como un objeto físico susceptible de ser tratado en un sistema
+    de información y sobre el cual se pueden grabar o recuperar datos.</p>
+
+<p class="wysiwyg-text-align-justify">Todos los soportes y documentos con datos personales existentes en la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }} serán enumerados y recogidos a través del menú de GAUSS
+    llamado "Inventario de soportes". El responsable del fichero será el encargado de custodiar las copias de seguridad
+    y de actualizar el inventario.</p>
+
+<p class="wysiwyg-text-align-justify">No estará permitido enviar ningún soporte o
+    documento fuera de la Asociación (incluyendo datos
+    comprendidos o adjuntos a un correo electrónico), cuya salida no haya sido previamente autorizada.</p>
+
+<p class="wysiwyg-text-align-justify">Los soportes enviados deberán ser autorizados por el responsable del fichero. </p>
+
+<h1>6.- NORMATIVA DE SEGURIDAD PARA SISTEMAS NO AUTOMATIZADOS</h1>
+
+<h2>6.1.- Archivo y Almacenamiento (no automatizados)</h2>
+
+<p class="wysiwyg-text-align-justify">El archivo de los soportes o documentos se realizarán de acuerdo con los
+    criterios previstos en su respectiva legislación, art. 106 RLOPD. Estos criterios deberán garantizar la correcta
+    conservación de los documentos, la localización y consulta de la información y
+    posibilitar el ejercicio de los derechos de oposición al tratamiento, acceso, rectificación y cancelación.</p>
+
+<p class="wysiwyg-text-align-justify">El responsable del fichero adoptará medidas que impidan el acceso
+    por parte de personas no autorizadas, a los dispositivos de almacenamiento de los documentos que contengan datos de
+    carácter personal. </p>
+
+
+<h2>6.2.- Control de Acceso (no automatizados)</h2>
+
+<p class="wysiwyg-text-align-justify">Los usuarios tendrán acceso únicamente a aquellos datos que precisen para el
+    desarrollo de sus funciones, y que previamente hayan sido autorizados para ello. Se mantendrá una relación
+    actualizada de los usuarios y los accesos autorizados para cada uno.</p>
+
+<p class="wysiwyg-text-align-justify">El responsable del fichero establecerá mecanismos
+    para evitar que un usuario pueda acceder a recursos con derechos distintos de los
+    autorizados.</p>
+
+<p class="wysiwyg-text-align-justify">En caso de que exista personal ajeno al responsable del fichero que tenga acceso a
+    los recursos deberá estar sometido a las mismas condiciones y obligaciones de seguridad que el personal propio.</p>
+
+<h2>6.3.- Gestión de soportes y documentos (no automatizados)</h2>
+
+<h3>6.3.1.- Inventario de soportes</h3>
+
+<p class="wysiwyg-text-align-justify">Para los soportes no automatizados con datos personales (papel), deberá
+    identificarse su contenido y registrarse a través del menú "Inventario de soportes" de GAUSS.</p>
+
+<h3>6.3.2.- Traslado de documentación</h3>
+
+<p class="wysiwyg-text-align-justify">Siempre que se proceda al traslado físico de la documentación contenida en un
+    fichero, deberán adoptarse medidas dirigidas a impedir el acceso o manipulación de la información objeto del
+    traslado. En cualquier caso el traslado debe estar previamente autorizado por el responsable del fichero. </p>
+
+<h3>6.3.3.- Destrucción de documentos</h3>
+
+<p class="wysiwyg-text-align-justify">Cuando haya desaparecido la necesidad del documento o soporte que contenga datos
+    de
+    carácter personal, deberá procederse a su destrucción, imposibilitando su reconstrucción posterior. </p>
+
+<h3>6.3.4.- Custodia de los soportes</h3>
+
+<p class="wysiwyg-text-align-justify">Mientras la documentación con datos de carácter personal no se encuentre
+    archivada en los dispositivos de almacenamiento establecidos en el apartado
+    anterior, por estar en proceso de revisión o tramitación, ya sea previo o posterior
+    a su archivo, la persona que se encuentre al cargo de la misma deberá custodiarla e impedir en todo momento que
+    pueda ser accedida por persona no autorizada. </p>
+
+
+<h1>7.- PROCEDIMIENTO DE AUTORIZACIÓN DE SALIDA DE SOPORTES Y DOCUMENTOS</h1>
+
+<p class="wysiwyg-text-align-justify">La salida de soportes y documentos que contengan datos de carácter personal,
+    incluidos los comprendidos y/o adjuntos a un correo electrónico, fuera de los locales de la entidad deberá ser
+    autorizada por el responsable del fichero.</p>
+
+<h1>8.- GESTIÓN DE USUARIOS</h1>
+
+<h2>8.1.- Alta de usuarios</h2>
+
+<p class="wysiwyg-text-align-justify">Es el Equipo Gestor de la entidad quien designará la persona, responsable del
+    fichero o persona en quien delegue, encargada de dar de alta a los usuarios en la aplicación web.</p>
+
+<p class="wysiwyg-text-align-justify">Cuando se produzca un alta de usuario en GAUSS,
+    la aplicación enviará un mensaje al responsable del fichero. Éste valorará
+    si alguno de los permisos solicitados no se ajusta a los criterios establecidos por la Asociación y tendrá
+    autorización para modificarlos.</p>
+
+<p class="wysiwyg-text-align-justify">Para el primer acceso del usuario al sistema, el responsable de seguridad deberá
+    comunicarle de forma confidencial su identificador y su contraseña. </p>
+
+<p class="wysiwyg-text-align-justify">GAUSS genera automáticamente el identificador y la contraseña teniendo en cuenta
+    los siguientes aspectos :</p>
+<ul>
+    <li><p class="wysiwyg-text-align-justify">No se reutilizará un identificador.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Generará una contraseña de al menos 6 caracteres
+        alfanuméricos.</p></li>
+</ul>
+<h2>8.2.- Baja de un usuario</h2>
+
+<p class="wysiwyg-text-align-justify">La baja será ejecutada por el responsable del fichero o el Equipo Gestor. Al
+    ejecutar la baja en GAUSS, el socio quedará sin acceso a la aplicación web. </p>
+
+<p class="wysiwyg-text-align-justify">GAUSS almacenará información descriptiva sobre los perfiles de acceso de los
+    usuarios que se den de baja, durante el tiempo requerido para cumplir obligaciones legales y para auditoría, así
+    como para mantener un histórico de socios. En cualquier caso, el socio objeto de la baja podrá en cualquier momento
+    solicitar el borrado o rectificación de estos datos.</p>
+
+<h2>8.3.- Modificación de permisos de un usuario. </h2>
+
+<p class="wysiwyg-text-align-justify">La modificación de los derechos o permisos de acceso de una usuario requerirá de
+    la misma autorización jerárquica del Equipo Gestor de la entidad, diferenciada según el perfil del usuario. El
+    procedimiento enunciado en el apartado de alta será extensible a este punto de
+    modificación de permisos. </p>
+
+<h2>8.4.- Reactivación de usuarios</h2>
+
+<p class="wysiwyg-text-align-justify">Para aquellos casos en que el acceso del usuario al sistema se haya revocado por
+    causas accidentales, como el olvido de la contraseña, un periodo prolongado de inactividad o un excesivo
+    número de intentos fallidos de acceso al sistema, la reactivación del
+    usuario exigirá su comunicación al responsable de seguridad para subsanar la situación.</p>
+
+<h1>9.- GESTIÓN DE CONTRASEÑAS</h1>
+
+<p class="wysiwyg-text-align-justify">En GAUSS cada usuario tiene un identificador que se autentica mediante
+    contraseña.</p>
+
+<p class="wysiwyg-text-align-justify">Los identificadores de usuario y las contraseñas de acceso asociadas son de uso
+    personal e intransferible y por tanto no pueden ser compartidos.</p>
+
+<p class="wysiwyg-text-align-justify">Para el primer acceso del usuario al sistema, se le deberá comunicar de forma
+    confidencial su identificador y su contraseña por parte del responsable de seguridad.</p>
+
+<p class="wysiwyg-text-align-justify">El identificador de acceso inicial es distinto para cada usuario.</p>
+
+<h2>9.1.- Privacidad</h2>
+
+<p class="wysiwyg-text-align-justify">Las contraseñas deben ser conocidas exclusivamente por el usuario propietario de
+    la misma y tratadas como información personal e intransferible. Es responsabilidad del usuario asegurar la
+    confidencialidad y custodia de la contraseña.</p>
+
+<p class="wysiwyg-text-align-justify">Se ha establecido ciertas consideraciones a la hora de elegir una contraseña que
+    deberán ser aplicadas por todos los usuarios del sistema: </p>
+<ol>
+    <li><p class="wysiwyg-text-align-justify">La longitud mínima de la contraseña deberá ser de 6 caracteres
+        alfanuméricos.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Se evitarán nombres comunes, números de matrículas de vehículos,
+        teléfonos, nombres de familiares, amigos, etc, y derivados del nombre de usuario como permutaciones o cambio
+        de orden de las letras, transposiciones, repeticiones un único
+        carácter,.etc.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Deberá cambiarse la contraseña con una periodicidad
+        <i><b>recomendable</b></i> de un año.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Los usuarios serán responsables de la salvaguarda y custodia de su
+        contraseña.</p></li>
+</ol>
+
+
+<p class="wysiwyg-text-align-justify">GAUSS permite:</p>
+<ul>
+    <li><p class="wysiwyg-text-align-justify">La introducción de la contraseña y su representación en pantalla en el
+        momento del identificación se realizará en un formato ininteligible.</p></li>
+    <li><p class="wysiwyg-text-align-justify">El cambio de contraseña por parte del usuario, siguiendo las
+        recomendaciones generales enunciadas anteriormente.</p></li>
+</ul>
+<p class="wysiwyg-text-align-justify">Se evitará en la comunicación escrita que se revele la contraseña de cualquier
+    usuario. </p>
+
+<h2>9.2.- Almacenamiento</h2>
+
+<p class="wysiwyg-text-align-justify">GAUSS almacena las contraseñas cifradas,
+    garantizando su confidencialidad e integridad, y ninguna persona tendrá acceso a la decodificación de las
+    mismas.</p>
+
+
+<h1>10.- FUNCIONES Y OBLIGACIONES DE LOS USUARIOS DE GAUSS</h1>
+
+<h2>10.1.- Obligaciones de los usuarios</h2>
+
+<p class="wysiwyg-text-align-justify">La entidad {{ request.session.gauser_extra.ronda.entidad.name }}, ha emitido
+    una circular interna donde se establecen las directrices para el tratamiento, por parte de todo el personal, de los
+    datos conocidos como consecuencia del desempeño de su labor en la Asociación.</p>
+
+<p class="wysiwyg-text-align-justify">En la citada circular se recogen las principales obligaciones en materia de
+    seguridad sobre datos de carácter personal, incluyendo la prohibición expresa de instalar cualquier tipo de
+    aplicación en los equipos informáticos y la utilización de los recursos informáticos para otras finalidades
+    diferentes de las estrictamente derivadas del desarrollo de su labor en la Asociación,
+    así como la obligación de mantener el deber de secreto sobre todos los datos
+    tratados y de no comunicar los referidos datos a ninguna persona o entidad sin la autorización pertinente. </p>
+
+
+<h2>10.2.- Funciones y Obligaciones atribuidas al Responsable del Fichero</h2>
+<ol>
+    <li><p class="wysiwyg-text-align-justify">Decidir sobre la finalidad, contenido y uso del tratamiento. Adoptará las
+        medidas de índole técnica y organizativas necesarias que garanticen la seguridad de los datos de carácter
+        personal y eviten su alteración, pérdida, tratamiento o acceso no autorizado. </p></li>
+    <li><p class="wysiwyg-text-align-justify">Está obligado al secreto profesional y al deber de custodia, respecto de
+        los datos de carácter personal que maneje la entidad.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Autorizar la ejecución del tratamiento de datos de carácter personal
+        fuera de los locales de la ubicación del fichero (art. 6 R.D.) </p></li>
+    <li><p class="wysiwyg-text-align-justify">Será quien autorice la salida fuera de los locales en que esté ubicado el
+        fichero, de soportes informáticos que contengan datos de carácter personal. </p></li>
+    <li><p class="wysiwyg-text-align-justify">Mantener actualizada la relación de usuarios que tengan acceso autorizado
+        al sistema de información, así como del inventario de ficheros. </p></li>
+    <li><p class="wysiwyg-text-align-justify">Nombrar al responsable/s de seguridad.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Adoptar las medidas necesarias para que el personal que tenga acceso a
+        los datos personales conozca las normas de seguridad, además de las consecuencias en que podría incurrir en caso
+        de incumplirlas.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Se encargará de que exista una relación actualizada de usuarios que
+        tengan acceso autorizado al Sistema de Información, así como de los procedimientos de identificación y
+        autenticación para dicho acceso, evitando que un usuario pueda acceder a datos o recursos con derechos distintos
+        de los autorizado.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Verificará la definición y correcta aplicación de los procedimientos de
+        realización de copias de respaldo y recuperación de datos.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Hará efectivo el derecho de acceso, rectificación, cancelación u oposición
+        del interesado. </p></li>
+    <li><p class="wysiwyg-text-align-justify">Supervisar la corrección de las incidencias acontecidas en relación a la
+        protección de los datos de carácter personal.</p></li>
+</ol>
+
+<h1>11.- PROCEDIMIENTOS DE GESTIÓN DE INCIDENCIAS</h1>
+
+<p class="wysiwyg-text-align-justify">La entidad
+    {{ request.session.gauser_extra.ronda.entidad.name }}, recogerá cuantas incidencias de seguridad se puedan producir
+    sobre los datos que trata. Este documento establece los mecanismos de actuación
+    para la gestión y respuesta ante las incidencias.</p>
+
+<p class="wysiwyg-text-align-justify">La aplicación del presente procedimiento se establece para todas los usuarios de
+    la entidad,
+    asociados y voluntarios, así como colaboradores externos.</p>
+
+<h2>11.1.- Tipo de incidencia a registrar</h2>
+
+<p class="wysiwyg-text-align-justify">Incidencia será cualquier situación que contravenga las medidas descritas en la
+    normativa de seguridad, así como el mal funcionamiento de los medios físicos y lógicos que pueda afectar a la
+    seguridad de la información que gestionan.</p>
+
+<p class="wysiwyg-text-align-justify">A continuación se detalla una lista, no cerrada de incidencias que serán
+    registradas.</p>
+<ol>
+    <li><p class="wysiwyg-text-align-justify">Incidencias que afecten a la identificación y autenticación de los
+        usuarios.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Incidencias que afecten a los derechos de acceso a los datos.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Incidencias que afecten a la gestión de soportes.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Incidencias que afecten a los procedimientos de copias de seguridad y
+        recuperación.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Cualquier otra diferente a las observadas como consecuencia de la
+        ejecución de los controles definidos para garantizar el cumplimiento de los dispuesto en el documento de
+        seguridad.</p></li>
+</ol>
+<h2>11.2.- Responsabilidades</h2>
+
+<p class="wysiwyg-text-align-justify">El responsable del fichero, o en su caso el de seguridad, es el responsable de
+    mantener el registro de incidencias, así como del seguimiento de las mismas. GAUSS facilita esta labor a través
+    del menú "Incidencias LOPD"</p>
+
+<p class="wysiwyg-text-align-justify">Los usuarios de GAUSS, voluntarios, socios y colaboradores externos, deben
+    participar en la implicación y seguimiento de la política de seguridad, aceptando formalmente sus obligaciones. </p>
+
+<p class="wysiwyg-text-align-justify">Cualquier usuario que tenga conocimiento directa o indirectamente de cualquier
+    incidencia de seguridad, actual o posible, lo comunicará con la mayor brevedad y las medidas tomadas al
+    respecto.</p>
+
+<h2>11.3.- Registros</h2>
+
+<p class="wysiwyg-text-align-justify">El registro de incidencias será mantenido por el responsable de fichero, o de
+    seguridad. Dicho registro contendrá los siguientes campos:</p>
+<ul>
+    <li><p class="wysiwyg-text-align-justify">Tipo de incidencia.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Momento en que se ha producido, en su defecto, su detección.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Persona que la notifica.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Quién la recibe/a quién se notifica.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Efectos causados por la misma y la solución dada.</p></li>
+</ul>
+<p class="wysiwyg-text-align-justify">En el caso en que la incidencia implique la ejecución de un proceso de
+    recuperación de datos, el registro contendrá además, tal y como consta en el procedimiento de copia de respaldo y
+    recuperación de datos:</p>
+<ul>
+    <li><p class="wysiwyg-text-align-justify">Persona que ejecutó el proceso.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Datos restaurados.</p></li>
+    <li><p class="wysiwyg-text-align-justify">En su caso, dato/s que fue necesario grabar manualmente para su
+        recuperación.</p></li>
+</ul>
+<p class="wysiwyg-text-align-justify">Estos datos serán anotados en GAUSS por el usuario que solucione la incidencia
+    a través del campo "observaciones" que aparece en el menú "Incidencias LOPD".</p>
+
+<h1>12.- PROCEDIMIENTO DE COPIAS DE RESPALDO Y RECUPERACIÓN</h1>
+
+<h2>12.1.- Procedimiento copia de seguridad y copia de respaldo</h2>
+
+<p class="wysiwyg-text-align-justify">GAUSS realizada periódicamente y de manera automática, copias de seguridad de los
+    datos de carácter personal que se encuentran alojados en su servidor. Por otro lado el responsable del fichero o de
+    seguridad, podrá realizar las copias que desee de los datos personales de los usuarios de su entidad
+    a través del propio GAUSS. </p>
+
+<p class="wysiwyg-text-align-justify">Para el supuesto de ser custodiada una copia de seguridad o respaldo
+    por la persona responsable de seguridad de la entidad, en un soporte externo, pendrive o disco duro,
+    será guardada bajo su responsabilidad. Comprometiéndose a su custodia. El Reglamento de desarrollo de la LOPD
+    determina que se conservará una copia de respaldo y de los procedimientos de recuperación de datos en lugar distinto
+    a que en el que se encuentren los equipos informáticos que los tratan.</p>
+
+<h2>12.2.- Procedimientos de recuperación</h2>
+
+<p class="wysiwyg-text-align-justify">Se cumplimentará una solicitud a Sistemas de Gestión Aumentada con una fecha
+    determinada. El responsable del fichero, o de seguridad anotará este hecho en el registro de incidencias.</p>
+
+<p class="wysiwyg-text-align-justify">El responsable del fichero, se encargará de revisar periódicamente sus copias de
+    seguridad y verificará que estas se están haciendo correctamente.</p>
+
+
+<h1>13.- PROCEDIMIENTOS PARA PROTEGER LOS DERECHOS DE LOS TITULARES</h1>
+
+<p class="wysiwyg-text-align-justify">La Ley Orgánica de Protección de datos 15/1999 tiene por objeto garantizar y
+    proteger, en lo que concierne al Tratamiento de datos personales, las libertades públicas y los derechos
+    fundamentales de las personas físicas y especialmente de su honor e intimidad personal y familiar. </p>
+
+<p class="wysiwyg-text-align-justify">Todas las personas tienen reconocidos los derechos de Acceso, Rectificación,
+    Cancelación y Oposición respecto de los Ficheros que contengan sus datos personales.</p>
+
+<p class="wysiwyg-text-align-justify">Estos derechos tienen un carácter personalísimo y deberán ser ejercitados por el
+    afectado o su representante legal frente a la entidad {{ request.session.gauser_extra.ronda.entidad.name }}, por
+    lo que será necesario que el afectado acredite su identidad. En el presente caso, cuando un interesado ejercite sus
+    derechos ante el encargado del tratamiento, Sistemas de Gestión Aumentada, según el art. 26 del Reglamento de la
+    LOPD, dará traslado de las solicitudes de ejercicio de estos derechos al responsable del fichero. </p>
+
+<p class="wysiwyg-text-align-justify">El ejercicio de los derechos de Acceso, Rectificación, Cancelación y Oposición
+    (ARCO) se ejercitarán a través del menú "Derechos ARCO" de GAUSS. La aplicación se encargará de enviar las
+    solicitudes al responsable del fichero de manera automática, respetando los plazos y formalidades previstas en
+    la normativa vigente, detallado en el artículo 25 del Reglamento de la LOPD.</p>
+
+<p class="wysiwyg-text-align-justify">El ejercicio de uno de estos derechos es totalmente independiente del resto.</p>
+
+<p class="wysiwyg-text-align-justify">La entidad {{ request.session.gauser_extra.ronda.entidad.name }} responderá a
+    cualquier solicitud que se le dirija, con independencia de que figuren o no datos personales del afectado en sus
+    Ficheros, debiendo utilizar cualquier medio que permita acreditar el envío y la recepción. Si la solicitud no reúne
+    los requisitos especificados, la entidad {{ request.session.gauser_extra.ronda.entidad.name }} solicitará la
+    subsanación de los mismos. </p>
+
+<p class="wysiwyg-text-align-justify">La entidad {{ request.session.gauser_extra.ronda.entidad.name }} adoptará las
+    medidas necesarias en orden a garantizar que todas las personas que tengan acceso a Datos De Carácter Personal y que
+    pertenecen a su organización, puedan informar a los interesados del procedimiento a seguir para el ejercicio de sus
+    derechos.</p>
+
+<h2>13.1.- Principio de Calidad</h2>
+
+<p class="wysiwyg-text-align-justify">La entidad {{ request.session.gauser_extra.ronda.entidad.name }} se compromete
+    con el presente documento, a seguir una serie de medidas a la hora de recoger para su tratamiento los datos de
+    carácter personal:</p>
+<ul>
+    <li><p class="wysiwyg-text-align-justify">Los datos de carácter personal deberán ser tratados de forma leal y
+        lícita. Se prohíbe la recogida de datos por medios fraudulentos, desleales o ilícitos.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Los datos de carácter personal sólo podrán ser recogidos para el
+        cumplimiento de finalidades determinadas, explícitas y legítimas del responsable del tratamiento. </p></li>
+    <li><p class="wysiwyg-text-align-justify">Los datos de carácter personal objeto de tratamiento no podrán usarse
+        para finalidades incompatibles con aquellas para las que los datos hubieran sido recogidos.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Sólo podrán ser objeto de tratamiento los datos que sean adecuados,
+        pertinentes y no excesivos en relación con las finalidades determinas, explícitas y legítimas par a las
+        que se hayan obtenido. </p></li>
+    <li><p class="wysiwyg-text-align-justify">Los datos de carácter personal serán exactos y puestos al día de forma
+        que respondan con veracidad a la situación actual del afectado. Si los datos fueran recogidos directamente del
+        afectado, se considerarán exactos. </p></li>
+    <li><p class="wysiwyg-text-align-justify">Si los datos de carácter personal sometidos a tratamiento resultaran ser
+        inexactos, en todo o en parte, o incompletos, serán cancelados y sustituidos por los correspondientes datos
+        rectificados o completados en el plazo de diez días desde que se tuviese
+        conocimiento de la inexactitud, salvo que la legislación aplicable al fichero establezca un procedimiento o un
+        plazo específico para ello. </p></li>
+    <li><p class="wysiwyg-text-align-justify">Los datos de carácter personal serán cancelados cuando hayan dejado de
+        ser necesarios o pertinentes para la finalidad para la cual hubieran sido recabados o registrados..</p></li>
+    <li><p class="wysiwyg-text-align-justify">No obstante, podrán conservarse durante el tiempo en que pueda exigirse
+        algún tipo de responsabilidad derivada de una relación u obligación jurídica o de la ejecución de un contrato o
+        de la aplicación de medidas precontractuales, solicitadas por el interesado.</p></li>
+</ul>
+<h2>13.2.- Principio de Información</h2>
+
+<p class="wysiwyg-text-align-justify">Cuando la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }} solicite datos personales de los interesados deberá
+    informarles previamente de modo expreso, preciso e inequívoco:</p>
+<ul>
+    <li><p class="wysiwyg-text-align-justify">De la existencia de un Fichero.</p></li>
+    <li><p class="wysiwyg-text-align-justify">De la finalidad de la recogida de datos.</p></li>
+    <li><p class="wysiwyg-text-align-justify">De los destinatarios de la información.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Del carácter obligatorio o potestativo de las preguntas.</p></li>
+    <li><p class="wysiwyg-text-align-justify">De las consecuencias de la obtención de los datos o de la negativa a
+        suministrarlos.</p></li>
+    <li><p class="wysiwyg-text-align-justify">De la posibilidad de ejercitar los derechos de acceso, rectificación,
+        cancelación y oposición.</p></li>
+    <li><p class="wysiwyg-text-align-justify">De la identidad y dirección de la
+        entidad {{ request.session.gauser_extra.ronda.entidad.name }} o de su representante.</p></li>
+</ul>
+<h2>13.3.- Derechos de Acceso, Rectificación, Cancelación y Bloqueo:</h2>
+
+<h3>13.3.1.- Derecho de acceso</h3>
+
+<p class="wysiwyg-text-align-justify">El derecho de acceso es el derecho del afectado a obtener información sobre si sus
+    propios datos de carácter personal están siendo objeto de tratamiento, la finalidad del tratamiento que, en su caso,
+    se esté realizando, así como la información disponible sobre el origen de dichos datos y las comunicaciones
+    realizadas o previstas de los mismos. </p>
+
+<p class="wysiwyg-text-align-justify">El afectado podrá obtener del responsable del tratamiento información relativa a
+    datos concretos, a datos incluidos en un determinado fichero, o a la totalidad de sus datos sometidos a tratamiento.
+    No obstante, cuando razones de especial complejidad lo justifiquen, el responsable del fichero podrá solicitar del
+    afectado la especificación de los ficheros respecto de los cuales quiera ejercitar el derecho de acceso, a cuyo
+    efecto deberá facilitarle una relación de todos ellos. </p>
+
+
+<p class="wysiwyg-text-align-justify">El particular al ejercitar el derecho de acceso, podrá optar por recibir la
+    información a través de uno o varios de los siguientes sistemas de consulta del fichero:</p>
+<ol>
+    <li><p class="wysiwyg-text-align-justify">Visualización en pantalla.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Escrito, copia o fotocopia remitida por correo, certificado o no.</p>
+    </li>
+    <li><p class="wysiwyg-text-align-justify">Correo electrónico u otros sistemas de comunicaciones electrónicas.</p>
+    </li>
+</ol>
+<p class="wysiwyg-text-align-justify">Los sistemas de consulta del fichero previstos en el apartado anterior podrán
+    restringirse en función de la configuración o implantación material del fichero o de la naturaleza del tratamiento,
+    siempre que el que se ofrezca al afectado sea gratuito y asegure la comunicación escrita si éste así lo exige. </p>
+
+
+<p class="wysiwyg-text-align-justify">Si el responsable del fichero, ofreciera un determinado sistema para hacer
+    efectivo el derecho de acceso y el afectado lo rechazase, aquel no respondería por
+    los posibles riesgos que para la seguridad de la información pudieran derivarse de
+    la elección. </p>
+
+<p class="wysiwyg-text-align-justify">Del mismo modo, si el responsable del fichero, ofreciera un procedimiento para
+    hacer efectivo el derecho de acceso y el afectado exigiese que el mismo se materializase a través de un
+    procedimiento que implique un coste desproporcionado, surtiendo el mismo efecto y garantizando la misma seguridad el
+    procedimiento ofrecido por el responsable, serán de cuenta del afectado los gastos derivados de su elección.</p>
+
+
+<p class="wysiwyg-text-align-justify">La entidad {{ request.session.gauser_extra.ronda.entidad.name }} resolverá
+    sobre la solicitud de acceso en el plazo máximo de un mes a contar desde la recepción de la solicitud, art. 29
+    RLOPD. Transcurrido el plazo sin que de forma expresa se responda a la petición de acceso, el interesado podrá
+    interponer la reclamación prevista en el artículo 18 de la LOPD. </p>
+
+<p class="wysiwyg-text-align-justify">En el caso de que no disponga de datos de carácter personal de los afectados
+    deberá igualmente comunicárselo en el mismo plazo.</p>
+
+<p class="wysiwyg-text-align-justify">Si la solicitud fuera estimada y la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }}, no acompañase a su comunicación la información a la
+    que se refiere el artículo 27.1 LOPD, el acceso se hará efectivo durante los diez días siguientes a dicha
+    comunicación.</p>
+
+<p class="wysiwyg-text-align-justify">La información que se proporcione, cualquiera que sea el soporte en que fuere
+    facilitada, será legible e inteligible.</p>
+
+<p class="wysiwyg-text-align-justify">Dicha información comprenderá todos los datos de base del afectado, los
+    resultantes de cualquier elaboración o proceso informático, así como la información disponible sobre el origen de
+    los datos, los cesionarios de los mismos y la especificación de los concretos usos y finalidades para los que se
+    almacenaron los datos.</p>
+
+
+<p class="wysiwyg-text-align-justify">La entidad podrá denegar el acceso a los datos de carácter personal cuando el
+    derecho ya se haya ejercitado en los doce meses anteriores a la solicitud, salvo que se acredite un interés legítimo
+    al efecto, art. 30 RLOPD.</p>
+
+<p class="wysiwyg-text-align-justify">Podrá también denegarse el acceso en los supuestos en que así lo prevea una Ley o
+    una norma de derecho comunitario de aplicación directa o cuando éstas impidan al responsable del tratamiento revelar
+    a los afectados el tratamiento de los datos a los que se refiera el acceso.</p>
+
+<p class="wysiwyg-text-align-justify">En todo caso, la entidad {{ request.session.gauser_extra.ronda.entidad.name }}
+    informará al afectado de su derecho a recabar la tutela de la Agencia Española de Protección de Datos o, en su caso,
+    de las autoridades de control de las comunidades autónomas, conforme a lo dispuesto en el artículo 18 de la Ley
+    Orgánica 15/1999, de 13 de diciembre.</p>
+
+<h3>13.3.2.- Derecho de Rectificación y Cancelación.</b>
+</h3>
+
+<p class="wysiwyg-text-align-justify">El derecho de rectificación es el derecho del afectado a que se modifiquen los
+    datos que resulten ser inexactos o incompletos, art. 32 RLOPD.</p>
+
+<p class="wysiwyg-text-align-justify">El ejercicio del derecho de cancelación dará lugar a que se supriman los datos que
+    resulten ser inadecuados o excesivos, sin perjuicio del deber de bloqueo conforme al Reglamento de desarrollo de la
+    LOPD. En los supuestos en que el interesado invoque el ejercicio del derecho de cancelación para revocar el
+    consentimiento previamente prestado, se estará a lo dispuesto en la Ley Orgánica 15/1999 de Protección de Datos, de
+    13 de diciembre y en el Reglamento de desarrollo.</p>
+
+<p class="wysiwyg-text-align-justify">La solicitud de rectificación deberá indicar a qué datos se refiere y la
+    corrección que haya de realizarse y deberá ir acompañada de la documentación justificativa de lo solicitado.</p>
+
+<p class="wysiwyg-text-align-justify">En la solicitud de cancelación, el interesado deberá indicar a qué datos se
+    refiere, aportando al efecto la documentación que lo justifique, en su caso.</p>
+
+<p class="wysiwyg-text-align-justify">La entidad {{ request.session.gauser_extra.ronda.entidad.name }} resolverá
+    sobre la solicitud de rectificación o cancelación en el plazo máximo de diez días a contar desde la recepción de la
+    solicitud. Transcurrido el plazo sin que de forma expresa se responda a la petición, el interesado podrá interponer
+    la reclamación prevista en el artículo 18 de la Ley Orgánica 15/1999, de 13 de diciembre.</p>
+
+<p class="wysiwyg-text-align-justify">En el caso de que no disponga de datos de carácter personal del afectado deberá
+    igualmente comunicárselo en el mismo plazo.</p>
+
+<p class="wysiwyg-text-align-justify">Si los datos rectificados o cancelados hubieran sido cedidos previamente, el
+    responsable del fichero deberá comunicar la rectificación o cancelación efectuada al cesionario, en idéntico plazo,
+    para que éste, también en el plazo de diez días contados desde la recepción de dicha comunicación, proceda,
+    asimismo, a rectificar o cancelar los datos.</p>
+
+<p class="wysiwyg-text-align-justify">La rectificación o cancelación efectuada por el cesionario no requerirá
+    comunicación alguna al interesado, sin perjuicio del ejercicio de los derechos por parte de los interesados
+    reconocidos en la Ley Orgánica 15/1999, de 13 de diciembre.</p>
+
+<p class="wysiwyg-text-align-justify">La cancelación no procederá cuando los datos de carácter personal deban ser
+    conservados durante los plazos previstos en las disposiciones aplicables o, en su caso, en las relaciones
+    contractuales entre la persona o entidad responsable del tratamiento y el interesado que justificaron el tratamiento
+    de los datos, art. 33 RLOPD.</p>
+
+<p class="wysiwyg-text-align-justify">Podrán también denegarse los derechos de rectificación o cancelación en los
+    supuestos en que así lo prevea una ley o una norma de derecho comunitario de aplicación directa o cuando éstas
+    impidan al responsable del tratamiento revelar a los afectados el tratamiento de los datos a los que se refiera el
+    acceso.</p>
+
+<p class="wysiwyg-text-align-justify">En todo caso, el responsable del fichero informará al afectado de su derecho a
+    recabar la tutela de la Agencia Española de Protección de Datos o, en su caso, de las autoridades de control de las
+    Comunidades Autónomas, conforme a lo dispuesto en el artículo 18 de la Ley Orgánica 15/1999, de 13 de diciembre.</p>
+
+<h3>13.3.3.- Derecho de Oposición</h3>
+
+<p class="wysiwyg-text-align-justify">El derecho de oposición es el derecho del afectado a que no se lleve a cabo el
+    tratamiento de sus datos de carácter personal o se cese en el mismo en los siguientes supuestos:</p>
+<ol>
+    <li><p class="wysiwyg-text-align-justify">Cuando no sea necesario su consentimiento
+        para el tratamiento, como consecuencia de la concurrencia de un motivo legítimo y fundado, referido a su
+        concreta situación personal, que lo justifique, siempre que una Ley no disponga lo contrario.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Cuando el tratamiento tenga por finalidad
+        la adopción de una decisión referida al afectado y basada únicamente en un tratamiento automatizado de sus datos
+        de carácter personal, en los términos previstos en el artículo 36 del Reglamento de desarrollo de LOPD.</p></li>
+</ol>
+<p class="wysiwyg-text-align-justify">El derecho de oposición se ejercitará mediante solicitud dirigida a la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }}. Cuando la oposición se realice con base
+    del apartado 1 anterior, en la
+    solicitud deberán hacerse constar los motivos fundados y legítimos, relativos a una concreta situación personal del
+    afectado, que justifican el ejercicio de este derecho.</p>
+
+<p class="wysiwyg-text-align-justify">La entidad {{ request.session.gauser_extra.ronda.entidad.name }} resolverá
+    sobre la solicitud de oposición en el plazo máximo de diez días a contar desde la recepción de la solicitud.
+    Transcurrido el plazo sin que de forma expresa se responda a la petición, el interesado podrá interponer la
+    reclamación prevista en el artículo 18 de la Ley Orgánica 15/1999, de 13 de diciembre.</p>
+
+<p class="wysiwyg-text-align-justify">En el caso de que no disponga de datos de carácter personal de los afectados
+    deberá igualmente comunicárselo en el mismo plazo.</p>
+
+<p class="wysiwyg-text-align-justify">La entidad {{ request.session.gauser_extra.ronda.entidad.name }} o el encargado
+    de tratamiento deberá excluir del tratamiento los datos relativos al afectado que ejercite su derecho de oposición o
+    denegar motivadamente la solicitud del interesado en el plazo previsto en el plazo de 10 días. (art. 25.3º del
+    Reglamento de la LOPD).</p>
+
+<p class="wysiwyg-text-align-justify">La aplicación GAUSS, facilita la confección de los documentos para el ejercicio
+    de los derechos de Acceso, Rectificación, Cancelación y Oposición.</p>
+
+
+<h5><u><b>ANEXO I DESCRIPCIÓN DE
+    FICHEROS</b></u></h5>
+
+<p class="wysiwyg-text-align-justify">En el presente anexo se recoge información de los ficheros que son responsabilidad
+    de la entidad {{ request.session.gauser_extra.ronda.entidad.name }} que son
+    registrados en el Registro General de Protección
+    de datos. Asímismo se adjunta el documento NOTA. </p>
+
+
+<p class="wysiwyg-text-align-justify"><b>Nombre del Fichero:</b> Socios de la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }}</p>
+<ol><p class="wysiwyg-text-align-justify">Identificador y nombre del fichero en el Registro General de Protección de
+    Datos de la Agencia Española de Protección de Datos: </p></ol>
+<ul>
+    <li><p class="wysiwyg-text-align-justify">Identificador: &lt;<i>código de inscripción</i>&gt;</p></li>
+    <li><p class="wysiwyg-text-align-justify">Nombre: &lt;<i>nombre inscrito</i>&gt;</p></li>
+    <li><p class="wysiwyg-text-align-justify">Descripción: &lt;<i>descripción inscrita</i>&gt;</p></li>
+</ul>
+<p class="wysiwyg-text-align-justify"><b>Datos tratados:</b> Datos Personales de los socios.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Nivel de medidas de seguridad a adoptar:</b> Básico.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Estructura del fichero principal:</b> nombre y apellidos, dirección,
+    teléfono/s, dirección de correo electrónico, hijos a cargo, fecha nacimiento de lso hijos, cuenta bancaria de la
+    unidad familiar, cargo (si lo tuviere), observaciones médicas relevantes para los fines de la entidad, como por
+    ejemplo intolerancias alimenticias. Y otros datos personales de los socios que por su entidad sean necesarias para
+    la consecución de los fines de la entidad, a la que voluntariamente se han asociado y facilitado sus datos. </p>
+
+<p class="wysiwyg-text-align-justify"><b>Ubicación del sistema de tratamiento:</b> servidor, alojamiento Web-Cloud
+    computing.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Modo de tratamiento:</b> Automatizado.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Sistema de tratamiento:</b> automatizado a través de una aplicación web,
+    mantenida por el encargado del tratamiento. </p>
+<ul><p class="wysiwyg-text-align-justify"><b>Leyes o regulaciones aplicables: </b>fundamentalmente LOPD 15/1999
+    de 13 de diciembre, RD 1720/2007 de 21 de diciembre y su Reglamento de desarrollo.</p></ul>
+<p class="wysiwyg-text-align-justify"><b>Obtención de los Datos:</b> El suministro de los datos de los socios han sido
+    facilitados de forma voluntaria por el propio colectivo de personas que forman parte de la entidad.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Servicio ante el que se ejercitan los derechos de acceso, rectificación,
+    cancelación y oposición: </b>{% for responsable in  estructura_lopd.responsables_fichero.all %}
+    {{ responsable.email }} ({{ responsable.get_full_name }}), {% endfor %}</p>
+
+<p class="wysiwyg-text-align-justify"><b>Relación de usuarios con acceso autorizado:</b> Miembros del Equipo Gestor.
+</p>
+
+<p class="wysiwyg-text-align-justify"><b>Descripción de las copias de respaldo:</b> automática por la misma aplicación
+    web.</p>
+
+<p class="wysiwyg-text-align-justify"><b>Relación de usuarios con acceso autorizado:</b> la relación de los mismos se
+    mantiene de forma informatizada. El listado de los usuarios autorizados en el tratamiento de los datos de carácter
+    personal, así como los permisos de acceso de cada uno de ellos, deberá ser actualizado, por el equipo gestor.
+    Pudiendo el responsable imprimir la relación de usuarios y adjuntarla periódicamente a este Anexo.</p>
+
+
+<h5>ANEXO II <u>NOMBRAMIENTOS, DELEGACIONES
+    Y USUARIOS</u>-</h5>
+
+<p class="wysiwyg-text-align-justify">El presente anexo se detalla la relación del personal con acceso a los datos
+    personales de la entidad, que serán nombrados por el Equipo Gestor, a los que se les habrá atribuído un perfil
+    para cumplir con su labor en la entidad. De las figuras detalladas a continuación, podrán existir todos o
+    algunos, o coincidir en la misma persona varios perfiles, siempre nombrados por el Equipo Gestor, según las
+    necesidades de la entidad y vigencia de los cargos.</p>
+
+<p class="wysiwyg-text-align-justify"><b>La relación de estos nombramientos quedarán registradas en la aplicación web,
+    por el responsable correspondiente, pudiendo imprimirse en un momento determinado, y adjuntarse a este ANEXO.</b>
+</p>
+
+
+<p class="wysiwyg-text-align-justify">El Equipo Gestor debe notificar la circular de seguridad y el compromiso de
+    confidencialidad, que se encuentra en el presente ANEXO, a todos los usuarios de la entidad. </p>
+
+
+<p class="wysiwyg-text-align-justify"><b>NOMBRAMIENTO DEL RESPONSABLE DE SEGURIDAD.</b></p>
+
+<p class="wysiwyg-text-align-justify"><b>( en caso de existir este figura)</b></p>
+
+<p class="wysiwyg-text-align-justify">El Equipo Gestor de la Asociación {{ request.session.gauser_extra.ronda.entidad.name }},
+    como responsable último del
+    fichero, ha nombrado en fecha {{ estructura_lopd.modificado|date }} (última fecha de modificación) a
+    {% for responsable in  estructura_lopd.responsables_seguridad.all %}
+        {{ responsable.get_full_name }}, {% endfor %}, como responsable{{ responsables_seguridad.count|pluralize }} de
+    seguridad, art. 95 RLOPD, que llevará {{ responsables_seguridad.count|pluralize:'n' }} a cabo las siguientes
+    funciones:</p>
+<ul>
+    <li><p class="wysiwyg-text-align-justify">Actualizar el documento de seguridad y adecuación del documento de
+        seguridad a la normativa vigente.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Establecerán mecanismos que permita la identificación de forma inequívoca
+        y personalizada de todo aquel usuario que intente acceder al sistema de información y la verificación de que
+        está autorizado.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Establecer mecanismos para evitar que un usuario acceda a datos o
+        recursos con derechos distintos a los autorizados.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Mantener una relación actualizada de los usuarios del sistema, indicando
+        sus derechos de acceso.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Mantener una relación del personal con acceso autorizado a los lugares
+        donde se almacenan los soportes y documentos.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Adoptar las medidas necesarias para que el personal conozca las normas en
+        materia de seguridad que afectan al desarrollo de sus funciones y de las consecuencias en que pudieran incurrir
+        en caso de incumplimiento, notificándoles la circular y el compromiso de confidencialidad, obrantes en este
+        ANEXO.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Verifica la definición y correcta aplicación de los procedimientos de
+        realización de copias de respaldo y recuperación de los datos.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Autorizar por escrito la ejecución de los procesos de recuperación de los
+        datos.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Adoptará las medidas correctoras como consecuencia de las deficiencias
+        detectadas en un proceso de auditoría y aprobadas por la Dirección de la Asociación..</p></li>
+    <li><p class="wysiwyg-text-align-justify">Recoger cuantas incidencias de seguridad se produzcan sobre los datos que
+        se traten. Custodiar toda la documentación, incluido los contratos o acuerdos que se mantengan con terceros.</p>
+    </li>
+    <li><p class="wysiwyg-text-align-justify">Asimismo se encargará de la gestión de autorizaciones y acceso a de los
+        usuarios autorizados, de acuerdo al art. 91 RLOPD.</p></li>
+</ul>
+<p class="wysiwyg-text-align-justify">En {{ request.session.gauser_extra.ronda.entidad.localidad }} a {{ fecha.dia }}
+    de {{ fecha.mes }} de
+    {{ fecha.ano }} </p>
+
+<p class="wysiwyg-text-align-justify">Fdo:___________________</p>
+
+<p class="wysiwyg-text-align-justify">Responsable de Seguridad</p>
+
+
+<table>
+    <tbody>
+    <tr>
+        <td><p class="wysiwyg-text-align-center">Nombre y apellidos</p></td>
+        <td><p class="wysiwyg-text-align-center">Cargo</p></td>
+        <td><p class="wysiwyg-text-align-center">Perfiles de acceso </p></td>
+        <td><p class="wysiwyg-text-align-center">Fechas de alta y baja</p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">{{ entidad.secretario.nombre }}</p></td>
+        <td><p class="wysiwyg-text-align-justify">{{ entidad.secretario.cargo }}</p></td>
+        <td><p class="wysiwyg-text-align-justify">Sección </p></td>
+        <td><p class="wysiwyg-text-align-justify">Alta:{{ entidad.secretario.alta }}</p>
+
+            <p class="wysiwyg-text-align-justify">Baja:{{ entidad.secretario.baja }}</p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">{{ entidad }}</p></td>
+        <td><p class="wysiwyg-text-align-justify">{{ entidad.cargo }}</p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify">Alta: {{ entidad.coordinador.alta }}</p>
+
+            <p class="wysiwyg-text-align-justify">Baja:{{ entidad.coordinador.baja }}</p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">{{ entidad.tesorero }}             </p></td>
+        <td><p class="wysiwyg-text-align-justify">{{ entidad.tesorero.cargo }}</p></td>
+        <td><p class="wysiwyg-text-align-justify">Sección contabilidad</p>
+
+            <p class="wysiwyg-text-align-justify">{{ entidad.tesorero.perfiles }}</p></td>
+        <td><p class="wysiwyg-text-align-justify">Alta: {{ entidad.tesorero.alta }}</p>
+
+            <p class="wysiwyg-text-align-justify">Baja:{{ entidad.tesorero.baja }}</p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">{{ encargado.tratamiento }}</p></td>
+        <td><p class="wysiwyg-text-align-justify">Sistemas de Gestión Aumentada</p></td>
+        <td><p class="wysiwyg-text-align-justify">E.T.</p></td>
+        <td><p class="wysiwyg-text-align-justify">{{ fecha.inicio.contrato }}</p></td>
+    </tr>
+    </tbody>
+</table>
+
+
+<p class="wysiwyg-text-align-justify">O:</p>
+
+<p class="wysiwyg-text-align-justify"><b>USUARIOS DEL FICHERO</b></p>
+<table>
+    <tbody>
+    <tr>
+        <td><p class="wysiwyg-text-align-center"><b>Nombre y apellidos</b></p></td>
+        <td><p class="wysiwyg-text-align-center"><b>Sección</b></p></td>
+        <td><p class="wysiwyg-text-align-center"><b>Perfil</b></p></td>
+        <td><p class="wysiwyg-text-align-center"><b>Alta</b></p></td>
+        <td><p class="wysiwyg-text-align-center"><b>Baja</b></p></td>
+    </tr>
+    <tr>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    </tbody>
+</table>
+
+
+<p class="wysiwyg-text-align-justify"><u>DELEGACIÓN DE AUTORIZACIONES</u></p>
+
+<p class="wysiwyg-text-align-justify">De acuerdo con el artículo 84 del RDLOPD, las funciones atribuídas al responsable
+    del fichero o tratamiento podrán ser delegadas en otras personas. En el documento de seguridad deberán constar las
+    personas habilitadas para otorgar estas autorizaciones así como aquellas en las que recae dicha delegación.
+    Actualizar la relación de estas delegaciones en la aplicación web, será igualmente labor del responsable del
+    fichero, o en su caso del responsable de seguridad, que podrá imprimirla y adjuntarla en este ANEXO. En ningún caso
+    esta designación supone una delegación de la responsabilidad que corresponde al responsable del fichero. </p>
+
+<p class="wysiwyg-text-align-justify">A continuación se detalla un modelo de solicitud de permisos de usuarios.</p>
+
+
+<p class="wysiwyg-text-align-justify">PERMISOS DE USUARIOS</p>
+<table>
+    <tbody>
+    <tr>
+        <td><p class="wysiwyg-text-align-center"><b>Nombre y apellidos</b></p></td>
+        <td><p class="wysiwyg-text-align-center"><b>Cargo</b></p></td>
+        <td><p class="wysiwyg-text-align-center"><b>Funciones </b></p></td>
+    </tr>
+    <tr>
+        <td colspan="3"><p class="wysiwyg-text-align-justify">Régimen:</p>
+
+            <p class="wysiwyg-text-align-justify">Miembro equipo gestor:</p>
+
+            <p class="wysiwyg-text-align-justify">Voluntario:</p>
+
+            <p class="wysiwyg-text-align-justify"><br></p></td>
+    </tr>
+    <tr>
+        <td colspan="3"><p class="wysiwyg-text-align-justify">Tipo de solicitud: </p>
+
+            <p class="wysiwyg-text-align-justify">- alta de usuario</p>
+
+            <p class="wysiwyg-text-align-justify">- modificación de permisos</p>
+
+            <p class="wysiwyg-text-align-justify">- baja de usuario:</p></td>
+    </tr>
+    <tr>
+        <td colspan="3"><p class="wysiwyg-text-align-justify">Motivo:</p>
+
+            <p class="wysiwyg-text-align-justify">- Alta en la organización</p>
+
+            <p class="wysiwyg-text-align-justify">- Baja en la Asociación</p>
+
+            <p class="wysiwyg-text-align-justify">- Cambio de cargo o puesto</p>
+
+            <p class="wysiwyg-text-align-justify">- Concesión de permiso especialmente</p></td>
+    </tr>
+    <tr>
+        <td colspan="3"><p class="wysiwyg-text-align-justify">Periodo:</p>
+
+            <p class="wysiwyg-text-align-justify">fecha inicio:_/_/_ fecha fin:_/_/_/</p></td>
+    </tr>
+    <tr>
+        <td colspan="3"><p class="wysiwyg-text-align-justify">Autorización:</p>
+
+            <p class="wysiwyg-text-align-justify"><br></p>
+
+            <p class="wysiwyg-text-align-justify"><br></p>
+
+            <p class="wysiwyg-text-align-justify">Responsable de seguridad responsable del fichero</p>
+
+            <p class="wysiwyg-text-align-justify"><br></p>
+
+            <p class="wysiwyg-text-align-justify"><br></p>
+
+            <p class="wysiwyg-text-align-justify">NOTA: para permisos extraordinarios deberá autorizar el equipo
+                gestor.</p></td>
+    </tr>
+    <tr>
+        <td colspan="3"><p class="wysiwyg-text-align-justify">Accesos autorizados</p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">Recurso</p></td>
+        <td><p class="wysiwyg-text-align-justify">Tipo de acceso</p></td>
+        <td><p class="wysiwyg-text-align-justify">Identificador usuario</p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+    </tr>
+    </tbody>
+</table>
+
+
+<p class="wysiwyg-text-align-justify"><u>FICHEROS NO AUTOMATIZADOS</u></p>
+
+<p class="wysiwyg-text-align-justify">El sistema de información no automatizado de la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }} se compone de dispositivos de almacenamiento
+    (armarios y archivadores), en la sede de la entidad, donde se almacenan los documentos que contienen los datos de
+    carácter personal.</p>
+
+<p class="wysiwyg-text-align-justify">Estos disponen de mecanismos que obstaculizan su apertura, la custodia de los
+    mecanismos de apertura de los mismos por las personas autorizadas, garantizando la correcta conservación de los
+    documentos, la localización y consulta de la información. Se asegura en estos casos también por el responsable del
+    fichero, el ejercicio de los derechos de oposición al tratamiento, acceso, rectificación y cancelación.</p>
+
+<p class="wysiwyg-text-align-justify">Se han establecido mecanismos para evitar que un usuario pueda acceder a recursos
+    con derechos distintos de los autorizados (mediante llaves). El Equipo Gestor podrá conceder, alterar o anular el
+    acceso autorizado a los ficheros no automatizados.</p>
+
+<p class="wysiwyg-text-align-justify">El acceso por parte de otras personas no autorizadas está estrictamente
+    prohibido, y únicamente podrá producirse mediante petición firmada del interesado y autorización por el Equipo
+    Gestor, el responsable de seguridad se encargará de archivar todas las peticiones.</p>
+
+<p class="wysiwyg-text-align-justify">Los soportes no automatizados de la entidad con datos personales (papel),
+    posibilitan la identificación de su contenido y han sido inventariados.</p>
+
+<p class="wysiwyg-text-align-justify">No está permitida la salida de ningún soporte o documento fuera de la
+    organización, cuya salida no haya sido previamente autorizada. </p>
+
+<p class="wysiwyg-text-align-justify">Cuando se desecha cualquier documento o soporte que contenga datos de carácter
+    persona se procederá a su destrucción, de manera que impida la reconstrucción posterior del documento, mediante el
+    uso de destructora.</p>
+
+
+<p class="wysiwyg-text-align-justify"><u>Usuarios con permisos de acceso a Ficheros no Automatizados:</u></p>
+
+<p class="wysiwyg-text-align-justify">Nombre y apellidos, Cargo, Funciones, Fecha,</p>
+
+
+<h6 class="wysiwyg-text-align-justify"><a target="_blank"
+                                          rel="nofollow"></a> <u>CIRCULAR
+    DE SEGURIDAD DE DATOS PERSONALES PARA TODOS LOS USUARIOS.</u></h6>
+
+<p class="wysiwyg-text-align-justify">El objeto de la presente circular es la difusión de las funciones y obligaciones
+    del personal de la Asociación {{ request.session.gauser_extra.ronda.entidad.name }}, en materia de seguridad de datos
+    personales, según se establece
+    en la Ley Orgánica 15/1999, de Protección de Datos de carácter personal (BOE 14/12/1999) y su desarrollo
+    reglamentario aprobado por Real Decreto 1720/2007 de 21 de diciembre (BOE 19/1/2008). El citado Reglamento exige la
+    observancia, entre otros, los siguientes aspectos:</p>
+<ul>
+    <li><p class="wysiwyg-text-align-justify">Implementar las medidas de índole técnicas y organizativas necesarias
+        para garantizar la seguridad que deben reunir los ficheros con datos de carácter personal, automatizados o no
+        automatizados, los centros de tratamiento, locales, equipos, sistemas, programas y personas que intervengan en
+        el tratamiento de los datos de carácter personal.</p></li>
+    <li><p class="wysiwyg-text-align-justify">La existencia de un Documento de Seguridad donde se recojan las medidas
+        definidas para garantizar lo dispuesto en Reglamento de seguridad.</p></li>
+    <li><p class="wysiwyg-text-align-justify">La calificación como infracción leve, grave, o muy grave, según el caso,
+        del incumplimiento de las medidas de seguridad descritas en el Reglamento, pudiendo sancionarse por la Agencia
+        Española de Protección de Datos con multa de 60.101 601.012,10 euros.</p>
+
+        <p class="wysiwyg-text-align-justify">La normativa de seguridad plasmada en el Documento de Seguridad es de
+            obligado cumplimiento para todo el personal de la Asociación con acceso a los datos automatizados de
+            carácter personal y a los sistemas de información. Este manual se encuentra a disposición de quién lo desee
+            consultar, previa solicitud al Responsable de seguridad. </p>
+
+        <p class="wysiwyg-text-align-justify">No obstante, a continuación se presenta un resumen de los datos más
+            relevantes:</p></li>
+</ul>
+<ol>
+    <li><p class="wysiwyg-text-align-justify">Con relación a los datos personales almacenados en sistemas no
+        automatizados (papel) se observará las siguientes normas:</p>
+        <ol><p class="wysiwyg-text-align-justify">- mientras la documentación con datos de carácter personal no se
+            encuentre archivada en los dispositivos habilitados para su almacenamiento, por estar en proceso de revisión
+            o tramitación, ya sea previo o posterior a su archivo, las persona que se encuentre al cargo de la misma
+            deberá custodiarla e impedir en todo momento que pueda ser accedida por personal no autorizado.</p>
+
+            <p class="wysiwyg-text-align-justify">- la generación de copias o la reproducción de los documentos
+                únicamente podrá ser realizada bajo el control del personal autorizado en el Documento de Seguridad.</p>
+
+            <p class="wysiwyg-text-align-justify">- deberá procederse a la destrucción de las copias o reproducciones
+                desechadas de forma que se evite el acceso a la información contenida en las mismas o su recuperación
+                posterior.</p>
+
+            <p class="wysiwyg-text-align-justify">- siempre que se proceda al traslado físico de la documentación
+                contenida en un fichero, deberán adoptarse medidas dirigidas a impedir el acceso o manipulación de la
+                información objeto de traslado.</p></ol>
+    </li>
+    <li><p class="wysiwyg-text-align-justify">Con relación a las contraseñas se habrán de observar las siguientes
+        normas:</p>
+
+        <p class="wysiwyg-text-align-justify">- Se evitarán nombres comunes, números de matrículas de vehículos,
+            teléfonos, nombres de familiares, amigos, etc.. y derivados del nombre de usuario como permutaciones o
+            cambio de orden de las letras, transposiciones, repeticiones de un único carácter, etc.</p>
+
+        <p class="wysiwyg-text-align-justify">- No se accederá al sistema utilizando el identificador y la contraseña
+            de otro usuario. Las responsabilidades de cualquier acceso realizado utilizando un identificador
+            determinado, recaerán sobre el usuario al que hubiera sido asignado.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Cualquier soporte informático recibido en la organización, deberá, ser
+        registrado, siguiendo, el procedimiento establecido en el Documento de Seguridad. Una vez procesado, el soporte
+        recibido deberá ser borrado completamente, en el caso de que por un motivo justificado se desee conservar el
+        soporte recibido, deberá inventariarse, siguiendo las normas descritas en el Documento de Seguridad.</p></li>
+    <li><p class="wysiwyg-text-align-justify">La salida de soportes informáticos y ordenadores personales que contengan
+        datos de carácter personal fuera de la organización precisa de autorización. En el documento de Seguridad se
+        describen el procedimiento para obtenerla. </p></li>
+    <li><p class="wysiwyg-text-align-justify">Toda incidencia en materia de seguridad deberá comunicarse, siguiendo las
+        instrucciones determinadas en el citado manual, al responsable de seguridad.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Todos los ficheros temporales que los usuarios mantengan en sus
+        ordenadores personales deberá ser borrados, una vez hay finalizado la finalidad para la que fueron creados.</p>
+    </li>
+    <li><p class="wysiwyg-text-align-justify">Queda terminantemente prohibido la creación de nuevos ficheros que
+        supongan el tratamiento de datos personales así como la cesión de los mismos sin previa autorización del Equipo
+        Gestor de la Asociación.</p></li>
+    <li><p class="wysiwyg-text-align-justify">No está permitido instalar ningún producto informático en ordenadores y
+        sistemas de información de la Asociación. Todas aquellas aplicaciones necesarias para el desempeño de su trabajo
+        serán instaladas únicamente por personal del responsable de seguridad o por la empresa prestataria de los
+        servicios informáticos. </p></li>
+    <li><p class="wysiwyg-text-align-justify">Queda prohibido utilizar los recursos de los sistemas a los que tenga
+        acceso para uso privado, acceso remoto a las aplicaciones, sistemas de información no recogidos en el Documento
+        de Seguridad, incluyendo la compartición de archivos mediante redes peer to peer o para cualquier
+        otra finalidad diferente de las estrictamente relacionadas con el fin de la Asociación. Se preserva a la entidad
+        el derecho de revisar el correo electrónico del personal, así como el de monitorizar cualquier sesión de acceso
+        a Internet iniciada por cualquier usuario de la Asociación {{ request.session.gauser_extra.ronda.entidad.name }}.</p>
+    </li>
+    <li><p class="wysiwyg-text-align-justify">Bajo ningún concepto puede revelarse a persona alguna ajena a la
+        Asociación información, a la que haya tenido acceso en el desempeño de sus funciones, sin la debida
+        autorización. </p></li>
+    <li><p class="wysiwyg-text-align-justify">Queda terminantemente prohibido facilitar a persona alguna ajena a la
+        Asociación ningún soporte conteniendo datos, a los que haya tenido acceso en el desempeño de sus funcione, sin
+        la debida autorización.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Únicamente está permitido utilizar la información referida en el apartado
+        anterior en le forma exigida por el desempeño de sus funciones en la
+        Asociación {{ request.session.gauser_extra.ronda.entidad.name }} sin estar
+        permitido disponer de ella de ninguna otra forma o para otra finalidad diferente.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Todos los usuarios finales han sido informados de la prohibición de
+        utilizar herramientas que permitan la recuperación masiva de información en sus ordenadores. No obstante,
+        ciertos usuarios disponen de alguna aplicación que permite tratar y descargar e la base de datos significativos
+        volúmenes de información.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Los usuarios que han sido autorizados para la utilización de este tipo de
+        herramientas, también han sido informados de que la descarga de información debe realizarse únicamente su unidad
+        virtual del disco del servidor y que una vez concluida la finalidad que motivó la creación del fichero, éste
+        debe ser cancelado. </p></li>
+    <li><p class="wysiwyg-text-align-justify">De un momo similar, los ficheros con datos de carácter personal que se
+        reciban por correo electrónico deberán ser cancelados cuando hayan dejado de ser necesarios y su tratamiento,
+        deberá haber sido previamente autorizado.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Queda terminantemente prohibido utilizar ninguna información que hubiese
+        podido obtener por su condición de asociado, voluntario de la
+        Asociación {{ request.session.gauser_extra.ronda.entidad.name }} y que no sea
+        necesario para el desempeño de sus funciones.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Todos lo compromisos anteriores deben mantenerse, incluso después de
+        extinguida la relación que se mantenga con la Asociación.</p></li>
+</ol>
+
+
+<p class="wysiwyg-text-align-justify">Para cualquier aclaración al respecto puede contactar con el responsable del
+    fichero, dirigiendo un correo electrónico a la siguiente dirección:</p>
+
+<p class="wysiwyg-text-align-justify">{{ responsablefichero.mail }}
+    y/o {% for responsable in  estructura_lopd.responsables_seguridad.all %}
+        {{ responsable.email }} ({{ responsable.get_full_name }}), {% endfor %}</p>
+
+
+<p class="wysiwyg-text-align-justify">En en {{ entidad.localidad }} a {{ fecha.dia }} de {{ fecha.mes }} de
+    {{ ano }}.</p>
+
+<p class="wysiwyg-text-align-justify">Firmado:</p>
+
+<p class="wysiwyg-text-align-justify">El/la usuario /voluntario.</p>
+
+
+<p><br><br></p>
+
+<h6>COMPROMISO DE CONFIDENCIALIDAD PARA LOS USUARIOS-
+    VOLUNTARIOS</h6>
+
+
+<p class="wysiwyg-text-align-justify">El abajo firmante,D/Dª {{ scouter.nombre }} con DNI {{ scouter.dni }} en
+    domicilio en {{ socuter.domicilio }} en el marco de la relación que mantiene con la
+    Asociación {{ request.session.gauser_extra.ronda.entidad.name }},
+    se compromete a:</p>
+<ul>
+    <li><p class="wysiwyg-text-align-justify">No revelar a persona alguna ajena a la
+        Asociación {{ request.session.gauser_extra.ronda.entidad.name }},
+        sin su consentimiento, la información referente a la que haya tenido acceso en el desempeño de sus funciones en
+        la Asociación {{ request.session.gauser_extra.ronda.entidad.name }},, excepto en el caso de que ello sea necesario
+        para dar debido cumplimiento a
+        obligaciones del abajo firmante o de la entidad impuestas por las leyes o normas que resulten de aplicación, o
+        sea requerido para ello por mandado de la autoridad competente con arreglo a Derecho.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Utilizar la información a que alude el apartado anterior únicamente en la
+        forma que exija el desempeño de sus funciones en la Asociación {{ request.session.gauser_extra.ronda.entidad.name }},
+        y no disponer de ella de
+        ninguna otra forma o con otra finalidad. </p></li>
+    <li><p class="wysiwyg-text-align-justify">No utilizar en forma alguna cualquier otra información que hubiese podido
+        obtener prevaliéndose de su condición de socio o voluntario de la
+        Asociación {{ request.session.gauser_extra.ronda.entidad.name }}, y que no sea
+        necesaria para le desempeño de sus funciones en la
+        Asociación {{ request.session.gauser_extra.ronda.entidad.name }}.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Cumplir en el desarrollo de sus funciones en la
+        Asociación {{ request.session.gauser_extra.ronda.entidad.name }}, la normativa vigente, nacional y comunitaria.
+        Relativa a la protección de datos
+        de carácter personal y, en particular, la LOPD y disposiciones complementarias o cualquier otra norma que las
+        sustituya en el futuro.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Cumplir los compromisos anteriores incluso después de extinguida, por
+        cualquier causa, la relación laboral que le uniera con la
+        Asociación {{ request.session.gauser_extra.ronda.entidad.name }}.</p></li>
+</ul>
+<p class="wysiwyg-text-align-justify">Declaro el entendimiento del presente documento, manifiesto mi conformidad con su
+    contenido y acepto el cumplimiento de todas las normas que en el mismo se proponen y/o adjuntan, y para que surta
+    plenos efectos, firmo la presente declaración, en {{ entidad.localidad }} a {{ fecha.dia }} de {{ fecha.mes }} de
+    {{ ano }}</p>
+
+<p class="wysiwyg-text-align-justify">Firma:</p>
+
+<h5>ANEXO III <u><b>AUTORIZACIONES
+    DE SALIDA O RECUPERACIÓN DE DATOS.</b></u></h5>
+
+<p>Modelos de autorizaciones:</p>
+
+<p><br></p>
+
+<p><b>Nº Salida:</b> 1</p>
+
+<p>Tipo de Soporte: Salida</p>
+
+<p>Destinatario: {{ Hacienda_Publica }}</p>
+
+<p>Periodicidad: {{ Anual_mensual }}</p>
+
+<p>Información contenida: necesarios para declarar los ingresos y gastos</p>
+
+<p>Medidas de Seguridad adoptadas: cifrado</p>
+
+<p><br></p>
+
+<p><b>Nº salida:</b> 2</p>
+
+<p>Tipo de Soporte: Salida</p>
+
+<p>Destinatario: {{ Bancos_y_cajas_de_Ahorro }}</p>
+
+<p>Periodicidad: {{ Anual_mensual }}</p>
+
+<p>Información contenida: necesarios para realizar el cobro de recibos</p>
+
+<p>Medidas de Seguridad adoptadas: cifrado</p>
+
+<h5><u>ANEXO IV REGISTRO DE ENTRADA
+    Y SALIDA DE SOPORTES</u></h5>
+
+<p>En la aplicación web quedará constancia de un historial de estos registros.?</p>
+
+<p><br></p>
+<table>
+    <tbody>
+    <tr>
+        <td colspan="2"><p><b>Modelo autorización ENTRADA de soporte</b></p></td>
+    </tr>
+    <tr>
+        <td><p>Soporte</p></td>
+        <td><p>Fecha:{{ entrada.fecha }} y hora{{ entrada.hora }}de entrada de soporte</p></td>
+    </tr>
+    <tr>
+        <td><p>Tipo de soporte y nº</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Contenido</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Fecha de creación</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    </tbody>
+</table>
+<p><br></p>
+<table>
+    <tbody>
+    <tr>
+        <td colspan="2"><p>ORIGEN Y FINALIDAD</p></td>
+    </tr>
+    <tr>
+        <td><p>Finalidad</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Origen</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    </tbody>
+</table>
+<p><br></p>
+<table>
+    <tbody>
+    <tr>
+        <td colspan="2"><p>FORMA DE ENVIO</p></td>
+    </tr>
+    <tr>
+        <td><p>Medio de envío</p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Remitente</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Precauciones para el transporte</p></td>
+        <td><p><br></p></td>
+    </tr>
+    </tbody>
+</table>
+<p><br></p>
+<table>
+    <tbody>
+    <tr>
+        <td colspan="2"><p>AUTORIZACIÓN</p></td>
+    </tr>
+    <tr>
+        <td><p>Persona responsable de la recepción</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Cargo/puesto</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Observaciones</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Firma </p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    </tbody>
+</table>
+<p><br></p>
+
+<p><br></p>
+<table>
+    <tbody>
+    <tr>
+        <td colspan="2"><p><b>Modelo autorización SALIDA de soporte</b></p></td>
+    </tr>
+    <tr>
+        <td><p>Soporte</p></td>
+        <td><p>Fecha:{{ salida.fecha }} y hora{{ salida.hora }}de salida de soporte</p></td>
+    </tr>
+    <tr>
+        <td><p>Tipo de soporte y nº</p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Contenido</p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-center">Ficheros de donde proceden los datos</p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Fecha de creación</p></td>
+        <td><p><br></p></td>
+    </tr>
+    </tbody>
+</table>
+<p><br></p>
+<table>
+    <tbody>
+    <tr>
+        <td colspan="2"><p>FINALIDAD y DESTINO</p></td>
+    </tr>
+    <tr>
+        <td><p>Finalidad</p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Destino</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Destinatario </p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    </tbody>
+</table>
+<p><br></p>
+<table>
+    <tbody>
+    <tr>
+        <td colspan="2"><p>FORMA DE ENVIO</p></td>
+    </tr>
+    <tr>
+        <td><p>Medio de envío</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Remitente</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Precauciones para el transporte</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    </tbody>
+</table>
+<p><br></p>
+<table>
+    <tbody>
+    <tr>
+        <td colspan="2"><p>AUTORIZACIÓN</p></td>
+    </tr>
+    <tr>
+        <td><p>Persona responsable de la entrega</p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Cargo/puesto</p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Observaciones</p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Firma </p></td>
+        <td><p><br></p></td>
+    </tr>
+    </tbody>
+</table>
+<p><br></p>
+
+<p><br></p>
+
+<p><br></p>
+
+<p><br></p>
+
+<p><br></p> <h5>ANEXO V INVENTARIO DE SOPORTES</h5>
+
+<p class="wysiwyg-text-align-justify">En el presente Anexo se recoge una relación de las soportes existentes que pueden
+    almacenar datos de carácter personal de la entidad. Inventario que se encuentra en la aplicación web, donde el
+    responsable del fichero actualizará los soportes de la entidad, y podrá imprimir la misma y adjuntarla a este
+    anexo.</p>
+
+
+<table>
+    <tbody>
+    <tr>
+        <td><p class="wysiwyg-text-align-center">Aplicación/</p></td>
+        <td><p class="wysiwyg-text-align-center">Descripción</p></td>
+        <td><p class="wysiwyg-text-align-center">Sistema</p></td>
+        <td><p class="wysiwyg-text-align-center">Fabricante</p></td>
+        <td><p class="wysiwyg-text-align-center">Ubicación </p></td>
+        <td><p class="wysiwyg-text-align-center">Nivel seguridad</p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-center">OFFICE</p></td>
+        <td><p class="wysiwyg-text-align-center">Software de gestión administrativa</p></td>
+        <td><p class="wysiwyg-text-align-center">Windows</p></td>
+        <td><p class="wysiwyg-text-align-center">Microsoft</p></td>
+        <td><p class="wysiwyg-text-align-center">Sede responsable del Fichero</p></td>
+        <td><p class="wysiwyg-text-align-center">Básico </p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">Copia de seguridad</p></td>
+        <td><p class="wysiwyg-text-align-justify">USB</p></td>
+        <td><p class="wysiwyg-text-align-justify">Domicilio del responsable del fichero</p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify">01</p>
+
+            <p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify">Copia de seguridad</p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">Copia seguridad</p></td>
+        <td><p class="wysiwyg-text-align-justify">Disco duro</p>
+
+            <p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify">Domicilio de la secretaria</p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify">02</p></td>
+        <td><p class="wysiwyg-text-align-justify">Copia seguridad</p></td>
+    </tr>
+    </tbody>
+</table>
+
+
+<h5>ANEXO VI <u><b>CONTRATOS DE
+    PRESTACIÓN DE SERVICIOS.</b></u></h5>
+
+
+<p class="wysiwyg-text-align-justify">Este anexo recoge, de existir, una relación de los datos tratados por terceros,
+    como consecuencia de un contrato de prestación de servicios. A continuación se presenta un modelo de tabla para
+    recoger esta información:</p>
+
+
+<table>
+    <tbody>
+    <tr>
+        <td><p class="wysiwyg-text-align-center"><br></p>
+
+            <p class="wysiwyg-text-align-center">Prestador del servicio</p></td>
+        <td><p class="wysiwyg-text-align-center"><br></p>
+
+            <p class="wysiwyg-text-align-center">Finalidades</p></td>
+        <td><p class="wysiwyg-text-align-center"><br></p>
+
+            <p class="wysiwyg-text-align-center">Datos facilitados</p></td>
+        <td><p class="wysiwyg-text-align-center"><br></p>
+
+            <p class="wysiwyg-text-align-center">Lugar de trabajo</p></td>
+        <td><p class="wysiwyg-text-align-center"><br></p>
+
+            <p class="wysiwyg-text-align-center">Nivel de seguridad</p></td>
+        <td><p class="wysiwyg-text-align-center">Ubicación del documento de seguridad</p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-center">Sistemas de Gestión Aumentada</p></td>
+        <td><p class="wysiwyg-text-align-center">Cloud computing</p></td>
+        <td><p class="wysiwyg-text-align-center">Socios</p></td>
+        <td><p class="wysiwyg-text-align-center">web</p></td>
+        <td><p class="wysiwyg-text-align-center">básico</p></td>
+        <td><p class="wysiwyg-text-align-center">Nube</p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-center"><br></p></td>
+        <td><p class="wysiwyg-text-align-center"><br></p></td>
+        <td><p class="wysiwyg-text-align-center"><br></p></td>
+        <td><p class="wysiwyg-text-align-center"><br></p></td>
+        <td><p class="wysiwyg-text-align-center"><br></p></td>
+        <td><p class="wysiwyg-text-align-center"><br></p></td>
+    </tr>
+    </tbody>
+</table>
+
+
+<p class="wysiwyg-text-align-justify">*El sistema de tratamiento es propiedad de Sistemas de Gestión Aumentada, como
+    encargado del tratamiento.</p>
+
+<p class="wysiwyg-text-align-justify">Los datos se tratan exclusivamente en los sistemas del prestador del servicio,
+    Sistemas de Gestión Aumentada, así reflejado en el contrato de prestación de servicios firmado entre la entidad y
+    Sistemas de Gestión Aumentada, como la confección del presente documento, según las exigencias del art. 12 LOPD, y
+    el
+    art. 88.5º RLOPD. </p>
+
+<h5><u>ANEXO VII REGISTRO DE
+    INCIDENCIAS</u></h5>
+
+<p class="wysiwyg-text-align-justify">El registro está informatizado, siendo <b>gaumentada.es l</b>a ruta de acceso, y
+    GAUSS la aplicación utilizada. Modelos de notificación y registro de incidencias:</p>
+
+<p><br></p>
+<table>
+    <tbody>
+    <tr>
+        <td colspan="2"><p>NOTIFICACIÓN DE INCIDENCIA</p></td>
+    </tr>
+    <tr>
+        <td><p>Nº de incidencia</p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td colspan="2"><p>Fecha de notificación: {{ notificacion.fecha }} Hora:{{ notificacion.hora }}</p></td>
+    </tr>
+    <tr>
+        <td colspan="2"><p>Usuario que realiza la notificación:</p></td>
+    </tr>
+    <tr>
+        <td colspan="2"><p>Personas a las que se le comunica la incidencia</p>
+
+            <p><br></p></td>
+    </tr>
+    <tr>
+        <td colspan="2"><p>DESCRIPCIÓN DE LA INCIDENCIA</p></td>
+    </tr>
+    <tr>
+        <td colspan="2"><p>Fecha: {{ incidencia.fecha }} Hora:{{ incidencia.hora }}</p></td>
+    </tr>
+    <tr>
+        <td><p>Tipo de incidencia(intrusión, pérdida de dato, etc)</p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Descripción detallada de la incidencia</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Posibles efectos de la incidencia</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Firma del notificante</p>
+
+            <p><br></p></td>
+        <td><p>Firma del receptor:</p></td>
+    </tr>
+    </tbody>
+</table>
+<p><br></p>
+<table>
+    <tbody>
+    <tr>
+        <td colspan="2"><p>RESOLUCIÓN DE INCIDENCIA</p></td>
+    </tr>
+    <tr>
+        <td><p>Nº de incidencia</p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Medidas adoptadas y pasos realizados</p>
+
+            <p><br></p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Resultado de las medidas</p>
+
+            <p><br></p>
+
+            <p><br></p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Fecha de resolución: </p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td colspan="2"><p>RECUPERACIÓN DE DATOS</p>
+
+            <p>(A rellenar solo si procede. Precisa de autorización del responsable del fichero)</p></td>
+    </tr>
+    <tr>
+        <td><p>Procedimiento realizado</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Fecha de realización</p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td colspan="2"><p>Datos restaurados Datos grabados manualmente</p>
+
+            <p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Persona que realiza el procedimientos</p>
+
+            <p><br></p></td>
+        <td><p><br></p></td>
+    </tr>
+    <tr>
+        <td><p>Fecha y lugar: </p>
+
+            <p><br></p></td>
+        <td><p><br></p>
+
+            <p><br></p>
+
+            <p>Firmado:</p></td>
+    </tr>
+    </tbody>
+</table>
+
+
+<p class="wysiwyg-text-align-justify"><u>AUDITORÍAS</u></p>
+
+<p class="wysiwyg-text-align-justify">El fichero de la entidad se someterá, al menos cada dos años, a una auditoría
+    interna, como fija el art. 110 RLOPD, para los datos de nivel medio. Para ello se dará cuenta de las posibles
+    incidencias acontecidas durante el año. </p>
+
+<p class="wysiwyg-text-align-justify">Fechas: {{ revision.fecha.fin }}</p>
+
+<p class="wysiwyg-text-align-justify">Carácter de la Revisión:..........................{{ revision.Fecha.fin }}</p>
+
+<p class="wysiwyg-text-align-justify">Tipo de la revisión: {{ revision.tipo.revision }}</p>
+
+<p class="wysiwyg-text-align-justify">Fecha última actualización: {{ fecha.ultimaactualizacion }}</p>
+
+<h5><u>ANEXO VIII ENCARGADO DE
+    TRATAMIENTO</u></h5>
+
+<p class="wysiwyg-text-align-justify">En el presente caso, es Sistemas de Gestión Aumentada el encargado del
+    tratamiento de los datos del responsable del fichero, en virtud de contrato, de acuerdo a las directrices del art.
+    12
+    de la LOPD, de prestación de servicios celebrado entre ambas partes. Contrato en el que se refleja que Sistemas de
+    Gestión Aumentada tratará los datos conforme a las instrucciones del responsable del fichero, que no los aplicará o
+    utilizará con fin distinto al seguido por la entidad {{ request.session.gauser_extra.ronda.entidad.name }}, y que no
+    los comunicará ni siquiera
+    para su conservación a otras personas. </p>
+
+<p class="wysiwyg-text-align-justify">El contrato referido recoge las medidas de seguridad a que se refiere el artículo
+    9 de la LOPD, medidas que el encargado del tratamiento está obligado a implementar.</p>
+
+
+<p class="wysiwyg-text-align-justify">¿¿??</p> <h6><a target="_blank"
+                                                      rel="nofollow"></a><u>CLAUSULAS
+    A INTRODUCIR:</u></h6>
+<ol>
+    <li><p><u>EN EL FORMULARIO DE INSCRIPCIÓN DE LOS SOCIOS:</u></p></li>
+</ol>
+
+
+<p class="wysiwyg-text-align-justify">De acuerdo con lo establecido en la Ley Orgánica de 15/1999, de 13 de diciembre,
+    de Protección de datos de carácter Personal, la Asociación {{ request.session.gauser_extra.ronda.entidad.name }}, informa
+    de que los datos que nos
+    facilite serán incorporados a nuestros ficheros, automatizados o no, con la finalidad de organizar y realizar todas
+    aquellas actuaciones que sean necesarias para la adecuada consecución de los fines de la Asociación así como para la
+    gestión interna asociado-socio.</p>
+
+<p class="wysiwyg-text-align-justify">Del mismo modo, solicitamos su consentimiento expreso para (señale la casilla si
+    se opone):</p>
+
+<p class="wysiwyg-text-align-justify">__ La captación, inclusión y reproducción de las imágenes de los menores y
+    padres/tutores en las distintas actividades de la Asociación,(acampadas, talleres, proyectos,etc), y su utilización
+    para ilustrar las noticias remitidas a las publicaciones y páginas de internet desarrollas dentro del ámbito de la
+    Asociación.</p>
+
+<p class="wysiwyg-text-align-justify">__ Utilizar sus datos una vez finalizada la relación con la Asociación, con la
+    finalidad de emitir comunicaciones para actos o encuentros de ex-asociados.</p>
+
+<p class="wysiwyg-text-align-justify">__ Concurriendo la posibilidad de transmitir los datos personales a las empresas
+    que pudieran mantener actividad con la Asociación, (entidades bancarias, para el cobro de los recibos, a la
+    Consejería de la Comunidad Autónoma correspondiente,etc)</p>
+
+
+<p class="wysiwyg-text-align-justify">El afectado garantiza la veracidad de los datos personales facilitados y se
+    compromete a actualizarlos remitiendo un correo o bien un escrito a la Asociación.</p>
+
+
+<p class="wysiwyg-text-align-justify">Ud. podrá en cualquier momento ejercitar el derecho de acceso, rectificación,
+    cancelación y oposición de los datos personales contenidos en nuestros ficheros, en los términos establecidos en la
+    Ley Orgánica 15/199 al responsable del fichero, mediante correo dirigido al mismo, bien por notificación escrita a
+    la dirección de la Asociación.</p>
+
+
+<ol>
+    <li><p class="wysiwyg-text-align-justify"><u>EN EL PIE DE CORREOS:</u></p></li>
+</ol>
+<p class="wysiwyg-text-align-justify">ADVERTENCIA----La información contenida en este correo electrónico, es de
+    carácter privado y confidencial, siendo para uso exclusivo de su destinatario. Si usted no es el destinatario
+    correcto, o ha recibido esta comunicación por error, le informamos que está totalmente prohibida cualquier
+    divulgación, o distribución o reproducción de este comunicación según la legislación vigente y le rogamos que nos lo
+    notifique inmediatamente, procediendo a su destrucción sin continuar la lectura.</p>
+
+
+<p class="wysiwyg-text-align-justify">Le informamos que su dirección de correo electrónico, así como el resto de los
+    datos de carácter personal que nos facilite, podrían ser objeto de tratamiento automatizado en nuestro fichero, con
+    la finalidad de gestionar la agenda de contactos de la Asociación {{ request.session.gauser_extra.ronda.entidad.name }}.
+    Ud. podrá en cualquier
+    momento ejercer sus derechos de acceso, rectificación, cancelación y oposición de los datos personales contenidos en
+    nuestros ficheros, en los términos establecidos en la Ley Orgánica 15/199 al responsable del fichero, mediante
+    correo dirigido al mismo, bien por notificación escrita a la dirección de la Asociación.</p>
+
+<p class="wysiwyg-text-align-justify">?</p> <h5><u>ANEXO IX MODELOS DE SOLICITUD
+    DE EJERCICIO DE DERECHOS A.R.C.O.</u></h5>
+
+
+<p class="wysiwyg-text-align-justify"><u>EJERCICIO DEL DERECHO DE ACCESO</u></p>
+
+<p class="wysiwyg-text-align-justify">Modelo de Petición de información sobre los datos personales incluidos en el
+    fichero:</p>
+
+
+
+
+
+<p class="wysiwyg-text-align-justify"><u>DERECHOS DE RECTIFICACIÓN Y CANCELACIÓN:</u></p>
+
+
+<ul>
+    <li><p class="wysiwyg-text-align-justify"><u>MODELO PARA EL EJERCICIO DEL DERECHO DE RECTIFICACIÓN</u></p></li>
+</ul>
+<p class="wysiwyg-text-align-justify">Modelo de petición de corrección de datos personales inexactos o incorrectos
+    objeto de tratamientos incluidos en el fichero.</p>
+
+<p class="wysiwyg-text-align-justify">DATOS DEL RESPONSABLE DEL FICHERO O TRATAMIENTO</p>
+
+<p class="wysiwyg-text-align-justify">Nombre: Asociación {{ request.session.gauser_extra.ronda.entidad.name }}</p>
+
+<p class="wysiwyg-text-align-justify">CIF: {{ entidad.cif }}</p>
+
+<p class="wysiwyg-text-align-justify">Domicilio: {{ entidad.domicilio }}</p>
+
+<p class="wysiwyg-text-align-justify">Correo: {{ entidad.secretario.correo }}</p>
+
+
+<p class="wysiwyg-text-align-justify">DATOS DEL SOLICITANTE</p>
+
+
+
+
+<table>
+    <tbody>
+    <tr>
+        <td><p class="wysiwyg-text-align-center">DATO INCORRECTO</p></td>
+        <td><p class="wysiwyg-text-align-center">DATO CORRECTO</p></td>
+        <td><p class="wysiwyg-text-align-center">DOCUMENTO ACREDITATIVO</p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">1)</p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">2)</p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">3)</p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+    </tr>
+    </tbody>
+</table>
+
+
+<ul>
+    <li><p class="wysiwyg-text-align-left"><u>MODELO EJERCICIO DEL DERECHO DE CANCELACIÓN</u></p></li>
+</ul>
+
+
+<p class="wysiwyg-text-align-justify">DATOS DEL RESPONSABLE DEL FICHERO O TRATAMIENTO</p>
+
+<p class="wysiwyg-text-align-justify">Nombre: Asociación {{ request.session.gauser_extra.ronda.entidad.name }}</p>
+
+<p class="wysiwyg-text-align-justify">CIF: {{ entidad.cif }}</p>
+
+<p class="wysiwyg-text-align-justify">Domicilio: {{ entidad.domicilio }}</p>
+
+<p class="wysiwyg-text-align-justify">Correo: {{ entidad.secretario.correo }}</p>
+
+
+<p class="wysiwyg-text-align-justify">DATOS DEL SOLICITANTE</p>
+
+
+<p class="wysiwyg-text-align-justify">En {{ fecha.solicitud }}</p>
+
+<p class="wysiwyg-text-align-justify">Fdo:</p>
+
+
+<table>
+    <tbody>
+    <tr>
+        <td><p class="wysiwyg-text-align-center">DATO A CANCELAR</p></td>
+        <td><p class="wysiwyg-text-align-center">DOCUMENTO ACREDITATIVO</p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">1)</p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">2)</p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">3)</p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+    </tr>
+    <tr>
+        <td><p class="wysiwyg-text-align-justify">4)</p></td>
+        <td><p class="wysiwyg-text-align-justify"><br></p></td>
+    </tr>
+    </tbody>
+</table>
+
+
+<p class="wysiwyg-text-align-left"><u>DERECHO DE OPOSICIÓN</u></p>
+<ul>
+    <li><p class="wysiwyg-text-align-left"><u>MODELO PARA EJERCICIO DEL DERECHO DE OPOSICIÓN</u></p></li>
+</ul>
+
+
+<p class="wysiwyg-text-align-justify">DATOS DEL RESPONSABLE DEL FICHERO.</p>
+
+<p class="wysiwyg-text-align-justify">Nombre: Asociación {{ request.session.gauser_extra.ronda.entidad.name }}</p>
+
+<p class="wysiwyg-text-align-justify">CIF: {{ entidad.cif }}</p>
+
+<p class="wysiwyg-text-align-justify">Domicilio: {{ entidad.domicilio }}</p>
+
+<p class="wysiwyg-text-align-justify">Correo: {{ entidad.secretario.correo }}</p>
+
+<p class="wysiwyg-text-align-justify">DATOS DEL INTERESADO O REPRESENTANTE LEGAL:</p>
+
+<p class="wysiwyg-text-align-justify">D/Dª {{ solicitante.nombre }}, mayor de edad, con domicilio
+    en {{ solicitante.domicilio }}, con DNI {{ solicitante.dni }}, con correo electrónico {{ solicitante.correo }}, por
+    medio del presente escrito manifiesta su deseo de ejercer su derecho de oposición, de conformidad con los artículos
+    6.4, 17 y 30.4 de la LOPD, y en consecuencia con los art. 34, 35 y 36 del Real Decreto 1720/2007.</p>
+
+<p class="wysiwyg-text-align-justify">EXPONGO:</p>
+
+
+<p class="wysiwyg-text-align-justify">SOLICITO:</p>
+
+<p class="wysiwyg-text-align-justify">Que sea atendido mi ejercicio del derecho de oposición en los términos
+    anteriormente expuestos. </p>
+
+<p class="wysiwyg-text-align-justify">En {{ fecha.solicitud }}</p>
+
+<p class="wysiwyg-text-align-justify">Fdo:</p>
+
+<p class="wysiwyg-text-align-justify"><i>El presente documento ha sido notificado a los responsables de la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }}, con entrega de una copia del mismo, encontrándose a su
+    vez en la aplicación GAUSS,
+    al que tienen acceso de forma digital.</i></p>
+
+<p class="wysiwyg-text-align-justify"><i>Fecha última modificación:</i></p>  <br></body>
+
+
+{#<script src="/static/foundation-5.2.2/js/vendor/jquery.js"></script>#}
+{#<script type="text/javascript">#}
+{#            var i1 = 0;#}
+{#            $('div#id_documento_seguridad > h1').each(function (index) {#}
+{#                i1 = i1 + 1;#}
+{#                var $primero = $(this);#}
+{#                $primero.html(i1 + '. ' + $primero.html());#}
+{#                var $contents1 = $primero.nextUntil('h1');#}
+{#                var i2 = 0;#}
+{#                $contents1.filter('h2').each(function (index2) {#}
+{#                    i2 = i2 + 1;#}
+{#                    var $segundo = $(this);#}
+{#                    $segundo.html(i1 + '.' + i2 + '. ' + $segundo.html());#}
+{#                    var $contents2 = $segundo.nextUntil('h2');#}
+{#                    var i3 = 0;#}
+{#                    $contents2.filter('h3').each(function (index3) {#}
+{#                        i3 = i3 + 1;#}
+{#                        var $tercero = $(this);#}
+{#                        $tercero.html(i1 + '.' + i2 + '.' + i3 + '. ' + $tercero.html());#}
+{#                    });#}
+{#                    var $contents3 = $segundo.nextUntil('h3');#}
+{#                    var i4 = 0;#}
+{#                    $contents3.filter('h4').each(function (index4) {#}
+{#                        i4 = i4 + 1;#}
+{#                        var $cuarto = $(this);#}
+{#                        $cuarto.html(i1 + '.' + i2 + '.' + i3 + '.' + i4 + '. ' + $cuarto.html());#}
+{#                    });#}
+{#                });#}
+{#            });#}
+{#    </script>#}
+</html>
+
+

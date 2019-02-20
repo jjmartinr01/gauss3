@@ -1,0 +1,39 @@
+<div class="row">
+    <div class="columns large-12">
+        <table width="80%">
+            <tbody>
+            <tr>
+                <th>Policía</th>
+                <th>Vivienda</th>
+                <th>NDI</th>
+                <th>Tipo</th>
+                <th>Fecha Exp.</th>
+                <th>Nombre</th>
+                <th>Sexo</th>
+                <th>Nacimiento</th>
+                <th>Pais</th>
+                <th>Firma</th>
+            </tr>
+            {% for v in viajeros %}
+                <tr>
+                    <td>{% if v.fichero_policia %}
+                        <span style="color:green"><i class="fa fa-check"></i></span> {% else %}
+                        <span style="color:red;font-weight: 800">No</span> {% endif %}</td>
+                    <td>{{ v.reserva.vivienda.nombre }}</td>
+                    <td>{{ v.ndi }}</td>
+                    <td>{{ v.get_tipo_ndi_display }}</td>
+                    <td>{{ v.fecha_exp|date:'d/m/Y' }}</td>
+                    <td>{{ v.apellido1 }} {{ v.apellido2 }}, {{ v.nombre }}</td>
+                    <td>{{ v.sexo }}</td>
+                    <td>{{ v.nacimiento|date:'d/m/Y' }}</td>
+                    <td>{{ v.get_pais_display }}</td>
+                    <td><img src="{{ v.firma.url }}" width="60px"/></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+

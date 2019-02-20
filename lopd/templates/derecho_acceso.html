@@ -1,0 +1,41 @@
+<h2 style="text-align:center;"> Solicitud de acceso a datos de carácter personal contenidos en la
+    entidad {{ request.session.gauser_extra.ronda.entidad.name }}</h2>
+<h5 style="text-align: center;">Petición de información sobre datos, ficheros y tratamientos</h5>
+
+<p class="wysiwyg-text-align-justify">&nbsp;</p>
+<p class="wysiwyg-text-align-justify">DOCUMENTO DIRIGIDO {% if estructura_lopd.responsables_fichero.count > 1 %}A LOS
+    RESPONSABLES {% else %}AL RESPONSABLE {% endif %}DEL FICHERO:</p>
+<p class="wysiwyg-text-align-justify">{{ estructura_lopd.responsables_fichero.all|join:', ' }}
+<hr>
+<p class="wysiwyg-text-align-justify">&nbsp;</p>
+
+<p class="wysiwyg-text-align-justify">{% if request.session.gauser_extra.gauser.sexo == 'H' %}
+    D. {% elif request.session.gauser_extra.gauser.sexo == 'M' %}Dª. {% else %}
+    D./Dª. {% endif %} {{ request.session.gauser_extra.gauser.get_full_name }}, mayor de edad, con
+    domicilio
+    en {{ request.session.gauser_extra.gauser.address }}, con DNI {{ request.session.gauser_extra.gauser.dni }}, con
+    correo electrónico {{ request.session.gauser_extra.gauser.email }}, por
+    medio del presente escrito manifiesta su deseo de ejercer su derecho de acceso, de conformidad con el artículo 15
+    de la Ley Orgánica 15/1999, y los artículos 27 y 28 del Real Decreto 1720/2007.</p>
+
+<p class="wysiwyg-text-align-justify">SOLICITA:</p>
+<ol>
+    <li><p class="wysiwyg-text-align-justify">Que se le facilite el acceso al fichero en el plazo máximo de un mes a
+        contar desde la recepción de esta solicitud, entendiendo que si transcurre este plazo sin que de forma expresa se
+        conteste a la mencionada petición de acceso se entenderá denegada.</p></li>
+    <li><p class="wysiwyg-text-align-justify">Que si la solicitud del derecho de acceso fuese estimada, se remita por
+        correo la información a la dirección arriba indicada en el plazo de diez días desde la resolución estimatoria
+        de la solicitud de acceso. </p></li>
+    <li><p class="wysiwyg-text-align-justify">Que en esta información comprenda de modo legible e inteligible los datos
+        de base que sobre mi persona están incluidos en su fichero, y los resultantes de cualquier elaboración, proceso 
+        o tratamiento, así como el origen de los datos, los cesionarios y la especificación de los concretos usos y
+        finalidades para los que se almacenaron. </p></li>
+</ol>
+
+
+<p class="wysiwyg-text-align-justify">En {{ request.session.gauser_extra.ronda.entidad.localidad }}
+    a {% now "j \d\e F \d\e Y" %}  </p>
+
+<p class="wysiwyg-text-align-justify">&nbsp;</p>
+
+<p class="wysiwyg-text-align-justify">Fdo: {{ request.session.gauser_extra.gauser.get_full_name }}</p>

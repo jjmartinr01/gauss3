@@ -1,0 +1,625 @@
+{% load my_templatetags %}
+{% load actividades_extras %}
+<div class="row">
+    <div class="columns large-4">
+        <label><b>Organizador:</b>
+            {% if actividad.organizador == g_e or g_e|has_permiso:'edita_actividades' %}
+                <select id="organizador" name="organizador" data-id="{{ actividad.id }}">
+                    <option value="{{ actividad.organizador.id }}">{{ actividad.organizador.gauser.get_full_name }}</option>
+                </select>
+            {% else %}
+                <br>{{ actividad.organizador.gauser.get_full_name }}
+            {% endif %}
+        </label>
+    </div>
+    <div class="columns large-3">
+        <label><b>Fecha de aprobación:</b>
+            {% if g_e|has_permiso:'aprueba_actividades' %}
+                <input type="text" class="fecha_aprobacion" data-id="{{ actividad.id }}" readonly
+                       value="{{ actividad.fecha_aprobacion|date:'d-m-Y' }}">
+            {% else %}
+                <br>{% if actividad.fecha_aprobacion %}{{ actividad.fecha_aprobacion|date:'d-m-Y' }}{% else %}
+                <span title="La debe aprobar alguien con permisos para hacerlo">No aprobada</span>{% endif %}
+            {% endif %}
+        </label>
+    </div>
+    <div class="columns large-1">
+        <label><b>Slide:</b></label>
+            {% if actividad.organizador == g_e or g_e|has_permiso:'edita_actividades' %}
+                <input type="checkbox" class="is_proyectable" data-id="{{ actividad.id }}"
+                {% if actividad.slideable %}checked{% endif %}>
+            {% else %}
+                {% if actividad.slideable %}Sí{% else %}No{% endif %}
+            {% endif %}
+
+    </div>
+    <div class="columns large-4">
+        <ul class="button-group right">
+            <li title="Generar pdf de esta actividad">
+                <a href="#" class="button pdf_actividad" data-id="{{ actividad.id }}"><i
+                        class="fa fa-file-pdf-o"></i>
+                    PDF</a></li>
+            {% if actividad.organizador == g_e or g_e|has_permiso:'borra_actividad' %}
+                <li title="Borrar esta actividad">
+                    <a href="#" class="button delete_actividad" data-id="{{ actividad.id }}"><i
+                            class="fa fa-trash-o"></i>
+                        Borrar</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-6">
+        <label><b>Nombre de la actividad:</b>
+            {% if actividad.organizador == g_e or g_e|has_permiso:'edita_actividades' %}
+                <input type="text" class="actividad_title" data-id="{{ actividad.id }}"
+                       value="{{ actividad.actividad_title }}">
+            {% else %}
+                <br>{{ actividad.actividad_title }}
+            {% endif %}
+        </label>
+    </div>
+    <div class="columns large-3">
+        <label><b>Fecha y hora de inicio:</b>
+            {% if actividad.organizador == g_e or g_e|has_permiso:'edita_actividades' %}
+                <input type="text" class="fechas_actividad fecha_inicio" data-id="{{ actividad.id }}"
+                       value="{{ actividad.fecha_hora_inicio|date:'d-m-Y H:i' }}" readonly>
+            {% else %}
+                <br>{{ actividad.fecha_hora_inicio|date:'d-m-Y H:i'}}
+            {% endif %}
+        </label>
+    </div>
+    <div class="columns large-3">
+        <label><b>Fecha y hora de finalización:</b>
+            {% if actividad.organizador == g_e or g_e|has_permiso:'edita_actividades' %}
+                <input type="text" class="fechas_actividad fecha_fin" data-id="{{ actividad.id }}"
+                       value="{{ actividad.fecha_hora_fin|date:'d-m-Y H:i' }}" readonly>
+            {% else %}
+                <br>{{ actividad.fecha_hora_fin|date:'d-m-Y H:i' }}
+            {% endif %}
+        </label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Colaboradores:</b>
+            {% if actividad.organizador == g_e or g_e|has_permiso:'edita_actividades' %}
+                <select id="colaboradores" name="colaboradores" multiple
+                        data-id="{{ actividad.id }}">
+                    {% for colaborador in actividad.colaboradores.all %}
+                        <option value="{{ colaborador.id }}" selected>{{ colaborador.gauser.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                <br> {% for colaborador in actividad.colaboradores.all %}
+                {{ colaborador.gauser.get_full_name }},
+            {% endfor %}
+            {% endif %}
+        </label>
+    </div>
+</div>
+
+{#<div class="row">#}
+{#    <div class="columns large-12"><label><b>Tramos horarios utilizados</b>#}
+{#        {% if actividad.organizador == g_e or g_e|has_permiso:'edita_actividades' %}#}
+{#            <div class="row">#}
+{#                {% for tramo in actividad|tramos_horarios %}#}
+{#                    <div class="columns large-2 medium-3 small-6 {% if forloop.last %} end{% endif %}">#}
+{#                        <input type="checkbox" value="{{ tramo.id }}" {% if tramo in actividad.tramos_horarios.all %}#}
+{#                               checked{% endif %} class="tramos_horarios"#}
+{#                               data-id="{{ actividad.id }}"> {{ tramo.nombre }}#}
+{#                    </div>#}
+{#                {% endfor %}#}
+{#            </div>#}
+{#        {% else %}#}
+{#            <br>{% for tramo in actividad.organizador.entidad|tramos_horarios %}#}
+{#            {{ tramo.tramo }},#}
+{#        {% endfor %}#}
+{#        {% endif %}#}
+{#    </label>#}
+{#    </div>#}
+{#</div>#}
+<hr>
+
+<div class="row">
+    <div class="columns large-12"><label><b>Descripción de la actividad</b></label>
+        {% if actividad.organizador == g_e or g_e|has_permiso:'edita_actividades' %}
+            <div contenteditable="true" id="actividad_description{{ actividad.id }}">
+                {% autoescape off %} {{ actividad.description }} {% endautoescape %}
+            </div>
+        {% else %}
+            <div>
+                {% autoescape off %} {{ actividad.description }} {% endautoescape %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="columns large-12"><label><b>Grupos que participan en la actividad</b>
+        <div class="row">
+            {% if actividad.organizador == g_e or g_e|has_permiso:'edita_actividades' %}
+                {% for grupo in actividad|grupos_entidad %}
+                    <div class="columns large-2 medium-3 small-6 {% if forloop.last %} end{% endif %}">
+                        <input type="checkbox" value="{{ grupo.id }}" class="grupos" data-id="{{ actividad.id }}"
+                               {% if grupo in actividad.grupos_incluidos %}checked{% endif %}
+                               title="{{ grupo.curso.nombre }}"> {{ grupo.nombre }}
+                    </div>
+                {% endfor %}
+            {% else %}
+                {% for grupo in actividad.grupos_incluidos %}
+                    {{ grupo.nombre }},
+                {% endfor %}
+            {% endif %}
+        </div>
+    </label>
+    </div>
+</div>
+<hr>
+
+{% if actividad.organizador == g_e or g_e|has_permiso:'edita_actividades' %}
+    <div class="row" id="grupos_actividad">
+    {% for grupo in actividad.grupos_incluidos %}
+            {% include 'actividad_accordion_content_grupo_alumno.html' %}
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="row">
+        <div class="columns large-12"><label><b>Alumnos que participan en la actividad</b>
+            {% for alumno in actividad.alumnos_incluidos.all %}
+                {{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }} ({{ alumno.grupo.nombre }});
+            {% endfor %}
+        </label>
+        </div>
+    </div>
+{% endif %}
+
+{# Aquí comienzan las líneas para subir archivos vía ajax #}
+<div class="row">
+    <div class="columns large-7" id="subir_ficheros" style="position:relative;">
+        <input type="file" name="gauss_file" id="gauss_file" multiple="multiple"
+               style="position:absolute;top: -3000px;left:-3000px;"
+               accept="video/*,image/*"/>
+        <a id="a_subir_ficheros"><i class="fa fa-hand-o-up"></i> Pulsa aquí para subir archivos <span
+                style="display: none" id="span_spin"><i class="fa fa-refresh fa-spin fa-fw"></i> Cargando... </span>
+            <span style="display: none" id="span_porcentage"></span></a>
+        <ul id="lista_ficheros" style="list-style: none;">
+            {% for fichero in actividad.file_actividad_set.all %}
+                <li data-id="{{ fichero.code }}" class="li_fichero {{ fichero.code }}"><a class="remove_file"
+                                                                                          data-code="{{ fichero.code }}"><i
+                        class="fa fa-times"></i> </a>
+                    {{ fichero.fich_name }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="columns large-5" id="previsualizador">
+        {% for fichero in actividad.file_actividad_set.all %}
+            <img style="display: none;" id="pre{{ fichero.code }}" class="{{ fichero.code }}"
+                 src="/{{ fichero.fichero.url }}"/>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    {% if actividad.organizador == g_e or g_e|has_permiso:'edita_actividades' %}
+        var loading_file = true;
+        $('#a_subir_ficheros').on("click", function (e) {
+            e.preventDefault();
+            if (loading_file) {
+                $('#gauss_file').trigger('click');
+                loading_file = false;
+            }
+        });
+
+        function updateProgress(evt) {
+            if (evt.lengthComputable) {
+                var percentComplete = (evt.loaded / evt.total) * 100;
+                $('#span_porcentage').html(parseInt(percentComplete) + '%');
+                console.log(percentComplete);
+            } else {
+                console.log('No es posible calcular el porcentaje de carga en el servidor');
+            }
+        }
+        {#    function transferComplete(evt) {#}
+        {#        console.log('Terminado');#}
+        {#        $('#lista_ficheros').html('<li>' + evt + '</li>');#}
+        {#        loading_file = true;#}
+        {#        $('#span_spin').hide();#}
+        {#    }#}
+
+        $('body').on('change', '#gauss_file', function () {
+            var input_files = document.getElementById('gauss_file').files;
+            $('#span_spin').show();
+            $('#span_porcentage').show();
+
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('fichero_xhr' + i, input_files[i]);
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'upload_fichero_extraescolar');
+            formData.append('actividad', {{ actividad.id }});
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener("progress", updateProgress, false);
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log('Terminado');
+                        var data = JSON.parse(xhr.responseText);
+                        $.each(data.ficheros, function (i, el) {
+                            var $a = $('<a/>').attr('data-code', el.code)
+                                .attr('class', 'remove_file')
+                                .html('<i class="fa fa-times"></i> ');
+                            var $li = $('<li/>').attr('data-id', el.code)
+                                .attr('class', 'li_fichero').addClass(el.code)
+                                .append($a).append(el.file_name);
+                            $('#lista_ficheros').append($li);
+                            var $img = $('<img/>').css('display', 'none')
+                                .attr('id', 'pre' + el.code)
+                                .attr('src', '/' + el.url)
+                                .attr('class', el.code);
+                            $('#previsualizador').append($img);
+                        });
+                        loading_file = true;
+                        $('#span_spin').hide();
+                        $('#span_porcentage').hide();
+                    }
+                }
+            };
+            xhr.open('POST', "/ajax_actividades/", true);
+            xhr.send(formData);
+        });
+
+        {# Aquí terminan las líneas para subir archivos vía ajax #}
+
+        $('body').on('click', '.remove_file', function (e) {
+            e.preventDefault();
+            var file_code = $(this).data('code');
+            console.log('d', file_code);
+            $.post("/ajax_actividades/", {action: 'remove_file', file_code: file_code},
+                function (data) {
+                    if (data) {
+                        $('.' + data).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('mouseenter', '.li_fichero', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#pre' + id).show();
+        });
+        $('body').on('mouseleave', '.li_fichero', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#pre' + id).hide();
+        });
+
+        $(".fechas_actividad").fdatetimepicker({
+            format: 'dd-mm-yyyy hh:ii',
+            weekStart: 1
+        });
+
+        $(".fecha_aprobacion").fdatepicker({
+            format: 'dd-mm-yyyy',
+            weekStart: 1
+        });
+        $(".fecha_aprobacion").change(function () {
+            var actividad = $(this).data('id');
+            var fecha = $(this).val();
+            $.post("/ajax_actividades/", {action: 'update_fecha_aprobacion', actividad: actividad, fecha: fecha},
+                function (data) {
+                    if (data == 'True') {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        $(".fecha_inicio").change(function () {
+            var actividad = $(this).data('id');
+            var fecha = $(this).val();
+            $.post("/ajax_actividades/", {action: 'update_fecha_inicio', actividad: actividad, fecha: fecha},
+                function (data) {
+                    if (data == 'True') {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $("#span_fecha_inicio" + actividad).html(fecha);
+                        $(".fecha_fin").val(fecha).trigger('change');
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                        $("#span_fecha_inicio" + actividad).html('Error en fecha');
+                    }
+                });
+        });
+        $(".fecha_fin").change(function () {
+            var actividad = $(this).data('id');
+            var fecha = $(this).val();
+            $.post("/ajax_actividades/", {action: 'update_fecha_fin', actividad: actividad, fecha: fecha},
+                function (data) {
+                    if (data == 'True') {
+                        $("#span_fecha_fin" + actividad).html(fecha);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                        $("#span_fecha_inicio" + actividad).html('Error en fecha');
+                    }
+                });
+        });
+
+        $(".actividad_title").keyup(function () {
+            var actividad = $(this).data('id');
+            var actividad_title = $(this).val();
+            $.post("/ajax_actividades/", {
+                    action: 'update_actividad_title',
+                    actividad: actividad,
+                    actividad_title: actividad_title
+                },
+                function (data) {
+                    if (data.success) {
+                        $("#span_actividad_title" + actividad).html(data.actividad_title);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                        $("#span_actividad_title" + actividad).html('Error en nombre. No guardado.');
+                    }
+                }, 'json');
+        });
+
+        var editor = CKEDITOR.inline('actividad_description{{ actividad.id }}');
+        editor.on('change', function (e) {
+            var texto = e.editor.getData();
+            var actividad = {{ actividad.id }};
+            $.post("/ajax_actividades/", {action: 'update_texto_actividad', actividad: actividad, texto: texto},
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+        });
+
+        $('#organizador, #colaboradores').select2({
+            placeholder: "Escribe parte del nombre",
+            minimumInputLength: 3,
+            ajax: {
+                url: "/ajax_actividades/",
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        action: 'busca_profesor',
+                        actividad: {{ actividad.id }},
+                        q: params.term, // search term
+                        page: params.page
+                    };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.last_name + ', ' + item.first_name,
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            },
+            templateResult: function (a) {
+                return "<span>" + a.text + "</span>"
+            }
+        });
+
+        function diff(A, B) {
+            if (!A) A = [];
+            if (!B) B = [];
+            return A.filter(function (a) {
+                return B.indexOf(a) == -1;
+            });
+        }
+
+        $("#organizador").change(function () {
+            var organizador = $(this).val();
+            var actividad = $(this).data('id');
+            $.post("/ajax_actividades/", {
+                    action: 'update_organizador',
+                    actividad: actividad,
+                    organizador: organizador
+                },
+                function (data) {
+                    if (data == 'True') {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        if ($("#colaboradores").val()) {
+            var colaboradores_actuales = $("#colaboradores").val();
+        } else {
+            var colaboradores_actuales = [];
+        }
+
+        $("#colaboradores").change(function () {
+            var actividad = $(this).data('id');
+            var colaboradores = $(this).val();
+            var removed = diff(colaboradores_actuales, colaboradores);
+            var added = diff(colaboradores, colaboradores_actuales);
+            colaboradores_actuales = colaboradores;
+            $.post("/ajax_actividades/", {
+                    action: 'update_colaboradores', actividad: actividad,
+                    removed: removed,
+                    added: added
+                },
+                function (data) {
+                    if (data == 'True') {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+        $('body').on('click', '.select_ninguno', function () {
+            var grupo = $(this).data('g');
+            var alumnos = $('*[data-grupo="' + grupo + '"]');
+            var actividad = $(this).data('actividad');
+            var operation = 'select_ninguno';
+            var alumnos_id = [];
+            $.each(alumnos, function (i, alumno) {
+                console.log(operation);
+                $(alumno).prop('checked', false);
+                alumnos_id.push($(alumno).val());
+            });
+            $.post("/ajax_actividades/", {
+                    action: 'todos_ninguno',
+                    operation: operation,
+                    actividad: actividad,
+                    alumnos_id: alumnos_id,
+                    grupo: grupo
+                },
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }, 'json');
+        });
+
+        $('body').on('click', '.select_todos', function () {
+            var grupo = $(this).data('g');
+            var alumnos = $('*[data-grupo="' + grupo + '"]');
+            var actividad = $(this).data('actividad');
+            var operation = 'select_todos';
+            var alumnos_id = [];
+            $.each(alumnos, function (i, alumno) {
+                console.log(operation);
+                $(alumno).prop('checked', true);
+                alumnos_id.push($(alumno).val());
+            });
+            $.post("/ajax_actividades/", {
+                    action: 'todos_ninguno',
+                    operation: operation,
+                    actividad: actividad,
+                    alumnos_id: alumnos_id,
+                    grupo: grupo
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+        });
+
+        $('body').on('change', '.alumnos_incluidos', function () {
+            var alumno = $(this).val();
+            var actividad = $(this).data('id');
+            var operation = 'removed';
+            if ($(this).is(':checked')) {
+                var operation = 'added';
+            }
+            $.post("/ajax_actividades/", {
+                    action: 'update_alumnos_incluidos',
+                    actividad: actividad,
+                    operation: operation,
+                    alumno: alumno
+                },
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+        });
+
+
+        $(".grupos").change(function () {
+            var actividad = $(this).data('id');
+            var grupo = $(this).val();
+            var operation = 'removed';
+            if ($(this).is(':checked')) {
+                var operation = 'added';
+            }
+            $.post("/ajax_actividades/", {
+                    action: 'update_grupos',
+                    actividad: actividad,
+                    operation: operation,
+                    grupo: grupo
+                },
+                function (data) {
+                    if (data.html) {
+                        $('#grupos_actividad').append(data.html);
+                    } else {
+                        $('.div_grupo' + data.grupo).remove();
+                    }
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }, 'json');
+        });
+
+
+
+{#        $(".tramos_horarios").change(function () {#}
+{#            var tramo_horario = $(this).val();#}
+{#            var actividad = $(this).data('id');#}
+{#            var operation = 'removed';#}
+{#            if ($(this).is(':checked')) {#}
+{#                var operation = 'added';#}
+{#            }#}
+{#            $.post("/ajax_actividades/", {#}
+{#                    action: 'update_tramos_horarios',#}
+{#                    actividad: actividad,#}
+{#                    operation: operation,#}
+{#                    tramo_horario: tramo_horario#}
+{#                },#}
+{#                function (data) {#}
+{#                    if (data == 'True') {#}
+{#                        $("#update_ok").show().delay(1500).fadeOut();#}
+{#                    } else {#}
+{#                        $('#update_error').show().delay(1500).fadeOut();#}
+{#                    }#}
+{#                });#}
+{#        });#}
+
+        $('body').on('click', '.delete_actividad', function (e) {
+            e.preventDefault();
+            actividad_borrar = $(this).data('id');
+            show_mensajes({
+                title: 'Borrar actividad', texto: 'Si aceptas la actividad será eliminada' +
+                ' completamente de la base de datos.', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/ajax_actividades/", {action: 'delete_actividad', actividad: actividad_borrar},
+                            function (data) {
+                                if (data.ok) {
+
+                                    $('#accordion' + actividad_borrar).remove();
+                                    setTimeout(function () {
+                                        show_mensajes({title: 'Actividad borrada', texto: data.mensaje});
+                                    }, 600);
+                                }
+                            });
+                    }
+                }
+            });
+        });
+    {% endif %}
+
+    $('body').on('click', '.pdf_actividad', function (e) {
+        e.preventDefault();
+        $('#id_actividad').val($(this).data('id'));
+        $('#action').val('pdf_actividades');
+        document.getElementById('Extraescolares').submit();
+    });
+</script>

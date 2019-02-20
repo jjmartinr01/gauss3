@@ -1,0 +1,173 @@
+{% extends "lateral.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui-timepicker-addon.css" />
+<script type="text/javascript" src="/static/js/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.min.js"></script>
+{# El siguiente js es utilizado para submit form con files en ajax #}
+<script type="text/javascript" src="/static/js/jquery.form.min.js"></script>
+{% endblock %}
+
+
+{% block ready %}
+  {# Función para adaptar copia/paste de procesadores de texto #}
+  function removeTags(string){
+    return string.replace(/(?:<(?:script|style)[^>]*>[\s\S]*?<\/(?:script|style)>|<[!\/]?[a-z]\w*(?:\s*[a-z][\w\-]*=?[^>]*)*>|<!--[\s\S]*?-->|<\?[\s\S]*?\?>)[\r\n]*/gi, ''); }
+
+  {# Inicialización de los iconos de control de la página #}
+  visualizar(['reunion_sign','reuniones_sign']);
+  $( "#reunion_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Ver reuniones en las que puedo participar');
+  {% if request.session.gauser_extra|has_permiso:'add_reuniones_rama' %}
+      visualizar(['plus_sign','ok_sign','remove_sign']);
+      $( "#plus_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir una nueva reunion');
+  {% endif %}
+
+  {# Acciones de control de la página #}
+  $( '#plus_sign' ).click(function(){ if( $(this).hasClass('navegar') ) {
+      $('#reunion_id').val('');
+      $('#action').val('grabar_reunion');
+      $.post("/add_reunion/", {action:'nueva'},function(data) {
+	  $('#div_reuniones').html(data);
+	  $( "#reuniones_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Ver todas las reuniones');
+	  $( "#reunion_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Ver reuniones en las que puedo participar');
+	  $( "#plus_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+	  $( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Guardar la nueva reunion');}); }});
+
+  $('#menucabecera').on('click','#remove_sign', function(event){ if( $(this).hasClass('navegar') ) {
+      $('#action').val('borrar_reunion');
+      document.{{formname}}.submit();
+      return false;}});
+  
+  $('#menucabecera').on('click', '#ok_sign', function(event){ if( $(this).hasClass('navegar') ) {
+      if ($('#action').val() == 'add_colaborador'){
+	  event.preventDefault();
+	  $('#{{formname}}').ajaxSubmit({
+	      url: '/guardar_colaborador_participante/',
+	      success: function(data) { $('#div_reuniones').html(data); } });
+	  return false;
+      }else if ($('#action').val() == 'add_participante'){
+	  event.preventDefault();
+	  $('#{{formname}}').ajaxSubmit({
+	      url: '/guardar_colaborador_participante/',
+	      success: function(data) { $('#div_reuniones').html(data); } });
+	  return false;
+      }else if ($('#action').val() == 'grabar_reunion'){  document.{{formname}}.submit(); }    
+      return false;}});
+
+  $('#reunion_sign').click(function () { if( $(this).hasClass('navegar') ) {
+      $( "#ok_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+      $( "#reunion_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+      $( "#reuniones_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Ver todas las reuniones');
+      {% if request.session.gauser_extra|has_permiso:'add_reuniones_rama' %}
+	$( "#plus_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir una nueva reunion');
+      {% endif %}
+      $.post("/mis_reuniones/", {},function(data) {
+	    $('#div_reuniones').html(data);}); }});
+
+  $('#reuniones_sign').click(function () { if( $(this).hasClass('navegar') ) {
+      $( "#ok_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+      $( "#reuniones_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+      $( "#reunion_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Ver reuniones en las que puedo participar');
+      {% if request.session.gauser_extra|has_permiso:'add_reuniones_rama' %}
+	$( "#plus_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir una nueva reunion');
+      {% endif %}
+      $.post("/total_reuniones/", {},function(data) {
+	    $('#div_reuniones').html(data);});}});
+
+  $('#pdf_reunion').click(function () {  $('#action').val('pdf_reunion'); document.{{formname}}.submit(); });
+
+  $('#Contenido').on('click','.show_hide_participantes', function(){
+      var id = $(this).attr('id').split('_')[1];
+      if ($('#participantes_'+id).text().length == 0){
+	$.post("/ver_participantes/", { id: id},function(data) {
+	    $('#participantes_'+id).html(data);$('#participantes_'+id).slideToggle();});  
+	return false;
+      }else{ $('#participantes_'+id).slideToggle(); } });
+
+  $('#Contenido').on('click','.reunion_texto', function(){
+      var id = $(this).attr('id').split('_')[1]
+      if ($('#div_'+id).text().length == 0){
+	$.post("/ver_reunion/", { id: id},function(data) {
+	    $('#div_'+id).html(data);$('#div_'+id).slideToggle();});  
+	return false;
+      }else{ $('#div_'+id).slideToggle(); } });
+
+  $('#Contenido').on('click','.modificar_reunion', function(){
+      var id = $(this).attr('id').split('___')[1]
+      $('#action').val('grabar_reunion');
+      $('#reunion_id').val(id);
+      $.post("/add_reunion/", {action:'modificar',id:id},function(data) {
+	  $('#div_reuniones').html(data);
+	  $( "#reuniones_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Ver todas las reuniones');
+	  $( "#reunion_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Ver reuniones en las que puedo participar');
+	  $( "#plus_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+	  $( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Guardar la nueva reunion');});
+      return false;});
+
+  $('#Contenido').on('click','.add_colaborador', function(){
+      $('#action').val('add_colaborador');
+      var id = $(this).attr('id').split('___')[1]
+      $('#reunion_id').val(id);
+      $.post("/add_colaborador/", {id:id},function(data) {
+	  $('#div_reuniones').html(data);
+	  $( "#reuniones_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Ver todas las reuniones');
+	  $( "#reunion_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Ver reuniones en las que puedo participar');
+	  $( "#plus_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+	  $( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir colaborador');});
+      return false;});
+
+  $('#Contenido').on('click','.add_participante', function(){
+      $('#action').val('add_participante');
+      var id = $(this).attr('id').split('___')[1]
+      $('#reunion_id').val(id);
+      $.post("/add_participante/", {id:id},function(data) {
+	  $('#div_reuniones').html(data);
+	  $( "#reuniones_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Ver todas las reuniones');
+	  $( "#reunion_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Ver reuniones en las que puedo participar');
+	  $( "#plus_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+	  $( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir educando participante en la reunion');});
+      return false;});
+
+  $('#Contenido').on('click','.borra_col_par', function(){
+      var id = $(this).attr('id').split('___');
+      if (id[0]=='participante'){
+	$.post("/borra_colaborador_participante/", {id:id[1], tipo:'participante'},function() {$('#tr_participante___'+id[1]).hide();});
+      }else{
+	$.post("/borra_colaborador_participante/", {id:id[1], tipo:'colaborador'},function() {$('#tr_colaborador___'+id[1]).hide();});}
+      return false;});
+  
+{% endblock %}
+
+
+{% block navegar %}
+{% endblock %}
+
+
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+
+<input type="hidden" id="action" name="action" value="">
+<input type="hidden" id="reunion_id" name="reunion_id" value="">
+<input type="hidden" id="act_aprobada" name="act_aprobada" value="">
+<div id="div_reuniones">
+  {% include "list_reuniones.html" %}
+</div>
+</form>
+
+{% endblock %}
+
+
+
+
+	
+
+
+
+
+
+
+

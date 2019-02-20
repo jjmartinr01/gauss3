@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="id_incidencia" name="id_incidencia" value="">
+
+
+        <div id="div_incidencias">
+            <div class="">
+                <h4 style="text-align: center;color: #008CBA;"><strong> Incidencias LOPD generadas en la
+                    entidad</strong></h4>
+            </div>
+            <table align="center" width="100%" cellspacing="3" cellpadding="3">
+                <thead>
+                <tr>
+                    <td style="text-align:center;"><span class="color2"><i class="fa fa-check-square-o"></i></span></td>
+                    <td style="text-align:center;"><span class="color2">Emisión de la incidencia</span></td>
+                    <td style="text-align:center;"><span class="color2">Tipo</span></td>
+                    <td style="text-align:center;"><span class="color2">Ficheros</span></td>
+                    <td style="text-align:center;"><span class="color2">Solucionar la incidencia</span></td>
+                </tr>
+                </thead>
+                <tbody>
+                {% for incidencia in incidencias %}
+                    <tr>
+                        <td class="icono" style="text-align:center;">
+                            <i style="cursor: pointer;"
+                               class="fa fa-square-o check_incidencia"
+                               id="check___{{ incidencia.id }}"> </i>
+                        </td>
+                        <td id="incidencia___{{ incidencia.id }}" data-tooltip aria-haspopup="true"
+                            style="cursor: pointer;white-space:normal;text-align:center;" class="has-tip get_incidencia"
+                            title="<p>Haz click aquí para ver el contenido de la incidencia</p>">
+                            <span class="color2">{{ incidencia.emisor_incidencia.gauser.get_full_name }}
+                            <br>{{ incidencia.fecha_emite }}</span>
+                        </td>
+                        <td style="text-align:center;">
+                            {{ incidencia.get_tipo_display }}
+                        </td>
+                        <td style="text-align:center;">
+                            {% for fichero in incidencia.ficheros.all %}
+                                {{ fichero.fich_name }} {% if not forloop.last %}<br>{% endif %}
+                            {% endfor %}
+                        </td>
+                        <td id="sol___{{ incidencia.id }}" data-tooltip aria-haspopup="true"
+                            style="cursor: pointer;white-space:normal;text-align:center;" class="has-tip go_solucionar"
+                            title="<p>Haz click aquí para solucionar la incidencia de {{ incidencia.emisor_incidencia.gauser.get_full_name }}
+                            emitida el {{ incidencia.fecha_emite }}<p>">
+                            <i class="fa fa-wrench"></i>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <table align="center" width="100%" cellspacing="3" cellpadding="3">
+                <thead>
+                <tr>
+                    <td style="text-align:center;"><span class="color2"><i class="fa fa-check-square-o"></i></span></td>
+                    <td style="text-align:center;"><span class="color2">Emisión de la incidencia</span></td>
+                    <td style="text-align:center;"><span class="color2">Tipo</span></td>
+                    <td style="text-align:center;"><span class="color2">Ficheros</span></td>
+                    <td style="text-align:center;"><span class="color2">Solución de la incidencia</span></td>
+                </tr>
+                </thead>
+                <tbody>
+                {% for incidencia in incidencias_solved %}
+                    <tr>
+                        <td class="icono" style="text-align:center;">
+                            <i style="cursor: pointer;"
+                               class="fa fa-square-o check_incidencia"
+                               id="check___{{ incidencia.id }}"> </i>
+                        </td>
+                        <td id="inc___{{ incidencia.id }}" data-tooltip aria-haspopup="true"
+                            style="cursor: pointer;white-space:normal;text-align:center;" class="has-tip get_incidencia"
+                            title="<p>Haz click aquí para ver el contenido de la incidencia</p>">
+                            <span class="color2">{{ incidencia.emisor_incidencia.gauser.get_full_name }}
+                            <br>{{ incidencia.fecha_emite }}</span>
+                        </td>
+                        <td style="text-align:center;">
+                            {{ incidencia.get_tipo_display }}
+                        </td>
+                        <td style="text-align:center;">
+                            {% for fichero in incidencia.ficheros.all %}
+                                {{ fichero.fich_name }} {% if not forloop.last %}<br>{% endif %}
+                            {% endfor %}
+                        </td>
+                        <td id="sol___{{ incidencia.id }}" data-tooltip aria-haspopup="true"
+                            style="cursor: pointer;white-space:normal;text-align:center;" class="has-tip go_solucionar"
+                            title="{{ incidencia.observaciones }}">
+                            <span class="color2">{{ incidencia.resolvedor.gauser.get_full_name }}
+                            <br>{{ incidencia.fecha_resuelve }}</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div id="form_incidencia" style="display: none;">
+            <div class="">
+                <h4 style="text-align: center;color: #008CBA;"><strong>Define el incidencia a subir a GAUSS</strong>
+                </h4>
+            </div>
+            <div class="row">
+                <div class="columns large-8">
+                    <label>Nombre del incidencia
+                        {{ form.nombre }}
+                    </label>
+                </div>
+                <div class="columns large-4">
+                    <label>Lugar donde se almacena
+                        {{ form.lugar }}
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <label>Texto con observaciones sobre el incidencia
+                        {{ form.observaciones }}
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div id="form_solucionar" style="display: none;">
+            <div class="">
+                <h4 style="text-align: center;color: #008CBA;"><strong>Solución dada a la incidencia dada por <span id="emisor_incidencia"></span></strong>
+                </h4>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <label>Texto con observaciones sobre la solución dada a la incidencia
+                        {{ form_resolver.observaciones }}
+                    </label>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        {# Visualización de iconos y funciones asociadas #}
+        habilita(['s_plus', 'h_trash-o', 'h_check', 'h_list-alt']);
+
+        $('#plus_sign').click(function (e) {
+            e.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                $('#action').val('guardar_incidencia');
+                $('#form_incidencia').slideDown();
+                $('#div_incidencias').slideUp();
+                habilita(['h_plus', 'h_trash-o', 's_check', 's_list-alt']);
+                editor = wysihtmleditor('id_observaciones', {height: '250'});
+            }
+        });
+
+        $('.go_solucionar').click(function(){
+            $('#action').val('resuelve_incidencia');
+            var id = $(this).attr('id').split('___')[1];
+            $('#id_incidencia').val(id);
+            $('#emisor_incidencia').html($('#incidencia___' + id).contents().filter('span').html());
+            $('#form_solucionar').show();
+            $('#form_incidencia').hide();
+            $('#div_incidencias').hide();
+            habilita(['h_plus', 'h_trash-o', 's_check', 's_list-alt']);
+            var editor = wysihtmleditor('id_observaciones', {height: '250'});
+        });
+
+        $('#list-alt_sign').click(function (e) {
+            e.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                $('#action').val('');
+                $('#form_incidencia').slideUp();
+                $('#div_incidencias').slideDown();
+                habilita(['s_plus', 'h_trash-o', 'h_check', 'h_list-alt']);
+            }
+        });
+
+        $('#trash-o_sign').click(function (e) {
+            e.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                show_mensajes({title: 'Eliminar este incidencia', texto: 'Si aceptas el incidencia se eliminará' +
+                        ' completamente de la base de datos.', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        $('#action').val('borrar_incidencia');
+                        hide_mensajes();
+                        document.{{formname}}.submit();
+                    }}});
+            }
+        });
+
+        $('#check_sign').click(function (e) {
+            e.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                document.{{formname}}.submit();
+            }
+        });
+
+        {# Definición de eventos #}
+        $('.get_incidencia').click(function () {
+            var id = $(this).attr('id').split('___')[1];
+            $.post("/incidencias_lopd/", { id_incidencia: id, action: 'mostrar_incidencia' }, function (data) {
+                show_mensajes({title: '', texto: data, size: 'large', buttons: {
+                    "Aceptar": function () {
+                        hide_mensajes();
+                    }}});
+            });
+        });
+
+
+        $('#div_incidencias').on('click', '.check_incidencia', function () {
+            if ($(this).hasClass('fa-check-square-o')) {
+                $(this).removeClass('fa-check-square-o');
+                $(".check_incidencia").addClass('fa-square-o');
+                $('#id_incidencia').val('');
+                habilita(['s_plus', 'h_trash-o', 'h_check', 'h_list-alt']);
+            } else {
+                var id = $(this).attr('id').split('___')[1];
+                $('#id_incidencia').val(id);
+                $(".check_incidencia").removeClass('fa-square-o');
+                $(this).addClass('fa-check-square-o');
+                habilita(['h_plus', 's_trash-o', 'h_check', 'h_list-alt']);
+            }
+        });
+
+        $("#hay_avisos").change(function () {
+            $('#action').val('guardar_incidencia');
+            $('#form_incidencia').slideDown();
+            $('#div_incidencias').slideUp();
+            habilita(['h_plus', 'h_trash-o', 's_check']);
+            editor = wysihtmleditor('id_observaciones', {height: '250'});
+        });
+    </script>
+{% endblock %}

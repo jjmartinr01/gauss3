@@ -1,0 +1,137 @@
+<div>
+    <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong> Introduce un nuevo artículo o servicio</strong>
+    </h4>
+</div>
+<input type="hidden" name="fotos_existentes" id="fotos_existentes"
+       value="{% for foto in fotos %}{{ foto.id }},{% endfor %}">
+<div class="row">
+    <div class="large-6 columns">
+        <label>Nombre del artículo o servicio
+            {{ form.nombre }}
+        </label>
+        <small class="error">El nombre es obligatorio</small>
+    </div>
+    <div class="large-3 columns">
+        <label>Precio
+            {{ form.precio }}
+        </label>
+        <small class="error">Si es gratuito escribe 0</small>
+    </div>
+    <div class="large-3 columns">
+        <label>Gastos de envío
+            {{ form.precio_envio }}
+        </label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-6">
+        <label>Estado
+        {{ form.estado }}
+        </label>
+    </div>
+    <div class="large-6 columns">
+        <label>Formato
+            {{ form.formato }}
+        </label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12" id="fotos_div">
+    </div>
+</div>
+{% if fotos %}
+    <div class="row">
+        <div class="columns large-12" style="padding: 10px;margin-left: 20px;">
+            {% for foto in fotos %}
+                <span id="nombre_foto_{{ foto.id }}">
+                    <a><i id="reenviar_foto___{{ foto.id }}" class="fa fa-remove fotos_reenviar"></i></a>
+                        {{ foto.fich_name }}{% if not forloop.last %}, {% endif %}
+                    </span>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+<div class="row">
+    <div class="large-12 columns">
+        <label>Categorías que lo clasifican
+            <input type="hidden" name="categorias" id="id_categorias" value="">
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="large-12 columns">
+        <label>Descripción del artículo o servicio
+            {{ form.descripcion }}
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="large-12 columns">
+        <label>Describe la forma de realizar el pago
+            {{ form.pago }}
+        </label>
+    </div>
+</div>
+
+<script>
+    $(document).scrollTop( $('#h4_title').offset().top - 150 );
+
+    $('.fotos_reenviar').click(function (e) {
+        e.preventDefault();
+        var id = $(this).attr('id').split('___')[1];
+        $('#nombre_foto_' + id).hide();
+        var vec_list = $('#fotos_existentes').val().split(',')
+        var index = vec_list.indexOf(id);
+        if (index > -1) {
+            vec_list.splice(index, 1);
+        }
+        $('#fotos_existentes').val(vec_list.join());
+    });
+
+    $("#id_categorias").select2({
+        placeholder: "Escribe parte del nombre",
+        minimumInputLength: 3,
+        multiple: true,
+        ajax: {
+            url: "/ajax_compraventa/",
+            dataType: 'json',
+            quietMillis: 100,
+            data: function (term, page) { // page is the one-based page number tracked by Select2
+                return {
+                    action: 'select_categorias',
+                    q: term, //search term
+                    page_limit: 10, // page size
+                    page: page // page number
+                };
+            },
+            results: function (data) {
+                return {
+                    results: $.map(data, function (item) {
+                        return {
+                            text: item.subcategoria + ' (' + item.categoria + ')',
+                            id: item.id
+                        }
+                    })
+                };
+            }
+        },
+        formatResult: function (resultado) {
+            return '<div class="select2-user-result">' + resultado.text + '</div>';
+        },
+        formatSelection: function (resultado) {
+            $('#gauser_extra_selected').val(resultado.id);
+            return resultado.text;
+        },
+        dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
+        escapeMarkup: function (m) {
+            return m;
+        } // we do not want to escape markup since we are displaying html in results
+    });
+    $('#fotos_div').gaussFileUpload({tag_a: '<i class="fa fa-paperclip"></i> Pulsa aquí para subir fotos'});
+    {% if categorias %}
+        $("#id_categorias").select2("data", {% autoescape off %}{{categorias}} {% endautoescape %});
+    {% endif %}
+
+</script>

@@ -1,0 +1,33 @@
+{% load my_templatetags %}
+
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap">Políticas de cuotas establecidas en el {{request.session.gauser_extra.entidad.name}} </td></tr></table>
+<table align="CENTER" cellpadding="3" width="100%">
+{% for politica_cuota in politicas %}
+  <tr><td colspan="7" style="height:1px;background-color:#623090;"></td></tr>
+  <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}">
+  <td class="icono">
+      <input type="checkbox" class="checkboxes" id="check_{{politica_cuota.id}}"/>
+  </td>
+  <td style="font-size:8pt;color:#623090;width:6%;text-align:center;" class="tabla_politica_cuotas" title="Cantidad a cobrar en esta cuota">
+      {{politica_cuota.cantidad}} €
+  </td>
+  <td style="font-size:8pt;color:#623090;width:6%;text-align:center;" class="tabla_politica_cuotas" title="Perioricidad en el cargo de la cuota">
+      {{politica_cuota.get_tipo_cobro_display}}
+  </td>
+  <td style="font-size:8pt;color:#623090;width:13%;text-align:center;" class="tabla_politica_cuotas" title="Cuotas para el 2º, 3º y siguientes socios del mismo tipo en la familia">
+      {{politica_cuota.descuentos|desglosar_descuentos}}
+  </td>
+  <td id="politica_cuota_{{politica_cuota.id}}" class="politica_cuota_texto" style="font-size:8pt;color:#623090;width:57%;white-space:normal;" title="Descripción del evento. Haz click para más información.">
+    &nbsp;&nbsp;{{politica_cuota.perfil.nombre}}.<span style="color:gray;">&nbsp;&nbsp;{{politica_cuota.concepto}}</span>
+  </td>
+  <td style="font-size:8pt;color:#623090;width:3%;text-align:center;">
+  {% if politica_cuota.perfiles.all|length > 0 %} <i  class="fa fa-group show_hide" id="grupo_{{politica_cuota.id}}" style="cursor:pointer;font-size:15px;" title="{% for perfil in politica_cuota.perfiles.all %} {{perfil}} {% if not forloop.last %}, {% endif %} {% endfor %}"></i> {% endif %}
+  </td>
+  <td style="font-size:8pt;color:#623090;width:13%;text-align:center;" title="Fecha de pago de la cuota">
+  Día {{politica_cuota.dia}} {% if politica_cuota.tipo_cobro == 'ANU' %} de {{politica_cuota.mes|nombre_mes}} {% else %} de cada mes {% endif %}
+  </td>
+  </tr>
+  <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}"><td colspan="7"> <div id="div_{{politica_cuota.id}}" style="padding-left:1px;padding-right:1px;white-space:normal;display:none;" class="div_exentos"></div> </td></tr>
+    
+{% endfor %}
+</table>

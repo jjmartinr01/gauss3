@@ -1,0 +1,11 @@
+{% if hw.top_bar %}
+    <div class="row" data-tb_id="{{ hw.top_bar.id }}" id="topbar">
+        {% with top_bar=hw.top_bar %}
+            {% include 'edita3_top_bar.html' %}
+        {% endwith %}
+    </div>
+{% endif %}
+
+<div id="rows_web" >
+    {% include "edita3_rows_editables.html" with hw=hw %}
+</div>

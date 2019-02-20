@@ -1,0 +1,40 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block ready %}
+  visualizar(['ok_sign',]);
+  $( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Aceptar y guardar los cambios');  
+
+  $('#ok_sign').click(function () {
+	$('#action').val('aceptar');
+	document.{{formname}}.submit(); });
+
+  $('#id_iban').attr('title','{{request.session.gauser_extra.entidad.banco.nombre}}');
+{% endblock %}
+
+
+{% block navegar %} 
+{% endblock %}
+
+
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+    <input type="hidden" name="action" id="action" value="">
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Datos configurables del Grupo</td></tr></table> 
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+<tr><td>
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+{{form}}
+<tr><td>Anagrama:</td><td><input type="file" name="anagrama"/></td></tr>
+</table>
+</td><td>
+<img width="300px" src="/media/anagramas/{{request.session.gauser_extra.entidad.code}}_anagrama.png"></td></tr>
+</table>
+</form>
+
+
+{% endblock %}

@@ -1,0 +1,87 @@
+{% load my_templatetags %}
+<div id="div_ayudante{{ ayudante.id }}">
+    <div class="row">
+        <div class="columns large-3">
+            <label><b>Nombre:</b>
+                {% if g_e|has_permiso:'edita_ayudantes' %}
+                    <input type="text" class="campo_ayudante" data-id="{{ ayudante.id }}"
+                           value="{{ ayudante.nombre }}" data-campo="nombre">
+                {% else %}
+                    <br>{{ ayudante.nombre }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label><b>Primer apellido:</b>
+                {% if g_e|has_permiso:'edita_ayudantes' %}
+                    <input type="text" class="campo_ayudante" data-id="{{ ayudante.id }}"
+                           value="{{ ayudante.apellido1 }}" data-campo="apellido1">
+                {% else %}
+                    <br>{{ ayudante.apellido1 }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label><b>Segundo apellido:</b>
+                {% if g_e|has_permiso:'edita_ayudantes' %}
+                    <input type="text" class="campo_ayudante" data-id="{{ ayudante.id }}"
+                           value="{{ ayudante.apellido2 }}" data-campo="apellido2">
+                {% else %}
+                    <br>{{ ayudante.apellido2 }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label><b>NIF:</b>
+                {% if g_e|has_permiso:'edita_ayudantes' %}
+                    <input type="text" class="campo_ayudante" data-id="{{ ayudante.id }}"
+                           value="{{ ayudante.nif }}" data-campo="nif">
+                {% else %}
+                    <br>{{ ayudante.nif }}
+                {% endif %}
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-3">
+            <label><b>Tipo de pago:</b>
+                {% if g_e|has_permiso:'edita_ayudantes' %}
+                    <select class="ayudante_tipo" data-id="{{ ayudante.id }}">
+                        <option value="P" {% if ayudante.tipo == 'P' %}selected{% endif %}>Porcentaje (%)</option>
+                        <option value="F" {% if ayudante.tipo == 'F' %}selected{% endif %}>Cantidad fija</option>
+                    </select>
+                {% else %}
+                    <br>{{ ayudante.get_tipo_display }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label><b>Cantidad:</b>
+                {% if g_e|has_permiso:'edita_ayudantes' %}
+                    <input type="text" class="campo_ayudante" data-id="{{ ayudante.id }}"
+                           value="{{ ayudante.cantidad }}" data-campo="cantidad">
+                {% else %}
+                    <br>{{ ayudante.cantidad }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label><b>IBAN:</b>
+                {% if g_e|has_permiso:'edita_ayudantes' %}
+                    <input type="text" class="campo_ayudante" data-id="{{ ayudante.id }}"
+                           value="{{ ayudante.iban }}" data-campo="iban">
+                {% else %}
+                    <br>{{ ayudante.iban }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label>&nbsp;</label>
+            {% if g_e|has_permiso:'borra_ayudantes' %}
+                <a class="button tiny delete_ayudante alert" data-id="{{ ayudante.id }}"><i
+                        class="fa fa-user-times"></i> Borrar ayudante</a>
+            {% else %}&nbsp;
+            {% endif %}
+        </div>
+    </div>
+</div>

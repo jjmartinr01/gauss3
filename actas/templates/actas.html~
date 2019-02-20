@@ -1,0 +1,149 @@
+{% extends "lateral.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css" />
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.min.js"></script>
+<style>
+  li { margin-left:25px; }
+</style>
+{% endblock %}
+
+
+{% block ready %}
+
+  // PARA LA EDICIÓN
+
+  visualizar(['save_sign','file_pdf']);
+  
+  $('#save_sign').click(function(){if( $(this).hasClass('navegar') ) {
+      $('#id_contenido_html').val(removeWordTags ($('#id_contenido_html').val())); 
+      $.ajax( {
+	  type: "POST",
+	  url: "/save_acta/",
+	  data: $("form").serialize(),
+	  success: function(data) {
+	  $( "#save_mod_dialog" ).dialog("open");
+	  setTimeout(function(){$( "#save_mod_dialog" ).dialog("close")},900);  
+	  $( "#acta_id" ).val(data);} });}});
+  
+  $( "#save_mod_dialog" ).dialog({autoOpen: false, width:'auto', modal: false,});
+  
+  $('#file_pdf').click(function () {  if( $(this).hasClass('navegar') ) {
+	$('#action').val('genera_pdf'); 
+	document.{{formname}}.submit();}});
+
+  $('#Contenido').click(function(e) {
+    var a=false;
+    if ($(e.target).parents('.div_total_checkboxes').length<1){
+	$('.todos_ningunos').hide();
+	$('.multiselect2checkbox').hide();
+	$('.ya_checked').show();}});
+
+  $('.texto_checkboxes').live('click',function(){
+	var id = this.id.split('___')[1];
+	$('#todos_ningunos___'+id).toggle();
+	$('#checkboxes___'+id).toggle();
+	$('#ya_checked___'+id).toggle();})
+
+  $('.select_todos').live('click', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).attr('checked', 'checked'); });
+
+  $('.select_ninguno').live('click', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).attr('checked', false); });
+
+  //PARA LA VISUALIZACIÓN
+
+  $('.editar_acta').click(function () {  
+    var id = this.id.split('___')[1];
+    $('#id_acta').val(id);
+    $.post("/editar_acta/", {id_acta:JSON.stringify(id),},function(data) {
+	$('#div_actas').html(data);
+	$( "#save_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Guardar la acta');
+	$( "#file_pdf" ).removeClass('no_navegar').addClass('navegar').attr('title','Generar pdf de la acta');});});
+  
+  $('.delete_acta').click(function () {  
+    $( "#dialog_del_acta" ).dialog({width: 'auto', modal: true, buttons: {
+	  "OK": function() { $( this ).dialog( "close" );},}});});
+
+  $(".pdf_acta").click(function() {
+      var id = this.id.split('___')[1];
+      $('#id_acta').val(id);
+      $('#action').val('pdf_acta');
+      document.{{formname}}.submit();});
+
+
+  $('#ok_sign').click(function () {  if( $(this).hasClass('navegar') ) {
+      $('#action').val('guardar');
+      $('#id_texto').val(removeWordTags ($('#id_texto').val())); 
+      document.{{formname}}.submit();}});
+
+
+  $(".ver_acta").click(function() {
+      id = this.id.split('___')[1];
+      if ($('#contenido_'+id).text()){
+	$('#contenido_'+id).toggle();
+      }else{
+	$.post("/contenido_acta/", {id_acta:JSON.stringify(id),},function(data) {
+	    $('#contenido_'+id).html(data);
+	    $('#ver_acta_'+id).hide();});}});
+
+  
+{% endblock %}
+
+
+{% block navegar %}                                                     
+{% endblock %}
+
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+<input type="hidden" id="action" name="action" value="">
+<input type="hidden" id="id_acta" name="id_acta" value="">
+
+<div id="div_actas">
+  <table align="center" width="100%" cellspacing="3" cellpadding="3">
+    <tr > <td class="cabecera" colspan="2">
+    <div style="float:center;text-align:center;">
+      &nbsp;&nbsp;Redacción de actas de reuniones 
+    </div><td></tr>
+    {% for acta in actas %}
+      <tr style="font-size:10pt;"> <td>&nbsp;</td></tr>
+      <tr style="font-size:10pt;" class="acta_description___{{acta.id}}"> <td style="border-bottom:3px solid lightgray;">
+	<div style="float:left;">
+	  &nbsp;&nbsp;Acta de {{acta.convocatoria.get_tipo_display}} del {{acta.convocatoria.fecha_hora|date:"d-m-Y"}} a las {{acta.convocatoria.fecha_hora|date:"H:i"}}
+	</div>
+	<div class="ver_acta" id="ver_acta___{{acta.id}}">
+	  <i class="icon-eye-open" title="Ver el texto de esta acta"></i>
+	</div>
+	<div class="pdf_acta" id="pdf_acta___{{acta.id}}">
+	  <i class="icon-file-text-alt" title="Generar pdf de esta acta"></i>
+	</div>
+	{% if acta.autor == request.session.gauser_extra or request.session.gauser_extra|has_perfiles:"4,5"%}
+	<div class="editar_acta" id="editar_acta___{{acta.id}}">
+	  <i class="icon-edit" title="Editar esta acta"></i>
+	</div>
+	<div class="delete_acta" id="del_acta___{{acta.id}}">
+	  <i class="icon-trash" title="Borrar esta acta"></i>
+	</div>
+	{% endif %}
+      <td></tr>
+      <tr class="acta_description___{{acta.id}}">
+      <td width="100%" style="white-space:normal;">
+	<div id="contenido_{{acta.id}}" title="Contenido del acta" style="margin-left:25px;"></div>
+      </td></tr>
+    {% endfor %}
+  </table>
+</div>
+</form>
+
+<div id="dialog_del_acta" title="Eliminar este acta" style="display:none;">
+  <p><i class="icon-warning-sign"></i> No se puede borrar un acta, ya que está ligada a una convocatoria. Un acta se elimina cuando se borra la convocatoria que le corresponde.</p>
+</div>
+<div id="save_mod_dialog" title="Modificaciones en el acta">
+  <p style="text-align:center">Contenido guardado.</p>
+</div>
+{% endblock %}

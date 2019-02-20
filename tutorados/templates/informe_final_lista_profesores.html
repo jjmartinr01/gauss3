@@ -1,0 +1,24 @@
+{% load my_templatetags %}
+{% if informes|length > 0 %}
+    <ol>
+        {% for i_f in informes %}
+            <li id="informe{{ i_f.id }}">
+                {{ i_f.profesor.gauser.get_full_name }} ({{ i_f.materia.nombre }})
+                {% if request.session.gauser_extra|has_perfiles:"4,5,6,7" %}
+                    &nbsp;<a class="borrar_informe" data-id="{{ i_f.id }}"><i class="fa fa-trash-o"></i></a>{% endif %}
+            </li>
+        {% endfor %}
+    </ol>
+    {% if request.session.gauser_extra|has_perfiles:"4,5,6,7" %}
+        <script>
+            $("body").on('click', '.borrar_informe', function (e) {
+                var id = $(this).data('id');
+                $.post("/informe_final/", {action: 'borrar_informe_final', id: id}, function (data) {
+                    $("#informe" + id).hide();
+                });
+            });
+        </script>
+    {% endif %}
+{% else %}
+    Ningún profesor ha rellenado todavía el informe
+{% endif %}

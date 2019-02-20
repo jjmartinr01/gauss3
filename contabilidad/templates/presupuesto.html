@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="partida_id" id="partida_id" value="">
+        <input type="hidden" name="id_presupuesto" id="id_presupuesto" value="{{ presupuesto.id }}">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong> {{ presupuesto.nombre }}
+                ({{ request.session.gauser_extra.ronda.entidad.name }})</strong></h4>
+        </div>
+
+        <div class="panel ">
+            <div class="row">
+                <div data-tooltip class="large-12 columns" id="texto_describir"
+                     title="La modificación de este texto puede hacerse en el listado de presupuestos.">
+                    {% autoescape off %}{{ presupuesto.describir }}{% endautoescape %}
+                </div>
+            </div>
+        </div>
+
+        <div style="float:inherit;" id="div_partidas">
+            {% include "list_partidas.html" %}
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['h_check', 's_plus', 'h_trash-o', 'h_pencil', 's_file-text-o']);
+
+        $('#plus_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                habilita(['s_check', 'h_plus']);
+                $('#action').val('add_partida');
+                $.post("/presupuesto_ajax/", {action: 'add_partida'}, function (data) {
+                    $('#div_partidas').html(data);
+                });
+            }
+        });
+
+        $('#pencil_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                var id = $('#partida_id').val();
+                $('#action').val('mod_partida');
+                habilita(['s_check', 'h_plus', 'h_pencil', 'h_trash-o']);
+                $.post("/presupuesto_ajax/", {action: 'mod_partida', id: id}, function (data) {
+                    $('#div_partidas').html(data);
+                });
+            }
+        });
+
+        $('#trash-o_sign').click(function (event) {
+            event.preventDefault();
+            var id_pre = $('#id_presupuesto').val();
+            var id = $('#partida_id').val();
+            $('#action').val('del_partida');
+            habilita(['h_check', 's_plus', 'h_pencil', 'h_trash-o']);
+            $.post("/presupuesto_ajax/", {action: 'del_partida', id: id, id_presupuesto: id_pre}, function (data) {
+                $('#div_partidas').html(data);
+            });
+        });
+
+        $("#file-text-o_sign").click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                $('#action').val('pdf_presupuesto');
+                document.{{formname}}.submit();
+            }
+        });
+
+        $('#check_sign').click(function (event) {
+            event.preventDefault();
+            var tip = $('#id_tipo').val().length > 3;
+            var nom = $('#id_nombre').val().length > 3;
+            var can = !isNaN(parseFloat($('#id_cantidad').val()));
+            if (can) {
+                $('#id_cantidad').val(parseFloat($('#id_cantidad').val()));
+            }
+            if (nom && tip && can) {
+                if ($('#action').val() == 'add_partida') {
+                    $('#action').val('save_partida_added');
+                    $('#' + '{{formname}}').ajaxSubmit({
+                        url: '/presupuesto_ajax/',
+                        success: function (data) {
+                            $('#div_partidas').html(data);
+                            habilita(['h_check', 's_plus']);
+                        }
+                    });
+                } else if ($('#action').val() == 'mod_partida') {
+                    $('#action').val('save_partida_modified');
+                    $('#' + '{{formname}}').ajaxSubmit({
+                        url: '/presupuesto_ajax/',
+                        success: function (data) {
+                            $('#div_partidas').html(data);
+                            habilita(['h_check', 's_plus', 'h_trash-o', 'h_pencil']);
+                        }
+                    });
+                }
+                return false;
+            } else {
+                var texto = '';
+                if (!nom) {
+                    texto = texto + '<li>Es necesario escribir un nombre para la partida (más de 3 caracteres).</li>';
+                }
+                if (!tip) {
+                    texto = texto + '<li>Debes seleccionar el tipo de partida (gasto o ingreso).</li>';
+                }
+                if (!can) {
+                    texto = texto + '<li>Cantidad debe ser un número real (sin letras y usa "." para los decimales).</li>';
+                }
+                $("#texto_faltan_campos").html(texto);
+                $('#faltan_campos').foundation('reveal', 'open');
+            }
+        });
+
+        $('#div_partidas').on('click', '.check_partida', function () {
+            if ($(this).hasClass('fa-check-square-o')) {
+                $(this).removeClass('fa-check-square-o');
+                $(".check_partida").addClass('fa-square-o');
+                $('#partida_id').val('');
+                habilita(['s_plus', 'h_pencil', 'h_trash-o']);
+            } else {
+                var id = $(this).attr('id').split('___')[1];
+                $('#partida_id').val(id);
+                $(".check_partida").removeClass('fa-square-o');
+                $(this).addClass('fa-check-square-o');
+                habilita(['h_plus', 's_pencil', 's_trash-o']);
+            }
+        });
+    </script>
+{% endblock %}

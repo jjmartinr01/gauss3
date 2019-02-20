@@ -1,0 +1,105 @@
+{% extends "lateral.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui-timepicker-addon.css" />
+<script type="text/javascript" src="/static/js/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.min.js"></script>
+
+{% endblock %}
+
+
+{% block ready %}
+ 
+  {% if request.session.gauser_extra|has_permiso:"da_alta_socios" %}
+      visualizar(['alta_sign']);
+      $( "#alta_sign" ).click(function () { if ( $(this).hasClass('navegar') ) {
+	  var bajas=[];
+	  $('input:checkbox.checkboxes:checked').each(function () {
+	      bajas.push($(this).attr('id').split('_')[1]); });
+	  $('#action').val('dar_altas');
+	  $('#id_bajas').val(bajas);
+	  document.{{formname}}.submit(); }});
+  {% endif %}
+  
+  
+  {% if request.session.gauser_extra|has_permiso:"borrar_datos_socios" %}
+      visualizar(['remove_sign']);
+      $('#remove_sign').click(function(){ if ( $(this).hasClass('navegar') ) {
+	  var bajas=[];
+	  $('input:checkbox.checkboxes:checked').each(function () {
+	      bajas.push($(this).attr('id').split('_')[1]); });
+	  $('#action').val('borrar_bajas');
+	  $('#id_bajas').val(bajas);
+	  $('#dialog_borrar').dialog('open'); }});
+
+      $('#dialog_borrar').dialog({ autoOpen: false, modal: true,
+	  buttons: { Cancelar: function() { $( this ).dialog( "close" ); }, Ok: function() { document.{{formname}}.submit(); }  }  });
+  {% endif %}
+
+
+  $('.checkboxes').click(function(){
+      if ($('input:checkbox.checkboxes:checked').length > 0) {
+	  //$( "#remove_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Borrar bajas seleccionados');
+	  $( "#alta_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Volver a dar de alta');}
+      else {
+	  //$( "#remove_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+	  $( "#alta_sign" ).removeClass('navegar').addClass('no_navegar').attr('title',''); } });
+
+{% endblock %}
+
+
+{% block navegar %}
+{% endblock %}
+
+
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+
+<input type="hidden" id="action" name="action" value="">
+<input type="hidden" id="id_bajas" name="id_bajas" value="">
+
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> </td></tr></table>
+<table align="CENTER" cellpadding="3" width="100%">
+{% for baja in bajas %}
+  <tr><td colspan="5" style="height:1px;background-color:#623090;"></td></tr>
+  <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}">
+  <td style="font-size:8pt;color:#623090;width:2%;text-align:center;">
+      <input type="checkbox" class="checkboxes" id="check_{{baja.id}}"/>
+  </td>
+    
+  <td style="font-size:8pt;color:#623090;width:24%;" class="tabla_bajas">
+      &nbsp;{{baja.gauser.get_full_name}}
+  </td>
+  <td title="Observaciones hechas a este socio" id="baja_{{baja.id}}" class="baja_texto" style="font-size:8pt;color:#623090;width:50%;white-space:normal;cursor:pointer;">{% autoescape off %}{{baja.observaciones|default:"No hay observaciones"}}{% endautoescape %}
+  </td>
+  <td style="font-size:8pt;color:#623090;width:12%;text-align:center;">
+  {{baja.fecha_alta|date}}
+  </td>
+  <td style="font-size:8pt;color:#623090;width:12%;text-align:center;">
+  {{baja.fecha_baja|date}}
+  </td>
+  </tr>
+{% endfor %}
+</table>
+</form>
+
+<div id="dialog_borrar" title="Borrar los datos del socio">
+  Si aceptas, todos los datos almacenados de este usuario se borrarán y no podrán recuperarse.
+</div>
+{% endblock %}
+
+
+
+
+	
+
+
+
+
+
+
+

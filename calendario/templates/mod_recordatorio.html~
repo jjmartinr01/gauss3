@@ -1,0 +1,36 @@
+{% load my_templatetags %}
+<script>
+  $( "#id_recordar" ).datetimepicker({
+	dateFormat: "dd/mm/yy",
+	dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	firstDay: 1,
+	hourText:"Hora",
+	minuteText:"Minutos",
+	timeText:"Salida:",
+	monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	});
+
+  $('.pulsar').click(function(){
+      var id = this.id.split('___');
+      $('#acontecimiento').val(id[2]);
+      $('#recordatorio').val(id[1]);
+      $('#form_recordatorio').show();      
+  });
+</script>
+<input type="hidden" name="acontecimiento" id="acontecimiento" value="">
+<input type="hidden" name="recordatorio" id="recordatorio" value="">
+<input type="hidden" name="gauser" value="{{request.session.gauser_extra.gauser.id}}">
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Recordatorio de eventos o acontecimientos</td></tr></table>
+<table style="border-spacing:10px;"><tbody>
+{% for recordatorio in recordatorios %}
+  <tr><td>Evento:</td><td>{{recordatorio.acontecimiento.nombre}}</td><td>Inicio:</td><td>{{recordatorio.acontecimiento.inicio}}</td> <td>Lugar:</td><td>{{recordatorio.acontecimiento.lugar}}</td></tr>
+  <tr><td>Recordatorio:</td><td>{% if recordatorio.recordar %} {{recordatorio.recordar}} {% else %} Sin fecha {% endif %}</td><td> Anulado:</td><td>{% if recordatorio.enterado %} Sí {% else %} No {% endif %}</td> <td colspan="2"><span class="info pulsar" id="recordatorio___{{recordatorio.id}}___{{recordatorio.acontecimiento.id}}">Modificar recordatorio</span></td></tr>
+  {% if not forloop.last %}<tr><td colspan="6" style="border-bottom: solid 1px;"></td></tr>{% endif %}
+{% endfor %}
+</tbody></table>
+
+  <table style="border-spacing:10px;display:none;" id="form_recordatorio"><tbody><tr>
+  <tr><td colspan="2" style="border-bottom: solid 1px;"></td></tr>
+  <tr><td style="color:red;">Fecha y hora del recordatorio: {{form.recordar}}</td><td style="color:red;">Anular recordatorio: {{form.enterado}}</td></tr>
+  </tbody></table>

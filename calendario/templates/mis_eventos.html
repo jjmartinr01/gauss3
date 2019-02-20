@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui-timepicker-addon.css" />
+<script type="text/javascript" src="/static/js/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.min.js"></script>
+
+<style>
+.importante {font-size:12pt;cursor:pointer;}
+.importante:hover {color: #E76123;}
+.recordatorio {font-size:12pt;cursor:pointer;}
+.recordatorio:hover {color: #E76123;}
+.fa-bookmark {font-size:12pt;}
+.fa-star {color:#e76123;}
+.icono {font-size:8pt;color:#623090;width:2%;text-align:center;}
+</style>
+{% endblock %}
+
+
+{% block ready %}
+  visualizar(['ok_sign','plus_sign','file_pdf','remove_sign','list_sign']);
+  $( "#plus_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir un nuevo acontecimiento/evento');
+  $( "#file_pdf" ).removeClass('no_navegar').addClass('navegar').attr('title','Genera PDF con tus eventos/acontecimientos');
+  
+  function removeTags(string){
+    return string.replace(/(?:<(?:script|style)[^>]*>[\s\S]*?<\/(?:script|style)>|<[!\/]?[a-z]\w*(?:\s*[a-z][\w\-]*=?[^>]*)*>|<!--[\s\S]*?-->|<\?[\s\S]*?\?>)[\r\n]*/gi, '');}
+
+  $('#list_sign').click(function () { if( $(this).hasClass('navegar') ) {
+    $( '#file_pdf' ).removeClass('no_navegar').addClass('navegar').attr('title','Genera PDF con tus eventos/acontecimientos');
+    $( '#plus_sign' ).removeClass('no_navegar').addClass('navegar').attr('title','');
+    $( "#ok_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( "#list_sign" ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $('#action').val('muestra_calendario');
+    location.href='/calendario_voluntario/i3010/';}});
+
+  $("#file_pdf").click(function() { if( $(this).hasClass('navegar') ) {
+      $('#action').val('pdf_documentos');
+      document.{{formname}}.submit();}});
+
+  {% for acontecimiento in acontecimientos %}
+    $('#acontecimiento_{{acontecimiento.id}}').html('{{acontecimiento.nombre}}.<span style="color:gray;">'+removeTags('{% autoescape off %} {{acontecimiento.describir}} {% endautoescape %}').substring(0, 85)+'</span>')
+  {% endfor %}
+
+
+  $('.acontecimiento_texto').click(function(){
+      var id = $(this).attr('id').split('_')[1];
+      if ($('#div_'+id).text().length == 0){
+	var jsonStr = JSON.stringify(id);
+	$.post("/ver_acontecimiento/", { id: id},function(data) {
+	    $('#div_'+id).html(data);$('#div_'+id).slideToggle();});  
+	return false;
+      }
+      else{
+	$('#div_'+id).slideToggle();
+      }
+  });
+
+  $('.show_hide').click(function(){
+    var id_acontecimiento = $(this).attr('id').split('_')[1];
+    $("#perfil_"+id_acontecimiento).slideToggle();
+    });
+
+  $('.checkboxes').click(function(){
+    if ($('input:checkbox.checkboxes:checked').length > 0) {
+	$( "#remove_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Borrar acontecimientos seleccionados');}
+    else { $( "#remove_sign" ).removeClass('navegar').addClass('no_navegar').attr('title',''); }
+    });
+
+  $('#remove_sign').click(function(){ if ( $(this).hasClass('navegar') ) {
+    var acontecimientos=[];
+    $('input:checkbox.checkboxes:checked').each(function () {
+	acontecimientos.push($(this).attr('id').split('_')[1]);
+    });
+    $('#action').val('borrar_acontecimientos');
+    $('#id_acontecimientos').val(acontecimientos);
+    document.{{formname}}.submit();
+  }});
+
+  $('.importante').click(function(){
+    var id = $(this).attr('id').split('_')[1];
+    if ( $(this).hasClass('fa-star-o') ) {
+	$(this).removeClass('fa-star-o').addClass('fa-star').attr('title','Acontecimiento importante');
+	$.post("/acontecimiento_importante/", { id: id, importante: 1},function() {});  
+	return false;
+    }else{
+	$(this).removeClass('fa-star').addClass('fa-star-o').attr('title','');
+	$.post("/acontecimiento_importante/", { id: id, importante: 0},function() {});  
+	return false;}
+  });
+
+  $('#plus_sign').click(function () { if( $(this).hasClass('navegar') ) {
+    $( '#file_pdf' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( '#plus_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Grabar el nuevo evento/acontecimiento');
+    $( "#calendar_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Volver a ver el calendario');
+    $( "#list_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Volver a ver la lista de eventos/acontecimientos');
+    $('#action').val('crea_acontecimiento');
+    $.post("/calendario_ajax/", {},function(data) { $('#lista_acontecimientos').html(data);});}});
+
+  $('#ok_sign').click(function () {  if( $(this).hasClass('navegar') ) {
+      if ($('#action').val() == 'mod_recordatorio'){
+	  document.{{formname}}.submit();
+      }else{
+	  var nom = $('#id_nombre').val().length > 3;
+	  var ini = $('#id_inicio').val().length > 3;
+	  var fin = $('#id_fin').val().length > 3;
+	  if (nom && ini && fin){
+	    $('#id_describir').val(removeWordTags ($('#id_describir').val()));
+	    document.{{formname}}.submit();}
+	  else {
+	    var texto = '';
+	    if( !nom ) { texto = texto + '<li>Es necesario escribir un nombre para el evento.</li>';}
+	    if( !ini ) { texto = texto + '<li>Debes señalar la fecha de inicio.</li>';}
+	    if( !fin ) { texto = texto + '<li>Debes señalar la fecha de finalización.</li>';}
+	    $( "#faltan_campos" ).html(texto);
+	    $( "#faltan_campos" ).dialog( "open" );}}}});
+
+  $(".recordatorio").click(function(){
+    var id = $(this).attr('id').split('_')[1];
+    $( '#file_pdf' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( '#plus_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Grabar el recordatorio');
+    $( "#list_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Volver a ver a la lista de eventos/acontecimientos');
+    $('#action').val('mod_recordatorio');
+    $.post("/mod_recordatorio/", {id:id,},function(data) {$('#lista_acontecimientos').html(data);});});
+{% endblock %}
+
+
+{% block navegar %}
+{% endblock %}
+
+
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+
+<input type="hidden" id="action" name="action" value="">
+<input type="hidden" id="id_acontecimientos" name="id_acontecimientos" value="">
+
+<div id="lista_acontecimientos">
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap">Eventos y acontecimientos a los que estoy {% if request.session.gauser_extra.gauser.sexo == 'H' %} citado {% else %} citada {% endif %} </td></tr></table>
+<table align="CENTER" cellpadding="3" width="100%">
+{% for acontecimiento in acontecimientos %}
+  <tr><td colspan="7" style="height:1px;background-color:#623090;"></td></tr>
+  <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}">
+  <td class="icono">
+      <input type="checkbox" class="checkboxes" id="check_{{acontecimiento.id}}"/>
+  </td>
+  <td class="icono">
+      {% if acontecimiento.id in importantes %}
+	  <i class="fa fa-star importante" id="importante_{{acontecimiento.id}}"></i>
+      {% else %}
+	  <i class="fa fa-star-o importante" id="importante_{{acontecimiento.id}}"></i>
+      {% endif %}
+  </td>
+  <td class="icono" title="Establecer/Modificar un recordatorio para este acontecimiento.">
+      <i class="fa fa-clock-o recordatorio" id="recordatorio_{{acontecimiento.id}}"></i>
+  </td>
+  
+  <td style="font-size:8pt;color:#623090;width:21%;" class="tabla_acontecimientos" title="Persona que creó el evento/acontecimiento">
+      {{acontecimiento.gauser_extra.gauser.get_full_name}}
+  </td>
+  <td id="acontecimiento_{{acontecimiento.id}}" class="acontecimiento_texto" style="font-size:8pt;color:#623090;width:60%;white-space:normal;cursor:pointer;" title="Descripción del evento. Haz click para más información.">
+  </td>
+  <td style="font-size:8pt;color:#623090;width:3%;text-align:center;">
+  {% if acontecimiento.perfiles.all|length > 0 %} <i  class="fa fa-group show_hide" id="grupo_{{acontecimiento.id}}" style="cursor:pointer;font-size:15px;" title="{% for perfil in acontecimiento.perfiles.all %} {{perfil}} {% if not forloop.last %}, {% endif %} {% endfor %}"></i> {% endif %}
+  </td>
+  <td style="font-size:8pt;color:#623090;width:10%;" title="Fecha de comienzo">
+  {{acontecimiento.inicio|date}}
+  </td>
+  </tr>
+  <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}"><td colspan="6"> <div id="div_{{acontecimiento.id}}" style="padding-left:35px;padding-right:35px;white-space:normal;display:none;"></div> </td></tr>
+  <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}"><td colspan="6"> <div id="perfil_{{acontecimiento.id}}" style="padding-left:35px;padding-right:35px;white-space:normal;display:none;">
+  {% if acontecimiento.perfiles.all|length > 0 %} {% for perfil in acontecimiento.perfiles.all %}<span class="perfiles_invitados" id="fichperfil_{{perfil.id}}">{{perfil.nombre}}</span>{% if not forloop.last %}, {% endif %} {% endfor %}{% endif %}
+  </div> </td></tr>
+    
+{% endfor %}
+</table>
+</div>
+
+</form>
+
+{% endblock %}
+
+
+
+
+	
+
+
+
+
+
+
+

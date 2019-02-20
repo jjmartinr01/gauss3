@@ -1,0 +1,71 @@
+{% load my_templatetags %}
+
+<div class="row">
+    <div class="columns large-6">
+        <label><b>Apartado o sección en la que se  asociará la noticia</b>
+            <select class="select_subentidad" data-noticia="{{ noticia.id }}">
+                {% for s in noticia.autor.entidad.subentidad_set.all %}
+                    <option value="{{ s.id }}" {% if s == noticia.subentidad %}selected{% endif %}>{{ s.nombre }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+
+    <div class="columns large-2">
+        <label><b>Publicar desde</b>
+            <input type="text" class="fechas_publicacion" data-action="publicar_from" readonly
+                   data-noticia="{{ noticia.id }}" value="{{ noticia.publicar_from|date:'d/m/Y' }}"></label>
+    </div>
+    <div class="columns large-2">
+        <label><b>Publicar hasta</b>
+            <input type="text" class="fechas_publicacion" data-action="publicar_to" readonly
+                   data-noticia="{{ noticia.id }}" value="{{ noticia.publicar_to|date:'d/m/Y' }}"></label>
+    </div>
+    <div class="columns large-2" title="Borrar la noticia y los archivos asociados con ella">
+        <label>&nbsp;
+            <a class="button  borrar_noticia" data-noticia="{{ noticia.id }}"><i class="fa fa-trash-o"></i> Borrar</a> </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Título de la noticia</b>
+            <input type="text" class="titulo_noticia" data-noticia="{{ noticia.id }}"
+                   value="{{ noticia.titulo }}" placeholder="Escribe aquí el título de la noticia">
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Contenido de la noticia</b></label>
+        <textarea class="texto_noticia" id="texto_noticia{{ noticia.id }}" data-noticia="{{ noticia.id }}"
+                  placeholder="Escribe aquí el texto que desarrolla la noticia">{{ noticia.texto }}</textarea>
+    </div>
+</div>
+
+
+<script>
+    $('.fechas_publicacion').fdatepicker({format: 'dd/mm/yyyy', language: 'es', weekStart: 1});
+
+    var editor{{ noticia.id }} = CKEDITOR.replace('texto_noticia{{ noticia.id }}', {
+        filebrowserBrowseUrl: '/browser/browse.php',
+        filebrowserUploadUrl: '/upload_file_noticia_web/'
+    });
+
+    editor{{ noticia.id }}.on('change', function (e) {
+        re_adjust_check_time;
+        {# Resetear el tiempo de contaje de sesión #}
+        var texto = e.editor.getData();
+        $.post("/noticias_web_ajax/", {
+                action: 'texto_noticia',
+                noticia: {{ noticia.id }},
+                texto: texto
+            },
+            function (data) {
+                if (data['ok']) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    });
+</script>

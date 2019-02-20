@@ -1,0 +1,270 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        .title_page {
+            text-align: center;
+            color: #008CBA;
+            font-weight: 800;
+        }
+
+        .opera {
+            margin-right: 20px;
+            cursor: pointer;
+            color: #008CBA;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .opera:hover {
+            -webkit-transform: scale(1.7, 1.7);
+            -webkit-transition-timing-function: ease-out;
+            -webkit-transition-duration: 150ms;
+            -moz-transform: scale(1.7, 1.7);
+            -moz-transition-timing-function: ease-out;
+            -moz-transition-duration: 150ms;
+            position: relative;
+            z-index: 99;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_acta" name="id_acta" value="">
+
+
+        <div>
+            <h4 class="title_page" id="titulo">Redacción de actas</h4>
+        </div>
+
+
+        <ul class="tabs" data-tab>
+            <li class="tab-title active" data-id="0">
+                <a href="#tab1">
+                    <b id="texto0">Actas sin redactar/publicar</b>
+                </a>
+            </li>
+            <li class="tab-title" data-id="1">
+                <a href="#tab2">
+                    <b id="texto1" style="color:white;">Actas publicadas</b>
+                </a>
+            </li>
+        </ul>
+        <div class="tabs-content">
+            <div class="content active" id="tab1">
+                <dl class="accordion" data-accordion id="list_actas_sin_publicar">
+                    {% if actas_sin_publicar %}
+                        {% for acta in actas_sin_publicar %}
+                            {% include "acta_accordion.html" %}
+                        {% endfor %}
+                    {% else %}
+                        <h5 style="color: #008CBA;font-weight: 700;" id="h5_lasp">No hay actas sin
+                            redactar/publicar</h5>
+                    {% endif %}
+                </dl>
+            </div>
+            <div class="content" id="tab2">
+                <dl class="accordion" data-accordion id="list_actas_publicadas">
+                    {% if actas_publicadas %}
+                        {% for acta in actas_publicadas %}
+                            {% include "acta_accordion.html" %}
+                        {% endfor %}
+                    {% else %}
+                        <h5 style="color: #008CBA;font-weight: 700;" id="h5_lap">No hay actas publicadas</h5>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+        <br>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $(document).foundation({
+            tab: {
+                callback: function (tab) {
+                    var id = $(tab[0]).data('id');
+                    if (id == 0) {
+                        $('#texto1').css('color', 'white');
+                        $('#texto0').css('color', 'black');
+                        $('#titulo').html('Redacción de actas de reunión (sin publicar)')
+                    } else {
+                        $('#texto0').css('color', 'white');
+                        $('#texto1').css('color', 'black');
+                        $('#titulo').html('Redacción de actas de reunión (publicadas)')
+                    }
+                }
+            }
+        });
+
+        $('body').on('click', '.publicada', function () {
+            var element = $(this);
+            var acta = $(this).val();
+            $.post("/redactar_actas_ajax/", {action: 'update_publicada', acta: acta},
+                function (data) {
+                    if (data.ok) {
+                        var a = $('#accordion' + acta).detach();
+                        if (data.publicada) {
+                            element.prop('checked', true);
+                            $('#list_actas_publicadas').prepend(a);
+                            $('#h5_lap').remove();
+                        } else {
+                            element.prop('checked', false);
+                            $('#list_actas_sin_publicar').prepend(a);
+                            $('#h5_lasp').remove();
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        if (element.prop('checked') == true) {
+                            element.prop('checked', false);
+                        } else {
+                            element.prop('checked', true);
+                        }
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.fecha_aprobacion', function () {
+            var fecha = $(this).val();
+            var acta = $(this).data('id');
+            $.post("/redactar_actas_ajax/", {action: 'update_fecha_aprobacion', acta: acta, fecha_aprobacion: fecha},
+                function (data) {
+                    if (data.ok) {
+                        $('#publicada' + acta).prop('checked', true);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup', '.nombre', function (e) {
+            var acta = $(this).data('id');
+            var nombre = $(this).text();
+            $.post("/redactar_actas_ajax/", {
+                    action: 'update_nombre_acta',
+                    acta: acta,
+                    nombre: nombre
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#span_nombre' + acta).html(data.nombre);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-acta')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/redactar_actas_ajax/", {action: 'open_accordion', acta: id}, function (data) {
+                                if (data.ok) {
+                                    $('#panel' + id).html(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#select_acta').select2({
+            placeholder: "Para buscar un acta, escribe parte del texto contenido en él",
+            allowClear: true,
+            ajax: {
+                url: "/ajax_actas/",
+                type: 'POST',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    $('#q').val(params.term);
+                    $('#page').val(params.page);
+                    $('#action').val('busca_acta');
+                    return $('#' + '{{ formname }}').serialize();
+                },
+                processResults: function (data, page) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            }, // let our custom formatter work
+            minimumInputLength: 3,
+            language: {
+                inputTooShort: function () {
+                    return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                }
+            }
+        });
+
+
+        $('#select_acta').change(function (e) {
+            e.preventDefault();
+            var id = $(this).val();
+            if (id) {
+                $('#id_acta').val(id);
+                $('#action').val('acta_append');
+                $.post("/ajax_actas/", $('#' + '{{ formname }}').serialize(), function (data) {
+                    var id = $('#id_acta').val();
+                    $('#list_actas_selected').prepend(data);
+                    $("#select_acta").val(null).trigger('change');
+                    $('<input />', {type: 'hidden', name: 'actas_seleccionadas', value: id, id: 'selec' + id})
+                        .appendTo('#div_actas_seleccionadas');
+                });
+            }
+        });
+
+
+        $('body').on('click', '.download_pdf', function (e) {
+            e.preventDefault();
+            $('#id_acta').val($(this).data('id'));
+            $('#action').val('pdf_acta');
+            document.getElementById("{{ formname }}").submit();
+        });
+
+        {% if request.session.gauser_extra|has_permiso:"mail_actas" %}
+            $('body').on('click', '.send_email', function (e) {
+                e.preventDefault();
+                var acta = $(this).data('id');
+                $.post("/redactar_actas_ajax/", {action: 'send_email', acta: acta}, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        show_mensajes({title: 'Envío de correos', 'texto': data.mensaje})
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+        {% endif %}
+    </script>
+{% endblock %}

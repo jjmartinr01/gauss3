@@ -1,0 +1,252 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+        }
+
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_registro" name="id_registro" value="">
+
+        <div id="div_registros_seleccionados"></div>
+
+        <div>
+            <h4 id="title_page"><strong>Registro Entradas-Salidas</strong></h4>
+        </div>
+        <div id="formulario_add"></div>
+        <div id="formulario_search">
+            <div class="row">
+                <div class="columns large-4">
+                    <label>Buscar entre esta fecha ...</label>
+                    <input id="id_fecha_inicio" name="fecha_inicio" type="text" value="01-09-2010">
+                </div>
+                <div class="columns large-4">
+                    <label>... y esta otra</label>
+                    <input id="id_fecha_fin" name="fecha_fin" type="text" value="{% now "d\-m\-Y" %}">
+                </div>
+                <div class="columns large-4">
+                    <label>Buscar en ...</label>
+                    <select id="tipo_busqueda" name="tipo_busqueda">
+                        {# Se busca en negativo, por eso SAL es para entradas y ENT para salidas. Ver el views.py #}
+                        <option value="TOD">Entradas y salidas</option>
+                        <option value="SAL">Sólo en entradas</option>
+                        <option value="ENT">Sólo en salidas</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-10">
+                <input type="text" name="busca_registros" id="busca_registros"
+                       placeholder="Escribe parte del texto incluido en el registro">
+            </div>
+            <div class="columns large-2">
+                <a id="busca_registros_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>
+            </div>
+{#                <div class="columns large-12">#}
+{#                    <select id="select_registro">#}
+{#                    </select>#}
+{#                </div>#}
+            </div>
+        </div>
+
+        <br><br>
+        <dl class="accordion" data-accordion id="list_registros_selected"></dl>
+
+        <dl class="accordion" data-accordion id="list_registros_recientes">
+            {% for registro in registros %}
+                <dd class="accordion-navigation" id="accordion{{ registro.id }}"
+                    style="border-bottom: dotted 1px black">
+                    <a href="#registro{{ registro.id }}">
+                        <b>Nº {{ registro.num_id }}</b> -- {{ registro.asunto }} ({{ registro.fecha|date:"d-m-Y" }})
+                    </a>
+
+                    <div id="registro{{ registro.id }}" class="content">
+                        <div class="row">
+                            <div class="columns large-4">
+                                <b>Emisor:</b><br>
+
+                                {{ registro.emisor }}<br>
+
+                                <b>Receptor:</b><br>
+
+                                {{ registro.receptor }}
+                            </div>
+                            <div class="columns large-8">
+                                <p id="asunto_{{ registro.id }}"><b>{{ registro.asunto }}</b></p>
+
+                                {#                                <div>{{ registro.texto|safe }}</div>#}
+                                {% autoescape off %}
+                                    {{ registro.texto }}
+                                {% endautoescape %}
+                                {% if registro.ficheros.all|length > 0 %}
+                                    <hr>
+                                    <b>{% if registro.ficheros.all|length > 1 %}Archivos:{% else %}Archivo{% endif %}</b>
+                                    {% for fichero in registro.ficheros.all %}
+                                        <a class="ficheros" data-id="{{ fichero.id }}">{{ fichero.fich_name }}</a>
+                                        &nbsp;&nbsp;&nbsp;
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </dd>
+            {% endfor %}
+        </dl>
+    </form>
+{% endblock %}
+
+{% block final %}
+{#    <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js"></script>#}
+    <script>
+        IDLE_TIMEOUT = 2000; //seconds
+
+        $("body").on('click', '#busca_registros_manual', function (e) {
+            var texto = $('#busca_registros').val();
+            var id_fecha_inicio = $('#id_fecha_inicio').val();
+            var id_fecha_fin = $('#id_fecha_fin').val();
+            var tipo_busqueda = $('#tipo_busqueda').val();
+            $.post("/ajax_registros/", {action: 'busca_registros', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda},
+                function (data) {
+                    $('#list_registros_selected').html(data['html']);
+                    $(document).foundation();
+                });
+        });
+        $("body").on('keyup', '#busca_registros', function (e) {
+            var texto = $('#busca_registros').val();
+            var id_fecha_inicio = $('#id_fecha_inicio').val();
+            var id_fecha_fin = $('#id_fecha_fin').val();
+            var tipo_busqueda = $('#tipo_busqueda').val();
+            $.post("/ajax_registros/", {action: 'busca_registros', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda},
+                function (data) {
+                    $('#list_registros_selected').html(data['html']);
+                    $(document).foundation();
+                });
+        });
+
+{#        $('#select_registro').select2({#}
+{#            placeholder: "Para buscar un registro, escribe parte del texto contenido en él",#}
+{#            allowClear: true,#}
+{#            ajax: {#}
+{#                url: "/ajax_registros/",#}
+{#                type: 'POST',#}
+{#                dataType: 'json',#}
+{#                delay: 250,#}
+{#                data: function (params) {#}
+{#                    $('#q').val(params.term);#}
+{#                    $('#page').val(params.page);#}
+{#                    $('#action').val('busca_registro');#}
+{#                    return $('#' + '{{ formname }}').serialize();#}
+{#                },#}
+{#                processResults: function (data, page) {#}
+{#                    return {#}
+{#                        results: $.map(data, function (item) {#}
+{#                            return {#}
+{#                                text: item.text,#}
+{#                                id: item.id#}
+{#                            }#}
+{#                        })#}
+{#                    };#}
+{#                },#}
+{#                cache: true#}
+{#            },#}
+{#            escapeMarkup: function (markup) {#}
+{#                return markup;#}
+{#            }, // let our custom formatter work#}
+{#            minimumInputLength: 3,#}
+{#            language: {#}
+{#                inputTooShort: function () {#}
+{#                    return "Introduce al menos 3 caracteres para iniciar búsqueda";#}
+{#                }#}
+{#            }#}
+{#        });#}
+
+
+{#        $('#select_registro').change(function (e) {#}
+{#            e.preventDefault();#}
+{#            var id = $(this).val();#}
+{#            if (id) {#}
+{#                $('#id_registro').val(id);#}
+{#                $('#action').val('registro_append');#}
+{#                $.post("/ajax_registros/", $('#' + '{{ formname }}').serialize(), function (data) {#}
+{#                    var id = $('#id_registro').val();#}
+{#                    $('#list_registros_selected').prepend(data);#}
+{#                    $("#select_registro").val(null).trigger('change');#}
+{#                    $('<input />', {type: 'hidden', name: 'registros_seleccionados', value: id, id: 'selec' + id})#}
+{#                            .appendTo('#div_registros_seleccionados');#}
+{#                });#}
+{#            }#}
+{#        });#}
+
+        {% if request.session.gauser_extra|has_permiso:"crea_registros" %}
+            habilita(['s_plus']);
+            $('#plus_sign').click(function (event) {
+                event.preventDefault();
+                $('#action').val('add_registro');
+                $.post("/ajax_registros/", $('#' + '{{ formname }}').serialize(), function (data) {
+                    $('#formulario_search').hide();
+                    $('#formulario_add').show().html(data);
+                    $(document).scrollTop($('#title_page').offset().top - 150);
+                    habilita(['h_plus', 's_check', 's_search']);
+                });
+            });
+            $('#search_sign').click(function (event) {
+                event.preventDefault();
+                $('#formulario_search').show();
+                $('#formulario_add').hide();
+                $(document).scrollTop($('#title_page').offset().top - 150);
+                habilita(['s_plus', 'h_check', 'h_search']);
+            });
+            $('#check_sign').click(function (event) {
+                event.preventDefault();
+                $('#action').val('save_registro');
+                document.{{ formname }}.submit();
+            });
+        {% endif %}
+
+
+{#        $('body').on('click', '.delete_registro', function (e) {#}
+{#            e.preventDefault();#}
+{#            var id = $(this).data('id');#}
+{#            $('#id_registro').val(id);#}
+{#            show_mensajes({#}
+{#                title: 'Borrar registro', texto: 'Si aceptas el registro será eliminado' +#}
+{#                ' completamente de la base de datos.', buttons: {#}
+{#                    "Cancelar": function () {#}
+{#                        hide_mensajes();#}
+{#                    },#}
+{#                    "Aceptar": function () {#}
+{#                        var id = $('#id_registro').val();#}
+{#                        $('#action').val('del_registro');#}
+{#                        hide_mensajes();#}
+{#                        $.post("/ajax_registros/", {action: 'delete_registro', id: id}, function (data) {#}
+{#                            if (data) {#}
+{#                                $('#accordion' + id).hide();#}
+{#                                $('#selec' + id).remove();#}
+{#                            }#}
+{#                        });#}
+{#                    }#}
+{#                }#}
+{#            });#}
+{#        });#}
+
+        $('body').on('click', '.ficheros', function (e) {
+            e.preventDefault();
+            $('#id_registro').val($(this).data('id'));
+            $('#action').val('pdf_registro');
+            document.{{ formname }}.submit();
+        });
+
+
+    </script>
+
+{% endblock %}

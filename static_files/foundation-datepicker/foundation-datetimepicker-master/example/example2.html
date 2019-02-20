@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Foundation datepicker</title>
+  <meta name="description" content="Port of bootstrap datepicker to Zurb Foundation framework">
+  <meta name="author" content="Peter Beno, najlepsiwebdesigner@gmail.com">
+  
+	<!-- CDN -->
+	<script src="http://code.jquery.com/jquery.min.js"></script>
+	<link href="http://netdna.bootstrapcdn.com/font-awesome/3.0.2/css/font-awesome.css" rel="stylesheet">
+	<link href="http://netdna.bootstrapcdn.com/font-awesome/3.0.2/css/font-awesome-ie7.css" rel="stylesheet">
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/prettify/r224/prettify.js"></script>
+	<link href="http://cdnjs.cloudflare.com/ajax/libs/prettify/r224/prettify.css" rel="stylesheet">
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,400,300,600,700&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+	
+  
+  
+  <!-- foundation start -->
+  <!-- Set the viewport width to device width for mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Included CSS Files (Compressed) -->
+  <link rel="stylesheet" href="../foundation/stylesheets/foundation.min.css">
+  <link rel="stylesheet" href="../foundation/stylesheets/app.css">
+  <script src="../foundation/javascripts/modernizr.foundation.js"></script>  
+  <!-- foundation end -->
+  
+	  
+  <!-- foundation datepicker start -->
+  <script src="js/foundation-datetimepicker.js"></script>
+<!--   <script src="js/bootstrap-datetimepicker.js"></script> -->
+<!--   <link rel="stylesheet" href="stylesheets/foundation-datepicker.css"> -->
+  <!-- foundation datepicker end -->
+  
+<!--   <link rel="stylesheet" href="stylesheets/example.css"> -->
+  <!--[if lt IE 9]>
+  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+	<div class="nine columns">
+          <h2>Example</h2>
+          <p>Attached to a field with the format specified via options.</p>
+          <div class="panel">
+            <input type="text" value="02-16-2012 23:00" id="dp1" >
+          </div>
+          
+        </div>
+      
+
+	<script>
+		$(function(){
+
+			$('#dp1').fdatetimepicker({
+				format: 'mm-dd-yyyy hh:ii'
+			});
+					
+		});
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,84 @@
+{% load my_templatetags %}
+{% load vut_extras %}
+<div class="row" id="div_autorizado{{ autorizado.id }}">
+    <div class="columns large-6">
+        <label title="Persona a la que autorizas acceso a tu vivienda"><b>Nombre</b>
+            <h4 class="subheader">{{ autorizado.autorizado.get_full_name }}</h4>
+        </label>
+    </div>
+    <div class="columns large-3" title="Estado en el que se encuentra esta autorización">
+        <label><b>Estado</b></label>
+        {% if autorizado.estado == 'OFE' %}
+            <span class="label">Ofertada</span>
+        {% elif autorizado.estado == 'ACE' %}
+            <span class="label success">Aceptada</span>
+        {% else %}
+            <span class="label alert">Rechazada</span>
+        {% endif %}
+
+    </div>
+    <div class="columns large-3" title="Borrar esta persona autorizada">
+        <label>&nbsp;</label>
+        {% if contabilidad %}  {# |autorizado:'delete_autorizado_contabilidad_vut' #}
+            <a class="button tiny delete_autorizado_contabilidad_vut alert" data-id="{{ autorizado.id }}"><i
+                    class="fa fa-user-times"></i> Borrar</a>
+        {% else %}&nbsp;
+        {% endif %}
+    </div>
+
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_contabilidad_vut"
+               {% if autorizado|has_permiso_vut:'borra_contabilidad_vut' %}checked{% endif %} data-id="{{ autorizado.id }}"
+               data-code="borra_contabilidad_vut"> Puede borrar la contabilidad
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_contabilidad_vut"
+               {% if autorizado|has_permiso_vut:'edita_contabilidad_vut' %}checked{% endif %} data-id="{{ autorizado.id }}"
+               data-code="edita_contabilidad_vut"> Edita la contabilidad
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_contabilidad_vut"
+               {% if autorizado|has_permiso_vut:'crea_partida_vut' %}checked{% endif %} data-id="{{ autorizado.id }}"
+               data-code="crea_partida_vut"> Crea partidas
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_contabilidad_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'borra_partida_vut' %}checked{% endif %}
+               data-code="borra_partida_vut"> Puede borrar partidas
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_contabilidad_vut"
+               {% if autorizado|has_permiso_vut:'edita_partida_vut' %}checked{% endif %} data-id="{{ autorizado.id }}"
+               data-code="edita_partida_vut"> Puede modificar partidas
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_contabilidad_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'crea_asiento_vut' %}checked{% endif %}
+               data-code="crea_asiento_vut"> Crea asientos de contabilidad
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_contabilidad_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'borra_asiento_vut' %}checked{% endif %}
+               data-code="borra_asiento_vut"> Puede borrar asientos
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_contabilidad_vut"
+               {% if autorizado|has_permiso_vut:'edita_asiento_vut' %}checked{% endif %} data-id="{{ autorizado.id }}"
+               data-code="edita_asiento_vut"> Puede modificar asientos
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_contabilidad_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'add_autorizado_contabilidad_vut' %}checked{% endif %}
+               data-code="add_autorizado_contabilidad_vut"> Puede añadir autorizados
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_contabilidad_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'delete_autorizado_contabilidad_vut' %}checked{% endif %}
+               data-code="delete_autorizado_contabilidad_vut"> Puede borrar autorizados
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_contabilidad_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'edita_autorizado_contabilidad_vut' %}checked{% endif %}
+               data-code="edita_autorizado_contabilidad_vut"> Puede modificar autorizados
+    </div>
+</div>

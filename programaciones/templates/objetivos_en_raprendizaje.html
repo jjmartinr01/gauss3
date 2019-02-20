@@ -1,0 +1,18 @@
+<label>Texto del resultado de aprendizaje:
+    <div class="row">
+        <div class="columns large-10"><input type="text" class="texto_raprendizaje"
+                                             data-id="{{ objetivos.0.resultado_aprendizaje.id }}"
+                                             value="{{ objetivos.0.resultado_aprendizaje.resultado }}"></div>
+        <div class="columns large-2"><a class="button tiny del_raprendizaje"
+                                        data-id="{{ objetivos.0.resultado_aprendizaje.id }}">Borrar</a></div>
+    </div>
+</label>
+
+<div id="objetivos_raprendizaje{{ objetivos.0.resultado_aprendizaje.id }}">
+    {% for objetivo in objetivos %}
+        {% include "objetivo_fieldset.html" %}
+    {% endfor %}
+</div>
+
+<a class="button add_objetivo" data-raprendizaje="{{ objetivos.0.resultado_aprendizaje.id }}"><i class="fa fa-plus"></i>
+    Objetivo y criterio de evaluación </a>

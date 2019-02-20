@@ -1,0 +1,97 @@
+{% load my_templatetags %}
+
+<style>
+.ver_observaciones {cursor:pointer;}
+.ver_observaciones:hover {color:#E76123;}
+.borra_col_par {cursor:pointer;}
+.borra_col_par:hover {color:#E76123;}
+</style>
+
+<script>
+$.cleditor.defaultOptions.controls = "bold italic underline | bullets numbering";
+editores = $("textarea").cleditor({width:"400px", height:"150"});
+
+  {% autoescape off %}
+    var json_usuarios = {{json_usuarios}};
+    var json_usuarios_ids = {{json_usuarios_ids}};
+  {% endautoescape %}
+  $( "#id_educando" ).autocomplete({
+      source: json_usuarios,
+      close: function() {
+		if (json_usuarios.indexOf($( "#id_educando" ).val()) > -1)
+		{
+		var id_user = json_usuarios_ids[json_usuarios.indexOf($( "#id_educando" ).val())];
+		$('#educando').val(id_user);}} });
+
+  $('.ver_observaciones').click(function(){
+      var id = $(this).attr('id').split('___')[1];
+      $('#observaciones___'+id).toggle();
+  });
+</script>
+
+
+
+<input type="hidden" name="educando" id="educando" value="">
+
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> {{actividad.actividad_title}}</td></tr></table>
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+  <tr><td>
+      <table>
+	<tr><td><input placeholder="Escribe parte del nombre o apellidos" id="id_educando" class="input_search_nodialog" style="margin-top:20px;margin-right:-25px;width:300px;"/><span style="font-size:14px;"><i class="fa fa-search"></i></i></span></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td>Describe las observaciones de este participante:</td></tr>
+	<tr><td>{{form.observaciones}}</td></tr>
+      </table>
+    </td><td>
+      <table><tr><td>
+      <table>
+	<tr><td colspan="2"> <span class="info">Responsable:</span></td></tr>
+	<tr><td>
+	    {% if gauser_extra_selected.foto %}
+	      <img  width="70" src="{{actividad.organizador.foto.url}}">
+	    {% else %}
+	      {% if gauser_extra_selected.gauser.sexo == 'H' %}
+		<img  width="70" src="/media/fotos/general_h.png">
+	      {% else %}
+		<img  width="70" src="/media/fotos/general_m.png">
+	      {% endif %}
+	    {% endif %}
+	</td><td>
+	  <span class="color2">{{actividad.organizador.gauser.get_full_name}}</span>
+	</td></tr>
+      </table></td></tr><tr></td>
+
+      <table>
+	<tr><td colspan="3"> <span class="info">Participantes ya inscritos:</span></td></tr>
+	{% for participante in participantes %}
+	<tr id="tr_participante___{{participante.id}}">
+	  <td style="width:50%;"> {{participante.educando.gauser.get_full_name}}</td>
+	  {% if participante.usuario == participante.educando or participante.usuario == request.session.gauser_extra %}
+	    <td style="width:10%;text-align:center;font-size:11pt;" title="Pulsa este icono para borrar participante">
+		<i id="participante___{{participante.id}}" class="fa fa-times-circle borra_col_par"></i>
+	    </td>
+	  {% else %}
+	    <td style="width:10%;text-align:center;font-size:11pt;">
+		<i id="participante___{{participante.id}}" class="fa fa-times-circle color1_suave"></i>
+	    </td>
+	  {% endif %}
+	  {% if participante.usuario == participante.educando or participante.usuario == request.session.gauser_extra or request.session.gauser_extra in scouters %}
+	    <td style="width:10%;text-align:center;font-size:11pt;" title="Pulsa este icono para ver las observaciones del participante">
+		<i id="ver_observaciones___{{participante.id}}" class="fa fa-question-circle ver_observaciones"></i>
+	    </td>
+	  {% else %}
+	    <td style="width:10%;text-align:center;font-size:11pt;">
+		<i id="ver_observaciones___{{participante.id}}" class="fa fa-question-circle color1_suave"></i>
+	    </td>
+	  {% endif %}
+	</tr>
+	<tr id="observaciones___{{participante.id}}" style="display:none;background-color:rgba(231, 97, 35, .2);">
+	  <td colspan="3">
+	    {% autoescape off %} {{participante.observaciones}} {% endautoescape %}
+	  </td>
+	</tr>
+	{% endfor %}
+      </table></td></tr></table>
+  </td></tr>
+</table>
+

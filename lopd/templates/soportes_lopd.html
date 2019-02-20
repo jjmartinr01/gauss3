@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="id_soporte" name="id_soporte" value="">
+
+
+        <div id="div_soportes">
+            <div class="">
+                <h4 style="text-align: center;color: #008CBA;"><strong> Soportes almacenados por la
+                    entidad</strong></h4>
+            </div>
+            <table align="center" width="100%" cellspacing="3" cellpadding="3">
+                <thead>
+                <tr>
+                    <td style="text-align:center;"><span class="color2"><i class="fa fa-check-square-o"></i></span></td>
+                    <td><span class="color2">&nbsp;Nombre del soporte</span></td>
+                    <td style="text-align:center;"><span class="color2">Lugar donde se guarda</span></td>
+                    <td style="text-align:center;" title="Fecha de creación del soporte"><span
+                            class="color2">Creado</span></td>
+                </tr>
+                </thead>
+                <tbody>
+                {% for soporte in soportes %}
+                    <tr>
+                        <td class="icono" style="text-align:center;">
+                            <i style="cursor: pointer;"
+                               class="fa fa-square-o check_soporte"
+                               id="check___{{ soporte.id }}"> </i>
+                        </td>
+                        <td id="soporte___{{ soporte.id }}" data-tooltip aria-haspopup="true" class="has-tip"
+                            style="cursor: pointer;white-space:normal;"
+                            title="{{ soporte.observaciones }}">
+                            <span class="color2">&nbsp;{{ soporte.nombre }}</span>
+                        </td>
+                        <td style="text-align:center;">
+                            {% if soporte.lugar %}
+                                &nbsp;{{ soporte.lugar }}
+                            {% else %}
+                                &nbsp;Desconocido
+                            {% endif %}
+                        </td>
+                        <td style="text-align:center;"
+                            title="El soporte fue añadido el {{ soporte.creado }}">
+                            {{ soporte.creado|date:"d/m/Y" }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div id="form_soporte" style="display: none;">
+            <div class="">
+                <h4 style="text-align: center;color: #008CBA;"><strong>Define el soporte a subir a GAUSS</strong></h4>
+            </div>
+            <div class="row">
+                <div class="columns large-8">
+                    <label>Nombre del soporte
+                        {{ form.nombre }}
+                    </label>
+                </div>
+                <div class="columns large-4">
+                    <label>Lugar donde se almacena
+                        {{ form.lugar }}
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <label>Texto con observaciones sobre el soporte
+                        {{ form.observaciones }}
+                    </label>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        {# Visualización de iconos y funciones asociadas #}
+        habilita(['s_plus', 'h_trash-o', 'h_check', 'h_list-alt']);
+
+        $('#plus_sign').click(function (e) {
+            e.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                $('#action').val('guardar_soporte');
+                $('#form_soporte').slideDown();
+                $('#div_soportes').slideUp();
+                habilita(['h_plus', 'h_trash-o', 's_check', 's_list-alt']);
+                editor = wysihtmleditor('id_observaciones', {height: '250'});
+            }
+        });
+
+        $('#list-alt_sign').click(function (e) {
+            e.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                $('#action').val('');
+                $('#form_soporte').slideUp();
+                $('#div_soportes').slideDown();
+                habilita(['s_plus', 'h_trash-o', 'h_check', 'h_list-alt']);
+            }
+        });
+
+        $('#trash-o_sign').click(function (e) {
+            e.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                show_mensajes({title: 'Eliminar este soporte', texto: 'Si aceptas el soporte se eliminará' +
+                        ' completamente de la base de datos.', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        $('#action').val('borrar_soporte');
+                        hide_mensajes();
+                        document.{{formname}}.submit();
+                    }}});
+            }
+        });
+
+        $('#check_sign').click(function (e) {
+            e.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                document.{{formname}}.submit();
+            }
+        });
+
+        {# Definición de eventos #}
+
+        $('#div_soportes').on('click', '.check_soporte', function () {
+            if ($(this).hasClass('fa-check-square-o')) {
+                $(this).removeClass('fa-check-square-o');
+                $(".check_soporte").addClass('fa-square-o');
+                $('#id_soporte').val('');
+                habilita(['s_plus', 'h_trash-o', 'h_check', 'h_list-alt']);
+            } else {
+                var id = $(this).attr('id').split('___')[1];
+                $('#id_soporte').val(id);
+                $(".check_soporte").removeClass('fa-square-o');
+                $(this).addClass('fa-check-square-o');
+                habilita(['h_plus', 's_trash-o', 'h_check', 'h_list-alt']);
+            }
+        });
+
+        $("#hay_avisos").change(function () {
+            $('#action').val('guardar_soporte');
+            $('#form_soporte').slideDown();
+            $('#div_soportes').slideUp();
+            habilita(['h_plus', 'h_trash-o', 's_check']);
+            editor = wysihtmleditor('id_observaciones', {height: '250'});
+        });
+    </script>
+{% endblock %}

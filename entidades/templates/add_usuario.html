@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="select_tipo">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Introduce los datos del nuevo usuario</strong></h4>
+        </div>
+
+        <div class="row">
+            <div class="large-4 columns">
+                <label>Nombre del nuevo usuario
+                    {{ form1.first_name }}
+                </label>
+            </div>
+            <div class="large-4 columns">
+                <label>Apellidos del nuevo usuario
+                    {{ form1.last_name }}
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>Fecha de nacimiento
+                    <input type="text" name="nacimiento" id="id_nacimiento" placeholder="dd/mm/YYYY"/>
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>DNI
+                    {{ form1.dni }}
+                </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="large-5 columns">
+                <label>Tipo de usuario
+                    <select name="cargos" id="cargos" multiple>
+                        {% for tipo in tipos_socio %}
+                            <option value="{{ tipo.id }}">{{ tipo.cargo }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+            <div class="large-5 columns">
+                <label>Secciones/Departamentos
+                    <select name="subentidades" id="subentidades" multiple>
+                        {% for sub in subentidades %}
+                            <option value="{{ sub.id }}">{{ sub.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>Sexo
+                    {{ form1.sexo }}
+                </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="large-3 columns">
+                <label>Correo electrónico
+                    {{ form1.email }}
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Teléfono fijo
+                    {{ form1.telfij }}
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Teléfono móvil
+                    {{ form1.telmov }}
+                </label>
+            </div>
+            <div data-tooltip aria-haspopup="true" class="large-3 columns has-tip" title="Los últimos códigos de identificación usados, han sido:<br><ul>{% for id in ids %}<li>{{ id }}</li>{% endfor %}</ul>">
+                <label>Nº ident. en la entidad <a href="/identificadores_entidad/"><i class="fa fa-info-circle"></i></a>
+                    {{ form2.id_organizacion }}
+                </label>
+            </div>
+        </div>
+
+        <div class="row panel callout">
+            <div class="row">
+                <div class="columns large-12">
+                    <strong>Si el usuario es menor de edad, debes seleccionar los tutores (deben estar registrados
+                        previamente).</strong>
+                </div>
+            </div>
+            <div class="row ">
+                <div class="large-6 columns">
+                    <div class="row collapse">
+                        <label>Selecciona al primer tutor</label>
+
+                        <div class="small-11 columns">
+                            <input type="hidden" placeholder="Para buscar escribe aquí parte del nombre del tutor"
+                                   id="tutor1" name="tutor1" value=""/>
+                        </div>
+                        <div class="small-1 columns">
+                            <span style="font-size:13px;" class="postfix"><i class="fa fa-search"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="large-6 columns">
+                    <div class="row collapse">
+                        <label>Selecciona al segundo tutor</label>
+
+                        <div class="small-11 columns">
+                            <input type="hidden" placeholder="Para buscar escribe aquí parte del nombre del tutor"
+                                   id="tutor2" name="tutor2" value=""/>
+                        </div>
+                        <div class="small-1 columns">
+                            <span style="font-size:13px;" class="postfix"><i class="fa fa-search"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="large-4 columns">
+                <label>Dirección
+                    {{ form1.address }}
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>Codigo postal
+                    {{ form1.postalcode }}
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Localidad
+                    {{ form1.localidad }}
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Provincia
+                    {{ form1.provincia }}
+                </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="large-6 columns">
+                <label>IBAN (Cuenta bancaria)
+                    {{ form2.num_cuenta_bancaria }}
+                </label>
+            </div>
+            <div class="large-6 columns">
+                <label>Ocupación del usuario
+                    {{ form2.ocupacion }}
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="large-12 columns">
+                <label>Observaciones
+                    {{ form2.observaciones }}
+                </label>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        {#        show_mensajes({#}
+        {#            texto: 'Para añadir un nuevo educando es necesario seleccionar al menos un tutor legal. Esto exige que el tutor o tutores legales estén introducidos con anterioridad. Si esto no es así, rellena primero los datos de uno de los tutores legales.',#}
+        {#            title: '<i class="fa fa-exclamation-triangle"></i> Aviso'#}
+        {#        })#}
+        habilita(['s_check']);
+
+        editor1 = wysihtmleditor('id_observaciones', {height: 200});
+        $('#cargos').select2();
+        $('#id_provincia').select2();
+        $('#subentidades').select2();
+        $('#id_sexo').select2();
+        $('#id_nacimiento').focusout(function () {
+            var today = new Date();
+            var f_n_a = $('#id_nacimiento').val().split('/');
+            var f_nac_18 = new Date(parseInt(f_n_a[2]) + 18, parseInt(f_n_a[1]) - 1, f_n_a[0]);
+            var timeDiff = today.getTime() - f_nac_18.getTime();
+            if (timeDiff < 0) {
+                $('#id_tutores').show();
+            }
+        })
+        $('#check_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                document.{{formname}}.submit();
+            }
+        });
+
+        $("#tutor1,#tutor2").select2({
+            placeholder: "Escribe parte del nombre",
+            minimumInputLength: 3,
+            ajax: {
+                url: "/buscar_usuarios/",
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (term, page) { // page is the one-based page number tracked by Select2
+                    return {
+                        action: 'select2',
+                        q: term, //search term
+                        page_limit: 10, // page size
+                        page: page // page number
+                    };
+                },
+                results: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.last_name + ', ' + item.first_name + ' (' + item.perfiles + ')',
+                                id: item.id
+                            }
+                        })
+                    };
+                }
+            },
+            formatResult: function (resultado) {
+                return '<div class="select2-user-result">' + resultado.text + '</div>';
+            },
+            formatSelection: function (resultado) {
+                $('#gauser_extra_selected').val(resultado.id);
+                return resultado.text;
+            },
+            dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
+            escapeMarkup: function (m) {
+                return m;
+            } // we do not want to escape markup since we are displaying html in results
+        });
+
+
+    </script>
+{% endblock %}

@@ -1,0 +1,27 @@
+<svg width="1000" height="66px" version="1.1" id="mySvg" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<g>
+	  <defs>
+	    <linearGradient id="GaussGradient">
+	      <stop style="stop-color:#b5d93d;stop-opacity:1" offset="0" />
+	      <stop style="stop-color:#b5d93d;stop-opacity:1" offset="0.05" />
+	      <stop style="stop-color:#fcfff9;stop-opacity:1" offset="0.19" />
+	      <stop style="stop-color:#3ca6c1;stop-opacity:1" offset="0.75" />
+	      <stop style="stop-color:#3ca6c1;stop-opacity:1" offset="1" />
+	    </linearGradient>
+	  </defs>
+
+	  <rect id="rect_cabecera" fill="url(#GaussGradient)" x="0" y="0" width="1000" height="66px"/>
+	  <text id="texto_cabecera" x="300" y="40" style="font-size:30px;font-weight:bold;font-stretch:normal;line-height:125%;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Arial;"> Gestión Interna del Grupo</text>
+	  <text id="usuario_nombre" x="75" y="20" style="stroke-width:0.1pt;stroke: #03764E; fill:#03764E;font-family: Arial,Helvetica,sans-serif; font-size: 8pt;font-weight:bold"> {{request.user.get_full_name}}</text>
+	  <foreignObject width="150" height="66" x="75" y="30" style="color: #03764E;font-family: Arial,Helvetica,sans-serif; font-size: 8pt;">
+	  {{request.session.rama_usuario_relation.cargo}}
+	  </foreignObject>
+	  <image xlink:href="/static/images/logo_gauss.png" x="290" y="0" width="120" height="66" id="logo_gauss" />
+	  <a xlink:href="http://www.larioja.org">
+	    <image xlink:href="/static/images/logo_larioja.png" x="290" y="0" width="200" height="66" id="logo_larioja" />
+	  </a>
+	  <a xlink:href="{{request.session.rama.web}}">
+	    <image xlink:href="/static/files/{{request.session.rama.code}}_anagrama.png" x="5px" y="0" width="66px" height="66px" id="anagrama_rama" />
+	  </a>
+	</g>
+      </svg>

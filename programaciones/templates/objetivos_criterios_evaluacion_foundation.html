@@ -1,0 +1,256 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="form_obj_criterios" name="{{ formname }}"
+          data-abide>
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="q" name="q" value="">
+        <input type="hidden" id="page" name="page" value="">
+
+        <div>
+            <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong>Formulario para creación de resultados
+                de aprendizaje y criterios de evaluación
+            </strong></h4>
+        </div>
+
+
+        <div id="div_obj_criterios">
+            <div class="row">
+                <div class="columns large-12">
+                    <label>
+                        <b>Selecciona un Ciclo Formativo:</b>
+                        <select name="titulo" id="id_titulo">
+                            <option id="option_titulo_empty" value="">Click aquí para hacer selección</option>
+                            {% for estudio in estudios %}
+                                <option value="{{ estudio.id }}">{{ estudio.curso }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+            </div>
+            <div class="row" id="div_select_modulo" style="display: none;">
+                <div class="columns large-12">
+                    <label>
+                        <b>Selecciona un Módulo:</b>
+                        <select name="modulo" id="id_modulo">
+                        </select>
+                    </label>
+                </div>
+            </div>
+            <br>
+            <dl class="accordion" data-accordion id="accordion_raprendizajes">
+            </dl>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+
+    <script>
+        IDLE_TIMEOUT = 4000; //seconds
+        habilita(['s_check']);
+
+        $('#id_titulo').select2();
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    var id = accordion.attr('data-id');
+                    if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                        $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                        $.post("/ajax_objetivos_criterios/", {id: id, action: 'cont_raprendizaje'}, function (data) {
+                            if (data.ok) {
+                                $('#panel' + data.id).html(data.html);
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            }
+                        });
+                    } else {
+                        $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                    }
+                    console.log(accordion.attr('id'));
+                }
+            }
+        });
+
+        $('body').on('change', '#id_titulo', function (e) {
+            e.preventDefault();
+            $('#div_select_modulo').show();
+            $('#option_titulo_empty').remove();
+            $('#id_modulo').html(''); {# Vaciamos el contenido del select #}
+            var id = $(this).val();
+            $.post("/ajax_objetivos_criterios/", {id: id, action: 'change_titulo'}, function (data) {
+                if (data.ok) {
+                    $('#id_modulo').append('<option id="option_modulo_empty" value="">Clik para seleccionar</option>');
+                    $('#accordion_raprendizajes').html('');
+                    $.each(data.modulos, function (key, value) {
+                        $('#id_modulo').append('<option value="' + key + '">' + value + '</option>');
+                    });
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#id_modulo').select2();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('change', '#id_modulo', function (e) {
+            e.preventDefault();
+            $('#option_modulo_empty').remove();
+            var id = $(this).val();
+            $.post("/ajax_objetivos_criterios/", {id: id, action: 'list_raprendizajes'}, function (data) {
+                if (data.ok) {
+                    $('#accordion_raprendizajes').html(data.html);
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+
+        $('#check_sign').click(function (e) {
+            e.preventDefault();
+            $('#action').val('save_obj_criterios');
+            $.post("/ajax_programaciones/", $('#form_obj_criterios').serialize(), function (data) {
+                $('.criterios').val('');
+                $('#resultado').val('');
+                alert('resultado y criterios guardados correctamente.')
+            });
+
+        });
+
+        $('body').on('keyup', '.texto_raprendizaje', function (e) {
+            e.preventDefault();
+            var ra_id = $(this).data('id');
+            var texto = $(this).val();
+            $.post("/ajax_objetivos_criterios/", {
+                action: 'change_texto_raprendizaje',
+                id: ra_id,
+                texto: texto
+            }, function (data) {
+                if (data.ok) {
+                    $('#span_texto_raprendizaje' + data.id).html(data.texto);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+
+        $('body').on('click', '.add_objetivo', function (e) {
+            e.preventDefault();
+            var raprendizaje = $(this).data('raprendizaje');
+            $.post("/ajax_objetivos_criterios/", {
+                action: 'add_objetivo',
+                id: raprendizaje
+            }, function (data) {
+                if (data.ok) {
+                    $('#objetivos_raprendizaje' + data.id).append(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('click', '.del_objetivo', function (e) {
+            e.preventDefault();
+            var objetivo = $(this).data('id');
+            $.post("/ajax_objetivos_criterios/", {
+                action: 'del_objetivo',
+                id: objetivo
+            }, function (data) {
+                if (data.ok) {
+                    $('#fieldset' + data.id).remove();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('keyup', '.texto_objetivo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var texto = $(this).val();
+            $.post("/ajax_objetivos_criterios/", {
+                action: 'texto_objetivo',
+                id: id,
+                texto: texto
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('keyup', '.texto_criterio', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var texto = $(this).val();
+            $.post("/ajax_objetivos_criterios/", {
+                action: 'texto_criterio',
+                id: id,
+                texto: texto
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('click', '.add_raprendizaje', function (e) {
+            e.preventDefault();
+            var materia = $(this).data('materia');
+            $.post("/ajax_objetivos_criterios/", {
+                action: 'add_raprendizaje',
+                materia: materia
+            }, function (data) {
+                if (data.ok) {
+                    $('#hr' + data.id).before(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('click', '.del_raprendizaje', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/ajax_objetivos_criterios/", {
+                action: 'del_raprendizaje',
+                id: id
+            }, function (data) {
+                if (data.ok) {
+                    $('#ddraprendizaje' + data.id).remove();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+
+
+
+
+
+	
+
+
+
+
+
+
+

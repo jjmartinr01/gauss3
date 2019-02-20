@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<django-objects version="1.0">
+<!--  -->
+<!-- Para cargar esta fixture es necesario ejecutar el comando: -->
+<!-- python manage.py loaddata ./grupos_scout/fixtures/actividades_iniciales.xml -->
+<!--  -->
+  <object pk="1" model="actividades.actividad">
+      <field to="grupos_scout.grupo_scout_user_relation" name="user" rel="ManyToOneRel">2</field>
+      <field to="grupos_scout.seccion" name="secciones" rel="ManyToManyRel">
+	  <object pk="1"></object>
+	  <object pk="2"></object>
+	  <object pk="3"></object>
+	  <object pk="4"></object>
+	  <object pk="5"></object>
+	  <object pk="6"></object>	     
+      </field>
+      <field type="CharField" name="code">2lk5hj2lkh245lhkj2060745lkhj245l</field>
+      <field type="CharField" name="actividad_title">Prueba de actividad 1 en enero</field>
+      <field type="TextField" name="description">Prueba de enero Prueba de enero Prueba de enero Prueba de enero Prueba de enero Prueba de enero Prueba de enero Prueba de enero Prueba de enero Prueba de enero Prueba de enero Prueba de enero Prueba de enero </field>
+      <field type="DateTimeField" name="fecha_inicio">2013-01-18 14:30</field>
+      <field type="DateTimeField" name="fecha_fin">2013-01-19 11:30</field>
+      <field type="DateField" name="deadline">2013-04-11</field>
+      <field type="CharField" name="lugar_salida">Local del grupo</field>
+      <field type="CharField" name="lugar_llegada">Local del grupo</field>
+      <field type="TextField" name="material_scouters">Material Material Material Material Material Material  </field>
+      <field type="TextField" name="material_educandos">poto pañoleta merienda  </field>
+      <field type="BooleanField" name="padres">True</field>
+      <field type="TextField" name="padres_colaborar">Transporte tiendas cocina</field>
+      <field type="BooleanField" name="reutilizable">True</field>
+  </object>
+
+  <object pk="2" model="actividades.actividad">
+      <field to="grupos_scout.grupo_scout_user_relation" name="user" rel="ManyToOneRel">2</field>
+      <field to="grupos_scout.seccion" name="secciones" rel="ManyToManyRel">
+	  <object pk="1"></object>
+	  <object pk="2"></object>
+	  <object pk="5"></object>
+	  <object pk="6"></object>	     
+      </field>
+      <field type="CharField" name="code">2lk5hj2lkh245lhkj13441adsfa245lkhj245l</field>
+      <field type="CharField" name="actividad_title">Prueba de actividad 1 en mayo</field>
+      <field type="TextField" name="description">Prueba de mayo Prueba de mayo Prueba de mayo Prueba de mayo </field>
+      <field type="DateTimeField" name="fecha_inicio">2013-05-18 14:30</field>
+      <field type="DateTimeField" name="fecha_fin">2013-05-19 11:30</field>
+      <field type="DateField" name="deadline">2013-05-11</field>
+      <field type="CharField" name="lugar_salida">Local del grupo</field>
+      <field type="CharField" name="lugar_llegada">Local del grupo</field>
+      <field type="TextField" name="material_scouters">Material Material Material Material Material Material  </field>
+      <field type="TextField" name="material_educandos">poto pañoleta merienda  </field>
+      <field type="BooleanField" name="padres">True</field>
+      <field type="TextField" name="padres_colaborar">Transporte tiendas cocina</field>
+      <field type="BooleanField" name="reutilizable">True</field>
+  </object>
+
+  <object pk="3" model="actividades.actividad">
+      <field to="grupos_scout.grupo_scout_user_relation" name="user" rel="ManyToOneRel">2</field>
+      <field to="grupos_scout.seccion" name="secciones" rel="ManyToManyRel">
+	  <object pk="4"></object>
+	  <object pk="5"></object>
+	  <object pk="6"></object>	     
+      </field>
+      <field type="CharField" name="code">2lk5hj2lkh245lhkj245lkrw74etwthj245l</field>
+      <field type="CharField" name="actividad_title">Prueba de actividad 2 en mayo</field>
+      <field type="TextField" name="description">Prueba de mayo 2 Prueba de mayo 2 Prueba de mayo 2 Prueba de mayo 2 Prueba de mayo 2 </field>
+      <field type="DateTimeField" name="fecha_inicio">2013-05-28 14:30</field>
+      <field type="DateTimeField" name="fecha_fin">2013-05-30 11:30</field>
+      <field type="DateField" name="deadline">2013-05-15</field>
+      <field type="CharField" name="lugar_salida">Local del grupo</field>
+      <field type="CharField" name="lugar_llegada">Local del grupo</field>
+      <field type="TextField" name="material_scouters">Material Material Material Material Material Material  </field>
+      <field type="TextField" name="material_educandos">poto pañoleta merienda  </field>
+      <field type="BooleanField" name="padres">True</field>
+      <field type="TextField" name="padres_colaborar">Transporte tiendas cocina</field>
+      <field type="BooleanField" name="reutilizable">True</field>
+  </object>
+
+  <object pk="4" model="actividades.actividad">
+      <field to="grupos_scout.grupo_scout_user_relation" name="user" rel="ManyToOneRel">2</field>
+      <field to="grupos_scout.seccion" name="secciones" rel="ManyToManyRel">
+	  <object pk="4"></object>
+	  <object pk="5"></object>
+	  <object pk="6"></object>	     
+      </field>
+      <field type="CharField" name="code">2lk5hj2lkh245lhkj245lkrwet64wthj245l</field>
+      <field type="CharField" name="actividad_title">Prueba de actividad 3 en mayo</field>
+      <field type="TextField" name="description">Prueba de mayo 3 Prueba de mayo 3 Prueba de mayo 3 Prueba de mayo 3 Prueba de mayo 3 </field>
+      <field type="DateTimeField" name="fecha_inicio">2013-05-30 14:30</field>
+      <field type="DateTimeField" name="fecha_fin">2013-05-31 11:30</field>
+      <field type="DateField" name="deadline">2013-05-19</field>
+      <field type="CharField" name="lugar_salida">Local del grupo</field>
+      <field type="CharField" name="lugar_llegada">Local del grupo</field>
+      <field type="TextField" name="material_scouters">Material Material Material Material Material Material  </field>
+      <field type="TextField" name="material_educandos">poto pañoleta merienda  </field>
+      <field type="BooleanField" name="padres">True</field>
+      <field type="TextField" name="padres_colaborar">Transporte tiendas cocina</field>
+      <field type="BooleanField" name="reutilizable">True</field>
+  </object>
+
+  <object pk="5" model="actividades.actividad">
+      <field to="grupos_scout.grupo_scout_user_relation" name="user" rel="ManyToOneRel">2</field>
+      <field to="grupos_scout.seccion" name="secciones" rel="ManyToManyRel">
+	  <object pk="4"></object>
+	  <object pk="5"></object>
+	  <object pk="6"></object>	     
+      </field>
+      <field type="CharField" name="code">2lk5h245245523j2lkh245lhkj764245lkrwetwthj245l</field>
+      <field type="CharField" name="actividad_title">Prueba de actividad 1 en junio</field>
+      <field type="TextField" name="description">Prueba 1 de junio Prueba 1 de junio Prueba 1 de junio Prueba 1 de junio </field>
+      <field type="DateTimeField" name="fecha_inicio">2013-06-10 14:30</field>
+      <field type="DateTimeField" name="fecha_fin">2013-06-11 17:30</field>
+      <field type="DateField" name="deadline">2013-06-07</field>
+      <field type="CharField" name="lugar_salida">Local del grupo</field>
+      <field type="CharField" name="lugar_llegada">Local del grupo</field>
+      <field type="TextField" name="material_scouters">Material Material Material Material Material Material  </field>
+      <field type="TextField" name="material_educandos">poto pañoleta merienda  </field>
+      <field type="BooleanField" name="padres">True</field>
+      <field type="TextField" name="padres_colaborar">Transporte tiendas cocina</field>
+      <field type="BooleanField" name="reutilizable">True</field>
+  </object>
+    
+ 
+  
+</django-objects>

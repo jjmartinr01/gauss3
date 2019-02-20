@@ -1,0 +1,162 @@
+{% load convivencia_extras %}
+<h2 style="text-align:center;"> COMUNICACIÓN DE CONDUCTAS CONTRARIAS Y SANCIONES</h2>
+
+Alumno: <strong> {{ informe.sancionado.gauser.get_full_name }}</strong>
+<br/>
+Grupo: <strong> {{ informe.sancionado.gauser_extra_estudios.grupo.nombre }}</strong> (
+{% for curso in informe.sancionado.gauser_extra_estudios.grupo.cursos.all %}{{ curso.nombre }}{% if not forloop.last %},
+    &nbsp;{% endif %}{% endfor %})
+<br/>
+Tutor: <strong> {{ informe.sancionado.gauser_extra_estudios.tutor.gauser.get_full_name }}</strong>
+
+<p>Estimados padres:</p>
+<p>Según queda establecido en el Decreto 4/2009, de 23 de enero, por el que se regula la convivencia en los centros
+    docentes y se establecen los derechos y deberes de sus miembros, así como en el Reglamento de Organización y
+    Funcionamiento del {{ informe.sancionado.entidad.name }}, me veo en la obligación de informarles
+    {% if informe.texto_motivo %}
+        del comportamiento de su {% if informe.sancionado.gauser.sexo == 'H' %} hijo, {% else %} hija, {% endif %} que a
+        continuación se describe: </p>
+        <i>
+            {% autoescape off %}
+                {{ informe.texto_motivo }}
+            {% endautoescape %}
+        </i>
+        <p> Por estos hechos, su {% if informe.sancionado.gauser.sexo == 'H' %} hijo, {% else %} hija, {% endif %} ha
+            incurrido
+            {% if informe.conductas.all|length > 1 %} en varias conductas contrarias a la convivencia, tipificadas
+                como: {% else %} en una conducta contraria a la convivencia tipificada como: {% endif %}</p>
+    {% else %}
+        de que su {% if informe.sancionado.gauser.sexo == 'H' %} hijo, {% else %} hija, {% endif %} ha incurrido
+        {% if informe.conductas.all|length > 1 %} en varias conductas contrarias a la convivencia, tipificadas como:
+        {% else %} en una conducta contraria a la convivencia tipificada como: {% endif %} </p>
+    {% endif %}
+<ul>
+    {% for conducta in informe.conductas.all %}
+        <li style="margin-bottom: 1em;"><strong> {{ conducta.conducta }} </strong></li>
+    {% endfor %}
+</ul>
+
+<p> Por ello se {% if informe.sanciones.all|length > 1 %} han aplicado las siguientes medidas correctoras: {% else %} ha
+    aplicado la siguiente medida correctora: {% endif %} </p>
+
+<ul>
+    {% for sancion in informe.sanciones.all %}
+        <li style="margin-bottom: 1em;"><strong> {{ sancion.sancion }} </strong></li>
+    {% endfor %}
+</ul>
+
+{% if informe.texto_sancion %}
+    <p> Que a su vez se {% if informe.sanciones.all|length > 1 %} concretan {% else %} concreta {% endif %}  en:</p>
+    <i>
+        {% autoescape off %}
+            {{ informe.texto_sancion }}
+        {% endautoescape %}
+    </i>
+{% endif %}
+
+{% if informe.expulsion %}
+    <p><strong> Se suspende el derecho de asistencia a clase del alumno
+        {% if informe.fechaexpulsion_set.all|length == 1 %} el día: {% else %}los días:{% endif %}<br>
+        {% for fecha in informe.fechaexpulsion_set.all %}
+            {% if forloop.revcounter0 == 1 %}{{ fecha.fecha|date:"d/m/Y" }} y
+                {% elif forloop.revcounter0 > 1 %}{{ fecha.fecha|date:"d/m/Y" }},
+                {% else %}{{ fecha.fecha|date:"d/m/Y" }}
+            {% endif %}
+        {% endfor %}
+    </strong></p>
+    <p>Con el fin de que {% if informe.sancionado.gauser.sexo == 'H' %}el alumno{% else %}la alumna{% endif %}
+        no interrumpa su proceso formativo, los profesores le proporcionarán tarea para ser realizada en casa.</p>
+{% endif %}
+
+{% if listar_conductas %}
+    <p>Les informo de que los informes sancionadores emitidos hasta el momento son:</p>
+    {% for informe_sancionador in informes %}
+        <p style="font-style:italic;"><strong> Informe emitido el {{ informe_sancionador.fecha_incidente|date:"d" }}
+            de {{ informe_sancionador.fecha_incidente|date:"F" }}
+            de {{ informe_sancionador.fecha_incidente|date:"Y" }}</strong></p>
+        <ul>
+            {% for conducta in informe_sancionador.conductas.all %}
+                <li>{{ conducta.conducta }}</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+
+    {% if expulsiones|length > 1 %}
+        <p>Determinadas conductas contrarias, así como la acumulación de las mismas, puede sancionarse con la expulsión
+            del centro. Por esta razón, le recuerdo que {{ informe.sancionado.gauser.get_full_name }} ha sido
+            {% if informe.sancionado.gauser.sexo == 'H' %} expulsado, {% else %} expulsada, {% endif %}
+            {{ expulsiones|length }} ve{{ expulsiones|length|pluralize:"z,ces" }}:</p>
+        <ul>
+            {% for expulsion in expulsiones %}
+                <li>El {{ expulsion.fecha_incidente|date:"j" }} de {{ expulsion.fecha_incidente|date:"F" }}
+                    de {{ expulsion.fecha_incidente|date:"Y" }}. {% if expulsion.fechaexpulsion_set.all|length > 0 %} Días:
+                    {% for fecha in expulsion.fechaexpulsion_set.all %}{% if forloop.revcounter0 == 1 %}
+                        {{ fecha.fecha|date:"d/m/Y" }} y
+                        {% elif forloop.revcounter0 > 1 %}{{ fecha.fecha|date:"d/m/Y" }}, {% else %}
+                        {{ fecha.fecha|date:"d/m/Y" }}{% endif %}{% endfor %}{% endif %}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endif %}
+
+
+{% with estadistica=informe.sancionado|estadistica_informes_is2pdf %}
+    <p>Solicito su colaboración para evitar que este tipo de comportamiento se siga produciendo y les recuerdo que la
+        acumulación de conductas contrarias o la reiteración en las mismas se tipifica como una conducta gravemente
+        perjudicial para la convivencia, lo que puede dar lugar a expulsiones de hasta diez días lectivos o al inicio de
+        un expediente sancionador que podría terminar con la expulsión definitiva del Centro. Hasta este
+        momento {{ informe.sancionado.gauser.get_full_name }} tiene {{ estadistica.tcnc }}
+        {% if estadistica.tcnc != 1 %} conductas contrarias {% else %}
+            conducta contraria {% endif %} a la convivencia y {{ estadistica.gpc }} {% if estadistica.gpc != 1 %}
+            conductas gravemente
+            perjudiciales {% else %} conducta gravemente perjudicial {% endif %} para la convivencia, por las cuales se
+        le han emitido {{ estadistica.informes }} informes sancionadores (incluido éste).</p>
+{% endwith %}
+<p>En caso de desacuerdo contra esta corrección podrá usted presentar reclamación ante el Director del Centro en los dos
+    días lectivos siguientes al de su notificación, advirtiéndole que la presentación de la reclamación no supondrá la
+    paralización de la sanción.</p>
+
+<div style="padding-top:20px;">
+    <p> Les saluda atentamente, </p>
+</div>
+<div style="text-align:center;">
+    <table>
+        <tr>
+            <td>En {{ informe.sancionador.entidad.localidad }}, a {{ informe.fecha_incidente|date:"j" }}
+                de {{ informe.fecha_incidente|date:"F"|lower }} de {{ informe.fecha_incidente|date:"Y" }}</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+        {% if dire %}
+            <tr>
+                <td>{{ dire.gauser.get_full_name }}</td>
+            </tr>
+            <tr>
+                <td>{{ dire.cargo|capfirst }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td>{{ informe.sancionador.gauser.get_full_name }}</td>
+            </tr>
+            <tr>
+                <td>{{ informe.sancionador.cargos.all.0.cargo|capfirst }}</td>
+            </tr>
+        {% endif %}
+    </table>
+</div>
+<hr/>
+<p style="font-size:7pt;padding-bottom:1em;"> Recórtese y devuélvase firmado al tutor del grupo {{ grupo }}<p>
+<p> He recibido el documento "Comunicación de Conductas Contrarias y Sanciones" emitido por {% if dire %}
+    {{ dire.gauser.get_full_name }} {% else %} {{ informe.sancionador.gauser.get_full_name }} {% endif %}
+    el {{ informe.fecha_incidente|date:"j" }} de {{ informe.fecha_incidente|date:"F"|lower }}
+    de {{ informe.fecha_incidente|date:"Y" }}.</p>
+<p> Nombre del receptor, fecha y firma:</p>
+
+ 

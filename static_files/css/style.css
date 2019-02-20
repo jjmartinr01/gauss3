@@ -1,0 +1,291 @@
+/* DIV de cabecera que está a su vez compuesto por tres partes */
+div.cabecera {
+    background: #f5ac19;
+    background: -webkit-linear-gradient(to right, #f5ac19 0%, #f5ac19 5%, #fcfff9 19%, #128529 75%, #128529 100%);
+    background: -moz-linear-gradient(to right, #f5ac19 0%, #f5ac19 5%, #fcfff9 19%, #128529 75%, #128529 100%);
+    background: -ms-linear-gradient(to right, #f5ac19 0%, #f5ac19 5%, #fcfff9 19%, #128529 75%, #128529 100%);
+    background: -o-linear-gradient(to right, #f5ac19 0%, #f5ac19 5%, #fcfff9 19%, #128529 75%, #128529 100%);
+    background: linear-gradient(to right, #f5ac19 0%, #f5ac19 5%, #fcfff9 19%, #128529 75%, #128529 100%);
+    height: 50px;
+}
+
+.cabecera {
+    font-size: 100% ! important;
+    margin: 0px ! important;
+    padding: 0px ! important;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+span.cabecera {
+    font-size: 26px ! important;
+    font-weight: bold;
+    color: white;
+    font-family: Arial;
+    margin-left: 10px ! important;
+}
+a.cabecera {
+    font-size: 80% ! important;
+    margin-left: 10px ! important;
+}
+
+img.cabecera{
+    height: 45px ! important;
+}
+
+div.cabecera_personal {
+    float: left;
+    width: 20%;
+    height: 46px;
+    color: #128529;
+    margin-left: 5px;
+    font-size: 8pt;
+    font-weight: bold;
+}
+
+div.cabecera_gauss {
+    float: left;
+    width: 49%;
+    height: 46px;
+    overflow: hidden;
+}
+
+div.cabecera_institucional {
+    float: left;
+    width: 29%;
+    height: 46px;
+}
+
+/* ************************************************************* */
+
+.fa-pulse {
+    animation: 1s steps(8, end) 0s normal none infinite running fa-spin;
+}
+
+/* ************************************************************* */
+
+.ul_menu{
+    margin-left: -0.8rem!important;
+    margin-top: -0.94rem!important;
+}
+
+
+/* ************************************************************* */
+.logo {
+    width: 1000px;
+    height: 50px;
+}
+
+.size-14 {
+    font-size: 14px;
+}
+
+.size-16 {
+    font-size: 16px;
+}
+
+.titulo {
+    text-align: center;
+    color: #007095;
+    font-weight: 700;
+    font-size: 22px;
+}
+
+.anagrama {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/*  CSS para colores  */
+.color_info {
+    color: #f5ac19;
+}
+
+.color1 {
+    color: #128529;
+    opacity: 1;
+}
+
+.color2 {
+    color: #f5ac19;
+    opacity: 1;
+}
+
+.color1_suave {
+    color: #128529;
+    opacity: 0.2;
+}
+
+.color2_suave {
+    color: #f5ac19;
+    opacity: 0.2;
+}
+
+.hr1 {
+    color: #128529;
+    background-color: #128529;
+    border: 0px;
+}
+
+.hr2 {
+    color: #f5ac19;
+    background-color: #f5ac19;
+    border: 0px;
+}
+
+/* ************************************************************* */
+
+.visible {
+    display: block;
+}
+
+.oculto {
+    display: none;
+}
+
+.navegar {
+    color: #f5ac19;
+    font-size: 14pt;
+    cursor: pointer;
+    text-align: right;
+    margin-right: 10px;
+}
+
+.navegar:hover {
+    color: #128529;
+}
+
+.text_overlap_navegar {
+    font-family: Arial, Helvetica, sans-serif;
+    position: relative;
+    left: 9px;
+    bottom: 2px;
+    font-size: 4pt;
+    font-weight: bold;
+    text-align: right;
+    margin-right: 11px;
+    margin-left: -21px;
+    z-index: 3;
+}
+
+.no_navegar {
+    color: #ACACAC;
+    font-size: 14pt;
+    cursor: default;
+    text-align: right;
+    margin-right: 10px;
+}
+
+/* ************************************************************* */
+/*Editor gauss basado en wysihtml5*/
+
+.editor {
+    border-style: solid ! important;
+    border-width: 1px ! important;
+    border-color: #CCCCCC ! important;
+    padding: 10px ! important;
+    background-color: #F5F5F5;
+    margin-bottom: 0px ! important;
+}
+
+div.editor {
+    border-bottom-style: none ! important;
+}
+
+.editor.dropdown.button:before, button.dropdown:before {
+    display: none ! important;
+}
+
+/* ************************************************************* */
+/*Botón de selección de la top-bar*/
+
+.has-dropdown > a:after {
+    border-top-color: #000000 ! important;
+    top: 15px ! important;
+}
+
+/* ************************************************************* */
+/*Calendario*/
+
+.varios_acontecimientos {
+    background: -webkit-linear-gradient(#ffa500, green, #ff00ff);
+    background: -moz-linear-gradient(#ffa500, green, #ff00ff);
+    background: -ms-linear-gradient(#ffa500, green, #ff00ff);
+    background: -o-linear-gradient(#ffa500, green, #ff00ff);
+    background: linear-gradient(#ffa500, green, #ff00ff);
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.EVT_PER {
+    background: #ffa500;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.EVT_FES {
+    background: red;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.EVT_REU {
+    background: #ff00ff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+div.varios_acontecimientos {
+    background: -webkit-linear-gradient(#ffa500, green, #ff00ff);
+    background: -moz-linear-gradient(#ffa500, green, #ff00ff);
+    background: -ms-linear-gradient(#ffa500, green, #ff00ff);
+    background: -o-linear-gradient(#ffa500, green, #ff00ff);
+    background: linear-gradient(#ffa500, green, #ff00ff);
+    border-radius: 5px;
+    width: 15px;
+    float: left;
+    margin: 0px 8px 15px 0;
+    cursor: auto;
+}
+
+div.EVT_PER {
+    background: #ffa500;
+    border-radius: 5px;
+    margin-right: 5px;
+    width: 15px;
+    float: left;
+    margin: 0px 8px 15px 0;
+    cursor: auto;
+}
+
+div.EVT_FES {
+    background: red;
+    border-radius: 5px;
+    margin-right: 5px;
+    width: 15px;
+    float: left;
+    margin: 0px 8px 15px 0;
+    cursor: auto;
+}
+
+div.EVT_REU {
+    background: #ff00ff;
+    border-radius: 5px;
+    margin-right: 5px;
+    width: 15px;
+    float: left;
+    margin: 0px 8px 15px 0;
+    cursor: auto;
+}
+
+/*WEB*/
+
+.figura-round {
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.figura-radius {
+    border-radius: 10%;
+    overflow: hidden;
+}

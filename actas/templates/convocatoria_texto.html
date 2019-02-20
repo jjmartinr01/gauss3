@@ -1,0 +1,23 @@
+{% load actas_extras %}
+{#<h1 class="title noeditable">{{ c.nombre }}</h1>#}
+<p>Se convoca a los {{ c.entidad.get_general_user_display }}s de <span title="Aquí se escriben automáticamente los convocados" class="sub_convocadas noeditable" contenteditable="false">{{ c|lista_subentidades_convocadas }}</span>, el
+    <span class="day_name noeditable" contenteditable="false" title="Aquí se escribe automáticamente el nombre del día">{{ c.fecha_hora|date:"l"|lower }}</span>
+    <span class="day_num noeditable" contenteditable="false" title="Aquí se escribe automáticamente el día del mes">{{ c.fecha_hora|date:"j" }}</span> de <span
+            class="month_name noeditable" contenteditable="false" title="Aquí se escribe automáticamente el mes">{{ c.fecha_hora|date:"F"|lower }}</span>
+    de <span class="year noeditable" contenteditable="false" title="Aquí se escribe automáticamente el año">{{ c.fecha_hora|date:"Y" }}</span> a las
+    <span class="datetime_time noeditable" contenteditable="false" title="Aquí se escribe automáticamente la hora">{{ c.fecha_hora|date:"H:i" }}</span> horas, en la <span
+            class="place noeditable" contenteditable="false" title="Aquí se escribe automáticamente el lugar"> {{ c|lugar }}</span>,
+    con el siguiente</p>
+<p>ORDEN DEL D&Iacute;A</p>
+<ol id="conv_points" title="Aquí se deben introducir los puntos de la convocatoria">
+    <li>Lectura y aprobaci&oacute;n si procede del acta anterior.</li>
+    <li>Punto del orden del d&iacute;a</li>
+    <li>Ruegos y preguntas.</li>
+</ol>
+<p>&nbsp;</p>
+{% now "j \d\e  F \d\e Y" as ahora %}
+<p>En <span class="noeditable">{{ c.entidad.localidad }}</span>, a <span id="datetime_now" class="noeditable" contenteditable="false">{{ ahora|lower }}</span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span class="convocante noeditable" contenteditable="false" title="Aquí se escribe automáticamente el convocante">{{ c|convocante }}</span><br>
+    <b><span class="cargo_convocante noeditable" contenteditable="false" title="Aquí se escribe automáticamente el cargo del convocante">{{ c|cargo_convocante }}</span></b></p>

@@ -1,0 +1,117 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css" />
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.min.js"></script>
+{# El siguiente js es utilizado para submit form con files en ajax #}
+<script type="text/javascript" src="/static/js/jquery.form.min.js"></script>
+<style>
+  li { margin-left:20px; }
+</style>
+{% endblock %}
+
+{% block ready %}
+  visualizar(['ok_sign','plus_sign','file_pdf']);
+  $( "#plus_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir una nueva partida al presupuesto');
+  $( "#file_pdf" ).removeClass('no_navegar').addClass('navegar').attr('title','Generar un pdf con el presupuesto');
+
+  $("#id_describir").cleditor({
+      width:        'auto', // width not including margins, borders or padding
+      height:       100, // height not including margins, borders or padding
+      controls:     // controls to add to the toolbar
+		    "bold italic underline strikethrough subscript superscript | size " +
+		    "style | bullets numbering | " +
+		    "alignleft center alignright justify | undo redo | " +
+		    "rule image link unlink",
+      });
+
+  $('#plus_sign').click(function () { if( $(this).hasClass('navegar') ) {
+    $( '#plus_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( '#ok_sign' ).removeClass('no_navegar').addClass('navegar').attr('title','Guardar la nueva partida');
+    $('#action').val('add_partida');
+    $.post("/add_partida/", {},function(data) { $('#div_partidas').html(data);});}});
+
+
+  $('#ok_sign').click(function (event) {  if( $(this).hasClass('navegar') ) {
+      if ($('#action').val() == 'mod_describir'){
+	$('#id_describir').val(removeWordTags ($('#id_describir').val()));
+	var describir = JSON.stringify($('#id_describir').val());
+	$.post("/mod_describir/", {describir:describir,},function(data) { $('#texto_describir').html(data);});
+	$("#editor_describir").toggle();
+	$("#texto_describir").toggle();
+	$( "#plus_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir una nueva partida al presupuesto');
+	$( '#ok_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+	return false;}
+      var tip = $('#id_tipo').val().length > 3;
+      var nom = $('#id_nombre').val().length > 3;
+      var can = !isNaN(parseFloat($('#id_cantidad').val()));
+      if (can){ $('#id_cantidad').val(parseFloat($('#id_cantidad').val()));}
+      if (nom && tip && can){
+	event.preventDefault();
+	if ($('#action').val() == 'add_partida'){
+	    $('#{{formname}}').ajaxSubmit({
+		url: '/save_partida/',
+		success: function(data) {
+		    $('#div_partidas').html(data); 
+		    $( '#plus_sign' ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir una nueva partida al presupuesto');
+		    $( '#ok_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');} });
+	}else if ($('#action').val() == 'mod_partida'){
+	    $('#{{formname}}').ajaxSubmit({
+		url: '/update_partida/',
+		success: function(data) {
+		    $('#div_partidas').html(data); 
+		    $( '#plus_sign' ).removeClass('no_navegar').addClass('navegar').attr('title','Añadir una nueva partida al presupuesto');
+		    $( '#ok_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');} });}
+	return false;
+      }else{
+      var texto = '';
+      if( !nom ) { texto = texto + '<li>Es necesario escribir un nombre para la partida (más de 3 caracteres).</li>';}
+      if( !tip ) { texto = texto + '<li>Debes seleccionar el tipo de partida (gasto o ingreso).</li>';}
+      if( !can ) { texto = texto + '<li>Cantidad debe ser un número real (sin letras y usa "." para los decimales).</li>';}
+      $( "#faltan_campos" ).html(texto);
+      $( "#faltan_campos" ).dialog( "open" );}}});
+
+  $('#Contenido').on('click','.modificar_partida',function(){
+    var id = $(this).attr('id').split('___')[1];
+    $('#partida_id').val(id);
+    $('#action').val('mod_partida');
+    $( '#plus_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+    $( '#ok_sign' ).removeClass('no_navegar').addClass('navegar').attr('title','Guardar la partida modificada');
+    $.post("/mod_partida/", {id:id,},function(data) { $('#div_partidas').html(data);});})
+  
+  $('#Contenido').on('click','.del_partida',function(){
+    var id = $(this).attr('id').split('___')[1];
+    $('#partida_id').val(id);
+    $('#action').val('del_partida');
+    $.post("/del_partida/", {id:id,},function(data) { $('#div_partidas').html(data);});})
+  
+  $("#file_pdf").click(function() { if( $(this).hasClass('navegar') ) {
+      $('#action').val('pdf_presupuesto');
+      document.{{formname}}.submit();}});
+
+  $("#texto_describir").click(function() { 
+      $("#editor_describir").toggle();
+      $("#texto_describir").toggle();
+      $( '#plus_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+      $( '#ok_sign' ).removeClass('no_navegar').addClass('navegar').attr('title','Guardar la descripción del presupuesto');
+      $( '#action' ).val('mod_describir');
+      $("#id_describir").cleditor()[0].disable(false).refresh();});
+
+{% endblock %}
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+  <input type="hidden" name="action" id="action" value="">
+  <input type="hidden" name="partida_id" id="partida_id" value="">
+  <div style="float:center;" id="div_presupuesto">
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Presupuesto de la APA {{request.session.gauser_extra.entidad.name}} para la {{request.session.gauser_extra.ronda.get_nombre_display}}</td></tr></table>
+    <div id="texto_describir" style="cursor:pointer;">{% autoescape off %}{{presupuesto.describir}}{% endautoescape %}</div>
+    <div id="editor_describir" style="display:none;">{{presupuestoform.describir}}</div>
+  </div>
+  <hr><br>
+  <div style="float:center;" id="div_partidas">
+      {% include "list_partidas.html" %}
+  </div>
+</form>
+{% endblock %}

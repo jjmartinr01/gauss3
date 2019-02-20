@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="graba_horario">
+        <input type="hidden" id="horario" name="horario" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Lista de horarios y creación de un nuevo
+                horario</strong></h4>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_horarios" title="Lista de horarios">
+            {% for horario in horarios %}
+                {% include "formulario_horario.html" %}
+            {% endfor %}
+        </dl>
+        <div class="row">
+            <div class="columns large-12">
+                <a class="button" id="add_horario"><i class="fa fa-plus"></i> Añadir horario</a>
+            </div>
+        </div>
+
+        <div class="row" id="timepicker" style="display: none;">
+            <div class="columns large-12" style="border: 1px solid lightgrey;background-color: white;">
+                <label>Hora:</label>
+                <div id="hour_slider" class="range-slider" data-slider
+                     data-options="start: 0; end: 23; step: 1;initial:0">
+                    <span class="range-slider-handle" role="slider" tabindex="0"></span>
+                    <span class="range-slider-active-segment"></span>
+                    <input type="hidden">
+                </div>
+                <label>Minutos:</label>
+                <div id="minute_slider" class="range-slider" data-slider
+                     data-options="start: 0; end: 55; step: 5;initial:0">
+                    <span class="range-slider-handle" role="slider" tabindex="0"></span>
+                    <span class="range-slider-active-segment"></span>
+                    <input type="hidden">
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        $('#add_horario').click(function (e) {
+            e.preventDefault();
+            $.post("/define_horario/", {action: 'add_horario'}, function (data) {
+                $('#list_horarios').append(data);
+            });
+        });
+
+        $('body').on('click', '.delete_horario', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/define_horario/", {action: 'delete_horario', id: id}, function (data) {
+                $('#accordion' + id).hide();
+                if (parseInt(data) > 0) {
+                    $('.ok_predeterminado').hide();
+                    $('.ok_checkbox').show();
+                    $('#ok_predeterminado' + data).show();
+                    $('#ok_checkbox' + data).hide();
+                }
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('propertychange input', '.descripcion', function (e) {
+            e.preventDefault();
+            var $elemento = $(this);
+            var id = $(this).data('id');
+            var descripcion = $(this).val();
+            $.post("/define_horario/", {action: 'descripcion', id: id, descripcion: descripcion}, function (data) {
+                $('#span_descripcion' + id).html(data);
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('click', '.predeterminado', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/define_horario/", {action: 'predeterminado', id: id}, function (data) {
+                $('.ok_predeterminado').hide();
+                $('.ok_checkbox').show();
+                $('#ok_predeterminado' + id).show();
+                $('#ok_checkbox' + id).hide();
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('click', '.dia', function (e) {
+            var id = $(this).data('id');
+            var dia = $(this).data('dia');
+            var check = $(this).is(':checked');
+            $.post("/define_horario/", {action: 'dia', id: id, dia: dia, check: check}, function (data) {
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('click', '.add_tramo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/define_horario/", {action: 'add_tramo', id: id}, function (data) {
+                $('#tramos_list' + id).append(data);
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('propertychange input', '.nombre_tramo', function (e) {
+            e.preventDefault();
+            var horario = $(this).data('horario');
+            var tramo = $(this).data('id');
+            var nombre = $(this).val();
+            $.post("/define_horario/", {action: 'nombre_tramo', horario: horario, tramo: tramo, nombre: nombre},
+                    function (data) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    });
+        });
+
+        {# Proporcionar un valor inicial a tramo nulo, para no ejecutar las dos funciones siguientes #}
+        var tramo = null;
+
+        function update_tramo(t, ini_fin){
+            var horario = t.data('horario');
+            var tramo = t.data('id');
+            var valor = t.val();
+            $.post("/define_horario/", {action: ini_fin, horario: horario, tramo: tramo, valor: valor},
+                    function (data) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    });
+        }
+
+        $('#hour_slider').on('change.fndtn.slider', function () {
+            if (tramo) {
+                var minutos = tramo.val().split(':')[1];
+                var v = $(this).attr('data-slider');
+                if (v.length == 1) {
+                    v = '0' + v;
+                }
+                tramo.val(v + ':' + minutos);
+                if (tramo.hasClass('inicio')) {
+                    update_tramo(tramo, 'inicio');
+                    v = parseInt(v) + 1;
+                    var t = $('#fin' + tramo.data('t'));
+                    t.val(v.toString() + ':' + minutos);
+                    update_tramo(t, 'fin');
+                }else{
+                    update_tramo(tramo, 'fin');
+                }
+            }
+        });
+
+        $('#minute_slider').on('change.fndtn.slider', function () {
+            if (tramo) {
+                var hora = tramo.val().split(':')[0];
+                var v = $(this).attr('data-slider');
+                if (v.length == 1) {
+                    v = '0' + v;
+                }
+                tramo.val(hora + ':' + v);
+                if (tramo.hasClass('inicio')) {
+                    update_tramo(tramo, 'inicio');
+                    var t = $('#fin' + tramo.data('t'));
+                    var hora = parseInt(hora) + 1;
+                    t.val(hora.toString() + ':' + v);
+                    update_tramo(t, 'fin');
+                }else{
+                    update_tramo(tramo, 'fin');
+                }
+            }
+        });
+
+        $('body').on('click', '.timepicker_tramo', function (e) {
+            e.preventDefault();
+            tramo = $(this);
+            var hora = tramo.val().split(':')[0];
+            var minutos = tramo.val().split(':')[1];
+            $('#hour_slider').attr('data-slider', hora);
+            $('#minute_slider').attr('data-slider', minutos);
+            var dest = $(this).data('dest');
+            $('#timepicker').appendTo($('#' + dest)).show();
+            $(document).foundation('slider', 'reflow');
+        });
+
+        $(document).keyup(function (e) {
+            if (e.keyCode == 27) { // escape key maps to keycode `27`
+                $('#timepicker').hide();
+            }
+        });
+
+        $(document).mouseup(function (e) {
+            var container = $('.timepicker_tramo');
+            if (!container.is(e.target) // if the target of the click isn't the container...
+                    && container.has(e.target).length === 0) // ... nor a descendant of the container
+            {
+                $('#timepicker').hide();
+            }
+        });
+
+        $('body').on('click', '.delete_tramo', function (e) {
+            e.preventDefault();
+            var horario = $(this).data('horario');
+            var tramo = $(this).data('id');
+            $.post("/define_horario/", {action: 'delete_tramo', horario: horario, tramo: tramo}, function (data) {
+                $('#row_tramo' + tramo).hide();
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+    </script>
+{% endblock %}

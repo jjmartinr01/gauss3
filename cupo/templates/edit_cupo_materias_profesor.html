@@ -1,0 +1,36 @@
+<div id="profesor_cupo{{ p.id }}">
+    <div class="row {% if contador|divisibleby:2 %}par{% else %}impar{% endif %}">
+        <div class="columns large-4">
+            <input type="text" maxlength="150" value="{{ p.nombre }}" data-id="{{ p.id }}" class="profesor_cupo"
+                   data-campo="nombre" placeholder="Nombre del profesor/a"></div>
+        <div class="columns large-3">
+            <select data-id="{{ p.id }}" class="profesor_cupo" data-campo="tipo">
+                <option value="DEF" {% if p.tipo == "DEF" %}selected{% endif %}>Destino definitivo</option>
+                <option value="INT" {% if p.tipo == "INT" %}selected{% endif %}>Interino de cupo</option>
+                <option value="NONE" {% if p.tipo == "NONE" %}selected{% endif %}>Profesor no necesario</option>
+            </select>
+        </div>
+        <div class="columns large-3">
+            <select data-id="{{ p.id }}" class="profesor_cupo" data-campo="jornada">
+                <option value="1" {% if p.jornada == "1" %}selected{% endif %}>Jornada completa</option>
+                <option value="2" {% if p.jornada == "2" %}selected{% endif %}>Jornada de 2/3</option>
+                <option value="3" {% if p.jornada == "3" %}selected{% endif %}>Media jornada</option>
+                <option value="4" {% if p.jornada == "4" %}selected{% endif %}>Jornada de 1/3</option>
+            </select>
+        </div>
+        <div class="columns large-2">
+            <input type="checkbox" data-id="{{ p.id }}" class="profesor_cupo" data-campo="bilingue"
+                   {% if p.bilingue %}checked{% endif %}> Bilingüe
+        </div>
+    </div>
+    <div class="row {% if contador|divisibleby:2 %}par{% else %}impar{% endif %}">
+        <div class="columns large-2"><a class="button tiny profesor_cupo" data-id="{{ p.id }}" data-campo="borrar"><i
+                class="fa fa-trash"></i> Borrar</a></div>
+        <div class="columns large-2"><a class="button tiny profesor_cupo" data-id="{{ p.id }}" data-campo="duplicar"><i
+                class="fa fa-copy"></i> Duplicar</a></div>
+        <div class="columns large-8">
+                    <textarea data-id="{{ p.id }}" class="profesor_cupo" placeholder="Observaciones sobre este profesor"
+                              data-campo="observaciones">{{ p.observaciones }}</textarea>
+        </div>
+    </div>
+</div>

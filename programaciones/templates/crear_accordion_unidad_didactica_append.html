@@ -1,0 +1,12 @@
+<dd class="accordion-navigation" id="accordion{{ ud.id }}"
+    style="border-bottom: dotted 1px black">
+    <a href="#ud{{ ud.id }}">UD <span id="orden{{ ud.id }}">{{ ud.orden }}</span>
+        - <span id="nombre{{ ud.id }}">{{ ud.nombre }}</span>
+        (<span id="duracion{{ ud.id }}">{{ ud.duracion }}</span> horas)</a>
+
+    <div id="ud{{ ud.id }}" class="content accordion-unidad" data-ud="{{ ud.id }}">
+        {% include "unidad_didactica_append.html" %}
+    </div>
+</dd>
+
+

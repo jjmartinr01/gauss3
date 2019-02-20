@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Dependencias
+                {% if request.session.gauser_extra.ronda.entidad.organization.id == 1 %}
+                    del Grupo Scout
+                {% elif request.session.gauser_extra.ronda.entidad.organization.id == 7 %}
+                    del Centro de Estudios
+                {% else %} {{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}{% endif %}
+                {{ request.session.gauser_extra.ronda.entidad.name }}</strong></h4>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12">
+                <dl class="accordion" data-accordion id="list_dependencias"
+                    title="Lista de dependencias">
+                    {% for dependencia in dependencias %}
+                        {% include "dependencia_accordion.html" %}
+                    {% endfor %}
+                </dl>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12"><a class="button" id="add_dependencia"><i class="fa fa-plus"></i> Dependencia</a>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        $("#add_dependencia").click(function (event) {
+            event.preventDefault();
+            $.post("/dependencias_entidad/", {action: 'add_dependencia'}, function (data) {
+                $('#list_dependencias').append(data);
+            });
+        });
+
+        $(".delete_dependencia").click(function (event) {
+            event.preventDefault();
+            var id = $(this).data('id');
+            $.post("/dependencias_entidad/", {action: 'delete_dependencia', id: id}, function (data) {
+                $('#accordion' + id).hide();
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('propertychange input', '.nombre_dependencia', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var nombre = $(this).val();
+            $.post("/dependencias_entidad/", {action: 'nombre_dependencia', id: id, nombre: nombre}, function (data) {
+                $('#nombre_accordion' + id).html(data);
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('propertychange input', '.edificio_dependencia', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var edificio = $(this).val();
+            $.post("/dependencias_entidad/", {action: 'edificio_dependencia', id: id, edificio: edificio}, function (data) {
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('propertychange input', '.planta_dependencia', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var planta = $(this).val();
+            $.post("/dependencias_entidad/", {action: 'planta_dependencia', id: id, planta: planta}, function (data) {
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('body').on('propertychange input', '.largo_dependencia', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var largo = $(this).val();
+            $.post("/dependencias_entidad/", {action: 'largo_dependencia', id: id, largo: largo}, function (data) {
+                if (data == 'error') {
+                    $("#update_error").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }
+
+            });
+        });
+
+        $('body').on('propertychange input', '.ancho_dependencia', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var ancho = $(this).val();
+            $.post("/dependencias_entidad/", {action: 'ancho_dependencia', id: id, ancho: ancho}, function (data) {
+                if (data == 'error') {
+                    $("#update_error").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('propertychange input', '.abrev_dependencia', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var abrev = $(this).val();
+            $.post("/dependencias_entidad/", {action: 'abrev_dependencia', id: id, abrev: abrev}, function (data) {
+                if (data == 'error') {
+                    $("#update_error").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('click', '.es_aula', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/dependencias_entidad/", {action: 'es_aula', id: id}, function (data) {
+                if (data.ok) {
+                    $('#d' + id).html(data.es_aula);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+    </script>
+{% endblock %}

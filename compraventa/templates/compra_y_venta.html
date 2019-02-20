@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        .articulo {
+            cursor: pointer;
+        }
+
+        .propietario {
+            cursor: pointer;
+        }
+
+        .reservado {
+            position: relative;
+        }
+
+        .div_reservado {
+            opacity: 0.4;
+            filter: alpha(opacity=40); /* For IE8 and earlier */
+            z-index: 2;
+        }
+
+        .si_reservado {
+            position: absolute;
+            top: 30%;
+            display: block;
+            font-weight: 700;
+            font-size: 200%;
+            z-index: 10;
+
+            /* Safari */
+            -webkit-transform: rotate(-70deg);
+
+            /* Firefox */
+            -moz-transform: rotate(-70deg);
+
+            /* IE */
+            -ms-transform: rotate(-70deg);
+
+            /* Opera */
+            -o-transform: rotate(-70deg);
+
+            /* Internet Explorer */
+            filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+        }
+
+        .no_reservado {
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}" data-abide>
+        {% csrf_token %}
+
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="id_articulo" name="id_articulo" value="">
+
+        <div id="div_articulos">
+            <div>
+                <h4 style="text-align: center;color: #008CBA;"><strong> Comprar, vender y ofrecer servicios</strong>
+                </h4>
+            </div>
+
+            <ul class="small-block-grid-2 medium-block-grid-3 large-block-grid-4">
+                {% for art in articulos %}
+                    <li class="{% if art.estado == 'RESERVADO' %} reservado {% elif art.vendedor != request.session.gauser_extra.gauser %} articulo {% endif %} {% if art.vendedor == request.session.gauser_extra.gauser %} propietario {% endif %}"
+                        data-id="{{ art.id }}">
+                        <div class="{% if art.estado == 'RESERVADO' %} div_reservado {% endif %}">
+                            {% if art.fotos.all|length > 0 %}
+                                <img src="{{ art.fotos.all.0.fichero.url }}">
+                            {% else %}
+                                <img src="/static/images/no_hay_fotos.png">
+                            {% endif %}
+                            <br>{{ art.nombre }}
+                            <br>{{ art|precio }} €
+                            <br>{{ art.descripcion|truncatechars:25 }}
+                        </div>
+                        <span class="{% if art.estado == 'RESERVADO' %} si_reservado {% else %} no_reservado {% endif %}">
+                            RESERVADO
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div id="introducir_articulo" style="display: none;"></div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script src="/static/gauss_fileupload/gauss_FileUpload.js"></script>
+    <script>
+        habilita(['s_plus', 'h_check', 'h_list-alt']);
+
+        $('#id_formato').select2();
+        {#        $('#id_categorias').select2();#}
+
+
+        $('#list-alt_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                habilita(['s_plus', 'h_check', 'h_list-alt']);
+                $('#action').val();
+                $('#introducir_articulo').hide();
+                $('#div_articulos').show();
+            }
+        });
+
+
+        $('body').on('click', '#plus_sign', function (event) {
+            event.preventDefault();
+            var action = 'introduce_articulo';
+            var id = '';
+            $('#action').val('introduce_articulo');
+            $('#div_articulos').hide();
+            habilita(['h_plus', 's_check', 's_list-alt']);
+            $.post("/ajax_compraventa/", {action: action, id: id}, function (data) {
+                $('#introducir_articulo').show();
+                $('#introducir_articulo').html(data);
+            });
+        });
+
+        $('body').on('click', '.articulo', function (event) {
+            event.preventDefault();
+            var action = 'select_articulo_servicio';
+            var id = $(this).data('id');
+            $('#id_articulo').val(id);
+            $('#action').val(action);
+            $('#div_articulos').hide();
+            habilita(['h_plus', 'h_check', 's_list-alt']);
+            $.post("/ajax_compraventa/", {action: action, id: id}, function (data) {
+                $('#introducir_articulo').show();
+                $('#introducir_articulo').html(data);
+            });
+        });
+
+        $('body').on('click', '.propietario', function (event) {
+            event.preventDefault();
+            var action = 'modifica_articulo';
+            var id = $(this).data('id');
+            $('#id_articulo').val(id);
+            $('#action').val(action);
+            $('#div_articulos').hide();
+            habilita(['h_plus', 's_check', 's_list-alt']);
+            $.post("/ajax_compraventa/", {action: action, id: id}, function (data) {
+                $('#introducir_articulo').show();
+                $('#introducir_articulo').html(data);
+            });
+        });
+
+        $('#check_sign').click(function (event) {
+            event.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                document.{{formname}}.submit();
+            }
+        });
+
+        $('.buscar').click(function () {
+            {# Cargar el id de la articulo seleccionada #}
+            var id_articulo_selected = $(this).attr('id').split('___')[1];
+            {# Borrar el contenido de la anterior articulo seleccionada #}
+            $("#div_buscados___" + $("#id_articulo_selected").val()).html('');
+
+            if ($("#div_buscar___" + id_articulo_selected).is(':visible')) {
+                $("#div_buscar___" + id_articulo_selected).hide();
+                $(".check_articulo").addClass('fa-square-o');
+                $(".check_articulo").removeClass('fa-check-square-o');
+                $('#id_articulo_selected').val('');
+                $('#action').val('')
+                habilita(['s_plus', 'h_pencil', 'h_trash-o', 'h_check']);
+            } else {
+                $("#id_articulo_selected").val(id_articulo_selected);
+                $("#action").val('asociar_socios');
+                $.post("/buscar_asociados/", {id: id_articulo_selected }, function (data) {
+                    $('.div_buscar').not("#div___" + id_articulo_selected).slideUp();
+                    $("#div_buscados___" + id_articulo_selected).html(data);
+                    $("#div_buscar___" + id_articulo_selected).slideDown();
+                    $(".check_articulo").removeClass('fa-check-square-o').removeClass('fa-square-o');
+                    habilita(['h_plus', 'h_pencil', 'h_trash-o', 's_check']);
+                });
+            }
+        });
+    </script>
+{% endblock %}

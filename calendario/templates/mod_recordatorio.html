@@ -1,0 +1,76 @@
+{% load my_templatetags %}
+<script>
+    $("#id_recordar").fdatetimepicker({
+        format: 'dd/mm/yyyy hh:ii'
+    });
+
+    $('.pulsar').click(function () {
+        var id = this.id.split('___');
+        $('#acontecimiento').val(id[2]);
+        $('#recordatorio').val(id[1]);
+        $('#form_recordatorio').show();
+    });
+</script>
+<input type="hidden" name="acontecimiento" id="acontecimiento" value="">
+<input type="hidden" name="recordatorio" id="recordatorio" value="">
+<input type="hidden" name="gauser" value="{{ request.session.gauser_extra.gauser.id }}">
+<div class="">
+    <h4 style="text-align: center;color: #008CBA;"><strong> Añadir/Modificar un recordatorio</strong></h4>
+</div>
+{% for recordatorio in recordatorios %}
+    <div class="row">
+        <div class="columns large-4">
+            Evento: <strong>{{ recordatorio.acontecimiento.nombre }}</strong>
+        </div>
+        <div class="columns large-4">
+            Inicio: <strong>{{ recordatorio.acontecimiento.inicio }}</strong>
+        </div>
+        <div class="columns large-4">
+            Lugar: <strong>{{ recordatorio.acontecimiento.lugar }}</strong>
+        </div>
+    </div>
+    {% if recordatorio.recordar %}
+        <div class="row">
+            <div class="columns large-4">
+                Recordatorio: <strong>{{ recordatorio.recordar }}</strong>
+            </div>
+            <div class="columns large-4">
+                Anulado: <strong>{% if recordatorio.enterado %} Sí {% else %} No {% endif %}</strong>
+            </div>
+            <div class="columns large-4"
+                 id="recordatorio___{{ recordatorio.id }}___{{ recordatorio.acontecimiento.id }}">
+                <strong>Modificar recordatorio</strong>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="columns large-4">
+                Recordatorio: <strong>Sin fecha</strong>
+            </div>
+            <div class="columns large-4">
+            </div>
+            <div class="columns large-4"
+                 id="recordatorio___{{ recordatorio.id }}___{{ recordatorio.acontecimiento.id }}">
+                <strong>Modificar recordatorio</strong>
+            </div>
+        </div>
+    {% endif %}
+
+
+    {% if not forloop.last %}
+        <hr>{% endif %}
+{% endfor %}
+
+
+<div class="row" style="display:none;" id="form_recordatorio">
+    <div class="columns large-6">
+        <label>Fecha y hora del recordatorio:
+            {{ form.recordar }}
+        </label>
+    </div>
+    <div class="columns large-6">
+        <label>Anular recordatorio:
+            {{ form.enterado }}
+        </label>
+    </div>
+</div>

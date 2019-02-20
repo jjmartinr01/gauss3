@@ -1,0 +1,53 @@
+<h2 style="text-align:center;"> Listado de solicitudes de uniformes</h2>
+
+<table align="CENTER" cellpadding="3" width="100%">
+
+    {% for uniforme in uniformes %}
+        {% ifchanged uniforme.tipo %}
+
+            <thead>
+            <tr><td>&NonBreakingSpace;</td></tr>
+            <tr>
+                <td style="text-align:center;"><strong>Pedido para</strong></td>
+                <td style="text-align:center;"><strong>Entregado</strong></td>
+                <td style="text-align:center;"><strong>Pagado</strong></td>
+                <td style="text-align:center;"><strong>Tipo</strong></td>
+                <td style="text-align:center;"><strong>Talla</strong></td>
+                <td style="text-align:center;"><strong>Pedido el</strong></td>
+            </tr>
+            </thead>
+        {% endifchanged %}
+        <tr id="fila_uniforme___{{ uniforme.id }}">
+            <td style="text-align:center;">
+                {{ uniforme.gauser_extra.gauser.get_full_name }}
+            </td>
+            {% if not uniforme.entregado %}
+                <td style="text-align:center;">
+                    &#x274f;
+                </td>
+            {% else %}
+                <td style="text-align:center;">
+                    Sí
+                </td>
+            {% endif %}
+            {% if not uniforme.pagado %}
+                <td style="text-align:center;">
+                    &#x274f;
+                </td>
+            {% else %}
+                <td style="text-align:center;">
+                    Sí
+                </td>
+            {% endif %}
+            <td style="text-align:center;">
+                {{ uniforme.get_tipo_display }}
+            </td>
+            <td style="text-align:center;">
+                {% if uniforme.talla %}{{ uniforme.get_talla_display }}{% endif %}
+            </td>
+            <td style="text-align:center;">
+                {{ uniforme.fecha_pedido|date:"d-m-Y" }}
+            </td>
+        </tr>
+    {% endfor %}
+</table>

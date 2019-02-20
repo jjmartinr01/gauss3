@@ -1,0 +1,152 @@
+<dl class="accordion" data-accordion id="accordion_info">
+    {% if informe.nuevas|length > 0 %}
+        <dd class="accordion-navigation">
+            <a href="#panel_nuevas">
+                Se ha{{ informe.nuevas|pluralize:'n' }} creado {{ informe.nuevas|length }}
+                reserva{{ informe.nuevas|pluralize }} nueva{{ informe.nuevas|pluralize }} (haz click aquí para verlas)
+            </a>
+            <div id="panel_nuevas" class="content">
+                <p>Algunos portales no indican la vivienda en sus archivos de reservas. Asegúrate de que la vivienda
+                    asignada
+                    es la correcta:</p>
+                <div class="row">
+                    {% for nueva in informe.nuevas %}
+                        <div class="columns large-3">
+                            <label>Portal:</label>{{ nueva.get_portal_display }}
+                        </div>
+                        <div class="columns large-3">
+                            <label>Fecha de entrada:</label>{{ nueva.entrada|date:'d/m/Y' }}
+                        </div>
+                        <div class="columns large-3">
+                            <label>Nombre:</label>{{ nueva.nombre }}
+                        </div>
+                        <div class="columns large-3">
+                            <label>Vivienda:</label>
+                            <select class="select_vivienda_reserva" data-reserva="{{ nueva.id }}">
+                                <option value="">--------</option>
+                                {% for v in viviendas %}
+                                    <option value="{{ v.id }}"
+                                            {% if reserva.vivienda == v %}selected="selected"{% endif %}>
+                                        {{ v.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </dd>
+    {% endif %}
+
+    {% if informe.actualizadas|length > 0 %}
+        <dd class="accordion-navigation">
+            <a href="#panel_actualizadas">
+                Se ha{{ informe.actualizadas|pluralize:'n' }} actualizado {{ informe.actualizadas|length }}
+                reserva{{ informe.actualizadas|pluralize }} (haz click aquí para verlas)
+            </a>
+            <div id="panel_actualizadas" class="content">
+                <table>
+                    <tbody>
+                    <tr>
+                        <th>Portal</th>
+                        <th>Vivienda</th>
+                        <th>Nombre</th>
+                        <th>Entrada</th>
+                        <th>Ingresos</th>
+                    </tr>
+                    {% for a in informe.actualizadas %}
+                        <tr>
+                            <td>{{ a.get_portal_display }}</td>
+                            <td>{{ a.vivienda }}</td>
+                            <td>{{ a.nombre }}</td>
+                            <td>{{ a.entrada|date:'d/m/Y' }}</td>
+                            <td>{{ a.total }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </dd>
+    {% endif %}
+
+    {% if informe.canceladas|length > 0 %}
+        <dd class="accordion-navigation">
+            <a href="#panel_canceladas">
+                El fichero contenía {{ informe.canceladas|length }} reserva{{ informe.actualizadas|pluralize }}
+                cancelada{{ informe.canceladas|pluralize }} (haz click aquí para
+                verla{{ informe.canceladas|pluralize }})
+            </a>
+            <div id="panel_canceladas" class="content">
+                <table>
+                    <tbody>
+                    <tr>
+                        <th>Portal</th>
+                        <th>Vivienda</th>
+                        <th>Nombre</th>
+                        <th>Entrada</th>
+                        <th>Ingresos</th>
+                    </tr>
+                    {% for a in informe.canceladas %}
+                        <tr>
+                            <td>{{ a.get_portal_display }}</td>
+                            <td>{{ a.vivienda }}</td>
+                            <td>{{ a.nombre }}</td>
+                            <td>{{ a.entrada|date:'d/m/Y' }}</td>
+                            <td>{{ a.total }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </dd>
+    {% endif %}
+
+    {% if informe.errores|length > 0 %}
+        <dd class="accordion-navigation">
+            <a href="#panel_errores">
+                No se han podido crear algunas reservas (haz click aquí para verlas)
+            </a>
+            <div id="panel_errores" class="content">
+                <ol>
+                    {% for error in informe.errores %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </dd>
+    {% endif %}
+
+    {% if informe.solapadas|length > 0 %}
+        <dd class="accordion-navigation">
+            <a href="#panel_solapadas">
+                Se han detectado reservas solapadas (haz click aquí para verlas)
+            </a>
+            <div id="panel_solapadas" class="content">
+                <table width="100%" id="tabla_solapadas">
+                    {% for reservas in informe.solapadas %}
+                        <tbody>
+                        <tr>
+                            <th colspan="8">Las siguientes reservas se solapan. Borra la que corresponda.</th>
+                        </tr>
+                        {% for r in reservas %}
+                            <tr class="tr_reserva_solapada solapada{{ r.id }}" data-reserva="{{ r.id }}">
+                                <td>{{ r.vivienda.nombre }}<br><span
+                                        class="label secondary round">{{ r.get_portal_display }}</span></td>
+                                <td style="max-width: 225px;overflow:hidden;"
+                                    title="{{ r.nombre }}">{{ r.nombre }}<br><span
+                                        class="label secondary round">{{ r.code }}</span></td>
+                                <td>{{ r.viajero_set.all|length }}</td>
+                                <td>{{ r.entrada|date:'d/m/Y' }}</td>
+                                <td>{{ r.salida|date:'d/m/Y' }}</td>
+                                <td>{{ r.id }}</td>
+                                <td class="td_total">{{ r.total }}</td>
+                                <td class="text-center"><a class="delete_solapada" data-id="{{ r.id }}"><i
+                                        class="fa fa-trash"></i></a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    {% endfor %}
+                </table>
+            </div>
+        </dd>
+    {% endif %}
+</dl>

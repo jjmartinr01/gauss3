@@ -1,0 +1,44 @@
+<div class="row">
+    <div class="columns large-2">
+        <label>Tipo {{ form1.tipo }}</label>
+    </div>
+    <div class="columns large-10">
+        <label>Asunto
+            {{ form1.asunto }}
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-5">
+        <label>Emisor
+            {{ form1.emisor }}
+        </label>
+
+    </div>
+    <div class="columns large-5">
+        <label>Receptor {{ form1.receptor }}</label>
+    </div>
+    <div class="columns large-2">
+        <label>fecha
+            <input id="id_texto-fecha" type="text" value="{% now "d\/m\/Y" %}" size="10" name="texto-fecha"></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12" id="subir_ficheros">
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label>Texto que explica el registro
+            {{ form1.texto }}
+        </label>
+    </div>
+</div>
+
+<script src="/static/gauss_fileupload/gauss_FileUpload.js"></script>
+<script>
+{#    var editor_contenidos = $('#id_texto-texto').wysihtmleditor();#}
+    var editor = CKEDITOR.replace('id_texto-texto');
+    $('#subir_ficheros').gaussFileUpload(
+            {tag_a: '<i class="fa fa-hand-o-up"></i> Pulsa aquí para cargar archivos asociados al registro'});
+</script>

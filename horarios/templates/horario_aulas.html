@@ -1,0 +1,193 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+{% load horarios_extras %}
+
+{% block contenido %}
+        <style>
+        #barra_iconos_menu {
+            z-index: 2000000 !important;
+        }
+
+        div.horario {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            height: {{ horario.horario_height }}px;
+            border: 1px solid grey;
+        }
+
+        div.dia_horario {
+            display: table-cell;
+            text-align: center;
+            height: {{ horario.horario_height }}px;
+            position: relative;
+        }
+
+        div.div_cell_sesion {
+            position: absolute;
+            border-left: 1px solid #BFDDCB;
+            border-top: 1px solid #BFDDCB;
+            border-right: 1px solid #BFDDCB;
+            background-color: white;
+            opacity: 1;
+            z-index: 1;
+            width: 100%;
+        }
+
+        div.div_cell_sesion:hover {
+            z-index: 100000 !important;
+            background-color: #ffd3e8;
+        }
+
+        .show_complete_cell {
+            z-index: 100000 !important;
+            background-color: #ffd3e8 !important;
+        }
+
+        #horas {
+            border-right: 1px solid grey;
+        }
+
+        div.horas {
+            position: absolute;
+            padding-left: 5px;
+            border-top: 1px solid #BFDDCB;
+            width: 100%;
+        }
+
+        .grupo {
+            color: #117700;
+        }
+
+        .materia {
+            color: #008CBA;
+        }
+
+        .profesor {
+            color: #888888;
+        }
+    </style>
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <div class="row">
+            <div class="columns large-6 text-right"><h4 style="color: #008CBA;"><strong>Horario
+                de </strong></h4>
+            </div>
+            <div class="columns large-6">
+                <h5 style="text-align: center;"><strong>
+                    <select name="aula" id="aula">
+                        {% for a in aulas %}
+                            <option value="{{ a.id }}" {% if aula.id == a.id %}selected{% endif %}> {{ a.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </strong></h5>
+            </div>
+
+        </div>
+
+        <div style="display: block;" class="panel callout">
+            <p>Buscar aulas libres según los siguientes parámetros:</p>
+            <div class="row">
+                <div class="columns large-2">
+                    <label> Día:<select id="dia">
+                        <option value="">-----</option>
+                        <option value="1">Lunes</option>
+                        <option value="2">Martes</option>
+                        <option value="3">Miércoles</option>
+                        <option value="4">Jueves</option>
+                        <option value="5">Viernes</option>
+                        <option value="6">Sábado</option>
+                        <option value="7">Domingo</option>
+                    </select></label>
+                </div>
+                <div class="columns large-2 medium-3 small-6 text-left">
+                    <label>Entre las:
+                        <input type="time" id="inicio" value=""></label>
+                </div>
+                <div class="columns large-2 medium-3 small-6 text-left">
+                    <label>.. y las: <input type="time" id="fin" value=""> </label>
+                </div>
+                <div class="columns large-2 medium-3 small-6 text-left end">
+                    <label>&nbsp;</label>
+                    <a class="button tiny radius" id="buscar_aulas_libres"><i class="fa fa-search"></i> Buscar</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12" id="resultado_aulas_libres">
+                </div>
+            </div>
+        </div>
+        <input type="hidden" name="horario" id="horario" value="{{ horario.id }}">
+
+        <div class="horario" id="div_horario_aula">
+            {% include "horario_aulas_content.html" %}
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('#aula').select2();
+
+        $('body').on('change', '#aula', function (e) {
+            var aula = $(this).val();
+            $.post("/horarios_ajax/", {
+                action: 'carga_horario_aula',
+                aula: aula,
+                horario: $('#horario').val()
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#div_horario_aula').html(data.html);
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+
+        $('body').on('change', '#dia, #inicio, #fin', function (e) {
+            var dia = $('#dia').val();
+            var inicio = $('#inicio').val();
+            var fin = $('#fin').val();
+            var horario = $('#horario').val();
+            $.post("/horarios_ajax/", {
+                action: 'buscar_aulas_libres',
+                dia: dia,
+                horario: horario,
+                inicio: inicio,
+                fin: fin
+            }, function (data) {
+                $('#resultado_aulas_libres').html(data.html);
+            });
+        });
+
+        $('body').on('click', '#buscar_aulas_libres', function (e) {
+            var dia = $('#dia').val();
+            var inicio = $('#inicio').val();
+            var fin = $('#fin').val();
+            var horario = $('#horario').val();
+            $.post("/horarios_ajax/", {
+                action: 'buscar_aulas_libres',
+                dia: dia,
+                horario: horario,
+                inicio: inicio,
+                fin: fin
+            }, function (data) {
+                $('#resultado_aulas_libres').html(data.html);
+            });
+        });
+
+        $('#Contenido').on('click', '.div_cell_sesion', function () {
+            var element = $(this);
+            if (!element.hasClass('show_complete_cell')) {
+                $('.div_cell_sesion').removeClass('show_complete_cell');
+                element.addClass('show_complete_cell');
+            } else {
+                $('.div_cell_sesion').removeClass('show_complete_cell');
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% load informes_extras %}
+<h2 style="text-align:center;"> INFORME DE SEGUIMIENTO ({% now 'd/m/Y' %})</h2>
+
+Alumno: <strong> {{informe.usuario.gauser.get_full_name}}</strong>
+<br/>
+Grupo: <strong> {{informe.usuario.gauser_extra_estudios.grupo.nombre}}</strong>
+<br/>
+Tutor: <strong> {{informe.usuario.gauser_extra_estudios.tutor.gauser.get_full_name}}</strong>
+<br/>
+Fecha de solicitud: <strong> {{informe.fecha}}</strong>
+
+
+{% for pregunta in informe.pregunta_set.all %}
+    <p style="font-weight:bold;padding-top:10px;"> {{ pregunta.pregunta }} </p>
+    {% for respuesta in pregunta.respuestas %}
+        <p><span style="color:gray;"> {{ respuesta.usuario.gauser.get_full_name }} {{ respuesta.usuario|materia:respuesta.usuario.gauser_extra_estudios.grupo }}:</span> {{ respuesta.respuesta }}</p>
+        {% endfor %}
+{% endfor %}

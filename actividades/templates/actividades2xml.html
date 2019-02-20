@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<actividades>
+    {% for actividad in actividades %}
+        <actividad>
+            <organizador>{{ actividad.organizador.gauser.get_full_name }}</organizador>
+            <colaboradores>
+                {% for colaborador in actividad.colaboradores.all %}
+                    <colaborador>{{ colaborador.gauser.get_full_name }}</colaborador>
+                {% endfor %}
+            </colaboradores>
+            <description>
+                {{ actividad.description }}
+            </description>
+            <fecha_inicio>{{ actividad.fecha_inicio|date:"d-m-Y" }}</fecha_inicio>
+            <fecha_fin>{{ actividad.fecha_fin|date:"d-m-Y" }}</fecha_fin>
+            <tramos_horarios>
+                {% for tramo in actividad.tramos_horarios.all %}
+                    <tramo>{{ tramo.tramo }}</tramo>
+                {% endfor %}
+            </tramos_horarios>
+            <grupos>
+                {% for grupo in actividad.nombre_grupos_incluidos %}
+                    <grupo>{{ grupo }}</grupo>
+                {% endfor %}
+            </grupos>
+            <ficheros>
+                {% for fichero in actividad.file_actividad_set.all %}
+                    <fichero>{{ fichero.fichero.url }}</fichero>
+                {% endfor %}
+            </ficheros>
+        </actividad>
+    {% endfor %}
+</actividades>
+ 

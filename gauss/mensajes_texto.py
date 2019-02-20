@@ -1,0 +1,5 @@
+# -*- coding: utf-8 -*-
+
+ADVERTENCIA_LEGAL = u'<hr/><p style="font-size:8pt;color:gray;">ADVERTENCIA LEGAL.- Este correo electrónico contiene información de carácter confidencial exclusivamente dirigida a su destinatario. Queda prohibida su divulgación, copia o distribución a terceros. En el caso de haberlo recibido por error, se ruega notifique esta circunstancia de inmediato al emisor del mensaje, procediendo a la destrucción del mismo.</p>'
+
+LOPD_TEXT = u'<p style="font-size:8pt;color:gray;">POLÍTICA DE PROTECCIÓN DE DATOS.- En cumplimiento de la LOPD le informamos que los datos que figuran en el presente envío han sido recabados de la base de datos GAUSS, domiciliada en Haro, C/Mazo 11. El tratamiento automatizado de estos datos tiene como finalidad el envío de información relativa a servicios de gestión del centro. Salvo que Vd. nos comunique lo contrario entenderemos prestado su consentimiento para llevar a cabo dichos servicios. No obstante puede ejercitar sus derechos en la dirección postal indicada o a través de la Dirección del Centro.</p>'

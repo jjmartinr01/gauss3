@@ -1,0 +1,7 @@
+<ul class="button-group {{ content_div.esquinas }}">
+    {% for enlace in content_div.enlaces.all %}
+        <li><a data-href="{% if enlace.href %}{{ enlace.href }}{% else %}#{% endif %}" class="button link_html_web"
+               data-externo="{{ enlace.externo }}" data-id="{{ enlace.id }}"
+               id="link{{ content_div.id }}-{{ enlace.id }}">{{ enlace.texto }}</a></li>
+    {% endfor %}
+</ul>

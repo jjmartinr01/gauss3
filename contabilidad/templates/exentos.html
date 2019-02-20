@@ -1,0 +1,38 @@
+{% load my_templatetags %}
+
+<div class="columns large-12">
+    {% if politica.exentos.all|length > 0 %}
+        <dl>
+            <dt>Personas que están exentas de pagar esta cuota
+                ({{ politica.exentos.all|length }})
+            </dt>
+            <dd>
+                {% if numero > 5 %}
+                    {% for exento in politica.exentos.all %}
+                        &nbsp;<span class="radius label">{{ exento.get_full_name }}</span>
+                        {% if forloop.last and forloop.counter > 10 %}
+                            &nbsp;
+                            <span class="secondary radius label"><a class="ocultar_exentos" data-id="{{ politica.id }}">
+                                ... (ocultar)</a></span>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    {% for exento in politica.exentos.all %}
+                        {% if forloop.counter < 5 %}
+                            &nbsp;<span class="radius label">{{ exento.get_full_name }}</span>
+                        {% endif %}
+                        {% if forloop.last and forloop.counter > 4 %}
+                            &nbsp;
+                            <span class="secondary radius label"><a class="mostrar_exentos" data-id="{{ politica.id }}">
+                                ... (mostrar todos)</a></span>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </dd>
+        </dl>
+    {% else %}
+        <b>No se han definido personas exentas de pagar esta cuota</b>
+    {% endif %}
+</div>
+
+

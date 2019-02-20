@@ -1,0 +1,48 @@
+{% load my_templatetags %}
+<div class="large-12 columns">
+    {% for semana in meses %}
+        {% for dia in semana %}
+            <div class="row mes_calendario {% if dia|date:'n' == mes.0.6|date:'n' %}td_dia{% endif %}"
+                 data-fecha="{{ dia|date:'d/m/Y' }}">
+                {% for vevent in vevents|including_day:dia %}
+                    {% if forloop.first %}
+                        <hr>
+                        <div title="Haz click aquí para añadir un evento" class="columns large-3 td_dia" data-fecha="{{ dia|date:'d/m/Y' }}">
+                                {{ dia|date:"DATE_FORMAT"|lower }}
+                            </div>
+                        {% else %}
+                        <div class="columns large-3">
+                                &nbsp;
+                            </div>
+                    {% endif %}
+                    {% if vevent.dtstart|fecha_eq:dia %}
+                        <div class="columns large-9">
+                            <a class="show_evento" data-id="{{ vevent.id }}">{{ vevent.summary }}</a>
+                            <b>{{ vevent.dtstart|date:"H:i" }}
+                                {% if not vevent.dtend|fecha_eq:dia %}
+                                    <span class="show-for-medium-up">(Comienza)</span> <span class="show-for-small-only">(Com.)</span>
+                                {% endif %}
+                            </b>
+                        </div>
+                    {% elif vevent.dtstart|fecha_lt:dia and vevent.dtend|fecha_gt:dia %}
+                        <div class="columns large-9">
+                            <a class="show_evento" data-id="{{ vevent.id }}">{{ vevent.summary }} </a>
+                            <b><span class="show-for-medium-up">(Continúa)</span> <span class="show-for-small-only">(Cont.)</span></b>
+                        </div>
+                    {% elif vevent.dtend|fecha_eq:dia %}
+                        <div class="columns large-9">
+                            <a class="show_evento" data-id="{{ vevent.id }}">{{ vevent.summary }}</a>
+                            <b>{{ vevent.dtend|date:"H:i" }} <span class="show-for-medium-up">(Finaliza)</span> <span class="show-for-small-only">(Fin.)</span></b>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% if forloop.parentloop.last and forloop.last %}
+                <span id="more_vevents{{ dia|date:"dmY" }}"><br>
+                <p><i>Se muestran los eventos hasta el {{ dia|date:"DATE_FORMAT"|lower }}.
+                <a class="more_vevents" data-fecha="{{ dia|date:"d/m/Y" }}">Listar más eventos ...</a></i></p>
+                </span>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+</div>

@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+{% endblock %}
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Gestión de conductas y sanciones</strong></h4>
+        </div>
+
+        <ul class="tabs" data-tab role="tablist">
+            <li class="tab-title active" role="presentation"><a href="#tab1" role="tab" tabindex="0"
+                                                                aria-selected="true"
+                                                                aria-controls="tab1">Sanciones</a></li>
+            <li class="tab-title" role="presentation"><a href="#tab2" role="tab" tabindex="0" aria-selected="false"
+                                                         aria-controls="tab2">Conductas</a></li>
+            <li class="tab-title" role="presentation"><a href="#tab3" role="tab" tabindex="0" aria-selected="false"
+                                                         aria-controls="tab2">Configuración</a></li>
+        </ul>
+        <div class="tabs-content">
+            <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
+                <div id="div_sanciones">
+                    <dl class="accordion" data-accordion id="list_sanciones">
+                        {% for sancion in sanciones %}
+                            {% include "accordion_sancion.html" %}
+                        {% endfor %}
+                    </dl>
+                    <hr>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <a class="button add_sancion"><i class="fa fa-plus"></i> Crear sanción</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section role="tabpanel" aria-hidden="true" class="content" id="tab2">
+                <div id="div_conductas">
+                    <dl class="accordion" data-accordion id="list_conductas">
+                        {% for conducta in conductas %}
+                            {% include "accordion_conducta.html" %}
+                        {% endfor %}
+                    </dl>
+                    <hr>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <a class="button add_conducta"><i class="fa fa-plus"></i> Crear conducta contraria</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section role="tabpanel" aria-hidden="true" class="content" id="tab3">
+                <div class="row">
+                    <div class="columns large-12">
+                        <b>Número de meses a partir de los cuales caducan las conductas</b>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns large-4">
+                        <label>Conductas contrarias:
+                            <input class="configura" data-campo="caduca_cnc" type="number" value="{{ con.caduca_cnc }}">
+                        </label>
+                    </div>
+                    <div class="columns large-4">
+                        <label>Conductas graves:
+                            <input class="configura" data-campo="caduca_gpc" type="number" value="{{ con.caduca_gpc }}">
+                        </label>
+                    </div>
+                    <div class="columns large-4">
+                        <label>Conductas del ROF:
+                            <input class="configura" data-campo="caduca_rof" type="number" value="{{ con.caduca_rof }}"></label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-12">
+                        <b>Número de conductas o informes para realizar la expulsión de un alumno</b>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns large-3">
+                        <label>Conductas contrarias:
+                            <input class="configura" data-campo="expulsar_cnc" type="number"
+                                   value="{{ con.expulsar_cnc }}">
+                        </label>
+                    </div>
+                    <div class="columns large-3">
+                        <label>Conductas graves:
+                            <input class="configura" data-campo="expulsar_gpc" type="number"
+                                   value="{{ con.expulsar_gpc }}">
+                        </label>
+                    </div>
+                    <div class="columns large-3">
+                        <label>Conductas del ROF:
+                            <input class="configura" data-campo="expulsar_rof" type="number"
+                                   value="{{ con.expulsar_rof }}"></label>
+                    </div>
+                    <div class="columns large-3">
+                        <label>Informes sancionadores:
+                            <input class="configura" data-campo="expulsar_inf" type="number"
+                                   value="{{ con.expulsar_inf }}"></label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-12">
+                        <b>Número de conductas o informes para empezar un expediente sancionador</b>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns large-6">
+                        <label>Conductas contrarias:
+                            <input class="configura" data-campo="expediente_cnc" type="number"
+                                   value="{{ con.expediente_cnc }}">
+                        </label>
+                    </div>
+                    <div class="columns large-6">
+                        <label>Informes sancionadores:
+                            <input class="configura" data-campo="expediente_inf" type="number"
+                                   value="{{ con.expediente_inf }}">
+                        </label>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('#Contenido').on('click keyup', '.configura', function (e) {
+            e.preventDefault();
+            var campo = $(this).data('campo');
+            var valor = $(this).val();
+            $.post("/gestionar_conductas_ajax/", {action: 'change_configuracion', campo: campo, valor: valor},
+                function (data) {
+                if (data['ok']) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('#Contenido').on('click', '.add_conducta', function (e) {
+            e.preventDefault();
+            $.post("/gestionar_conductas_ajax/", {action: 'add_conducta'}, function (data) {
+                $('#list_conductas').append(data);
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('#Contenido').on('click', '.add_sancion', function (e) {
+            e.preventDefault();
+            $.post("/gestionar_conductas_ajax/", {action: 'add_sancion'}, function (data) {
+                $('#list_sanciones').append(data);
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-sancion')) {
+                        var id = accordion.data('id');
+                        if ($('#circle_s' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon_s').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle_s' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion_s' + id).offset().top - 50);
+                            $.post("/gestionar_conductas_ajax/", {action: 'open_accordion_s', id: id}, function (data) {
+                                $('#panel_s' + id).html(data);
+                            });
+                        } else {
+                            $('#circle_s' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel_s' + id).empty();
+                        }
+                    } else if (accordion.hasClass('accordion-conducta')) {
+                        var id = accordion.data('id');
+                        if ($('#circle_c' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon_c').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle_c' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion_c' + id).offset().top - 50);
+                            $.post("/gestionar_conductas_ajax/", {action: 'open_accordion_c', id: id}, function (data) {
+                                $('#panel_c' + id).html(data);
+                            });
+                        } else {
+                            $('#circle_c' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel_c' + id).empty();
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

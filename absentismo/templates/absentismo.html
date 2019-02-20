@@ -1,0 +1,307 @@
+{% extends "base_select2-4.html" %}
+{% load entidades_extras %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="expediente_id" name="expediente_id" value="">
+
+        <h4 style="text-align: center;color: #008CBA;"><strong>Control de absentismo</strong></h4>
+
+        <div class="row">
+            <div class="columns large-12">
+                <label>Busca la persona sobre el que quieres hacer actuaciones
+                    <select id="select_actuado">
+                    </select>
+                </label>
+            </div>
+        </div>
+        <br><br>
+        <dl class="accordion" data-accordion id="list_absentismos_recientes">
+            {% for expediente in expedientes %}
+                {% include 'absentismo_accordion.html' %}
+            {% endfor %}
+        </dl>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script type="application/javascript">
+        {% if expedientes|length == 0 %}
+            show_mensajes({
+                title: 'No se muestran alumnos con actuaciones de absentismo',
+                texto: 'Esto se puede deber a que todavía no se ha grabado ninguna actuación.'
+            });
+        {% endif %}
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-absentismo')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/ajax_absentismo/", {action: 'open_accordion', expediente: id},
+                                function (data) {
+                                    $('#panel' + id).html(data);
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#select_actuado').select2({
+            placeholder: "Escribe parte del nombre para buscar el alumno",
+            allowClear: true,
+            ajax: {
+                url: "/ajax_absentismo/",
+                type: 'POST',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    $('#q').val(params.term);
+                    $('#page').val(params.page);
+                    $('#action').val('buscar_actuado');
+                    return $('#' + '{{ formname }}').serialize();
+                },
+                processResults: function (data, page) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            }, // let our custom formatter work
+            minimumInputLength: 3,
+            language: {
+                inputTooShort: function () {
+                    return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                }
+            }
+        });
+
+
+        $('#select_actuado').change(function (e) {
+            e.preventDefault();
+            var expedientado = $(this).val();
+            $.post("/ajax_absentismo/", {action: 'get_expedientado', expedientado: expedientado},
+                function (data) {
+                    if (data.ok) {
+                        $('#list_absentismos_recientes').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        user_id = data.user_id;
+                        show_mensajes({
+                            title: 'Generar Actuaciones de Absentismo',
+                            texto: data.user + ' no tiene ninguna actuación de ' +
+                            'absentismo creada. Si aceptas se creará una actuación de absentismo que podrás modificar.',
+                            buttons: {
+                                "Cancelar": function () {
+                                    hide_mensajes();
+                                },
+                                "Aceptar": function () {
+                                    hide_mensajes();
+                                    $.post("/ajax_absentismo/", {
+                                            action: 'create_actuacion',
+                                            expedientado: user_id
+                                        },
+                                        function (data) {
+                                            if (data.ok) {
+                                                $('#list_absentismos_recientes').prepend(data.html);
+                                                $("#update_ok").show().delay(1500).fadeOut();
+                                            } else {
+                                                $('#update_error').show().delay(1500).fadeOut();
+                                            }
+                                        });
+                                }
+                            }
+                        });
+                    }
+
+                }, 'json');
+        });
+
+        {% if g_e|has_permiso:'crea_actuacion_absentismo' %}
+            $('body').on('keyup', '.configura', function () {
+                var valor = $(this).val();
+                var expediente = $(this).data('id');
+                var campo = $(this).data('campo');
+                $.post("/ajax_absentismo/", {
+                        action: 'update_configura',
+                        campo: campo,
+                        expediente: expediente,
+                        valor: valor
+                    },
+                    function (data) {
+                        if (data == 'True') {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('click', '.matricula', function () {
+                var expediente = $(this).data('id');
+                $.post("/ajax_absentismo/", {
+                        action: 'update_configura_matricula',
+                        expediente: expediente
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#matricula' + data.expediente).html(data.texto);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('change', '.tutor', function () {
+                var expediente = $(this).data('id');
+                var tutor = $(this).val();
+                $.post("/ajax_absentismo/", {
+                        action: 'update_tutor',
+                        expediente: expediente,
+                        tutor: tutor
+                    },
+                    function (data) {
+                        if (data) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('keyup', '.observaciones', function () {
+                var texto = $(this).html();
+                var actuacion = $(this).data('id');
+                $.post("/ajax_absentismo/", {action: 'update_observaciones', actuacion: actuacion, texto: texto},
+                    function (data) {
+                        if (data == 'True') {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('change', '.fecha', function () {
+                var actuacion = $(this).data('id');
+                var fecha = $(this).val();
+                $.post("/ajax_absentismo/", {action: 'update_fecha', actuacion: actuacion, fecha: fecha},
+                    function (data) {
+                        if (data == 'True') {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('keyup', '.faltas', function () {
+                var faltas = parseInt($(this).val());
+                var actuacion = $(this).data('id');
+                $.post("/ajax_absentismo/", {action: 'update_faltas', actuacion: actuacion, faltas: faltas},
+                    function (data) {
+                        if (data == 'True') {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('keyup', '.contacto', function () {
+                var contacto = $(this).val();
+                var actuacion = $(this).data('id');
+                $.post("/ajax_absentismo/", {action: 'update_contacto', actuacion: actuacion, contacto: contacto},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            window.console.log(data.error)
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                            window.console.log(data.error)
+                        }
+                    });
+            });
+
+            $('body').on('click', '.add_actuacion_absentismo', function (e) {
+                e.preventDefault();
+                var expediente = $(this).data('id');
+                $.post("/ajax_absentismo/", {action: 'add_actuacion_absentismo', expediente: expediente},
+                    function (data) {
+                        if (data) {
+                            $('#actuaciones' + expediente).append(data.html);
+                            $('#span_absentismos' + expediente).html(data.n_actuaciones);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    }, 'json');
+            });
+
+            $('body').on('click', '.delete_actuacion', function (e) {
+                e.preventDefault();
+                actuacion = $(this).data('id');
+                show_mensajes({
+                    title: 'Borrar actuación de absentismo',
+                    texto: 'Si aceptas la actuación de absentismo será eliminada' +
+                    ' completamente de la base de datos.',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/ajax_absentismo/", {action: 'delete_actuacion', actuacion: actuacion},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#actuacion' + actuacion).remove();
+                                        $('#span_absentismos' + data.expediente).html(data.n_actuaciones);
+                                        if (data.n_actuaciones == 0) {
+                                            $('#accordion' + data.expediente).remove();
+                                            var hidden_val = $("input[name=expedientes_seleccionados]").filter(function () {
+                                                return this.value === '' + data.expediente;
+                                            });
+                                            hidden_val.remove();
+                                        }
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                }, 'json');
+                        }
+                    }
+                });
+            });
+
+            $('body').on('click', '.pdf_absentismo', function (e) {
+                e.preventDefault();
+                $('#expediente_id').val($(this).data('id'));
+                $('#action').val('pdf_absentismo');
+                document.{{ formname }}.submit();
+            });
+
+        {% endif %}
+
+    </script>
+
+{% endblock %}

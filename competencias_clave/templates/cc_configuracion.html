@@ -1,0 +1,80 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Configurar competencias clave</strong></h4>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_cursos" title="Lista de cursos">
+            {% for curso in cursos %}
+                {% include "cc_configuracion_curso.html" %}
+            {% endfor %}
+        </dl>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('curso_cc')) {
+                        var id = accordion.data('curso');
+                        console.log(id);
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/cc_configuracion/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#curso' + id).html(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#curso' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#Contenido').on('keyup', '.ccper', function (e) {
+            var elemento = $(this);
+            var cc = elemento.data('cc');
+            var materia = elemento.data('materia');
+            var valor = parseInt(elemento.val());
+            setTimeout(function () {
+                if (valor == elemento.val() && valor > -1) {
+                    $.post("/cc_configuracion/", {
+                        action: 'mod_percentage',
+                        materia: materia,
+                        cc: cc,
+                        valor: valor
+                    }, function (data) {
+                        if (data.ok) {
+                            if (data.total > 100) {
+                                $('#' + data.cc + data.cm).val(data.valor);
+                                $('#total' + data.cm).html(100);
+                            }else{
+                                $('#total' + data.cm).html(data.total);
+                            }
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+                }
+            }, 250);
+        });
+    </script>
+{% endblock %}

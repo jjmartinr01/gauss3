@@ -1,0 +1,12 @@
+<div class="nav-bar right">
+    <ul class="button-group">
+        {% for enlace in content_div.enlaces.all %}
+            <li><a href="{% if enlace.href %}{{ enlace.href }}{% else %}#{% endif %}" class="button link_html_web"
+                   id="link-{{ enlace.id }}">{{ enlace.texto }}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+<h1>{{ content_div.title }}
+    <small>{{ content_div.subtitle }}</small>
+</h1>
+<hr/>

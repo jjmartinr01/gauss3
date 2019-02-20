@@ -1,0 +1,92 @@
+{% load my_templatetags %}
+<script>
+    editor1 = wysihtmleditor('id_describir', {height: 250});
+
+    $("#id_inicio").fdatetimepicker({
+        format: 'dd/mm/yyyy hh:ii'
+    });
+    {#	dateFormat: "dd/mm/yy",#}
+    {#	dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],#}
+    {#	dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],#}
+    {#	firstDay: 1,#}
+    {#	hourText:"Hora",#}
+    {#	minuteText:"Minutos",#}
+    {#	timeText:"Salida:",#}
+    {#	monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],#}
+    {#    });#}
+
+    $('#id_fin').fdatetimepicker({
+        format: 'dd/mm/yyyy hh:ii'
+    });
+    $("#id_fin2").fdatetimepicker({
+        dateFormat: "dd/mm/yy",
+        dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+        dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+        firstDay: 1,
+        hourText: "Hora",
+        minuteText: "Minutos",
+        timeText: "Salida:",
+        monthNames: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+    });
+
+    $("#id_recordar").fdatetimepicker({
+        dateFormat: "dd/mm/yy",
+        dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+        dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+        firstDay: 1,
+        hourText: "Hora",
+        minuteText: "Minutos",
+        timeText: "Salida:",
+        monthNames: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+    });
+
+
+</script>
+<input type="hidden" name="gauser_extra" value="{{ request.session.gauser_extra.id }}">
+<div class="">
+    <h4 style="text-align: center;color: #008CBA;"><strong> Crear un nuevo evento o acontecimiento</strong></h4>
+</div>
+
+<div class="row">
+    <div class="columns large-8">
+        <label> Nombre del evento/acontecimiento
+            {{ form.nombre }}
+        </label>
+    </div>
+    <div class="columns large-4">
+        <label>
+            Tipo de evento
+            <select name="tipo" id="tipo">
+                {% for tipo in tipos %}
+                    <option value="{{ tipo.0 }}">{{ tipo.1 }}</option>
+                {% endfor %}</select>
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-4">
+        <label> Fecha y hora de inicio
+            {{ form.inicio }}
+        </label>
+    </div>
+    <div class="columns large-4">
+        <label>
+            Fecha y hora de finalización
+            {{ form.fin }}
+        </label>
+    </div>
+    <div class="columns large-4">
+        <label>
+            Lugar de realización
+            {{ form.lugar }}
+        </label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label> Introduce una descripción (opcional)
+            {{ form.describir }}
+        </label>
+    </div>
+</div>

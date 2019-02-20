@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="id_presupuesto" id="id_presupuesto" value="">
+
+
+        <div>
+            <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong> Presupuestos de la entidad
+                {{ request.session.gauser_extra.ronda.entidad.name }} </strong></h4>
+        </div>
+
+        <div id="lista_presupuestos">
+            <dl class="accordion" data-accordion>
+                {% for presupuesto in presupuestos %}
+                    <dd class="accordion-navigation"
+                        style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+                        <a href="#panel___{{ presupuesto.id }}">
+                            <i id="circle{{ presupuesto.id }}" class="fa fa-plus-circle circle_icon"></i>
+                            {{ presupuesto.nombre }}
+                            {% if presupuesto.archivado %} <span class="info radius label">Presupuesto archivado</span>
+                            {% endif %}
+                        </a>
+
+                        <div id="panel___{{ presupuesto.id }}" class="content">
+                            <a data-dropdown="drop{{ presupuesto.id }}" aria-controls="drop{{ presupuesto.id }}" aria-expanded="false">
+                                <i class="fa fa-cogs"></i> Operaciones sobre este presupuesto
+                            </a>
+                            <hr>
+                            <p>{% autoescape off %}{{ presupuesto.describir }}{% endautoescape %}</p>
+                            <hr>
+                            <p>Fecha de creación: {{ presupuesto.creado|date:"d \d\e F \d\e Y" }}</p>
+
+                            <p>Última modificación: {{ presupuesto.modificado|date:"d \d\e F \d\e Y" }}</p>
+                            {% if presupuesto.archivado %}
+                                <p>Este presupuesto está archivado. Si necesitas añadir partidas, gastos o ingresos es
+                                    necesario desarchivarlo pulsando en la opción "<i class="fa fa-folder-open-o"></i> Desarchivar"
+                                </p>
+                            {% else %}
+                                <p>Este presupuesto está abierto y por tanto se pueden modificar tanto las partidas,
+                                    como los gasto e ingresos registrados. Si el ejercicio para el que fue creado ha
+                                    finalizado es conveniente que lo archives seleccionando la opción
+                                    "<i class="fa fa-folder-o"></i> Archivar"</p>
+                            {% endif %}
+                        </div>
+                    </dd>
+                    <ul id="drop{{ presupuesto.id }}" class="f-dropdown medium" data-dropdown-content aria-hidden="true" tabindex="-1">
+                        {% if not presupuesto.archivado %}
+                            <li><a class="editar" id="e___{{ presupuesto.id }}" data-id="{{ presupuesto.id }}">
+                                <i class="fa fa-pencil fa-fw"></i> Editar nombre y descripción
+                            </a></li>
+                            <li><a class="mostrar" id="m___{{ presupuesto.id }}" data-id="{{ presupuesto.id }}">
+                                <i class="fa fa-file-text-o fa-fw"></i> Añadir partidas a este presupuesto
+                            </a></li>
+                        {% endif %}
+                        <li><a class="pdf" id="p___{{ presupuesto.id }}" data-id="{{ presupuesto.id }}">
+                            <i class="fa fa-file-pdf-o fa-fw"></i> Generar pdf
+                        </a></li>
+                        {% if presupuesto.archivado %}
+                            <li><a class="abrir" id="a___{{ presupuesto.id }}" data-id="{{ presupuesto.id }}">
+                                <i class="fa fa-folder-open-o fa-fw"></i> Desarchivar (se podrán realizar modificaciones)
+                            </a></li>
+                        {% else %}
+                            <li><a class="archivar" id="a___{{ presupuesto.id }}" data-id="{{ presupuesto.id }}">
+                                <i class="fa fa-folder-o fa-fw"></i> Archivar (no se podrá modificar el presupuesto)
+                            </a></li>
+                        {% endif %}
+                        <li><a class="copiar" id="c___{{ presupuesto.id }}" data-id="{{ presupuesto.id }}">
+                            <i class="fa fa-copy fa-fw"></i> Hacer una copia de este presupesto
+                        </a></li>
+                        {% if not presupuesto.archivado %}
+                            <li><a class="borrar" id="b___{{ presupuesto.id }}" data-id="{{ presupuesto.id }}">
+                                <i class="fa fa-trash-o fa-fw"></i> Borrar este presupuesto
+                            </a></li>
+                        {% endif %}
+                    </ul>
+                    <input type="hidden" id="archivado___{{ presupuesto.id }}" value="{{ presupuesto.archivado }}">
+                {% endfor %}
+            </dl>
+        </div>
+        <div id="add_presupuesto" style="display: none;">
+            <div class="row">
+                <div class="columns large-12">
+                    <label>Nombre del presupuesto
+                        <input type="text" name="nombre" id="nombre" value="">
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <label>Describción general
+                        <textarea name="describir" id="describir"></textarea>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    var id = accordion.attr('id').split('___')[1];
+                    if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                        $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                    } else {
+                        $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                    }
+                    console.log(accordion.attr('id'));
+                }
+            }
+        });
+        {% if request.session.gauser_extra|has_permiso:'edita_presupuestos' %}
+            habilita(['s_plus', 'h_check', 'list-alt']);
+
+            $('#plus_sign').click(function (event) {
+                event.preventDefault();
+                habilita(['s_check', 'h_plus']);
+                $('#action').val('add_presupuesto');
+                $('#lista_presupuestos').hide();
+                $('#add_presupuesto').show();
+                editor1 = wysihtmleditor('describir', {height: 200});
+            });
+
+            $('#check_sign').click(function (event) {
+                event.preventDefault();
+                if ($('#nombre').val().length > 3) {
+                    document.{{formname}}.submit();
+                }
+            });
+
+            $('.editar').click(function (e) {
+                var id = $(this).data('id');
+                if ($('#archivado___' + id).val() == 'False') {
+                    habilita(['s_check', 'h_plus']);
+                    $('#action').val('mod_presupuesto');
+                    $('#id_presupuesto').val(id);
+                    $('#lista_presupuestos').hide();
+                    $('#add_presupuesto').show();
+                    $.post("/presupuesto_ajax/", {id_presupuesto: id, action: 'presupuesto_data'}, function (data) {
+                        $('#describir').val(data.describir);
+                        $('#nombre').val(data.nombre);
+                        editor1 = wysihtmleditor('describir', {height: 200});
+                    }, 'json');
+                } else {
+                    $(document).scrollTop($('#h4_title').offset().top - 150);
+                    show_mensajes({
+                        title: 'No es posible editar',
+                        texto: 'El presupuesto está archivado y no es posible editarlo.<br>Para editarlo pulsa el boton "<i class="fa fa-folder-open-o"></i> Abrir".'
+                    });
+                }
+            });
+
+            $('.borrar').click(function (e) {
+                var id = $(this).data('id');
+                $('#id_presupuesto').val(id);
+                $('#action').val('borrar_presupuesto');
+                document.{{formname}}.submit();
+            });
+
+            $('.archivar').click(function (e) {
+                var id = $(this).data('id');
+                console.log(id);
+                $('#id_presupuesto').val(id);
+                $('#action').val('archivar_presupuesto');
+                document.{{formname}}.submit();
+            });
+
+            $('.abrir').click(function (e) {
+                var id = $(this).data('id');
+                $('#id_presupuesto').val(id);
+                $('#action').val('abrir_presupuesto');
+                document.{{formname}}.submit();
+            });
+
+            $('.pdf').click(function (e) {
+                var id = $(this).data('id');
+                $('#id_presupuesto').val(id);
+                $('#action').val('pdf_presupuesto');
+                document.{{formname}}.submit();
+            });
+
+            $('.copiar').click(function (e) {
+                var id = $(this).data('id');
+                $('#id_presupuesto').val(id);
+                $('#action').val('copiar_presupuesto');
+                document.{{formname}}.submit();
+            });
+        {% endif %}
+
+        $('.mostrar').click(function (e) {
+            var id = $(this).data('id');
+            if ($('#archivado___' + id).val() == 'False') {
+{#                var id = $(this).data('id');#}
+                window.location.href = '/presupuesto/' + id + '/';
+            } else {
+                $(document).scrollTop($('#h4_title').offset().top - 150);
+                show_mensajes({
+                    title: 'No es posible mostrar',
+                    texto: 'El presupuesto está archivado y no es posible mostrarlo.<br>Para cambiar su estado y abrirlo, pulsa el boton "<i class="fa fa-folder-open-o"></i> Abrir".'
+                });
+            }
+        });
+
+    </script>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% load my_templatetags %}
+<ul class="left">
+    <li class="has-dropdown"><a href="#">Menú</a>
+        <ul class="dropdown">
+            <li><label>Primer Nivel</label></li>
+            {% if g_e|has_permiso:'m20' %}
+                <li class="has-dropdown"><a id="m20" href="#">{{ MENU.m20 }}</a>
+                    <ul class="dropdown">
+                        <li><label>Segundo Nivel</label></li>
+                        {% if g_e|has_permiso:'m20i10' %}
+                            <li><a id="m20i10" href="/{{ MENU.m20i10href }}/">{{ MENU.m20i10 }}</a></li>{% endif %}
+                        <li><a id="m20i15" href="/{{ MENU.m20i15href }}/">{{ MENU.m20i15 }}</a></li>
+                        {% if g_e|has_permiso:'m20i20' %}
+                            <li><a id="m20i20" href="/{{ MENU.m20i20href }}/">{{ MENU.m20i20 }}</a></li>{% endif %}
+                        {% if g_e|has_permiso:'m20i25' %}
+                            <li><a id="m20i25" href="/{{ MENU.m20i25href }}/">{{ MENU.m20i25 }}</a></li>{% endif %}
+                    </ul>
+                </li>{% endif %}
+            {% if g_e|has_permiso:'m25' %}
+                <li class="has-dropdown"><a id="m25" href="#">{{ MENU.m25 }}</a>
+                    <ul class="dropdown">
+                        <li><label>Segundo Nivel</label></li>
+                        {% if g_e|has_permiso:'m25i10' %}
+                            <li class="has-dropdown"><a id="m25i10" href="#">{{ MENU.m25i10 }}</a>
+                                <ul class="dropdown">
+                                    <li><label>Tercer Nivel</label></li>
+                                    {% if g_e|has_permiso:'m25i10i10' %}
+                                        <li><a id="m25i10i10" href="/{{ MENU.m25i10i10href }}/">{{ MENU.m25i10i10 }}</a>
+                                        </li>{% endif %}
+                                    {% if g_e|has_permiso:'m25i10i15' %}
+                                        <li><a id="m25i10i15" href="/{{ MENU.m25i10i15href }}/">{{ MENU.m25i10i15 }}</a>
+                                        </li>{% endif %}
+                                    {% if g_e|has_permiso:'m25i10i20' %}
+                                        <li><a id="m25i10i20" href="/{{ MENU.m25i10i20href }}/">{{ MENU.m25i10i20 }}</a>
+                                        </li>{% endif %}
+                                </ul>
+                            </li>{% endif %}
+                        {% if g_e|has_permiso:'m25i12' %}
+                            <li class="has-dropdown"><a id="m25i12" href="#">{{ MENU.m25i12 }}</a>
+                                <ul class="dropdown">
+                                    <li><label>Tercer Nivel</label></li>
+                                    {% if g_e|has_permiso:'m25i12i10' %}
+                                        <li><a id="m25i12i10" href="/{{ MENU.m25i12i10href }}/">{{ MENU.m25i12i10 }}</a>
+                                        </li>{% endif %}
+                                    {% if g_e|has_permiso:'m25i12i20' %}
+                                        <li><a id="m25i12i20" href="/{{ MENU.m25i12i20href }}/">{{ MENU.m25i12i20 }}</a>
+                                        </li>{% endif %}
+                                </ul>
+                            </li>{% endif %}
+                        {% if g_e|has_permiso:'m25i15' %}
+                        <li><a id="m25i15" href="/{{ MENU.m25i15href }}/">{{ MENU.m25i15 }}</a></li>{% endif %}
+                        {% if g_e|has_permiso:'m25i20' %}
+                        <li><a id="m25i20" href="/{{ MENU.m25i20href }}/">{{ MENU.m25i20 }}</a></li>{% endif %}
+                        {% if g_e|has_permiso:'m25i25' %}
+                        <li><a id="m25i25" href="/{{ MENU.m25i25href }}/">{{ MENU.m25i25 }}</a></li>{% endif %}
+                        {% if g_e|has_permiso:'m25i30' %}
+                        <li><a id="m25i30" href="/{{ MENU.m25i30href }}/">{{ MENU.m25i30 }}</a></li>{% endif %}
+                        {% if g_e|has_permiso:'m25i35' %}
+                        <li><a id="m25i35" href="/{{ MENU.m25i35href }}/">{{ MENU.m25i35 }}</a></li>{% endif %}
+                        {% if g_e|has_permiso:'m25i40' %}
+                        <li><a id="m25i40" href="/{{ MENU.m25i40href }}/">{{ MENU.m25i40 }}</a></li>{% endif %}
+                        {% if g_e|has_permiso:'m25i45' %}
+                        <li><a id="m25i45" href="/{{ MENU.m25i45href }}/">{{ MENU.m25i45 }}</a></li>{% endif %}
+                    </ul>
+                </li>{% endif %}
+            {% if g_e|has_permiso:'m30' %}<li><a id="m30" href="/calendario/">{{ MENU.m30 }}</a></li>{% endif %}
+            {% if g_e|has_permiso:'m35' %}
+            <li class="has-dropdown"><a id="m35" href="">{{ MENU.m35 }}</a>
+                <ul class="dropdown">
+                    <li><label>Segundo Nivel</label></li>
+                    {% if g_e|has_permiso:'m35i10' %}
+                    <li><a id="m35i10" href="/{{ MENU.m35i10href }}/">{{ MENU.m35i10 }}</a></li>{% endif %}
+                    {% if g_e|has_permiso:'m35i15' %}
+                    <li><a id="m35i15" href="/{{ MENU.m35i15href }}/">{{ MENU.m35i15 }}</a></li>{% endif %}
+                    {% if g_e|has_permiso:'m35i20' %}
+                    <li><a id="m35i20" href="/{{ MENU.m35i20href }}/">{{ MENU.m35i20 }}</a></li>{% endif %}
+                </ul>
+            </li>{% endif %}
+            {% if g_e|has_permiso:'m40' %}
+            <li class="has-dropdown"><a id="m40" href="#">{{ MENU.m40 }}</a>
+                <ul class="dropdown">
+                    <li><label>Segundo Nivel</label></li>
+                    {% if g_e|has_permiso:'m40i10' %}
+                    <li><a id="m40i10" href="/{{ MENU.m40i10href }}/">{{ MENU.m40i10 }}</a></li>{% endif %}
+                    {% if g_e|has_permiso:'m40i15' %}
+                    <li><a id="m40i15" href="/{{ MENU.m40i15href }}/">{{ MENU.m40i15 }}</a></li>{% endif %}
+                    {% if g_e|has_permiso:'m40i20' %}
+                    <li><a id="m40i20" href="/{{ MENU.m40i20href }}/">{{ MENU.m40i20 }}</a></li>{% endif %}
+                </ul>
+            </li>{% endif %}
+            {% if g_e|has_permiso:'m45' %}
+            <li class="has-dropdown"><a id="m45" href="#">{{ MENU.m45 }}</a>
+                <ul class="dropdown">
+                    <li><label>Segundo Nivel</label></li>
+                    {% if g_e|has_permiso:'m45i10' %}
+                    <li><a id="m45i10" href="/{{ MENU.m45i10href }}/">{{ MENU.m45i10 }}</a></li>{% endif %}
+                </ul>
+            </li>{% endif %}
+            <li class="divider"></li>
+            {% if g_e|has_permiso:'m50' %}
+            <li class="has-dropdown"><a id="m50" href="#">{{ MENU.m50 }}</a>
+                <ul class="dropdown">
+                    <li><label>Segundo Nivel</label></li>
+                    {% if g_e|has_permiso:'m50i10' %}
+                    <li><a id="m50i10" href="/{{ MENU.m50i10href }}/">{{ MENU.m50i10 }}</a></li>{% endif %}
+                </ul>
+            </li>{% endif %}
+
+
+            {% if g_e|has_permiso:'m60' %}
+            <li class="has-dropdown"><a id="m60" href="#">{{ MENU.m60 }}</a>
+                <ul class="dropdown">
+                    <li><label>Segundo Nivel</label></li>
+                    {% if g_e|has_permiso:'m60i10' %}
+                    <li><a id="m60i10" href="/{{ MENU.m60i10href }}/">{{ MENU.m60i10 }}</a></li>{% endif %}
+                    {% if g_e|has_permiso:'m60i15' %}
+                    <li><a id="m60i15" href="/{{ MENU.m60i15href }}/">{{ MENU.m60i15 }}</a></li>{% endif %}
+                    {% if g_e|has_permiso:'m60i20' %}
+                    <li><a id="m60i20" href="/{{ MENU.m60i20href }}/">{{ MENU.m60i20 }}</a></li>{% endif %}
+                </ul>
+            </li>{% endif %}
+
+
+        </ul>
+    </li>
+    <li class="divider"></li>
+</ul>

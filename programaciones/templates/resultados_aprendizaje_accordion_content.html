@@ -1,0 +1,21 @@
+<ul class="button-group centered">
+    <li title="Borrar este resultado de aprendizaje">
+        <a href="#" class="button borrar_resultado"
+           data-id="{{ r.id }}"><i class="fa fa-trash-o"></i> Borrar resultado de aprendizaje</a></li>
+    <li title="Añadir objetivo asociado al resultado de aprendizaje">
+        <a href="#" class="button add_objetivo"
+           data-id="{{ r.id }}"><i class="fa fa-plus"></i> Añadir objetivo</a></li>
+</ul>
+<input type="text" value="{{ r.resultado }}" class="input_resultado" data-id="{{ r.id }}"
+title="Texto del resultado de aprendizaje">
+
+
+<div class="row">
+    <div class="columns large-12">
+        <table id="list_objetivos{{ r.id }}">
+            {% for o in r.objetivo_set.all %}
+                {% include "resultados_aprendizaje_accordion_content_objetivo.html" %}
+            {% endfor %}
+        </table>
+    </div>
+</div>

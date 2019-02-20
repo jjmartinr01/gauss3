@@ -1,0 +1,12 @@
+<dd class="accordion-navigation" id="accordion_s{{ sancion.id }}"
+    style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+    <a href="#panel_s{{ sancion.id }}">
+        <i id="circle_s{{ sancion.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <span id="span_sancion{{ sancion.id }}">{{ sancion.sancion|truncatechars:43 }}</span> <span
+            id="span_tipo_s{{ sancion.id }}"
+            style="color: #a3a3a3">{{ sancion.get_tipo_display }}</span>
+    </a>
+
+    <div id="panel_s{{ sancion.id }}" class="content accordion-sancion" data-id="{{ sancion.id }}">
+    </div>
+</dd>

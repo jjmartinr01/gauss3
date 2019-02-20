@@ -1,0 +1,416 @@
+{% load convivencia_extras %}
+
+{% with estadistica=inf_actual.sancionado|estadistica_informes %}
+    <div class="row">
+        <div class="columns large-12">
+            <br>
+            <span class="label alert">{{ estadistica.cnc }} Conductas contrarias</span>
+            <span class="label alert">{{ estadistica.gpc }} Conductas graves</span>
+            <span class="label alert">{{ estadistica.rof }} Conductas ROF</span>
+            <span class="label alert">{{ estadistica.informes|length }} Informes sancionadores</span>
+            <span class="label alert">{{ estadistica.exp }} expulsiones</span>
+        </div>
+    </div>
+    <hr>
+    <table align="center">
+        <tbody>
+        <tr>
+            <th>Profesor que sanciona</th>
+            <th>Tutor</th>
+            {% if inf_actual.sancionado.gauser_extra_estudios.cotutor %}
+                <th>Co-tutor</th>{% endif %}
+            <th>Grupo</th>
+            <th>Fecha</th>
+        </tr>
+        <tr>
+            <td>{% if g_e|has_permiso:'elige_sancionador' %}
+                <select class="selecciona_sancionador" data-inf_actual="{{ inf_actual.id }}" id="sancionador">
+                    {% for docente in docentes %}
+                        <option value="{{ docente.id }}" {% if docente == inf_actual.sancionador %}selected{% endif %}
+                        >{{ docente.gauser.last_name }}, {{ docente.gauser.first_name }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                {{ inf_actual.sancionador.gauser.get_full_name }}
+                <input type="hidden" value="{{ inf_actual.sancionador.id }}" id="sancionador">
+            {% endif %}
+            </td>
+            <td>{% if inf_actual.sancionado.gauser_extra_estudios.tutor %}
+                {{ inf_actual.sancionado.gauser_extra_estudios.tutor.gauser.get_full_name }}{% else %}
+                <select class="selecciona_tutor" data-inf_actual="{{ inf_actual.id }}">
+                    <option value="">--------</option>
+                    {% for docente in docentes %}
+                        <option value="{{ docente.id }}">{{ docente.gauser.last_name }}, {{ docente.gauser.first_name }}</option>
+                    {% endfor %}
+                </select> {% endif %}</td>
+            {% if inf_actual.sancionado.gauser_extra_estudios.cotutor %}
+                <td>{{ inf_actual.sancionado.gauser_extra_estudios.cotutor.gauser.get_full_name }}</td>{% endif %}
+            <td>{{ inf_actual.sancionado.gauser_extra_estudios.grupo.nombre }}</td>
+            <td><input type="text" class="fecha_informe" data-inf_actual="{{ inf_actual.id }}"
+                       value="{{ inf_actual.fecha_incidente|date:'d/m/Y' }}"></td>
+        </tr>
+        </tbody>
+    </table>
+    <hr>
+
+    {% if estadistica.informes|length > 0 %}
+        <table width="100%">
+            <tbody>
+            <tr>
+                <th>Sancionado por</th>
+                <th>Fecha</th>
+                <th>Archivo</th>
+                <th>Expulsión</th>
+                {% if g_e|has_permiso:'borra_informes_sancionadores' %}
+                    <th>Borrar</th>
+                {% endif %}
+            </tr>
+            {% for informe in estadistica.informes %}
+                <tr id="tr_informe{{ informe.id }}">
+                    <td>{{ informe.sancionador.gauser.get_full_name }}</td>
+                    <td>{{ informe.created }}</td>
+                    <td><a class="descargar_informe" data-id="{{ informe.id }}"><i class="fa fa-download"></i> Descargar</a>
+                    </td>
+                    <td>{% if informe.expulsion %}Sí{% else %}No{% endif %}</td>
+                    {% if g_e|has_permiso:'borra_informes_sancionadores' %}
+                        <td><a class="borrar_informe" data-id="{{ informe.id }}"><i class="fa fa-trash-o"></i></a></td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endwith %}
+<dl class="accordion" data-accordion id="list_conductas">
+    {% for conducta in g_e.ronda.entidad.conducta_set.all %}
+        {% ifchanged conducta.tipo %}
+            <dd class="accordion-navigation" id="accordion_c{{ conducta.tipo }}"
+                style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+                <a href="#panel_c{{ conducta.tipo }}">
+                    <i id="circle_c{{ conducta.tipo }}" class="fa fa-plus-circle circle_icon_c"></i>
+                    <span id="span_conducta{{ conducta.tipo }}"><b>Conductas {{ conducta.get_tipo_display|lower }}</b></span>
+                    <span style="color: #a3a3a3">({{ conducta.tipo }})</span>
+                </a>
+                <div id="panel_c{{ conducta.tipo }}" class="content accordion-conducta"
+                     data-tipo="{{ conducta.tipo }}" data-inf_actual="{{ inf_actual.id }}"></div>
+            </dd>
+        {% endifchanged %}
+    {% endfor %}
+</dl>
+
+<hr>
+<dl class="accordion" data-accordion id="list_sanciones">
+    {% for sancion in g_e.ronda.entidad.sancion_set.all %}
+        {% ifchanged sancion.tipo %}
+            <dd class="accordion-navigation" id="accordion_s{{ sancion.tipo }}"
+                style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+                <a href="#panel_s{{ sancion.tipo }}">
+                    <i id="circle_s{{ sancion.tipo }}" class="fa fa-plus-circle circle_icon_s"></i>
+                    <span id="span_sancion{{ sancion.tipo }}"><b>Sanciones para conductas {{ sancion.get_tipo_display|lower }}</b></span>
+                    <span style="color: #a3a3a3">({{ sancion.tipo }})</span>
+                </a>
+                <div id="panel_s{{ sancion.tipo }}" class="content accordion-sancion"
+                     data-tipo="{{ sancion.tipo }}" data-inf_actual="{{ inf_actual.id }}"></div>
+            </dd>
+        {% endifchanged %}
+    {% endfor %}
+</dl>
+
+<div class="row" id="div_expulsion"
+     style="display: {% if inf_actual.fechaexpulsion_set.all|length > 0 %}display;{% else %}none;{% endif %}">
+    <hr>
+    <div class="columns large-10">
+        <label><a id="pick_date">Click aquí para seleccionar días de expulsión <i class="fa fa-calendar"></i> </a>
+        </label>
+        <select multiple="multiple" data-inf_actual="{{ inf_actual.id }}" id="fechas_expulsion">
+            {% for fecha in inf_actual.fechaexpulsion_set.all %}
+                <option value="{{ fecha|date:'d/m/Y' }}"
+                >{{ fecha|date:'d/m/Y' }}</option> {% endfor %}
+        </select>
+    </div>
+
+    <div class="columns large-2">
+        <label>Listar conductas</label>
+        <input type="checkbox" name="listar_conductas" id="listar_conductas">
+    </div>
+    <p>&nbsp;</p>
+    <hr>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Describe el comportamiento del alumno que conduce a este informe sancionador:</b>
+            <textarea id="describe_conducta{{ inf_actual.sancionado.id }}"
+                      data-inf_actual="{{ inf_actual.id }}">{{ inf_actual.texto_motivo }}</textarea></label>
+    </div>
+</div>
+
+<br>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Si es necesario, especifica en que va a consistir la sanción:</b>
+            <textarea id="describe_sancion{{ inf_actual.sancionado.id }}"
+                      data-inf_actual="{{ inf_actual.id }}">{{ inf_actual.texto_sancion }}</textarea></label>
+    </div>
+</div>
+
+<script>
+    {#    var editor = CKEDITOR.replace('describe_conducta{{ inf_actual.sancionado.id }}',#}
+    {#                {customConfig: '/static/ckeditor/ckeditor_config.js'});#}
+
+
+    $('#inf_actual').val({{ inf_actual.id }});
+
+    $('.fecha_informe').fdatepicker({
+        format: "dd/mm/yyyy",
+        language: 'es',
+        weekStart: 1
+    });
+
+    $('body').on('change', '.fecha_informe', function (e) {
+        var action = 'fecha_informe';
+        var valor = $(this).val();
+        var informe = $(this).data('inf_actual');
+        $.post("/sancionar_conductas_ajax/", {
+            action: action,
+            valor: valor,
+            informe: informe
+        }, function (data) {
+            if (data.ok) {
+                $("#update_ok").show().delay(1500).fadeOut();
+            } else {
+                $("#update_error").show().delay(1500).fadeOut();
+            }
+        });
+    });
+
+
+    $('#pick_date').fdatepicker({
+        format: "dd/mm/yyyy",
+        language: 'es',
+        weekStart: 1
+    }).on('changeDate', function (ev) {
+        var value = $('#pick_date').data('date');
+        var newOption = new Option(value, value, false, true);
+        $("#fechas_expulsion").append(newOption).trigger('change');
+        $('#pick_date').fdatepicker('hide');
+    });
+
+    {# Para evitar lanzar dos peticiones de fechas de expulsión seguidas se define la variable fechas_expulsion_working #}
+    {# que únicamente permitirá el ajax una vez finalizada la petición anterior  #}
+    var fechas_expulsion_working = false;
+    $('body').on('change', '#fechas_expulsion', function (e) {
+        if (!fechas_expulsion_working) {
+            fechas_expulsion_working = true;
+            var fechas = $(this).val();
+            var informe = $(this).data('inf_actual');
+            $.post("/sancionar_conductas_ajax/", {
+                action: 'fechas_expulsion',
+                fechas: fechas,
+                informe: informe
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+                fechas_expulsion_working = false;
+            });
+        }
+    });
+
+    var editor1 = CKEDITOR.replace('describe_conducta{{ inf_actual.sancionado.id }}', {
+        {#    filebrowserBrowseUrl: '/browser/browse.php',#}
+        {#    filebrowserUploadUrl: '/uploader/upload.php'#}
+    });
+    var editor2 = CKEDITOR.replace('describe_sancion{{ inf_actual.sancionado.id }}');
+
+
+    editor1.on('change', function (e) {
+        var texto = e.editor.getData();
+        $.post("/sancionar_conductas_ajax/", {
+                action: 'describe_conducta',
+                inf_actual: {{ inf_actual.id }},
+                texto: texto
+            },
+            function (data) {
+                if (data['ok']) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    });
+
+    editor2.on('change', function (e) {
+        var texto = e.editor.getData();
+        $.post("/sancionar_conductas_ajax/", {
+                action: 'describe_sancion',
+                inf_actual: {{ inf_actual.id }},
+                texto: texto
+            },
+            function (data) {
+                if (data['ok']) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    });
+
+    $('body').on('click', '.conductas_checkbox', function () {
+        var inf_actual = $(this).data('inf_actual');
+        var tipo = $(this).data('tipo');
+        var conductas = [];
+        $('.conductas_checkbox:checked').each(function () {
+            conductas.push($(this).data('id'));
+        });
+        $.post("/sancionar_conductas_ajax/", {
+                action: 'check_conductas',
+                conductas: conductas,
+                inf_actual: inf_actual,
+                tipo: tipo
+            },
+            function (data) {
+                if (data.ok) {
+                    $('.sanciones_checkbox').prop('disabled', true);
+                    $.each(data['sanciones'], function (index, value) {
+                        {#                        $('#s' + value).prop('disabled', false);#}
+                        $('.' + value).prop('disabled', false);
+                    });
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    });
+
+    $('body').on('click', '.sanciones_checkbox', function () {
+        var inf_actual = $(this).data('inf_actual');
+        var tipo = $(this).data('tipo');
+        var sanciones = [];
+        $('.sanciones_checkbox:checked').each(function () {
+            sanciones.push($(this).data('id'));
+        });
+        $.post("/sancionar_conductas_ajax/", {
+                action: 'check_sanciones',
+                sanciones: sanciones,
+                inf_actual: inf_actual,
+                tipo: tipo
+            },
+            function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    if (data.expulsion) {
+                        $('#div_expulsion').show();
+                        $('#fechas_expulsion').select2();
+                    } else {
+                        $('#div_expulsion').hide();
+                    }
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    });
+
+    $('body').on('change', '.selecciona_sancionador', function () {
+        var sancionador = $(this).val();
+        var inf_actual = $(this).data('inf_actual');
+        $.post("/sancionar_conductas_ajax/",
+            {action: 'change_sancionador', sancionador: sancionador, inf_actual: inf_actual},
+            function (data) {
+                if (data.ok) {
+                    $('#fechas_expulsion').val(null).trigger('change');
+                    $('#panel_sCNC').html(data.cnc);
+                    $('#panel_sGPC').html(data.gpc);
+                    $('#listar_conductas').prop('checked', false);
+                    $('#div_expulsion').hide();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    });
+
+    $('body').on('change', '.selecciona_tutor', function () {
+        var tutor = $(this).val();
+        var inf_actual = $(this).data('inf_actual');
+        $.post("/sancionar_conductas_ajax/",
+            {action: 'change_tutor', tutor: tutor, inf_actual: inf_actual},
+            function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    });
+
+    {#    $('body').on('click', '.del_informe', function () {#}
+    {#        var informe = $(this).data('id');#}
+    {#        $.post("/sancionar_conductas_ajax/",#}
+    {#            {action: 'del_informe', informe: informe},#}
+    {#            function (data) {#}
+    {#                if (data.ok) {#}
+    {#                    $('#tr_informe' + informe).remove();#}
+    {#                    $("#update_ok").show().delay(1500).fadeOut();#}
+    {#                } else {#}
+    {#                    show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data['mensaje']});#}
+    {#                    $("#update_error").show().delay(1500).fadeOut();#}
+    {#                }#}
+    {#            });#}
+    {#    });#}
+
+
+    $(document).foundation({
+        accordion: {
+            callback: function (accordion) {
+                if (accordion.hasClass('accordion-sancion')) {
+                    var tipo = accordion.data('tipo');
+                    var inf_actual = accordion.data('inf_actual');
+                    var sancionador = $('#sancionador').val();
+                    if ($('#circle_s' + tipo).hasClass('fa-plus-circle')) {
+                        $('.circle_icon_s').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#circle_s' + tipo).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                        window.scrollTo(0, $('#accordion_s' + tipo).offset().top - 50);
+                        $.post("/sancionar_conductas_ajax/", {
+                            action: 'open_accordion_s',
+                            tipo: tipo,
+                            sancionador: sancionador,
+                            informe: inf_actual
+                        }, function (data) {
+                            $('#panel_s' + tipo).html(data);
+                        });
+                    } else {
+                        $('#circle_s' + tipo).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#panel_s' + tipo).empty();
+                    }
+                } else if (accordion.hasClass('accordion-conducta')) {
+                    var tipo = accordion.data('tipo');
+                    var inf_actual = accordion.data('inf_actual');
+                    var conductas = [];
+                    $('.conductas_checkbox:checked').each(function () {
+                        conductas.push($(this).data('id'));
+                    });
+                    if ($('#circle_c' + tipo).hasClass('fa-plus-circle')) {
+                        $('.circle_icon_c').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#circle_c' + tipo).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                        window.scrollTo(0, $('#accordion_c' + tipo).offset().top - 50);
+                        $.post("/sancionar_conductas_ajax/", {
+                            action: 'open_accordion_c',
+                            tipo: tipo,
+                            informe: inf_actual,
+                            conductas: conductas
+                        }, function (data) {
+                            $('#panel_c' + tipo).html(data);
+                        });
+                    } else {
+                        $('#circle_c' + tipo).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#panel_c' + tipo).empty();
+                    }
+                }
+            }
+        }
+    });
+
+</script>

@@ -1,0 +1,17 @@
+{% load my_templatetags %}
+<p>Hola {{}}:</p>
+
+<p>Este correo te informa de que tu acceso a GAUSS (https://scout.gaumentada.es) es el siguiente:</p>
+
+<p><strong>Usuario:</strong> {{g_e.gauser.username}}</p>
+<p><strong>Contraseña:</strong> {{password}}</p>
+
+</p>Una vez que hayas entrado en GAUSS dirígete a la parte superior derecha de la pantalla y pulsa sobre "Mis datos". Se desplegará un formulario en el que podrás ver los datos que el grupo scout {{g_e.entidad.name}} tiene sobre tu persona. Por favor, actualizalos si ves que alguno de ellos no es correcto, para ello debes pulsar el icono "Guardar las modificaciones" después de realizar los cambios. Es muy importante que cambies la contraseña de acceso que te facilitamos en este correo.</p>
+<br/>
+<hr/>
+<p style="font-size:8;color:gray;font-family: Arial, Helvetica, sans-serif;">Has recibido este mensaje a través de GAUSS porque estás registrado en el grupo scout {{g_e.entidad.name}}. Si contestas a este correo utilizando tu servicio de correo responderás a quien lo escribió, pero no quedará reflejado en GAUSS.</p>
+<p style="font-size:8;color:gray;">Este mensaje y cualquier fichero que pudiera adjuntar se dirige exclusivamente a su destinatario.
+Si Vd. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente y borre el mensaje junto con sus ficheros anexos sin leerlo, copiarlo, grabarlo, distribuirlo o divulgarlo o hacer cualquier otro uso de la información sin el consentimiento del coordinador del grupo scout {{g_e.entidad.name}}.</p>
+<p style="font-size:8;color:gray;">El correo electrónico vía Internet no permite asegurar la confidencialidad o correcta recepción de los mensajes, por lo que el emisor de este correo no asume responsabilidad alguna por los daños causados.</p>
+<p style="font-size:8;color:gray;">Cualquier opinión expresada en este mensaje corresponde únicamente al autor remitente, y no representa necesariamente la opinión del grupo scout {{g_e.entidad.name}}, salvo cuando el remitente esté autorizado para hacerlo y así lo indique.</p>
+<p style="font-size:8;color:green;">Antes de imprimir este documento, asegúrese de que es necesario. En nuestra mano está cuidar del medio ambiente.</p>

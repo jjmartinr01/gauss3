@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        #div_web {
+            position: relative;
+            display: none;
+            background-color: #ffffff;
+            border: solid 1px #d3d3d3;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .es_home {
+            cursor: pointer;
+        }
+
+        .cambia_nombre {
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}" data-abide>
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+
+        <div id="div_webs" {% if pag %} style="display: none;"{% endif %}>
+            <div class="">
+                <h4 style="text-align: center;color: #008CBA;">
+                    <strong> Webs creadas en {{ request.session.gauser_extra.ronda.entidad.name }}</strong></h4>
+            </div>
+
+            <dl class="accordion" data-accordion>
+                {% for html_web in html_webs %}
+                    <dd class="accordion-navigation" id="accordion{{ html_web.id }}"
+                        style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+                        <a href="#panel___{{ html_web.id }}">
+                            <i id="circle{{ html_web.id }}" class="fa fa-plus-circle circle_icon"></i>
+                            <span id="nombre_accordion{{ html_web.id }}">{{ html_web.nombre }}</span>
+                            (<span id="tipo_accordion{{ html_web.id }}">{{ html_web.get_tipo_display }}</span>)
+                            &nbsp;&nbsp; <span id="home_accordion{{ html_web.id }}"
+                                               class="home {% if not html_web.home %}hide{% endif %}">
+                                <i class="fa fa-home"></i></span>
+                        </a>
+                        <div id="panel___{{ html_web.id }}" class="content accordion-html_web"
+                             data-id="{{ html_web.id }}">
+{#                            {% include "web1_design_accordion.html" %}#}
+                        </div>
+                    </dd>
+                {% endfor %}
+            </dl>
+        </div>
+
+        <div id="div_edita_web" {% if not pag %} style="display: none;" {% endif %}>
+        </div>
+
+        <div id="form_web" style="display: none;">
+            <div class="row">
+                <h4 style="text-align: center;color: #008CBA;"><strong> Crear una nueva página web</strong></h4>
+            </div>
+            <div class="row">
+                <div class="columns large-6">
+                    <label>
+                        Nombre de la web
+                        <small>obligatorio</small>
+                        <input type="text" name="nombre" id="id_nombre" required>
+                    </label>
+                    <small class="error">Debes escribir un nombre para la web.</small>
+                </div>
+                <div class="columns large-6">
+                    <label>
+                        Selecciona un tipo de plantilla
+                        <div class="row">
+                            <div class="columns large-1">
+                                <h4><a id="plantilla_anterior"><i class="fa fa-hand-o-left"></i></a></h4>
+                            </div>
+                            <div class="columns large-10">
+                                <select name="tipo_plantilla" id="tipo_plantilla">
+                                    {% for p in plantillas_disponibles %}
+                                        <option value="{{ p.0 }}">{{ p.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="columns large-1">
+                                <h4><a id="plantilla_siguiente"><i class="fa fa-hand-o-right"></i></a></h4>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <label>
+                        La página web seleccionada tendrá un aspecto según la plantilla mostrada en el interior del
+                        recuadro rojo:
+                    </label>
+                </div>
+            </div>
+            <div style="border: solid 1px lightcoral;padding: 5px;" id="plantilla">
+                {% include 'web2_banded_s.html' %}
+            </div>
+        </div>
+
+        <div id="modal_aviso" class="reveal-modal" data-reveal>
+            <h3 id="h3_modal_aviso"></h3>
+            <span id="span_modal_aviso"></span>
+            <a class="close-reveal-modal">&#215;</a>
+        </div>
+        <div id="modal_cambiar_nombre" class="reveal-modal" data-reveal>
+            <h3>Escribe el nuevo nombre de la página</h3>
+            <input type="text" name="nuevo_nombre" id="nuevo_nombre" value="">
+
+            <h3>Indica los posibles editores de la página</h3>
+            <input type="hidden" name="editores" id="id_editores" value="">
+
+            <p><a href="#" id="ok_cambiar_nombre" class="secondary button">Aceptar</a></p>
+            <a class="close-reveal-modal">&#215;</a>
+        </div>
+        <div id="modal_cambia_distribucion" class="reveal-modal" data-reveal>
+            <h3>Distribución de la página web</h3>
+
+            <div class="row">
+                <div class="columns large-4 medium-4 small-4">
+                    <label>Nº Columnas del lateral izquierdo
+                        <input class="col_dis" type="number" name="col_izq" id="col_izq" value="" min="0" max="12">
+                    </label>
+                </div>
+                <div class="columns large-4 medium-4 small-4">
+                    <label>Nº Columnas de la parte central
+                        <input class="col_dis" type="number" name="col_cen" id="col_cen" value="" min="0" max="12">
+                    </label>
+                </div>
+                <div class="columns large-4 medium-4 small-4">
+                    <label>Nº Columnas del lateral derecho
+                        <input class="col_dis" type="number" name="col_der" id="col_der" value="" min="0" max="12">
+                    </label>
+                </div>
+            </div>
+            <div id="page_distribution_message" data-alert class="alert-box alert radius" tabindex="0"
+                 aria-live="assertive" style="display: none;" role="dialogalert">
+                La suma de las columnas debe ser 12.
+                {#                <button href="#" tabindex="0" class="close" aria-label="Close Alert">&times;</button>#}
+            </div>
+            <p><a href="#" id="ok_cambia_distribucion" class="secondary button">Aceptar</a></p>
+            <a class="close-reveal-modal">&#215;</a>
+        </div>
+        <input type="hidden" name="id_web" id="id_web" value="">
+        <input type="hidden" name="id_tag" id="id_tag" value="">
+        <input type="file" name="fichero_xhr" id="fichero_xhr" style="position: fixed; top: -3000px">
+        <input type="hidden" name="tipo_fichero_xhr" id="tipo_fichero_xhr" value="">
+        <input type="hidden" name="file_web_id" id="file_web_id" value="">
+<div id="hola"></div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script src="/static/gauss_fileupload/gauss_FileAjaxUpload.js"></script>
+    <script>
+        habilita(['s_plus', 'h_trash-o', 'h_check', 'h_list-alt', 'h_pencil', 'h_eye']);
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    var id = accordion.data('id');
+                    if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                        $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                        $('#id_web').val(id);
+                        $.post("/web_design/", {action: 'abrir_accordion', id: id}, function (data) {
+                            $('#panel___' + id).html(data);
+                        });
+                        habilita(['h_plus', 's_trash-o', 'h_check', 'h_list-alt', 's_pencil', 's_eye']);
+                    } else {
+                        $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#id_web').val('');
+                        habilita(['s_plus', 'h_trash-o', 'h_check', 'h_list-alt', 'h_pencil', 'h_eye']);
+                    }
+                }
+            }
+        });
+
+        {# Lista de plantillas disponibles: #}
+        $('#tipo_plantilla').select2();
+        var html_pages = [{% for p in plantillas_disponibles %}{% autoescape off %}'{{ p.0 }}', {% endautoescape %}{% endfor %}];
+        $('body').on('click', '#plantilla_siguiente', function (e) {
+            e.preventDefault();
+            var start = $('#tipo_plantilla').val();
+            var next = html_pages[($.inArray(start, html_pages) + 1) % html_pages.length];
+            $("#tipo_plantilla").val(next).trigger("change").select2("val", next);
+            {# Si quitamos el $('#tipo_plantilla').select2() la línea anterior queda de la forma: #}
+            {# $("#tipo_plantilla").val(next).trigger("change");#}
+        });
+        $('body').on('click', '#plantilla_anterior', function (e) {
+            e.preventDefault();
+            var start = $('#tipo_plantilla').val();
+            var indice = ($.inArray(start, html_pages) - 1) % html_pages.length;
+            if (indice < 0) {
+                indice = html_pages.length - 1;
+            }
+            var anterior = html_pages[indice];
+            $("#tipo_plantilla").val(anterior).trigger("change").select2("val", anterior);
+        });
+        $('body').on('change', '#tipo_plantilla', function (e) {
+            e.preventDefault();
+            var tipo = $(this).val();
+            $.post("/web_design/", {action: 'actualiza_plantilla', tipo: tipo}, function (data) {
+                $('#plantilla').html(data);
+            });
+        });
+
+        {# Cambios en Template_web a través de ajax #}
+        $(document).on('opened.fndtn.reveal', '#modal_cambiar_nombre', function () {
+            $("#nuevo_nombre").focus();
+        });
+
+        $('body').on('click', '.cambia_distribucion',function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#id_web').val(id);
+            $('#modal_cambia_distribucion').foundation('reveal', 'open');
+            $('#col_izq').val($(this).data('col_izq')).focus();
+            $('#col_cen').val($(this).data('col_cen'));
+            $('#col_der').val($(this).data('col_der'));
+        });
+        $('#ok_cambia_distribucion').click(function (e) {
+            e.preventDefault();
+            var id = $('#id_web').val();
+            var total_col = parseInt($('#col_izq').val()) + parseInt($('#col_cen').val()) + parseInt($('#col_der').val());
+            if (total_col != 12) {
+                $('#page_distribution_message').show();
+            } else {
+                var col_izq = $('#col_izq').val();
+                var col_cen = $('#col_cen').val();
+                var col_der = $('#col_der').val();
+                $.post("/web_design/", {
+                    action: 'ok_cambia_distribucion', col_izq: col_izq, col_cen: col_cen,
+                    col_der: col_der, id: id
+                }, function (data) {
+                    $('#distribucion___' + id).html(data);
+                    $('#modal_cambia_distribucion').foundation('reveal', 'close');
+                });
+            }
+        });
+        $('body').on('click', '.cambia_nombre',function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#id_web').val(id);
+            $('#modal_cambiar_nombre').foundation('reveal', 'open');
+            $('#nuevo_nombre').val($(this).data('nombre')).focus();
+            $.post("/web_design/", {action: 'list_editores', id: id}, function (data) {
+                $("#id_editores").select2("data", data);
+            }, 'json');
+        });
+        $('#ok_cambiar_nombre').click(function (e) {
+            e.preventDefault();
+            var id = $('#id_web').val();
+            $('#nombre_accordion' + id).html($('#nuevo_nombre').val());
+            var nombre = JSON.stringify($('#nuevo_nombre').val());
+            var editores = JSON.stringify($('#id_editores').val());
+            $('#modal_cambiar_nombre').foundation('reveal', 'close');
+            $.post("/web_design/", {action: 'cambia_nombre', id: id, nombre: nombre, editores: editores},
+                    function (data) {
+                        $('#panel___' + id).html(data);
+                    });
+        });
+        $("#id_editores").select2({
+            placeholder: "Escribe parte del nombre",
+            minimumInputLength: 3,
+            multiple: true,
+            ajax: {
+                url: "/web_design/",
+                type: 'POST',
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (term, page) { // page is the one-based page number tracked by Select2
+                    return {
+                        action: 'editores',
+                        q: term, //search term
+                        page_limit: 10, // page size
+                        page: page // page number
+                    };
+                },
+                results: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                }
+            },
+            formatResult: function (resultado) {
+                return '<div class="select2-user-result">' + resultado.text + '</div>';
+            },
+            formatSelection: function (resultado) {
+                $('#gauser_extra_selected').val(resultado.id);
+                return resultado.text;
+            },
+            dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
+            escapeMarkup: function (m) {
+                return m;
+            } // we do not want to escape markup since we are displaying html in results
+        });
+
+        $('body').on('click', '.cambia_tipo',function (e) {
+            e.preventDefault();
+            var tipo = $(this).attr('id').split('___')[0];
+            var id = $(this).attr('id').split('___')[1];
+            $.post("/web_design/", {action: 'cambia_tipo', id: id, tipo: tipo}, function (data) {
+                $('#tipo___' + id).html(data);
+                $('#tipo_accordion' + id).html(data);
+            });
+        });
+
+        $('body').on('click', '.cambia_home', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/web_design/", {action: 'cambia_home', id: id}, function (data) {
+                $('.cambia_home').html('No');
+                $('#cambia_home' + id).html(data);
+                $('.home').addClass('hide');
+                $('#home_accordion' + id).removeClass('hide');
+            });
+        });
+
+        $('body').on('click', '.cambia_publicar',function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $.post("/web_design/", {action: 'cambia_publicar', id: id}, function (data) {
+                $('#cambia_publicar' + id).html(data);
+            });
+        });
+
+        $('body').on('click', '.cambia_html', function (e) {
+            e.preventDefault();
+            var id = $(this).attr('id').split('___')[1];
+            $('#id_web').val(id);
+            $('#fichero_xhr').trigger('click');
+        });
+
+        {# Código para realizar la edición de la página web seleccionada #}
+        $('#pencil_sign').click(function (e) {
+            e.preventDefault();
+            var id = $("#id_web").val();
+            window.location.href = '/edita_web/' + id;
+        });
+
+        $('#plus_sign').click(function (e) {
+            e.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                $('#action').val('guardar_web');
+                $('#form_web').slideDown();
+                $('#div_webs').slideUp();
+                habilita(['h_plus', 'h_trash-o', 's_check', 's_list-alt', 'h_pencil', 'h_eye']);
+            }
+        });
+
+        $('#list-alt_sign').click(function (e) {
+            e.preventDefault();
+            $('#action').val('');
+            $('#form_web').slideUp();
+            $('#mail_web').slideUp();
+            $('#div_edita_web').slideUp();
+            $('#div_webs').slideDown();
+            $(".fa_check").addClass('fa-square-o').removeClass('fa-check-square-o');
+            habilita(['s_plus', 'h_trash-o', 'h_check', 'h_list-alt', 'h_pencil', 'h_eye']);
+        });
+
+        $('#trash-o_sign').click(function (e) {
+            e.preventDefault();
+            var t = 'Eliminar web';
+            var m = 'Si aceptas, la web seleccionada se borrará de la base de datos.';
+            show_mensajes({
+                title: t, texto: m, buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        $('#action').val('borrar_web');
+                        hide_mensajes();
+                        document.{{formname}}.submit();
+                    }
+                }
+            });
+        });
+
+        $('#check_sign').click(function (e) {
+            e.preventDefault();
+            $id_nombre = Foundation.libs.abide.parse_patterns($('#id_nombre'));
+            if ($id_nombre) {
+                document.{{formname}}.submit();
+            }
+        });
+    </script>
+{% endblock %}

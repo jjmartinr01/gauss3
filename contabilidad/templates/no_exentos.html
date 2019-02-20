@@ -1,0 +1,23 @@
+{% load my_templatetags %}
+
+{% if numero < 6 %}
+    {% for no_exento in politica|no_exentos:numero %}
+        &nbsp;<span class="radius label">{% autoescape off %}{{ no_exento }}{% endautoescape %}</span>
+        {% if forloop.last and politica|number_no_exentos > numero %}
+            &nbsp;<span class="secondary radius label">
+            <a class="mostrar_no_exentos" data-id="{{ politica.id }}">
+                ... (mostrar todos)
+            </a></span>
+        {% endif %}
+    {% endfor %}
+{% else %}
+    {% for no_exento in politica|no_exentos:1000 %}
+            &nbsp;<span class="radius label">{% autoescape off %}{{ no_exento }}{% endautoescape %}</span>
+        {% if forloop.last and forloop.counter > 10 %}
+            &nbsp;<span class="secondary radius label">
+            <a class="ocultar_no_exentos" data-id="{{ politica.id }}">
+                ... (ocultar)
+            </a></span>
+        {% endif %}
+    {% endfor %}
+{% endif %}

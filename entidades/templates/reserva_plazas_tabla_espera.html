@@ -1,0 +1,40 @@
+<tbody>
+<thead>
+<tr>
+    <th style="text-align:center;"><span class="color2">Nombre</span></th>
+    <th style="text-align:center;"><span class="color2">Fecha nacimiento</span></th>
+    <th style="text-align:center;"><span class="color2">Teléfono</span></th>
+    <th style="text-align:center;"><span class="color2">e-mail</span></th>
+    <th style="text-align:center;"><span class="color2">Fecha y hora solicitud</span></th>
+    <th style="text-align:center;"><span class="color2">Pertenecería a</span></th>
+</tr>
+</thead>
+{% for reserva in reservas %}
+    <tr id="reserva{{ reserva.id }}">
+        <td>
+            <a data-dropdown="drop{{ reserva.id }}" aria-controls="drop{{ reserva.id }}"
+               aria-expanded="false">{{ reserva.first_name }} {{ reserva.last_name }}</a>
+            <ul id="drop{{ reserva.id }}" class="f-dropdown medium" data-dropdown-content aria-hidden="true" tabindex="-1">
+                <li><a class="dar_alta" data-id="{{ reserva.id }}"><i class="fa fa-user-plus fa-fw"></i> Dar de alta como usuario de la entidad</a></li>
+                <li><a class="borrar_reserva" data-id="{{ reserva.id }}"><i class="fa fa-user-times fa-fw"></i> Borrar esta reserva</a></li>
+                <li><a class="info_reserva" data-id="{{ reserva.id }}"><i class="fa fa-info-circle fa-fw"></i> Información sobre esta reserva</a></li>
+            </ul>
+        </td>
+        <td>
+            {{ reserva.nacimiento|date:'d/m/Y' }}
+        </td>
+        <td>
+            {{ reserva.telfij }} {{ reserva.telmov }}
+        </td>
+        <td>
+            {{ reserva.email }}
+        </td>
+         <td>
+            {{ reserva.creado|date:'d/m/Y H:i' }}
+        </td>
+        <td>
+            {{ reserva.subentidades }}
+        </td>
+    </tr>
+{% endfor %}
+</tbody>

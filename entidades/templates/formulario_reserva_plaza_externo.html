@@ -1,0 +1,103 @@
+{% extends "base_reserva.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        #datos_contenido_reserva {
+            position: relative;
+            background-color: #ffffff;
+            border: solid 1px #d3d3d3;
+            padding: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" name="entidad" id="entidad" value="{{ entidad.id }}">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Solicitud de alta en {{ entidad.name }}</strong>
+            </h4>
+        </div>
+
+        <div id="formulario_reserva_plaza">
+            {% include "formulario_reserva_plaza.html" %}
+        </div>
+
+        <div class="row">
+            <div class="large-3 medium-4 small-5 columns text-right">
+                <label class="right inline">
+                    <span style="font-size: 12pt;font-weight: 700;color: #31859c">¿Eres humano?</span>
+                    <br>
+                    <span style="font-size: 12pt;font-weight: 700;color: #31859c"><a id="recarga_captcha">Recargar
+                            <i class="fa fa-refresh"></i> </a></span>
+                </label>
+            </div>
+            <div class="large-3 medium-4 small-5 columns">
+                <label id="captcha">
+                    {{ captcha_form.captcha }}
+                </label>
+            </div>
+            <div class="large-3 medium-2 small-5 columns">&nbsp;<a class="button" id="aceptar">Hacer solicitud</a></div>
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        {% if reserva_grabada %}
+            show_mensajes({
+                title: 'Reserva grabada',
+                texto: '<p>Se ha registrado tu solicitud.</p><p>En breve nos pondremos en contacto contigo.</p>'
+            });
+        {% endif %}
+
+        $('#recarga_captcha').click(function (e) {
+            e.preventDefault();
+            $.post("/recarga_captcha/", {action: 'recarga_captcha'}, function (data) {
+                $('#captcha').html(data);
+            });
+        });
+
+        $('#aceptar').click(function (e) {
+            e.preventDefault();
+            $.post("/formulario_ext_reserva_plaza/", $('#' + '{{ formname }}').serialize(), function (data) {
+                if (data.ok) {
+                    show_mensajes({
+                        title: 'Reserva guardada',
+                        texto: 'Los datos de la reserva se han guardado correctamente.'
+                    });
+                    $('#formulario_reserva_plaza').html(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                    show_mensajes({
+                        title: '<i class="fa fa-warning"></i> Error',
+                        texto: data.mensaje
+                    });
+                }
+            });
+        });
+
+        {#    $('body').on('change', '.fecha_nacimiento', function () {#}
+        {#    var dia = $('#dia_nacimiento').val();#}
+        {#    var mes = $('#mes_nacimiento').val();#}
+        {#    var anyo = $('#anyo_nacimiento').val();#}
+        {#    $('#nacimiento').val(dia + '/' + mes + '/' + anyo)#}
+        {#    });#}
+        $("#id_nacimiento").fdatepicker({
+            format: 'dd/mm/yyyy',
+            weekStart: 1,
+            endDate: new Date(),
+            initialDate: '02/12/1989',
+            leftArrow: '<<',
+            rightArrow: '>>',
+            language: 'es'
+        });
+
+    </script>
+{% endblock %}

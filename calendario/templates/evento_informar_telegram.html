@@ -1,0 +1,15 @@
+{{ actualizador.gauser.get_full_name }} ha {% if tipo == 'Nuevo' %} creado un evento {% else %}actualizado el evento{% endif %} denominado: "{{ vevent.summary }}"
+{% if vevent.dtend %}
+    {% if vevent.dtstart == vevent.dtend %}
+        Tendrá lugar el {{ vevent.dtstart|date:'l\, j \d\e F \a \l\a\s H:i'|lower }}
+    {% elif vevent.dtstart|date:'dmY' == vevent.dtend|date:'dmY' %}
+        Tendrá lugar el {{ vevent.dtstart|date:'l\, j \d\e F, \d\e\s\d\e \l\a\s H:i'|lower }} hasta las {{ vevent.dtend|date:'H:i' }}.
+    {% else %}
+        Se desarrollará desde el {{ vevent.dtstart|date:'l\, j \d\e F, \a \l\a\s H:i'|lower }} hasta el {{ vevent.dtend|date:'l\, j \d\e F, \a \l\a\s H:i'|lower }}.
+    {% endif %}
+{% else %}
+    Comenzará el {{ vevent.dtstart|date:'l\, j \d\e F \a \l\a\s H:i'|lower }}.
+{% endif %}
+{% if vevent.location %}
+    Lugar: {{ vevent.location }}
+{% endif %}

@@ -1,0 +1,33 @@
+{% load my_templatetags %}
+
+<style>
+    .ccper {
+        max-width: 50px;
+    }
+</style>
+<table width="100%">
+    <tr>
+        <th>Materia</th>
+        <th>CCL</th>
+        <th>CMCT</th>
+        <th>CD</th>
+        <th>CPAA</th>
+        <th>CSC</th>
+        <th>SIE</th>
+        <th>CEC</th>
+        <th>&nbsp;</th>
+    </tr>
+    {% for m in materias %}
+        <tr>
+            <td>{{ m.materia.nombre }}</td>
+            <td><input id="ccl{{ m.id }}" class="ccper" data-materia="{{ m.id }}" data-cc="ccl" value="{{ m.ccl }}"/></td>
+            <td><input id="cmct{{ m.id }}" class="ccper" data-materia="{{ m.id }}" data-cc="cmct" value="{{ m.cmct }}"/></td>
+            <td><input id="cd{{ m.id }}" class="ccper" data-materia="{{ m.id }}" data-cc="cd" value="{{ m.cd }}"/></td>
+            <td><input id="cpaa{{ m.id }}" class="ccper" data-materia="{{ m.id }}" data-cc="cpaa" value="{{ m.cpaa }}"/></td>
+            <td><input id="csc{{ m.id }}" class="ccper" data-materia="{{ m.id }}" data-cc="csc" value="{{ m.csc }}"/></td>
+            <td><input id="sie{{ m.id }}" class="ccper" data-materia="{{ m.id }}" data-cc="sie" value="{{ m.sie }}"/></td>
+            <td><input id="cec{{ m.id }}" class="ccper" data-materia="{{ m.id }}" data-cc="cec" value="{{ m.cec }}"/></td>
+            <td style="color:firebrick;font-weight: 800;"><span id="total{{ m.id }}">{{ m.total_percentage }}</span>%</td>
+        </tr>
+    {% endfor %}
+</table>

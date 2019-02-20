@@ -1,0 +1,170 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block ready %}
+  $( "#dialog_borrar" ).dialog({
+            autoOpen: false,
+            resizable: false,
+            height:140,
+            modal: true,
+            buttons: { Cancelar: function() { $( this ).dialog( "close" ); }, Ok: function() { document.{{formname}}.submit(); }  }
+        });
+  $('#aceptar').click(function () {  $('#action').val('aceptar'); document.{{formname}}.submit(); });
+  $('#borrar_usuario').click(function () {
+	  $('#action').val('borrar_usuario');
+	  $('#scout_selected').val($('#scout').val());
+	  $( "#dialog_borrar" ).dialog("open");
+	  });
+  $('#volver').click(function () {  javascript:history.go(-1); });
+  $('#scout').change(function () {
+	  $('#action').val('educando_scout_selected');
+	  $('#scout_selected').val($('#scout').val());
+	  document.{{formname}}.submit();
+  });
+  $( "#id_nacimiento" ).datepicker({
+	  dateFormat: "dd/mm/yy",
+	  dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	  dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	  firstDay: 1,
+	  monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	  onClose: function(dateText, inst) {
+	  }
+	  });
+{% endblock %}
+
+
+{% block navegar %}
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <img id="volver" style="cursor:pointer;" border="0" align="right" alt="Atrás" title="Atrás" src="/static/images/volver.gif">
+  <img id="aceptar" style="cursor:pointer;" border="0" align="right" alt="Aceptar" title="Aceptar" src="/static/images/aceptar.gif">
+  <img id="borrar_usuario" style="cursor:pointer;" border="0" align="right" alt="Borrar" title="Borrar usuario" width="26" src="/static/images/erase_user.png">
+  <img border="0" align="right" alt="" title="" src="/static/images/nada60x30.gif">
+  <div style="float:right;">
+    <select id="scout" name="scout">
+    {% if educando_scout_user_relation %}
+    <option value="{{educando_scout_user_relation.user.id}}">{{educando_scout_user_relation.user.get_full_name}}</option>
+    {% else %}
+    <option value="">Selecciona educando</option>
+    {% endif %}
+    {% for scout in scouts %}
+      <option value="{{scout.user.id}}"> {{scout.user.last_name}}, {{scout.user.first_name}} </option>
+    {% endfor %}
+    </select>
+  </div>
+    {% if educando_scout_user_relation %}
+    Datos de los educandos
+    {% else %}
+    <span style="color:red;"> SELECCIONA EDUCANDO &rarr; </span>
+    {% endif %}
+    
+{% endblock %}
+
+
+
+{% block contenido %}
+{% if avisos %}
+<div id="dialog-aviso" title="Información del sistema">
+  {% for aviso in avisos %}
+  <p> {% autoescape off %} {{aviso}} {% endautoescape %} </p>
+  {% endfor %}
+</div>
+<script>
+$(function() { $( "#dialog-aviso" ).dialog({ modal: true, buttons: { Ok: function() { $( this ).dialog( "close" ); 
+										    $('#action').val('borrar_avisos');
+										    $('#scout_selected').val($('#scout').val());
+										    document.{{formname}}.submit();
+										    }}});});
+</script>
+{% endif %}
+
+
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+    <input type="hidden" name="action" id="action" value="">
+    <input type="hidden" name="scout_selected" id="scout_selected" value="{{educando_scout_user_relation.user.id}}">
+    <input type='hidden' name='ingreso' id='ingreso' value='{{educando_scout_user_relation.ingreso|date:"Y-m-d"}}'>
+    <input type="hidden" name="rama" id="rama" value="{{educando_scout_user_relation.rama}}">
+    
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Datos básicos del usuario GAUSS Scout</td></tr></table> 
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Nombre:</td><td align="right"> {{ form1.first_name }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Apellidos: <td align="left" colspan="1">{{ form1.last_name }}</td>
+	<td class="columnaFondo" align="center" nowrap="nowrap" rowspan="2"> &nbsp;&nbsp;<img align="center" width="55" src="/media/fotos/{{educando_scout_user_relation.foto}}"> </td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;<span class="info">Para cambiar foto, selecciona archivo de imagen:</span> </td></tr>
+	<tr><td></td><td></td><td></td><td></td><td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	{% if educando_scout_user_relation %}<input type="file" name="foto_scout"/> {% endif %} </td></tr><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Usuario:</td><td align="right"> {{ form1.username }}</td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Contraseña:</td><td align="left"> {% if educando_scout_user_relation %} <input type="password" name="password1" value=""/> {% endif %} </td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;
+	  Confirma contraseña:</td><td align="left"> {% if educando_scout_user_relation %} <input type="password" name="password2" value=""/> {% endif %} &nbsp;&nbsp;
+	  Email: {{ form1.email }}</td>
+	</tr></table>
+
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Datos personales almacenados</td></tr></table> 
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Sexo: {{form2.sexo}} </td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;DNI: {{form2.dni}} </td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Tél. fijo: {{form2.telfij}} </td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Tél. móvil: {{form2.telmov}} </td></tr><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Dirección: {{form2.address}} </td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;C.P.: {{form2.postalcode}} </td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Localidad: {{form2.localidad}} </td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Provincia: {{form2.provincia}} </td></tr><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Fecha nacimiento: {{form2.nacimiento}} </td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Fecha de alta: {{form2.fecha_alta}} </td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap" title="Número de hermanos mayores en el grupo. Puede tener efecto con respecto al pago de la cuota."> &nbsp;&nbsp;Nº de hermanos mayores: {{form2.num_her_may}} </td><td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Profesión: {{form2.ocupacion}} </td></tr><tr></table>
+
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp; Observaciones médicas:</td></tr><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp; {{form2.obs_medicas}} </td></tr></table>
+
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Entidad bancaria: {{form2.entidad_bancaria}} </td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Nº de cuenta: {{form2.num_cuenta_bancaria}} </td></tr><tr>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Primer tutor: {{form2.tutor1}} </td>
+	<td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Segundo tutor: {{form2.tutor2}} </td>
+	</tr>
+	</table>
+
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Relación con el grupo {{request.session.grupo_scout.name}}</td></tr></table>
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Activo: {{form3.activo}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Rama/Sección: {{form3.rama}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap">  </td></tr><tr>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Nº Identificación en el grupo: {{form3.idgrupo_scout}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Titulación: {{form3.titulacion}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Cargo: {{form3.cargo}} </td></tr><tr></table>
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Presidente: {{form3.presidente}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Vicepresidente: {{form3.vicepresidente}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Secretario: {{form3.secretario}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Pertenece al Consejo: {{form3.consejo}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Pertenece al Comité: {{form3.comite}} </td></tr><tr>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Tesorero: {{form3.tesorero}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Responsable de rama/sección: {{form3.responsable_rama}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Monitor/Scouter: {{form3.monitor}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Padre: {{form3.padre}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Educando: {{form3.educando_scout}} </td></tr><tr>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Encargado de almacén: {{form3.enc_almacen}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Encargado de cocina: {{form3.enc_cocina}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Encargado de fontanería: {{form3.enc_fontaneria}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Encargado de carpintería: {{form3.enc_carpinteria}} </td>
+    <td class="columnaFondo" align="LEFT" nowrap="nowrap"> &nbsp;&nbsp;Encargado de electricidad: {{form3.enc_electricidad}} </td>
+    </tr></table>
+   
+
+</form>
+
+
+<div id="dialog_borrar" title="Borrar socio del sistema">
+  ¿Estás seguro de querer borrar a este socio?
+</div>
+
+{% endblock %}

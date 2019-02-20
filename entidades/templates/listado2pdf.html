@@ -1,0 +1,69 @@
+{% load my_templatetags %}
+<h2 style="text-align:center;"> Listado ({{ request.session.gauser_extra.ronda.entidad.name }})</h2>
+<strong> {% now "j \d\e F \d\e Y" %}</strong>
+<br>
+<hr>
+<br>
+{% if cargos|length > 0 %}
+    <h3>Cargos/Perfiles</h3>
+    {% for cargo in cargos %}
+        <h3 style="background-color: #d3d3d3;">{{ cargo.cargo }}</h3>
+        {% for socio in cargo|socios_cargo %}
+            <strong>Nombre:</strong> {{ socio.gauser.get_full_name }}<br>
+            {% if socio.subentidades.all|length > 0 %}
+                <strong>Secciones/departamentos:</strong>
+                {% for sub in socio.subentidades.all %}{{ sub.nombre }}{% if not forloop.last %},
+                {% endif %}{% endfor %}
+                <br>
+            {% endif %}
+            {% if socio.tutor1 %}
+                <strong>Tutor:</strong> {{ socio.tutor1.gauser.get_full_name }} ({{ socio.tutor1.gauser.telfij }} -
+                {{ socio.tutor1.gauser.telmov }})<br>
+            {% endif %}
+            {% if socio.tutor2 %}
+                <strong>Tutor:</strong> {{ socio.tutor2.gauser.get_full_name }} ({{ socio.tutor2.gauser.telfij }} -
+                {{ socio.tutor2.gauser.telmov }})<br>
+            {% endif %}
+            {% if socio.observaciones|length > 5 %}
+                <strong>Observaciones: </strong><br>
+                {% autoescape off %}{{ socio.observaciones }} {% endautoescape %}
+            {% endif %}
+            <br><br>
+            <hr style="color: gray;">
+        {% endfor %}
+    {% endfor %}
+{% endif %}
+
+{% if subentidades|length > 0 %}
+    <h3>Secciones/Departamentos</h3>
+    {% for subentidad in subentidades %}
+        <h3 style="background-color: #d3d3d3;">{{ subentidad.nombre }}</h3>
+        {% for socio in subentidad|socios_subentidad %}
+            <strong>Nombre:</strong> {{ socio.gauser.get_full_name }}<br>
+            {% if socio.cargos.all|length > 0 %}
+                <strong>Cargos/Perfiles:</strong>
+                {% for cargo in socio.cargos.all %}{{ cargo.cargo }}{% if not forloop.last %},
+                {% endif %} {% endfor %}
+                <br>
+            {% endif %}
+            {% if socio.tutor1 %}
+                <strong>Tutor:</strong> {{ socio.tutor1.gauser.get_full_name }} ({{ socio.tutor1.gauser.telfij }} -
+                {{ socio.tutor1.gauser.telmov }})<br>
+            {% endif %}
+            {% if socio.tutor2 %}
+                <strong>Tutor:</strong> {{ socio.tutor2.gauser.get_full_name }} ({{ socio.tutor2.gauser.telfij }} -
+                {{ socio.tutor2.gauser.telmov }})<br>
+            {% endif %}
+            {% if socio.observaciones|length > 5 %}
+                <strong>Observaciones: </strong><br>
+                {% autoescape off %}{{ socio.observaciones }} {% endautoescape %}
+            {% endif %}
+            <br><br>
+            {% if not forloop.last %}
+            <hr style="color: gray;">
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+{% endif %}
+
+

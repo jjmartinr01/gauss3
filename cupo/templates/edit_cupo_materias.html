@@ -1,0 +1,88 @@
+{% load my_templatetags %}
+{% for m in materias %}
+    {% if forloop.counter0|divisibleby:8 and not duplicated %}
+        <div class="row">
+            <div class="columns large-4 medium-4 small-6 cab_title" style="text-align: left;">
+                Nombre de la materia
+            </div>
+            <div class="columns large-1 medium-1 small-3 cab_title"
+                 title="Periodos lectivos en una semana que son destinados a la materia">
+                Periodos
+            </div>
+            <div class="columns large-1 medium-1 small-3 cab_title"
+                 title="Número de grupos calculados en función del número de alumnos máximo y mínimo permitido.">
+                Grupos
+            </div>
+            <div class="columns large-3 medium-3 small-6 cab_title" title="Especialidad del profesorado objeto de cupo">
+                Especialidad
+            </div>
+            <div class="columns large-1 medium-1 small-2 cab_title" title="Número de alumnos previsto en esta materia">
+                Alumnos
+            </div>
+            <div class="columns large-1 medium-1 small-2 cab_title" title="Número de máximo de alumnos en un grupo">
+                Máx.
+            </div>
+            <div class="columns large-1 medium-1 small-2 cab_title" title="Número de mínimo de alumnos en un grupo">
+                Mín.
+            </div>
+        </div>
+    {% endif %}
+    <div id="row{{ m.id }}"
+         class="row materia  {% if duplicated %} duplicated
+             {% else %}{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}{% endif %}">
+        <div class="columns large-4 medium-4 small-6">
+            <a id="nombre_actual{{ m.id }}" data-dropdown="drop{{ m.id }}" aria-controls="drop{{ m.id }}"
+               aria-expanded="false">{{ m.nombre }}</a>
+            <div id="drop{{ m.id }}" data-dropdown-content class="f-dropdown content medium" aria-hidden="true"
+                 tabindex="-1"
+                 aria-autoclose="false">
+                <ul style="list-style-type: none;">
+                    <li><a data-materia="{{ m.id }}" class="delete_materia"><i class="fa fa-trash-o fa-fw"></i>
+                        Borrar</a></li>
+                    <li><a data-materia="{{ m.id }}" class="duplicate_materia"><i class="fa fa-copy fa-fw"></i> Duplicar</a>
+                    </li>
+                </ul>
+                <label>Cambia el nombre:<input type="text" data-materia="{{ m.id }}" class="change_nombre"
+                                               value="{{ m.nombre }}"></label>
+            </div>
+            {% if not s_c %}-{% if m.curso %}{{ m.curso.nombre }}{% else %}No asignada a un curso{% endif %}{% endif %}
+        </div>
+        <div class="columns large-1 medium-1 small-3 num_periodos" contenteditable="true" data-materia="{{ m.id }}"
+             title="Periodos lectivos en una semana que son destinados a la materia">
+            {% if m.periodos %}{{ m.periodos }}{% else %}0{% endif %}
+        </div>
+        <div class="columns large-1 medium-1 small-3 num_grupos"
+             title="Número de grupos calculados en función del número de alumnos máximo y mínimo permitido.">
+            <span id="num_grupos{{ m.id }}">{{ m.num_grupos }}</span>
+        </div>
+        <div class="columns large-3 medium-3 small-6" title="Especialidad del profesorado objeto de cupo">
+            <select class="especialidad {% if not m.especialidad %} sin_especialidad {% endif %}"
+                    data-materia="{{ m.id }}" id="esp{{ m.id }}">
+                <option value="">Sin Especialidad</option>
+                {% for esp in especialidades %}
+                    <option value="{{ esp.id }}"
+                            {% if m.especialidad == esp %}selected{% endif %}>{{ esp.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="columns large-1 medium-1 small-2 num_alumnos" title="Número de alumnos previsto en esta materia"
+             contenteditable="true" data-materia="{{ m.id }}">
+            {{ m.num_alumnos }}
+        </div>
+        <div class="columns large-1 medium-1 small-2 max_num_alumnos" title="Número de máximo de alumnos en un grupo"
+             contenteditable="true" data-materia="{{ m.id }}">
+            {{ m.max_num_alumnos }}
+        </div>
+        <div class="columns large-1 medium-1 small-2 min_num_alumnos" title="Número de mínimo de alumnos en un grupo"
+             contenteditable="true" data-materia="{{ m.id }}">
+            {{ m.min_num_alumnos }}
+        </div>
+    </div>
+{% endfor %}
+
+{% if especialidad %}
+    <hr>
+    {% for p in especialidad|profesores_especialidad %}
+        {% include "edit_cupo_materias_profesor.html" with contador=forloop.counter %}
+    {% endfor %}
+{% endif %}

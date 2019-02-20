@@ -1,0 +1,497 @@
+{% load my_templatetags %}
+<input type="hidden" id="gauser_extra_selected" value="{{ gauser_extra_selected.id }}">
+<input type="hidden" id="prox_g_e_selected" value="{{ prox_g_e_selected }}">
+<input type="hidden" id="prev_g_e_selected" value="{{ prev_g_e_selected }}">
+<div class="row formulario_socio">
+    <div class="large-2 columns">
+        <label data-tooltip class="has-tip tip-right" id="fake_file_input"
+               title="Haz click para seleccionar un archivo con la fotografía">
+            {% if gauser_extra_selected.foto %}
+                <img id="foto_user" width="70" src="{{ gauser_extra_selected.foto.url }}">
+            {% else %}
+                {% if gauser_extra_selected.gauser.sexo == 'H' %}
+                    <img id="foto_user" width="70" src="/media/fotos/general_h.png">
+                {% else %}
+                    <img id="foto_user" width="70" src="/media/fotos/general_m.png">
+                {% endif %}
+            {% endif %}
+        </label>
+    </div>
+    <div class="large-2 columns">
+        <span id="span_spin" style="display: none;"><i class="fa fa-spin fa-spiner"></i> </span>
+    </div>
+    <div class="large-8 columns">
+        <input type="file" name="foto" id="id_foto" style="position:absolute;top:-3000px;">
+    </div>
+</div>
+
+<div class="row formulario_socio">
+    <div class="large-3 columns">
+        <label style="font-weight: 800;">Nombre de usuario
+            <input type="text" data-campo="username" value="{{ gauser_extra_selected.gauser.username }}" class="gauser"
+                   maxlength="150"/>
+        </label>
+    </div>
+    <div class="large-4 columns">
+        <label style="font-weight: 800;">Escribe contraseña
+            <input type="password" id="password1" class="change_password" placeholder="Sólo si deseas cambiarla"/>
+        </label>
+    </div>
+    <div class="large-4 columns">
+        <label style="font-weight: 800;">Repite contraseña <span id="pass_warning" style="color:red;display: none;"><i class="fa fa-warning"></i></span>
+            <span id="pass_ok" style="color:green;display: none;"><i class="fa fa-check"></i></span>
+            <input type="password" id="password2" class="change_password"
+                   placeholder="Igual que anterior si deseas cambiarla"/>
+            <ul style="color:red">
+                <li id="no_coinciden" class="warnings" style="display: none;">Las contraseñas no coinciden</li>
+                <li id="no_length" class="warnings" style="display: none;">Deben tener más de 6 caracteres</li>
+                <li id="no_upper" class="warnings" style="display: none;">Deben tener alguna maýuscula</li>
+                <li id="no_lower" class="warnings" style="display: none;">Deben tener alguna minúscula</li>
+                <li id="no_digit" class="warnings" style="display: none;">Deben tener algún número</li>
+            </ul>
+        </label>
+    </div>
+    <div class="large-1 columns">
+        <label>&nbsp;
+            <a class="button tiny radius disabled secondary" id="boton_password"
+               title="Cambiar la contraseña">Cambiar</a>
+        </label>
+    </div>
+</div>
+
+<div class="row formulario_socio">
+    <div class="large-5 columns">
+        <label style="font-weight: 800;">Nombre del usuario
+            <input type="text" data-campo="first_name" value="{{ gauser_extra_selected.gauser.first_name }}"
+                   id="id_first_name" maxlength="30" class="gauser"/>
+        </label>
+    </div>
+    <div class="large-6 columns">
+        <label style="font-weight: 800;">Apellidos del usuario
+            <input type="text" data-campo="last_name" value="{{ gauser_extra_selected.gauser.last_name }}"
+                   maxlength="30" class="gauser"/>
+        </label>
+    </div>
+    <div class="large-1 columns">
+        <label style="font-weight: 800;">Activo</label>
+        <input type="checkbox" {% if gauser_extra_selected.activo %}checked{% endif %} class="ge_activo"/>
+    </div>
+</div>
+
+<div class="row formulario_socio">
+    <div class="large-2 columns">
+        <label style="font-weight: 800;">Sexo
+            <select data-campo="sexo" class="gauser">
+                <option value="">---------</option>
+                <option value="H" {% if gauser_extra_selected.gauser.sexo == 'H' %}selected{% endif %}>Hombre</option>
+                <option value="M" {% if gauser_extra_selected.gauser.sexo == 'M' %}selected{% endif %}>Mujer</option>
+            </select>
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label style="font-weight: 800;">Fecha de nacimiento
+            <input type="text" id="id_na{{ gauser_extra_selected.id }}" placeholder="dd/mm/YYYY"
+                   title="La fecha de nacimiento debes introducirla en formato dd/mm/YYYY"
+                   value="{{ gauser_extra_selected.gauser.nacimiento|default_if_none:""|date:"d/m/Y" }}"/>
+        </label>
+    </div>
+    <div class="large-2 columns">
+        <label style="font-weight: 800;">DNI
+            <input type="text" data-campo="dni" value="{{ gauser_extra_selected.gauser.dni }}" maxlength="20"
+                   class="gauser"/>
+        </label>
+    </div>
+    <div class="large-5 columns">
+        <label style="font-weight: 800;">Correo electrónico
+            <input type="email" data-campo="email" id="id_email" maxlength="254"
+                   value="{{ gauser_extra_selected.gauser.email }}" class="gauser"/>
+        </label>
+    </div>
+</div>
+
+<div class="row formulario_socio">
+    <div class="large-3 columns">
+        <label style="font-weight: 800;">Teléfono fijo
+            <input type="text" data-campo="telfij" id="id_telfij" maxlength="30"
+                   value="{{ gauser_extra_selected.gauser.telfij|default_if_none:"" }}" class="gauser"/>
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label style="font-weight: 800;">Teléfono móvil
+            <input type="text" data-campo="telmov" id="id_telmov" maxlength="30"
+                   value="{{ gauser_extra_selected.gauser.telmov|default_if_none:"" }}" class="gauser"/>
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label style="font-weight: 800;">Nº ident. entidad <a href="/listados_usuarios_entidad/?tab=1"><i class="fa fa-info-circle"></i></a>
+            {#            {% if form2.id_entidad %}#}
+            <input type="text" data-campo="id_entidad" value="{{ gauser_extra_selected.id_entidad|default_if_none:"" }}"
+                   id="id_id_entidad" maxlength="20" class="gauser_extra"/>
+            {#            {% else %}#}
+            {#                <span data-tooltip title="Este campo no está disponible para este tipo de perfil"#}
+            {#                      class="has-tip label secondary radius">No disponible en este perfil</span>#}
+            {#            {% endif %}#}
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label style="font-weight: 800;">Nº ident. organización <a href="/listados_usuarios_entidad/?tab=1"><i class="fa fa-info-circle"></i></a>
+            {% if gauser_extra_selected.id_organizacion %}
+                <input type="text" data-campo="id_organizacion" value="{{ gauser_extra_selected.id_organizacion }}"
+                       id="id_id_organizacion" maxlength="20" class="gauser_extra"/>
+            {% else %}
+                <span data-tooltip title="Este campo no está disponible para este tipo de perfil"
+                      class="has-tip label secondary radius">No disponible en este perfil</span>
+            {% endif %}
+        </label>
+    </div>
+</div>
+
+<div class="panel callout row" id="id_tutores">
+    <div class="columns large-12">
+        <div class="row">
+            <div class="columns large-12">
+                {% if gauser_extra_selected|edad < 18 %}
+                    <p><strong>Este usuario es menor de edad y, por tanto, debe tener asignado al menos un tutor
+                        legal (para seleccionarlo debe estar registrado previamente).</strong></p>
+                {% else %}
+                    <p><strong>Este usuario es mayor de edad. No necesita tener asignados tutores legales, pero
+                        si lo deseas puedes hacer la asignación.</strong></p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <div class="row formulario_socio">
+                    <div class="large-6 columns">
+                        <div class="row collapse">
+                            <label style="font-weight: 800;">Selecciona al primer tutor</label>
+                            <div class="small-11 columns">
+                                <select class="select_user select_tutor" data-tutor="tutor1">
+                                    {% if gauser_extra_selected.tutor1 %}
+                                        <option value="{{ gauser_extra_selected.tutor1.id }}">{{ gauser_extra_selected.tutor1.gauser.last_name }}, {{ gauser_extra_selected.tutor1.gauser.first_name }}</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="large-6 columns">
+                        <div class="row collapse">
+                            <label style="font-weight: 800;">Selecciona al segundo tutor</label>
+
+                            <div class="small-11 columns tutores">
+                                <select class="select_user select_tutor" data-tutor="tutor2">
+                                    {% if gauser_extra_selected.tutor2 %}
+                                        <option value="{{ gauser_extra_selected.tutor2.id }}">{{ gauser_extra_selected.tutor2.gauser.last_name }}, {{ gauser_extra_selected.tutor2.gauser.first_name }}</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row formulario_socio">
+            <div class="large-12 columns">
+                <div class="row collapse">
+                    <label style="font-weight: 800;">Unidad familiar:</label>
+                    {% for miembro in gauser_extra_selected.unidad_familiar %}
+                        {% if not forloop.revcounter0 == 1 and not forloop.last %}
+                            <a data-id="{{ miembro.id }}" class="buscar_miembro">
+                                {{ miembro.gauser.get_full_name }}</a>,
+                        {% elif forloop.revcounter0 == 1 %}
+                            <a data-id="{{ miembro.id }}" class="buscar_miembro">
+                                {{ miembro.gauser.get_full_name }}</a> y
+                        {% else %}
+                            <a data-id="{{ miembro.id }}" class="buscar_miembro">
+                                {{ miembro.gauser.get_full_name }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row formulario_socio">
+    <div class="large-4 columns">
+        <label style="font-weight: 800;">Dirección
+            <input type="text" data-campo="address" id="id_address" maxlength="100"
+                   value="{{ gauser_extra_selected.gauser.address|default_if_none:"" }}" class="gauser"/>
+        </label>
+    </div>
+    <div class="large-2 columns">
+        <label style="font-weight: 800;">Codigo postal
+            <input type="text" data-campo="postalcode" id="id_postalcode" maxlength="10"
+                   value="{{ gauser_extra_selected.gauser.postalcode|default_if_none:"" }}" class="gauser"/>
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label style="font-weight: 800;">Localidad
+            <input type="text" data-campo="localidad" id="id_localidad" maxlength="50"
+                   value="{{ gauser_extra_selected.gauser.localidad|default_if_none:"" }}" class="gauser"/>
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label style="font-weight: 800;">Provincia
+            <select data-campo="provincia" id="id_provincia" class="gauser">
+                <option value="">Elige provincia</option>
+                <option value="01" {% if gauser_extra_selected.gauser.provincia == '01' %}selected{% endif %}>
+                    Álava/Araba
+                </option>
+                <option value="02" {% if gauser_extra_selected.gauser.provincia == '02' %}selected{% endif %}>Albacete
+                </option>
+                <option value="03" {% if gauser_extra_selected.gauser.provincia == '03' %}selected{% endif %}>
+                    Alicante/Alacant
+                </option>
+                <option value="04" {% if gauser_extra_selected.gauser.provincia == '04' %}selected{% endif %}>Almería
+                </option>
+                <option value="33" {% if gauser_extra_selected.gauser.provincia == '33' %}selected{% endif %}>Asturias
+                </option>
+                <option value="05" {% if gauser_extra_selected.gauser.provincia == '05' %}selected{% endif %}>Ávila
+                </option>
+                <option value="06" {% if gauser_extra_selected.gauser.provincia == '06' %}selected{% endif %}>Badajoz
+                </option>
+                <option value="08" {% if gauser_extra_selected.gauser.provincia == '08' %}selected{% endif %}>
+                    Barcelona
+                </option>
+                <option value="09" {% if gauser_extra_selected.gauser.provincia == '09' %}selected{% endif %}>Burgos
+                </option>
+                <option value="10" {% if gauser_extra_selected.gauser.provincia == '10' %}selected{% endif %}>Cáceres
+                </option>
+                <option value="11" {% if gauser_extra_selected.gauser.provincia == '11' %}selected{% endif %}>Cádiz
+                </option>
+                <option value="39" {% if gauser_extra_selected.gauser.provincia == '39' %}selected{% endif %}>
+                    Cantabria
+                </option>
+                <option value="12" {% if gauser_extra_selected.gauser.provincia == '12' %}selected{% endif %}>
+                    Castellón/Castelló
+                </option>
+                <option value="51" {% if gauser_extra_selected.gauser.provincia == '51' %}selected{% endif %}>Ceuta
+                </option>
+                <option value="13" {% if gauser_extra_selected.gauser.provincia == '13' %}selected{% endif %}>Ciudad
+                    Real
+                </option>
+                <option value="14" {% if gauser_extra_selected.gauser.provincia == '14' %}selected{% endif %}>Córdoba
+                </option>
+                <option value="16" {% if gauser_extra_selected.gauser.provincia == '16' %}selected{% endif %}>Cuenca
+                </option>
+                <option value="17" {% if gauser_extra_selected.gauser.provincia == '17' %}selected{% endif %}>
+                    Gerona/Girona
+                </option>
+                <option value="35" {% if gauser_extra_selected.gauser.provincia == '35' %}selected{% endif %}>Las
+                    Palmas
+                </option>
+                <option value="18" {% if gauser_extra_selected.gauser.provincia == '18' %}selected{% endif %}>Granada
+                </option>
+                <option value="19" {% if gauser_extra_selected.gauser.provincia == '19' %}selected{% endif %}>
+                    Guadalajara
+                </option>
+                <option value="20" {% if gauser_extra_selected.gauser.provincia == '20' %}selected{% endif %}>
+                    Guipúzcoa/Guipuzkoa
+                </option>
+                <option value="21" {% if gauser_extra_selected.gauser.provincia == '21' %}selected{% endif %}>Huelva
+                </option>
+                <option value="22" {% if gauser_extra_selected.gauser.provincia == '22' %}selected{% endif %}>Huesca
+                </option>
+                <option value="07" {% if gauser_extra_selected.gauser.provincia == '07' %}selected{% endif %}>Islas
+                    Baleares/Illes Balears
+                </option>
+                <option value="23" {% if gauser_extra_selected.gauser.provincia == '23' %}selected{% endif %}>Jaén
+                </option>
+                <option value="15" {% if gauser_extra_selected.gauser.provincia == '15' %}selected{% endif %}>A Coruña
+                </option>
+                <option value="26" {% if gauser_extra_selected.gauser.provincia == '26' %}selected{% endif %}>La Rioja
+                </option>
+                <option value="24" {% if gauser_extra_selected.gauser.provincia == '24' %}selected{% endif %}>León
+                </option>
+                <option value="25" {% if gauser_extra_selected.gauser.provincia == '25' %}selected{% endif %}>
+                    Lérida/Lleida
+                </option>
+                <option value="27" {% if gauser_extra_selected.gauser.provincia == '27' %}selected{% endif %}>Lugo
+                </option>
+                <option value="28" {% if gauser_extra_selected.gauser.provincia == '28' %}selected{% endif %}>Madrid
+                </option>
+                <option value="29" {% if gauser_extra_selected.gauser.provincia == '29' %}selected{% endif %}>Málaga
+                </option>
+                <option value="52" {% if gauser_extra_selected.gauser.provincia == '52' %}selected{% endif %}>Melilla
+                </option>
+                <option value="30" {% if gauser_extra_selected.gauser.provincia == '30' %}selected{% endif %}>Murcia
+                </option>
+                <option value="31" {% if gauser_extra_selected.gauser.provincia == '31' %}selected{% endif %}>Navarra
+                </option>
+                <option value="32" {% if gauser_extra_selected.gauser.provincia == '32' %}selected{% endif %}>
+                    Orense/Ourense
+                </option>
+                <option value="34" {% if gauser_extra_selected.gauser.provincia == '34' %}selected{% endif %}>Palencia
+                </option>
+                <option value="36" {% if gauser_extra_selected.gauser.provincia == '36' %}selected{% endif %}>
+                    Pontevedra
+                </option>
+                <option value="37" {% if gauser_extra_selected.gauser.provincia == '37' %}selected{% endif %}>
+                    Salamanca
+                </option>
+                <option value="40" {% if gauser_extra_selected.gauser.provincia == '40' %}selected{% endif %}>Segovia
+                </option>
+                <option value="41" {% if gauser_extra_selected.gauser.provincia == '41' %}selected{% endif %}>Sevilla
+                </option>
+                <option value="42" {% if gauser_extra_selected.gauser.provincia == '42' %}selected{% endif %}>Soria
+                </option>
+                <option value="43" {% if gauser_extra_selected.gauser.provincia == '43' %}selected{% endif %}>
+                    Tarragona
+                </option>
+                <option value="38" {% if gauser_extra_selected.gauser.provincia == '38' %}selected{% endif %}>Santa Cruz
+                    de Tenerife
+                </option>
+                <option value="44" {% if gauser_extra_selected.gauser.provincia == '44' %}selected{% endif %}>Teruel
+                </option>
+                <option value="45" {% if gauser_extra_selected.gauser.provincia == '45' %}selected{% endif %}>Toledo
+                </option>
+                <option value="46" {% if gauser_extra_selected.gauser.provincia == '46' %}selected{% endif %}>
+                    Valencia/Valéncia
+                </option>
+                <option value="47" {% if gauser_extra_selected.gauser.provincia == '47' %}selected{% endif %}>
+                    Valladolid
+                </option>
+                <option value="48" {% if gauser_extra_selected.gauser.provincia == '48' %}selected{% endif %}>
+                    Vizcaya/Bizkaia
+                </option>
+                <option value="49" {% if gauser_extra_selected.gauser.provincia == '49' %}selected{% endif %}>Zamora
+                </option>
+                <option value="50" {% if gauser_extra_selected.gauser.provincia == '50' %}selected{% endif %}>Zaragoza
+                </option>
+            </select>
+        </label>
+    </div>
+</div>
+
+<div class="row formulario_socio">
+    <div class="large-6 columns">
+        <label style="font-weight: 800;">IBAN (Cuenta bancaria)
+            <input type="text" data-campo="num_cuenta_bancaria" id="id_num_cuenta_bancaria" maxlength="50"
+                   title="{{ gauser_extra_selected.banco.nombre }}"
+                   value="{{ gauser_extra_selected.num_cuenta_bancaria|default_if_none:"" }}" class="gauser_extra"/>
+        </label>
+    </div>
+    <div class="large-6 columns">
+        <label style="font-weight: 800;">Ocupación del usuario
+            <input type="text" data-campo="ocupacion" id="id_ocupacion" maxlength="300"
+                   value="{{ gauser_extra_selected.ocupacion|default_if_none:"" }}" class="gauser_extra"/>
+        </label>
+    </div>
+</div>
+
+<div class="row formulario_socio">
+    <div class="columns large-12">
+        <label style="font-weight: 800;">Datos de interés del usuario
+            <div style="min-height: 280px;border:solid 1px lightgrey;" id="id_observaciones"
+                 contenteditable="true">
+                {% autoescape off %}{{ gauser_extra_selected.observaciones }}{% endautoescape %}</div>
+        </label>
+    </div>
+</div>
+
+<div class="row formulario_socio">
+    <div class="columns large-12">
+        <h5><i class="fa fa-hand-o-up"></i> <strong>Selecciona perfiles/cargos vinculados a este
+            usuario</strong> <a href="/listados_usuarios_entidad/?tab=3"><i class="fa fa-info-circle"></i></a></h5>
+    </div>
+</div>
+
+<div class="row panel formulario_socio">
+    {% for cargo in cargos %}
+        <div class="large-3 columns" id="div_cargos">
+            <input type="checkbox" class="cargos" value="{{ cargo.id }}"
+                    {% if cargo in gauser_extra_selected.cargos.all %}
+                   checked="checked" {% endif %}> {{ cargo.cargo }}
+        </div>
+    {% endfor %}
+</div>
+
+<div class="row formulario_socio">
+    <div class="columns large-12">
+        <h5><i class="fa fa-hand-o-up"></i> <strong>Selecciona las secciones/departamentos a las
+            que pertenece este usuario</strong> <a href="/listados_usuarios_entidad/?tab=2"><i
+                class="fa fa-info-circle"></i></a></h5>
+    </div>
+</div>
+
+<div class="row panel formulario_socio">
+    {% for subentidad in subentidades %}
+        <div class="large-3 columns" id="div_subentidades">
+            <input type="checkbox" class="subentidades" value="{{ subentidad.id }}"
+                    {% if subentidad in gauser_extra_selected.subentidades.all %}
+                   checked="checked" {% endif %}> {{ subentidad.nombre }}
+        </div>
+    {% endfor %}
+</div>
+
+
+{#{% if gauser_extra_selected|faltas_asistencia %}#}
+{#    <div class="row formulario_socio">#}
+{#        <div class="columns large-12">#}
+{#            <h5>Faltas de asistencia</h5>#}
+{#        </div>#}
+{#    </div>#}
+{#    {% for falta in gauser_extra_selected|faltas_asistencia %}#}
+{#        <p><i class="fa fa-caret-right"></i> {{ falta.get_tipo_display }}#}
+{#            el {{ falta.sesion.get_dia_display }} {{ falta.fecha_falta|date:'d \d\e F \d\e Y'|lower }}#}
+{#            a {{ falta.sesion.materia.nombre }} {% if falta.justificada %}- <b>Está justificada</b>{% endif %}#}
+{#        </p>#}
+{#    {% endfor %}#}
+{#{% else %}#}
+{#    <div class="row formulario_socio">#}
+{#        <div class="columns large-12">#}
+{#            <h5>No se han registrado faltas de asistencia</h5>#}
+{#        </div>#}
+{#    </div>#}
+{#{% endif %}#}
+
+<script>
+    setTimeout(function () {
+        $("#id_na{{ gauser_extra_selected.id }}").fdatepicker({
+            format: 'dd/mm/yyyy',
+            weekStart: 1,
+            endDate: new Date(),
+            startView: 'decade',
+            leftArrow: '<<',
+            rightArrow: '>>',
+            language: 'es'
+        }).on('changeDate', function (ev) {
+            var campo = 'nacimiento';
+            var valor = ev.date.getFullYear() + '-' + (ev.date.getMonth() + 1) + '-' + ev.date.getDate();
+            var ge = $('#gauser_extra_selected').val();
+            post_change('mod_gauser_data', campo, ge, valor);
+        })
+    }, 200);
+
+    {% if gauser_extra_selected.tutor1 %}
+        $("#id_tutor1").select2("data",
+            {
+                id: {{gauser_extra_selected.tutor1.id}},
+                text: "{{ gauser_extra_selected.tutor1.gauser.last_name }}, {{ gauser_extra_selected.tutor1.gauser.first_name }}"
+            }
+        );
+    {% endif %}
+    {% if gauser_extra_selected.tutor2 %}
+        $("#id_tutor2").select2("data",
+            {
+                id: {{gauser_extra_selected.tutor2.id}},
+                text: "{{ gauser_extra_selected.tutor2.gauser.last_name }}, {{ gauser_extra_selected.tutor2.gauser.first_name }}"
+            }
+        );
+    {% endif %}
+
+    setTimeout(function () {
+        editor = CKEDITOR.inline('id_observaciones');
+        editor.on('change', function (e) {
+            var valor = e.editor.getData();
+            setTimeout(function () {
+                if (valor == e.editor.getData()) {
+                    post_change('mod_gauser_extra_data', 'observaciones', {{ gauser_extra_selected.id }}, valor);
+                }
+            }, 750);
+        });
+    }, 700);
+
+    load_select2('.select_user');
+</script>

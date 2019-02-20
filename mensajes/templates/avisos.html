@@ -1,0 +1,3 @@
+{% for aviso in avisos %}
+    <p> {% autoescape off %} {{ aviso.aviso }} {% endautoescape %} </p>
+{% endfor %}

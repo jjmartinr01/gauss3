@@ -1,0 +1,1 @@
+{% load convivencia_extras %}Informe sancionador para {{ informe.sancionado.gauser.get_full_name }} {{ informe.sancionado.gauser_extra_estudios.grupo.nombre }} ({% with estadistica=informe.sancionado|estadistica_informes_is2pdf %}CC: {{ estadistica.tcnc }}, CG: {{ estadistica.gpc }}, Informes: {{ estadistica.informes }}{% endwith %})

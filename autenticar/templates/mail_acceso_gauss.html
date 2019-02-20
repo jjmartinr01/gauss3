@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html style="overflow:hidden">
+<head>
+    <title>GAUSS - Recuperar contraseña de acceso</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" type="image/x-icon" href="/static/images/favicon.png">
+    <link rel="stylesheet" href="/static/css/gauss_inicio.css" type="text/css">
+    <link rel="stylesheet" href="/static/foundation-5.2.2/css/foundation.css"/>
+</head>
+
+<body style="text-align: center;">
+<img style="padding-top:100px;" src="/static/images/logo_gauss_acceso.png" width="200"/>
+
+{#<h3>Tienes {{ g_s|length }} {% if g_s != 1 %} cuentas {% else %} cuenta {% endif %} en GAUSS:</h3>#}
+{#<ul class="no-bullet">#}
+{#    {% for g in g_s %}#}
+{#        {% if forloop.first %}#}
+{#            <li>Una cuenta asociada al usuario <span style="color:red;">{{ g.get_full_name }}</span></li>{% endif %}#}
+{#        {% if not forloop.first %}#}
+{#            <li>Otra cuenta asociada al usuario <span style="color:red;">{{ g.get_full_name }}</span></li>{% endif %}#}
+{#    {% endfor %}#}
+{#</ul>#}
+<h4>Te hemos mandado un correo que te ayudará a recuperar tu contraseña. Te llegará en un par de minutos ...</h4>
+<h5 class="small subheader">Quizás tengas que mirar en la bandeja de correo no deseado (spam) para verlo.</h5>
+<META HTTP-EQUIV="Refresh" Content="5; URL=/">
+</body>
+</html>

@@ -1,0 +1,71 @@
+{% load my_templatetags %}
+
+<dl class="accordion" data-accordion>
+    {% for subentidad in subentidades %}
+        <dd class="accordion-navigation" id="accordion{{ subentidad.id }}"
+            style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+            <a href="#panel___{{ subentidad.id }}">
+                <i id="circle{{ subentidad.id }}" class="fa fa-plus-circle circle_icon"></i>
+                {{ subentidad.nombre }} <span style="color: #a3a3a3">({{ subentidad.edad_min }} &#8804;
+                       <i class="fa fa-male"></i> &#8804; {{ subentidad.edad_max }})</span>
+            </a>
+
+            <div id="panel___{{ subentidad.id }}" class="content accordion-subentidad" data-id="{{ subentidad.id }}">
+                <dl>
+
+                    <dl>
+                        <dt>Observaciones</dt>
+
+                        <dd id="observaciones{{ subentidad.id }}">
+                            {{ subentidad.observaciones }}</dd>
+
+                    </dl>
+                    <hr>
+                    {% with subentidad|usuarios_en_subentidad as usuarios %}
+                        <dt>Personas que pertenecen a este departamento/sección ({{ usuarios|length }})</dt>
+
+                        <dd id="lista_usuarios{{ subentidad.id }}">
+                            {% for usuario in usuarios %}
+                                {% if forloop.counter < 6 %}
+                                    &nbsp;<span class="radius label">{{ usuario.gauser.get_full_name }}</span>
+                                {% endif %}
+                                {% if forloop.last and forloop.counter > 5 %}
+                                    &nbsp;<span class="secondary radius label">
+                            <a class="mostrar_usuarios" data-id="{{ subentidad.id }}">... (mostrar todos)</a></span>
+                                {% endif %}
+                            {% endfor %}
+                        </dd>
+                    {% endwith %}
+                </dl>
+                {% if request.session.gauser_extra|has_permiso:'edita_subentidades' %}
+                    <hr>
+                    <dl>
+                        <dt>Rango de edad para los miembros de este departamento/sección</dt>
+
+                        <dd id="rango_edad{{ subentidad.id }}">
+                            Mayores de {{ subentidad.edad_min }} y menores de {{ subentidad.edad_max }}</dd>
+
+                    </dl>
+                    <hr>
+                    <dl>
+                        <dt>Mensajería</dt>
+
+                        <dd id="mensajeria{{ subentidad.id }}">
+                            {% if subentidad.mensajes %}
+                                Admite mensajería
+                            {% else %}
+                                No admite mensajería
+                            {% endif %}</dd>
+
+                    </dl>
+                    <hr>
+                    <dl>
+                        <dt>Número de identificación para hacer cargas masivas</dt>
+
+                        <dd>&nbsp;&nbsp;{{ subentidad.id }}</dd>
+                    </dl>
+                {% endif %}
+            </div>
+        </dd>
+    {% endfor %}
+</dl>

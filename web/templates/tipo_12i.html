@@ -1,0 +1,5 @@
+{% if content_div.imagen %}
+    <img id="imagen_web{{ cd.id }}" class="imagen_web" data-roworden="{{ row.orden }}" data-cd="{{ content_div.id }}" data-orden="{{ content_div.orden }}" title="{{ content_div.caption }}" src="{{ content_div.imagen.fichero.url }}">
+{% else %}
+    <img id="imagen_web{{ cd.id }}" class="imagen_web" data-roworden="{{ row.orden }}" data-cd="{{ content_div.id }}" title="{{ content_div.caption }}" src="/static/images/1000x400.png">
+{% endif %}

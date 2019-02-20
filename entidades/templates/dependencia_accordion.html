@@ -1,0 +1,68 @@
+{% load l10n %}
+<dd class="accordion-navigation" id="accordion{{ dependencia.id }}">
+    <a href="#dependencia{{ dependencia.id }}">
+        <span id="nombre_accordion{{ dependencia.id }}">{{ dependencia.nombre }}</span>
+    </a>
+
+    <div id="dependencia{{ dependencia.id }}" class="content dependencia_contenido"
+         data-dependencia="{{ dependencia.id }}">
+
+        <ul class="button-group centered">
+
+            <li title="Borrar este dependencia">
+                <a href="#" class="button delete_dependencia"
+                   data-id="{{ dependencia.id }}"><i
+                        class="fa fa-trash-o"></i>
+                    Borrar</a></li>
+
+        </ul>
+
+        <div class="row">
+            <div class="columns large-5">
+                <label>Nombre de la dependencia
+                    <input type="text" name="nombre{{ dependencia.id }}" id="nombre{{ dependencia.id }}"
+                           value="{{ dependencia.nombre }}" class="nombre_dependencia"
+                           data-id="{{ dependencia.id }}"></label>
+            </div>
+            <div class="columns large-2">
+                <label>Abreviatura
+                    <input type="text" name="abrev{{ dependencia.id }}" id="abrev{{ dependencia.id }}"
+                           value="{{ dependencia.abrev }}" class="abrev_dependencia"
+                           data-id="{{ dependencia.id }}"></label>
+            </div>
+            <div class="columns large-5">
+                <label>Edificio en el que se encuentra
+                    <input type="text" name="edificio{{ dependencia.id }}" id="edificio{{ dependencia.id }}"
+                           value="{{ dependencia.edificio }}" class="edificio_dependencia"
+                           data-id="{{ dependencia.id }}"></label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-4">
+                <label>Nombre de la planta
+                    <input type="text" name="planta{{ dependencia.id }}" id="planta{{ dependencia.id }}"
+                           value="{{ dependencia.planta }}" class="planta_dependencia"
+                           data-id="{{ dependencia.id }}"></label>
+            </div>
+            <div class="columns large-3">
+                <label>Metros de largo
+                    <input type="text" name="largo{{ dependencia.id }}" id="largo{{ dependencia.id }}"
+                           value="{{ dependencia.largo|unlocalize }}" class="largo_dependencia"
+                           data-id="{{ dependencia.id }}"></label>
+            </div>
+            <div class="columns large-3">
+                <label>Metros de ancho
+                    <input type="text" name="ancho{{ dependencia.id }}" id="ancho{{ dependencia.id }}"
+                           value="{{ dependencia.ancho|unlocalize }}" class="ancho_dependencia"
+                           data-id="{{ dependencia.id }}"></label>
+            </div>
+            <div class="columns large-2">
+                <label title="Las aulas se utilizarán en la gestión del módulo de horarios">¿Es Aula?</label>
+                &nbsp;&nbsp;
+                <a class="es_aula" data-id="{{ dependencia.id }}" id="d{{ dependencia.id }}" style="font-weight: 800">
+                    {% if dependencia.es_aula %}Sí{% else %}No{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+</dd>

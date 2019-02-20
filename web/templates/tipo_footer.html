@@ -1,0 +1,21 @@
+<tipo_footer id="tipo_footer___{{ content_div.id }}" class="row content_div-tipo_footer">
+    <div class="large-12 columns">
+        <hr/>
+        <div class="row">
+            <div class="large-6 columns">
+                <p>
+                    © {{ content_div.entidad.name }}
+                    <br>{{ content_div.entidad.address }} {{ content_div.entidad.localidad }}
+                    ({{ content_div.entidad.get_provincia_display }})</p>
+            </div>
+            <div class="large-6 columns">
+                <ul class="inline-list right">
+                    {% for enlace in content_div.enlaces.all %}
+                        <li><a href="{% if enlace.href %}{{ enlace.href }}{% else %}#{% endif %}" class="link_html_web"
+                               id="link-{{ enlace.id }}">{{ enlace.texto }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</tipo_footer>

@@ -1,0 +1,188 @@
+{% load my_templatetags %}
+<div id="whole_page">
+    <div>
+        <h4 style="text-align: center;color: #008CBA;"><strong> {% if articulo.formato == 'FIJ' %} Compra de
+            artículo {% elif articulo.formato == 'SUB' %} Realiza oferta para la
+            subasta {% elif articulo.formato == 'SER' %} Solicitud de servicio/trabajo {% endif %}</strong>
+        </h4>
+    </div>
+
+    <div class="carrusel">
+        {% for foto in articulo.fotos.all %}
+            <div><img src="{{ foto.fichero.url }}"></div>
+        {% endfor %}
+    </div>
+
+    <ul class="pricing-table">
+        <li class="title">{{ articulo.nombre }}</li>
+        <li class="price">{{ articulo|precio }} €</li>
+        <li class="description">{{ articulo.descripcion }}</li>
+        {% if articulo.precio_envio %}
+            <li class="bullet-item">Gastos de envío: {{ articulo.precio_envio }} €</li>
+        {% endif %}
+        {% if articulo.pago %}
+            <li class="description">{{ articulo.pago }}</li>
+        {% endif %}
+        <li class="bullet-item"><span style="color: gray;">
+        {% if articulo.formato == 'FIJ' %} Vende:
+        {% elif articulo.formato == 'SUB' %} Subasta:
+        {% elif articulo.formato == 'SER' %} Ofrecido por: {% endif %}
+        </span>
+            {{ articulo.vendedor.get_full_name }} ({{ articulo.entidad.name }})
+        </li>
+        {% if articulo.formato == 'SUB' %}
+            <li class="bullet-item">
+                <input type="text" name="oferta" value="" placeholder="Escribe aquí tu oferta (€)" id="id_oferta">
+            </li>
+        {% else %}
+            <input type="hidden" name="oferta" value="">
+        {% endif %}
+    </ul>
+
+    <h4>Tus datos son:</h4>
+    {% if request.session.gauser_extra %}
+        <div class="row">
+            <div class="columns large-4 medium-4">
+                Nombre: <strong>{{ request.session.gauser_extra.gauser.get_full_name }}</strong>
+            </div>
+            <div class="columns large-4 medium-4">
+                Email: <strong>{{ request.session.gauser_extra.gauser.email }}</strong>
+            </div>
+            <div class="columns large-4 medium-4">
+                Teléfono: <strong>{{ request.session.gauser_extra.gauser.telmov }}</strong>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <p>Si no hay datos suficientes para que el vendedor contacte contigo deberías añadirlos en: <a
+                        href="/mis_datos/"><i class="fa fa-user"></i> Mis datos</a></p>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="columns large-5 medium-5">
+                <label>Escribe tu nombre
+                    <input type="text" name="nombre_comprador" id="nombre_comprador"
+                           value="{{ request.session.gauser_extra.gauser.get_full_name }}">
+                </label>
+            </div>
+            <div class="columns large-5 medium-5">
+                <label>Escribe tu email
+                    <input type="text" name="email_comprador" id="email_comprador"
+                           value="{{ request.session.gauser_extra.gauser.email }}">
+                </label>
+            </div>
+            <div class="columns large-2 medium-2">
+                <label>Teléfono
+                    <input type="text" name="tel_comprador" id="email_comprador"
+                           value="{{ request.session.gauser_extra.gauser.telmov }}">
+                </label>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if articulo.formato == 'FIJ' %}
+        <div class="row">
+            <div class="columns large-12">
+                <label>Escribe aquí un mensaje para el vendedor:</label>
+            <textarea name="mensaje_comprador" id="mensaje_comprador" rows="6">Hola {{ articulo.vendedor.first_name }},
+He visto el artículo "{{ articulo.nombre }}" que has puesto a la venta a través de GAUSS y me gustaría comprarlo.
+Por favor, ponte en contacto conmigo para cerrar la compra.
+    </textarea></div>
+        </div>
+    {% elif articulo.formato == 'SER' %}
+        <div class="row">
+            <div class="columns large-12">
+                <label>Escribe aquí un mensaje para el vendedor:</label>
+            <textarea name="mensaje_comprador" id="mensaje_comprador" rows="6">Hola {{ articulo.vendedor.first_name }},
+He visto en GAUSS que ofreces el servicio/trabajo "{{ articulo.nombre }}" y me gustaría ...
+Por favor, ponte en contacto conmigo para cerrar la compra.
+    </textarea></div>
+        </div>
+    {% else %}
+        <input type="text" name="mensaje_comprador" value="">
+    {% endif %}
+
+    <div class="row">
+        <div class="large-12 medium-12 small-12 columns text-center">
+            <a class="button" id="boton_aceptar" href="#">
+                {% if articulo.formato == 'FIJ' %}<i class="fa fa-envelope"></i> Envía al vendedor
+                {% elif articulo.formato == 'SUB' %} <i class="fa fa-gavel"></i> Realiza oferta
+                {% elif articulo.formato == 'SER' %} <i class="fa fa-envelope"></i> Envía solicitud {% endif %}</a>
+        </div>
+    </div>
+</div>
+
+
+<div id="aviso_mensaje_cola" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true"
+     role="dialog">
+    <h2 id="modalTitle">Tu solicitud ha sido cursada correctamente</h2>
+    <p>Te hemos enviado un correo con información detallada. Te llegará en un par de minutos ...</p>
+    <h5 class="small subheader">Quizás tengas que mirar en la bandeja de correo no deseado (spam) para verlo.</h5>
+    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.min.js"></script>
+<script>
+    $('#boton_aceptar').click(function (e) {
+        e.preventDefault();
+        var oferta = '{{ articulo.precio }}';
+        $('#id_articulo').val({{ articulo.id }});
+        {% if articulo.formato == 'FIJ' %}
+            var action = 'precio_fijo';
+            var mensaje_comprador = $('#mensaje_comprador').val();
+        {% elif articulo.formato == 'SUB' %}
+            var action = 'subasta';
+            var oferta = $('#id_oferta').val();
+            var mensaje_comprador = '';
+        {% elif articulo.formato == 'SER' %}
+            var action = 'servicio';
+            var mensaje_comprador = $('#mensaje_comprador').val();
+        {% endif %}
+        $.post("/ajax_compraventa/", {
+                    id_articulo: {{ articulo.id }},
+                    action: action,
+                    oferta: oferta,
+                    mensaje_comprador: mensaje_comprador
+                },
+                function (data) {
+                    $('#aviso_mensaje_cola').foundation('reveal', 'open');
+                });
+    });
+
+    $(document).on('closed.fndtn.reveal', '#aviso_mensaje_cola', function () {
+        window.location.href = '/comprar_y_vender/';
+    });
+
+    $('.carrusel').slick({
+        centerMode: true,
+        centerPadding: '60px',
+        slidesToShow: 3,
+        infinite: true,
+        arrows: true,
+        appendArrows: 'hola',
+        responsive: [
+            {
+                breakpoint: 768,
+                settings: {
+                    arrows: true,
+                    centerMode: true,
+                    centerPadding: '40px',
+                    slidesToShow: 3
+                }
+            },
+            {
+                breakpoint: 480,
+                settings: {
+                    arrows: false,
+                    centerMode: true,
+                    centerPadding: '40px',
+                    slidesToShow: 1
+                }
+            }
+        ]
+    });
+
+</script>

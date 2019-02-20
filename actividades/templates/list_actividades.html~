@@ -1,0 +1,83 @@
+{% load my_templatetags %}
+
+<style>
+.no_puede_participar {font-size:12pt;opacity:0.4;}
+.puede_participar {font-size:12pt;cursor:pointer;}
+.puede_participar:hover {font-size:12pt;cursor:pointer;color:#E76123;}
+.fa-bookmark {font-size:12pt;}
+.fa-star {color:#e76123;}
+</style>
+
+<table align="CENTER" cellpadding="3" width="100%">
+  {% for actividad in actividades %}
+    {% ifchanged actividad.fecha_inicio.month %}
+      </table>
+      <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap">
+      Actividades programadas para el mes de {{ actividad.fecha_inicio|date:"F" }}
+      </td></tr></table>
+      <table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+    {% endifchanged %}
+      <tr><td colspan="7" style="height:1px;background-color:#623090;"></td></tr>
+      <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}">
+      
+      <td style="font-size:8pt;color:#623090;width:20%;text-align:center;" class="tabla_actividads">
+	  {% if actividad.fecha_inicio == actividad.fecha_fin %}
+	      <span title="Se realiza el {{actividad.fecha_inicio}}">{{actividad.fecha_inicio|date}}</span>
+	  {% else %}
+	      <span title="Se realiza entre el {{actividad.fecha_inicio}} y el {{actividad.fecha_fin}}">{{actividad.fecha_inicio|date}} ~ {{actividad.fecha_fin|date}}</span>
+	  {% endif %}
+      </td>
+
+      <td id="actividad_{{actividad.id}}" class="actividad_texto" style="font-size:8pt;color:#623090;width:57%;white-space:normal;cursor:pointer;"> <span class="color2">&nbsp;{{actividad.actividad_title}}</span>
+      </td>
+
+      <td style="font-size:8pt;color:#623090;width:3%;text-align:center;">
+      {% if actividad.subentidades.all|length > 0 %} <i  class="fa fa-group show_hide_participantes" id="subentidad_{{actividad.id}}" style="cursor:pointer;font-size:15px;" title="{% for subentidad in actividad.subentidades.all %} {{subentidad.nombre}} {% if not forloop.last %}, {% endif %} {% endfor %}"></i> {% endif %}
+      </td>
+
+      <td style="font-size:8pt;color:#623090;width:10%;text-align:center;" title="El {{actividad.deadline}} es la máxima fecha para poder apuntarse como participante o colaborador.">
+      {{actividad.deadline|date}}
+      </td>
+
+      {% if actividad|puede_colaborar:request.session.gauser_extra %}
+	  <td style="width:3%;text-align:center;" title="Puedes añadirte como colaborador con la actividad o añadir a otra persona dependiendo de tu perfil">
+	      {% if request.session.gauser_extra.gauser.sexo == 'H' %}
+		<i id="add_colaborador___{{actividad.id}}" class="fa fa-male puede_participar add_colaborador"><span style="font-size:8pt;"><i class="fa fa-plus-circle"></i></span></i> 
+	      {% else %}
+		<i id="add_colaborador___{{actividad.id}}" class="fa fa-female puede_participar add_colaborador"><span style="font-size:8pt;"><i class="fa fa-plus-circle"></i></span></i> 
+	      {% endif %}
+	  </td>
+      {% else %}
+	  <td style="width:3%;text-align:center;" title="No son necesarios colaboradores con esta actividad">
+	      {% if request.session.gauser_extra.gauser.sexo == 'H' %}
+		<i id="add_colaborador___{{actividad.id}}" class="fa fa-male no_puede_participar"><span style="font-size:9pt;"><i class="fa fa-plus-circle"></i></span></i> 
+	      {% else %}
+		<i id="add_colaborador___{{actividad.id}}" class="fa fa-female no_puede_participar"><span style="font-size:9pt;"><i class="fa fa-plus-circle"></i></span></i> 
+	      {% endif %}
+	  </td>
+      {% endif %}
+      
+      <td style="width:3%;text-align:center;">
+	  {% if actividad|puede_participar:request.session.gauser_extra %}
+	      <i title="Puedes incluirte como participante en la actividad o incluir a otros educandos dependiendo de tu perfil" id="add_participante___{{actividad.id}}" class="fa fa-user puede_participar"><span style="font-size:8pt;"><i class="fa fa-plus-circle"></i></span></i> 
+	  {% else %}
+	      <i title="No puedes incluirte como participante en la actividad o incluir a otros educandos" id="add_participante___{{actividad.id}}" class="fa fa-user no_puede_participar"><span style="font-size:8pt;"><i class="fa fa-plus-circle"></i></span></i> 
+	  {% endif %}
+      </td>
+
+      <td style="width:3%;text-align:center;">
+	  {% if actividad.organizador == request.session.gauser_extra or request.session.gauser_extra|has_permiso:'mod_actividades_grupo' %}
+	      <i title="Pulsando en este icono puedes modificar el contenido de la actividad o incluso borrarla" id="mod_actividad___{{actividad.id}}" class="fa fa-pencil puede_participar modificar_actividad"></i> 
+	  {% else %}
+	      <i title="No tienes permiso para modificar el contenido de la actividad" id="mod_actividad___{{actividad.id}}" class="fa fa-pencil no_puede_participar"></i> 
+	  {% endif %}
+      </td>
+      </tr>
+
+      <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}"><td colspan="7"> <div id="div_{{actividad.id}}" style="padding-left:35px;padding-right:35px;white-space:normal;display:none;"></div> </td></tr>
+
+      <tr class="{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}"><td colspan="7"> <div id="participantes_{{actividad.id}}" style="padding-left:35px;padding-right:35px;white-space:normal;display:none;"></div> </td></tr>
+  
+{% endfor %}
+</table>
+

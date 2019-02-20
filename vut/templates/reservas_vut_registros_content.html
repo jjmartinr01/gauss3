@@ -1,0 +1,64 @@
+<div class="row">
+    <div class="columns large-4">
+        <label>Nombre:</label>{{ v.nombre }} {{ v.apellido1 }} {{ v.apellido2 }}
+    </div>
+    <div class="columns large-4">
+        <label>Fecha de nacimiento:</label> {{ v.nacimiento|date:'d/m/Y' }}
+    </div>
+    <div class="columns large-4">
+        <label>País de nacimiento:</label>{{ v.get_pais_display }}
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="columns large-4">
+        <label>Tipo de documento:</label> {{ v.get_tipo_ndi_display }}
+    </div>
+    <div class="columns large-4">
+        <label>Nº de documento:</label>{{ v.ndi }}
+    </div>
+    <div class="columns large-4">
+        <label>Fecha de expedición:</label>{{ v.fecha_exp|date:'d/m/Y' }}
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="columns large-4">
+        <label>Fecha de entrada:</label>{{ v.reserva.entrada|date:'d/m/Y' }}
+    </div>
+    <div class="columns large-4">
+        <label>Sexo:</label> {{ v.get_sexo_display }}
+    </div>
+    <div class="columns large-4">
+        <label>Registrado en {{ v.reserva.vivienda.get_police_display }}:</label>
+        <div id="registro_policia{{ v.id }}">
+        {% if v.fichero_policia %}
+            <span style="color:green"><i class="fa fa-check"></i> </span>{% else %}
+            <a data-dropdown="drop{{ v.id }}" aria-controls="drop1" aria-expanded="false">Posibles
+                acciones</a>
+            <ul id="drop{{ v.id }}" class="f-dropdown" data-dropdown-content aria-hidden="true"
+                tabindex="-1">
+                <li>
+                    <a title="Selecciona esta opción si quieres que Gauss intente registrar automáticamente al viajero en la Policía/Guardia Civil"
+                       data-id="{{ v.id }}" class="activar_registro"><i class="fa fa-vcard-o fa-fw"></i>
+                        Intentar que Gauss registre al viajero</a></li>
+                <li><a data-id="{{ v.id }}" class="registrado_manualmente"
+                       title="Selecciona esta opción si has registrado manualmente al viajero en la página web de la Policía/Guardia Civil">
+                    <i class="fa fa-check fa-fw"></i>Marcar como registrado</a></li>
+            </ul>
+        {% endif %}
+        </div>
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="columns large-12 text-center"><img src="{{ v.firma.url }}" width="120px"/>
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="columns large-12"><label>Observaciones:</label>
+    <div id="observaciones{{ v.id }}">{% autoescape off %}{{ v.observaciones }}{% endautoescape %}</div>
+    </div>
+</div>
+

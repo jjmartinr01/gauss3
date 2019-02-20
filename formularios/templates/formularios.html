@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}"
+          xmlns="http://www.w3.org/1999/html">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="gform" id="gform" value="{{ id_gform }}">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong>
+                Formularios {{ request.session.gauser_extra.ronda.entidad.name }}</strong></h4>
+        </div>
+
+        <div id="lista_gforms">
+            {% include "formularios_accordion.html" %}
+        </div>
+        <div id="add_gform" style="display: none;">
+            <div class="row">
+                <div class="columns large-12">
+                    <label>Nombre del gform
+                        <input type="text" name="nombre" id="nombre" value="">
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <label>Describción general
+                        <textarea name="describir" id="describir"></textarea>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        habilita(['s_plus']);
+        {% if id_gform %}
+            $(document).scrollTop( $('#panel___' + {{ id_gform }}).offset().top - 150 );
+            $('#circle' + {{ id_gform }}).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+        {% endif %}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    var id = accordion.attr('id').split('___')[1];
+                    if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                        $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                        $('#gform').val(id);
+                    } else {
+                        $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        $('#gform').val('');
+                    }
+                    console.log(accordion.attr('id'));
+                }
+            }
+        });
+
+        $('body').on('click', '.editar', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var gform = $(this).data('id');
+            window.location.href = "/edita_gform/?gform=" + gform;
+        });
+
+        $('body').on('click', '.ver', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var gform = $(this).data('id');
+            window.location.href = "/ver_gform/?gform=" + gform;
+        });
+
+        $('body').on('click', '.resultados', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var gform = $(this).data('id');
+            window.location.href = "/resultados_gform/?gform=" + gform;
+        });
+
+        $('body').on('click', '.excel', function (e) {
+            e.preventDefault();
+            $('#action').val('excel');
+            document.{{formname}}.submit();
+        });
+
+        $('body').on('click', '.borrar', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar el formulario?',
+                texto: 'Si eliminas el formulario, también se borrarán todas las respuestas de los usuarios.',
+                buttons: {
+                    "Eliminar": function () {
+                        hide_mensajes();
+                        var id = $('#gform').val();
+                        console.log(id);
+                        $.post("/formulario_ajax/", {action: 'del_gform', id: id}, function (data) {
+                            $('#lista_gforms').html(data);
+                        });
+                    },
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    }
+                }
+            });
+        });
+
+
+        $('#plus_sign').on('click', function (e) {
+            e.preventDefault();
+            $.post("/formulario_ajax/", {action: 'add_gform'}, function (data) {
+                $('#lista_gforms').html(data);
+            });
+        })
+
+
+    </script>
+
+{% endblock %}

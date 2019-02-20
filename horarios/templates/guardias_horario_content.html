@@ -1,0 +1,7 @@
+{% load my_templatetags %}
+<span id="guardia{{ g.id }}">{% autoescape off %}
+    {{ g.observaciones }}{% endautoescape %}
+    {% if g.tarea %}<a data-id="{{ g.id }}" class="download_tarea"><i class="fa fa-download"></i> Tarea</a>{% endif %}
+    {% if request.session.gauser_extra|has_permiso:'borra_guardias_horario' %}
+        &nbsp;&nbsp;&nbsp;<a class="del_guardia" data-guardia="{{ g.id }}"><i class="fa fa-trash"></i> </a>{% endif %}
+    </span>

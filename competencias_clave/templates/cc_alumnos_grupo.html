@@ -1,0 +1,50 @@
+<div class="row">
+    <div class="columns large-12">
+        <table width="100%">
+            <tr>
+                <th>Alumno</th>
+                <th>Nota</th>
+                <th>CCL</th>
+                <th>CMCT</th>
+                <th>CD</th>
+                <th>CPAA</th>
+                <th>CSC</th>
+                <th>SIE</th>
+                <th>CEC</th>
+            </tr>
+            {% for a in cmas %}
+                {% if forloop.counter|divisibleby:6 %}
+                    <tr>
+                        <th>Alumno</th>
+                        <th>Nota</th>
+                        <th>CCL</th>
+                        <th>CMCT</th>
+                        <th>CD</th>
+                        <th>CPAA</th>
+                        <th>CSC</th>
+                        <th>SIE</th>
+                        <th>CEC</th>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <td>{{ forloop.counter }} {{ a.alumno.gauser.get_full_name }}</td>
+                    <td><input class="nota" type="number" min=0 max=10 data-cma="{{ a.id }}"></td>
+                    <td><input class="cma" type="number" min=0 max=10 data-cma="{{ a.id }}" data-cc="ccl"
+                               value="{{ a.ccl }}"></td>
+                    <td><input class="cma" type="number" min=0 max=10 data-cma="{{ a.id }}" data-cc="cmct"
+                               value="{{ a.cmct }}"></td>
+                    <td><input class="cma" type="number" min=0 max=10 data-cma="{{ a.id }}" data-cc="cd"
+                               value="{{ a.cd }}"></td>
+                    <td><input class="cma" type="number" min=0 max=10 data-cma="{{ a.id }}" data-cc="cpaa"
+                               value="{{ a.cpaa }}"></td>
+                    <td><input class="cma" type="number" min=0 max=10 data-cma="{{ a.id }}" data-cc="csc"
+                               value="{{ a.csc }}"></td>
+                    <td><input class="cma" type="number" min=0 max=10 data-cma="{{ a.id }}" data-cc="sie"
+                               value="{{ a.sie }}"></td>
+                    <td><input class="cma" type="number" min=0 max=10 data-cma="{{ a.id }}" data-cc="cec"
+                               value="{{ a.cec }}"></td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>

@@ -1,0 +1,944 @@
+<?xml version="1.0" encoding="utf-8"?>
+<django-objects version="1.0">
+
+    <object pk="5" model="autenticar.permiso">
+	<field type="CharField" name="nombre">Acceso a: "Configuración de GAUSS"</field>
+	<field type="CharField" name="code_nombre">acceso_configurar</field>
+	<field type="CharField" name="tipo">MEN</field>
+    </object>
+    <object pk="10" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Configuración de GAUSS</field>
+        <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">5</field>
+    </object>
+	
+	
+	<object pk="10" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Acceso a: "Apariencia"</field>
+	    <field type="CharField" name="code_nombre">control_apariencia</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="1010" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">10</field>
+	    <field type="CharField" name="textelement">Apariencia</field>
+	    <field type="CharField" name="href">/apariencia/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">10</field>
+	</object>
+	
+	
+	<object pk="20" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Acceso a: "Asignar perfiles y permisos"</field>
+	    <field type="CharField" name="code_nombre">asigna_perfiles</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="1020" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">10</field>
+	    <field type="CharField" name="textelement">Asignar perfiles y permisos</field>
+	    <field type="CharField" name="href">/perfiles_permisos/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">20</field>
+	</object>
+	    
+	
+	<object pk="40" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede realizar cargas masivas de usuarios</field>
+	    <field type="CharField" name="code_nombre">carga_masiva</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="1030" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">10</field>
+	    <field type="CharField" name="textelement">Carga masiva</field>
+	    <field type="CharField" name="href">/carga_masiva/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">40</field>
+	</object>
+	
+	<object pk="42" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede generar claves de forma masiva</field>
+	    <field type="CharField" name="code_nombre">claves_masivas</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="1040" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">10</field>
+	    <field type="CharField" name="textelement">Generar claves</field>
+	    <field type="CharField" name="href">/generar_claves/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">42</field>
+	</object>
+	
+	<object pk="45" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Acceso al menu: Gestión del Grupo</field>
+	    <field type="CharField" name="code_nombre">menu_gest_grupo</field>
+	    <field type="CharField" name="tipo">MEN</field>
+	</object>
+	<object pk="20" model="autenticar.menu">
+	    <field type="CharField" name="textmenu">Gestión del Grupo</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">45</field>
+	</object>
+	
+	<object pk="50" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede modificar los datos del Grupo</field>
+	    <field type="CharField" name="code_nombre">datos_grupo</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="2010" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">20</field>
+	    <field type="CharField" name="textelement">Datos del Grupo</field>
+	    <field type="CharField" name="href">/datos_grupo/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">50</field>
+	</object>
+	
+	<object pk="51" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Acceso al submenú: Gestión económica</field>
+	    <field type="CharField" name="code_nombre">acceso_gestion_economica</field>
+	    <field type="CharField" name="tipo">SUB</field>
+	</object>
+	<object pk="2020" model="autenticar.submenu">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">20</field>
+	    <field type="CharField" name="textmenu">Gestión económica</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">51</field>
+	</object>
+
+	    <object pk="52" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Puede crear presupuestos para el grupo</field>
+		<field type="CharField" name="code_nombre">crea_presupuestos</field>
+		<field type="CharField" name="tipo">STE</field>
+	    </object>
+	    <object pk="202010" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">2020</field>
+		<field type="CharField" name="textelement">Presupuesto del grupo</field>
+		<field type="CharField" name="href">/presupuesto/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">52</field>
+	    </object>
+	    
+	    <object pk="53" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Puede registrar gastos e ingresos generales</field>
+		<field type="CharField" name="code_nombre">registra_gastos_ingresos</field>
+		<field type="CharField" name="tipo">STE</field>
+	    </object>
+	    <object pk="202020" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">2020</field>
+		<field type="CharField" name="textelement">Gastos/Ingresos</field>
+		<field type="CharField" name="href">/gastos_ingresos/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">53</field>
+	    </object>
+
+	    <object pk="55" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Crea política de cuotas</field>
+		<field type="CharField" name="code_nombre">crea_politica_cuotas</field>
+		<field type="CharField" name="tipo">MTE</field>
+	    </object>
+	    <object pk="60" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Emite remesas bancarias</field>
+		<field type="CharField" name="code_nombre">emite_remesas</field>
+		<field type="CharField" name="tipo">ESP</field>
+	    </object>
+	    <object pk="202025" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">2020</field>
+		<field type="CharField" name="textelement">Política de cuotas</field>
+		<field type="CharField" name="href">/politica_cuotas/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">55</field>
+	    </object>
+	    
+	    
+	<object pk="65" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede añadir socios</field>
+	    <field type="CharField" name="code_nombre">add_socio</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="2030" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">20</field>
+	    <field type="CharField" name="textelement">Añadir nuevo socio</field>
+	    <field type="CharField" name="href">/add_socio/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">65</field>
+	</object>
+	
+
+	<object pk="67" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Gestiona bajas de socios</field>
+	    <field type="CharField" name="code_nombre">gestiona_bajas_socios</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="68" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede dar de baja a socios</field>
+	    <field type="CharField" name="code_nombre">da_baja_socios</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="69" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede dar de alta a socios</field>
+	    <field type="CharField" name="code_nombre">da_alta_socios</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="66" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede borrar datos socios</field>
+	    <field type="CharField" name="code_nombre">borrar_datos_socios</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="2035" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">20</field>
+	    <field type="CharField" name="textelement">Gestión de bajas</field>
+	    <field type="CharField" name="href">/bajas_socios/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">67</field>
+	</object>
+	
+
+	<object pk="70" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede ver datos de padres y madres</field>
+	    <field type="CharField" name="code_nombre">ver_datos_padres</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="80" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede modificar datos de padres y madres</field>
+	    <field type="CharField" name="code_nombre">mod_datos_padres</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="2040" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">20</field>
+	    <field type="CharField" name="textelement">Madres y padres</field>
+	    <field type="CharField" name="href">/madres_padres/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">70</field>
+	</object>
+	
+	
+	<object pk="90" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede ver datos de los scouters</field>
+	    <field type="CharField" name="code_nombre">ver_datos_scouters</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="100" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede modificar datos de scouters</field>
+	    <field type="CharField" name="code_nombre">mod_datos_scouters</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="2050" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">20</field>
+	    <field type="CharField" name="textelement">Scouters</field>
+	    <field type="CharField" name="href">/scouters/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">90</field>
+	</object>
+	
+	
+	<object pk="110" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede ver datos de los educandos</field>
+	    <field type="CharField" name="code_nombre">ver_datos_educandos</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="115" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede modificar datos de los educandos</field>
+	    <field type="CharField" name="code_nombre">mod_datos_educandos</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="2060" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">20</field>
+	    <field type="CharField" name="textelement">Educandos</field>
+	    <field type="CharField" name="href">/educandos/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">110</field>
+	</object>
+	
+	
+	<object pk="116" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede ver datos de los socios adultos</field>
+	    <field type="CharField" name="code_nombre">ver_datos_socios_adultos</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="117" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede modificar datos de los socios adultos</field>
+	    <field type="CharField" name="code_nombre">mod_datos_socios_adultos</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="2070" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">20</field>
+	    <field type="CharField" name="textelement">Socios adultos</field>
+	    <field type="CharField" name="href">/socios_adultos/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">116</field>
+	</object>
+    
+    
+    <object pk="120" model="autenticar.permiso">
+	<field type="CharField" name="nombre">Acceso al menú: Menú de Scouters</field>
+	<field type="CharField" name="code_nombre">acceso_acciones_scouters</field>
+	<field type="CharField" name="tipo">MEN</field>
+    </object>
+    <object pk="30" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Menú de Scouters</field>
+        <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">120</field>
+    </object>
+
+	<object pk="130" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede ver calendario de scouters</field>
+	    <field type="CharField" name="code_nombre">ver_calendario_scouters</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="140" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede añadir eventos al calendario de scouters</field>
+	    <field type="CharField" name="code_nombre">add_calendario_scouters</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="150" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede modificar eventos del calendario de scouters</field>
+	    <field type="CharField" name="code_nombre">mod_calendario_scouters</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="3010" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">30</field>
+	    <field type="CharField" name="textelement">Calendario Scouter</field>
+	    <field type="CharField" name="href">/calendario_scouter/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">130</field>
+	</object>
+
+
+	<object pk="160" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede reservar material</field>
+	    <field type="CharField" name="code_nombre">reservar_material</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="170" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede solicitar compra de material</field>
+	    <field type="CharField" name="code_nombre">solicita_compra</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="3020" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">30</field>
+	    <field type="CharField" name="textelement">Materiales del grupo</field>
+	    <field type="CharField" name="href">/materiales/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">160</field>
+	</object>
+
+	
+	<object pk="250" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede ver las actividades del Grupo</field>
+	    <field type="CharField" name="code_nombre">ver_actividades_grupo</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="255" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede modificar las actividades del Grupo</field>
+	    <field type="CharField" name="code_nombre">mod_actividades_grupo</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="260" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede añadir actividades del Grupo</field>
+	    <field type="CharField" name="code_nombre">add_actividades_grupo</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="262" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede aprobar actividades del Grupo</field>
+	    <field type="CharField" name="code_nombre">aprobar_actividades_grupo</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="265" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede generar informe de las actividades del Grupo</field>
+	    <field type="CharField" name="code_nombre">pdf_actividades_grupo</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="3040" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">30</field>
+	    <field type="CharField" name="textelement">Actividades del Grupo</field>
+	    <field type="CharField" name="href">/actividades/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">250</field>
+	</object>
+
+
+	<object pk="270" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede generar actilla de evaluación de la sección/rama</field>
+	    <field type="CharField" name="code_nombre">gen_actillas_evaluacion_rama</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="272" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede generar actillas de evaluación</field>
+	    <field type="CharField" name="code_nombre">gen_actillas_evaluacion</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="3050" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">30</field>
+	    <field type="CharField" name="textelement">Actillas de evaluación</field>
+	    <field type="CharField" name="href">/actillas/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">270</field>
+	</object>
+    
+    
+	<object pk="275" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Acceso al submenú: Informes de seguimiento</field>
+	    <field type="CharField" name="code_nombre">acceso_informes_seguimiento</field>
+	    <field type="CharField" name="tipo">SUB</field>
+	</object>
+	<object pk="3060" model="autenticar.submenu">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">30</field>
+	    <field type="CharField" name="textmenu">Informes de seguimiento</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">275</field>
+	</object>
+
+	    <object pk="280" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Puede solicitar informes de educandos</field>
+		<field type="CharField" name="code_nombre">ask_informes_educandos</field>
+		<field type="CharField" name="tipo">STE</field>
+	    </object>
+	    <object pk="306010" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">3060</field>
+		<field type="CharField" name="textelement">Solicitar informe</field>
+		<field type="CharField" name="href">/solicitar_informe/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">280</field>
+	    </object>
+	    
+	    <object pk="290" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Puede ver sus informes de educandos</field>
+		<field type="CharField" name="code_nombre">mis_informes_educandos</field>
+		<field type="CharField" name="tipo">STE</field>
+	    </object>
+	    <object pk="306020" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">3060</field>
+		<field type="CharField" name="textelement">Mis informes</field>
+		<field type="CharField" name="href">/mis_informes/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">290</field>
+	    </object>
+
+	    <object pk="306030" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">3060</field>
+		<field type="CharField" name="textelement">Rellenar informe</field>
+		<field type="CharField" name="href">/rellenar_informe/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">290</field>
+	    </object>
+
+	<object pk="292" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede ver Padres y Madres de su rama</field>
+	    <field type="CharField" name="code_nombre">ver_padres_rama</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="3070" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">30</field>
+	    <field type="CharField" name="textelement">Padres y Madres</field>
+	    <field type="CharField" name="href">/madres_padres_rama/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">292</field>
+	</object>
+	
+	<object pk="294" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede ver Educandos de su rama</field>
+	    <field type="CharField" name="code_nombre">acceso_educandos_rama</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="3075" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">30</field>
+	    <field type="CharField" name="textelement">Educandos</field>
+	    <field type="CharField" name="href">/educandos_rama/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">294</field>
+	</object>
+
+    <object pk="300" model="autenticar.permiso">
+	<field type="CharField" name="nombre">Acceso al menú: Calendario</field>
+	<field type="CharField" name="code_nombre">acceso_calendario</field>
+	<field type="CharField" name="tipo">MEN</field>
+    </object>
+    <object pk="40" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Calendario</field>
+        <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">300</field>
+    </object>
+	
+	<object pk="4010" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">40</field>
+	    <field type="CharField" name="textelement">Calendario gráfico</field>
+	    <field type="CharField" name="href">/calendario/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">300</field>
+	</object>	
+
+	<object pk="4020" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">40</field>
+	    <field type="CharField" name="textelement">Mis eventos</field>
+	    <field type="CharField" name="href">/mis_eventos/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">300</field>
+	</object>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    <object pk="350" model="autenticar.permiso">
+	<field type="CharField" name="nombre">Acceso al menú: Correo y mensajería</field>
+	<field type="CharField" name="code_nombre">acceso_correo</field>
+	<field type="CharField" name="tipo">MEN</field>
+    </object>
+    <object pk="50" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Correo y mensajería</field>
+        <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">350</field>
+    </object>
+	
+	
+	<object pk="360" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede enviar correo a cualquier miembro del Grupo</field>
+	    <field type="CharField" name="code_nombre">correo_global</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="365" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede enviar correo a cualquier scouter</field>
+	    <field type="CharField" name="code_nombre">correo_scouters</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="370" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede enviar correo a scouters de mi rama</field>
+	    <field type="CharField" name="code_nombre">correo_scouters_rama</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="380" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede enviar correo a cualquier educando</field>
+	    <field type="CharField" name="code_nombre">correo_educandos</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="390" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede enviar correo a educandos de mi rama</field>
+	    <field type="CharField" name="code_nombre">correo_educandos_rama</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="400" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede enviar correo a cualquier padre</field>
+	    <field type="CharField" name="code_nombre">correo_padres</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="410" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede enviar correo a padres de mi rama</field>
+	    <field type="CharField" name="code_nombre">correo_padres_rama</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="5010" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">50</field>
+	    <field type="CharField" name="textelement">Redactar mensaje</field>
+	    <field type="CharField" name="href">/correo/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">350</field>
+	</object>
+
+
+	<object pk="5020" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">50</field>
+	    <field type="CharField" name="textelement">Mensajes enviados</field>
+	    <field type="CharField" name="href">/enviados/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">350</field>
+	</object>
+	
+	
+	<object pk="5030" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">50</field>
+	    <field type="CharField" name="textelement">Mensajes recibidos</field>
+	    <field type="CharField" name="href">/recibidos/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">350</field>
+	</object>
+    
+
+    <object pk="420" model="autenticar.permiso">
+	<field type="CharField" name="nombre">Acceso al menú: Actas</field>
+	<field type="CharField" name="code_nombre">acceso_actas</field>
+	<field type="CharField" name="tipo">MEN</field>
+    </object>
+    <object pk="60" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Actas del grupo</field>
+        <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">420</field>
+    </object>
+	
+	<object pk="422" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Acceso al submenú: Redactar convocatoria</field>
+	    <field type="CharField" name="code_nombre">acceso_redactar_convocatorias_grupo</field>
+	    <field type="CharField" name="tipo">SUB</field>
+	</object>
+	<object pk="6010" model="autenticar.submenu">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">60</field>
+	    <field type="CharField" name="textmenu">Convocar ...</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">422</field>
+	</object>
+
+	    <object pk="424" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Puede convocar al consejo scout</field>
+		<field type="CharField" name="code_nombre">convoca_consejo</field>
+		<field type="CharField" name="tipo">STE</field>
+	    </object>
+	    <object pk="601010" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">6010</field>
+		<field type="CharField" name="textelement">Consejo scout</field>
+		<field type="CharField" name="href">/convoca_consejo/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">424</field>
+	    </object>
+	    
+	    <object pk="426" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Puede convocar al comité scout</field>
+		<field type="CharField" name="code_nombre">convoca_comite</field>
+		<field type="CharField" name="tipo">STE</field>
+	    </object>
+	    <object pk="601020" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">6010</field>
+		<field type="CharField" name="textelement">Comité scout</field>
+		<field type="CharField" name="href">/convoca_comite/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">426</field>
+	    </object>
+	    
+	    <object pk="428" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Puede convocar a la asamblea</field>
+		<field type="CharField" name="code_nombre">convoca_asamblea</field>
+		<field type="CharField" name="tipo">STE</field>
+	    </object>
+	    <object pk="601030" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">6010</field>
+		<field type="CharField" name="textelement">Asamblea scout</field>
+		<field type="CharField" name="href">/convoca_asamblea/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">428</field>
+	    </object>
+
+	<object pk="430" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Acceso al submenú: Redactar actas</field>
+	    <field type="CharField" name="code_nombre">acceso_redactar_actas_grupo</field>
+	    <field type="CharField" name="tipo">SUB</field>
+	</object>
+	<object pk="6020" model="autenticar.submenu">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">60</field>
+	    <field type="CharField" name="textmenu">Redactar acta ...</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">430</field>
+	</object>
+
+	    <object pk="434" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Puede redactar acta del consejo scout</field>
+		<field type="CharField" name="code_nombre">redactar_acta_consejo</field>
+		<field type="CharField" name="tipo">STE</field>
+	    </object>
+	    <object pk="602010" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">6020</field>
+		<field type="CharField" name="textelement"> ... del consejo scout</field>
+		<field type="CharField" name="href">/readactar_acta_consejo/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">434</field>
+	    </object>
+	    
+	    <object pk="436" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Puede ver convocatorias del comité scout</field>
+		<field type="CharField" name="code_nombre">redactar_acta_comite</field>
+		<field type="CharField" name="tipo">STE</field>
+	    </object>
+	    <object pk="602020" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">6020</field>
+		<field type="CharField" name="textelement">... del comité scout</field>
+		<field type="CharField" name="href">/redactar_acta_comite/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">436</field>
+	    </object>
+	    
+	    <object pk="438" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Puede redactar actas de la asamblea</field>
+		<field type="CharField" name="code_nombre">redactar_acta_asamblea</field>
+		<field type="CharField" name="tipo">STE</field>
+	    </object>
+	    <object pk="602030" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">6020</field>
+		<field type="CharField" name="textelement">... de la asamblea scout</field>
+		<field type="CharField" name="href">/redactar_acta_asamblea/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">438</field>
+	    </object>
+
+	<object pk="440" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Acceso al submenú: Ver actas del grupo</field>
+	    <field type="CharField" name="code_nombre">acceso_ver_actas_grupo</field>
+	    <field type="CharField" name="tipo">SUB</field>
+	</object>
+	<object pk="6030" model="autenticar.submenu">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">60</field>
+	    <field type="CharField" name="textmenu">Ver actas ...</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">440</field>
+	</object>
+
+	    <object pk="444" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Puede ver actas del consejo scout</field>
+		<field type="CharField" name="code_nombre">ver_actas_consejo</field>
+		<field type="CharField" name="tipo">STE</field>
+	    </object>
+	    <object pk="603010" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">6030</field>
+		<field type="CharField" name="textelement"> ... del consejo scout</field>
+		<field type="CharField" name="href">/actas_consejo/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">444</field>
+	    </object>
+	    
+	    <object pk="446" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Puede ver actas del comité scout</field>
+		<field type="CharField" name="code_nombre">ver_actas_comite</field>
+		<field type="CharField" name="tipo">STE</field>
+	    </object>
+	    <object pk="603020" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">6030</field>
+		<field type="CharField" name="textelement">... del comité scout</field>
+		<field type="CharField" name="href">/actas_comite/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">446</field>
+	    </object>
+	    
+	    <object pk="448" model="autenticar.permiso">
+		<field type="CharField" name="nombre">Puede ver actas de la asamblea</field>
+		<field type="CharField" name="code_nombre">ver_actas_asamblea</field>
+		<field type="CharField" name="tipo">STE</field>
+	    </object>
+	    <object pk="603030" model="autenticar.submenu_element">
+		<field to="autenticar.submenu" name="submenu" rel="ManyToOneRel">6030</field>
+		<field type="CharField" name="textelement">... de la asamblea scout</field>
+		<field type="CharField" name="href">/actas_asamblea/</field>
+		<field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">448</field>
+	    </object>
+	
+	
+	
+    <object pk="450" model="autenticar.permiso">
+	<field type="CharField" name="nombre">Acceso al menú: Actividades del grupo</field>
+	<field type="CharField" name="code_nombre">acceso_actividades</field>
+	<field type="CharField" name="tipo">MEN</field>
+    </object>
+    <object pk="70" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Actividades del grupo</field>
+        <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">450</field>
+    </object>
+	
+	<object pk="455" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede ver actividades</field>
+	    <field type="CharField" name="code_nombre">ver_actividades_grupo</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="460" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede añadir actividades</field>
+	    <field type="CharField" name="code_nombre">add_actividades_grupo</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="465" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede modificar actividades</field>
+	    <field type="CharField" name="code_nombre">mod_actividades_grupo</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	
+	<object pk="7010" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">70</field>
+	    <field type="CharField" name="textelement">Actividades</field>
+	    <field type="CharField" name="href">/actividades/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">455</field>
+	</object>
+	
+	
+	<object pk="470" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede ver reuniones de rama</field>
+	    <field type="CharField" name="code_nombre">ver_reuniones_rama</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="472" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede añadir reuniones de rama</field>
+	    <field type="CharField" name="code_nombre">add_reuniones_rama</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="474" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede modificar reuniones de rama</field>
+	    <field type="CharField" name="code_nombre">mod_reuniones_rama</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="7020" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">70</field>
+	    <field type="CharField" name="textelement">Reuniones de rama</field>
+	    <field type="CharField" name="href">/reuniones_rama/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">470</field>
+	</object>
+
+    <object pk="500" model="autenticar.permiso">
+	<field type="CharField" name="nombre">Acceso al menú: Utilidades</field>
+	<field type="CharField" name="code_nombre">acceso_utilidades</field>
+	<field type="CharField" name="tipo">MEN</field>
+    </object>
+    <object pk="80" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Utilidades</field>
+        <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">500</field>
+    </object>
+	
+	
+	<object pk="510" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede crear contactos</field>
+	    <field type="CharField" name="code_nombre">crear_contacto</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="8010" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">80</field>
+	    <field type="CharField" name="textelement">Crear contacto</field>
+	    <field type="CharField" name="href">/crear_contacto/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">510</field>
+	</object>
+	
+	
+	<object pk="520" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede crear escritos</field>
+	    <field type="CharField" name="code_nombre">crear_escrito</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="8020" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">80</field>
+	    <field type="CharField" name="textelement">Mis escritos</field>
+	    <field type="CharField" name="href">/escritos/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">520</field>
+	</object>
+	
+	
+	<object pk="530" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede ver documentos</field>
+	    <field type="CharField" name="code_nombre">ver_documentos</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="540" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede crear documentos</field>
+	    <field type="CharField" name="code_nombre">crear_documentos</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="8030" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">80</field>
+	    <field type="CharField" name="textelement">Documentos</field>
+	    <field type="CharField" name="href">/documentos/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">530</field>
+	</object>
+
+
+    <object pk="700" model="autenticar.permiso">
+	<field type="CharField" name="nombre">Acceso al menú: Biblioteca</field>
+	<field type="CharField" name="code_nombre">acceso_biblioteca</field>
+	<field type="CharField" name="tipo">MEN</field>
+    </object>
+    <object pk="92" model="autenticar.menu">
+        <field type="CharField" name="textmenu">Biblioteca</field>
+        <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">700</field>
+    </object>
+	
+	
+	<object pk="710" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede ver fondos bibliográficos</field>
+	    <field type="CharField" name="code_nombre">ver_fondos_biblioteca</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="715" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede solicitar préstamo de ejemplares</field>
+	    <field type="CharField" name="code_nombre">solicita_prestamos</field>
+	    <field type="CharField" name="tipo">ESP</field>
+	</object>
+	<object pk="9210" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">92</field>
+	    <field type="CharField" name="textelement">Búsqueda de ejemplares</field>
+	    <field type="CharField" name="href">/buscar_biblioteca/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">710</field>
+	</object>
+	
+	<object pk="720" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede introducir fondos bibliográficos</field>
+	    <field type="CharField" name="code_nombre">introduce_fondos_biblioteca</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="9220" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">92</field>
+	    <field type="CharField" name="textelement">Introducir fondo bibliográfico</field>
+	    <field type="CharField" name="href">/add_fondo_biblioteca/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">720</field>
+	</object>
+	
+	<object pk="730" model="autenticar.permiso">
+	    <field type="CharField" name="nombre">Puede modificar fondos bibliográficos</field>
+	    <field type="CharField" name="code_nombre">modifica_fondos_biblioteca</field>
+	    <field type="CharField" name="tipo">MTE</field>
+	</object>
+	<object pk="9230" model="autenticar.menu_element">
+	    <field to="autenticar.menu" name="menu" rel="ManyToOneRel">92</field>
+	    <field type="CharField" name="textelement">Modificar fondo bibliográfico</field>
+	    <field type="CharField" name="href">/mod_fondo_biblioteca/</field>
+	    <field to="autenticar.permiso" name="req_perm" rel="ManyToOneRel">730</field>
+	</object>
+
+
+
+    <object pk="5" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Administrador/a del sistema</field>
+	<field to="autenticar.permiso" name="permisos" rel="ManyToManyRel">
+	  <object pk="5"/>
+	</field>
+    </object>
+    <object pk="10" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Coordinador Nacional Scout</field>
+	<field to="autenticar.permiso" name="permisos" rel="ManyToManyRel">
+	  <object pk="45"/>
+	</field>
+    </object>
+    <object pk="15" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Coordinador Regional Scout</field>
+    </object>
+    <object pk="20" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Coordinador de Grupo Scout</field>
+	<field to="autenticar.permiso" name="permisos" rel="ManyToManyRel">
+	  <object pk="45"/>
+	</field>
+    </object>
+    <object pk="25" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Administrador Informático del Grupo</field>
+	<field to="autenticar.permiso" name="permisos" rel="ManyToManyRel">
+	  <object pk="45"/>
+	</field>
+    </object>
+    
+    <object pk="30" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Secretario/a</field>
+	<field to="autenticar.permiso" name="permisos" rel="ManyToManyRel">
+	  <object pk="45"/>
+	</field>
+    </object>
+    <object pk="35" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Tesorero/a</field>
+	<field to="autenticar.permiso" name="permisos" rel="ManyToManyRel">
+	  <object pk="45"/>
+	</field>
+    </object>
+    
+    <object pk="40" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Jefe de Rama</field>
+	<field to="autenticar.permiso" name="permisos" rel="ManyToManyRel">
+	  <object pk="45"/>
+	</field>
+    </object>
+    <object pk="45" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Castores</field>
+	<field to="autenticar.permiso" name="permisos" rel="ManyToManyRel">
+	  <object pk="45"/>
+	</field>
+    </object>
+    <object pk="50" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Lobatos</field>
+	<field to="autenticar.permiso" name="permisos" rel="ManyToManyRel">
+	  <object pk="45"/>
+	</field>
+    </object>
+    <object pk="55" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Tropa/Scouts</field>
+	<field to="autenticar.permiso" name="permisos" rel="ManyToManyRel">
+	  <object pk="45"/>
+	</field>
+    </object>
+    <object pk="60" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Escultas/Pioneros</field>
+	<field to="autenticar.permiso" name="permisos" rel="ManyToManyRel">
+	  <object pk="45"/>
+	</field>
+    </object>
+    <object pk="65" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Rovers</field>
+	<field to="autenticar.permiso" name="permisos" rel="ManyToManyRel">
+	  <object pk="45"/>
+	</field>
+    </object>
+    <object pk="70" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Educando</field>
+    </object>
+    <object pk="75" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Scouter</field>
+    </object>
+    <object pk="80" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Padre/Madre</field>
+    </object>
+    <object pk="85" model="autenticar.perfil">
+	<field type="CharField" name="nombre">Socio adulto</field>
+    </object>
+   
+
+
+    
+     
+  
+</django-objects>

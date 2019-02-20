@@ -1,0 +1,107 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sistemas de gestión aumentada | ASOCIA</title>
+    <link rel="shortcut icon" href="/static/images/favicon3.ico">
+    <link rel="stylesheet" href="/static/css/style.css"/>
+    <link rel="stylesheet" href="/static/foundation-5.5.1/css/foundation.css"/>
+    <link rel="stylesheet" href="/static/foundation-icons/foundation-icons/foundation-icons.css"/>
+    <link rel="stylesheet" href="/static/font-awesome-4.2.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/static/foundation-datepicker/foundation-datepicker.css"/>
+    <link rel="stylesheet" href="/static/foundation-datepicker/foundation-datetimepicker.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/slick/slick.css"/>
+
+    {#    <link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css"/>#}
+    <link rel="stylesheet" type="text/css" href="/static/css/wysiwyg-color.css"/>
+
+    <link rel="stylesheet" href="/static/js/jquery-ui-1.10.3/css/custom-theme/jquery-ui-1.10.3.custom.min.css"/>
+    {#          type="text/css">#}
+    <link rel="stylesheet" href="/static/wysiwyg.css" type="text/css">
+    <style>
+
+        .columnas2 {
+            -moz-column-count: 2;
+            -webkit-column-count: 2;
+            column-count: 2;
+        }
+
+        .columnas3 {
+            -moz-column-count: 3;
+            -webkit-column-count: 3;
+            column-count: 3;
+        }
+    </style>
+</head>
+<body>
+
+<form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}" data-abide>
+    {% csrf_token %}
+    <input type="hidden" id="action" name="action" value="">
+    <br>
+
+    <div class="off-canvas-wrap" id="contenidos_web">
+        <div class="inner-wrap">
+            <nav class="left-off-canvas-menu"><!-- put your links in here --></nav>
+            <div id="web_contents">
+                {#                {% if hw.top_bar %}#}
+                {#                    <div class="editable row" data-editable="t_b{{ hw.top_bar.id }}">#}
+                {#                        {% with top_bar=hw.top_bar %}#}
+                {#                            {% include 'edita3_top_bar.html' %}#}
+                {#                        {% endwith %}#}
+                {#                    </div>#}
+                {#                {% endif %}#}
+                {##}
+                {#                <div id="rows_web" class="row">#}
+                {#                    {% include "edita3_rows_editables.html" with hw=hw %}#}
+                {#                </div>#}
+                {% include "pagina2_hw.html" %}
+            </div>
+        </div>
+    </div>
+
+    <input type="file" name="file_web" id="file_web" style="position: fixed; top: -3000px">
+    <input type="hidden" name="content_div" id="content_div" value="">
+    <input type="hidden" name="row_id" id="row_id" value="">
+    <input type="hidden" name="cd_orden" id="cd_orden" value="">
+    <input type="hidden" name="row_orden" id="row_orden" value="">
+    <input type="hidden" name="id" id="id" value="">
+
+</form>
+
+<script src="/static/foundation-5.5.1/js/vendor/jquery.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui-1.10.3/js/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="/static/foundation-5.5.1/js/vendor/modernizr.js"></script>
+<script src="/static/js/jquery.cookie.js"></script>
+<script src="/static/js/base_gauss.js"></script>
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery.form.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery.fileDownload.js"></script>
+<script type="text/javascript" src="/static/js/gauss_editor.js"></script>
+<script src="/static/foundation-5.5.1/js/foundation.min.js"></script>
+<script src="/static/js/wysihtml5_advanced.js"></script>
+<script src="/static/js/wysihtml5-0.4.0pre.js"></script>
+<script src="/static/foundation-datepicker/foundation-datepicker.js"></script>
+<script src="/static/foundation-datepicker/foundation-datetimepicker.js"></script>
+<link href="/static/select2/select2-foundation5.css" rel="stylesheet"/>
+<script src="/static/select2/select2.js"></script>
+<script src="/static/select2/select2_locale_es.js"></script>
+<script src="/static/js/jquery.MultiFile.js"></script>
+
+<script>
+    charge_on_ready();
+    $('body').on('click', '.link_html_web', function (e) {
+        e.preventDefault();
+        var externo = $(this).data('externo');
+        var href = $(this).data('href');
+        if (externo == 'True') {
+            window.location.href = href;
+        } else {
+            window.location.href = location.protocol + '//' + location.host + location.pathname + '?id=' + href;
+        }
+    });
+    $(document).foundation();
+</script>
+</body>
+</html>

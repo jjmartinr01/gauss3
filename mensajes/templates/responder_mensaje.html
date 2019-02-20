@@ -1,0 +1,27 @@
+<link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css" />
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.min.js"></script>
+<script src="/static/js/jquery.MultiFile.js"></script>
+
+<div style="padding-bottom:10px;clear:left;">
+  <div style="padding:20px;" id="adjuntos_div">
+    <i style="font-size:11pt;" class="fa fa-paperclip"></i>Adjuntar archivos:<input class="multi" type="file" name="files">
+  </div>
+
+  <div style="padding:20px;clear:left;" id="django_form">
+   Redacta el mensaje:
+    <br/>
+    <textarea id="id_mensaje" name="mensaje"></textarea>
+  </div>
+</div>
+
+<script>
+  $("#id_mensaje").cleditor({
+      width:        'auto', // width not including margins, borders or padding
+      height:       250, // height not including margins, borders or padding
+      controls:     // controls to add to the toolbar
+		    "bold italic underline strikethrough subscript superscript | size " +
+		    "style | bullets numbering | " +
+		    "alignleft center alignright justify | undo redo | " +
+		    "rule image link unlink",
+      });
+</script>

@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es" xmlns:pdf="http://htmltopdf.org/pdf">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Actividad{{ actividades|pluralize:"es" }} del grupo scout {{request.session.grupo_scout.code}}</title>
+<style>
+@media print {
+    @page {
+	    -pdf-page-orientation: portrait;
+	    -pdf-page-size: a4;
+	    /* background-image: url(background.pdf); */
+	    margin-top: 5.5cm;
+	    margin-left: 2cm;
+	    margin-right: 2cm;
+	    margin-bottom: 2cm;
+	    @frame footer {
+		    -pdf-frame-content: footer;
+		    bottom: 0cm;
+		    left: 6.15cm;
+		    right: 2cm;
+		    height: 1.275cm;
+	    }
+	    @frame header {
+		    -pdf-frame-content: header;
+		    top: 0.01cm;
+		    left: 2cm;
+		    right: 2cm;
+		    height: 4.63cm;
+	    }
+	  }
+}
+
+html {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12pt;
+	text-align: justify;
+}
+
+table
+{ 
+margin-left: auto;
+margin-right: auto;
+}
+p {
+	font-size: 12pt;
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+
+#footer {
+	text-align: center;
+}
+
+#header {
+	text-align: center;
+}
+
+.pagebreak {
+	page-break-after: always;
+}
+
+</style>
+</head>
+<body>
+<div id="footer" class="pdf">
+  <img  border="0" src="{{PATH_IMAGES}}foot_image.png" id="img_pie" align="left">
+</div>
+<div id="header" class="pdf" style="float:left;">
+  <img  border="0" src="{{PATH_IMAGES}}cabecera_{{request.session.centro.code}}.png" id="img_cabecera" align="left">
+</div>
+<h2 style="text-align:center;"> ACTIVIDAD{{ actividades|pluralize:"ES" }} DEL GRUPO SCOUT {{request.session.grupo_scout.code}}</h2>
+
+<p>Estimados padres:</p>
+<p>El grupo scout {{request.session.grupo_scout.name}} ha preparado una actividad en la que puede participar vuestro hijo/a. El título de la actividad es "{{actividad.actividad_title}}", está destinada a {{ramas}} y consiste en:</p>
+<p> {{actividad.description}}</p>
+{% if actividad.fecha_inicio|date:"d m" == actividad.fecha_fin|date:"d m" %}
+<p>La actividad tendrá lugar el día {{actividad.fecha_inicio|date}}, comenzará a las {{actividad.fecha_inicio|time:"H:i"}} ({{actividad.lugar_salida}}) y finalizará a las {{actividad.fecha_fin|time:"H:i"}} ({{actividad.lugar_llegada}}).</p>
+{% else %}
+<p>La actividad comenzará el día {{actividad.fecha_inicio|date}} a las {{actividad.fecha_inicio|time:"H:i"}} ({{actividad.lugar_salida}}) y terminará el día {{actividad.fecha_fin|date}}  a las {{actividad.fecha_fin|time:"H:i"}} ({{actividad.lugar_llegada}}).</p>
+{% endif %}
+ derechos y deberes de sus miembros, así como en el Reglamento de Organización y Funcionamiento del {{request.session.centro.name}}, me veo en la obligación de informarles 
+{% if informe.motivo %}
+del comportamiento de su {% if alumno.user.get_profile.sexo == 'H' %} hijo, {% else %} hija, {% endif %} que a continuación se describe: </p>
+<p style="font-style:italic;"> {{informe.motivo}} </p>
+
+{% autoescape off %}
+    {{acta}}
+{% endautoescape %}
+
+user = models.ForeignKey(Grupo_scout_User_Relation) #organizador
+    
+    
+    
+    colaboradores = models.ManyToManyField(Grupo_scout_User_Relation, related_name="scouters_colaboradores", verbose_name="Scouters que participan", blank=True, null=True)
+    castores = models.BooleanField("Participan castores")
+    lobatos = models.BooleanField("Participan lobatos")
+    tropa = models.BooleanField("Participa tropa")
+    escultas = models.BooleanField("Participan escultas/pioneros")
+    rovers = models.BooleanField("Participan rovers")
+    material_scouters = models.TextField("Cosas que deben preparar y llevar los scouters", blank=True, null=True)
+    material_educandos = models.TextField("Cosas que deben llevar los educandos", blank=True, null=True)
+    material_cocina = models.TextField("Cosas que deben preparar y llevar los cocineros", blank=True, null=True)
+    cocina = models.BooleanField("¿Son necesarios cocineros?")
+    cocineros = models.ManyToManyField(Grupo_scout_User_Relation, related_name="cocineros", blank=True, null=True)
+    aprobada = models.BooleanField("Aprobada por el Consejo")
+    fecha_aprobacion = models.DateField("Fecha de aprobación por el Consejo",null=True, blank=True)
+</body>
+</html>
+ 

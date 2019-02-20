@@ -1,0 +1,100 @@
+{% load estudios_extras %}
+<ul class="button-group centered">
+    <li title="Borrar este curso">
+        <a href="#" class="button delete_curso"
+           data-curso="{{ curso.id }}"><i class="fa fa-trash-o"></i> Borrar curso</a></li>
+    <li title="Borrar este curso">
+        <a href="#" class="button add_materia_curso"
+           data-curso="{{ curso.id }}"><i class="fa fa-plus"></i> Añadir materia</a></li>
+</ul>
+
+<div class="row">
+    <div class="columns large-7">
+        <label>Escribe el nombre del curso:
+            <input type="text" class="campo" data-campo="nombre" value="{{ curso.nombre }}"
+                   data-id="{{ curso.id }}" data-object="Curso">
+        </label>
+    </div>
+    <div class="columns large-3">
+        <label>Etapa educativa:
+            <select name="etapa" class="campo" data-campo="etapa"
+                    data-id="{{ curso.id }}" data-object="Curso">
+                <option value="">---------</option>
+                {% for etapa in etapas %}
+                    <option value="{{ etapa.0 }}"
+                            {% if curso.etapa == etapa.0 %}selected{% endif %}>{{ etapa.1 }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+    <div class="columns large-2">
+        <label>Edad:
+            <input type="text" class="campo" data-campo="edad"
+                   value="{% if curso.edad %}{{ curso.edad }}{% endif %}"
+                   data-id="{{ curso.id }}" data-object="Curso">
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-3">
+        <label>Tipo de estudio:
+            <input type="text" class="campo" data-campo="tipo"
+                   value="{% if curso.tipo %}{{ curso.tipo }}{% endif %}"
+                   data-id="{{ curso.id }}" data-object="Curso">
+        </label>
+    </div>
+    <div class="columns large-3">
+        <label>Nombre resumido del curso:
+            <input type="text" class="campo" data-campo="nombre_especifico"
+                   value="{% if curso.nombre_especifico %}{{ curso.nombre_especifico }}{% endif %}"
+                   data-id="{{ curso.id }}" data-object="Curso">
+        </label>
+    </div>
+    {#            <div class="columns large-3">#}
+    {#                <label>Departamento:#}
+    {#                    <input type="text" class="campo" data-campo="familia"#}
+    {#                           value="{% if curso.familia %}{{ curso.familia }}{% endif %}"#}
+    {#                           data-id="{{ curso.id }}" data-object="Curso">#}
+    {#                </label>#}
+    {#            </div>#}
+    <div class="columns large-3">
+        <label>Clave externa:
+        </label>
+        {% if curso.clave_ex %}
+            <b>{{ curso.clave_ex }}</b>
+        {% else %}
+            <b>Sin definir</b>
+        {% endif %}
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Materias asociadas a este curso:</b>
+        </label>
+        <div id="list_materias{{ curso.id }}">
+            {% for materia in curso.materia_set.all %}
+                {% include "configura_cursos_formulario_materia.html" %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Grupos asociados a este curso:</b>
+
+        </label>
+        {% for grupo in curso|grupos_curso %}{% if not forloop.first %}{% if forloop.last %} y {% else %},&nbsp;
+        {% endif %}{% endif %}<a><b>{{ grupo.nombre }}</b></a>{% endfor %}
+    </div>
+</div>
+{% if curso.observaciones %}
+    <div class="row">
+        <div class="columns large-12">
+            <label>Observaciones:
+            </label>
+            {% autoescape off %}{{ curso.observaciones }}{% endautoescape %}
+        </div>
+    </div>
+{% endif %}

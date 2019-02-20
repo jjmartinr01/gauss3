@@ -1,0 +1,95 @@
+{% load my_templatetags %}
+<style>
+    html {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 10pt;
+        text-align: justify;
+    }
+
+    table {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    p {
+        font-size: 10pt;
+        margin-top: 14pt;
+        margin-bottom: 14pt;
+    }
+
+    p.programacion {
+        font-size: 10pt;
+        margin-top: 0px;
+        margin-bottom: -15px;
+        white-space: pre-line;
+    }
+
+    .sub {
+        text-decoration: underline;
+    }
+
+</style>
+
+
+<h2 class="pagebreak" style="font-size: 1px;">&nbsp;</h2>
+<h2>Unidad didáctica {{ ud.orden }}: {{ ud.nombre }}</h2>
+<table>
+    <tr>
+        <td>Título:</td>
+        <td style="font-weight: 800;"><strong>{{ ud.programacion.titulo.nombre }}</strong></td>
+    </tr>
+    <tr>
+        <td>Módulo:</td>
+        <td style="font-weight: 800;">{{ ud.programacion.modulo.nombre }}</td>
+    </tr>
+    <tr>
+        <td>Profesor:</td>
+        <td style="font-weight: 800;">{{ ud.programacion.g_e.gauser.get_full_name }}</td>
+    </tr>
+    <tr>
+        <td>Tiempo estimado:</td>
+        <td style="font-weight: 800;">{{ ud.duracion }} horas</td>
+    </tr>
+</table>
+{#<div style="white-space: pre-line">#}
+{#    <p class="programacion"></p>#}
+{#    <p class="programacion"><strong> </strong></p>#}
+{#    <p class="programacion"> </p>#}
+{#    <p class="programacion">  horas</p>#}
+{#</div>#}
+
+<h4 class="sub">Objetivos</h4>
+{% for ra in u.resultados_aprendizaje %}
+    <p>Los objetivos para conseguir el resultado de aprendizaje: <span
+            style="color:darkgrey">{{ ra.resultado }}</span>
+    </p>
+    <ol>
+        {% for o in u|objetivos_ra:ra %}
+            <li>{{ o.texto }}</li>
+        {% endfor %}
+    </ol>
+{% endfor %}
+{% for con in u.cont_unidad_modulo_set.all %}
+    {% if con.objetivos %}
+        {% if u.resultados_aprendizaje|length > 0 %}
+            <p>Otros objetivos específicos marcados por el profesor son:</p>
+        {% endif %}
+        {% autoescape off %}
+            {{ con.objetivos }}
+        {% endautoescape %}
+    {% endif %}
+{% endfor %}
+<h4 class="sub">Contenidos</h4>
+{% for con in u.cont_unidad_modulo_set.all %}
+    {% if con.nombre %}<b>{{ con.nombre }}</b> ({{ con.duracion }} hora{{ con.duracion|pluralize }})<br> {% else %}
+        <b>Tiempo estimado: {{ con.duracion }} hora{{ con.duracion|pluralize }} </b><br>{% endif %}
+    {% autoescape off %}
+        {{ con.contenido }}
+    {% endautoescape %}
+{% endfor %}
+<h4 class="sub">Actividades de enseñanza-aprendizaje y de evaluación</h4>
+{% for con in u.cont_unidad_modulo_set.all %}
+    {% autoescape off %}
+        {{ con.actividades }}
+    {% endautoescape %}
+{% endfor %}

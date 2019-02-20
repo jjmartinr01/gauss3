@@ -1,0 +1,11 @@
+<div class="row" id="filtro{{ filtro.id }}" style="padding-top: 10px;">
+    <div class="columns large-5">
+        Nombre: <b>{{ filtro.nombre }}</b>
+    </div>
+    <div class="columns large-5">
+        Texto filtro: <b>{{ filtro.filtro }}</b>
+    </div>
+    <div class="columns large-2">
+        <a data-id="{{ filtro.id }}" data-cupo="{{ filtro.cupo.id }}" class="delete_filtro"><i class="fa fa-trash"></i> Borrar</a>
+    </div>
+</div>

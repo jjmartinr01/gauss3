@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{#{% load my_templatetags %}#}
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}"
+          xmlns="http://www.w3.org/1999/html">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="gform" id="gform" value="{{ ginputs.0.gform.id }}">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong>{{ ginputs.0.gform.nombre }}</strong></h4>
+        </div>
+        {% for ginput in ginputs %}
+            {% ifchanged ginput.row %}
+                {% if not forloop.first %}
+                    </div>
+                {% endif %}
+                <div class="row">
+                <div class="columns large-{{ ginput.ancho }}">
+            {% else %}
+                <div class="columns large-{{ ginput.ancho }}">
+            {% endifchanged %}
+        {% if ginput.tipo == 'gselect' %}
+            <span>{{ ginput.label }}</span>
+            <select {% if ginput.select %}multiple{% endif %} class="gselect">
+                {% for goption in ginput.goption_set.all reversed %}
+                    <option value="{{ goption.value }}"
+                            {% if goption.selected %}selected{% endif %}>{{ goption.text }}
+                    </option>
+                {% endfor %}
+            </select>
+        {% elif ginput.tipo == 'gbool' %}
+            <span>{{ ginput.label }}</span><br>
+            <input type="checkbox">
+        {% elif ginput.tipo == 'gfile' %}
+            <span>{{ ginput.label }}</span><br>
+            <a class="a_gfile" data-id="{{ ginput.id }}" id="a_ginput{{ ginput.id }}">Click aquí para cargar un
+                archivo</a>
+            <a class="t_gfile button tiny round" id="t_ginput{{ ginput.id }}" data-id="{{ ginput.id }}"
+               style="display: none;"><i class="fa fa-trash-o fa-2x"></i></a>
+            <input type="file" class="gfile" id="ginput{{ ginput.id }}" style="position: fixed; top: -3000px;">
+        {% elif ginput.tipo == 'gtext' %}
+            <span>{{ ginput.label }}</span>
+            <textarea rows="4"></textarea>
+        {% else %}
+            <span>{{ ginput.label }}</span>
+            <input type="text" placeholder="{{ ginput.get_tipo_display }}">
+        {% endif %}
+        </div>
+        {% if forloop.last %}
+            </div>
+        {% endif %}
+        {% endfor %}
+
+
+    </form>
+
+{% endblock %}
+
+
+{% block final %}
+    <script type="text/javascript">
+        habilita(['s_arrow-left', 's_trash-o']);
+        $('.gselect').select2();
+
+        $('#arrow-left_sign').on('click', function (e) {
+            e.preventDefault();
+            var gform = $('#gform').val();
+            window.location.href = "/formularios/?gform=" + gform;
+        });
+
+        $('.a_gfile').on('click', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#ginput' + id).trigger('click');
+        });
+
+        $('body').on('change', '.gfile', function () {
+            var id = $(this).attr('id');
+            var a_id = 'a_' + id;
+            var t_id = 't_' + id;
+            {#            var input_file = document.getElementById(id).value;#}
+            var input_file = $('#' + id).val();
+            $('#' + a_id).html(input_file);
+            $('#' + t_id).show();
+        });
+
+        $('body').on('click', '.t_gfile', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#' + 'a_ginput' + id).html('Click aquí para cargar un archivo');
+            $('#' + 't_ginput' + id).hide();
+        });
+
+
+        {#            var ul = document.getElementById(gauss_fileList);#}
+        {#            var valido = true;#}
+        {#            while (ul.hasChildNodes()) {#}
+        {#                ul.removeChild(ul.firstChild);#}
+        {#            }#}
+        {#            $('.' + gauss_files_created).each(function () {#}
+        {#                    var id = $(this).attr('id');#}
+        {#                    var input = document.getElementById(id);#}
+        {#                    if (input.files.length > 0 && settings.tipos != '*' && input == input_file){#}
+        {#                        for (var i = 0; i < input.files.length; i++) {#}
+        {#                            var extension = input.files[i].name.split('.').pop();#}
+        {#                            window.console.log(settings.tipos);#}
+        {#                            window.console.log(extension);#}
+        {#                            if (settings.tipos.indexOf(extension) == -1){#}
+        {#                                valido = false;#}
+        {#                                $('#' + id).remove();#}
+        {#                                $('#' + gauss_aviso).show();#}
+        {#                                setTimeout(function() {#}
+        {#                                    $('#' + gauss_aviso).hide('blind', {}, 500)#}
+        {#                                }, 5000);#}
+        {#                            }#}
+        {#                        }#}
+        {#                    }#}
+        {#                    if (input.files.length > 0 && valido){#}
+        {#                        var tag_a = document.createElement('a');#}
+        {#                        tag_a.id = 'delete____' + id;#}
+        {#                        tag_a.className = gauss_delete_file;#}
+        {#                        var tag_i = document.createElement('i');#}
+        {#                        tag_i.className = 'fa fa-times';#}
+        {#                        var li = document.createElement("li");#}
+        {#                        li.className = id; //Para poder borrar el li a traves de la clase#}
+        {#                        var contenido_li = [];#}
+        {#                        for (var i = 0; i < input.files.length; i++) {#}
+        {#                            contenido_li.push(input.files[i].name + ' (' + input.files[i].size + ' bytes)');#}
+        {#                        }#}
+        {#                        tag_a.title = 'Elimar ' + contenido_li.join(', ');#}
+        {#                        var text_li = document.createTextNode(' ' + contenido_li.join(', '));#}
+        {#                        tag_a.appendChild(tag_i);#}
+        {#                        li.appendChild(tag_a);#}
+        {#                        li.appendChild(text_li);#}
+        {#                        ul.appendChild(li);#}
+        {#                    }#}
+        {#                }#}
+        {#            )#}
+
+    </script>
+
+{% endblock %}

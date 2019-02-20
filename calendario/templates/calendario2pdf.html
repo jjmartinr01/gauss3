@@ -1,0 +1,103 @@
+{% load my_templatetags %}
+
+<style>
+
+    .EVT_PRI {
+        background: #ffa500;
+        color: #ffffff;
+        font-weight: 800;
+        text-align: center;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .EVT_MUL {
+        background: red;
+        color: #ffffff;
+        font-weight: 800;
+        text-align: center;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .EVT_UNI {
+        background: #ff00ff;
+        color: #ffffff;
+        font-weight: 800;
+        text-align: center;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+
+</style>
+
+<table>
+    <tr>
+        {% for mes in calendario %}
+            <td>
+                <table style="font-size:11pt;text-align:center;border-spacing:5px;border: solid gray 1px;">
+                    <tr>
+                        <th colspan="7">{{ mes.15.fecha|date:"F" }}&nbsp;{{ mes.15.fecha|date:"Y" }}</th>
+                    </tr>
+                    <tr>
+                        <th class="dia_l">L</th>
+                        <th class="dia_m">M</th>
+                        <th class="dia_x">X</th>
+                        <th class="dia_j">J</th>
+                        <th class="dia_v">V</th>
+                        <th class="dia_s">S</th>
+                        <th class="dia_d">D</th>
+                    </tr>
+                    <tr>
+                        {% for dia in mes %}
+                            {% if dia.eventos.all|length == 0 %}
+                                <td {% if dia.fecha %}class="show_add_evento"{% endif %}
+                                    id="{{ dia.id }}">{{ dia.fecha|date:"j" }}
+
+                                </td>
+                            {% else %}
+                                <td id="{{ dia.id }}"
+                                    class="existe_evento show_add_evento {% if dia.eventos.all|length > 1 %} EVT_MUL {% else %} {% if dia.eventos.all.0.subentidades.all|length > 0 %} EVT_UNI {% else %} EVT_PRI {% endif %}{% endif %}">
+                                    {{ dia.fecha|date:"j" }}
+                                </td>
+                            {% endif %}
+                            {% if forloop.counter|divisibleby:"7" %}
+                                </tr>
+                                <tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tr>
+                    {% if mes|length < 36 %}
+                        <tr>
+                            <td>&nbsp;</td>
+                        </tr>
+                    {% endif %}
+                </table>
+            </td>
+            {% if forloop.counter|divisibleby:"3" %}
+                </tr> {# Cierre de div de cuatro columnas #}
+                <tr> {# Cierre del div row #}
+            {% endif %}
+        {% endfor %}
+        </tr>
+</table>
+
+{% for evento in eventos %}
+    <h4>
+        {% autoescape off %}
+            {{ evento.nombre }}
+        {% endautoescape %}</h4>
+    <strong>Inicio:</strong> {{ evento.inicio|date:"j\/m\/Y \a \l\a\s H:i" }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <strong>Finalización:</strong> {{ evento.fin|date:"j\/m\/Y \a \l\a\s H:i" }}<br>
+
+    {% for subentidad in evento.subentidades.all %}
+        <span style="color:blue"> {{ subentidad.nombre }}</span>{% if not forloop.last %}, {% endif %}{% endfor %}<br>
+    <strong>Descripción:</strong> {{ evento.descripcion }}
+
+
+    {% if not forloop.last %}
+        <hr>
+    {% endif %}
+{% endfor %}
+

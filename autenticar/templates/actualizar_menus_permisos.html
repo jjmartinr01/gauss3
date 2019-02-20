@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Actualización de menús en todas las
+                entidades</strong></h4>
+        </div>
+        <h5>
+            Selecciona la configuración de permisos y menús que quieres actualizar:
+        </h5>
+        {% for a in apps_configuration %}
+            <div class="columns large-4">
+                {% if a.updated %}
+                    <div><b>{{ a.app }}</b> <span style="color:green;"><i class="fa fa-check"></i> </span></div>
+                {% else %}
+                    <div id="checkbox{{ a.app }}" style="color: red;">
+                        <input type="checkbox" class="app_configuration" data-app="{{ a.app }}">
+                        {% if a.last_update|date:'Y' == '2000' %}
+                            <span title="Esta aplicación nunca ha sido actualizada">{{ a.app }}**</span>
+                        {% else %}
+                            <span title="Última actualización: {{ a.last_update|date:'d/m/Y' }}">{{ a.app }}</span>
+                        {% endif %}
+                    <span id="{{ a }}" style="color:green;display: none;"><i class="fa fa-check"></i> </span>
+                    </div>
+                    <div id="updated{{ a.app }}" style="display: none;">
+                        <b>{{ a.app }}</b> <span style="color:green;"><i class="fa fa-check"></i> </span>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script type="application/javascript">
+        $('body').on('click', '.app_configuration', function () {
+            var app = $(this).data('app');
+            $.post("/actualizar_menus_permisos/", {
+                    action: 'update_app',
+                    app: app
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#checkbox' + app).hide();
+                        $('#updated' + app).show();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                        show_mensajes({
+                            'title': '<i class="fa fa-warning"></i> Error en la actualización',
+                            'texto': data.aviso
+                        })
+                    }
+                });
+        });
+    </script>
+{% endblock %}

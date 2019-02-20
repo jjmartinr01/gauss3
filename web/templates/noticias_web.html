@@ -1,0 +1,215 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+{% endblock %}
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong id="titulo">Noticias para la web (Mis noticias)</strong></h4>
+        </div>
+        <input type="hidden" name="inf_actual" id="inf_actual" value="{{ inf_actual }}">
+        <input type="hidden" name="inf_descargar" id="inf_descargar" value="">
+        <input type="hidden" name="action" id="action" value="">
+
+        <ul class="tabs" data-tab>
+            <li class="tab-title active" data-id="0">
+                <a href="#tab1">
+                    <b id="texto0">Mis noticias</b>
+                </a>
+            </li>
+            <li class="tab-title" data-id="1">
+                <a href="#tab2">
+                    <b id="texto1" style="color:white;">Otras noticias</b>
+                </a>
+            </li>
+        </ul>
+        <div class="tabs-content">
+            <div class="content active" id="tab1">
+                <div class="row">
+                    <div class="columns large-12 text-right">
+                        <a class="button" id="add_noticia">Añadir noticia</a>
+                    </div>
+                </div>
+                <dl class="accordion" data-accordion id="list_mis_noticias">
+                    {% for noticia in mis_noticias %}
+                        {% include "noticias_web_accordion.html" %}
+                    {% endfor %}
+                </dl>
+            </div>
+            <div class="content" id="tab2">
+                <dl class="accordion" data-accordion id="list_otras_noticias">
+                    {% if request.session.gauser_extra|has_permiso:'edita_noticias_web' %}
+                        {% for noticia in otras_noticias %}
+                            {% include "noticias_web_accordion.html" %}
+                        {% endfor %}
+                    {% else %}
+                        {% for noticia in otras_noticias %}
+                            <dd class="accordion-navigation" id="accordion{{ noticia.id }}"
+                                style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+                                <a href="#panel{{ noticia.id }}">
+                                    <i id="circle{{ noticia.id }}" class="fa fa-plus-circle circle_icon"></i>
+                                    <span id="span_noticia{{ noticia.id }}"><b> {{ noticia.titulo }}</b></span>
+                                </a>
+                                <div id="panel{{ noticia.id }}" class="content accordion-otras_noticias"
+                                     data-noticia="{{ noticia.id }}">
+                                    <div class="row">
+                                        <div class="columns large-12">
+                                            <b>{{ noticia.titulo }}</b>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="columns large-12">
+                                            {% autoescape off %}
+                                                {{ noticia.texto }}
+                                            {% endautoescape %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </dd>
+                        {% endfor %}
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $(document).foundation({
+            tab: {
+                callback: function (tab) {
+                    var id = $(tab[0]).data('id');
+                    if (id == 0) {
+                        $('#texto1').css('color', 'white');
+                        $('#texto0').css('color', 'black');
+                        $('#titulo').html('Noticias para la web (Mis noticias)')
+                    } else {
+                        $('#texto0').css('color', 'white');
+                        $('#texto1').css('color', 'black');
+                        $('#titulo').html('Noticias para la web (Otras noticias)')
+                    }
+                }
+            }
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-mis_noticias')) {
+                        var id = accordion.data('noticia');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/noticias_web_ajax/", {action: 'open_accordion', noticia: id}, function (data) {
+                                if (data.ok) {
+                                    $('#panel' + id).html(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#add_noticia').click(function (e) {
+            e.preventDefault();
+            $.post("/noticias_web_ajax/", {
+                action: 'add_noticia'
+            }, function (data) {
+                if (data.ok) {
+                    $('#list_mis_noticias').append(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('keyup', '.titulo_noticia', function () {
+            var titulo = $(this).val();
+            var noticia = $(this).data('noticia');
+            $.post("/noticias_web_ajax/", {
+                action: 'titulo_noticia',
+                noticia: noticia,
+                titulo: titulo
+            },
+            function (data) {
+                if (data['ok']) {
+                    $('#span_noticia' + noticia).html(titulo);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('change', '.fechas_publicacion', function () {
+            var fecha = $(this).val();
+            var action = $(this).data('action');
+            var noticia = $(this).data('noticia');
+            $.post("/noticias_web_ajax/", {
+                action: action,
+                noticia: noticia,
+                fecha: fecha
+            },
+            function (data) {
+                if (data['ok']) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('change', '.select_subentidad', function () {
+            var noticia = $(this).data('noticia');
+            var subentidad = $(this).val();
+            $.post("/noticias_web_ajax/", {
+                action: 'select_subentidad',
+                noticia: noticia,
+                subentidad: subentidad
+            },
+            function (data) {
+                if (data['ok']) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('click', '.borrar_noticia', function (e) {
+            e.preventDefault();
+            var noticia = $(this).data('noticia');
+            $.post("/noticias_web_ajax/", {
+                action: 'borrar_noticia',
+                noticia: noticia
+            },
+            function (data) {
+                if (data['ok']) {
+                    $('#accordion' + data.noticia).remove();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+
+
+
+    </script>
+{% endblock %}

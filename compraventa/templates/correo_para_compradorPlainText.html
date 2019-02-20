@@ -1,0 +1,27 @@
+{% load my_templatetags %}
+Hola {{ comprador.comprador.first_name }},
+{% if request.POST.action == 'servicio' %}
+Has solicitado el servicio "{{ comprador.articulo.nombre }}" que ha ofertado {{ comprador.articulo.vendedor.get_full_name }}.
+
+Las características del servicio son:
+Servicio: {{ comprador.articulo.nombre }} 
+{% else %}
+Has solicitado la compra del artículo "{{ comprador.articulo.nombre }}" que ha puesto a la venta {{ comprador.articulo.vendedor.get_full_name }}.
+Las características del producto son:
+Artículo: {{ comprador.articulo.nombre }} 
+{% endif %}
+Precio: {{ comprador.articulo|precio }} €
+Descripción: {{ comprador.articulo.descripcion }}
+{% if comprador.articulo.precio_envio %}
+Gastos de envío: Gastos de envío: {{ comprador.articulo.precio_envio }} €
+{% endif %}
+{% if comprador.articulo.pago %}
+Forma de pago: {{ comprador.articulo.pago }}
+{% endif %}
+{% if comprador.articulo.formato == 'FIJ' %} Vende:
+{% elif comprador.articulo.formato == 'SUB' %} Subasta:
+{% elif comprador.articulo.formato == 'SER' %} Ofrecido por: {% endif %}
+{{ comprador.articulo.vendedor.get_full_name }} ({{ comprador.articulo.entidad.name }})
+{% if comprador.articulo.formato == 'SUB' %}
+La cantidad de dinero que has ofertado es: {{ comprador.oferta }}
+{% endif %}

@@ -1,0 +1,244 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+
+{% block contenido %}
+    {#    <link href="/static/select2/select2-4.0-foundation5.css" rel="stylesheet"/>#}
+    <style>
+        .opera {
+            margin-right: 20px;
+            cursor: pointer;
+            color: #008CBA;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .opera:hover {
+            -webkit-transform: scale(1.7, 1.7);
+            -webkit-transition-timing-function: ease-out;
+            -webkit-transition-duration: 150ms;
+            -moz-transform: scale(1.7, 1.7);
+            -moz-transition-timing-function: ease-out;
+            -moz-transition-duration: 150ms;
+            position: relative;
+            z-index: 99;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="filtrado" id="filtrado" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong> Generar un listado de usuarios</strong></h4>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_filtros_recientes">
+            {% for filtrado in filtrados %}
+                {% include 'filtro_accordion.html' %}
+            {% endfor %}
+        </dl>
+    </form>
+    <div style="position: fixed; top: 120px;right: 150px;color: gray;" id="num_resultados"></div>
+{% endblock %}
+
+{% block final %}
+    <script type="application/javascript">
+        habilita(['s_plus']);
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-filtro')) {
+                        var id = accordion.data('id');
+                        console.log(id)
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/ajax_filtro/", {action: 'open_accordion', filtrado: id},
+                                function (data) {
+                                    $('#panel' + id).html(data);
+                                    $(document).foundation();
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                            $('#num_resultados').html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#plus_sign').click(function (e) {
+            e.preventDefault();
+            var filtrado = $(this).val();
+            $.post("/ajax_filtro/", {action: 'add_filtrado', filtrado: filtrado},
+                function (data) {
+                    $('#list_filtros_recientes').prepend(data);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+        });
+
+
+        $('body').on('keyup', '.nombre_filtrado', function () {
+            var nombre = $(this).val();
+            var filtrado = $(this).data('id');
+            $.post("/ajax_filtro/", {action: 'update_nombre_filtrado', filtrado: filtrado, nombre: nombre},
+                function (data) {
+                    if (data.ok) {
+                        $('#span_nombre_filtrado' + filtrado).html(data.nombre);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.add_filtro', function (e) {
+            e.preventDefault();
+            var filtrado = $(this).data('id');
+            $.post("/ajax_filtro/", {action: 'add_filtro', filtrado: filtrado},
+                function (data) {
+                    if (data.ok) {
+                        $('#filtros' + filtrado).append(data.html);
+                        $('#operacion' + filtrado).val(data.operacion);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+        $('body').on('click', '.delete_filtro', function (e) {
+            e.preventDefault();
+            filtro = $(this).data('id');
+            show_mensajes({
+                title: 'Borrar filtro',
+                texto: 'Si aceptas el filtro será eliminado y no podrá recuperarse.',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/ajax_filtro/", {action: 'delete_filtro', filtro: filtro},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#filtro' + filtro).remove();
+                                    $('#operacion' + data.filtrado).val(data.operacion);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                    $.each(data.cambios, function (i, el) {
+                                        $('#nq' + el.filtro).html(el.n_filtro);
+                                    });
+                                    if (data.delete_filtrado) {
+                                        $('#accordion' + data.filtrado).remove();
+                                    }
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            }, 'json');
+                    }
+                }
+            });
+        });
+
+        $('body').on('propertychange input', '.change_value', function (e) {
+            e.preventDefault();
+            var filtro = $(this).data('id');
+            var value = $(this).val();
+            $.post("/ajax_filtro/", {action: 'update_value_filtro', filtro: filtro, value: value},
+                function (data) {
+                    if (data.ok) {
+                        $('#resultados' + data.filtrado).html(data.html);
+                        $('#num_resultados').html(data.num + ' resultados encontrados.');
+                        $("#num_resultados").show().delay(2500).fadeOut();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.change_fecha', function (e) {
+            e.preventDefault();
+            var filtro = $(this).data('id');
+            var value = $(this).val();
+            $.post("/ajax_filtro/", {action: 'update_value_filtro', filtro: filtro, value: value},
+                function (data) {
+                    if (data.ok) {
+                        $('#resultados' + data.filtrado).html(data.html);
+                        $('#num_resultados').html(data.num + ' resultados encontrados.');
+                        $("#num_resultados").show().delay(2500).fadeOut();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.tipo_filtro', function (e) {
+            e.preventDefault();
+            var filtro = $(this).data('id');
+            var tipo = $(this).val();
+            $.post("/ajax_filtro/", {action: 'update_tipo_filtro', filtro: filtro, tipo: tipo},
+                function (data) {
+                    if (data.ok) {
+                        $('.posible_value' + filtro).hide();
+                        $('.' + tipo + filtro).show();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('propertychange input', '.operacion', function (e) {
+            e.preventDefault();
+            var filtrado = $(this).data('id');
+            var operacion = $(this).val();
+            $.post("/ajax_filtro/", {action: 'update_operacion', filtrado: filtrado, operacion: operacion},
+                function (data) {
+                    if (data.ok) {
+                        $('#resultados' + data.filtrado).html(data.html);
+                        $('#num_resultados').html(data.num + ' resultados encontrados.');
+                        $("#num_resultados").show().delay(2500).fadeOut();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.campo', function (e) {
+            e.preventDefault();
+            var filtrado = $(this).data('id');
+            var campo = $(this).val();
+            var operation = 'removed';
+            if ($(this).is(':checked')) {
+                var operation = 'added';
+            }
+            $.post("/ajax_filtro/", {action: 'update_campo', filtrado: filtrado, campo: campo, operation: operation},
+                function (data) {
+                    if (data.ok) {
+                        $('#resultados' + data.filtrado).html(data.html);
+                        $('#num_resultados').html(data.num + ' resultados encontrados.');
+                        $("#num_resultados").show().delay(2500).fadeOut();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.download_file', function (e) {
+            e.preventDefault();
+            $('#filtrado').val($(this).data('id'));
+            $('#action').val('download_file');
+            document.{{ formname }}.submit();
+        });
+
+    </script>
+
+{% endblock %}

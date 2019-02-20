@@ -1,0 +1,70 @@
+{% load my_templatetags %}
+
+<dd class="accordion-navigation" id="accordion{{ materia.id }}">
+    <a href="#materia{{ materia.id }}">
+        <span id="span_nombre{{ materia.id }}" style="font-weight: 800;">{{ materia.nombre }}</span>
+        <i class="fa fa-long-arrow-right"></i> <span id="span_curso{{ materia.id }}">{{ materia.curso }}</span>
+    </a>
+
+    <div id="materia{{ materia.id }}" class="content materia_contenido" data-materia="{{ materia.id }}">
+
+        <ul class="button-group centered">
+            <li title="Borrar este materia">
+                <a href="#" class="button delete_materia"
+                   data-materia="{{ materia.id }}"><i class="fa fa-trash-o"></i> Borrar</a></li>
+        </ul>
+        <div class="row">
+            <div class="columns large-12">
+                <label>Selecciona el curso al que pertenece la materia:
+                    <select name="curso" class="curso" data-materia="{{ materia.id }}">
+                        {% if materia.curso %}
+                            <option value="{{ materia.curso.id }}">{{ materia.curso }}</option>{% else %}
+                            <option value="">Elige un curso</option>{% endif %}
+                        {% for curso in cursos %}
+                            <option value="{{ curso.id }}">{{ curso }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="columns large-8">
+                <label>Escribe el nombre de la materia:
+                    <input type="text" class="campo" data-campo="nombre" value="{{ materia.nombre }}"
+                           data-materia="{{ materia.id }}">
+                </label>
+            </div>
+            <div class="columns large-4">
+                <label>Abreviatura para la materia:
+                    <input type="text" class="campo" data-campo="abreviatura"
+                           value="{% if materia.abreviatura %}{{ materia.abreviatura }}{% endif %}"
+                           data-materia="{{ materia.id }}">
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-4">
+                <label>Nº de horas semanales:
+                    <input type="text" class="campo" data-campo="horas" value="{{ materia.horas }}"
+                           data-materia="{{ materia.id }}">
+                </label>
+            </div>
+            <div class="columns large-4">
+                <label title="El número de horas totales durante el curso completo">Nº horas totales:
+                    <input type="text" class="campo" data-campo="duracion" value="{{ materia.duracion }}"
+                           data-materia="{{ materia.id }}">
+                </label>
+            </div>
+            <div class="columns large-4">
+                <label>Clave externa:
+                </label>
+                {% if materia.clave_ex %}
+                    <b>{{ materia.clave_ex }}</b>
+                {% else %}
+                    <b>Sin definir</b>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</dd>

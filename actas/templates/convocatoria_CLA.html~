@@ -1,0 +1,6 @@
+<p>A petición del Director se convoca al Claustro del {{request.session.gauser_extra.centro.tipo}} {{request.session.gauser_extra.centro.name}}, con carácter Extraordinario, para el {{fecha_hora}}, a las 16:30 horas, en el Salón de Actos con el siguiente</p><p>ORDEN DEL DÍA</p><ol><li>Lectura y aprobación, si procede del acta anterior.</li><li></li><li>Ruegos y preguntas.</li></ol>
+<p>&nbsp;</p>
+<p>En {{request.session.gauser_extra.centro.get_localidad_display}} a {% now "j" %} de  {% now "F" %}  de {% now "Y" %}</p>
+<p>&nbsp;</p>
+<p class="contacto"><strong>{{request.session.gauser_extra.gauser.get_full_name}}</strong></p>
+<p class="contacto">{% if request.session.gauser_extra.gauser.sexo == 'H' %}Secretario {% else %} Secretaria {% endif %} del {{request.session.gauser_extra.centro.tipo}} {{request.session.gauser_extra.centro.name}}</p>

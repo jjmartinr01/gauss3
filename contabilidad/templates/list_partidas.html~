@@ -1,0 +1,45 @@
+{% load my_templatetags %}
+
+<style>
+.no_puede_modificar {font-size:12pt;opacity:0.4;}
+.puede_modificar {font-size:12pt;cursor:pointer;}
+.puede_modificar:hover {font-size:12pt;cursor:pointer;color:#E76123;}
+.puede_borrar {font-size:12pt;cursor:pointer;}
+.puede_borrar:hover {font-size:12pt;cursor:pointer;color:#E76123;}
+</style>
+<div id="list_partidas">
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+    <tr><td> <span class="color2">Nombre</span></td>
+    <td style="text-align:center;"> <span class="color2">Tipo</span></td>
+    <td style="text-align:center;"> <span class="color2">Cantidad</span></td>
+    <td style="text-align:center;"> <span class="color2">Creado</span></td>
+    <td style="text-align:center;"> <span class="color2">Últ. modif.</span></td>
+    <td style="text-align:center;"> <span class="color2">Editar</span></td>
+    <td style="text-align:center;"> <span class="color2">Borrar</span></td></tr>
+    {% for partida in partidas %}
+      {% if partida.tipo == 'INGRE' %}
+	<tr><td> {{partida.nombre}}</span></td>
+	<td style="text-align:center;"> {{partida.get_tipo_display}}</span></td>
+	<td style="text-align:center;"> {{partida.cantidad}} €</span></td>
+	<td style="text-align:center;"> {{partida.creado}}</span></td>
+	<td style="text-align:center;"> {{partida.modificado}}</span></td>
+	<td style="text-align:center;"> <i title="Pulsando en este icono puedes modificar la partida" id="mod_partida___{{partida.id}}" class="fa fa-pencil puede_modificar modificar_partida"></i></span></td>
+	<td style="text-align:center;"> <i title="Pulsando en este icono puedes borrar la partida" id="del_partida___{{partida.id}}" class="fa fa-trash-o puede_borrar modificar_partida"></i></span></td></tr>
+      {% endif %}
+    {% endfor %}
+    <tr><td></td><td style="text-align:center;background:#dcc8dc;"> <span class="color2">Total ingresos:</span></td><td style="text-align:center;background:#dcc8dc;"> <span class="color2">{{ingresos.ingreso_total}} €</span></td></tr>
+    <tr><td>&nbsp;</td></tr>
+    {% for partida in partidas %}
+      {% if partida.tipo == 'GASTO' %}
+	<tr><td> {{partida.nombre}}</span></td>
+	<td style="text-align:center;"> {{partida.get_tipo_display}}</span></td>
+	<td style="text-align:center;"> {{partida.cantidad}} €</span></td>
+	<td style="text-align:center;"> {{partida.creado}}</span></td>
+	<td style="text-align:center;"> {{partida.modificado}}</span></td>
+	<td style="text-align:center;"> <i title="Pulsando en este icono puedes modificar la partida" id="mod_partida___{{partida.id}}" class="fa fa-pencil puede_modificar modificar_partida"></i></span></td>
+	<td style="text-align:center;"><i title="Pulsando en este icono puedes borrar la partida" id="del_partida___{{partida.id}}" class="fa fa-trash-o puede_borrar del_partida"></i></span></td></tr>
+      {% endif %}
+    {% endfor %}
+    <tr><td></td><td style="text-align:center;background:#dcc8dc;"> <span class="color2">Total gastos:</span></td><td style="text-align:center;background:#dcc8dc;"> <span class="color2">{{gastos.gasto_total}} €</span></td></tr>
+</table>
+</div>

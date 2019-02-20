@@ -1,0 +1,419 @@
+{% extends "base_select2-4.html" %}
+{% load entidades_extras %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="informe_id" name="informe_id" value="">
+
+        <h4 style="text-align: center;color: #008CBA;"><strong>Informes de seguimiento</strong></h4>
+
+        <div class="row">
+            <div class="columns large-12">
+                <label>Busca la persona escribiendo parte de su nombre
+                    <select id="select_usuario">
+                    </select>
+                </label>
+            </div>
+        </div>
+        <br>
+        {% if g_e|has_permiso:'solicita_informes_seguimiento' %}
+            <div class="row" style="display: none;" id="button_crear_informe">
+                <div class="columns large-12"><label>Si deseas solicitar un informe para <span class="usuario_nombre">
+            </span> pulsa el siguiente botón:</label>
+                    <a class="button" data-id="" id="id_button_crear_informe">Solicitar nuevo informe
+                        para <span class="usuario_nombre"></span></a>
+                </div>
+            </div>
+        {% endif %}
+        <br><br>
+        <dl class="accordion" data-accordion id="list_informes_seguimiento"></dl>
+        {% with informes=informes_a_rellenar %}
+            <dl class="accordion" data-accordion id="list_informes_a_rellenar">
+                {% include 'informes_seguimiento_accordion.html' %}
+            </dl>
+        {% endwith %}
+        {% with informes=informes_solicitados %}
+            <dl class="accordion" data-accordion id="list_informes_solicitados">
+                {% include 'informes_seguimiento_accordion.html' %}
+            </dl>
+        {% endwith %}
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script type="application/javascript">
+        var usuario_id;
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-informe_seguimiento')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/ajax_informe_seguimiento/", {action: 'open_accordion', informe: id},
+                                function (data) {
+                                    $('#panel' + id).html(data);
+                                    inicializar_select_usuarios_destino();
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#select_usuario').select2({
+            placeholder: "Escribe parte del nombre para buscar",
+            allowClear: true,
+            ajax: {
+                url: "/ajax_informe_seguimiento/",
+                type: 'POST',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    var ges_informes_abiertos = [];
+                    $('.ges_informes_abiertos').each(function () {
+                        ges_informes_abiertos.push($(this).val());
+                    });
+                    return {action: 'buscar_usuario', q: params.term, ges_informes_abiertos: ges_informes_abiertos}
+                },
+                processResults: function (data, page) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            }, // let our custom formatter work
+            minimumInputLength: 3,
+            language: {
+                inputTooShort: function () {
+                    return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                }
+            }
+        });
+
+
+        $('#select_usuario').change(function (e) {
+            e.preventDefault();
+            usuario_id = $(this).val();
+            var ges_informes_cerrados = [];
+            $('.ges_informes_cerrados').each(function () {
+                ges_informes_cerrados.push($(this).val());
+            });
+            $.post("/ajax_informe_seguimiento/", {
+                    action: 'get_informes_usuario',
+                    usuario: usuario_id,
+                    ges_informes_cerrados: ges_informes_cerrados
+                },
+                function (data) {
+                    if (data.ok) {
+
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('.usuario_nombre').html(data.usuario_nombre);
+                        if (data.crea_informe) {
+                            $('#button_crear_informe').show();
+                        }
+                        if (data.html) {
+                            $('#list_informes_seguimiento').prepend(data.html);
+                        } else {
+                            var texto = 'No existen informes o no tienes permiso para verlos';
+                            var title = '<i class="fa fa-warning"></i> No existen informes';
+                            show_mensajes({texto: texto, title: title});
+                        }
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+        });
+
+        $('body').on('change', '.deadline', function () {
+            var informe = $(this).data('id');
+            var deadline = $(this).val();
+            $.post("/ajax_informe_seguimiento/", {action: 'deadline', informe: informe, deadline: deadline},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        if (data.estado == 'closed') {
+                            $('#estado' + data.inf).removeClass('fa-unlock').addClass('fa-lock').css('color', 'red');
+                        } else {
+                            $('#estado' + data.inf).removeClass('fa-lock').addClass('fa-unlock').css('color', 'green');
+                        }
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        $('body').on('click', '.del_informe_seguimiento', function (e) {
+            e.preventDefault();
+            informe_del = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> Borrado de informe',
+                texto: 'Si aceptas, el informe se eliminará completamente de la base de datos.',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/ajax_informe_seguimiento/", {action: 'del_informe_seguimiento', informe: informe_del},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#accordion' + informe_del).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            }, 'json');
+                    }
+                }
+            });
+        });
+        $('body').on('click', '.del_participacion_informe_seguimiento', function (e) {
+            e.preventDefault();
+            informe_participacion_del = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> No participar en este informe',
+                texto: 'Si aceptas, serás eliminado de la lista de personas a las que se les ha solicitado responder este informe.',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/ajax_informe_seguimiento/", {action: 'del_participacion_informe_seguimiento', informe: informe_participacion_del},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#accordion' + informe_participacion_del).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            }, 'json');
+                    }
+                }
+            });
+        });
+        $('body').on('keyup', '.texto_solicitud', function () {
+            var informe = $(this).data('informe');
+            var texto = $(this).val();
+            $.post("/ajax_informe_seguimiento/", {action: 'texto_solicitud', informe: informe, texto: texto},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.aviso_informe_seguimiento', function (e) {
+            e.preventDefault();
+            var informe = $(this).data('id');
+            $.post("/ajax_informe_seguimiento/", {action: 'aviso_informe_seguimiento', informe: informe},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.delete_pregunta', function (e) {
+            e.preventDefault();
+            pregunta = $(this).data('id');
+            show_mensajes({
+                title: 'Borrar pregunta del informe de seguimiento',
+                texto: 'Si aceptas, se eliminará la pregunta completamente de la base de datos.',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/ajax_informe_seguimiento/", {action: 'delete_pregunta', pregunta: pregunta},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#pregunta' + pregunta).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            }, 'json');
+                    }
+                }
+            });
+        });
+
+        $('body').on('keyup', '.pregunta', function (e) {
+            e.preventDefault();
+            var pregunta = $(this).data('id');
+            var informe = $(this).data('informe');
+            var texto = $(this).val();
+            $.post("/ajax_informe_seguimiento/", {
+                    action: 'pregunta',
+                    informe: informe,
+                    pregunta: pregunta,
+                    texto: texto
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+        });
+
+        $('body').on('keyup', '.respuesta_a_pregunta', function (e) {
+            e.preventDefault();
+            var informe = $(this).data('informe');
+            var pregunta = $(this).data('pregunta');
+            var ge = $(this).data('ge');
+            var respuesta = $(this).val();
+            $.post("/ajax_informe_seguimiento/", {
+                    action: 'respuesta_a_pregunta',
+                    informe: informe,
+                    pregunta: pregunta,
+                    ge: ge,
+                    respuesta: respuesta
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#n_usuarios_respondido' + informe).html(data.n);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+        });
+
+
+        {% if g_e|has_permiso:'solicita_informes_seguimiento' %}
+            $('body').on('click', '#id_button_crear_informe', function (e) {
+                e.preventDefault();
+                $.post("/ajax_informe_seguimiento/", {
+                        action: 'solicitar_informe',
+                        usuario_id: usuario_id
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#button_crear_informe').hide();
+                            $('#list_informes_seguimiento').prepend(data.html);
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+
+
+        function inicializar_select_usuarios_destino() {
+            $('.usuarios_destino').select2({
+                placeholder: "Escribe parte del nombre para buscar",
+                allowClear: true,
+                ajax: {
+                    url: "/ajax_informe_seguimiento/",
+                    type: 'POST',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {action: 'buscar_usuarios_destino', q: params.term}
+                    },
+                    processResults: function (data, page) {
+                        return {
+                            results: $.map(data, function (item) {
+                                return {
+                                    text: item.text,
+                                    id: item.id
+                                }
+                            })
+                        };
+                    },
+                    cache: true
+                },
+                escapeMarkup: function (markup) {
+                    return markup;
+                }, // let our custom formatter work
+                minimumInputLength: 3,
+                language: {
+                    inputTooShort: function () {
+                        return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                    }
+                }
+            });
+        }
+
+        $('body').on('change', '.usuarios_destino', function (e) {
+            e.preventDefault();
+            var usuarios_destino = $(this).val();
+            var informe = $(this).data('informe');
+            var usuario_select = $(this);
+            $.post("/ajax_informe_seguimiento/", {
+                    action: 'mod_usuarios_destino', usuarios: usuarios_destino, informe: informe
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#n_usuarios_destino' + informe).html(data.n);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+        });
+
+        $('body').on('change', '.pregunta_action', function (e) {
+            e.preventDefault();
+            var n = $(this).val();
+            var informe = $(this).data('informe');
+            if (n != 'hacer_nada') {
+                $.post("/ajax_informe_seguimiento/", {
+                        action: 'add_pregunta_informe', n: n, informe: informe
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $("#preguntas" + informe).prepend(data.html);
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    }, 'json');
+            }
+        });
+
+
+        {# ####################################################################### #}
+        {% if g_e|has_permiso:'solicita_informes_seguimiento' %}
+
+
+            $('body').on('click', '.pdf_informe_seguimiento', function (e) {
+                e.preventDefault();
+                $('#informe_id').val($(this).data('id'));
+                $('#action').val('pdf_informe_seguimiento');
+                document.informe_seguimiento.submit();
+            });
+
+        {% endif %}
+
+    </script>
+
+{% endblock %}

@@ -1,0 +1,152 @@
+{% load my_templatetags %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es" xmlns:pdf="http://htmltopdf.org/pdf">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Actividad{{ actividades|pluralize:"es" }} del grupo scout {{request.session.grupo_scout.code}}</title>
+<style>
+
+html {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12pt;
+  text-align: justify;
+}
+table
+{ 
+  margin-left: auto;
+  margin-right: auto;
+}
+p {
+  font-size: 12pt;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+</style>
+</head>
+<body>
+<h2 style="text-align:center;"> ACTIVIDAD{{ actividades|pluralize:"ES" }} DEL GRUPO SCOUT {{request.session.gauser_extra.entidad.name}}</h2>
+
+<p>{% if interesado.gauser.sexo = 'H' %} Estimado {% else %} Estimada {% endif %} {% if interesado.alias %} {{interesado.alias}}: {% else %} {{interesado.gauser.first_name}}: {% endif %} </p>
+
+{% if interesado|has_perfiles:"70" %} {# Es decir tiene perfil de educando #}
+
+  <p>El grupo scout {{request.session.grupo_scout.name}} ha preparado la actividad "{{actividad.actividad_title}}" en la que puedes participar. Está destinada a {% for seccion in actividad.subentidades.all %} {% if forloop.first %}  {% elif forloop.last %} y {% else %}, {% endif %} {{seccion.nombre}} {% endfor %} y consiste en:</p>
+  <p>{% autoescape off %} {{actividad.description}} {% endautoescape %}</p>
+  {% if actividad.fecha_inicio|date:"d m" == actividad.fecha_fin|date:"d m" %}
+  <p>La actividad tendrá lugar el día {{actividad.fecha_inicio|date:"l, j"}} de {{actividad.fecha_inicio|date:"F"}} de {{actividad.fecha_inicio|date:"Y"}}, comenzará a las {{actividad.fecha_inicio|time:"H:i"}} ({{actividad.lugar_salida}}) y finalizará a las {{actividad.fecha_fin|time:"H:i"}} ({{actividad.lugar_llegada}}).</p>
+  {% else %}
+  <p>La actividad comenzará el {{actividad.fecha_inicio|date:"l, j"}} de {{actividad.fecha_inicio|date:"F"}} de {{actividad.fecha_inicio|date:"Y"}} a las {{actividad.fecha_inicio|time:"H:i"}} ({{actividad.lugar_salida}}) y terminará el {{actividad.fecha_fin|date:"l, j"}} de {{actividad.fecha_fin|date:"F"}} de {{actividad.fecha_fin|date:"Y"}}  a las {{actividad.fecha_fin|time:"H:i"}} ({{actividad.lugar_llegada}}).</p>
+  {% endif %}
+  {% if actividad.material_educandos %}
+  <p>Debes acordarte de llevar lo siguiente:</p>
+  {% autoescape off %}
+    {{actividad.material_educandos}}
+  {% endautoescape %}
+  {% endif %}
+  <p>Si deseas participar en esta actividad puedes confirmarlo haciendo click en en siguiente enlace antes del {{actividad.deadline}}:</p>
+  <p style="text-align:center;">
+    {% if '8000' in http_referer %}
+      <a href="http://localhost:8000/enlazar/?u={{interesado.id}}&c={{code}}&actividad={{actividad.id}}">Confirmar participación en la actividad</a>
+    {% else %}
+      <a href="https://scout.gaumentada.es/enlazar/?u={{interesado.id}}&c={{code}}&actividad={{actividad.id}}">Confirmar participación en la actividad</a>
+    {% endif %}
+  </p>
+
+  {% if actividad.padres %}
+    <p>¡¡Anima a tus padres a participar ya que es necesaria su colaboración en esta actividad!!</p>
+  {% endif %}
+
+{% elif interesado|has_perfiles:"80" %} {# Es decir tiene perfil de padre/madre #}
+  
+  <p>El grupo scout {{request.session.grupo_scout.name}} ha preparado la actividad "{{actividad.actividad_title}}" en la que puede participar vuestro hijo/a. Está destinada a {% for seccion in actividad.subentidades.all %} {% if forloop.last %} y {% elif forloop.first %} {% else %}, {% endif %} {{seccion.nombre}} {% endfor %} y consiste en:</p>
+  <p>{% autoescape off %} {{actividad.description}} {% endautoescape %}</p>
+  {% if actividad.fecha_inicio|date:"d m" == actividad.fecha_fin|date:"d m" %}
+  <p>La actividad tendrá lugar el día {{actividad.fecha_inicio|date:"l, j"}} de {{actividad.fecha_inicio|date:"F"}} de {{actividad.fecha_inicio|date:"Y"}}, comenzará a las {{actividad.fecha_inicio|time:"H:i"}} ({{actividad.lugar_salida}}) y finalizará a las {{actividad.fecha_fin|time:"H:i"}} ({{actividad.lugar_llegada}}).</p>
+  {% else %}
+  <p>La actividad comenzará el {{actividad.fecha_inicio|date:"l, j"}} de {{actividad.fecha_inicio|date:"F"}} de {{actividad.fecha_inicio|date:"Y"}} a las {{actividad.fecha_inicio|time:"H:i"}} ({{actividad.lugar_salida}}) y terminará el {{actividad.fecha_fin|date:"l, j"}} de {{actividad.fecha_fin|date:"F"}} de {{actividad.fecha_fin|date:"Y"}}  a las {{actividad.fecha_fin|time:"H:i"}} ({{actividad.lugar_llegada}}).</p>
+  {% endif %}
+  {% if actividad.material_educandos %}
+  <p>Los chicos deberán llevar lo siguiente:</p>
+  {% autoescape off %}
+    {{actividad.material_educandos}}
+  {% endautoescape %}
+  {% endif %}
+  <p>Si deseas que tu hijo/a participe en esta actividad puedes confirmarlo haciendo click en en siguiente enlace antes del {{actividad.deadline}}:</p>
+  <p style="text-align:center;">
+    {% if '8000' in http_referer %}
+      <a href="http://localhost:8000/enlazar/?u={{interesado.id}}&c={{code}}&actividad={{actividad.id}}">Confirmar participación en la actividad</a>
+    {% else %}
+      <a href="https://scout.gaumentada.es/enlazar/?u={{interesado.id}}&c={{code}}&actividad={{actividad.id}}">Confirmar participación en la actividad</a>
+    {% endif %}
+  </p>
+
+  {% if actividad.padres %}
+    <p>Para esta actividad es necesaria la colaboración de madres y padres:</p>
+    {% autoescape off %}
+      {{actividad.padres_colaborar}}
+    {% endautoescape %}
+    <p>Si deseas colaborar en el desarrollo de esta actividad puedes indicarlo utilizando el mismo enlace anterior.</p>
+  {% endif %}
+
+{% elif interesado|has_perfiles:"85" %} {# Es decir tiene perfil de socio adulto #}
+
+  <p>El grupo scout {{request.session.grupo_scout.name}} ha preparado la actividad "{{actividad.actividad_title}}" en la que puedes participar. Está destinada a {% for seccion in actividad.subentidades.all %} {% if forloop.last %} y {% elif forloop.first %} {% else %}, {% endif %} {{seccion.nombre}} {% endfor %} y consiste en:</p>
+  <p>{% autoescape off %} {{actividad.description}} {% endautoescape %}</p>
+  {% if actividad.fecha_inicio|date:"d m" == actividad.fecha_fin|date:"d m" %}
+  <p>La actividad tendrá lugar el día {{actividad.fecha_inicio|date:"l, j"}} de {{actividad.fecha_inicio|date:"F"}} de {{actividad.fecha_inicio|date:"Y"}}, comenzará a las {{actividad.fecha_inicio|time:"H:i"}} ({{actividad.lugar_salida}}) y finalizará a las {{actividad.fecha_fin|time:"H:i"}} ({{actividad.lugar_llegada}}).</p>
+  {% else %}
+  <p>La actividad comenzará el {{actividad.fecha_inicio|date:"l, j"}} de {{actividad.fecha_inicio|date:"F"}} de {{actividad.fecha_inicio|date:"Y"}} a las {{actividad.fecha_inicio|time:"H:i"}} ({{actividad.lugar_salida}}) y terminará el {{actividad.fecha_fin|date:"l, j"}} de {{actividad.fecha_fin|date:"F"}} de {{actividad.fecha_fin|date:"Y"}}  a las {{actividad.fecha_fin|time:"H:i"}} ({{actividad.lugar_llegada}}).</p>
+  {% endif %}
+  
+  <p>Puedes confirmar tu participación haciendo click en en siguiente enlace antes del {{actividad.deadline}}:</p>
+  <p style="text-align:center;">
+    {% if '8000' in http_referer %}
+      <a href="http://localhost:8000/enlazar/?u={{interesado.id}}&c={{code}}&actividad={{actividad.id}}">Confirmar participación en la actividad</a>
+    {% else %}
+      <a href="https://scout.gaumentada.es/enlazar/?u={{interesado.id}}&c={{code}}&actividad={{actividad.id}}">Confirmar participación en la actividad</a>
+    {% endif %}
+  </p>
+
+  {% if actividad.padres %}
+    <p>La colaboración de socios puede ser:</p>
+    {% autoescape off %}
+      {{actividad.padres_colaborar}}
+    {% endautoescape %}
+  {% endif %}
+
+{% elif interesado|has_perfiles:"75" %} {# Es decir tiene perfil de scouter #}
+
+  <p>El grupo scout {{request.session.grupo_scout.name}} ha preparado la actividad "{{actividad.actividad_title}}" en la que puedes participar. Está destinada a {% for seccion in actividad.subentidades.all %} {% if forloop.last %} y {% elif forloop.first %} {% else %}, {% endif %} {{seccion.nombre}} {% endfor %} y consiste en:</p>
+  <p>{% autoescape off %} {{actividad.description}} {% endautoescape %}</p>
+  {% if actividad.fecha_inicio|date:"d m" == actividad.fecha_fin|date:"d m" %}
+  <p>La actividad tendrá lugar el día {{actividad.fecha_inicio|date:"l, j"}} de {{actividad.fecha_inicio|date:"F"}} de {{actividad.fecha_inicio|date:"Y"}}, comenzará a las {{actividad.fecha_inicio|time:"H:i"}} ({{actividad.lugar_salida}}) y finalizará a las {{actividad.fecha_fin|time:"H:i"}} ({{actividad.lugar_llegada}}).</p>
+  {% else %}
+  <p>La actividad comenzará el {{actividad.fecha_inicio|date:"l, j"}} de {{actividad.fecha_inicio|date:"F"}} de {{actividad.fecha_inicio|date:"Y"}} a las {{actividad.fecha_inicio|time:"H:i"}} ({{actividad.lugar_salida}}) y terminará el {{actividad.fecha_fin|date:"l, j"}} de {{actividad.fecha_fin|date:"F"}} de {{actividad.fecha_fin|date:"Y"}}  a las {{actividad.fecha_fin|time:"H:i"}} ({{actividad.lugar_llegada}}).</p>
+  {% endif %}
+  {% if actividad.material_scouters %}
+  <p>Los scouters se encargan de llevar lo siguiente:</p>
+  {% autoescape off %}
+    {{actividad.material_scouters}}
+  {% endautoescape %}
+  {% endif %}
+  <p>Para indicar tu participación en esta actividad haz click en en siguiente enlace antes del {{actividad.deadline}}:</p>
+  <p style="text-align:center;">
+    {% if '8000' in http_referer %}
+      <a href="http://localhost:8000/enlazar/?u={{interesado.id}}&c={{code}}&actividad={{actividad.id}}">Confirmar participación en la actividad</a>
+    {% else %}
+      <a href="https://scout.gaumentada.es/enlazar/?u={{interesado.id}}&c={{code}}&actividad={{actividad.id}}">Confirmar participación en la actividad</a>
+    {% endif %}
+  </p>
+
+{% endif %}
+
+  <br/>
+  Grupo Scout {{request.session.gauser_extra.entidad.name}}
+  <br/>
+  <br/>
+  <hr/>
+  <p style="font-size:10;color:gray;">Has recibido este mensaje porque estás registrado en el grupo scout {{request.session.grupo_scout.name}}. Este correo se ha enviado de forma automática por GAUSS. Si contestas a este correo utilizando tu servicio de correo responderás a quien lo escribió usando {{interesado|dominio_correo}}, pero no quedará reflejado en GAUSS.</p>
+
+</body>
+</html>
+ 

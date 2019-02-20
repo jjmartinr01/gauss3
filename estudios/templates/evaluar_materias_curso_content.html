@@ -1,0 +1,86 @@
+{% load my_templatetags %}
+
+<div class="row">
+    <div class="columns large-4 medium-12 small-12"><b>Alumno</b></div>
+    <div class="columns large-4 medium-6 small-6"><b>Materia</b></div>
+    <div class="columns large-4 medium-6 small-6"><b>Calificaciones por evaluación</b></div>
+</div>
+<div class="row">
+    <div class="columns large-4 medium-12 small-12">&nbsp;</div>
+    <div class="columns large-4 medium-6 small-6">&nbsp;</div>
+    <div class="columns large-4 medium-6 small-6">
+        <div class="row">
+            <div class="columns large-4 medium-4 small-4">1ª Ev.</div>
+            <div class="columns large-4 medium-4 small-4">2ª Ev.</div>
+            <div class="columns large-4 medium-4 small-4">3ª Ev.</div>
+        </div>
+    </div>
+</div>
+{% for matricula in matriculas %}
+    {% ifchanged matricula.ge %}
+        <div class="row">
+            <hr>
+        </div>
+        <div class="row">
+            <div class="columns large-4 medium-12 small-12"><span
+                    style="color:#008cba; font-weight: 800;">{{ matricula.ge.gauser.get_full_name }}</span><br>
+                {% if matricula.evaluador != g_e %}
+                    <span class="label alert round"
+                          title="Tienes permiso para evaluar a este alumno, pero lo tiene asignado: {{ matricula.evaluador.gauser.get_full_name }}">{{ matricula.ge.gauser_extra_estudios.grupo.nombre }}</span>
+                {% else %}
+                    <span class="label round">{{ matricula.ge.gauser_extra_estudios.grupo.nombre }}</span>
+                {% endif %}</div>
+            <div class="columns large-4 medium-6 small-6">{{ matricula.materia.nombre }}
+                {% if matricula.materia.curso.nombre_especifico %}
+                    <span class="label secondary round">{{ matricula.materia.curso.nombre_especifico }}</span>
+                {% else %}
+                    <span class="label secondary round">{{ matricula.materia.curso.nombre }}</span>
+                {% endif %}
+            </div>
+            <div class="columns large-4 medium-6 small-6">
+                <div class="row">
+                    <div class="columns large-4 medium-4 small-4"><input type="number" min="1" max="10" class="nota"
+                                                                         data-nota="nota1"
+                                                                         data-matricula="{{ matricula.id }}"
+                                                                         value="{{ matricula.nota1 }}"></div>
+                    <div class="columns large-4 medium-4 small-4"><input type="number" min="1" max="10" class="nota"
+                                                                         data-nota="nota2"
+                                                                         data-matricula="{{ matricula.id }}"
+                                                                         value="{{ matricula.nota2 }}"></div>
+                    <div class="columns large-4 medium-4 small-4"><input type="number" min="1" max="10" class="nota"
+                                                                         data-nota="nota3"
+                                                                         data-matricula="{{ matricula.id }}"
+                                                                         value="{{ matricula.nota3 }}"></div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="row" style="padding-bottom: 5px;">
+            <div class="columns large-4 medium-12 small-12">&nbsp;</div>
+            <div class="columns large-4 medium-6 small-6">{{ matricula.materia.nombre }}
+                {% if matricula.materia.curso.nombre_especifico %}
+                    <span class="label secondary round">{{ matricula.materia.curso.nombre_especifico }}</span>
+                {% else %}
+                    <span class="label secondary round">{{ matricula.materia.curso.nombre }}</span>
+                {% endif %}
+            </div>
+            <div class="columns large-4 medium-6 small-6">
+                <div class="row">
+                    <div class="columns large-4 medium-4 small-4"><input type="number" min="1" max="10" class="nota"
+                                                                         data-nota="nota1"
+                                                                         data-matricula="{{ matricula.id }}"
+                                                                         value="{{ matricula.nota1 }}"></div>
+                    <div class="columns large-4 medium-4 small-4"><input type="number" min="1" max="10" class="nota"
+                                                                         data-nota="nota2"
+                                                                         data-matricula="{{ matricula.id }}"
+                                                                         value="{{ matricula.nota2 }}"></div>
+                    <div class="columns large-4 medium-4 small-4"><input type="number" min="1" max="10" class="nota"
+                                                                         data-nota="nota3"
+                                                                         data-matricula="{{ matricula.id }}"
+                                                                         value="{{ matricula.nota3 }}"></div>
+                </div>
+            </div>
+        </div>
+    {% endifchanged %}
+
+{% endfor %}

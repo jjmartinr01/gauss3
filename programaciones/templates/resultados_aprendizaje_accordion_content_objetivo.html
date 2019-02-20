@@ -1,0 +1,16 @@
+<tr id="objetivo{{ o.id }}">
+    <td><b>Objetivo:</b></td>
+    <td>
+        <div contenteditable="true" class="div_objetivo"
+             data-id="{{ o.id }}">{% autoescape off %}{{ o.texto }}{% endautoescape %}</div>
+    </td>
+    <td><a class="borrar_objetivo" data-id="{{ o.id }}" title="Borrar el objetivo asociado al resultado de aprendizaje"><i class="fa fa-trash-o"></i></a></td>
+</tr>
+<tr id="crit_eval{{ o.id }}">
+    <td><b>Criterio de evaluación:</b></td>
+    <td>
+        <div contenteditable="true" class="div_crit_eval"
+             data-id="{{ o.id }}">{% autoescape off %}{{ o.crit_eval }}{% endautoescape %}</div>
+    </td>
+    <td>&nbsp;</td>
+</tr>

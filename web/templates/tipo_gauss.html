@@ -1,0 +1,53 @@
+<div class="row" style="margin-left: 1px !important;margin-right: 1px !important;">
+    <div class="columns large-12">
+        <form action="" method="post" name="autenticar_tipo_gauss" id="autenticar_tipo_gauss">
+            {% csrf_token %}
+            <div class="row">&nbsp;</div>
+            <div class="panel">
+
+                <div class="row">
+                    <div class="large-1 medium-1 small-1 columns">&nbsp;</div>
+                    <div class="large-7 small-7 medium-7 columns end text-right">
+                        <img src="/static/images/logo_tipo_gauss_acceso.png" height="76" width="273">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="large-1 medium-1 small-1 columns">&nbsp;</div>
+                    <div class="large-5 medium-5 small-5 columns text-right">
+                        <label class="right inline">
+                            <span style="font-size: 12pt;font-weight: 700;color: #31859c">Usuario</span>
+                        </label>
+                    </div>
+                    <div class="large-5 medium-5 small-5 columns">
+                        <input name="usuario" type="text" size="15" maxlength="50" value="">
+                    </div>
+                    <div class="large-1 medium-1 small-1 columns">&nbsp;</div>
+                </div>
+                <div class="row">
+                    <div class="large-1 medium-1 small-1 columns">&nbsp;</div>
+                    <div class="large-5 medium-5 small-5 columns text-right">
+                        <label for="right-label" class="right inline">
+                            <span style="font-size: 12pt;font-weight: 700;color: #31859c">Contraseña</span>
+                        </label>
+                    </div>
+                    <div class="large-5 medium-5 small-5 columns">
+                        <input name="passusuario" type="password" size="15" maxlength="50" value="">
+                    </div>
+                    <div class="large-1 medium-1 small-1 columns">&nbsp;</div>
+                </div>
+                <div class="row">
+                    <div class="large-1 medium-1 small-1 columns">&nbsp;</div>
+                    <div class="large-10 medium-10 small-10 columns text-right">
+                        <input class="button" value="Entrar" name="entrar" onclick="" type="submit">
+                    </div>
+                    <div class="large-1 medium-1 small-1 columns text-right">&nbsp;</div>
+                </div>
+                {#        <div class="row">#}
+                {#            <div class=" text-center"><a href=""> ¿Has olvidado tu contraseña?</a></div>#}
+                {#        </div>#}
+
+
+            </div>
+        </form>
+    </div>
+</div>

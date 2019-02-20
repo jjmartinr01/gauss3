@@ -1,0 +1,6 @@
+<p>Se convoca a los miembros de la Comisión de Coordinación Pedagógica del {{request.session.gauser_extra.centro.tipo}} {{request.session.gauser_extra.centro.name}}, para el {{fecha_hora}}, a las 16:30 horas, en la sala de profesores con el siguiente</p><p>ORDEN DEL DÍA</p><ol><li>Lectura y aprobación, si procede del acta anterior.</li><li></li><li>Ruegos y preguntas.</li></ol>
+<p>&nbsp;</p>
+<p>En {{request.session.gauser_extra.centro.get_localidad_display}} a {% now "j" %} de  {% now "F" %}  de {% now "Y" %}</p>
+<p>&nbsp;</p>
+<p class="contacto"><strong>{{request.session.gauser_extra.gauser.get_full_name}}</strong></p>
+<p align="center">{% if request.session.gauser_extra.gauser.sexo == 'H' %}Director {% else %} Directora {% endif %} del {{request.session.gauser_extra.centro.tipo}} {{request.session.gauser_extra.centro.name}}</p>

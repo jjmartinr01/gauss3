@@ -1,0 +1,178 @@
+# -*- coding: utf-8 -*-
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django import forms
+from entidades.models import Entidad, Ronda, Organization, Subentidad, Subsubentidad, Alta_Baja
+from autenticar.models import Menu, Menu_element, Submenu_element, Submenu, Enlace, Gauser, Gauser_extra, Permiso, Perfil
+from mensajes.models import Mensaje, Aviso, Adjunto, Borrado, Importante, Leido
+from actividades.models import Actividad, Participante, Colaborador, Reunion
+from calendario.models import Acontecimiento, Gauser_invitado_acontecimiento
+from contabilidad.models import Presupuesto, Partida, Asiento, Politica_cuotas, Remesa#, Descuentos
+from bancos.models import Banco
+
+
+#class Gauser_extraAdmin(admin.ModelAdmin):
+    #"""
+    #When we save a member, we need to make sure that the
+    #appropriate permissions are added.
+
+    #Then, when we delete, we need to make sure they are removed.
+    #"""
+    #search_fields = ['user__last_name']
+    ##list_filter = ['monitor','educando_scout']
+    #def save_model(self, request, obj, form, change):
+        #"""
+        #We use this form to make sure the permissions are up to date
+        #and that we store the appropriate info into the user fields too.
+        #"""
+        #user_id = request.REQUEST.get('user',None)
+        #user = Gauser.objects.get(id=user_id)
+        #scouter = request.REQUEST.get('monitor')
+        #if scouter:
+	  #permiso = Permission.objects.get(codename="add_actividad")
+	  #user.user_permissions.add(permiso)
+        ##member_status = request.REQUEST.get('active',False)
+        ##members_only = Permission.objects.get(codename="is_member")
+        ##if user and member_status:
+            ##user.user_permissions.add(members_only)
+        ##elif user:
+            ##user.user_permissions.remove(members_only)
+        #obj.save()
+
+    ##def log_deletion(self, request, object, object_repr):
+        ##members_only = Permission.objects.get(codename="is_member")
+        ##if object.user:
+            ##object.user.user_permissions.remove(members_only)
+        ##super(MemberAdmin, self).log_deletion(request, object, object_repr)
+
+
+#class Datos_entidadInline(admin.TabularInline):
+  #model = Datos_entidad
+  #extra = 0
+#class EntidadAdmin(admin.ModelAdmin):
+    ##fieldsets = [
+        ##(None,               {'fields': ['question']}),
+        ##('Date information', {'fields': ['pub_date'], 'classes': ['collapse']}),
+    ##]
+    #inlines = [Datos_entidadInline]
+    #list_display = ('code','name',)
+    #list_filter = ['name']
+    #search_fields = ['code']
+    ##date_hierarchy = 'pub_date'
+
+#admin.site.register(Entidad, EntidadAdmin)
+
+#class MonitorInline(admin.TabularInline):
+    #model = Monitor
+    #extra = 1
+
+#class MonitorAdmin(admin.ModelAdmin):
+    #fieldsets = [
+        #(None,               {'fields': ['nombre']}),
+        #('Date information', {'fields': ['apellidos'], 'classes': ['collapse']}),
+    #]
+    #list_display = ('code','name','address')
+    #list_filter = ['name']
+    #search_fields = ['code']
+    #inlines = [MonitorInline]
+   
+
+#class Gauser_extraAdmin(admin.ModelAdmin):
+    #fieldsets = [
+        #(None,               {'fields': ['nombre']}),
+        #('Date information', {'fields': ['apellidos'], 'classes': ['collapse']}),
+    #]
+    #list_display = ('code','name','address')
+    #list_filter = ['name']
+    #search_fields = ['user__last_name']
+    #list_filter = ['monitor','educando_scout']
+    #inlines = [MonitorInline]
+#admin.site.register(Entidad, EntidadAdmin)    
+
+class Banco_Admin(admin.ModelAdmin):
+    search_fields = ['codigo','bic']
+
+
+class Gauser_extraAdmin(admin.ModelAdmin):
+    search_fields = ['gauser__last_name']
+    list_filter = ['entidad','ronda']
+
+class MyUserChangeForm(UserChangeForm):
+    class Meta(UserChangeForm.Meta):
+        model = Gauser
+
+class MyUserCreationForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = Gauser
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        try:
+            MyUser.objects.get(username=username)
+        except MyUser.DoesNotExist:
+            return username
+        raise forms.ValidationError(self.error_messages['duplicate_username'])
+
+
+
+class MyUserAdmin(UserAdmin):
+    #form = MyUserChangeForm
+    #add_form = MyUserCreationForm
+    #fieldsets = UserAdmin.fieldsets + (
+        #(None, {'fields': ('sexo')}),
+    #)
+    form = MyUserChangeForm
+
+    fieldsets = UserAdmin.fieldsets + (
+            (None, {'fields': ('sexo', 'dni', 'address', 'postalcode', 'localidad', 'provincia', 'nacimiento', 'telfij', 'telmov', 'familia')}),
+    )
+
+    def get_form(self, request, obj=None, **kwargs):
+	self.exclude = ("user_permissions")
+	## Dynamically overriding
+	#self.fieldsets[2][1]["fields"] = ('is_active', 'is_staff','is_superuser','groups')
+	self.fieldsets[2][1]["fields"] = ('is_active',)
+	form = super(MyUserAdmin,self).get_form(request, obj, **kwargs)
+	return form
+
+
+admin.site.register(Gauser, MyUserAdmin)
+
+admin.site.register(Gauser_extra, Gauser_extraAdmin)
+
+
+
+admin.site.register(Organization)
+admin.site.register(Entidad)
+admin.site.register(Subentidad)
+admin.site.register(Subsubentidad)
+admin.site.register(Alta_Baja)
+admin.site.register(Ronda)
+admin.site.register(Permiso)
+admin.site.register(Perfil)
+admin.site.register(Menu)
+admin.site.register(Submenu)
+admin.site.register(Menu_element)
+admin.site.register(Submenu_element)
+admin.site.register(Enlace)
+admin.site.register(Mensaje)
+admin.site.register(Adjunto)
+admin.site.register(Borrado)
+admin.site.register(Importante)
+admin.site.register(Leido)
+admin.site.register(Aviso)
+admin.site.register(Actividad)
+admin.site.register(Reunion)
+admin.site.register(Participante)
+admin.site.register(Colaborador)
+admin.site.register(Acontecimiento)
+admin.site.register(Gauser_invitado_acontecimiento)
+admin.site.register(Presupuesto)
+admin.site.register(Partida)
+admin.site.register(Asiento)
+admin.site.register(Politica_cuotas)
+admin.site.register(Remesa)
+admin.site.register(Banco)
+#admin.site.register(Descuentos)
+

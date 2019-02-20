@@ -1,0 +1,28 @@
+{% load my_templatetags %}
+  <input type="hidden" id="tipo_selected" name="tipo_selected" value="{{tipo}}">
+  <table align="center" width="100%" cellspacing="3" cellpadding="3">
+  {% for reparacion in reparaciones %}
+  <tr><td class="cabecera" colspan="2">
+  {% if reparacion.resuelta %}
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Reparación {{reparacion.tipo}}-{{reparacion.id}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  Incidencia Solucionada ({{reparacion.fecha_solucion}}) &nbsp;&nbsp;&nbsp;<i class="icon-thumbs-up"></i>
+  {% else %}
+  <span style="color:#ffffcc;">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Reparación {{reparacion.tipo}}-{{reparacion.id}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  Incidencia no solucionada
+  {% with permiso="control_reparaciones_"|add:reparacion.tipo %}
+    {% if request.session.gauser_extra|has_permiso:permiso %}
+    <span class="necesita_reparar" id="reparacion_{{reparacion.id}}" style="cursor:pointer;">
+    &nbsp;&nbsp;&nbsp;<i class="icon-wrench"></i>&nbsp;&nbsp;&nbsp;</span>
+    {% endif %}
+  {% endwith %}
+  </span>
+  {% endif %}
+  <td></tr><tr>
+    <td width="20%" style="white-space:normal;"><p>Tipo: {{reparacion.get_tipo_display}}<p><p>Fecha: {{reparacion.fecha_comunicado|date:"d-m-Y"}}<p><p>Lugar: {{reparacion.lugar}}<p></td>
+    <td width="80%" style="white-space:normal;"><p><span class="info">Descripción:</span> {% autoescape off %} {{reparacion.describir_problema}} {% endautoescape %} </p>
+    {% if reparacion.resuelta %} <span class="info">Descripción de la solución:</span> {% autoescape off %} {{reparacion.describir_solucion}} {% endautoescape %} {% endif %} </td></tr>
+  {% endfor %}
+  </table>
+
+    

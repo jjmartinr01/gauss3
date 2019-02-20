@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Asignación de menús
+                a {{ request.session.gauser_extra.ronda.entidad.name }}</strong></h4>
+        </div>
+        {% for md in menus_default %}
+            {% if not forloop.first %}
+                <hr>
+            {% endif %}
+            <span style="margin-left: {{ md.nivel }}0px; font-weight: 800;font-variant: small-caps;">
+                <input type="checkbox" data-id="{{ md.id }}" class="menu" id="menu{{ md.id }}"
+                       {% if md.code_menu in menus_entidad %}checked{% endif %}> {{ md.texto_menu }}</span><br>
+            {% for subm in md.children %}
+                <span style="margin-left: {{ subm.nivel }}0px">
+                <input type="checkbox" data-id="{{ subm.id }}" class="menu" id="menu{{ subm.id }}"
+                       {% if subm.code_menu in menus_entidad %}checked{% endif %}> {{ subm.texto_menu }}</span><br>
+            {% endfor %}
+
+        {% endfor %}
+
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('.menu').change(function (e) {
+            var id = $(this).data('id');
+            if ($(this).is(':checked')) {
+                $.post("/asignar_menus_entidad/", {action: 'add_menu', id: id}, function (data) {
+                    $.each(data, function (key, value) {
+                        $('#menu' + value).prop('checked', true);
+                    });
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }, 'json');
+            } else {
+                $.post("/asignar_menus_entidad/", {action: 'del_menu', id: id}, function (data) {
+                    $.each(data, function (key, value) {
+                        $('#menu' + value).prop('checked', false);
+                    });
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }, 'json');
+            }
+        });
+
+    </script>
+{% endblock %}

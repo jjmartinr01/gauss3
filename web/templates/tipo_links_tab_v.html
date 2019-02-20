@@ -1,0 +1,6 @@
+<ul class="side-nav">
+    {% for enlace in content_div.enlaces.all %}
+        <li><a href="{% if enlace.href %}{{ enlace.href }}{% else %}#{% endif %}" class="link_html_web"
+               id="link-{{ enlace.id }}">{{ enlace.texto }}</a></li>
+    {% endfor %}
+</ul>

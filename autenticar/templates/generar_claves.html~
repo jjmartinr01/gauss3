@@ -1,0 +1,160 @@
+{% extends "lateral.html" %}
+
+{% block head %}
+<!-- <script type="text/javascript" src="/static/js/multiselect-to-checkboxes.js"></script> -->
+
+{% endblock %}
+
+{% block ready %}
+
+  visualizar(['ok_sign','search_sign']);
+  $( "#search_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Buscar por nombre');
+  $( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Modificar scouters y educandos');
+
+  $('#ok_sign').click(function () {  if ( $(this).hasClass('navegar') ) {
+	$('#action').val('aceptar');
+	document.{{formname}}.submit();} });
+
+  $( "#dialog_buscar" ).dialog({autoOpen: false, resizable: false, height:115, width:350, modal: true});
+
+  $('#search_sign').click(function () { $( "#dialog_buscar" ).dialog("open"); });
+
+  $('#Contenido').on('change', '.check___id_educandos', function () {
+    var id_selected = JSON.stringify($(this).attr("id").split('___')[1]);
+    if ($(this).attr("checked")) {
+	$.post("/scouters_asociados/", { educando: id_selected},function(data) {
+	  data=data.replace('["','').replace('"]','').split('", "'); //El array transmitido se entiende como un string
+	  for (id_scouter in data){
+	    $('#scouter___'+ data[id_scouter]).attr('checked', true);
+	  }
+	});
+    }
+    else {$.post("/scouters_asociados/", { educando: id_selected},function(data) {
+	  data=data.replace('["','').replace('"]','').split('", "');
+	  for (id_scouter in data){
+	    $('#scouter___'+ data[id_scouter]).attr('checked', false);
+	  }
+	});}
+    });
+
+
+
+
+  $('#Contenido').click(function(e) {
+    var a=false;
+    if ($(e.target).parents('.div_total_checkboxes').length<1){
+	$('.todos_ningunos').each(function(i, div){
+	    if ($(div).css('display') == 'block'){
+		var id = div.id.split('___')[1];
+		$('#checkbox_cerrado').val(id).change();}});
+	$('.todos_ningunos').hide();
+	$('.multiselect2checkbox').hide();
+	$('.ya_checked').show();}});
+
+  $('.texto_checkboxes').click(function(){
+	var id = this.id.split('___')[1];
+	$('#todos_ningunos___'+id).toggle();
+	$('#checkboxes___'+id).toggle();
+	$('#ya_checked___'+id).toggle();})
+
+  $('#Contenido').on('click', '.select_todos', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).prop('checked', 'checked'); });
+
+  $('#Contenido').on('click', '.select_ninguno', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).prop('checked', false); });
+{% endblock %}
+
+
+{% block navegar %}
+{% endblock %}
+
+
+
+{% block contenido %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+    <input type="hidden" name="action" id="action" value="">
+    <input type="hidden" name="gauser_extra_selected" id="gauser_extra_selected" value="{{gauser_extra.id}}">
+    
+    <table align="CENTER" cellpadding="3" cellspacing="3" width="100%"><tr><td class="cabecera" align="CENTER" nowrap="nowrap"> Generar claves de los socios indicados a continuación</td></tr></table>
+    
+
+    <div id="tot___id_educandos" class="div_total_checkboxes">
+      <div class="div_texto_checkboxes">
+	  <span class="info texto_checkboxes" id="texto___id_educandos"><i class="fa fa-hand-o-up"></i> Selecciona educandos</span>
+      </div>
+      <div class="todos_ningunos" id="todos_ningunos___id_educandos">
+	  <span id="todo___id_educandos" class="select_todos info"><i class="fa fa-check-circle"></i> Todos </span>
+	  <span id="ninguno___id_educandos" class="select_ninguno info"><i class="fa fa-times-circle"></i> Ninguno</span>
+      </div>
+      <table width="100%" id="checkboxes___id_educandos" class="multiselect2checkbox"><tbody><tr>
+	  {% for educando in educandos %}
+	    <td><input type="checkbox" id="educando___{{educando.id}}" name="educandos" class="check___id_educandos" value="{{educando.id}}"> {{educando.gauser.last_name}}, {{educando.gauser.first_name}}</td>
+	    {%if forloop.counter|divisibleby:"4" %}
+		</tr><tr>
+	    {% endif %}
+	  {% endfor %}
+      </tbody></table>
+    </div>
+
+    <div id="tot___id_scouters" class="div_total_checkboxes">
+      <div class="div_texto_checkboxes">
+	  <span class="info texto_checkboxes" id="texto___id_scouters"><i class="fa fa-hand-o-up"></i> Selecciona scouters</span>
+      </div>
+      <div class="todos_ningunos" id="todos_ningunos___id_scouters">
+	  <span id="todo___id_scouters" class="select_todos info"><i class="fa fa-check-circle"></i> Todos </span>
+	  <span id="ninguno___id_scouters" class="select_ninguno info"><i class="fa fa-times-circle"></i> Ninguno</span>
+      </div>
+      <table width="100%" id="checkboxes___id_scouters" class="multiselect2checkbox"><tbody><tr>
+	  {% for scouter in scouters %}
+	    <td><input type="checkbox" id="scouter___{{scouter.id}}" name="scouters" class="check___id_scouters" value="{{scouter.id}}"> {{scouter.gauser.last_name}}, {{scouter.gauser.first_name}}</td>
+	    {%if forloop.counter|divisibleby:"4" %}
+		</tr><tr>
+	    {% endif %}
+	  {% endfor %}
+      </tbody></table>
+    </div>
+
+    <div id="tot___id_padres" class="div_total_checkboxes">
+      <div class="div_texto_checkboxes">
+	  <span class="info texto_checkboxes" id="texto___id_padres"><i class="fa fa-hand-o-up"></i> Selecciona padres</span>
+      </div>
+      <div class="todos_ningunos" id="todos_ningunos___id_padres">
+	  <span id="todo___id_padres" class="select_todos info"><i class="fa fa-check-circle"></i> Todos </span>
+	  <span id="ninguno___id_padres" class="select_ninguno info"><i class="fa fa-times-circle"></i> Ninguno</span>
+      </div>
+      <table width="100%" id="checkboxes___id_padres" class="multiselect2checkbox"><tbody><tr>
+	  {% for padre in padres %}
+	    <td><input type="checkbox" id="padre___{{padre.id}}" name="padres" class="check___id_padres" value="{{padre.id}}"> {{padre.gauser.last_name}}, {{padre.gauser.first_name}}</td>
+	    {%if forloop.counter|divisibleby:"4" %}
+		</tr><tr>
+	    {% endif %}
+	  {% endfor %}
+      </tbody></table>
+    </div>
+
+    <div id="tot___id_adultos" class="div_total_checkboxes">
+      <div class="div_texto_checkboxes">
+	  <span class="info texto_checkboxes" id="texto___id_adultos"><i class="fa fa-hand-o-up"></i> Selecciona socios adultos</span>
+      </div>
+      <div class="todos_ningunos" id="todos_ningunos___id_adultos">
+	  <span id="todo___id_adultos" class="select_todos info"><i class="fa fa-check-circle"></i> Todos </span>
+	  <span id="ninguno___id_adultos" class="select_ninguno info"><i class="fa fa-times-circle"></i> Ninguno</span>
+      </div>
+      <table width="100%" id="checkboxes___id_adultos" class="multiselect2checkbox"><tbody><tr>
+	  {% for adulto in adultos %}
+	    <td><input type="checkbox" id="adulto___{{adulto.id}}" name="adultos" class="check___id_adultos" value="{{adulto.id}}"> {{adulto.gauser.last_name}}, {{adulto.gauser.first_name}}</td>
+	    {%if forloop.counter|divisibleby:"4" %}
+		</tr><tr>
+	    {% endif %}
+	  {% endfor %}
+      </tbody></table>
+    </div>
+</form>
+
+<div id="dialog_buscar" title="Búsqueda de usuarios de GAUSS">
+  <input placeholder="Buscar por nombre" class="input_search" id="usuarios_list" style="margin-top:20px;margin-right:-25px;width:300px;"/><span style="font-size:16px;"><i class="fa fa-search"></i></i></span>
+</div>
+{% endblock %}

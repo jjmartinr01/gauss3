@@ -1,0 +1,56 @@
+{% load my_templatetags %}
+<script>
+  $.cleditor.defaultOptions.controls = "bold underline italic strikethrough | bullets numbering  | undo redo";
+  $('#id_describir').cleditor({
+	    width:        'auto',
+	    height:       250, 
+        });
+
+  $( "#id_inicio" ).datetimepicker({
+	dateFormat: "dd/mm/yy",
+	dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	firstDay: 1,
+	hourText:"Hora",
+	minuteText:"Minutos",
+	timeText:"Salida:",
+	monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	});
+
+$( "#id_fin" ).datetimepicker({
+	dateFormat: "dd/mm/yy",
+	dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	firstDay: 1,
+	hourText:"Hora",
+	minuteText:"Minutos",
+	timeText:"Salida:",
+	monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	});
+
+$( "#id_recordar" ).datetimepicker({
+	dateFormat: "dd/mm/yy",
+	dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	firstDay: 1,
+	hourText:"Hora",
+	minuteText:"Minutos",
+	timeText:"Salida:",
+	monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	});
+
+</script>
+<input type="hidden" name="gauser" value="{{request.session.gauser_extra.gauser.id}}">
+<table style="border-spacing:10px;"><tbody><tr>
+<tr><td>Nombre del evento:</td><td>{{form.nombre}}</td></tr>
+<tr><td>Fecha inicio:</td><td>{{form.inicio}}</td></tr>
+<tr><td>Fecha fin:</td><td>{{form.fin}}</td></tr>
+<tr><td>Lugar:</td><td>{{form.lugar}}</td></tr>
+{% if request.session.gauser_extra|has_perfiles:"4,5,6,7" %}
+<tr><td>¿Visible por toda la comunidad educativa del Centro?</td><td>{{form.publico}}</td></tr>
+<tr><td>Tipo de evento:</td><td>{{form.tipo}}</td></tr>
+{% endif %}
+<tr><td>Fecha de recordatorio:</td><td>{{form.recordar}}</td></tr>
+<tr><td colspan="2">Introduce una descripción (opcional):</td></tr>
+</tbody></table>
+{{form.describir}}

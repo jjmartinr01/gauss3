@@ -1,0 +1,25 @@
+{% load my_templatetags %}
+{% load vut_extras %}
+<div class="row">
+    <ul class="button-group right">
+        {% if g_e|has_permiso:'add_dispositivo_domotica' %}
+            <li><a class="button add_dispositivo_domotica" data-vivienda="{{ vivienda.id }}"><i class="fa fa-plus"></i>
+                Añadir dispositivo domótico</a></li>
+        {% endif %}
+    </ul>
+</div>
+<div id="list_dispositivos{{ vivienda.id }}">
+{% for domotica in domoticas %}
+    {% include "domotica_vut_accordion_content_dispositivo.html" %}
+{% endfor %}
+</div>
+
+{#<script>#}
+{#    $(".fecha").fdatepicker({#}
+{#        format: 'dd/mm/yyyy',#}
+{#        weekStart: 1,#}
+{#        leftArrow: '<<',#}
+{#        rightArrow: '>>',#}
+{#        language: 'es'#}
+{#    });#}
+{#</script>#}

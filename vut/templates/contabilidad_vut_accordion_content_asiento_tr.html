@@ -1,0 +1,11 @@
+<tr id="asiento_tr{{ asiento.id }}">
+    <td>{{ asiento.concepto }}</td>
+    <td>{{ asiento.vivienda.nombre }}</td>
+    {% if asiento.fichero %}
+        <td><a class="download_file_asiento_vut" data-asiento="{{ asiento.id }}">{{ asiento.fich_name }}</a></td>
+    {% else %}
+        <td>---</td>
+    {% endif %}
+    <td>{{ asiento.cantidad }}</td>
+    <td><a class="borrar_asiento_vut" data-asiento="{{ asiento.id }}"><b><i class="fa fa-trash"></i> Borrar</b></a></td>
+</tr>

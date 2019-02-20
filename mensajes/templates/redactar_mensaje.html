@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="tipo_respuesta" id="tipo_respuesta" value="{{ tipo_respuesta }}">
+        <input type="hidden" name="adjuntos_reenviados" id="adjuntos_reenviados"
+               value="{% for adjunto in adjuntos %}{{ adjunto.id }},{% endfor %}">
+        <input type="hidden" name="usa_mensaje" value="{{ usa_mensaje }}">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Envío de correos <i class="fa fa-envelope-square"></i> y mensajes</strong> <i class="fa fa-telegram"></i> </h4>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label>Selecciona receptores
+                    <div class="button-bar">
+                        {% for sub_accesible in sub_accesibles %}
+                            {% if sub_accesible.mensajes %}
+                                <ul class="button-group">
+                                    <li>
+                                        <a title="Pincha aquí para seleccionar a todos los miembros de {{ sub_accesible.nombre }}"
+                                           id="socios___{{ sub_accesible.id }}" href="#"
+                                           class="buscar_receptores_subentidad small button">{{ sub_accesible.nombre }}</a>
+                                    </li>
+                                    <li><a id="borrar_socios___{{ sub_accesible.id }}" href="#"
+                                           class="alert borrar_receptores_subentidad small button alert"
+                                           title="Pincha aquí para borrar los miembros de {{ sub_accesible.nombre }}">
+                                        <i class="fa fa-times"></i></a>
+                                    </li>
+                                </ul>
+                            {% endif %}
+                            {% if sub_accesible.edad_max < 19 %}
+                                <ul class="button-group">
+                                    <li>
+                                        <a title="Pincha aquí para seleccionar a todos los padres de {{ sub_accesible.nombre }}"
+                                           id="padres___{{ sub_accesible.id }}" href="#"
+                                           class="buscar_receptores_subentidad small button">{{ sub_accesible.nombre }}(madres/padres)</a>
+                                    </li>
+                                    <li><a id="borrar_padres___{{ sub_accesible.id }}" href="#"
+                                           class="alert borrar_receptores_subentidad small button alert"
+                                           title="Pincha aquí para borrar los miembros de {{ sub_accesible.nombre }}">
+                                        <i class="fa fa-times"></i></a>
+                                    </li>
+                                </ul>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="mensaje-receptores" id="id_receptores" value="">
+                </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12">
+                <label>Asunto
+                    {{ form1.asunto }}
+                </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12" id="adjuntos_div">
+            </div>
+        </div>
+        {% if tipo_respuesta == 'reenviar' %}
+            <div class="row">
+                <div class="columns large-12" style="padding: 10px;margin-left: 20px;">
+                    {% for adjunto in adjuntos %}
+                        <span id="nombre_adjunto_{{ adjunto.id }}">
+                    <a><i id="reenviar_adjunto___{{ adjunto.id }}" class="fa fa-remove adjuntos_reenviar"></i></a>
+                        {{ adjunto.filename }}{% if not forloop.last %}, {% endif %}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="columns large-12">
+                <label>Redacta el mensaje
+                    {{ form1.mensaje }}
+                </label>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script src="/static/gauss_fileupload/gauss_FileUpload.js"></script>
+    <script>
+        $("#id_receptores").select2({
+            placeholder: "Escribe parte del nombre",
+            minimumInputLength: 3,
+            multiple: true,
+            ajax: {
+                url: "/ajax_mensajes/",
+                dataType: 'json',
+                quietMillis: 100,
+                data: function (term, page) { // page is the one-based page number tracked by Select2
+                    return {
+                        action: 'receptores',
+                        q: term, //search term
+                        page_limit: 10, // page size
+                        page: page // page number
+                    };
+                },
+                results: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                }
+            },
+            formatResult: function (resultado) {
+                return '<div class="select2-user-result">' + resultado.text + '</div>';
+            },
+            formatSelection: function (resultado) {
+                $('#gauser_extra_selected').val(resultado.id);
+                return resultado.text;
+            },
+            dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
+            escapeMarkup: function (m) {
+                return m;
+            } // we do not want to escape markup since we are displaying html in results
+        });
+
+
+        $(".buscar_receptores_subentidad").click(function (e) {
+            e.preventDefault();
+            var existentes = $("#id_receptores").select2("data");
+            $.post("/ajax_mensajes/", {subentidad: $(this).attr('id'), action: 'receptores_subentidad'  },
+                    function (data) {
+                        $("#id_receptores").select2("data", data.concat(existentes));
+                    },
+                    'json');
+        });
+
+        $(".borrar_receptores_subentidad").click(function (e) {
+            e.preventDefault();
+            var existentes = $("#id_receptores").select2("data");
+            var id = $(this).attr('id').split('___');
+            if (id[0] == 'borrar_socios') {
+                var id = 'socios___' + id[1];
+            } else {
+                var id = 'padres___' + id[1];
+            }
+            $.post("/ajax_mensajes/", {subentidad: id, action: 'receptores_subentidad'  },
+                    function (data) {
+                        var diff = existentes.filter(function (current) {
+                            return data.filter(function (current_b) {
+                                return current_b.id == current.id && current_b.text == current.text
+                            }).length == 0
+                        });
+
+                        $("#id_receptores").select2("data", diff);
+                    },
+                    'json');
+        });
+
+
+        habilita(['s_envelope-square', 's_telegram']);
+
+        $('#adjuntos_div').gaussFileUpload({
+            tag_a: '<i class="fa fa-paperclip"></i> Pulsa aquí para adjuntar archivos al correo'});
+
+        $('#Contenido').on('click', '#attach_file', function () {
+            $('#adjuntos_div').show();
+            $('#id_file').click();
+            setTimeout(function () {
+                $('#id_file').val($('#id_file').val());
+            }, 1);
+        });
+
+        $('.adjuntos_reenviar').click(function (e) {
+            e.preventDefault();
+            var id = $(this).attr('id').split('___')[1];
+            $('#nombre_adjunto_' + id).hide();
+            var vec_list = $('#adjuntos_reenviados').val().split(',')
+            var index = vec_list.indexOf(id);
+            if (index > -1) {
+                vec_list.splice(index, 1);
+            }
+            $('#adjuntos_reenviados').val(vec_list.join());
+        });
+
+        {#        $("#id_receptores").select2({placeholder: "Escribe parte del nombre para buscar coincidencias"});#}
+
+        {#        $('.subentidad_convocada').click(function () {#}
+        {#            var id_subentidad_selected = $(this).attr('id').split('___')[1];#}
+        {#            if ($('#hidden___' + id_subentidad_selected).val() == 0) {#}
+        {#                $('.socio.sub___' + id_subentidad_selected).prop('selected', true);#}
+        {#                $('#hidden___' + id_subentidad_selected).val(1);#}
+        {#                $('#id_receptores').trigger('change');#}
+        {#            } else {#}
+        {#                $('.socio.sub___' + id_subentidad_selected).prop('selected', false);#}
+        {#                $('#hidden___' + id_subentidad_selected).val(0);#}
+        {#                $('#id_receptores').trigger('change');#}
+        {#            }#}
+        {#        });#}
+        {##}
+        {#        $('.padres_subentidad_convocada').click(function () {#}
+        {#            var id_subentidad_selected = $(this).attr('id').split('___')[1];#}
+        {#            if ($('#padreshidden___' + id_subentidad_selected).val() == 0) {#}
+        {#                $('.padre.sub___' + id_subentidad_selected).prop('selected', true);#}
+        {#                $('#padreshidden___' + id_subentidad_selected).val(1);#}
+        {#                $('#id_receptores').trigger('change');#}
+        {#            } else {#}
+        {#                $('.padre.sub___' + id_subentidad_selected).prop('selected', false);#}
+        {#                $('#padreshidden___' + id_subentidad_selected).val(0);#}
+        {#                $('#id_receptores').trigger('change');#}
+        {#            }#}
+        {#        })#}
+
+
+        $("#envelope-o_sign").click(function (e) {
+            e.preventDefault();
+            $('#action').val('mail');
+            document.{{formname}}.submit();
+        });
+
+        $("#send-o_sign").click(function (e) {
+            e.preventDefault();
+            $('#action').val('telegram');
+            $('#telegram').val()
+            document.{{formname}}.submit();
+        });
+
+
+        editor = wysihtmleditor('id_mensaje-mensaje', {attach: false});
+
+        {% if receptores %}
+            $("#id_receptores").select2("data", {% autoescape off %}{{receptores}} {% endautoescape %});
+            $('#id_mensaje-mensaje').focus();
+            $('#id_mensaje-mensaje')[0].selectionStart = 0;
+            {#$('#id_mensaje-mensaje').selectionEnd = 0;#}
+            {#        editor.focus();#}
+        {% endif %}
+
+    </script>
+
+{% endblock %}

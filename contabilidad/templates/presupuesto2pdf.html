@@ -1,0 +1,58 @@
+<h2 style="text-align:center;"> Presupuesto de la entidad {{ presupuesto.entidad.name }}</h2>
+
+<strong> {{ presupuesto.nombre }}</strong>
+<br>
+Creado: <strong> {{ presupuesto.creado }}</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Modificado:
+<strong> {{ presupuesto.modificado }}</strong>
+<br><br>
+
+<p>{% autoescape off %}{{ presupuesto.describir }}{% endautoescape %}</p>
+<hr>
+<br>
+
+<table align="CENTER" cellpadding="3" cellspacing="3" width="100%">
+    <tr>
+        <td colspan="2"><span class="color2"><strong>Nombre</strong></span></td>
+        <td style="text-align:center;"><span class="color2"><strong>Tipo</strong></span></td>
+        <td style="text-align:center;"><span class="color2"><strong>Cantidad</strong></span></td>
+        <td style="text-align:center;"><span class="color2"><strong>Creado</strong></span></td>
+        <td style="text-align:center;"><span class="color2"><strong>Últ. modif.</strong></span></td>
+    </tr>
+    {% for partida in partidas %}
+        {% if partida.tipo == 'INGRE' %}
+            <tr>
+                <td colspan="2"> {{ partida.nombre }}</td>
+                <td style="text-align:center;"> {{ partida.get_tipo_display }}</td>
+                <td style="text-align:center;"> {{ partida.cantidad }} €</td>
+                <td style="text-align:center;"> {{ partida.creado|date:"SHORT_DATE_FORMAT" }}</td>
+                <td style="text-align:center;"> {{ partida.modificado|date:"SHORT_DATE_FORMAT" }}</td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+    <tr>
+        <td colspan="2">&nbsp;</td>
+        <td style="text-align:center;background:#dcc8dc;"><span class="color2">Total ingresos:</span></td>
+        <td style="text-align:center;background:#dcc8dc;"><span class="color2">{{ ingresos.ingreso_total }} €</span>
+        </td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+    </tr>
+    {% for partida in partidas %}
+        {% if partida.tipo == 'GASTO' %}
+            <tr>
+                <td colspan="2"> {{ partida.nombre }}</td>
+                <td style="text-align:center;"> {{ partida.get_tipo_display }}</td>
+                <td style="text-align:center;"> {{ partida.cantidad }} €</td>
+                <td style="text-align:center;"> {{ partida.creado|date:"SHORT_DATE_FORMAT" }}</td>
+                <td style="text-align:center;"> {{ partida.modificado|date:"SHORT_DATE_FORMAT" }}</td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+    <tr>
+        <td colspan="2">&nbsp;</td>
+        <td style="text-align:center;background:#dcc8dc;"><span class="color2">Total gastos:</span></td>
+        <td style="text-align:center;background:#dcc8dc;"><span class="color2">{{ gastos.gasto_total }} €</span></td>
+    </tr>
+</table>
+

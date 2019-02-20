@@ -1,0 +1,30 @@
+<tbody>
+<tr>
+    <th>Campo</th>
+    <th>Texto</th>
+    <th>¿Se muestra?</th>
+    <th title="¿Es obligatorio rellenarlo?">¿Obligatorio?</th>
+    <th title="El número de columnas (entre 1 y 12) que utilizará el campo para mostrarse en la pantalla del ordenador">
+        Columnas
+    </th>
+    <th title="Orden en el que aparecerá en el formulario">Orden</th>
+    <th title="Indica si se mostrará en una nueva fila">Nueva fila</th>
+</tr>
+{% for cr in configura_reservas %}
+    <tr>
+        <td><span style="font-weight: 800;">{{ cr.get_campo_display }}</span></td>
+        <td><input type="text" class="configura_reservas_num" value="{{ cr.texto }}" data-campo="texto" data-id="{{ cr.id }}"> </td>
+        <td><input type="checkbox" data-id="{{ cr.id }}" data-campo="usado"
+                   class="configura_reservas_check" {% if cr.usado %}checked{% endif %}></td>
+        <td><input type="checkbox" data-id="{{ cr.id }}" data-campo="required"
+                   class="configura_reservas_check" {% if cr.required %}checked{% endif %}></td>
+        <td><input type="number" data-id="{{ cr.id }}" data-campo="columns"
+                   class="configura_reservas_num"
+                   min="1" max="12" value="{{ cr.columns }}"></td>
+        <td><input type="number" data-id="{{ cr.id }}" data-campo="orden" min="1" max="60"
+                   class="configura_reservas_num" value="{{ cr.orden }}"></td>
+        <td><input type="checkbox" data-id="{{ cr.id }}" data-campo="row"
+                   class="configura_reservas_check" {% if cr.row %}checked{% endif %}></td>
+    </tr>
+{% endfor %}
+</tbody>

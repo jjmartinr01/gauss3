@@ -1,0 +1,15 @@
+{% load my_templatetags %}
+<h2 style="text-align:center;"> Mensajes/Correos ({{ mensajes.0.emisor.entidad.name }})</h2>
+<strong> {% now "j \d\e F \d\e Y" %}</strong>
+<br>
+<hr>
+<br>
+{% for mensaje in mensajes %}
+    <strong>Emisor:</strong> {{ mensaje.emisor.gauser.get_full_name }}, <strong>Fecha:</strong> {{ mensaje.fecha|date:"j \d\e F \d\e Y" }}<br>
+    <strong>Asunto:</strong> {% autoescape off %} {{ mensaje.asunto }} {% endautoescape %}<br>
+    <strong>Receptores: </strong> {% for receptor in mensaje.receptores.all %} {{ receptor.get_full_name }}, {% endfor %}
+    <br><br>
+    {% autoescape off %} {{ mensaje.mensaje }} {% endautoescape %}
+    <hr style="color: gray;">
+{% endfor %}
+

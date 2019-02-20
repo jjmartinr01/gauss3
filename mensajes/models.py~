@@ -1,0 +1,94 @@
+# -*- coding: utf-8 -*-
+from django.db import models
+from autenticar.models import Gauser, Gauser_extra
+from entidades.models import Entidad, Ronda
+from datetime import datetime
+import os
+
+#Las siguientes líneas son para eliminar las etiquetas html (html tags) del mensaje:
+from HTMLParser import HTMLParser
+
+class MLStripper(HTMLParser):
+    def __init__(self):
+        self.reset()
+        self.fed = []
+    def handle_data(self, d):
+        self.fed.append(d)
+    def get_data(self):
+        return ' '.join(self.fed)
+
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
+
+
+
+# Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
+def update_fichero(instance, filename):
+    nombre = filename.partition('.')
+    ahora = datetime.now()
+    fichero = str(instance.propietario.id) + '_' + nombre[0].replace(' ', '_') + '_' + str(ahora.day) + '-' + str(ahora.month) + '-' + str(ahora.year) + '.' + nombre[2] 
+    return os.path.join("adjuntos/", fichero)
+
+class Adjunto(models.Model):
+    propietario = models.ForeignKey(Gauser_extra)
+    fichero = models.FileField("Fichero con información", upload_to= update_fichero, blank=True)
+    def filename(self):
+      f = os.path.basename(self.fichero.name)
+      return str(os.path.split(f))
+    def __unicode__(self):
+      return u'%s (%s)' % (self.fichero, self.propietario.gauser.get_full_name())
+
+class Etiqueta(models.Model):
+    propietario = models.ForeignKey(Gauser_extra)
+    nombre = models.CharField("Etiqueta", max_length=500)
+    def __unicode__(self):
+      return u'%s (%s)' % (self.nombre, self.propietario.gauser.get_full_name())
+
+class Mensaje(models.Model):
+    emisor = models.ForeignKey(Gauser_extra, related_name="emisor")
+    receptores = models.ManyToManyField(Gauser, related_name="receptores")
+    adjuntos = models.ManyToManyField(Adjunto, related_name="adjuntos", null=True, blank=True)
+    etiquetas = models.ManyToManyField(Etiqueta, related_name="etiquetas", null=True, blank=True)
+    fecha = models.DateTimeField("Fecha y hora de envío")
+    asunto = models.CharField("Asunto", max_length=500, null=True, blank=True)
+    mensaje = models.TextField("Texto del Mensaje")
+    
+    def men_ini(self): #Devuelve los primeros caracteres del mensaje
+      ncar = 85
+      sin_tags = strip_tags(self.mensaje)
+      if len(sin_tags) > 85 : return sin_tags[:ncar]+'...'
+      else: return sin_tags
+    
+    def __unicode__(self):
+      return u'Enviado por %s (%s) - %s' % (self.emisor.gauser.get_full_name(),self.fecha, self.asunto)
+
+class Borrado(models.Model):
+    eraser = models.ForeignKey(Gauser_extra)
+    mensaje = models.ForeignKey(Mensaje, related_name="mensaje_borrado")
+    def __unicode__(self):
+      return u'Borrado por %s (%s) - %s' % (self.eraser.gauser.get_full_name(),self.mensaje.fecha, self.mensaje.asunto)
+
+class Leido(models.Model):
+    lector = models.ForeignKey(Gauser_extra)
+    mensaje = models.ForeignKey(Mensaje, related_name="mensaje_leido")
+    def __unicode__(self):
+      return u'Leído por %s (%s) - %s' % (self.lector.gauser.get_full_name(),self.mensaje.fecha, self.mensaje.asunto)
+
+class Importante(models.Model):
+    marcador = models.ForeignKey(Gauser_extra)
+    mensaje = models.ForeignKey(Mensaje, related_name="mensaje_importante")
+    def __unicode__(self):
+      return u'Marcado como importante por %s (%s) - %s' % (self.marcador.gauser.get_full_name(),self.mensaje.fecha, self.mensaje.asunto)
+
+
+class Aviso(models.Model):
+    usuario = models.ForeignKey(Gauser_extra)
+    aviso = models.TextField("Mensaje de aviso")
+    ip = models.CharField("Dirección IP en la que estaba el usuario", max_length=50, null=True, blank=True)
+    link = models.CharField("Redireccionamiento", max_length=100, null=True, blank=True)
+    fecha = models.DateTimeField("Fecha y hora en la que se generó el aviso")
+    aceptado = models.BooleanField("¿Ha sido aceptado/OK?")
+    def __unicode__(self):
+      return u'%s (%s)--%s' % (self.aviso,self.fecha,self.usuario)

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        .check_cargo {
+            text-align: center;
+            cursor: pointer;
+            font-size: 120%;
+        }
+
+        #check_todos {
+            text-align: center;
+            cursor: pointer;
+            font-size: 120%;
+        }
+
+    </style>
+{% endblock %}
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="id_cargo_selected" name="id_cargo_selected" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong> Cargos/Perfiles de la entidad</strong></h4>
+        </div>
+
+        <div id="div_cargos">
+            <dl class="accordion" data-accordion id="list_cargos">
+                {% for cargo in cargos %}
+                    {% include "accordion_cargo.html" %}
+                {% endfor %}
+            </dl>
+        </div>
+        {% if request.session.gauser_extra|has_permiso:'crea_perfiles' %}
+            <hr>
+            <div class="row">
+                <div class="columns large-12">
+                    <a class="button add_cargo"><i class="fa fa-plus"></i> Crear cargo</a>
+                </div>
+            </div>
+        {% endif %}
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        {% if request.session.gauser_extra|has_permiso:'crea_perfiles' %}
+            $('#Contenido').on('click', '.add_cargo', function (e) {
+                e.preventDefault();
+                var cargo = $(this).data('cargo');
+                $.post("/organigrama/", {action: 'add_cargo'}, function (data) {
+                    $('#list_cargos').append(data);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+            });
+        {% endif %}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-cargo')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            $('#id_cargo_selected').val(id);
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/organigrama/", {action: 'open_accordion', id: id}, function (data) {
+                                $('#panel' + id).html(data);
+                            });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#id_cargo_selected').val('');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html style="overflow:hidden">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style>
+        img.center {
+            margin-left: 0cm;
+        }
+
+        div.logo {
+            position: fixed;
+            top: 20px;
+            left: 11.7cm;
+        }
+    </style>
+    <script>
+        function subst() {
+            var vars = {};
+            var x = window.location.search.substring(1).split('&');
+            for (var i in x) {
+                var z = x[i].split('=', 2);
+                vars[z[0]] = decodeURI(z[1]); //decodeURIComponent()
+            }
+            var x = ['frompage', 'topage', 'page', 'webpage', 'section', 'subsection', 'subsubsection'];
+            for (var i in x) {
+                var y = document.getElementsByClassName(x[i]);
+                for (var j = 0; j < y.length; ++j) y[j].textContent = vars[x[i]];
+            }
+        }
+    </script>
+</head>
+<body onload="subst()">
+<table>
+    <tr>
+        <td><img width="50px" border="0" src="/home/juanjo/django/gauss_asocia/static_files/images/logo_scout.png"
+                 id="img_pie" align="left"></td>
+        <td colspan="9"><span
+                style="font-size:9pt;color:#7f7f7f">Grupo scout {{ request.session.gauser_extra.ronda.entidad.name }}
+        <br>{{ request.session.gauser_extra.ronda.entidad.address }}{% if request.session.gauser_extra.ronda.entidad.tel %}, Tel.:
+                {{ request.session.gauser_extra.ronda.entidad.tel }}{% endif %}
+            {% if request.session.gauser_extra.ronda.entidad.fax %},
+                Fax: {{ request.session.gauser_extra.ronda.entidad.fax }}{% endif %}
+            {% if request.session.gauser_extra.ronda.entidad.web %}, web:
+                {{ request.session.gauser_extra.ronda.entidad.web }}{% endif %}</span></td>
+        <td style="font-size:9pt;font-family: arial, sans-serif;">Página <span class="page"></span> de <span
+                class="topage"></span></td>
+    </tr>
+</table>
+</body>
+</html>

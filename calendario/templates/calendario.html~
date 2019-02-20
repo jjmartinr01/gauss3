@@ -1,0 +1,62 @@
+<script>
+$('#Contenido').on('mouseover', '.existe_acontecimiento', function () {
+  id = this.id;
+  $( '#dialog_'+id ).dialog({minWidth:400, width:($(window).width()/2), modal: true, buttons: {  
+	    "Aceptar": function() { $( this ).dialog( "close" ); },
+	    "Añadir/modificar recordatorio": function() {
+		$( '#file_pdf' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+		$( '#plus_sign' ).removeClass('navegar').addClass('no_navegar').attr('title','');
+		$( "#ok_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Grabar el recordatorio');
+		$( "#calendar_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Volver a ver el calendario');
+		$('#action').val('mod_recordatorio');
+		$( this ).dialog( "close" );
+		$.post("/mod_recordatorio/", {fecha:id,},function(data) {$('#div_calendario').html(data);});}}})});
+</script>
+
+<table style="border-spacing:5px;padding-left:15px;"><tbody><tr>
+    <td class="varios_acontecimientos">&nbsp;&nbsp;&nbsp;</td><td>Varios acontecimientos&nbsp;&nbsp;&nbsp;</td>
+    <td class="EVT_PER">&nbsp;&nbsp;&nbsp;</td><td>Evento privado&nbsp;&nbsp;&nbsp;</td>
+    <td class="EVT_FES">&nbsp;&nbsp;&nbsp;</td><td>Día festivo&nbsp;&nbsp;&nbsp;</td>
+    <td class="EVT_REU">&nbsp;&nbsp;&nbsp;</td><td>Hay reunión&nbsp;&nbsp;&nbsp;</td>
+    <td class="EVT_EVA">&nbsp;&nbsp;&nbsp;</td><td>Acampada/Excursión&nbsp;&nbsp;&nbsp;</td>
+</tr></tbody></table>
+<table width="100%" style="border-spacing:20px;"><tbody><tr>
+      {% for mes in cal %}
+	  <td align="center" style="background:#b14bc1;border-radius:10px;">
+	      <table style="font-size:11pt;text-align:center;border-spacing:5px;color:white;">
+		  <tr>
+		    <td colspan="7">{{mes.15.0|date:"F"}}&nbsp;{{mes.15.0|date:"Y"}}</td></tr><tr><td class="dia_l">L</td><td class="dia_m">M</td><td class="dia_x">X</td><td class="dia_j">J</td><td  class="dia_v">V</td><td class="dia_s">S</td><td class="dia_d">D</td></tr><tr>
+			{% for dia in mes %}
+			    {% if dia.1|length == 0 %}
+				<td >{{dia.0|date:"j"}}</td>
+			    {% else %}
+				{% if dia.1|length == 1 %}
+				    <td id="{{dia.0|date:'dmY'}}" class="{{dia.1.0.tipo}} existe_acontecimiento">{{dia.0|date:"j"}}</td>
+				{% else %}
+				    <td id="{{dia.0|date:'dmY'}}" class="varios_acontecimientos existe_acontecimiento">{{dia.0|date:"j"}}</td>
+				{% endif %}
+				<div id="dialog_{{dia.0|date:'dmY'}}" title="Evento programado" style="display:none;">
+				  {% for acontecimiento in dia.1 %}
+				      <p style="margin-top:15px;"> <strong>{{acontecimiento.nombre}}</strong> {% if acontecimiento.lugar|length > 3 %}({{acontecimiento.lugar}}) {% endif %}</p>
+				      {% if acontecimiento.inicio|date:"d" == acontecimiento.fin|date:"d" %}
+					<p style="margin-left:10px;"> <i > Fecha:</i> {{acontecimiento.inicio|date:"SHORT_DATE_FORMAT"}} {% if acontecimiento.inicio|date:"P" != 'media noche' %} a las {{acontecimiento.inicio|date:"P"}} {% endif %}</p>
+				      {% else %}
+					<p style="margin-left:10px;"> <i > Inicio:</i> {{acontecimiento.inicio|date:"SHORT_DATE_FORMAT"}} {% if acontecimiento.inicio|date:"P" != 'media noche' %} a las {{acontecimiento.inicio|date:"P"}} {% endif %}&nbsp;&nbsp;&nbsp;&nbsp; <i > Fin:</i> {{acontecimiento.fin|date:"SHORT_DATE_FORMAT"}} {% if acontecimiento.fin|date:"P" != 'media noche' %} a las {{acontecimiento.fin|date:"P"}} {% endif %}</p>
+				      {% endif %}
+				      {% if acontecimiento.describir|length > 5 %}
+					{% autoescape off %} {{acontecimiento.describir}} {% endautoescape %}
+				      {% endif %}
+				      <hr/>
+				  {% endfor %}
+				</div>
+			    {% endif %}
+			    {%if forloop.counter|divisibleby:"7" %}
+				</tr><tr>
+			    {% endif %}
+			{% endfor %}
+			</tr></table></td>
+			{%if forloop.counter|divisibleby:"3" %}
+				</tr><tr>
+			{% endif %}
+			{% endfor %}
+  </tbody></table>

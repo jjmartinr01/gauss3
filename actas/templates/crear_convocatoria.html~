@@ -1,0 +1,243 @@
+{% extends "lateral.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/js/CLEditor1_4_3/jquery.cleditor.css" />
+<script type="text/javascript" src="/static/js/CLEditor1_4_3/jquery.cleditor.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui-timepicker-addon.css" />
+<script type="text/javascript" src="/static/js/jquery-ui-timepicker-addon.js"></script>
+{% endblock %}
+
+{% block ready %}
+  visualizar(['save_sign','file_pdf','sobre_sign']);
+  $( "#save_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Guardar la convocatoria');
+
+  
+  $("#id_texto_convocatoria").cleditor({
+		  width:        'auto',
+		  height:       450, // height not including margins, borders or padding
+		  controls:     // controls to add to the toolbar
+				"bold italic underline strikethrough subscript superscript | " +
+				"| bullets numbering | " +
+				"alignleft center alignright justify | undo redo | " +
+				"rule",
+	      });
+
+  $("#id_texto_convocatoria").cleditor()[0].disable(true);
+
+  $('#save_sign').click(function(){if( $(this).hasClass('navegar') ) {
+      var tipo  = JSON.stringify($('#tipo').val());
+      var id = JSON.stringify($('#id_selected').val());
+      $('#id_texto_convocatoria').val(removeWordTags ($('#id_texto_convocatoria').val())); 
+      $.ajax( {
+	  type: "POST",
+	  url: "/save_convocatoria/",
+	  data: $("form").serialize(),
+	  success: function(data) {
+	  $( "#save_mod_dialog" ).dialog("open");
+	  setTimeout(function(){$( "#save_mod_dialog" ).dialog("close")},900); 
+	  $( "#file_pdf" ).removeClass('no_navegar').addClass('navegar').attr('title','Generar pdf de la convocatoria');
+	  $( "#sobre_sign" ).removeClass('no_navegar').addClass('navegar').attr('title','Enviar mail de la convocatoria a todos los convocados');
+	  $( "#convocatoria_id" ).val(data);} });}});
+  
+  $( "#save_mod_dialog" ).dialog({autoOpen: false, width:'auto', modal: false,});
+
+  $( "#enviando_mail_dialog" ).dialog({autoOpen: false, width:'auto', modal: true,});
+  
+  $( "#enviar_mail_dialog" ).dialog({autoOpen: false, width: 'auto', modal: true, buttons: {
+	  "Continuar": function() { 
+	      $( this ).dialog( "close" ); 
+	      var id = $('#convocatoria_id').val();
+	      var tipo = $('#tipo_convocatoria').val();
+	      $( "#enviando_mail_dialog" ).dialog("open");
+	      $.post("/email_convocatoria/", { tipo: JSON.stringify(tipo), id_convocatoria: JSON.stringify(id)},function() {});
+},
+	  "Cancelar": function() { $( this ).dialog( "close" ); }}});
+
+  $('#file_pdf').click(function () {  if( $(this).hasClass('navegar') ) {
+      $('#action').val('pdf'); 
+      document.{{formname}}.submit();}});
+
+  $('#sobre_sign').click(function () {  if( $(this).hasClass('navegar') ) {
+      var tipo = $('#tipo_convocatoria').val();
+      if (tipo == 'CCP') { var texto = 'Se enviará un correo a todos los jefes de departamento con la convocatoria.'; }
+      else if (tipo == 'CLA') { var texto = 'Se enviará un correo a todos los miembros del Claustro con la convocatoria.'; }
+      else if (tipo == 'CON') { var texto = 'Se enviará un correo a todos los miembros del Consejo Escolar con la convocatoria.'; }
+      else if (tipo == 'DEP') { var texto = 'Se enviará un correo a todos los miembros del departamento de {{request.session.gauser_extra.especialidad.departamento.nombre}} con la convocatoria.'; }
+      else { var texto = 'Se enviará un correo a todos los destinatarios seleccionados en la convocatoria.'; }
+      $('#text_enviar_mail_dialog').html(texto);
+      $( "#enviar_mail_dialog" ).dialog("open");}});
+
+
+
+  $( "#input_fecha_hora" ).datetimepicker({
+	dateFormat: "dd/mm/yy",
+	dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+	dayNames: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+	firstDay: 1,
+	hourText:"Hora",
+	minuteText:"Minutos",
+	timeText:"Salida:",
+	monthNames: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+	beforeShowDay: $.datepicker.noWeekends,});
+  
+  $( "#input_fecha_hora" ).change(function(){
+      $('#tipo_convocatoria').prop('disabled', false);
+      $('.acceso').removeClass('desactivado');});
+
+  $('#tipo_convocatoria').change(function(){
+      var tipo = $('#tipo_convocatoria').val();
+      if ( tipo == 'OTR' ) { $('#tipo_destinatario').show(); } else { $('#tipo_destinatario').hide(); }
+      var fecha = $('#input_fecha_hora').val()
+      if (fecha.length > 3){
+	  $("#id_texto_convocatoria").cleditor()[0].disable(false);
+	  $.post("/actualiza_texto_convocatoria/", { tipo: JSON.stringify(tipo), fecha: JSON.stringify(fecha)},function(data) {
+	  $('#id_texto_convocatoria').html(data).blur();});}});
+
+  $('.tipo_destinatario').change(function(){
+      if ( $(this).val() == 'profesores' ) {
+	  $('#tot___id_profesores').show();
+	  $('#tot___id_grupos').hide();
+      }else{
+	  $('#tot___id_profesores').hide();
+	  $('#tot___id_grupos').show();}});
+
+  $('#Contenido').click(function(e) {
+    var a=false;
+    if ($(e.target).parents('.div_total_checkboxes').length<1){
+	$('.todos_ningunos').hide();
+	$('.multiselect2checkbox').hide();
+	$('.ya_checked').show();}});
+
+  $('.texto_checkboxes').click(function(){
+	var id = this.id.split('___')[1];
+	$('#todos_ningunos___'+id).toggle();
+	$('#checkboxes___'+id).toggle();
+	$('#ya_checked___'+id).toggle();})
+
+  $('.check___id_grupos').live('change',function(){
+      var grupos_list = new Array();
+      $('#tot___id_grupos').find(':checked').each(function(i, checkbox){
+	  var cbvalue = $(checkbox).val();
+	  grupos_list.push(cbvalue);});
+      var alumnos = new Array();
+      $('#selecciona_alumnos').find(':checked').each(function(i, checkbox){
+	  var cbvalue = $(checkbox).val();
+	  alumnos.push(cbvalue);});
+      $.post("/actualiza_grupos_convocatoria/", { grupos_list: JSON.stringify(grupos_list),alumnos:JSON.stringify(alumnos)},function(data) {
+	    $('#selecciona_alumnos').html(data);});});
+
+  $('.select_todos').live('click', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).attr('checked', 'checked'); });
+
+  $('.select_ninguno').live('click', function(){
+    var identificador = this.id.split('___')[1];
+    $('.check___'+identificador).attr('checked', false); });
+
+{% endblock %}
+
+
+{% block navegar %}                                                     
+{% endblock %}
+
+
+{% block contenido %}
+{% if request.session.gauser_extra|has_permiso:"crear_convocatorias" %}
+<form action="" method="post" enctype="multipart/form-data" id="{{formname}}" name="{{formname}}">
+{% csrf_token %}
+<input type="hidden" id="action" name="action" value="">
+<input type="hidden" id="convocatoria_id" name="convocatoria_id" value="{{convocatoria_id}}">
+<input type="hidden" id="autor" name="autor" value="{{request.session.gauser_extra.gauser.id}}">
+
+<div id="div_convocatoria">
+  <table align="center" width="100%" cellspacing="3" cellpadding="3">
+    <tr><td class="cabecera" colspan="2">
+      &nbsp;&nbsp;Formulario para la elaboración de una convocatoria
+    </td></tr>
+    <tr><td>
+	1º Fecha y hora de la reunión que se convoca:</td><td> <input placeholder="Selecciona fecha y hora" id="input_fecha_hora" style="margin-right:-17px;width:210px;" name="fecha_hora"/><span style="font-size:13px;"><i class="icon-calendar"></i></span>
+      </td></tr>
+    <tr><td class="acceso desactivado">2º Tipo de convocatoria: </td><td><select name="tipo" id="tipo_convocatoria" class="acceso desactivado" disabled>
+	<option value="">Pincha aquí para seleccionar tipo</option>
+	{% if request.session.gauser_extra|has_permiso:"crear_convocatorias_OTR" %}<option value="OTR">Convocatoria genérica</option>{% endif %}
+	{% if request.session.gauser_extra|has_permiso:"crear_convocatorias_CCP" %}<option value="CCP">Comisión de coordinación pedagógica</option>{% endif %}
+	{% if request.session.gauser_extra|has_permiso:"crear_convocatorias_CLA" %}<option value="CLA">Claustro</option>{% endif %}
+	{% if request.session.gauser_extra|has_permiso:"crear_convocatorias_DEP" %}<option value="DEP">Reunión de Departamento</option>{% endif %}
+	{% if request.session.gauser_extra|has_permiso:"crear_convocatorias_CON" %}<option value="CON">Consejo Escolar</option>{% endif %}
+	</select>
+    </td></tr>
+    </table>
+    
+    <div id="tipo_destinatario" style="display:none;padding:10px 0 0 25px;">
+      <span class="info" > Selecciona el tipo de miembro de la Comunidad Educativa vas a convocar:</span><br>
+      <input type="radio"  name="tipo_destinatario" class="tipo_destinatario" value="profesores"> Profesores<br>
+      <input type="radio"  name="tipo_destinatario" class="tipo_destinatario" value="madres"> Madres y padres
+      
+      
+      <div id="tot___id_profesores" class="div_total_checkboxes" style="display:none;">
+	<div class="div_texto_checkboxes">
+	    <span class="info texto_checkboxes" id="texto___id_profesores"><i class="icon-hand-up"></i> Selecciona profesores</span>
+	</div>
+	<div class="todos_ningunos" id="todos_ningunos___id_profesores">
+	    <span id="todo___id_profesores" class="select_todos info"><i class="icon-ok-sign"></i> Todos </span>
+	    <span id="ninguno___id_profesores" class="select_ninguno info"><i class="icon-remove-sign"></i> Ninguno</span>
+	</div>
+	<table width="100%" id="checkboxes___id_profesores" class="multiselect2checkbox"><tbody><tr>
+	    {% for profesor in profesores %}
+	      <td><input type="checkbox" name="convocados" class="check___id_profesores" value="{{profesor.id}}">{{profesor.gauser.get_full_name}}</td>
+	      {%if forloop.counter|divisibleby:"4" %}
+		  </tr><tr>
+	      {% endif %}
+	    {% endfor %}
+	</tbody></table>
+      </div>
+
+      <div id="tot___id_grupos" class="div_total_checkboxes" style="display:none;">
+	<div class="div_texto_checkboxes">
+	    <span class="info texto_checkboxes" id="texto___id_grupos"><i class="icon-hand-up"></i> Selecciona el grupo o grupos en el que están los hijos de quienes van a ser convocados</span>
+	</div>
+	<div class="todos_ningunos" id="todos_ningunos___id_grupos">
+	    <span id="todo___id_grupos" class="select_todos info"><i class="icon-ok-sign"></i> Todos </span> <span id="ninguno___id_grupos" class="select_ninguno info"><i class="icon-remove-sign"></i> Ninguno</span>
+	</div>
+	<table width="100%" id="checkboxes___id_grupos" class="multiselect2checkbox"><tbody><tr>
+	    {% for grupo in grupos %}
+		<td><input type="checkbox" name="grupos" class="check___id_grupos" value="{{grupo.id}}">{{grupo.nombre}}</td>
+		{%if forloop.counter|divisibleby:"7" %}
+		    </tr><tr>
+		{% endif %}
+	    {% endfor %}
+	</tbody></table>
+      </div>
+
+      <div id="selecciona_alumnos" class="div_total_checkboxes">&nbsp;</div>
+    </div>
+    
+
+  <br>{{form.texto_convocatoria}}
+  
+</div>
+</form>
+<div id="save_mod_dialog" title="Modificaciones en el documento">
+  <p style="text-align:center">Convocatoria guardada.</p>
+</div>
+<div id="enviar_mail_dialog" title="Enviar por email la convocatoria">
+  <p style="text-align:center" id="text_enviar_mail_dialog"></p>
+</div>
+<div id="enviando_mail_dialog" title="Enviando por email la convocatoria">
+  <p style="text-align:center">Se está enviando por mail la convocatoria. Esta operación puede durar unos minutos.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+
+
+
+	
+
+
+
+
+
+
+

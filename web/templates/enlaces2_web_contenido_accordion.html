@@ -1,0 +1,104 @@
+<div class="row">
+    <div class="columns large-10">
+        <label>Breve descripción:</label>
+        {% if enlace_web.descripcion %}
+            <a class="descripcion" data-id="{{ enlace_web.id }}" id="descripcion{{ enlace_web.id }}"
+               data-data="{{ enlace_web.descripcion }}">{{ enlace_web.descripcion }}</a>
+        {% else %}
+            <a class="descripcion" data-id="{{ enlace_web.id }}" id="descripcion{{ enlace_web.id }}"
+               data-data="No hay descripción">No hay descripción</a>
+        {% endif %}
+
+        <div id="edita_descripcion{{ enlace_web.id }}" style="display: none;">
+            <input type="text" name="input_descripcion" id="input_descripcion{{ enlace_web.id }}"
+                   {% if enlace_web.descripcion %}value="{{ enlace_web.descripcion }}" {% else %}
+                   value="No hay descripción" {% endif %} maxlength="300">
+
+            <p><a href="#" data-id="{{ enlace_web.id }}" class="secondary button ok_descripcion">Aceptar</a></p>
+        </div>
+
+    </div>
+    <div class="columns large-2">
+        <label>Botón azul:</label>
+        <a class="activar" data-id="{{ enlace_web.id }}" id="activar{{ enlace_web.id }}">
+            {% if enlace_web.activo %} Sí {% else %} No {% endif %}
+        </a>
+    </div>
+    <hr>
+</div>
+<div class="row">
+    <div class="columns large-10" id="href_nombre_dinamico{{ enlace_web.id }}">
+        {% include "enlaces2_web_href_nombre.html" %}
+    </div>
+    <div class="columns large-2">
+        <label>Borrar enlace:</label>
+        <a class="borrar" data-id="{{ enlace_web.id }}">
+            <i class="fa fa-trash-o"></i>
+        </a>
+    </div>
+    <hr>
+</div>
+<div class="row">
+    <div class="columns large-10">
+        <label>Sub-enlaces:
+            <input type="hidden" name="subenlaces" class="seleccionar_enlaces" id="subenlaces{{ enlace_web.id }}">
+        </label>
+    </div>
+    <div class="columns large-2">
+        <label>Orden:
+        <input class="orden" type="number" value="{{ enlace_web.orden }}" name="orden" id="orden{{ enlace_web.id }}" data-id="{{ enlace_web.id }}"> </label>
+    </div>
+    <hr>
+</div>
+
+<script>
+    $(".seleccionar_enlaces").select2({
+        placeholder: "Escribe parte del nombre",
+        minimumInputLength: 3,
+        multiple: true,
+        ajax: {
+            url: "/enlaces_web/",
+            dataType: 'json',
+            quietMillis: 100,
+            data: function (term, page) { // page is the one-based page number tracked by Select2
+                return {
+                    action: 'select2',
+                    q: term, //search term
+                    page_limit: 10, // page size
+                    page: page // page number
+                };
+            },
+            results: function (data) {
+                return {
+                    results: $.map(data, function (item) {
+                        return {
+                            text: item.texto + ' (' + item.href + ')',
+                            id: item.id
+                        }
+                    })
+                };
+            }
+        },
+        formatResult: function (resultado) {
+            return '<div class="select2-user-result">' + resultado.text + '</div>';
+        },
+        {#            formatSelection: function (resultado) {#}
+        {#                $('#gauser_extra_selected').val(resultado.id);#}
+        {#                return resultado.text;#}
+        {#            },#}
+        dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
+        escapeMarkup: function (m) {
+            return m;
+        } // we do not want to escape markup since we are displaying html in results
+    });
+    $("#subenlaces" + '{{ enlace_web.id }}').select2("data", {% autoescape off %}{{subenlaces}} {% endautoescape %});
+    $("#subenlaces" + '{{ enlace_web.id }}').on('change', function (e) {
+        var id = {{ enlace_web.id }};
+        var enlaces = $("#subenlaces" + id).val();
+        window.console.log(enlaces);
+        $.post("/enlaces_web/", {action: 'update_enlaces', id: id, enlaces: enlaces}, function (data) {
+            $('#href_nombre_dinamico' + id).html(data[0]);
+            $('#href_nombre_title_dinamico' + id).html(data[1]);
+        }, 'json');
+    });
+</script>

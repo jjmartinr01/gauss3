@@ -1,0 +1,77 @@
+<ul class="button-group centered">
+    <li title="Generar pdf de esta unidad didáctica">
+        <a href="#" class="button pdf_ud" data-ud="{{ ud.id }}"><i
+                class="fa fa-file-pdf-o"></i>
+            PDF</a></li>
+    <li title="Borrar esta unidad didáctica">
+        <a href="#" class="button delete_ud" data-ud="{{ ud.id }}"><i
+                class="fa fa-trash-o"></i>
+            Borrar</a></li>
+</ul>
+
+<div class="row">
+    <div class="columns large-2">
+        <label title="Posición dentro de la programación. Número de unidad didáctica">
+            Posición:
+            <input type="text" name="pos_ud" id="input_orden{{ ud.id }}" class="pos_ud" value="{{ ud.orden }}"
+                   data-ud="{{ ud.id }}">
+        </label>
+    </div>
+    <div class="columns large-8">
+        <label>
+            Nombre:
+            <input type="text" name="nombre_ud" class="nombre_ud" value="{{ ud.nombre }}" maxlength="290"
+                   data-ud="{{ ud.id }}">
+        </label>
+    </div>
+    <div class="columns large-2">
+        <label title="Número de horas lectivas que se van a emplear en esta unidad">
+            Horas:
+            <input type="text" name="duracion_ud" id="duracion_input{{ ud.id }}" value="{{ ud.duracion }}"
+                   class="duracion_ud" data-ud="{{ ud.id }}">
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label>
+            <b>Selecciona el/los resultados de aprendizaje y objetivos que deseas que se obtengan en esta
+                unidad</b>
+            <ul style="list-style-type: none;">
+                {% for ra in ud.programacion.modulo.resultado_aprendizaje_set.all %}
+                    <li><input type="checkbox" name="resultados_aprendizaje" value="{{ ra.id }}"
+                               data-ud="{{ ud.id }}" class="resultados_aprendizaje"
+                               {% if ra in ud.resultados_aprendizaje %}checked{% endif %}> {{ ra.resultado }}</li>
+                    <div id="objetivos{{ ud.id }}_{{ ra.id }}" style="margin-left: 30px"></div>
+                {% endfor %}
+            </ul>
+        </label>
+    </div>
+</div>
+<hr>
+
+<div class="row">
+    <div class="column large-12">
+        <label><strong>En este apartado puedes escribir los contenidos y actividades de aprendizaje que serán
+            desarrollados en esta unidad didáctica</strong>
+        </label>
+    </div>
+</div>
+
+<div id="contenidos_unidad_didactica{{ ud.id }}">
+    {% for con in ud.cont_unidad_modulo_set.all %}
+        {% include "contenidos_unidad_didactica_append.html" %}
+    {% endfor %}
+</div>
+
+<div class="row">
+    <div class="column large-12">
+        <label><strong>Para ir añadiendo contenidos de manera sucesiva a esta unidad, sólo tienes que ir pulsando
+            el siguiente botón</strong> <a class="button tiny round add_contenido_ud" data-ud="{{ ud.id }}">
+            <i class="fa fa-plus"></i> Añadir</a>
+        </label>
+    </div>
+</div>
+<hr>
+
+

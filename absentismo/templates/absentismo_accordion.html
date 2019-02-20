@@ -1,0 +1,13 @@
+{% load entidades_extras %}
+<input type="hidden" name="expedientes_seleccionados" value="{{ expediente.id }}">
+<dd class="accordion-navigation" id="accordion{{ expediente.id }}">
+    <a href="#panel{{ expediente.id }}">
+        <i id="circle{{ expediente.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <b><span id="span_absentismo_title{{ expediente.id }}">{{ expediente.expedientado.gauser.get_full_name }}</span></b>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Se han realizado <span
+            id="span_absentismos{{ expediente.id }}">{{ expediente.actuacion_set.all|length }}</span> actuaciones)</a>
+
+    <div id="panel{{ expediente.id }}" class="content accordion-absentismo"
+         data-id="{{ expediente.id }}">
+    </div>
+</dd>

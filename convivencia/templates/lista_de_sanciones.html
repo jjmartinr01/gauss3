@@ -1,0 +1,22 @@
+{% load convivencia_extras %}
+<table>
+    <tbody>
+    {% for sancion in sanciones %}
+        <tr>
+{#            {% if sancionador|has_any_cargo:sancion.cargos.all or sancionador|has_permiso:'aplica_cualquier_sancion' %}#}
+                {% if sancionador|has_permiso:sancion.permiso.code_nombre or sancionador|has_permiso:'aplica_cualquier_sancion' %}
+                <td><input type="checkbox" id="s{{ sancion.id }}" data-id="{{ sancion.id }}"
+                           data-inf_actual="{{ inf_actual.id }}" data-tipo="{{ sancion.tipo }}"
+                           class="sanciones_checkbox {{ sancion.tipo }}"
+                           {% if sancion in inf_actual.sanciones.all %}checked="checked"{% endif %}></td>
+                <td>{{ sancion.sancion }}</td>
+            {% else %}
+                <td title="{{ sancionador.gauser.get_full_name }} no tiene permiso para imponer esta sanción. Pregunta en Jefatura de Estudios o Dirección si crees que se debería imponer esta sanción.">
+                    <input type="checkbox" disabled></td>
+                <td>{{ sancion.sancion }}</td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+

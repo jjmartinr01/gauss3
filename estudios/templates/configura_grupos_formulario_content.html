@@ -1,0 +1,102 @@
+{% load estudios_extras %}
+
+<ul class="button-group centered">
+    <li title="Borrar este grupo">
+        <a href="#" class="button delete_grupo"
+           data-grupo="{{ grupo.id }}"><i class="fa fa-trash-o"></i> Borrar</a></li>
+</ul>
+
+<div class="row">
+
+    {#<div class="columns large-12">#}
+    {#                <label>Grupos asociados a este curso:#}
+    {#                    <select id="grupos{{ curso.id }}" name="grupos{{ curso.id }}" multiple="multiple" class="grupos">#}
+    {#                        {% for s in subentidades %}#}
+    {#                            <option id="{{ s.id }}" {% if s in curso.grupos.all %}#}
+    {#                                    selected {% endif %}>{{ s.nombre }}</option>#}
+    {#                        {% endfor %}#}
+    {#                    </select>#}
+    {#                </label>#}
+    {#            </div>#}
+
+
+    <div class="columns large-2">
+        <label>Nombre del grupo:
+            <input type="text" class="campo_texto" data-campo="nombre" value="{{ grupo.nombre }}"
+                   data-grupo="{{ grupo.id }}">
+        </label>
+    </div>
+
+    <div class="columns large-2">
+        <label>Curso escolar:
+            {#            <select name="ronda" data-campo="ronda" class="campo" data-grupo="{{ grupo.id }}">#}
+            {#                <option value="">-------------</option>#}
+            {#                {% for r in rondas %}#}
+            {#                    <option value="{{ r.id }}" {% if grupo.ronda == r %}selected{% endif %}>{{ r.nombre }}</option>#}
+            {#                {% endfor %}#}
+            {#            </select>#}
+        </label>
+        {{ grupo.ronda.nombre }}
+    </div>
+
+    {% if grupo.cotutores|length > 0 %}
+        <div class="columns large-3">
+            <label>Tutor:
+            </label>
+            {% for tutor in grupo.tutores %}{% if not forloop.first %} / {% endif %}{{ tutor.gauser.get_full_name }} {% endfor %}
+        </div>
+
+        <div class="columns large-3">
+            <label>Co-Tutor:
+                {#            <select name="cotutor" data-campo="cotutor" class="campo" data-grupo="{{ grupo.id }}">#}
+                {#                <option value="">-------------</option>#}
+                {#                {% for d in docentes %}#}
+                {#                    <option value="{{ d.id }}" {% if grupo.cotutor == d %}selected{% endif %}>#}
+                {#                        {{ d.gauser.last_name }}, {{ d.gauser.first_name }}</option>#}
+                {#                {% endfor %}#}
+                {#            </select>#}
+            </label>
+            {% for cotutor in grupo.cotutores %}{% if not forloop.first %} / {% endif %}{{ cotutor.gauser.get_full_name }} {% endfor %}
+        </div>
+    {% else %}
+        <div class="columns large-6">
+            <label>Tutor:
+            </label>
+            {% for tutor in grupo.tutores %}{% if not forloop.first %} / {% endif %}{{ tutor.gauser.get_full_name }} {% endfor %}
+        </div>
+    {% endif %}
+    <div class="columns large-2">
+        <label>Clave externa:
+        </label>
+        {% if grupo.clave_ex %}
+            <b>{{ grupo.clave_ex }}</b>
+        {% else %}
+            <b>Sin definir</b>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label>Cursos asociados a este grupo:
+            <select id="cursos{{ grupo.id }}" class="update_cursos" data-grupo="{{ grupo.id }}" multiple>
+                {% for c in cursos %}
+                    <option value="{{ c.id }}" {% if c in grupo.cursos.all %}selected{% endif %}>{{ c.nombre }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+
+
+</div>
+
+{% if grupo.observaciones %}
+    <div class="row">
+        <div class="columns large-12">
+            <label>Observaciones:
+            </label>
+            {% autoescape off %}{{ grupo.observaciones }}{% endautoescape %}
+            A este grupo pertenecen {{ grupo|alumnos_grupo|length }} alumnos
+        </div>
+    </div>
+{% endif %}
