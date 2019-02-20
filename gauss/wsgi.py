@@ -7,7 +7,7 @@ For more information on this file, see
 https://docs.djangoproject.com/en/1.9/howto/deployment/wsgi/
 """
 
-python_home = '/home/gauss/django/nuevogauss/gauss'
+python_home = '/home/gauss/django/gauss3'
 import sys
 import site
 
