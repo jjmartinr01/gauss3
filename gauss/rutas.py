@@ -2,7 +2,7 @@
 
 RUTA_DJANGO = "/home/gauss/django"
 
-RUTA_BASE = "%s/nuevogauss/gauss" % RUTA_DJANGO
+RUTA_BASE = "%s/gauss3" % RUTA_DJANGO
 
 RUTA_STATIC = "%s/sitestatic/" % RUTA_BASE
 
