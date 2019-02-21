@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-RUTA_DJANGO = "/home/gauss/django"
+from gauss.settings import RUTA_DJANGO_SETTINGS, RUTA_BASE_SETTINGS
 
-RUTA_BASE = "%s/gauss3" % RUTA_DJANGO
+RUTA_DJANGO = RUTA_DJANGO_SETTINGS
+
+RUTA_BASE = RUTA_BASE_SETTINGS
 
 RUTA_STATIC = "%s/sitestatic/" % RUTA_BASE
 
