@@ -4,6 +4,7 @@ import logging
 import string
 import random
 import os
+import pdfkit
 from datetime import date
 from django.db.models import Q
 from django.template import RequestContext
@@ -99,7 +100,21 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
         comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 --header-html %s --footer-html %s %s %s' % (
             cabecera, pie, fichero_html, fichero_pdf)
         logger.info(u'Ejecuta: %s' % (comando))
-        os.system(comando)
+        # os.system(comando)
+        options = {
+            'page-size': 'A4',
+            'margin-top': '52',
+            'margin-right': '20',
+            'margin-bottom': '20',
+            'margin-left': '20',
+            'encoding': "UTF-8",
+            'no-outline': None,
+            '--header-html': cabecera,
+            '--footer-html': pie,
+            '--header-spacing': '5',
+            '--load-error-handling': 'ignore'
+        }
+        pdfkit.from_string(c, fichero_pdf, options)
     elif tipo == 'sin_cabecera':
         comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 %s %s' % (fichero_html, fichero_pdf)
         logger.info(u'Ejecuta: %s' % (comando))
@@ -114,7 +129,7 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
         pagecount = int(os.system(comando))
         return pagecount, open(fichero_pdf)
     else:
-        return open(fichero_pdf)
+        return open(fichero_pdf, 'rb')
 
 
 # Generador de contraseñas
