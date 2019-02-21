@@ -233,15 +233,14 @@ def sancionar_conductas(request):
                     'gauser__id', flat=True).distinct()
                 try:
                     # Comprobamos si un mensaje igual se ha mandado ya
-                    a = fff
                     Mensaje.objects.get(emisor=g_e, asunto=asunto, mensaje=texto)
                 except:
                     mc = Mensaje_cola.objects.filter(mensaje__emisor=g_e, mensaje__asunto=asunto, enviado=False)
                     if mc.count() > 0:
                         mc[0].mensaje.delete()
                         mc.delete()
-                    #encolar_mensaje(emisor=g_e, receptores=receptores, asunto=asunto, html=texto,
-                     #               etiqueta='is%s' % informe.id)
+                    encolar_mensaje(emisor=g_e, receptores=receptores, asunto=asunto, html=texto,
+                                   etiqueta='is%s' % informe.id)
                 # Fin de código para enviar correo
                 texto_html = render_to_string('is2pdf.html', {'informe': informe, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS,
                                                               'listar_conductas': listar_conductas,
