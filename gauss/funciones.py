@@ -109,8 +109,8 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
             'margin-left': '20',
             'encoding': "UTF-8",
             'no-outline': None,
-            '--header-html': cabecera,
-            '--footer-html': pie,
+            '--header-html': 'file://%s' % cabecera,
+            '--footer-html': 'file://%s' % pie,
             '--header-spacing': '5',
             '--load-error-handling': 'ignore'
         }
