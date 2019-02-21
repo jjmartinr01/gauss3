@@ -29,6 +29,10 @@ for item in list(sys.path):
         sys.path.remove(item)
 sys.path[:0] = new_sys_path
 
+path = '/home/gauss/django/gauss3'
+if path not in sys.path:
+    sys.path.append(path)
+
 import os
 from django.core.wsgi import get_wsgi_application
 
