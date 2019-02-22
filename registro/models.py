@@ -42,5 +42,5 @@ class Registro(models.Model):
     asunto = models.CharField("Asunto", max_length=500)
     texto = models.TextField("Texto explicativo del registro", blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s) - %s' % (self.entidad.name, self.fecha, self.asunto)

@@ -61,7 +61,7 @@ def registro(request):
         if request.POST['action'] == 'pdf_registro':
             id_fich = request.POST['id_registro']
             fichero = Fichero.objects.get(id=id_fich)
-            response = HttpResponse(open(RUTA_BASE + fichero.fichero.url), content_type=fichero.content_type)
+            response = HttpResponse(open(RUTA_BASE + fichero.fichero.url, 'rb'), content_type=fichero.content_type)
             response['Content-Disposition'] = 'attachment; filename=%s' % (fichero.fich_name)
             return response
 
