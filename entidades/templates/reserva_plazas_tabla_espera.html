@@ -7,6 +7,7 @@
     <th style="text-align:center;"><span class="color2">e-mail</span></th>
     <th style="text-align:center;"><span class="color2">Fecha y hora solicitud</span></th>
     <th style="text-align:center;"><span class="color2">Pertenecería a</span></th>
+    <th style="text-align:center;"><span class="color2">Perfiles asignados</span></th>
 </tr>
 </thead>
 {% for reserva in reservas %}
@@ -33,7 +34,18 @@
             {{ reserva.creado|date:'d/m/Y H:i' }}
         </td>
         <td>
-            {{ reserva.subentidades }}
+            <select multiple="multiple" id="subentidades">
+                {% for s in reserva.entidad.subentidad_set.all %}
+                    <option value="{{ s.id }}">{{ s.nombre }}</option>
+                    {% endfor %}
+            </select>
+        </td>
+    <td>
+            <select multiple="multiple" id="cargos">
+                {% for c in reserva.entidad.cargo_set.all %}
+                    <option value="{{ c.id }}">{{ c.cargo }}</option>
+                    {% endfor %}
+            </select>
         </td>
     </tr>
 {% endfor %}

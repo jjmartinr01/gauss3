@@ -238,7 +238,14 @@
         $('#Contenido').on('click', '.dar_alta', function (e) {
             e.preventDefault();
             var reserva = $(this).data('id');
-            $.post("/ajax_entidades/", {reserva: reserva, action: 'reserva2usuario'}, function (data) {
+            var cargos = $('#cargos').val();
+            var subentidades = $('#subentidades').val();
+            $.post("/ajax_entidades/", {
+                reserva: reserva,
+                cargos: cargos,
+                subentidades: subentidades,
+                action: 'reserva2usuario'
+            }, function (data) {
                 if (data.ok) {
                     $("#update_ok").show().delay(1500).fadeOut();
                     $('#reserva' + reserva).remove();

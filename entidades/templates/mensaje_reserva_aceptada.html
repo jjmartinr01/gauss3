@@ -1,0 +1,14 @@
+{% load entidades_extras %}
+{% if mail %}
+    <p>Estimado/a,</p>
+    <p>Se ha aceptado tu solicitud para pertenecer a {{ reserva.entidad.name }}. Los datos grabados son:</p>
+{% endif %}
+<p>Desde este momento tus datos se encuentran almacenados en el servidor de {{ reserva.entidad.name }}.</p>
+<p>En cualquier momento puedes ejercer los derechos de acceso, rectificación, oposición, portabilidad,
+    limitación, al tratamiento y supresión de los datos objeto de tratamiento pulsando en el enlace
+    <span class="label secondary"><i class="fa fa-user"></i> Mis datos</span> que se encuentra en la
+    parte superior derecha de Gauss. También puedes enviar un correo electrónico al responsable de la entidad
+    para que efectúe los cambios oportunos.</p>
+{% if mail %}
+    Recibe un cordial saludo,
+{% endif %}

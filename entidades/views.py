@@ -1754,9 +1754,8 @@ def ajax_entidades(request):
                                                    address=reserva.address, telfij=reserva.telfij,
                                                    telmov=reserva.telmov, sexo=reserva.sexo, last_login=ahora,
                                                    nacimiento=reserva.nacimiento, dni=reserva.dni)
-            menus = Menu.objects.filter(entidad=g_e.ronda.entidad, menu_default__tipo='Accesible').values_list(
-                'menu_default__code_menu')
-            permisos = Permiso.objects.filter(code_nombre__in=menus)
+            cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('cargos[]'))
+            subs = Subentidad.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('subentidades[]'))
             if reserva.first_name_tutor1:
                 try:
                     g1 = Gauser.objects.get(dni=reserva.dni_tutor1)
@@ -1775,7 +1774,8 @@ def ajax_entidades(request):
                     g_e1.save()
                 except:
                     g_e1 = Gauser_extra.objects.create(gauser=g1, activo=True, ronda=g_e.ronda)
-                g_e1.permisos.add(*permisos)
+                g_e1.cargos.add(*cargos)
+                g_e1.subentidades.add(*subs)
             else:
                 g1, g_e1, g1_name = None, None, None
             if reserva.first_name_tutor2:
@@ -1796,7 +1796,8 @@ def ajax_entidades(request):
                     g_e2.save()
                 except:
                     g_e2 = Gauser_extra.objects.create(gauser=g2, activo=True, ronda=g_e.ronda)
-                g_e2.permisos.add(*permisos)
+                g_e2.cargos.add(*cargos)
+                g_e2.subentidades.add(*subs)
             else:
                 g2, g_e2, g2_name = None, None, None
             try:
@@ -1808,9 +1809,14 @@ def ajax_entidades(request):
             except:
                 ge = Gauser_extra.objects.create(gauser=g, tutor1=g_e1, tutor2=g_e2, activo=True, ronda=g_e.ronda,
                                                  observaciones=reserva.observaciones)
-            ge.permisos.add(*permisos)
-            mensaje = render_to_string('reserva2usuario.html', {'g1': g1, 'g2': g2, 'g': g})
+            ge.cargos.add(*cargos)
+            ge.subentidades.add(*subs)
+            receptores = [i for i in [g1, g2, g] if i]
+            mensaje = render_to_string('mensaje_reserva_aceptada.html', {'reserva': reserva, 'mail': True})
+            encolar_mensaje(emisor=g_e, receptores=receptores, etiqueta='reservas%s' % g_e.ronda.entidad.id,
+                            asunto='Solicitud de plaza aceptada en %s' % g_e.ronda.entidad.name, html=mensaje)
             reserva.delete()
+            mensaje = render_to_string('reserva2usuario.html', {'g1': g1, 'g2': g2, 'g': g})
             return JsonResponse({'ok': True, 'mensaje': mensaje})
             # except:
             #     return JsonResponse({'ok': False})

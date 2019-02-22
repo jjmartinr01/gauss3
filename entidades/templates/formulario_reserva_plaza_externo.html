@@ -23,8 +23,36 @@
             </h4>
         </div>
 
+        <div class="row">
+            <div class="columns large-12">
+                <div data-alert class="alert-box alert radius">
+                    Esta página utiliza cookies para estudiar de forma ANÓNIMA cómo se utiliza nuestra web. Si sigues
+                    navegando entendemos que aceptas su uso.
+                    <a href="#" class="close"><span class="label">Aceptar</span></a>
+                </div>
+            </div>
+        </div>
+
+
         <div id="formulario_reserva_plaza">
             {% include "formulario_reserva_plaza.html" %}
+        </div>
+        <div class="row">
+            <div class="columns large-12 panel">
+                <p>Cuando pulses en <span class="label">Hacer solicitud</span> los datos que has introducido se
+                    almacenarán en un servidor
+                    gestionado por {{ entidad.name }}. Estos datos nunca se van a ceder a terceros, salvo que sean
+                    requeridos por cuestiones legales por la Administración Pública.</p>
+                <p>En cualquier momento puedes ejercer los derechos de acceso, rectificación, oposición, portabilidad,
+                    limitación, al tratamiento y supresión de los datos objeto de tratamiento pulsando en el enlace
+                    <span class="label secondary"><i class="fa fa-user"></i> Mis datos</span> que se encuentra en la
+                    parte
+                    superior derecha de Gauss. También puedes enviar un correo electrónico al responsable de la entidad
+                    para que efectúe los cambios oportunos.</p>
+                <p><input type="checkbox" id="checkbox_entendido"> <span style="color:red" id="span_entendido">He
+                    entendido los términos del servicio y autorizo a que {{ entidad.name }} haga uso de
+                    los datos.</span></p>
+            </div>
         </div>
 
         <div class="row">
@@ -65,22 +93,31 @@
 
         $('#aceptar').click(function (e) {
             e.preventDefault();
-            $.post("/formulario_ext_reserva_plaza/", $('#' + '{{ formname }}').serialize(), function (data) {
-                if (data.ok) {
-                    show_mensajes({
-                        title: 'Reserva guardada',
-                        texto: 'Los datos de la reserva se han guardado correctamente.'
-                    });
-                    $('#formulario_reserva_plaza').html(data.html);
-                    $("#update_ok").show().delay(1500).fadeOut();
-                } else {
-                    $("#update_error").show().delay(1500).fadeOut();
-                    show_mensajes({
-                        title: '<i class="fa fa-warning"></i> Error',
-                        texto: data.mensaje
-                    });
-                }
-            });
+            if ($('#checkbox_entendido').prop('checked')) {
+                $.post("/formulario_ext_reserva_plaza/", $('#' + '{{ formname }}').serialize(), function (data) {
+                    if (data.ok) {
+                        show_mensajes({
+                            title: 'Reserva guardada',
+                            texto: 'Los datos de la reserva se han guardado correctamente.'
+                        });
+                        $('#formulario_reserva_plaza').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                        show_mensajes({
+                            title: '<i class="fa fa-warning"></i> Error',
+                            texto: data.mensaje
+                        });
+                    }
+                });
+            } else {
+                var texto = $('#span_entendido').html();
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Error',
+                    texto: '<p>Es necesario autorizar a {{ entidad.name }} hacer uso de los datos.</p>' +
+                        '<p>Haz click en: <span style="color:red">' + texto + '</span></p>'
+                });
+            }
         });
 
         {#    $('body').on('change', '.fecha_nacimiento', function () {#}
