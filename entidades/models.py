@@ -33,7 +33,7 @@ class Organization(models.Model):
     def filename(self):
         return os.path.basename(self.anagrama.name)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.organization, self.iniciales)
 
 
@@ -47,7 +47,7 @@ class Ronda(models.Model):
         verbose_name_plural = "Rondas"
         ordering = ['-inicio', 'nombre']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.entidad.name)
 
 
@@ -126,7 +126,7 @@ class Entidad(models.Model):
         gn = self.get_general_name_display()
         return 'las %s' % (gn) if self.general_name < 100 else 'los %s' % (gn)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.name, self.code)
 
 
@@ -150,7 +150,7 @@ class Subentidad(models.Model):
         verbose_name_plural = "Subentidades"
         ordering = ['parent__nombre', 'nombre']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Subentidad: %s (%s)' % (self.nombre, self.entidad.name)
 
 
@@ -162,7 +162,7 @@ class Subsubentidad(models.Model):
     class Meta:
         verbose_name_plural = "Subsubentidades"
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Subentidad: %s (%s)' % (self.nombre, self.entidad.name)
 
 
@@ -241,7 +241,7 @@ class Alta_Baja(models.Model):
     class Meta:
         verbose_name_plural = "Altas y bajas"
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s) - Alta: %s, Baja: %s' % (
             self.gauser.get_full_name(), self.entidad.name, self.fecha_alta, self.fecha_baja)
 
@@ -261,7 +261,7 @@ class Cargo(models.Model):
     class Meta:
         ordering = ['nivel', 'cargo']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.cargo)
 
 
@@ -293,7 +293,7 @@ class ConfiguraReservaPlaza(models.Model):
         verbose_name_plural = "Configuraciones de reserva de plazas"
         ordering = ['entidad', 'orden']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s %s (%s) - columns: %s' % (self.entidad.name, self.campo, self.required, self.columns)
 
 
@@ -338,7 +338,7 @@ class Reserva_plaza(models.Model):
     class Meta:
         verbose_name_plural = "Reservas de plaza"
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s %s (%s)' % (self.first_name, self.last_name, self.nacimiento)
 
 
@@ -359,7 +359,7 @@ class Dependencia(models.Model):
     class Meta:
         ordering = ['edificio', 'planta', 'nombre']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.entidad.name)
 
 
@@ -395,6 +395,8 @@ class Gauser_extra(models.Model):
     num_cuenta_bancaria = models.CharField("Número de IBAN", max_length=50, blank=True, null=True)
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
     educa_pk = models.CharField("pk en gauss_educa", max_length=12, blank=True, null=True)
+    consentimiento = models.BooleanField('Consentimiento datos en gauss', default=False)
+    fecha_consentimiento = models.DateTimeField('Fecha y hora firma de consentimiento', blank=True, null=True)
 
     # tutor_entidad1 = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
     #                                    related_name='tutor_entidad')
@@ -496,7 +498,7 @@ class Gauser_extra(models.Model):
         verbose_name_plural = "Datos extra de un usuario (Gauser_extra)"
         ordering = ['gauser__last_name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s -- %s' % (self.gauser, self.ronda)
 
 
@@ -541,7 +543,7 @@ class GE_extra_field(models.Model):
 #     content_type_archivo = models.CharField('Tipo de archivo', max_length=200, blank=True, null=True)
 #     fich_name = models.CharField("Nombre del archivo", max_length=200, blank=True, null=True)
 #
-#     def __unicode__(self):
+#     def __str__(self):
 #         comentario = 'Original' if not self.ginput else self.rellenador.gauser.get_full_name()
 #         return u'%s, %s (Tipo: %s) - %s' % (self.gform.nombre, self.label, self.tipo, comentario)
 #
@@ -552,7 +554,7 @@ class GE_extra_field(models.Model):
 #     value = models.CharField('Value', max_length=50)
 #     selected = models.BooleanField('Selected', default=False)
 #
-#     def __unicode__(self):
+#     def __str__(self):
 #         return u'%s (%s) - Seleccionada: %s' % (self.text, self.value, self.selected)
 
 
@@ -582,7 +584,7 @@ class Menu(models.Model):
     def children(self):
         return Menu.objects.filter(entidad=self.entidad, menu_default__parent=self.menu_default).distinct()
 
-    def __unicode__(self):
+    def __str__(self):
         try:
             parent = ' - Padre: ' + self.parent.menu_default.code_menu
         except:
@@ -597,7 +599,7 @@ class Filtrado(models.Model):
     nombre = models.CharField("Nombre del filtro", max_length=200)
     operacion = models.CharField("Operaciones de filtrado", max_length=40, null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.propietario.entidad.name)
 
 
@@ -630,7 +632,7 @@ class FiltroQ(models.Model):
     class Meta:
         ordering = ['n_filtro']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.filtrado, self.filtro)
 
 
@@ -663,7 +665,7 @@ class CampoF(models.Model):
     filtrado = models.ForeignKey(Filtrado, on_delete=models.CASCADE)
     campo = models.CharField("Campo a mostrar en el resultado", max_length=70, null=True, blank=True, choices=CAMPOS)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.filtrado, self.campo)
 
 
@@ -676,7 +678,7 @@ class ConfigurationUpdate(models.Model):
     class Meta:
         ordering = ['id']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s -- %s (%s)' % (self.entidad, self.app, self.updated)
 
 # n='cosa'
