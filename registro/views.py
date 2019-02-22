@@ -62,7 +62,7 @@ def registro(request):
             id_fich = request.POST['id_registro']
             fichero = Fichero.objects.get(id=id_fich)
             response = HttpResponse(open(RUTA_BASE + fichero.fichero.url, 'rb'), content_type=fichero.content_type)
-            response['Content-Disposition'] = 'attachment; filename=%s' % (fichero.fich_name)
+            response['Content-Disposition'] = 'attachment; filename="%s"' % (fichero.fich_name)
             return response
 
     return render(request, "registro.html",
