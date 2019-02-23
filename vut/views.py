@@ -641,7 +641,10 @@ def ajax_reservas_vut(request):
                 viviendas = viviendas_con_permiso(g_e, 'comunica_registro_policia')
                 viajero = Viajero.objects.get(id=request.POST['viajero'])
                 vivienda = viajero.reserva.vivienda
-                registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
+                try:
+                    registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
+                except:
+                    registro = crea_fichero_policia(viajero)
                 if vivienda in viviendas:
                     estado = graba_registro(registro)
                     return JsonResponse({'ok': estado, 'observaciones': viajero.observaciones})
@@ -1190,7 +1193,7 @@ def crea_fichero_policia(viajero):
         fich_name = '%s.001' % (vivienda.police_code)
         ruta = os.path.join("%svut/" % (RUTA_MEDIA), fich_name)
         f = open(ruta, "w+")
-        contenido = render_to_string('fichero_registro_policia.txt', {'v': vivienda, 'vs': [viajero]})
+        contenido = render_to_string('fichero_registro_policia.vut', {'v': vivienda, 'vs': [viajero]})
         f.write(contenido.encode('utf-8'))
         RegistroPolicia.objects.create(vivienda=vivienda, parte=File(f), viajero=viajero)
         f.close()
