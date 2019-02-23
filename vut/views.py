@@ -1190,6 +1190,19 @@ def crea_fichero_policia(viajero):
         viajero.observaciones = ''
         viajero.save()
     vivienda = viajero.reserva.vivienda
+
+    #############
+    fich_name = '%s.001' % (vivienda.police_code)
+    ruta = os.path.join("%svut/" % (RUTA_MEDIA), fich_name)
+    f = open(ruta, "w+")
+    contenido = render_to_string('fichero_registro_policia.vut', {'v': vivienda, 'vs': [viajero]})
+    f.write(contenido.encode('utf-8'))
+    RegistroPolicia.objects.create(vivienda=vivienda, parte=File(f), viajero=viajero)
+    f.close()
+    logger.info("2")
+    return True
+    ############
+
     try:
         fich_name = '%s.001' % (vivienda.police_code)
         ruta = os.path.join("%svut/" % (RUTA_MEDIA), fich_name)
