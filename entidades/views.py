@@ -769,7 +769,7 @@ def configura_rondas(request):
             cargo = Cargo.objects.get(id=request.POST['cargo'], entidad=g_e.ronda.entidad)
             if ronda.id > g_e.ronda.entidad.ronda.id:
                 # Capturamos los g_es seleccionados:
-                g_es = Gauser_extra.objects.filter(ronda=g_e.ronda.entidad.ronda, cargos__in=[cargo], activo=True)
+                g_es = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo], activo=True)
                 # En caso aumentar de curso creamos g_es si es necesario
                 # Los primeros en crearse deben ser los tutores, ya que deberán asignarse a los no tutores
                 lista = g_es.values_list('tutor1__id', 'tutor2__id')
@@ -780,7 +780,7 @@ def configura_rondas(request):
                     try:
                         Gauser_extra.objects.get(gauser=g__e.gauser, ronda=ronda)
                     except:
-                        new_user = Gauser_extra.objects.create(gauser=g__e.gauser, entidad=g__e.entidad,
+                        new_user = Gauser_extra.objects.create(gauser=g__e.gauser,
                                                                ronda=ronda,
                                                                id_entidad=g__e.id_entidad,
                                                                id_organizacion=g__e.id_organizacion,
@@ -809,7 +809,7 @@ def configura_rondas(request):
                             tutor2 = tutores_nuevos.get(gauser=g__e.tutor2.gauser)
                         except:
                             tutor2 = None
-                        new_user = Gauser_extra.objects.create(gauser=g__e.gauser, entidad=g__e.entidad,
+                        new_user = Gauser_extra.objects.create(gauser=g__e.gauser,
                                                                ronda=ronda,
                                                                id_entidad=g__e.id_entidad,
                                                                id_organizacion=g__e.id_organizacion,
@@ -892,8 +892,7 @@ def datos_entidad(request):
                                     u'<p>No se puede asociar una entidad bancaria con el IBAN de la entidad.</p>')
                     crear_aviso(request, False, u'<p>Datos modificados correctamente.</p>')
                     entidad = Entidad.objects.get(id=g_e.ronda.entidad.id)
-                    request.session['gauser_extra'] = Gauser_extra.objects.get(gauser=g_e.gauser, entidad=entidad,
-                                                                               ronda=entidad.ronda)
+                    request.session['gauser_extra'] = Gauser_extra.objects.get(gauser=g_e.gauser, ronda=entidad.ronda)
                 else:
                     crear_aviso(request, False, form.errors)
                     form = EntidadForm(request.POST)
@@ -1147,11 +1146,10 @@ def add_usuario(request):
             form1 = Socio_GauserForm(request.POST, instance=gauser)
             form1.save()
         try:
-            gauser_extra = Gauser_extra.objects.get(gauser=gauser, entidad=g_e.ronda.entidad, ronda=g_e.ronda)
+            gauser_extra = Gauser_extra.objects.get(gauser=gauser, ronda=g_e.ronda)
             crear_aviso(request, False, 'El usuario para esta entidad ya existe y no se crea uno nuevo')
         except:
-            gauser_extra = Gauser_extra.objects.create(gauser=gauser, activo=True, entidad=g_e.ronda.entidad,
-                                                       ronda=g_e.ronda)
+            gauser_extra = Gauser_extra.objects.create(gauser=gauser, activo=True, ronda=g_e.ronda)
             form2 = Socio_Gauser_extraForm(request.POST, instance=gauser_extra)
             gauser_extra = form2.save()
         gauser_extra.num_cuenta_bancaria = num_cuenta2iban(gauser_extra.num_cuenta_bancaria)
@@ -1194,8 +1192,7 @@ def tutores_entidad(request):
         action = request.POST['action']
         if action == 'selecciona_docente':
             try:
-                docente = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, ronda=g_e.ronda,
-                                                   id=request.POST['docente'])
+                docente = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['docente'])
                 if request.POST['tipo'] == 'tutor':
                     alumnos_tutorados = Gauser_extra_estudios.objects.filter(grupo__ronda=g_e.ronda, tutor=docente)
                 else:
@@ -1224,8 +1221,7 @@ def tutores_entidad(request):
 
         elif action == 'selecciona_grupos':
             try:
-                docente = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, ronda=g_e.ronda,
-                                                   id=request.POST['docente'])
+                docente = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['docente'])
                 # if request.POST['tipo'] == 'tutor':
                 #     alumnos_tutorados = Gauser_extra_estudios.objects.filter(grupo__ronda=g_e.ronda, tutor=docente)
                 # else:
@@ -1242,8 +1238,7 @@ def tutores_entidad(request):
 
         elif action == 'selecciona_todos_ninguno':
             try:
-                docente = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, ronda=g_e.ronda,
-                                                   id=request.POST['docente'])
+                docente = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['docente'])
                 grupo = Grupo.objects.get(ronda=g_e.ronda, id=request.POST['grupo'])
                 alumnos = Gauser_extra_estudios.objects.filter(grupo=grupo)
                 docente_asignado = docente if request.POST['select'] == 'todos' else None
@@ -1270,8 +1265,7 @@ def tutores_entidad(request):
 
         elif action == 'selecciona_alumno':
             try:
-                docente = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, ronda=g_e.ronda,
-                                                   id=request.POST['docente'])
+                docente = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['docente'])
                 alumno = Gauser_extra_estudios.objects.get(grupo__ronda=g_e.ronda, id=request.POST['alumno'])
                 docente_asignado = docente if request.POST['checked'] == 'true' else None
                 if request.POST['tipo'] == 'tutor':
@@ -1323,28 +1317,28 @@ def bajas_usuarios(request):
             baja_actuar = Alta_Baja.objects.get(gauser=gauser, entidad=g_e.ronda.entidad, id=request.POST['baja'])
             datos = baja_actuar.dar_alta(autor=g_e.gauser.get_full_name())
             baja = Alta_Baja.objects.get(id=request.POST['baja'], entidad=g_e.ronda.entidad)
-            ges = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, gauser=baja.gauser)
+            ges = Gauser_extra.objects.filter(ronda__entidad=g_e.ronda.entidad, gauser=baja.gauser)
             gs = baja.estado_unidad_familiar
             html = render_to_string('bajas_accordion_content.html', {'baja': baja, 'ges': ges, 'gs': gs})
             return JsonResponse({'ok': True, 'html': html})
         elif action == 'dar_baja':
             gauser = Gauser.objects.get(id=request.POST['gauser'])
             try:
-                ge = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, gauser=gauser, ronda=g_e.ronda.entidad.ronda)
+                ge = Gauser_extra.objects.get(gauser=gauser, ronda=g_e.ronda)
             except:
-                ge = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, gauser=gauser).reverse()[0]
+                ge = Gauser_extra.objects.filter(ronda__entidad=g_e.ronda.entidad, gauser=gauser).reverse()[0]
                 ge.pk = None
                 ge.ronda = g_e.ronda.entidad.ronda
                 ge.save()
             ge.dar_baja(g_e.gauser.get_full_name())
             baja = Alta_Baja.objects.get(id=request.POST['baja'], entidad=g_e.ronda.entidad)
-            ges = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, gauser=baja.gauser)
+            ges = Gauser_extra.objects.filter(ronda__entidad=g_e.ronda.entidad, gauser=baja.gauser)
             gs = baja.estado_unidad_familiar
             html = render_to_string('bajas_accordion_content.html', {'baja': baja, 'ges': ges, 'gs': gs})
             return JsonResponse({'ok': True, 'html': html})
         elif action == 'borrar_usuario':
             gauser = Gauser.objects.get(id=request.POST['gauser'])
-            ges = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, gauser=gauser)
+            ges = Gauser_extra.objects.filter(ronda__entidad=g_e.ronda.entidad, gauser=gauser)
             for ge in ges:
                 ge.delete()
             try:
@@ -1356,7 +1350,7 @@ def bajas_usuarios(request):
                 baja_borrar.delete()
                 html = '<h1>Usuario borrado</h1>'
             else:
-                ges = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, gauser=baja.gauser)
+                ges = Gauser_extra.objects.filter(ronda__entidad=g_e.ronda.entidad, gauser=baja.gauser)
                 gs = baja.estado_unidad_familiar
                 html = render_to_string('bajas_accordion_content.html', {'baja': baja, 'ges': ges, 'gs': gs})
             return JsonResponse({'ok': True, 'html': html})
@@ -1376,12 +1370,10 @@ def bajas_usuarios(request):
                     n_a.fecha_alta = datetime.now().date()
                     n_a.save()
                     try:
-                        g_e_selected = Gauser_extra.objects.get(gauser=n_a.gauser, entidad=n_a.entidad,
-                                                                ronda=n_a.entidad.ronda)
+                        g_e_selected = Gauser_extra.objects.get(gauser=n_a.gauser, ronda=n_a.entidad.ronda)
                         crear_aviso(request, False, u'Se ha recuperado al socio %s' % (g_e_selected))
                     except:
-                        g_e_selected = Gauser_extra.objects.create(gauser=n_a.gauser, entidad=n_a.entidad,
-                                                                   ronda=n_a.entidad.ronda)
+                        g_e_selected = Gauser_extra.objects.create(gauser=n_a.gauser, ronda=n_a.entidad.ronda)
                         crear_aviso(request, False,
                                     u'Se ha recuperado al socio %s creando un usuario para esta ronda. Es necesario asignar perfiles manualmente.' % (
                                         g_e_selected))
@@ -1467,17 +1459,17 @@ def organigrama(request):
         elif action == 'update_usuarios_cargo' and g_e.has_permiso('asigna_perfiles'):
             cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
             if 'added[]' in request.POST:
-                ge = Gauser_extra.objects.get(entidad=g_e.ronda, id=request.POST['added[]'])
-                ge.cargos.add(cargo)
-                # for id in request.POST.getlist('added[]'):
-                #     ge = Gauser_extra.objects.get(entidad=g_e.ronda, id=id)
-                #     ge.cargos.add(cargo)
+                # ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['added[]'])
+                # ge.cargos.add(cargo)
+                for id in request.POST.getlist('added[]'):
+                    ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=id)
+                    ge.cargos.add(cargo)
             if 'removed[]' in request.POST:
-                ge = Gauser_extra.objects.get(entidad=g_e.ronda, id=request.POST['removed[]'])
-                ge.cargos.remove(cargo)
-                # for id in request.POST.getlist('removed[]'):
-                #     ge = Gauser_extra.objects.get(entidad=g_e.ronda, id=id)
-                #     ge.cargos.remove(cargo)
+                # ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['removed[]'])
+                # ge.cargos.remove(cargo)
+                for id in request.POST.getlist('removed[]'):
+                    ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=id)
+                    ge.cargos.remove(cargo)
             return JsonResponse({'ok': True})
         elif action == 'del_cargo' and g_e.has_permiso('borra_perfiles'):
             cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
@@ -1681,7 +1673,7 @@ def subentidades_ajax(request):
             try:
                 subentidad = Subentidad.objects.get(pk=request.POST['id'], entidad=g_e.ronda.entidad)
                 old_users = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[subentidad])
-                new_users = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad,
+                new_users = Gauser_extra.objects.filter(ronda__entidad=g_e.ronda.entidad,
                                                         id__in=request.POST.getlist('users[]'))
                 added_users = new_users.exclude(id__in=old_users)
                 removed_users = old_users.exclude(id__in=new_users)
@@ -2020,7 +2012,7 @@ def crea_entidad(request):
                 entidad.save()
                 ronda.entidad = entidad
                 ronda.save()
-                ge = Gauser_extra.objects.create(gauser=g_e.gauser, entidad=entidad, ronda=ronda, activo=True)
+                ge = Gauser_extra.objects.create(gauser=g_e.gauser, ronda=ronda, activo=True)
                 permisos = Permiso.objects.all()
                 ge.permisos.add(*permisos)
                 crear_aviso(request, False,
