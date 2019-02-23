@@ -638,6 +638,15 @@ def ajax_reservas_vut(request):
                 html = render_to_string('reservas_vut_registros.html', {'viajeros': viajeros})
                 return JsonResponse({'ok': True, 'html': html})
             elif request.POST['action'] == 'activar_registro':
+                viviendas = viviendas_con_permiso(g_e, 'comunica_registro_policia')
+                viajero = Viajero.objects.get(id=request.POST['viajero'])
+                vivienda = viajero.reserva.vivienda
+                registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
+                if vivienda in viviendas:
+                    estado = graba_registro(registro)
+                    return JsonResponse({'ok': estado, 'observaciones': viajero.observaciones})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para realizar esta acción.'})
                 try:
                     viviendas = viviendas_con_permiso(g_e, 'comunica_registro_policia')
                     viajero = Viajero.objects.get(id=request.POST['viajero'])
