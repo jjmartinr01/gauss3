@@ -1466,13 +1466,14 @@ def organigrama(request):
             return HttpResponse(niveles[int(cargo.nivel)])
         elif action == 'update_usuarios_cargo' and g_e.has_permiso('asigna_perfiles'):
             cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
+            return JsonResponse({'ok': True})
             if 'added[]' in request.POST:
                 for id in request.POST.getlist('added[]'):
-                    ge = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, id=id)
+                    ge = Gauser_extra.objects.get(entidad=g_e.ronda, id=id)
                     ge.cargos.add(cargo)
             if 'removed[]' in request.POST:
                 for id in request.POST.getlist('removed[]'):
-                    ge = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, id=id)
+                    ge = Gauser_extra.objects.get(entidad=g_e.ronda, id=id)
                     ge.cargos.remove(cargo)
             return JsonResponse({'ok': True})
         elif action == 'del_cargo' and g_e.has_permiso('borra_perfiles'):
