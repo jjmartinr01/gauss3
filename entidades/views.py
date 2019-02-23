@@ -1420,7 +1420,7 @@ def bajas_usuarios(request):
                   })
 
 
-@permiso_required('acceso_gestionar_perfiles')
+# @permiso_required('acceso_gestionar_perfiles')
 def organigrama(request):
     g_e = request.session['gauser_extra']
     crear_aviso(request, True, request.META['PATH_INFO'])
