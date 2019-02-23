@@ -81,7 +81,6 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
         os.makedirs(os.path.dirname(media))
         logger.info(u'Se crea ruta: %s' % (media))
 
-
     html_template = 'genera_documento2pdf.html'
     c = render_to_string(html_template, {'texto': texto, 'title': title}, request=request)
     logger.info(u'Escritura en %s' % (fichero_html))
@@ -97,9 +96,9 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
         logger.info(u'Ejecuta: %s' % (comando))
         os.system(comando)
     elif tipo == 'inf':
-        comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 --header-html %s --footer-html %s %s %s' % (
-            cabecera, pie, fichero_html, fichero_pdf)
-        logger.info(u'Ejecuta: %s' % (comando))
+        # comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 --header-html %s --footer-html %s %s %s' % (
+        #     cabecera, pie, fichero_html, fichero_pdf)
+        # logger.info(u'Ejecuta: %s' % (comando))
         # os.system(comando)
         options = {
             'page-size': 'A4',
@@ -116,9 +115,14 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
         }
         pdfkit.from_string(c, fichero_pdf, options)
     elif tipo == 'sin_cabecera':
-        comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 %s %s' % (fichero_html, fichero_pdf)
-        logger.info(u'Ejecuta: %s' % (comando))
-        os.system(comando)
+        options = {'page-size': 'A4', 'margin-top': '20', 'margin-right': '20', 'margin-bottom': '20',
+                   'margin-left': '20', 'encoding': "UTF-8", 'no-outline': None, '--header-spacing': '5',
+                   '--load-error-handling': 'ignore'}
+        pdfkit.from_string(c, fichero_pdf, options)
+
+        # comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 %s %s' % (fichero_html, fichero_pdf)
+        # logger.info(u'Ejecuta: %s' % (comando))
+        # os.system(comando)
     if attach:
         fichero_pdf2 = media + fichero + '_adjuntos.pdf'
         comando = 'pdftk %s attach_files %s output %s' % (fichero_pdf, attach, fichero_pdf2)
@@ -139,7 +143,8 @@ def pass_generator(size=6, chars=string.ascii_letters + string.digits):
 
 # Obtención de los usuarios de la entidad que no están de baja:
 def usuarios_ronda(ronda, subentidades=False, cargos=False, edad_min=-1, edad_max=120):
-    bajas = Alta_Baja.objects.filter(entidad=ronda.entidad, fecha_baja__isnull=False).values_list('gauser__id', flat=True)
+    bajas = Alta_Baja.objects.filter(entidad=ronda.entidad, fecha_baja__isnull=False).values_list('gauser__id',
+                                                                                                  flat=True)
     nacimiento_early = date(date.today().year - edad_max, 1, 1)
     nacimiento_last = date(date.today().year - edad_min, 12, 31)
     if edad_min == -1 and edad_max == 120:
@@ -155,6 +160,7 @@ def usuarios_ronda(ronda, subentidades=False, cargos=False, edad_min=-1, edad_ma
         filtro = filtro & Q(subentidades__in=subentidades)
 
     return Gauser_extra.objects.filter(filtro).order_by('gauser__last_name', 'gauser__first_name')
+
 
 def usuarios_de_gauss(entidad, subentidades=False, cargos=False, edad_min=-1, edad_max=120, ronda=False):
     bajas = Alta_Baja.objects.filter(entidad=entidad, fecha_baja__isnull=False).values_list('gauser__id', flat=True)
