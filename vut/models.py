@@ -116,7 +116,7 @@ class Vivienda(models.Model):
     def codigo_entidad_emisora(self):
         return self.police_code[-10:]
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.municipio)
 
 
@@ -130,7 +130,7 @@ class CalendarioVivienda(models.Model):
     portal = models.CharField("Portal que proporciona el calendario", blank=True, choices=PORTALES, max_length=3)
     ical = models.CharField("URL del ical", blank=True, max_length=250, null=True, default='')
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s <- %s -> %s' % (self.vivienda, self.get_portal_display(), self.ical)
 
 
@@ -143,7 +143,7 @@ class Autorizado(models.Model):
     estado = models.CharField('Estado de la autorización', max_length=3, default='OFE', choices=ESTADOS)
     permisos = models.ManyToManyField(Permiso, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s <-> %s' % (self.vivienda, self.autorizado)
 
 
@@ -161,7 +161,7 @@ class Ayudante(models.Model):
     class Meta:
         ordering = ['apellido1', 'apellido2', 'nombre']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s %s, %s - %s' % (self.apellido1, self.apellido2, self.nombre, self.vivienda)
 
 
@@ -197,7 +197,7 @@ class Reserva(models.Model):
         self.salida = self.entrada + timedelta(self.noches)
         super(Reserva, self).save(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s - %s (%s) - %s' % (self.vivienda, self.nombre, self.code, self.total, self.entrada)
 
 
@@ -249,9 +249,9 @@ class Viajero(models.Model):
     class Meta:
         ordering = ['reserva__vivienda', '-num']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s %s, %s (%s)' % (self.num, self.apellido1, self.apellido2, self.nombre, self.creado.date())
-    # def __unicode__(self):
+    # def __str__(self):
     #     return u'%s' % (self.num)
 
 
@@ -263,7 +263,7 @@ class PagoAyudante(models.Model):
     class Meta:
         ordering = ['ayudante__apellido1', 'ayudante__apellido2', 'ayudante__nombre']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s %s, %s - %s (%s Euros)' % (self.ayudante.apellido1, self.ayudante.apellido2, self.ayudante.nombre,
                                                self.reserva, self.pago)
 
@@ -301,7 +301,7 @@ class RegistroPolicia(models.Model):
     class Meta:
         ordering = ['-creado']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s (%s)' % (self.ext, self.vivienda.nombre, self.creado)
 
 
@@ -333,7 +333,7 @@ class ContabilidadVUT(models.Model):
     class Meta:
         ordering = ['-creado']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Contabilidad para %s (%s) - B: %s' % (self.propietario.get_full_name(), self.modificado, self.borrada)
 
 
@@ -346,7 +346,7 @@ class AutorizadoContabilidadVut(models.Model):
     estado = models.CharField('Estado de la autorización', max_length=3, default='OFE', choices=ESTADOS)
     permisos = models.ManyToManyField(Permiso, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s <-> %s' % (self.contabilidad, self.autorizado)
 
 
@@ -360,7 +360,7 @@ class PartidaVUT(models.Model):
     creado = models.DateField('Fecha de creación', auto_now_add=True)  # Se graba automaticamente al crearse
     modificado = models.DateField('Fecha de modificación', auto_now=True)  # Se graba automaticamente al modificarse
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.get_tipo_display())
 
 
@@ -390,7 +390,7 @@ class AsientoVUT(models.Model):
         fileName, fileExtension = os.path.splitext(self.fich_name)
         return fileExtension
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s (%s)' % (self.partida.contabilidad.id, self.concepto, self.cantidad)
 
 
@@ -411,5 +411,5 @@ class DomoticaVUT(models.Model):
     class Meta:
         ordering = ['-creado']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.vivienda)
