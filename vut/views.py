@@ -37,7 +37,7 @@ from gauss.rutas import RUTA_MEDIA, MEDIA_VUT, RUTA_BASE
 from autenticar.control_acceso import permiso_required
 from mensajes.models import Aviso
 from autenticar.models import Permiso, Gauser
-from mensajes.views import encolar_mensaje
+from mensajes.views import encolar_mensaje, crear_aviso
 from vut.models import Vivienda, Ayudante, Reserva, Viajero, RegistroPolicia, PAISES, Autorizado, CalendarioVivienda, \
     ContabilidadVUT, PartidaVUT, AsientoVUT, AutorizadoContabilidadVut, PORTALES, DomoticaVUT
 
@@ -91,14 +91,18 @@ def viviendas(request):
                 fecha_anterior_limite = datetime.today().date() - timedelta(1100)
                 viajeros = Viajero.objects.filter(reserva__vivienda=vivienda,
                                                   reserva__entrada__gte=fecha_anterior_limite)
-                c = render_to_string('libro_registro_policia.html',
-                                     {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                ruta = '%s%s/%s/' % (MEDIA_VUT, vivienda.gpropietario.id, vivienda.id)
-                fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
-                                   title=u'Libro de registro de viajeros', tipo='sin_cabecera')
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
-                return response
+                if viajeros.count() > 0:
+                    c = render_to_string('libro_registro_policia.html',
+                                         {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
+                    ruta = '%s%s/%s/' % (MEDIA_VUT, vivienda.gpropietario.id, vivienda.id)
+                    fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
+                                       title=u'Libro de registro de viajeros', tipo='sin_cabecera')
+                    response = HttpResponse(fich, content_type='application/pdf')
+                    response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
+                    return response
+                else:
+                    crear_aviso(request, False,
+                                '<p>No se puede generar un libro de registros. No hay ningún viajero registrado.</p>')
 
     return render(request, "viviendas.html",
                   {
@@ -320,24 +324,8 @@ def ajax_viviendas(request):
                                     login_ok = False
                             except:
                                 login_ok = False
+                            s.close()
                             return JsonResponse({'ok': True, 'login_ok': login_ok})
-                            # options = Options()
-                            # options.add_argument("--headless")
-                            # display = Display(visible=0, size=(800, 600))
-                            # display.start()
-                            # driver = webdriver.Firefox(firefox_options=options,
-                            #                            log_path='%sgeckodriver.log' % MEDIA_VUT)
-                            # driver.get('https://webpol.policia.es/e-hotel/login')
-                            # driver.find_element_by_name("username").send_keys(vivienda.police_code)
-                            # driver.find_element_by_name("password").send_keys(vivienda.police_pass)
-                            # driver.find_element_by_id('loginButton').click()
-                            # try:  # Comprobamos si existe uno de los elementos. Existe si se ha logeado correctamente.
-                            #     login_ok = driver.find_element_by_id('datosUsuarioBanner').is_displayed()
-                            #     driver.find_element_by_class_name("fa-sign-out").click()
-                            # except:
-                            #     login_ok = False
-                            # driver.close()
-                            # return JsonResponse({'ok': True, 'login_ok': login_ok})
                         elif vivienda.police == 'GC':
                             fichero = open(RUTA_BASE + '/vut/PARTE_COMPROBACION.001')
                             url = 'https://%s:%s@hospederias.guardiacivil.es/hospederias/servlet/ControlRecepcionFichero' % (
@@ -1009,7 +997,8 @@ def graba_registro(registro):
                                      'Host': 'webpol.policia.es', 'Referer': 'https://webpol.policia.es/e-hotel/',
                                      'Upgrade-Insecure-Requests': '1', 'User-Agent': 'python-requests/2.21.0'}
             try:
-                p2 = s.post('https://webpol.policia.es/e-hotel/execute_login', data=payload, headers=execute_login_headers, timeout=5)
+                p2 = s.post('https://webpol.policia.es/e-hotel/execute_login', data=payload,
+                            headers=execute_login_headers, timeout=5)
             except:
                 return False
             # A continuación hacemos una petición GET a inicio sin ningún parámetro
@@ -1264,7 +1253,7 @@ def viajeros(request):
         except:
             try:
                 reserva = Reserva.objects.get(secret=secret, code=code, entrada__gt=hoy)
-                data  = {'fechas': True, 'entrada': reserva.entrada, 'salida': reserva.salida}
+                data = {'fechas': True, 'entrada': reserva.entrada, 'salida': reserva.salida}
             except:
                 data = {'fechas': False}
             return render(request, "registro_entrada_viajero_error.html", data)
@@ -1757,6 +1746,7 @@ def ajax_domotica_vut(request):
             except:
                 return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el dispositivo."})
 
+
 ################################################################################
 ################################################################################
 ################################################################################
@@ -1862,7 +1852,8 @@ def registra_viajero_policia(viajero):
 
     profile = webdriver.FirefoxProfile()
     profile.accept_untrusted_certs = True
-    driver = webdriver.Firefox(firefox_profile=profile, firefox_options=options, log_path='%sgeckodriver.log' % MEDIA_VUT)
+    driver = webdriver.Firefox(firefox_profile=profile, firefox_options=options,
+                               log_path='%sgeckodriver.log' % MEDIA_VUT)
     driver.delete_all_cookies()
     wait = WebDriverWait(driver, 10)
     driver.get("https://webpol.policia.es/e-hotel/login")
@@ -1962,7 +1953,6 @@ def registra_viajero_policia(viajero):
             driver.find_element_by_class_name("fa-sign-out").click()
             driver.close()
             return False
-
 
 #
 # def registra_viajero(viajero):
