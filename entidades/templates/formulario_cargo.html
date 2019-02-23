@@ -233,7 +233,12 @@
             usuarios_cargo_actuales = usuarios_cargo;
             $.post("/organigrama/", {action: 'update_usuarios_cargo', cargo: cargo, removed: removed, 'added': added},
                     function (data) {
-                        $("#update_ok").show().delay(1500).fadeOut();
+                        if(data.ok){
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        }else{
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+
                     }, 'json');
         });
 
