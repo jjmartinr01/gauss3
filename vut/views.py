@@ -644,7 +644,8 @@ def ajax_reservas_vut(request):
                 try:
                     registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
                 except:
-                    registro = crea_fichero_policia(viajero)
+                    crea_fichero_policia(viajero)
+                    registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
                 if vivienda in viviendas:
                     estado = graba_registro(registro)
                     return JsonResponse({'ok': estado, 'observaciones': viajero.observaciones})
