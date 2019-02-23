@@ -289,23 +289,55 @@ def ajax_viviendas(request):
                     permiso = Permiso.objects.get(code_nombre='comprueba_conexion_policia')
                     if has_permiso_on_vivienda(g_e, vivienda, permiso):
                         if vivienda.police == 'PN':
-                            options = Options()
-                            options.add_argument("--headless")
-                            display = Display(visible=0, size=(800, 600))
-                            display.start()
-                            driver = webdriver.Firefox(firefox_options=options,
-                                                       log_path='%sgeckodriver.log' % MEDIA_VUT)
-                            driver.get('https://webpol.policia.es/e-hotel/login')
-                            driver.find_element_by_name("username").send_keys(vivienda.police_code)
-                            driver.find_element_by_name("password").send_keys(vivienda.police_pass)
-                            driver.find_element_by_id('loginButton').click()
-                            try:  # Comprobamos si existe uno de los elementos. Existe si se ha logeado correctamente.
-                                login_ok = driver.find_element_by_id('datosUsuarioBanner').is_displayed()
-                                driver.find_element_by_class_name("fa-sign-out").click()
+                            s = requests.Session()
+                            s.verify = False
+                            try:
+                                p1 = s.get('https://webpol.policia.es/e-hotel/', timeout=5)
+                            except:
+                                return False
+                            cookies_header = ''
+                            for c in dict(s.cookies):
+                                cookies_header += '%s=%s;' % (c, dict(s.cookies)[c])
+                            soup1 = BeautifulSoup(p1.content.decode(p1.encoding), 'html.parser')
+                            csrf_token = soup1.find('input', {'name': '_csrf'})['value']
+                            payload = {'username': vivienda.police_code, '_csrf': csrf_token,
+                                       'password': vivienda.police_pass}
+                            execute_login_headers = {
+                                'Accept': 'text/html,  application/xhtml+xml, application/xml;q=0.9,*/*;q=0.8',
+                                'Accept-Encoding': 'gzip, deflate, br',
+                                'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                'Connection': 'keep-alive',
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'Cookie': cookies_header,
+                                'Host': 'webpol.policia.es', 'Referer': 'https://webpol.policia.es/e-hotel/',
+                                'Upgrade-Insecure-Requests': '1', 'User-Agent': 'python-requests/2.21.0'}
+                            try:
+                                p2 = s.post('https://webpol.policia.es/e-hotel/execute_login', data=payload,
+                                            headers=execute_login_headers, timeout=5)
+                                if vivienda.police_code in p2.content.decode(p2.encoding):
+                                    login_ok = True
+                                else:
+                                    login_ok = False
                             except:
                                 login_ok = False
-                            driver.close()
                             return JsonResponse({'ok': True, 'login_ok': login_ok})
+                            # options = Options()
+                            # options.add_argument("--headless")
+                            # display = Display(visible=0, size=(800, 600))
+                            # display.start()
+                            # driver = webdriver.Firefox(firefox_options=options,
+                            #                            log_path='%sgeckodriver.log' % MEDIA_VUT)
+                            # driver.get('https://webpol.policia.es/e-hotel/login')
+                            # driver.find_element_by_name("username").send_keys(vivienda.police_code)
+                            # driver.find_element_by_name("password").send_keys(vivienda.police_pass)
+                            # driver.find_element_by_id('loginButton').click()
+                            # try:  # Comprobamos si existe uno de los elementos. Existe si se ha logeado correctamente.
+                            #     login_ok = driver.find_element_by_id('datosUsuarioBanner').is_displayed()
+                            #     driver.find_element_by_class_name("fa-sign-out").click()
+                            # except:
+                            #     login_ok = False
+                            # driver.close()
+                            # return JsonResponse({'ok': True, 'login_ok': login_ok})
                         elif vivienda.police == 'GC':
                             fichero = open(RUTA_BASE + '/vut/PARTE_COMPROBACION.001')
                             url = 'https://%s:%s@hospederias.guardiacivil.es/hospederias/servlet/ControlRecepcionFichero' % (
@@ -638,26 +670,19 @@ def ajax_reservas_vut(request):
                 html = render_to_string('reservas_vut_registros.html', {'viajeros': viajeros})
                 return JsonResponse({'ok': True, 'html': html})
             elif request.POST['action'] == 'activar_registro':
-                viviendas = viviendas_con_permiso(g_e, 'comunica_registro_policia')
-                viajero = Viajero.objects.get(id=request.POST['viajero'])
-                vivienda = viajero.reserva.vivienda
-                try:
-                    registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
-                except:
-                    crea_fichero_policia(viajero)
-                    registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
-                if vivienda in viviendas:
-                    estado = graba_registro(registro)
-                    return JsonResponse({'ok': estado, 'observaciones': viajero.observaciones})
-                else:
-                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para realizar esta acción.'})
                 try:
                     viviendas = viviendas_con_permiso(g_e, 'comunica_registro_policia')
                     viajero = Viajero.objects.get(id=request.POST['viajero'])
                     vivienda = viajero.reserva.vivienda
-                    registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
+                    try:
+                        registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
+                    except:
+                        crea_fichero_policia(viajero)
+                        registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
                     if vivienda in viviendas:
                         estado = graba_registro(registro)
+                        registro.enviado = True
+                        registro.save()
                         return JsonResponse({'ok': estado, 'observaciones': viajero.observaciones})
                     else:
                         return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para realizar esta acción.'})
@@ -1190,23 +1215,10 @@ def crea_fichero_policia(viajero):
         viajero.observaciones = ''
         viajero.save()
     vivienda = viajero.reserva.vivienda
-
-    #############
-    fich_name = '%s.001' % (vivienda.police_code)
-    ruta = os.path.join("%svut/" % (RUTA_MEDIA), fich_name)
-    f = open(ruta, "wb+")
-    contenido = render_to_string('fichero_registro_policia.vut', {'v': vivienda, 'vs': [viajero]})
-    f.write(contenido.encode('utf-8'))
-    RegistroPolicia.objects.create(vivienda=vivienda, parte=File(f), viajero=viajero)
-    f.close()
-    logger.info("2")
-    return True
-    ############
-
     try:
         fich_name = '%s.001' % (vivienda.police_code)
         ruta = os.path.join("%svut/" % (RUTA_MEDIA), fich_name)
-        f = open(ruta, "w+")
+        f = open(ruta, "wb+")
         contenido = render_to_string('fichero_registro_policia.vut', {'v': vivienda, 'vs': [viajero]})
         f.write(contenido.encode('utf-8'))
         RegistroPolicia.objects.create(vivienda=vivienda, parte=File(f), viajero=viajero)

@@ -112,12 +112,11 @@ def comunica_viajero2PNGC():
                                              'Cookie': cookies_header,
                                              'Host': 'webpol.policia.es',
                                              'Referer': 'https://webpol.policia.es/e-hotel/',
-                                             'User-Agent': 'python-requests/2.11.1',
+                                             'User-Agent': 'python-requests/2.21.0',
                                              'X-CSRF-TOKEN': csrf_token,
                                              'X-Requested-With': 'XMLHttpRequest'}
                 try:
-                    p11 = s.post(obtener_etiquetas_url, headers=obtener_etiquetas_headers, cookies=dict(s.cookies),
-                                 timeout=5)
+                    p11 = s.post(obtener_etiquetas_url, headers=obtener_etiquetas_headers, timeout=5)
                 except:
                     return False
                 # Cargamos los valores de los inputs demandados para hacer el login y enviamos el post con el payload
@@ -130,10 +129,10 @@ def comunica_viajero2PNGC():
                                          'Content-Type': 'application/x-www-form-urlencoded',
                                          'Cookie': cookies_header,
                                          'Host': 'webpol.policia.es', 'Referer': 'https://webpol.policia.es/e-hotel/',
-                                         'Upgrade-Insecure-Requests': '1', 'User-Agent': 'python-requests/2.11.1'}
+                                         'Upgrade-Insecure-Requests': '1', 'User-Agent': 'python-requests/2.21.0'}
                 try:
                     p2 = s.post('https://webpol.policia.es/e-hotel/execute_login', data=payload,
-                                headers=execute_login_headers, cookies=dict(s.cookies), timeout=5)
+                                headers=execute_login_headers, timeout=5)
                 except:
                     return False
                 # A continuación hacemos una petición GET a inicio sin ningún parámetro
@@ -143,7 +142,7 @@ def comunica_viajero2PNGC():
                     'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
                     'Connection': 'keep-alive', 'Cookie': cookies_header, 'Host': 'webpol.policia.es',
                     'Referer': 'https://webpol.policia.es/e-hotel/', 'Upgrade-Insecure-Requests': '1',
-                    'User-Agent': 'python-requests/2.11.1'}
+                    'User-Agent': 'python-requests/2.21.0'}
                 try:
                     p21 = s.get('https://webpol.policia.es/e-hotel/inicio', headers=execute_inicio_headers,
                                 cookies=dict(s.cookies), timeout=5)
@@ -153,24 +152,24 @@ def comunica_viajero2PNGC():
                 # Si la respuesta es correcta la respuesta contendrá el usuario:
                 if vivienda.police_code in p21.content.decode(p2.encoding):
                     # El siguiente paso es obtener etiquetas. Esta es una solicitud POST sin payload
-                    obtener_etiquetas_url = 'https://webpol.policia.es/e-hotel/obtenerEtiquetas'
-                    obtener_etiquetas_headers = {'Accept': 'application/json, text/javascript, */*; q=0.01',
-                                                 'Accept-Encoding': 'gzip, deflate, br',
-                                                 'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                                                 'Ajax-Referer': '/e-hotel/obtenerEtiquetas',
-                                                 'Connection': 'keep-alive',
-                                                 'Content-Length': '0',
-                                                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                                                 'Cookie': cookies_header, 'Host': 'webpol.policia.es',
-                                                 'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                                 'User-Agent': 'python-requests/2.11.1',
-                                                 'X-CSRF-TOKEN': '92a4cc08-b50b-4be3-8a98-8adf8bb1db2e',
-                                                 'X-Requested-With': 'XMLHttpRequest'}
-                    try:
-                        p22 = s.post(obtener_etiquetas_url, headers=obtener_etiquetas_headers, cookies=dict(s.cookies),
-                                     timeout=5)
-                    except:
-                        return False
+                    # obtener_etiquetas_url = 'https://webpol.policia.es/e-hotel/obtenerEtiquetas'
+                    # obtener_etiquetas_headers = {'Accept': 'application/json, text/javascript, */*; q=0.01',
+                    #                              'Accept-Encoding': 'gzip, deflate, br',
+                    #                              'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                    #                              'Ajax-Referer': '/e-hotel/obtenerEtiquetas',
+                    #                              'Connection': 'keep-alive',
+                    #                              'Content-Length': '0',
+                    #                              'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    #                              'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                    #                              'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                    #                              'User-Agent': 'python-requests/2.21.0',
+                    #                              'X-CSRF-TOKEN': '92a4cc08-b50b-4be3-8a98-8adf8bb1db2e',
+                    #                              'X-Requested-With': 'XMLHttpRequest'}
+                    # try:
+                    #     p22 = s.post(obtener_etiquetas_url, headers=obtener_etiquetas_headers, cookies=dict(s.cookies),
+                    #                  timeout=5)
+                    # except:
+                    #     return False
                     # A continuación debemos ir a la grabación manual. Antes se hace una llamada para limpiar la sesión
                     limpiar_sesion_temporal_url = 'https://webpol.policia.es/e-hotel/limpiarSesionTemporal'
                     limpiar_sesion_temporal_headers = {'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -181,11 +180,10 @@ def comunica_viajero2PNGC():
                                                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                                                        'Cookie': cookies_header, 'Host': 'webpol.policia.es',
                                                        'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                                       'User-Agent': 'python-requests/2.11.1',
+                                                       'User-Agent': 'python-requests/2.21.0',
                                                        'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
                     try:
-                        p23 = s.post(limpiar_sesion_temporal_url, headers=limpiar_sesion_temporal_headers,
-                                     cookies=dict(s.cookies), timeout=5)
+                        p23 = s.post(limpiar_sesion_temporal_url, headers=limpiar_sesion_temporal_headers, timeout=5)
                     except:
                         return False
                     # Ahora es cuando se hace otra petición POST para llegar a la grabación manual sin payload
@@ -200,11 +198,10 @@ def comunica_viajero2PNGC():
                                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                                                'Cookie': cookies_header, 'Host': 'webpol.policia.es',
                                                'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                               'User-Agent': 'python-requests/2.11.1',
+                                               'User-Agent': 'python-requests/2.21.0',
                                                'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
                     try:
-                        p3 = s.post(grabador_manual_url, headers=grabador_manual_headers, cookies=dict(s.cookies),
-                                    timeout=5)
+                        p3 = s.post(grabador_manual_url, headers=grabador_manual_headers, timeout=5)
                         logger.info("Entrada en grabador manual")
                         sleep(10)
                     except:
@@ -239,12 +236,11 @@ def comunica_viajero2PNGC():
                                        'Cookie': cookies_header,
                                        'Host': 'webpol.policia.es',
                                        'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                       'User-Agent': 'python-requests/2.11.1',
+                                       'User-Agent': 'python-requests/2.21.0',
                                        'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
                     logger.info("Definido huesped_headers")
                     try:
-                        p4 = s.post(huesped_url, data=data_viajero, headers=huesped_headers, cookies=dict(s.cookies),
-                                    timeout=5)
+                        p4 = s.post(huesped_url, data=data_viajero, headers=huesped_headers, timeout=5)
                         logger.info("Enviados datos del huesped")
                         sleep(4)
                     except:
@@ -264,46 +260,46 @@ def comunica_viajero2PNGC():
                         mensaje, idHuesped, idHospederia)
                     logger.info("Se han grabado las observaciones")
                     # Para completar la grabación es necesario llamar a parteViajero a través de una petición GET:
-                    parte_viajero_url = 'https://webpol.policia.es/e-hotel/hospederia/manual/vista/parteViajero'
-                    parte_viajero_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
-                                             'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                                             'Ajax-Referer': '/e-hotel/hospederia/manual/insertar/huesped',
-                                             'Connection': 'keep-alive',
-                                             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                                             'Cookie': cookies_header, 'Host': 'webpol.policia.es',
-                                             'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                             'User-Agent': 'python-requests/2.11.1',
-                                             'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
-                    try:
-                        p5 = s.get(parte_viajero_url, headers=parte_viajero_headers, cookies=dict(s.cookies), timeout=5)
-                        logger.info("Enviado GET a parteViajero")
-                        sleep(4)
-                    except:
-                        logger.info("Error al procesar parteViajero")
-                        return False
+                    # parte_viajero_url = 'https://webpol.policia.es/e-hotel/hospederia/manual/vista/parteViajero'
+                    # parte_viajero_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                    #                          'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                    #                          'Ajax-Referer': '/e-hotel/hospederia/manual/insertar/huesped',
+                    #                          'Connection': 'keep-alive',
+                    #                          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    #                          'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                    #                          'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                    #                          'User-Agent': 'python-requests/2.21.0',
+                    #                          'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                    # try:
+                    #     p5 = s.get(parte_viajero_url, headers=parte_viajero_headers, cookies=dict(s.cookies), timeout=5)
+                    #     logger.info("Enviado GET a parteViajero")
+                    #     sleep(4)
+                    # except:
+                    #     logger.info("Error al procesar parteViajero")
+                    #     return False
                     # En siguiente paso dado a través de un navegador es llamar a tipoDocumentoNacionalidad con una
                     # petición POST enviando como parámetro la "nacionalidad":
-                    nacionalidad_url = 'https://webpol.policia.es/e-hotel/combo/tipoDocumentoNacionalidad'
-                    nacionalidad_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
-                                            'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                                            'Ajax-Referer': '/e-hotel/combo/tipoDocumentoNacionalidad',
-                                            'Connection': 'keep-alive',
-                                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                                            'Cookie': cookies_header, 'Host': 'webpol.policia.es',
-                                            'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                            'User-Agent': 'python-requests/2.11.1',
-                                            'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
-                    payload = {'nacionalidad': viajero.pais}
-                    try:
-                        p6 = s.post(nacionalidad_url, headers=nacionalidad_headers, cookies=dict(s.cookies),
-                                    data=payload,
-                                    timeout=5)
-                        logger.info("Enviado POST a tipoDocumentoNacionalidad")
-                    except:
-                        logger.info("Error al enviar POST a tipoDocumentoNacionalidad")
-                        return False
+                    # nacionalidad_url = 'https://webpol.policia.es/e-hotel/combo/tipoDocumentoNacionalidad'
+                    # nacionalidad_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                    #                         'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                    #                         'Ajax-Referer': '/e-hotel/combo/tipoDocumentoNacionalidad',
+                    #                         'Connection': 'keep-alive',
+                    #                         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    #                         'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                    #                         'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                    #                         'User-Agent': 'python-requests/2.21.0',
+                    #                         'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                    # payload = {'nacionalidad': viajero.pais}
+                    # try:
+                    #     p6 = s.post(nacionalidad_url, headers=nacionalidad_headers, cookies=dict(s.cookies),
+                    #                 data=payload,
+                    #                 timeout=5)
+                    #     logger.info("Enviado POST a tipoDocumentoNacionalidad")
+                    # except:
+                    #     logger.info("Error al enviar POST a tipoDocumentoNacionalidad")
+                    #     return False
                     # En este punto termina el proceso de grabación
-                    if p6.status_code == 200:
+                    if p4.status_code == 200:
                         logger.info(u'Todo correcto')
                         s.close()
                         viajero.fichero_policia = True
@@ -427,7 +423,7 @@ def comunica_viajero2PNGC2(registro):
                                              'Cookie': cookies_header,
                                              'Host': 'webpol.policia.es',
                                              'Referer': 'https://webpol.policia.es/e-hotel/',
-                                             'User-Agent': 'python-requests/2.11.1',
+                                             'User-Agent': 'python-requests/2.21.0',
                                              'X-CSRF-TOKEN': csrf_token,
                                              'X-Requested-With': 'XMLHttpRequest'}
                 try:
@@ -445,7 +441,7 @@ def comunica_viajero2PNGC2(registro):
                                          'Content-Type': 'application/x-www-form-urlencoded',
                                          'Cookie': cookies_header,
                                          'Host': 'webpol.policia.es', 'Referer': 'https://webpol.policia.es/e-hotel/',
-                                         'Upgrade-Insecure-Requests': '1', 'User-Agent': 'python-requests/2.11.1'}
+                                         'Upgrade-Insecure-Requests': '1', 'User-Agent': 'python-requests/2.21.0'}
                 try:
                     p2 = s.post('https://webpol.policia.es/e-hotel/execute_login', data=payload,
                                 headers=execute_login_headers, cookies=dict(s.cookies), timeout=5)
@@ -458,7 +454,7 @@ def comunica_viajero2PNGC2(registro):
                     'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
                     'Connection': 'keep-alive', 'Cookie': cookies_header, 'Host': 'webpol.policia.es',
                     'Referer': 'https://webpol.policia.es/e-hotel/', 'Upgrade-Insecure-Requests': '1',
-                    'User-Agent': 'python-requests/2.11.1'}
+                    'User-Agent': 'python-requests/2.21.0'}
                 try:
                     p21 = s.get('https://webpol.policia.es/e-hotel/inicio', headers=execute_inicio_headers,
                                 cookies=dict(s.cookies), timeout=5)
@@ -478,7 +474,7 @@ def comunica_viajero2PNGC2(registro):
                                                  'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                                                  'Cookie': cookies_header, 'Host': 'webpol.policia.es',
                                                  'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                                 'User-Agent': 'python-requests/2.11.1',
+                                                 'User-Agent': 'python-requests/2.21.0',
                                                  'X-CSRF-TOKEN': '92a4cc08-b50b-4be3-8a98-8adf8bb1db2e',
                                                  'X-Requested-With': 'XMLHttpRequest'}
                     try:
@@ -496,7 +492,7 @@ def comunica_viajero2PNGC2(registro):
                                                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                                                        'Cookie': cookies_header, 'Host': 'webpol.policia.es',
                                                        'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                                       'User-Agent': 'python-requests/2.11.1',
+                                                       'User-Agent': 'python-requests/2.21.0',
                                                        'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
                     try:
                         p23 = s.post(limpiar_sesion_temporal_url, headers=limpiar_sesion_temporal_headers,
@@ -515,7 +511,7 @@ def comunica_viajero2PNGC2(registro):
                                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                                                'Cookie': cookies_header, 'Host': 'webpol.policia.es',
                                                'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                               'User-Agent': 'python-requests/2.11.1',
+                                               'User-Agent': 'python-requests/2.21.0',
                                                'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
                     try:
                         p3 = s.post(grabador_manual_url, headers=grabador_manual_headers, cookies=dict(s.cookies),
@@ -554,7 +550,7 @@ def comunica_viajero2PNGC2(registro):
                                        'Cookie': cookies_header,
                                        'Host': 'webpol.policia.es',
                                        'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                       'User-Agent': 'python-requests/2.11.1',
+                                       'User-Agent': 'python-requests/2.21.0',
                                        'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
                     logger.info("Definido huesped_headers")
                     try:
@@ -587,7 +583,7 @@ def comunica_viajero2PNGC2(registro):
                                              'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                                              'Cookie': cookies_header, 'Host': 'webpol.policia.es',
                                              'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                             'User-Agent': 'python-requests/2.11.1',
+                                             'User-Agent': 'python-requests/2.21.0',
                                              'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
                     try:
                         p5 = s.get(parte_viajero_url, headers=parte_viajero_headers, cookies=dict(s.cookies), timeout=5)
@@ -606,7 +602,7 @@ def comunica_viajero2PNGC2(registro):
                                             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                                             'Cookie': cookies_header, 'Host': 'webpol.policia.es',
                                             'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                            'User-Agent': 'python-requests/2.11.1',
+                                            'User-Agent': 'python-requests/2.21.0',
                                             'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
                     payload = {'nacionalidad': viajero.pais}
                     try:
