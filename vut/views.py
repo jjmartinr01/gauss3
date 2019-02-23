@@ -941,24 +941,24 @@ def graba_registro(registro):
             soup1 = BeautifulSoup(p1.content.decode(p1.encoding), 'html.parser')
             csrf_token = soup1.find('input', {'name': '_csrf'})['value']
             # El siguiente paso que da el sistema es la obtención de etiquetas de su sistema "ARGOS"
-            obtener_etiquetas_url = 'https://webpol.policia.es/e-hotel/obtenerEtiquetas'
-            obtener_etiquetas_headers = {'Accept': 'application/json, text/javascript, */*; q=0.01',
-                                         'Accept-Encoding': 'gzip, deflate, br',
-                                         'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                                         'Ajax-Referer': '/e-hotel/obtenerEtiquetas', 'Connection': 'keep-alive',
-                                         'Content-Length': '0',
-                                         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                                         'Cookie': cookies_header,
-                                         'Host': 'webpol.policia.es',
-                                         'Referer': 'https://webpol.policia.es/e-hotel/',
-                                         'User-Agent': 'python-requests/2.11.1',
-                                         'X-CSRF-TOKEN': csrf_token,
-                                         'X-Requested-With': 'XMLHttpRequest'}
-            try:
-                p11 = s.post(obtener_etiquetas_url, headers=obtener_etiquetas_headers, cookies=dict(s.cookies),
-                             timeout=5)
-            except:
-                return False
+            # obtener_etiquetas_url = 'https://webpol.policia.es/e-hotel/obtenerEtiquetas'
+            # obtener_etiquetas_headers = {'Accept': 'application/json, text/javascript, */*; q=0.01',
+            #                              'Accept-Encoding': 'gzip, deflate, br',
+            #                              'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+            #                              'Ajax-Referer': '/e-hotel/obtenerEtiquetas', 'Connection': 'keep-alive',
+            #                              'Content-Length': '0',
+            #                              'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            #                              'Cookie': cookies_header,
+            #                              'Host': 'webpol.policia.es',
+            #                              'Referer': 'https://webpol.policia.es/e-hotel/',
+            #                              'User-Agent': 'python-requests/2.11.1',
+            #                              'X-CSRF-TOKEN': csrf_token,
+            #                              'X-Requested-With': 'XMLHttpRequest'}
+            # try:
+            #     p11 = s.post(obtener_etiquetas_url, headers=obtener_etiquetas_headers, cookies=dict(s.cookies),
+            #                  timeout=5)
+            # except:
+            #     return False
             # Cargamos los valores de los inputs demandados para hacer el login y enviamos el post con el payload
             # En este caso enviamos: headers, cookies y parámetros (payload)
             payload = {'username': vivienda.police_code, '_csrf': csrf_token, 'password': vivienda.police_pass}
@@ -969,10 +969,9 @@ def graba_registro(registro):
                                      'Content-Type': 'application/x-www-form-urlencoded',
                                      'Cookie': cookies_header,
                                      'Host': 'webpol.policia.es', 'Referer': 'https://webpol.policia.es/e-hotel/',
-                                     'Upgrade-Insecure-Requests': '1', 'User-Agent': 'python-requests/2.11.1'}
+                                     'Upgrade-Insecure-Requests': '1', 'User-Agent': 'python-requests/2.21.0'}
             try:
-                p2 = s.post('https://webpol.policia.es/e-hotel/execute_login', data=payload,
-                            headers=execute_login_headers, cookies=dict(s.cookies), timeout=5)
+                p2 = s.post('https://webpol.policia.es/e-hotel/execute_login', data=payload, headers=execute_login_headers, timeout=5)
             except:
                 return False
             # A continuación hacemos una petición GET a inicio sin ningún parámetro
@@ -982,34 +981,33 @@ def graba_registro(registro):
                 'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
                 'Connection': 'keep-alive', 'Cookie': cookies_header, 'Host': 'webpol.policia.es',
                 'Referer': 'https://webpol.policia.es/e-hotel/', 'Upgrade-Insecure-Requests': '1',
-                'User-Agent': 'python-requests/2.11.1'}
+                'User-Agent': 'python-requests/2.21.0'}
             try:
-                p21 = s.get('https://webpol.policia.es/e-hotel/inicio', headers=execute_inicio_headers,
-                            cookies=dict(s.cookies), timeout=5)
+                p21 = s.get('https://webpol.policia.es/e-hotel/inicio', headers=execute_inicio_headers, timeout=5)
             except:
                 return False
             # Hacemos una comprabción para asegurarnos de que se ha accedido correctamente a la webpol.
             # Si la respuesta es correcta la respuesta contendrá el usuario:
             if vivienda.police_code in p21.content.decode(p2.encoding):
                 # El siguiente paso es obtener etiquetas. Esta es una solicitud POST sin payload
-                obtener_etiquetas_url = 'https://webpol.policia.es/e-hotel/obtenerEtiquetas'
-                obtener_etiquetas_headers = {'Accept': 'application/json, text/javascript, */*; q=0.01',
-                                             'Accept-Encoding': 'gzip, deflate, br',
-                                             'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                                             'Ajax-Referer': '/e-hotel/obtenerEtiquetas',
-                                             'Connection': 'keep-alive',
-                                             'Content-Length': '0',
-                                             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                                             'Cookie': cookies_header, 'Host': 'webpol.policia.es',
-                                             'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                             'User-Agent': 'python-requests/2.11.1',
-                                             'X-CSRF-TOKEN': '92a4cc08-b50b-4be3-8a98-8adf8bb1db2e',
-                                             'X-Requested-With': 'XMLHttpRequest'}
-                try:
-                    p22 = s.post(obtener_etiquetas_url, headers=obtener_etiquetas_headers, cookies=dict(s.cookies),
-                                 timeout=5)
-                except:
-                    return False
+                # obtener_etiquetas_url = 'https://webpol.policia.es/e-hotel/obtenerEtiquetas'
+                # obtener_etiquetas_headers = {'Accept': 'application/json, text/javascript, */*; q=0.01',
+                #                              'Accept-Encoding': 'gzip, deflate, br',
+                #                              'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                #                              'Ajax-Referer': '/e-hotel/obtenerEtiquetas',
+                #                              'Connection': 'keep-alive',
+                #                              'Content-Length': '0',
+                #                              'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                #                              'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                #                              'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                #                              'User-Agent': 'python-requests/2.11.1',
+                #                              'X-CSRF-TOKEN': '92a4cc08-b50b-4be3-8a98-8adf8bb1db2e',
+                #                              'X-Requested-With': 'XMLHttpRequest'}
+                # try:
+                #     p22 = s.post(obtener_etiquetas_url, headers=obtener_etiquetas_headers, cookies=dict(s.cookies),
+                #                  timeout=5)
+                # except:
+                #     return False
                 # A continuación debemos ir a la grabación manual. Antes se hace una llamada para limpiar la sesión
                 limpiar_sesion_temporal_url = 'https://webpol.policia.es/e-hotel/limpiarSesionTemporal'
                 limpiar_sesion_temporal_headers = {'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -1020,11 +1018,10 @@ def graba_registro(registro):
                                                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                                                    'Cookie': cookies_header, 'Host': 'webpol.policia.es',
                                                    'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                                   'User-Agent': 'python-requests/2.11.1',
+                                                   'User-Agent': 'python-requests/2.21.0',
                                                    'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
                 try:
-                    p23 = s.post(limpiar_sesion_temporal_url, headers=limpiar_sesion_temporal_headers,
-                                 cookies=dict(s.cookies), timeout=5)
+                    p23 = s.post(limpiar_sesion_temporal_url, headers=limpiar_sesion_temporal_headers, timeout=5)
                 except:
                     return False
                 # Ahora es cuando se hace otra petición POST para llegar a la grabación manual sin payload
@@ -1039,11 +1036,10 @@ def graba_registro(registro):
                                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                                            'Cookie': cookies_header, 'Host': 'webpol.policia.es',
                                            'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                           'User-Agent': 'python-requests/2.11.1',
+                                           'User-Agent': 'python-requests/2.21.0',
                                            'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
                 try:
-                    p3 = s.post(grabador_manual_url, headers=grabador_manual_headers, cookies=dict(s.cookies),
-                                timeout=5)
+                    p3 = s.post(grabador_manual_url, headers=grabador_manual_headers, timeout=5)
                     logger.info("Entrada en grabador manual")
                     sleep(10)
                 except:
@@ -1078,12 +1074,11 @@ def graba_registro(registro):
                                    'Cookie': cookies_header,
                                    'Host': 'webpol.policia.es',
                                    'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                   'User-Agent': 'python-requests/2.11.1',
+                                   'User-Agent': 'python-requests/2.21.0',
                                    'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
                 logger.info("Definido huesped_headers")
                 try:
-                    p4 = s.post(huesped_url, data=data_viajero, headers=huesped_headers, cookies=dict(s.cookies),
-                                timeout=5)
+                    p4 = s.post(huesped_url, data=data_viajero, headers=huesped_headers, timeout=5)
                     logger.info("Enviados datos del huesped")
                     sleep(4)
                 except:
@@ -1103,46 +1098,44 @@ def graba_registro(registro):
                     mensaje, idHuesped, idHospederia)
                 logger.info("Se han grabado las observaciones")
                 # Para completar la grabación es necesario llamar a parteViajero a través de una petición GET:
-                parte_viajero_url = 'https://webpol.policia.es/e-hotel/hospederia/manual/vista/parteViajero'
-                parte_viajero_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
-                                         'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                                         'Ajax-Referer': '/e-hotel/hospederia/manual/insertar/huesped',
-                                         'Connection': 'keep-alive',
-                                         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                                         'Cookie': cookies_header, 'Host': 'webpol.policia.es',
-                                         'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                         'User-Agent': 'python-requests/2.11.1',
-                                         'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
-                try:
-                    p5 = s.get(parte_viajero_url, headers=parte_viajero_headers, cookies=dict(s.cookies), timeout=5)
-                    logger.info("Enviado GET a parteViajero")
-                    sleep(4)
-                except:
-                    logger.info("Error al procesar parteViajero")
-                    return False
+                # parte_viajero_url = 'https://webpol.policia.es/e-hotel/hospederia/manual/vista/parteViajero'
+                # parte_viajero_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                #                          'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                #                          'Ajax-Referer': '/e-hotel/hospederia/manual/insertar/huesped',
+                #                          'Connection': 'keep-alive',
+                #                          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                #                          'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                #                          'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                #                          'User-Agent': 'python-requests/2.21.0',
+                #                          'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                # try:
+                #     p5 = s.get(parte_viajero_url, headers=parte_viajero_headers, timeout=5)
+                #     logger.info("Enviado GET a parteViajero")
+                #     sleep(4)
+                # except:
+                #     logger.info("Error al procesar parteViajero")
+                #     return False
                 # En siguiente paso dado a través de un navegador es llamar a tipoDocumentoNacionalidad con una
                 # petición POST enviando como parámetro la "nacionalidad":
-                nacionalidad_url = 'https://webpol.policia.es/e-hotel/combo/tipoDocumentoNacionalidad'
-                nacionalidad_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
-                                        'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                                        'Ajax-Referer': '/e-hotel/combo/tipoDocumentoNacionalidad',
-                                        'Connection': 'keep-alive',
-                                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                                        'Cookie': cookies_header, 'Host': 'webpol.policia.es',
-                                        'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                        'User-Agent': 'python-requests/2.11.1',
-                                        'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
-                payload = {'nacionalidad': viajero.pais}
-                try:
-                    p6 = s.post(nacionalidad_url, headers=nacionalidad_headers, cookies=dict(s.cookies),
-                                data=payload,
-                                timeout=5)
-                    logger.info("Enviado POST a tipoDocumentoNacionalidad")
-                except:
-                    logger.info("Error al enviar POST a tipoDocumentoNacionalidad")
-                    return False
+                # nacionalidad_url = 'https://webpol.policia.es/e-hotel/combo/tipoDocumentoNacionalidad'
+                # nacionalidad_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                #                         'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                #                         'Ajax-Referer': '/e-hotel/combo/tipoDocumentoNacionalidad',
+                #                         'Connection': 'keep-alive',
+                #                         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                #                         'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                #                         'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                #                         'User-Agent': 'python-requests/2.21.0',
+                #                         'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                # payload = {'nacionalidad': viajero.pais}
+                # try:
+                #     p6 = s.post(nacionalidad_url, headers=nacionalidad_headers, data=payload, timeout=5)
+                #     logger.info("Enviado POST a tipoDocumentoNacionalidad")
+                # except:
+                #     logger.info("Error al enviar POST a tipoDocumentoNacionalidad")
+                #     return False
                 # En este punto termina el proceso de grabación
-                if p6.status_code == 200:
+                if p4.status_code == 200:
                     logger.info(u'Todo correcto')
                     s.close()
                     viajero.fichero_policia = True
@@ -1816,122 +1809,121 @@ def ajax_domotica_vut(request):
 #                 buscar.click()
 
 
-# def registra_viajero_policia(viajero):
-#     hoy = datetime.today().date()
-#     ayer = hoy - timedelta(1)
-#
-#     # options = webdriver.ChromeOptions()
-#     # options.add_argument('--ignore-certificate-errors')
-#     # driver = webdriver.Chrome(chrome_options=options)
-#
-#     options = Options()
-#     # options.add_argument("--headless")
-#     # display = Display(visible=0, size=(800, 600))
-#     # display.start()
-#
-#     profile = webdriver.FirefoxProfile()
-#     profile.accept_untrusted_certs = True
-#     driver = webdriver.Firefox(firefox_profile=profile, firefox_options=options,
-#                                log_path='%sgeckodriver.log' % MEDIA_VUT)
-#     driver.delete_all_cookies()
-#     wait = WebDriverWait(driver, 10)
-#     driver.get("https://webpol.policia.es/e-hotel/login")
-#     driver.find_element_by_name("username").send_keys(viajero.reserva.vivienda.police_code)
-#     driver.find_element_by_name("password").send_keys(viajero.reserva.vivienda.police_pass)
-#     driver.find_element_by_id('loginButton').click()
-#     driver.find_element_by_id('grabadorManual').click()
-#     # wait.until(EC.presence_of_element_located((By.ID, 'nombre')))
-#     wait.until(lambda gdriver: driver.execute_script("return jQuery.active == 0"))
-#     driver.execute_script("$('#nombre').val('%s')" % viajero.nombre)
-#     driver.execute_script("$('#apellido1').val('%s')" % viajero.apellido1)
-#     driver.execute_script("$('#apellido2').val('%s')" % viajero.apellido2)
-#     driver.execute_script("$('#nacionalidad').val('%s')" % viajero.pais)
-#     driver.execute_script("$('#nacionalidad').trigger('chosen:updated').change()")
-#     # Al actualizar la nacionalidad se hace una petición ajax para actualizar el 'tipoDocumento'
-#     # http://www.mahsumakbas.net/selenium-webdrvier-wait-jquery-ajax-request-complete-in-python/
-#     # Esperaremos a que esta petición finalice:
-#     wait.until(lambda gdriver: driver.execute_script("return jQuery.active == 0"))
-#     driver.execute_script("$('#tipoDocumento').val('%s')" % viajero.tipo_ndi)
-#     driver.execute_script("$('#tipoDocumento').trigger('chosen:updated').change()")
-#     driver.execute_script("$('#numIdentificacion').val('%s')" % viajero.ndi)
-#     driver.execute_script(
-#         "$('#fechaExpedicionDoc').datepicker('update', '%s')" % viajero.fecha_exp.strftime('%d/%m/%Y'))
-#     driver.execute_script("$('#dia').val('%s')" % viajero.nacimiento.day)
-#     driver.execute_script("$('#mes').val('%s')" % viajero.nacimiento.month)
-#     driver.execute_script("$('#ano').val('%s')" % viajero.nacimiento.year)
-#     driver.execute_script("$('#sexo').val('%s')" % viajero.sexo)
-#     driver.execute_script("$('#sexo').trigger('chosen:updated').change()")
-#     if viajero.reserva.entrada == hoy or viajero.reserva.entrada == ayer:
-#         fechaEntrada = viajero.reserva.entrada.strftime('%d/%m/%Y')
-#     else:
-#         fechaEntrada = hoy.strftime('%d/%m/%Y')
-#     driver.execute_script("$('#fechaEntrada').datepicker('update', '%s')" % fechaEntrada)
-#
-#     # #----------------------------------------------------------------#
-#     # # -----Esta parte debería utilizarse si no funcionara 'wait'-----#
-#     # # ---------------------------------------------------------------#
-#     # # Queda por rellenar el tipo de documento. Al cambiar la nacionalidad se borran tanto
-#     # # el tipo de documento como el número de documento
-#     # intentos = 10
-#     # n = 0
-#     # while n < intentos:
-#     #     n += 1
-#     #     sleep(0.5)
-#     #     tipo_documento = driver.find_element_by_id('tipoDocumento').get_attribute('value')
-#     #     if tipo_documento == viajero.tipo_ndi:
-#     #         n = 11
-#     #     else:
-#     #         driver.execute_script("$('#tipoDocumento').val('%s')" % viajero.tipo_ndi)
-#     #         driver.execute_script("$('#tipoDocumento').trigger('chosen:updated').change()")
-#     # if driver.find_element_by_id('tipoDocumento').get_attribute('value') == viajero.tipo_ndi:
-#     #     driver.find_element_by_id('numIdentificacion').send_keys(viajero.ndi)
-#     # else:
-#     #     viajero.observaciones += '<p>Registro cancelado. No se puede establecer el tipo de ndi</p>'
-#     #     viajero.save()
-#     #     return False
-#     # # ----------------------------------------------------------------#
-#
-#     # Si la grabación de datos ha ido bien el siguiente paso es pulsar en 'btnGuardar':
-#     sleep(2)
-#     guardar = wait.until(EC.presence_of_element_located((By.ID, 'btnGuardar')))
-#     guardar.click()
-#     # sleep(5)
-#     # driver.close()
-#     # return False
-#     sleep(2)
-#     # Si esta acción funciona correctamente se mostrará un reval modal
-#     wait.until(lambda gdriver: driver.execute_script("return jQuery.active == 0"))
-#     try:
-#         modal = wait.until(EC.presence_of_element_located((By.ID, 'modal-parteHuesped')))
-#         # modal = driver.find_element_by_id('modal-parteHuesped')
-#         # Si existe el modal es porque se ha registrado correctamente el viajero
-#         # El siguiente paso sería buscar el botón de cancelar (la 'x' superior derecha)
-#         x = modal.find_element_by_xpath('//button')  # Botón 'x' para Cancelar
-#         x.click()  # Pulsamos para eliminar el modal
-#         # A continuación esperamos a que se recargue la página y salimos:
-#         wait.until(lambda gdriver: driver.execute_script("return jQuery.active == 0"))
-#         salir = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'fa-sign-out')))
-#         driver.find_element_by_class_name("fa-sign-out").click()
-#         salir.click()
-#         sleep(5)
-#         driver.close()
-#         return True
-#     except:
-#         # Si se produce una excepción aparecerá un mensaje genérico indicando los errores:
-#         try:
-#             e = driver.find_element_by_id('divMensajeGenerico')
-#             viajero.observaciones = e.text
-#             viajero.save()
-#             driver.find_element_by_class_name("fa-sign-out").click()
-#             driver.close()
-#             return False
-#         except:
-#             error = wait.until(EC.presence_of_element_located((By.ID, 'contenedor-error')))
-#             viajero.observaciones = error.text
-#             viajero.save()
-#             driver.find_element_by_class_name("fa-sign-out").click()
-#             driver.close()
-#             return False
+def registra_viajero_policia(viajero):
+    hoy = datetime.today().date()
+    ayer = hoy - timedelta(1)
+
+    # options = webdriver.ChromeOptions()
+    # options.add_argument('--ignore-certificate-errors')
+    # driver = webdriver.Chrome(chrome_options=options)
+
+    options = Options()
+    # options.add_argument("--headless")
+    # display = Display(visible=0, size=(800, 600))
+    # display.start()
+
+    profile = webdriver.FirefoxProfile()
+    profile.accept_untrusted_certs = True
+    driver = webdriver.Firefox(firefox_profile=profile, firefox_options=options, log_path='%sgeckodriver.log' % MEDIA_VUT)
+    driver.delete_all_cookies()
+    wait = WebDriverWait(driver, 10)
+    driver.get("https://webpol.policia.es/e-hotel/login")
+    driver.find_element_by_name("username").send_keys(viajero.reserva.vivienda.police_code)
+    driver.find_element_by_name("password").send_keys(viajero.reserva.vivienda.police_pass)
+    driver.find_element_by_id('loginButton').click()
+    driver.find_element_by_id('grabadorManual').click()
+    # wait.until(EC.presence_of_element_located((By.ID, 'nombre')))
+    wait.until(lambda gdriver: driver.execute_script("return jQuery.active == 0"))
+    driver.execute_script("$('#nombre').val('%s')" % viajero.nombre)
+    driver.execute_script("$('#apellido1').val('%s')" % viajero.apellido1)
+    driver.execute_script("$('#apellido2').val('%s')" % viajero.apellido2)
+    driver.execute_script("$('#nacionalidad').val('%s')" % viajero.pais)
+    driver.execute_script("$('#nacionalidad').trigger('chosen:updated').change()")
+    # Al actualizar la nacionalidad se hace una petición ajax para actualizar el 'tipoDocumento'
+    # http://www.mahsumakbas.net/selenium-webdrvier-wait-jquery-ajax-request-complete-in-python/
+    # Esperaremos a que esta petición finalice:
+    wait.until(lambda gdriver: driver.execute_script("return jQuery.active == 0"))
+    driver.execute_script("$('#tipoDocumento').val('%s')" % viajero.tipo_ndi)
+    driver.execute_script("$('#tipoDocumento').trigger('chosen:updated').change()")
+    driver.execute_script("$('#numIdentificacion').val('%s')" % viajero.ndi)
+    driver.execute_script(
+        "$('#fechaExpedicionDoc').datepicker('update', '%s')" % viajero.fecha_exp.strftime('%d/%m/%Y'))
+    driver.execute_script("$('#dia').val('%s')" % viajero.nacimiento.day)
+    driver.execute_script("$('#mes').val('%s')" % viajero.nacimiento.month)
+    driver.execute_script("$('#ano').val('%s')" % viajero.nacimiento.year)
+    driver.execute_script("$('#sexo').val('%s')" % viajero.sexo)
+    driver.execute_script("$('#sexo').trigger('chosen:updated').change()")
+    if viajero.reserva.entrada == hoy or viajero.reserva.entrada == ayer:
+        fechaEntrada = viajero.reserva.entrada.strftime('%d/%m/%Y')
+    else:
+        fechaEntrada = hoy.strftime('%d/%m/%Y')
+    driver.execute_script("$('#fechaEntrada').datepicker('update', '%s')" % fechaEntrada)
+
+    # #----------------------------------------------------------------#
+    # # -----Esta parte debería utilizarse si no funcionara 'wait'-----#
+    # # ---------------------------------------------------------------#
+    # # Queda por rellenar el tipo de documento. Al cambiar la nacionalidad se borran tanto
+    # # el tipo de documento como el número de documento
+    # intentos = 10
+    # n = 0
+    # while n < intentos:
+    #     n += 1
+    #     sleep(0.5)
+    #     tipo_documento = driver.find_element_by_id('tipoDocumento').get_attribute('value')
+    #     if tipo_documento == viajero.tipo_ndi:
+    #         n = 11
+    #     else:
+    #         driver.execute_script("$('#tipoDocumento').val('%s')" % viajero.tipo_ndi)
+    #         driver.execute_script("$('#tipoDocumento').trigger('chosen:updated').change()")
+    # if driver.find_element_by_id('tipoDocumento').get_attribute('value') == viajero.tipo_ndi:
+    #     driver.find_element_by_id('numIdentificacion').send_keys(viajero.ndi)
+    # else:
+    #     viajero.observaciones += '<p>Registro cancelado. No se puede establecer el tipo de ndi</p>'
+    #     viajero.save()
+    #     return False
+    # # ----------------------------------------------------------------#
+
+    # Si la grabación de datos ha ido bien el siguiente paso es pulsar en 'btnGuardar':
+    sleep(2)
+    guardar = wait.until(EC.presence_of_element_located((By.ID, 'btnGuardar')))
+    guardar.click()
+    # sleep(5)
+    # driver.close()
+    # return False
+    sleep(2)
+    # Si esta acción funciona correctamente se mostrará un reval modal
+    wait.until(lambda gdriver: driver.execute_script("return jQuery.active == 0"))
+    try:
+        modal = wait.until(EC.presence_of_element_located((By.ID, 'modal-parteHuesped')))
+        # modal = driver.find_element_by_id('modal-parteHuesped')
+        # Si existe el modal es porque se ha registrado correctamente el viajero
+        # El siguiente paso sería buscar el botón de cancelar (la 'x' superior derecha)
+        x = modal.find_element_by_xpath('//button')  # Botón 'x' para Cancelar
+        x.click()  # Pulsamos para eliminar el modal
+        # A continuación esperamos a que se recargue la página y salimos:
+        wait.until(lambda gdriver: driver.execute_script("return jQuery.active == 0"))
+        salir = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'fa-sign-out')))
+        driver.find_element_by_class_name("fa-sign-out").click()
+        salir.click()
+        sleep(5)
+        driver.close()
+        return True
+    except:
+        # Si se produce una excepción aparecerá un mensaje genérico indicando los errores:
+        try:
+            e = driver.find_element_by_id('divMensajeGenerico')
+            viajero.observaciones = e.text
+            viajero.save()
+            driver.find_element_by_class_name("fa-sign-out").click()
+            driver.close()
+            return False
+        except:
+            error = wait.until(EC.presence_of_element_located((By.ID, 'contenedor-error')))
+            viajero.observaciones = error.text
+            viajero.save()
+            driver.find_element_by_class_name("fa-sign-out").click()
+            driver.close()
+            return False
 
 
 #
