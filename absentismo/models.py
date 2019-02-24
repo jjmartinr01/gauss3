@@ -23,7 +23,7 @@ class ExpedienteAbsentismo(models.Model):
         verbose_name_plural = 'Expedientes de absentismo'
         ordering = ['expedientado__entidad', 'expedientado']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.expedientado.gauser.get_full_name(), self.creado)
 
 
@@ -47,5 +47,5 @@ class Actuacion(models.Model):
         verbose_name_plural = 'Actuaciones de absentismo'
         ordering = ['expediente__expedientado', 'fecha']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.expediente.expedientado.gauser.get_full_name(), self.fecha)

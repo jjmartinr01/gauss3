@@ -24,7 +24,7 @@ class Curso(models.Model):
     class Meta:
         ordering = ['etapa', 'tipo', 'nombre']
 
-    def __unicode__(self):
+    def __str__(self):
         try:
             return u'%s (%s)' % (self.nombre, self.ronda.entidad.name)
         except:
@@ -61,7 +61,7 @@ class Grupo(models.Model):
     class Meta:
         ordering = ['nombre']
 
-    def __unicode__(self):
+    def __str__(self):
         cursos = self.cursos.all().values_list('nombre', flat=True)
         return u'%s - %s - %s' % (self.nombre, ', '.join(cursos), self.ronda)
 
@@ -82,7 +82,7 @@ class Materia(models.Model):
     class Meta:
         ordering = ['curso', 'nombre']
 
-    def __unicode__(self):
+    def __str__(self):
         curso_nombre = self.curso.nombre if self.curso else 'No asignada a un curso'
         return u'%s - %s (%s horas)' % (self.nombre, curso_nombre, self.horas)
 
@@ -97,7 +97,7 @@ class Gauser_extra_estudios(models.Model):
     def materias(self):
         return Matricula.objects.filter(ge=self.ge).values_list('materia__clave_ex', 'materia__nombre', 'estado')
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s' % (self.ge, self.grupo)
 
 
@@ -114,7 +114,7 @@ class Matricula(models.Model):
     class Meta:
         ordering = ['ge__gauser_extra_estudios__grupo', 'ge__gauser__last_name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s (%s)' % (self.ge, self.materia, self.estado)
 
 

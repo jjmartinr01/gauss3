@@ -35,5 +35,5 @@ class Uniforme(models.Model):
     observaciones = models.TextField('Observaciones', blank=True, null=True)
     fecha_pedido = models.DateField("Fecha del pedido", auto_now_add=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.gauser_extra, self.talla)

@@ -54,7 +54,7 @@ class Adjunto(models.Model):
         f = os.path.basename(self.fichero.name)
         return os.path.split(f)[1]
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.fichero, self.propietario.gauser.get_full_name())
 
 
@@ -65,7 +65,7 @@ class Etiqueta(models.Model):
     class Meta:
         app_label = 'mensajes'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.propietario.gauser.get_full_name())
 
 
@@ -92,7 +92,7 @@ class Mensaje(models.Model):
         else:
             return sin_tags
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Enviado por %s (%s) - %s' % (self.emisor.gauser.get_full_name(), self.fecha, self.asunto)
 
 
@@ -103,7 +103,7 @@ class Borrado(models.Model):
     class Meta:
         app_label = 'mensajes'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Borrado por %s (%s) - %s' % (
         self.eraser.gauser.get_full_name(), self.mensaje.fecha, self.mensaje.asunto)
 
@@ -115,7 +115,7 @@ class Leido(models.Model):
     class Meta:
         app_label = 'mensajes'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Leído por %s (%s) - %s' % (self.lector.gauser.get_full_name(), self.mensaje.fecha, self.mensaje.asunto)
 
 
@@ -126,7 +126,7 @@ class Importante(models.Model):
     class Meta:
         app_label = 'mensajes'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Marcado como importante por %s (%s) - %s' % (
         self.marcador.gauser.get_full_name(), self.mensaje.fecha, self.mensaje.asunto)
 
@@ -142,7 +142,7 @@ class Aviso(models.Model):
     class Meta:
         app_label = 'mensajes'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)--%s' % (self.aviso, self.fecha, self.usuario)
 
 
@@ -156,5 +156,5 @@ class Mensaje_cola(models.Model):
     class Meta:
         ordering = ['creado', 'id']
         app_label = 'mensajes'
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s - %s)' % (self.mensaje.asunto, self.creado, self.modificado)

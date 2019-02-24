@@ -50,7 +50,7 @@ class Curso(models.Model):
     class Meta:
         ordering = ['etapa', 'tipo', 'nombre']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.ronda.entidad.name)
 
 
@@ -84,7 +84,7 @@ class Grupo(models.Model):
     class Meta:
         ordering = ['nombre']
 
-    def __unicode__(self):
+    def __str__(self):
         cursos = self.cursos.all().values_list('nombre', flat=True)
         return u'%s - %s - %s' % (self.nombre, ', '.join(cursos), self.ronda)
 
@@ -105,7 +105,7 @@ class Grupo(models.Model):
 #     class Meta:
 #         ordering = ['curso', 'nombre']
 #
-#     def __unicode__(self):
+#     def __str__(self):
 #         curso_nombre = self.curso.nombre if self.curso else 'No asignada a un curso'
 #         return u'%s - %s (%s horas)' % (self.nombre, curso_nombre, self.horas)
 
@@ -241,7 +241,7 @@ class Horario(models.Model):
             gs.append({'hora': hora, 'sesiones': ss})
         return gs
 
-    def __unicode__(self):
+    def __str__(self):
         p = ' - Predeterminado' if self.predeterminado else ''
         return u'Horario de %s (%s)%s' % (self.entidad, self.descripcion[:150], p)
 
@@ -257,7 +257,7 @@ class Tramo_horario(models.Model):
     class Meta:
         ordering = ['inicio']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s-%s) - %s (%s)' % (
             self.nombre, self.inicio, self.fin, self.horario.entidad.name, self.horario.entidad.ronda.nombre)
 
@@ -275,7 +275,7 @@ class Actividad(models.Model):
         verbose_name_plural = "Actividades"
         ordering = ['id']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s %s (%s)' % (self.nombre, self.entidad, self.clave_ex)
 
 
@@ -314,7 +314,7 @@ class Sesion(models.Model):
         pixels_minuto = self.horario.pixels_minuto
         return (hora_fin.hour * 60 + hora_fin.minute - hora_inicio.hour * 60 - hora_inicio.minute) * pixels_minuto
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s' % (self.dia, self.horario)
 
         # return u'%s - %s (%s)' % (self.dia, self.horario, self.g_e.gauser.get_full_name())
@@ -424,7 +424,7 @@ class Falta_asistencia(models.Model):
     tipo = models.CharField('Retraso o Falta', max_length=10, choices=TIPO_FALTA, default='f')
     justificada = models.BooleanField('La ha justificado?', default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Falta: %s - %s (%s)' % (self.g_e, self.sesion.materia.nombre, self.fecha_falta)
 
 
@@ -440,7 +440,7 @@ class Guardia(models.Model):
     tarea = models.FileField("Tarea", upload_to=update_tarea, blank=True, null=True)
     content_type = models.CharField('Content Type del archivo tarea', max_length=50, blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s' % (self.fecha, self.sesion)
 
 
@@ -450,7 +450,7 @@ class Gauser_extra_horarios(models.Model):
     tutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='tutor_ge', on_delete=models.CASCADE)
     cotutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='cotutor_ge', on_delete=models.CASCADE)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s' % (self.ge, self.grupo)
 
 

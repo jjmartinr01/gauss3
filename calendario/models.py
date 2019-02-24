@@ -77,7 +77,7 @@ class Vevent(models.Model):
     trigger1_alarm = models.DateTimeField('TRIGGER (alarm)', blank=True, null=True)
     trigger2_alarm = models.DurationField('Cuanto tiempo antes del evento se debe avisar', blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.summary, self.dtstart)
 
 
@@ -87,5 +87,5 @@ class Calendar(models.Model):
     calname = models.CharField('Nombre del calendario', max_length=150)
     vevents = models.ManyToManyField(Vevent, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Calendario de: %s (%s)' % (self.gauser.get_full_name(), self.calname)

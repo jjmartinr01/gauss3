@@ -18,7 +18,7 @@ class Apariencia(models.Model):
     lugar = models.CharField("Lugar en el que está este texto", max_length=200, blank=True, null=True)
     acceso = models.BooleanField("Tiene acceso a esta apariencia?", default=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s ---> %s (%s)' % (self.code_texto, self.texto, self.entidad.code)
 
 
@@ -27,5 +27,5 @@ class Apariencia_default(models.Model):
     texto = models.CharField("Texto", max_length=300, blank=True, null=True)
     lugar = models.CharField("Lugar en el que está este texto", max_length=200, blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s ---> %s' % (self.code_texto, self.texto)

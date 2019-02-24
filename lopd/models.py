@@ -35,7 +35,7 @@ class Estructura_lopd(models.Model):
 
     class Meta:
         verbose_name_plural = 'Estructuras LOPD'
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.entidad.name)
 
 
@@ -60,7 +60,7 @@ class Fichero_incidencia(models.Model):
         f = os.path.basename(self.fichero.name)
         return os.path.split(f)[1]
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.fichero, self.propietario.gauser.get_full_name())
 
 TIPOS_INCIDENCIA =(('IDAU', 'Identificación y autenticación de usuarios'),
@@ -85,7 +85,7 @@ class Incidencia_lopd(models.Model):
 
     class Meta:
         verbose_name_plural = 'Incidencias relacionadas con la LOPD'
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s (%s)' % (self.emisor_incidencia.entidad.name, self.get_tipo_display(), self.fecha_emite)
 
 class Soporte_lopd(models.Model):
@@ -95,5 +95,5 @@ class Soporte_lopd(models.Model):
     observaciones = models.TextField("Observaciones", blank=True,null=True)
     creado = models.DateField("Fecha de creación", auto_now=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.entidad.name)

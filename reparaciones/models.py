@@ -29,7 +29,7 @@ class Reparacion(models.Model):
         verbose_name_plural = "reparaciones"
         ordering = ['-fecha_comunicado', 'resuelta']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Incidencia en %s %s-%s. Comunicada por %s' % (
             self.lugar, self.tipo, self.fecha_comunicado, self.detecta)
 

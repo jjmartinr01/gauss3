@@ -42,7 +42,7 @@ class Informe_seguimiento(models.Model):
         preguntas = Pregunta.objects.filter(informe=self)
         return len(set(Respuesta.objects.filter(pregunta__in=preguntas).values_list('usuario__id', flat=True)))
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s (%s) %s' % (
             self.usuario.gauser.get_full_name(), self.usuario.gauser_extra_estudios.grupo, self.fecha, self.id)
 
@@ -56,7 +56,7 @@ class PreguntaPub(models.Model):
     pregunta = models.CharField("Escribe una pregunta para tu informe", max_length=400, blank=True, null=True)
     tipo_pregunta = models.CharField("Tipo de pregunta", max_length=40, choices=TIPO_PREGUNTA, default='PER')
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.pregunta)
 
 
@@ -68,7 +68,7 @@ class Pregunta(models.Model):
     def respuestas(self):
         return Respuesta.objects.filter(pregunta=self)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.pregunta)
 
 
@@ -81,7 +81,7 @@ class Respuesta(models.Model):
     class Meta:
         ordering = ['id', ]
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Inf: %s, Pre: %s... - Res: %s... (%s)' % (
             self.informe.id, self.pregunta.pregunta[:20], self.respuesta[:20], self.usuario.gauser.get_full_name())
 
@@ -107,7 +107,7 @@ class Fichero_seguimiento(models.Model):
         f = os.path.basename(self.fichero.name)
         return os.path.split(f)[1]
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.fichero, self.respuesta.usuario.gauser.get_full_name())
 
 
@@ -138,7 +138,7 @@ class Informe_tareas(models.Model):
     class Meta:
         ordering = ['-fecha']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s (%s) %s' % (
             self.usuario.gauser.get_full_name(), self.usuario.gauser_extra_estudios.grupo, self.deadline, self.id)
 
@@ -155,7 +155,7 @@ class Tarea_propuesta(models.Model):
         return set(Sesion.objects.filter(grupo=grupo, horario__predeterminado=True, g_e=self.usuario, materia__isnull=False).values_list(
             'materia__nombre', flat=True))
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s) %s' % (
             self.usuario.gauser.get_full_name(), self.fecha, self.id)
 
@@ -174,7 +174,7 @@ class Fichero_tarea(models.Model):
         f = os.path.basename(self.fichero.name)
         return os.path.split(f)[1]
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.fichero, self.tarea.usuario.gauser.get_full_name())
 
 # DEPARTAMENTOS = (
@@ -204,7 +204,7 @@ class Fichero_tarea(models.Model):
 #     class Meta:
 #         ordering = ['materia']
 #
-#     def __unicode__(self):
+#     def __str__(self):
 #         d = self.materia.nombre if self.materia else 'Para cualquier materia'
 #         c = self.estudio.curso if self.estudio.id != 10 else 'Para cualquier curso'
 #         return u'%s - %s (%s) %s' % (self.centro.name, self.aspecto, d, c)
@@ -214,7 +214,7 @@ class Fichero_tarea(models.Model):
 #     usuario = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name="valora_aspecto_usuario", on_delete=models.CASCADE)
 #     aspecto = models.ForeignKey(AspectoEducativo, blank=True, null=True, related_name="valora_aspecto_objetivo", on_delete=models.CASCADE)
 #     necesita_mejorar = models.BooleanField("Necesita mejorar?", default=False)
-#     def __unicode__(self):
+#     def __str__(self):
 #         nc = ['No necesita mejorar', 'Necesita mejorar']
 #         return u'%s - %s (%s)' % (self.usuario.gauser.get_full_name(), self.aspecto.aspecto, nc[self.necesita_mejorar])
 #
@@ -233,7 +233,7 @@ class Fichero_tarea(models.Model):
 #     class Meta:
 #         ordering = ['materia']
 #
-#     def __unicode__(self):
+#     def __str__(self):
 #         d = self.materia.nombre if self.materia else 'Para cualquier materia'
 #         c = self.estudio.curso if self.estudio.id != 10 else 'Para cualquier curso'
 #         return u'%s - %s (%s) %s' % (self.centro.name, self.objetivo, d, c)
@@ -248,7 +248,7 @@ class Fichero_tarea(models.Model):
 #     usuario = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name="valora_objetivo_usuario", on_delete=models.CASCADE)
 #     objetivo = models.ForeignKey(Objetivos, blank=True, null=True, related_name="valora_objetivo_objetivo", on_delete=models.CASCADE)
 #     valoracion = models.CharField("Valoración del objetivo", max_length=10, choices=VALORES, blank=True, null=True)
-#     def __unicode__(self):
+#     def __str__(self):
 #         return u'%s - %s (%s)' % (self.usuario.gauser.get_full_name(), self.objetivo.objetivo, self.valoracion)
 #
 #
@@ -284,6 +284,6 @@ class Fichero_tarea(models.Model):
 #     creado = models.DateTimeField('Fecha y hora de creación', auto_now_add=True, null=True)
 #     modificado = models.DateTimeField('Fecha y hora de modificación', auto_now=True, null=True)
 #
-#     def __unicode__(self):
+#     def __str__(self):
 #         return u'%s - %s' % (self.usuario.gauser.get_full_name(), self.usuario.grupo)
 #

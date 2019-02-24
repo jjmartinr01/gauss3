@@ -24,7 +24,7 @@ class Etiqueta_documental(models.Model):
     class Meta:
         verbose_name_plural = "Etiquetas/Carpetas para los Documentos"
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.entidad.name)
 
 def update_fichero_documental(instance, filename):
@@ -57,7 +57,7 @@ class Ges_documental(models.Model):
     class Meta:
         verbose_name_plural = "Documentos (Gestión Documental)"
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.creado)
 
 
@@ -77,7 +77,7 @@ class Permiso_Ges_documental(models.Model):
     gauser = models.ForeignKey(Gauser, on_delete=models.CASCADE)
     documento = models.ForeignKey(Ges_documental, on_delete=models.CASCADE)
     permiso = models.CharField('Permiso sobre el documento', max_length=15, choices=PERMISOS)
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.documento.nombre, self.gauser.get_full_name())
 
 
@@ -94,5 +94,5 @@ class Contrato_gauss(models.Model):
     class Meta:
         verbose_name_plural = "Contratos con entidades"
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.entidad, self.modificado)

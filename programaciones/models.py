@@ -34,7 +34,7 @@ class ProgramacionSubida(models.Model):
     def filename(self):
         return os.path.basename(self.archivo.name)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s (%s)' % (self.materia.curso.ronda.entidad.code, self.materia.nombre, self.materia.curso)
 
 def crea_departamentos(ronda):
@@ -65,7 +65,7 @@ class Departamento(models.Model):
     horas_coordinador = models.IntegerField("Número de horas de coordinación para el jefe de departamento", null=True,
                                             blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.ronda)
 
 
@@ -91,7 +91,7 @@ class Materia_programaciones(models.Model):
     class Meta:
         ordering = ['materia__nombre', 'materia__curso']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s horas)' % (self.materia.nombre, self.materia.horas)
 
 
@@ -100,7 +100,7 @@ class Resultado_aprendizaje(models.Model):
     resultado = models.TextField("Resultado")
     educa_pk = models.CharField("pk en gauss_educa", max_length=12, blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s' % (self.resultado[:80], self.materia)
 
 
@@ -111,7 +111,7 @@ class Objetivo(models.Model):
     crit_eval = models.TextField("Criterio de evaluación", blank=True, null=True)
     educa_pk = models.CharField("pk en gauss_educa", max_length=12, blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s' % (self.texto[:80], self.resultado_aprendizaje)
 
 
@@ -189,7 +189,7 @@ class Cuerpo_funcionario(models.Model):
     code = models.CharField('Código del cuerpo', max_length=10)
     nombre = models.CharField('Nombre del cuerpo', max_length=100)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s' % (self.code, self.nombre)
 
 
@@ -198,7 +198,7 @@ class Especialidad_funcionario(models.Model):
     code = models.CharField('Código del cuerpo', max_length=10)
     nombre = models.CharField('Nombre del cuerpo', max_length=100)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s (%s)' % (self.code, self.nombre, self.cuerpo)
 
 
@@ -206,7 +206,7 @@ class Especialidad_funcionario(models.Model):
 #     entidad = models.ForeignKey(Entidad, blank=True, null=True, on_delete=models.CASCADE)
 #     cuerpo = models.ForeignKey(Cuerpo_funcionario, blank=True, null=True, on_delete=models.CASCADE)
 #
-#     def __unicode__(self):
+#     def __str__(self):
 #         return u'%s - %s' % (self.entidad, self.cuerpo)
 
 
@@ -218,7 +218,7 @@ class Especialidad_entidad(models.Model):
         ordering = ["especialidad__cuerpo"]
         verbose_name_plural = "Especialidades de funcionarios en la entidad"
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s' % (self.ronda, self.especialidad)
 
 
@@ -233,7 +233,7 @@ class Gauser_extra_programaciones(models.Model):
         ordering = ["ge__gauser__last_name"]
         verbose_name_plural = "Gausers extra en programaciones"
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s' % (self.ge, self.departamento)
 
 
@@ -280,7 +280,7 @@ class Titulo_FP(models.Model):
         else:
             return 'Título Profesional Básico en %s' % (self.nombre)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Título: %s' % (self.nombre)
 
 
@@ -289,7 +289,7 @@ class Obj_general(models.Model):
     objetivo = models.TextField('Objetivo general')
     educa_pk = models.CharField("pk en gauss_educa", max_length=12, blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Título: %s - %s' % (self.titulo.nombre, self.objetivo)
 
 
@@ -322,7 +322,7 @@ class Programacion_modulo(models.Model):
             objs += list(u.objetivos.all())
         return list(set(objs))
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.modulo)
 
 
@@ -349,7 +349,7 @@ class UD_modulo(models.Model):  # Unidad didáctica del módulo
         ordering = ["orden"]
         verbose_name_plural = "Unidades didácticas de módulos"
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s' % (self.nombre, self.duracion)
 
 
@@ -367,7 +367,7 @@ class Cont_unidad_modulo(models.Model):
         ordering = ["orden"]
         verbose_name_plural = "Contenidos de la unidad didáctica"
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s (%s horas)' % (self.unidad.nombre, self.contenido[:200], self.duracion)
 
 

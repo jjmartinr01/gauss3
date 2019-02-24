@@ -15,5 +15,5 @@ class Item(models.Model):
     prestado_fecha = models.DateField('Fecha de prestado')
     creado = models.DateField('Fecha de creación',auto_now_add=True) #carga automaticamente la fecha al crearse
     modificado = models.DateField('Fecha de modificación',auto_now=True) #carga automaticamente la fecha al modificarse
-    def __unicode__(self):
+    def __str__(self):
       return u'Tipo: %s (%s) -- %s' % (self.nombre, self.entidad.name, self.creado)

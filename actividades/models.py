@@ -72,7 +72,7 @@ class Actividad(models.Model):
     class Meta:
         ordering = ['fecha_hora_inicio', 'fecha_hora_fin']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Actividad del %s (%s) -- %s' % (self.organizador.entidad.name, self.fecha_inicio, self.actividad_title)
 
 
@@ -150,7 +150,7 @@ class File_actividad(models.Model):
         except:
             pass
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s - %s)' % (self.fichero, self.fich_name, self.actividad.actividad_title)
 
 

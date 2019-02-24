@@ -35,7 +35,7 @@ class CompetenciasMateria(models.Model):
         self.cec = self.cec if self.cec else 0
         return self.ccl + self.cmct + self.cd+ self.cpaa + self.csc + self.sie +self.cec
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s: CCL %s - CMCT %s - CD %s - CPAA %s - CSC %s - SIE %s - CEC %s' % (
             self.materia, self.ccl, self.cmct, self.cd, self.cpaa, self.csc, self.sie, self.cec)
 
@@ -61,6 +61,6 @@ class CompetenciasMateriaAlumno(models.Model):
     class Meta:
         ordering = ['alumno__gauser__last_name', 'materia']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s, %s: CCL %s - CMCT %s - CD %s - CPAA %s - CSC %s - SIE %s - CEC %s' % (
             self.alumno, self.materia, self.ccl, self.cmct, self.cd, self.cpaa, self.csc, self.sie, self.cec)

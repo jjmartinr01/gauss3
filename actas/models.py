@@ -45,7 +45,7 @@ class Convocatoria(models.Model):
     class Meta:
         ordering = ['-fecha_hora']
 
-    def __unicode__(self):
+    def __str__(self):
         try:
             return u'%s (%s) -- %s' % (self.nombre, self.fecha_hora, self.entidad)
         except:
@@ -60,7 +60,7 @@ class Punto_convocatoria(models.Model):
     class Meta:
         ordering = ['convocatoria']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.convocatoria, self.punto[:100])
 
 
@@ -108,7 +108,7 @@ class Acta(models.Model):
     class Meta:
         ordering = ['-convocatoria__fecha_hora']
 
-    def __unicode__(self):
+    def __str__(self):
         try:
             return u'Acta de la convocatoria de %s (%s) - %s' % (
                 self.convocatoria.nombre, self.convocatoria.fecha_hora, self.convocatoria.convocante.entidad.name)
@@ -124,5 +124,5 @@ class Acuerdo_acta(models.Model):
     class Meta:
         ordering = ['acta']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.acta, self.acuerdo)

@@ -56,7 +56,7 @@ class Sancion(models.Model):
         verbose_name_plural = 'Sanciones'
         ordering = ['tipo', 'id']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.sancion, self.entidad.name)
 
 
@@ -71,7 +71,7 @@ class Conducta(models.Model):
         verbose_name_plural = 'Conductas sancionables'
         ordering = ['tipo', 'id']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.conducta, self.entidad.name)
 
 
@@ -132,7 +132,7 @@ class Informe_sancionador(models.Model):
         verbose_name_plural = 'Informes sancionadores (Informe_sancionador)'
         ordering = ['fecha_incidente']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Informe sancionador a %s. Entidad: %s (%s)' % (
             self.sancionado, self.sancionado.entidad.name, self.sancionador)
 
@@ -160,6 +160,6 @@ class Expulsar(models.Model):
     class Meta:
         verbose_name_plural = 'Expulsiones'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Informe de expulsión a %s. Entidad: %s (%s)' % (
             self.expulsado, self.expulsado.entidad.name, self.expulsa)

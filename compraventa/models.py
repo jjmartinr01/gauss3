@@ -15,7 +15,7 @@ class Categoria_objeto(models.Model):
     class Meta:
         ordering = ['pk']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s -> %s' % (self.categoria, self.subcategoria)
 
 # Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
@@ -37,7 +37,7 @@ class Foto_objeto(models.Model):
         return os.path.split(f)[1]
 
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.fichero, self.entidad.name)
 
 
@@ -72,7 +72,7 @@ class Articulo(models.Model):
     class Meta:
         ordering = ['pk']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.nombre)
 
 class Comprador(models.Model):
@@ -86,6 +86,6 @@ class Comprador(models.Model):
     class Meta:
         ordering = ['pk']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Compra: %s' % (self.articulo.nombre)
 

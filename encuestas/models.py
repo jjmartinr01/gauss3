@@ -9,7 +9,7 @@ class Dimension(models.Model):
     nombre = models.CharField("Nombre de la dimensión", max_length=50)
     descripcion = models.TextField("Descripción de la dimensión")
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s -- %s' % (self.abrev, self.nombre)
 
 
@@ -25,7 +25,7 @@ class Pregunta(models.Model):
     class Meta:
         ordering = ['dimension']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s %s (%s)' % (self.dimension.abrev, self.sector, self.pregunta[:40])
 
 
@@ -34,7 +34,7 @@ class Encuesta(models.Model):
     sector = models.CharField("Sector al que va destinada", max_length=15, choices=SECTORES)
     subentidad = models.ForeignKey(Subentidad, on_delete=models.CASCADE, blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.sector, self.ronda)
 
 
@@ -48,7 +48,7 @@ class Respuesta(models.Model):
     pregunta = models.ForeignKey(Pregunta, on_delete=models.CASCADE)
     respuesta = models.IntegerField("Grado de cumplimiento", max_length=15, choices=RESPUESTAS)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s -- %s -- %s (%s)' % (self.encuesta, self.ge, self.pregunta, self.respuesta)
 
 

@@ -22,7 +22,7 @@ class Fichero(models.Model):
     fich_name = models.CharField('Nombre del fichero', max_length=200, blank=True, null=True)
     content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.fichero)
 
 

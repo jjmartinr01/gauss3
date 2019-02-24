@@ -38,7 +38,7 @@ class File_contabilidad(models.Model):
         f = os.path.basename(self.fichero.name)
         return os.path.split(f)[1]
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.fichero, self.entidad.name)
 
 class Presupuesto(models.Model):
@@ -52,7 +52,7 @@ class Presupuesto(models.Model):
     class Meta:
         ordering = ['-creado']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Presupuesto de la entidad %s (%s)' % (self.entidad.name, self.modificado)
 
 
@@ -65,7 +65,7 @@ class Partida(models.Model):
     modificado = models.DateField('Fecha de modificación',
                                   auto_now=True)  #carga automaticamente la fecha al modificarse
 
-    def __unicode__(self):
+    def __str__(self):
         #return u'%s - Partida de %s (%s)' % (self.presupuesto.id, self.get_tipo_display(),self.nombre)
         return u'%s (%s)' % (self.nombre, self.get_tipo_display())
 
@@ -86,7 +86,7 @@ class Asiento(models.Model):
         fileName, fileExtension = os.path.splitext(self.escaneo.name)
         return fileExtension
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s (%s)' % (self.partida.presupuesto.id, self.concepto, self.cantidad)
 
 
@@ -107,7 +107,7 @@ class Politica_cuotas(models.Model):
         ordering = ['-modificado']
         verbose_name_plural = "Políticas de cuotas"
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s (%s)' % (self.entidad.name, self.cargo, self.cantidad)
 
 class Remesa_emitida(models.Model):
@@ -123,7 +123,7 @@ class Remesa_emitida(models.Model):
         ordering = ['-creado']
         verbose_name_plural = "Remesas emitidas"
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s (%s)' % (self.politica.entidad.name, self.politica.cargo.cargo, self.grupo)
 
 class Remesa(models.Model):
@@ -141,7 +141,7 @@ class Remesa(models.Model):
     class Meta:
         verbose_name_plural = "Remesas individuales"
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s - %s' % (self.emitida.politica.entidad.name, self.rmtinf, self.dbtrnm)
 
 

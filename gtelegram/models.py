@@ -16,7 +16,7 @@ class Update(models.Model):
     id_telegram = models.CharField('Identificador del update de Telegram', max_length=40)
     json = models.TextField('La respuesa JSON enviada por Telegram', blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         data = json.loads(self.json)
         if data['message']['from']['id'] == data['message']['chat']['id']:
             ids = '%s (%s)' % (data['message']['from']['first_name'], data['message']['from']['id'])
@@ -42,7 +42,7 @@ class Location(models.Model):
     longitude = models.FloatField() # 	Float 	Longitude as defined by sender
     latitude = models.FloatField() # 	Float 	Latitude as defined by sender
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Longitud: %s -- Latitud: %s' % (self.longitude, self.latitude)
 
 class User (models.Model):
@@ -64,7 +64,7 @@ class User (models.Model):
         else:
             return Gauser_extra.objects.none()
 
-    def __unicode__(self):
+    def __str__(self):
         if self.gauser:
             texto = 'identificado con %s' % self.gauser.get_full_name()
         else:
@@ -80,7 +80,7 @@ class Chat (models.Model):
     first_name = models.CharField('Firstname (para chats privados)', max_length=60, blank=True, null=True) #Optional. First name of the other party in a private chat
     last_name = models.CharField('Lastname (para chats privados)', max_length=60, blank=True, null=True) #Optional. Last name of the other party in a private chat
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.title, self.id_telegram)
 
 
@@ -93,7 +93,7 @@ class Message(models.Model):
     modificado = models.DateTimeField('Fecha y hora en la que se modifica', auto_now=True)
     date = models.DateTimeField('Fecha y hora de Telegram para el mensaje enviado', blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         texto = '...' if len(self.message) > 30 else ''
         return u'%s %s (%s - %s) -- %s' % (self.message[:30], texto, self.id_telegram, self.date, self.user)
 
@@ -104,7 +104,7 @@ class Response(models.Model):
     class Meta:
         unique_together = ('message', 'reply_to')
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s |<->| %s' % (self.message, self.reply_to)
 
 class Genera_code(models.Model):
@@ -112,5 +112,5 @@ class Genera_code(models.Model):
     gauser = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
     creado = models.DateTimeField('Fecha y hora en la que se crea', auto_now_add=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s - %s (%s)' % (self.gauser.get_full_name(), self.code, self.creado)

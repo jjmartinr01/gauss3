@@ -30,7 +30,7 @@ class Noticia_web(models.Model):
         self.modified = timezone.now()
         return super(Noticia_web, self).save(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.titulo, self.autor)
 
 # Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
@@ -52,7 +52,7 @@ class File_noticia_web(models.Model):
         f = os.path.basename(self.fichero.name)
         return os.path.split(f)[1]
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s - %s)' % (self.noticia.titulo, self.fichero, self.noticia.autor)
 
 
@@ -74,7 +74,7 @@ class File_web(models.Model):
         f = os.path.basename(self.fichero.name)
         return os.path.split(f)[1]
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s - %s)' % (self.fichero, self.fich_name, self.entidad.name)
 
 
@@ -97,7 +97,7 @@ class Enlace_web(models.Model):
     def hermanos(self):
         return Enlace_web.objects.filter(padre=self.padre, entidad=self.entidad)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s-%s)' % (self.entidad.name, self.texto, self.href)
 
 
@@ -111,7 +111,7 @@ class Top_bar(models.Model):
     contain_to_grid = models.BooleanField('La top-bar se ajusta a la rejilla', default=False)
     tipo = models.CharField('Tipo de posicionamiento', max_length=20, choices=TIPOS, blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.entidad.name, self.nombre)
 
 
@@ -183,7 +183,7 @@ class Content_div(models.Model):
     class Meta:
         ordering = ['orden']
 
-    def __unicode__(self):
+    def __str__(self):
         row_web = Row_web.objects.get(contents_div__in=[self.id])
         if self.texto:
             texto = self.texto[:30] + '...'
@@ -228,7 +228,7 @@ class Row_web(models.Model):
     class Meta:
         ordering = ['orden']
 
-    def __unicode__(self):
+    def __str__(self):
         html_web = Html_web.objects.get(rows_web__in=[self.id])
         return u'orden: %s, html_web: %s' % (self.orden, html_web)
 
@@ -237,7 +237,7 @@ class Categoria_web(models.Model):
     entidad = models.ForeignKey(Entidad, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField("Nombre de la categoría", max_length=100, blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.entidad.name)
 
 
@@ -247,7 +247,7 @@ class Legal_web(models.Model):
     aviso_legal = models.TextField('Aviso legal', blank=True, null=True)
     privacidad = models.TextField('Política de privacidad', blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Documentos legales de %s' % (self.entidad.name)
 
 TIPOS_dict = {'NORMAL': 'Página normal', 'POST': 'Es un post', 'POST_LIST': 'Es la lista de post',
@@ -274,5 +274,5 @@ class Html_web(models.Model):
     creado = models.DateTimeField('Fecha y hora de creación', auto_now_add=True, null=True)
     modificado = models.DateTimeField('Fecha y hora de modificación', auto_now=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)-%s' % (self.nombre, ['No es home', 'Es el home'][self.home], self.entidad.name)

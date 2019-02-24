@@ -19,5 +19,5 @@ class Banco(models.Model):
     fax = models.CharField("Fax", max_length=15, null=True, blank=True)
     web = models.CharField("Página web", max_length=50, null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.nif)

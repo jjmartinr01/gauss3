@@ -26,7 +26,7 @@ class Cupo(models.Model):
     class Meta:
         ordering = ['-creado']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s %s (%s)' % (self.ronda.entidad.name, self.nombre, self.modificado)
 
 
@@ -38,7 +38,7 @@ class EspecialidadCupo(models.Model):
     class Meta:
         ordering = ['nombre']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s %s (%s)' % (self.cupo.nombre, self.nombre, self.cupo.ronda.entidad.name)
 
 
@@ -47,7 +47,7 @@ class FiltroCupo(models.Model):
     nombre = models.CharField("Nombre del filtro", max_length=150)
     filtro = models.CharField("Texto de filtrado", max_length=50)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s %s (%s)' % (self.cupo.ronda.entidad.name, self.nombre, self.filtro)
 
 
@@ -76,7 +76,7 @@ class Materia_cupo(models.Model):
     class Meta:
         ordering = ['curso', 'nombre']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s) -- %s' % (self.nombre, self.curso, self.cupo)
 
 
@@ -115,7 +115,7 @@ class Profesores_cupo(models.Model):
                 'profes_media': profes_media, 'profes_tercio': profes_tercio, 'periodos_sobrantes': periodos_sobrantes,
                 'num_periodos': self.num_periodos}
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Cupo: %s (%s) -- %s:%s' % (
             self.cupo.nombre, self.cupo.ronda.entidad.code, self.especialidad.nombre, self.num_periodos)
 
@@ -134,6 +134,6 @@ class Profesor_cupo(models.Model):
     class Meta:
         ordering = ['profesorado__especialidad__departamento', 'tipo', 'jornada']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s) -- %s:%s' % (
             self.profesorado.cupo.nombre, self.profesorado.especialidad.nombre, self.nombre, self.get_jornada_display())
