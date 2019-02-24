@@ -34,7 +34,7 @@ class Menu_default(models.Model):
     def children(self):
         return Menu_default.objects.filter(parent=self)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s --> %s' % (self.code_menu, self.texto_menu)
 
 
@@ -56,7 +56,7 @@ class Permiso(models.Model):
     class Meta:
         ordering = ['pk']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (%s)' % (self.nombre, self.code_nombre)
 
 
@@ -85,7 +85,7 @@ class Gauser(AbstractUser):
         verbose_name_plural = "Usuarios (Gauser)"
         ordering = ['pk']
 
-    def __unicode__(self):
+    def __str__(self):
         if self.email:
             texto = u'%s %s (%s)' % (self.first_name, self.last_name, self.email)
         else:
@@ -99,7 +99,7 @@ class Enlace(models.Model):
     enlace = models.CharField("Enlace", max_length=100)
     deadline = models.DateField('Fecha límite de validez')
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s -- %s (%s)' % (self.enlace, self.usuario, self.deadline)
 
 # class Candidato(models.Model):
@@ -121,5 +121,5 @@ class Enlace(models.Model):
 #     password = models.CharField("password del candidato", max_length=230, blank=True, null=True)
 #     arreglado = models.BooleanField("Está ya arreglada la confusión", default=False)
 #
-#     def __unicode__(self):
+#     def __str__(self):
 #         return u'%s -- %s (%s)' % (self.gauser, self.username, self.dni)
