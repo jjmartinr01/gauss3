@@ -49,6 +49,10 @@ PERMISOS = [{'code_nombre': 'crea_carpetas',
              'nombre': 'Tiene permiso para borrar cualquier archivo',
              'menu': 'acceso_documentos'
              },
+            {'code_nombre': 'borra_cualquier_carpeta',
+             'nombre': 'Tiene permiso para borrar cualquier carpeta',
+             'menu': 'acceso_documentos'
+             },
             {'code_nombre': 'edita_contrato_gauss',
              'nombre': 'Tiene permiso para editar el contrato de GAUSS',
              'menu': 'acceso_contrato_gauss'

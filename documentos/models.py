@@ -80,6 +80,14 @@ class Permiso_Ges_documental(models.Model):
     def __str__(self):
         return u'%s (%s)' % (self.documento.nombre, self.gauser.get_full_name())
 
+class Compartir_Ges_documental(models.Model):
+    documento = models.ForeignKey(Ges_documental, on_delete=models.CASCADE, null=True, blank=True)
+    subentidades = models.ManyToManyField(Subentidad, blank=True)
+    cargos = models.ManyToManyField(Cargo, blank=True)
+    permiso = models.CharField('Permiso sobre el documento', max_length=15, choices=PERMISOS)
+    def __str__(self):
+        return u'%s (%s)' % (self.documento.nombre, self.gauser.get_full_name())
+
 
 class Contrato_gauss(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
