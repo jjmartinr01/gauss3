@@ -86,8 +86,8 @@ class Permiso_Ges_documental(models.Model):
 
 class Compartir_Ges_documental(models.Model):
     documento = models.ForeignKey(Ges_documental, on_delete=models.CASCADE, null=True, blank=True)
-    subentidad = models.ForeignKey(Subentidad, blank=True)
-    cargo = models.ForeignKey(Cargo, blank=True)
+    subentidad = models.ForeignKey(Subentidad, on_delete=models.CASCADE, blank=True, null=True)
+    cargo = models.ForeignKey(Cargo, on_delete=models.CASCADE, blank=True, null=True)
     permiso = models.CharField('Permiso sobre el documento', max_length=15, choices=PERMISOS)
 
     def __str__(self):
