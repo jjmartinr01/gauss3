@@ -14,6 +14,7 @@ from autenticar.models import Gauser
 from gauss.funciones import pass_generator
 from gauss.rutas import RUTA_BASE
 
+
 class Etiqueta_documental(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     nombre = models.CharField("Carpeta/Etiqueta", max_length=300, null=True, blank=True)
@@ -26,6 +27,7 @@ class Etiqueta_documental(models.Model):
 
     def __str__(self):
         return u'%s (%s)' % (self.nombre, self.entidad.name)
+
 
 def update_fichero_documental(instance, filename):
     nombre = filename.partition('.')
@@ -77,14 +79,17 @@ class Permiso_Ges_documental(models.Model):
     gauser = models.ForeignKey(Gauser, on_delete=models.CASCADE)
     documento = models.ForeignKey(Ges_documental, on_delete=models.CASCADE)
     permiso = models.CharField('Permiso sobre el documento', max_length=15, choices=PERMISOS)
+
     def __str__(self):
         return u'%s (%s)' % (self.documento.nombre, self.gauser.get_full_name())
 
+
 class Compartir_Ges_documental(models.Model):
     documento = models.ForeignKey(Ges_documental, on_delete=models.CASCADE, null=True, blank=True)
-    # subentidades = models.ManyToManyField(Subentidad, blank=True)
-    # cargos = models.ManyToManyField(Cargo, blank=True)
+    subentidad = models.ForeignKey(Subentidad, blank=True)
+    cargo = models.ForeignKey(Cargo, blank=True)
     permiso = models.CharField('Permiso sobre el documento', max_length=15, choices=PERMISOS)
+
     def __str__(self):
         return u'%s (%s)' % (self.documento.nombre, self.permiso)
 
@@ -92,7 +97,8 @@ class Compartir_Ges_documental(models.Model):
 class Contrato_gauss(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     firma_gauss = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True, related_name='firma_gauss21')
-    firma_entidad = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True, related_name='firma_entidad2')
+    firma_entidad = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True,
+                                      related_name='firma_entidad2')
     texto = models.TextField("Texto del contrato")
     fichero = models.FileField("Contrato firmado", upload_to=update_fichero_contrato, blank=True, null=True)
     content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
