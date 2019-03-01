@@ -87,7 +87,7 @@ class Entidad(models.Model):
     dominio = models.CharField("Subdominio", max_length=200, null=True, blank=True)
     general_name = models.IntegerField("Nombre general", default=1, choices=GNS)
     general_user = models.IntegerField("Nombre general de usuario", default=101, choices=GUS)
-    secret=models.CharField("Clave secreta asociada a la entidad", blank=True, null=True, max_length=50)
+    secret = models.CharField("Clave secreta asociada a la entidad", blank=True, null=True, max_length=50)
 
     class Meta:
         verbose_name_plural = "Entidades"
@@ -321,7 +321,7 @@ class Reserva_plaza(models.Model):
     telmov_tutor2 = models.CharField("Teléfono móvil del segundo tutor", max_length=30, blank=True, default='')
     email_tutor2 = models.CharField("Correo electrónico del primer tutor", max_length=100, blank=True, default='')
     dni_tutor2 = models.CharField("Teléfono móvil", max_length=30, null=True, blank=True, default='')
-    observaciones= models.TextField('Observaciones', blank=True, null=True, default='')
+    observaciones = models.TextField('Observaciones', blank=True, null=True, default='')
     creado = models.DateTimeField('Fecha y hora de la solicitud de reserva', auto_now_add=True)
 
     def subentidades(self):  # Devuelve las subentidades a las que podría pertenecer
@@ -672,7 +672,7 @@ class CampoF(models.Model):
 class ConfigurationUpdate(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     app = models.CharField("Nombre de la aplicación", max_length=80)
-    last_update = models.DateTimeField('Fecha y hora de la última actualización', default=timezone.datetime(2000,1,1))
+    last_update = models.DateTimeField('Fecha y hora de la última actualización', default=timezone.datetime(2000, 1, 1))
     updated = models.BooleanField('La app está actualizada?', default=True)
 
     class Meta:

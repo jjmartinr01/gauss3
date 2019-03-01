@@ -10,7 +10,7 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="robots" content="all"/>
-    <meta name="B-verify" content="d56bcfcd8bbd7ec711d93f32af87428f5e57e11e" />
+    <meta name="B-verify" content="d56bcfcd8bbd7ec711d93f32af87428f5e57e11e"/>
 </head>
 
 <form action="" method="post" data-abide id="autenticar_form">
@@ -27,7 +27,7 @@
         <div class="row">
             <div class="large-6 small-6 medium-6 columns end text-right">
                 <img src="/static/images/logo_gauss_acceso.png" height="76" width="273">
-{#                <img src="{% static "images/logo_gauss_acceso.png" %}" height="76" width="273" alt="My image"/>#}
+                {#                <img src="{% static "images/logo_gauss_acceso.png" %}" height="76" width="273" alt="My image"/>#}
             </div>
         </div>
         <div id="introduce_user_pass" style="display:{% if tipo == 'acceso' %}block{% else %}none{% endif %};">
@@ -69,7 +69,8 @@
                 </div>
             </div>
         </div>
-        <div id="introduce_mail" style="display:{% if tipo == 'introduce_captcha' or tipo == 'introduce_mail' %}block{% else %}none{% endif %};">
+        <div id="introduce_mail"
+             style="display:{% if tipo == 'introduce_captcha' or tipo == 'introduce_mail' %}block{% else %}none{% endif %};">
             <div class="row">
                 <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
                 <div class="large-9 medium-10 small-11 columns">
@@ -135,6 +136,15 @@
             </div>
         </div>
     </div>
+    <div class="row" id="alerta_cookies">
+        <div class="columns large-12">
+            <div data-alert class="alert-box secondary radius">
+                Esta página utiliza cookies para estudiar de forma ANÓNIMA cómo se utiliza. Si sigues
+                navegando entendemos que aceptas su uso.
+                <a href="#" id="aceptar_cookies"><span class="label">Aceptar</span></a>
+            </div>
+        </div>
+    </div>
 </form>
 
 <script src="/static/foundation-5.5.3/js/vendor/jquery.js"></script>
@@ -144,10 +154,12 @@
 
 <script>
     var csrftoken = $.cookie('csrftoken');
+
     function csrfSafeMethod(method) {
         // these HTTP methods do not require CSRF protection
         return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
     }
+
     $.ajaxSetup({
         beforeSend: function (xhr, settings) {
             if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
@@ -174,6 +186,11 @@
     $('#login_button').click(function (e) {
         e.preventDefault();
         document.getElementById("autenticar_form").submit();
+    });
+
+    $('#aceptar_cookies').click(function (e) {
+        e.preventDefault();
+        $('#alerta_cookies').hide();
     });
 </script>
 </html>
