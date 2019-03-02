@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        .tabtext {
+            color: #74bfdd;
+            font-weight: 800;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="select_tipo">
+
+        <ul class="tabs" data-tab role="tablist">
+            <li class="tab-title" role="presentation" data-id="0" id="li1">
+                <a href="#tab1" role="tab" tabindex="0" aria-selected="true" aria-controls="tab1">
+                    <span id="texto1" class="tabtext">Identificadores</span></a>
+            </li>
+            <li class="tab-title" role="presentation" data-id="1" id="li2">
+                <a href="#tab2" role="tab" tabindex="0" aria-selected="false" aria-controls="tab2">
+                    <span id="texto2" class="tabtext">Secciones/Departamentos</span></a>
+            </li>
+            <li class="tab-title" role="presentation" data-id="2" id="li3">
+                <a href="#tab3" role="tab" tabindex="0" aria-selected="false" aria-controls="tab3">
+                    <span id="texto3" class="tabtext">Cargos/Perfiles</span></a>
+            </li>
+        </ul>
+        <div class="tabs-content">
+            <section role="tabpanel" aria-hidden="false" class="content" id="tab1">
+                {% include "tab_identificadores_entidad.html" %}
+            </section>
+            <section role="tabpanel" aria-hidden="false" class="content" id="tab2">
+                {% include "tab_secciones_entidad.html" %}
+            </section>
+            <section role="tabpanel" aria-hidden="false" class="content" id="tab3">
+                {% include "tab_cargos_perfiles_entidad.html" %}
+            </section>
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_check']);
+
+        $('body').on('click', '.go_page', function (e) {
+            e.preventDefault();
+            var tab = $(this).data('tab');
+            var page = $(this).data('page');
+            if (page) {
+                var section = $(this).closest('section').prop('id');
+                $.post("/listados_usuarios_entidad/", {action: 'update_page', tab: tab, 'page': page},
+                    function (data) {
+                        if (data.ok) {
+                            $('#' + section).html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        });
+
+        $(document).foundation({
+            tab: {
+                callback: function (tab) {
+                    var id = $(tab[0]).data('id');
+                    var tab = id + 1;
+                    $('.tabtext').css('color', '#74bfdd');
+                    $('#texto' + tab).css('color', 'black');
+                }
+            }
+        });
+
+        $('.id_aso').on('keyup', function (event) {
+            event.preventDefault();
+            var id_aso = $(this).text();
+            var ge = $(this).data('ge');
+            $.post("/listados_usuarios_entidad/", {action: 'update_id_entidad', id_entidad: id_aso, 'ge': ge},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('.id_org').on('keyup', function (event) {
+            event.preventDefault();
+            var id_org = $(this).text();
+            var ge = $(this).data('ge');
+            $.post("/listados_usuarios_entidad/", {action: 'update_id_organizacion', id_organizacion: id_org, 'ge': ge},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('.checkbox_sub').on('click', function (event) {
+            var sub = $(this).data('sub');
+            var ge = $(this).data('ge');
+            var is_checked = $(this).prop('checked');
+            $.post("/listados_usuarios_entidad/", {
+                    action: 'update_subentidades', subentidad: sub, 'ge': ge,
+                    is_checked: is_checked
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('.checkbox_cargos').on('click', function (event) {
+            var cargo = $(this).data('cargo');
+            var ge = $(this).data('ge');
+            var is_checked = $(this).prop('checked');
+            $.post("/listados_usuarios_entidad/", {
+                    action: 'update_cargos', cargo: cargo, 'ge': ge,
+                    is_checked: is_checked
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+        {# Las siguientes líneas son para activar la pestaña indicada en la url #}
+        setTimeout(function () {
+            var current_url = new URL(window.location.href);
+            var tab = current_url.searchParams.get("tab");
+            $('#li' + tab).addClass('active');
+            $('#tab' + tab).addClass('active');
+            $('#texto' + tab).css('color', 'black');
+        }, 100);
+
+    </script>
+{% endblock %}
