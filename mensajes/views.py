@@ -445,7 +445,7 @@ def recibidos(request):
                       'leidos': Leido.objects.filter(mensaje__in=mensajes, lector=g_e).values_list(
                           'mensaje__id', flat=True),
                       'pagination': pagination,
-                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)
                   })
 
 

@@ -1,36 +1,14 @@
 # -*- coding: utf-8 -*-
+import os
+from datetime import datetime
 from django.db import models
+from django.utils.html import strip_tags
 
 # from autenticar.models import Gauser, Gauser_extra
 from entidades.models import Entidad, Ronda
 from entidades.models import Gauser_extra as GE
 from autenticar.models import Gauser
 # from entidades.models import Entidad, Ronda, Gauser_extra
-
-from datetime import datetime
-import os
-
-# Las siguientes líneas son para eliminar las etiquetas html (html tags) del mensaje:
-# from HTMLParser import HTMLParser  #Esto es para python2. En python3:
-from html.parser import HTMLParser
-
-
-class MLStripper(HTMLParser):
-    def __init__(self):
-        self.reset()
-        self.fed = []
-
-    def handle_data(self, d):
-        self.fed.append(d)
-
-    def get_data(self):
-        return ' '.join(self.fed)
-
-
-def strip_tags(html):
-    s = MLStripper()
-    s.feed(html)
-    return s.get_data()
 
 
 # Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
