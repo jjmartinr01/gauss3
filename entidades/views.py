@@ -160,13 +160,6 @@ def usuarios_entidad_ajax(request):
                     return JsonResponse({'ok': False, 'error': 'No tienes el permiso necesario'})
             elif action == 'mod_gauser_extra_data':
                 if g_e.has_permiso('modifica_datos_usuarios'):
-
-                    ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
-                    setattr(ge, request.POST['campo'], request.POST['valor'])
-                    ge.save()
-                    return JsonResponse({'ok': True})
-
-
                     try:
                         ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
                         setattr(ge, request.POST['campo'], request.POST['valor'])

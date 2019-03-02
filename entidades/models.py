@@ -559,7 +559,7 @@ def ge_id_patron_match(ge):
     lexema = id_entidad[len(eai.prefijo):quitar_sufijo]
     if eai.lexema == 'num':
         lexema_match = lexema.isdigit()
-    elif eai == 'timestamp':
+    elif eai.lexema == 'timestamp':
         try:
             datetime.strptime(lexema, '%y%m%d%H%M%S')
             lexema_match = True
