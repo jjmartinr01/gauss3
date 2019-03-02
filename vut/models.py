@@ -292,7 +292,8 @@ class RegistroPolicia(models.Model):
 
     @property
     def ext(self):
-        return str(self.n).zfill(3)
+        return '%03d' % self.n
+        # return str(self.n).zfill(3)
 
     @property
     def filename(self):

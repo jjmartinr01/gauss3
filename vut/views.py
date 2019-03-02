@@ -1212,6 +1212,8 @@ def crea_fichero_policia(viajero):
         f.write(contenido.encode('utf-8'))
         RegistroPolicia.objects.create(vivienda=vivienda, parte=File(f), viajero=viajero)
         f.close()
+        if os.path.isfile(ruta):
+            os.remove(ruta)
         logger.info("2")
         return True
     except:
