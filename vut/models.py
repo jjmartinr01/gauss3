@@ -368,7 +368,7 @@ def update_fichero(instance, filename):
     nombre = filename.rpartition('.')
     instance.fich_name = filename
     fichero = pass_generator(size=30) + '.' + nombre[2]
-    return '/'.join(['contabilidad_vut', str(instance.vivienda.entidad.code), str(instance.vivienda.id), fichero])
+    return '/'.join(['contabilidad_vut', str(instance.vivienda.entidad.id), str(instance.vivienda.id), fichero])
 
 
 class AsientoVUT(models.Model):

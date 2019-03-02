@@ -94,7 +94,7 @@ def viviendas(request):
                 if viajeros.count() > 0:
                     c = render_to_string('libro_registro_policia.html',
                                          {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                    ruta = '%s%s/%s/' % (MEDIA_VUT, vivienda.gpropietario.id, vivienda.id)
+                    ruta = '%s%s/%s/' % (MEDIA_VUT, vivienda.entidad.id, vivienda.id)
                     fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
                                        title=u'Libro de registro de viajeros', tipo='sin_cabecera')
                     response = HttpResponse(fich, content_type='application/pdf')
