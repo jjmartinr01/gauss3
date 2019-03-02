@@ -8,34 +8,68 @@
             font-weight: 800;
         }
     </style>
+    <div class="row">
+        <div class="columns large-12">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Configuración para crear identificadores de usuarios
+                en {{ g_e.ronda.entidad.name }}</strong></h4>
+        </div>
+    </div>
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
-        <input type="hidden" id="action" name="action" value="select_tipo">
-
-        <ul class="tabs" data-tab role="tablist">
-            <li class="tab-title" role="presentation" data-id="0" id="li1">
-                <a href="#tab1" role="tab" tabindex="0" aria-selected="true" aria-controls="tab1">
-                    <span id="texto1" class="tabtext">Identificadores</span></a>
-            </li>
-            <li class="tab-title" role="presentation" data-id="1" id="li2">
-                <a href="#tab2" role="tab" tabindex="0" aria-selected="false" aria-controls="tab2">
-                    <span id="texto2" class="tabtext">Secciones/Departamentos</span></a>
-            </li>
-            <li class="tab-title" role="presentation" data-id="2" id="li3">
-                <a href="#tab3" role="tab" tabindex="0" aria-selected="false" aria-controls="tab3">
-                    <span id="texto3" class="tabtext">Cargos/Perfiles</span></a>
-            </li>
-        </ul>
-        <div class="tabs-content">
-            <section role="tabpanel" aria-hidden="false" class="content" id="tab1">
-                {% include "tab_identificadores_entidad.html" %}
-            </section>
-            <section role="tabpanel" aria-hidden="false" class="content" id="tab2">
-                {% include "tab_secciones_entidad.html" %}
-            </section>
-            <section role="tabpanel" aria-hidden="false" class="content" id="tab3">
-                {% include "tab_cargos_perfiles_entidad.html" %}
-            </section>
+        <div class="row">
+            <div class="columns large-12">
+                <label>¿Configuración automática?</label>
+                <input type="checkbox" id="conf_automatica" {% if eai.auto %}checked{% endif %}> Selecciona si quieres
+                que se genere el identificador de un usuario en {{ g_e.ronda.entidad.name }}
+            </div>
+        </div>
+        <div id="id_automatico" style="display: {% if eai.auto %}block{% else %}none{% endif %};">
+            <div class="row">
+                <div class="columns large-4"><label>Prefijo: <input type="text" data-campo="prefijo" class="campo"
+                                                                    value="{{ eai.prefijo }}"></label></div>
+                <div class="columns large-4"><label>Lexema:
+                    <select data-campo="lexema" class="campo">
+                        <option value="num" {% if eai.lexema == 'num' %}selected{% endif %}>Número incremental</option>
+                        <option value="timestamp" {% if eai.lexema == 'timestamp' %}selected{% endif %}>Instante en el
+                            momento del alta
+                        </option>
+                    </select></label></div>
+                <div class="columns large-4"><label>Sufijo: <input type="text" data-campo="sufijo" class="campo"
+                                                                   value="{{ eai.sufijo }}"></label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <label>El identificador de cada usuario tendría la forma:</label>
+                    <div><span id="span_prefijo">{{ eai.prefijo }}</span><span
+                            id="span_lexema">{% if eai.lexema == 'num' %}00457{% else %}210528173422{% endif %}</span
+                    ><span id="span_sufijo">{{ eai.sufijo }}</span></div>
+                </div>
+            </div>
+        </div>
+        <div id="id_no_automatico" style="opacity:0.5;display: {% if eai.auto %}none{% else %}block{% endif %};">
+            <div class="row">
+                <div class="columns large-4"><label>Prefijo: <input type="text" readonly
+                                                                    value="{{ eai.prefijo }}"></label></div>
+                <div class="columns large-4"><label>Lexema:
+                    <select disabled="disabled">
+                        <option value="num" {% if eai.lexema == 'num' %}selected{% endif %}>Número incremental</option>
+                        <option value="timestamp" {% if eai.lexema == 'timestamp' %}selected{% endif %}>Instante en el
+                            momento del alta
+                        </option>
+                    </select></label></div>
+                <div class="columns large-4"><label>Sufijo: <input type="text" readonly
+                                                                   value="{{ eai.sufijo }}"></label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <label>El identificador de cada usuario tendría la forma:</label>
+                    <div><span id="span_prefijo">{{ eai.prefijo }}</span><span
+                            id="span_lexema">{% if eai.lexema == 'num' %}00457{% else %}210528173422{% endif %}</span
+                    ><span id="span_sufijo">{{ eai.sufijo }}</span></div>
+                </div>
+            </div>
         </div>
     </form>
 
@@ -43,108 +77,54 @@
 
 {% block final %}
     <script>
-        habilita(['s_check']);
-
-        $('body').on('click', '.go_page', function (e) {
-            e.preventDefault();
-            var tab = $(this).data('tab');
-            var page = $(this).data('page');
-            if (page) {
-                var section = $(this).closest('section').prop('id');
-                $.post("/listados_usuarios_entidad/", {action: 'update_page', tab: tab, 'page': page},
+        {% if g_e|has_permiso:'configura_auto_id' %}
+            $('body').on('click', '#conf_automatica', function (e) {
+                if ($(this).prop('checked')) {
+                    $('#id_no_automatico').hide();
+                    $('#id_automatico').show();
+                    var auto = 1;
+                } else {
+                    $('#id_no_automatico').show();
+                    $('#id_automatico').hide();
+                    var auto = 0;
+                }
+                $.post("/configura_auto_id/", {action: 'update_auto', auto: auto},
                     function (data) {
                         if (data.ok) {
-                            $('#' + section).html(data.html);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
                         }
                     });
+            });
+
+
+            function post_change(action, campo, valor) {
+                $.post("/configura_auto_id/", {
+                    action: action,
+                    campo: campo,
+                    valor: valor
+                }, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#span_' + data.campo).html(data.valor);
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
             }
-        });
 
-        $(document).foundation({
-            tab: {
-                callback: function (tab) {
-                    var id = $(tab[0]).data('id');
-                    var tab = id + 1;
-                    $('.tabtext').css('color', '#74bfdd');
-                    $('#texto' + tab).css('color', 'black');
-                }
-            }
-        });
-
-        $('.id_aso').on('keyup', function (event) {
-            event.preventDefault();
-            var id_aso = $(this).text();
-            var ge = $(this).data('ge');
-            $.post("/listados_usuarios_entidad/", {action: 'update_id_entidad', id_entidad: id_aso, 'ge': ge},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
+            $('#Contenido').on('keyup change', '.campo', function (e) {
+                var elemento = $(this);
+                var campo = elemento.data('campo');
+                var valor = elemento.val();
+                setTimeout(function () {
+                    if (valor == elemento.val()) {
+                        post_change('update_campo', campo, valor);
                     }
-                });
-        });
-
-        $('.id_org').on('keyup', function (event) {
-            event.preventDefault();
-            var id_org = $(this).text();
-            var ge = $(this).data('ge');
-            $.post("/listados_usuarios_entidad/", {action: 'update_id_organizacion', id_organizacion: id_org, 'ge': ge},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('.checkbox_sub').on('click', function (event) {
-            var sub = $(this).data('sub');
-            var ge = $(this).data('ge');
-            var is_checked = $(this).prop('checked');
-            $.post("/listados_usuarios_entidad/", {
-                    action: 'update_subentidades', subentidad: sub, 'ge': ge,
-                    is_checked: is_checked
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('.checkbox_cargos').on('click', function (event) {
-            var cargo = $(this).data('cargo');
-            var ge = $(this).data('ge');
-            var is_checked = $(this).prop('checked');
-            $.post("/listados_usuarios_entidad/", {
-                    action: 'update_cargos', cargo: cargo, 'ge': ge,
-                    is_checked: is_checked
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-
-        {# Las siguientes líneas son para activar la pestaña indicada en la url #}
-        setTimeout(function () {
-            var current_url = new URL(window.location.href);
-            var tab = current_url.searchParams.get("tab");
-            $('#li' + tab).addClass('active');
-            $('#tab' + tab).addClass('active');
-            $('#texto' + tab).css('color', 'black');
-        }, 100);
+                }, 750);
+            });
+        {% endif %}
 
     </script>
 {% endblock %}

@@ -27,8 +27,13 @@
                 ---
             {% endif %}
         </div>
+    {% if ge.ronda.entidad.entidad_auto_id.auto %}
+        <div class="columns large-2 id_aso" data-ge="{{ ge.id }}">
+            {% if ge.id_entidad %}{{ ge.id_entidad }}{% else %}---{% endif %}</div>
+    {% else %}
         <div class="columns large-2 id_aso" contenteditable="true" data-ge="{{ ge.id }}">
             {% if ge.id_entidad %}{{ ge.id_entidad }}{% else %}---{% endif %}</div>
+    {% endif %}
         <div class="columns large-2 id_org" contenteditable="true" data-ge="{{ ge.id }}">
             {% if ge.id_organizacion %}{{ ge.id_organizacion }}{% else %}---{% endif %}</div>
     </div>

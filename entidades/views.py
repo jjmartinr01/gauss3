@@ -160,6 +160,13 @@ def usuarios_entidad_ajax(request):
                     return JsonResponse({'ok': False, 'error': 'No tienes el permiso necesario'})
             elif action == 'mod_gauser_extra_data':
                 if g_e.has_permiso('modifica_datos_usuarios'):
+
+                    ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
+                    setattr(ge, request.POST['campo'], request.POST['valor'])
+                    ge.save()
+                    return JsonResponse({'ok': True})
+
+
                     try:
                         ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
                         setattr(ge, request.POST['campo'], request.POST['valor'])
@@ -228,6 +235,7 @@ def usuarios_entidad_ajax(request):
                                                                              'subentidades': subentidades,
                                                                              'prev_g_e_selected': prev,
                                                                              'prox_g_e_selected': prox,
+                                                                             'g_e': g_e
                                                                              })
                 return JsonResponse({'ok': True, 'html': html})
             elif request.POST['action'] == 'baja_socio':
@@ -354,6 +362,39 @@ def usuarios_entidad(request):
     }
 
     return render(request, "usuarios_entidad.html", respuesta)
+
+
+@permiso_required('configura_auto_id')
+def configura_auto_id(request):
+    g_e = request.session["gauser_extra"]
+    try:
+        eai = g_e.ronda.entidad.entidad_auto_id
+    except:
+        eai = Entidad_auto_id.objects.create(entidad=g_e.ronda.entidad)
+
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'update_auto':
+            g_e.ronda.entidad.entidad_auto_id.auto = request.POST['auto']
+            g_e.ronda.entidad.entidad_auto_id.save()
+            return JsonResponse({'ok': True, 'auto': g_e.ronda.entidad.entidad_auto_id.auto})
+        if action == 'update_campo':
+            valor = request.POST['valor']
+            if valor == 'num':
+                valor = '00457'
+            elif valor == 'timestamp':
+                valor = '210528173422'
+            setattr(g_e.ronda.entidad.entidad_auto_id, request.POST['campo'], request.POST['valor'])
+            g_e.ronda.entidad.entidad_auto_id.save()
+            return JsonResponse({'ok': True, 'campo': request.POST['campo'], 'valor': valor})
+
+    respuesta = {
+        'formname': 'configura_auto_id',
+        'eai': eai,
+        'g_e': g_e,
+        'avisos': Aviso.objects.filter(usuario=request.session["gauser_extra"], aceptado=False),
+    }
+    return render(request, "configura_auto_id.html", respuesta)
 
 
 @permiso_required('acceso_listados_usuarios')

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from django.db import models
 from django.utils import timezone
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 import os
 from gauss.constantes import *
 from gauss.rutas import *
@@ -15,6 +17,7 @@ from autenticar.models import Gauser, Permiso, Menu_default
 # post_save.connect(update_stock, sender=TransactionDetail, dispatch_uid="update_stock_count")
 
 # Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
+
 
 def update_anagrama_organizacion(instance, filename):
     nombre = filename.partition('.')
@@ -507,6 +510,84 @@ class GE_extra_field(models.Model):
     code = models.CharField('Code', max_length=50, blank=True, null=True)
     name = models.CharField('Nombre', max_length=50, blank=True, null=True)
     value = models.TextField('Valor', blank=True, null=True)
+
+    def __str__(self):
+        return u'%s -- %s - %s' % (self.ge, self.code, self.name)
+
+
+def user_auto_id(ge):
+    eai = ge.ronda.entidad.entidad_auto_id
+    if eai.auto:
+        prefijo = eai.prefijo if eai.prefijo else ''
+        sufijo = eai.sufijo if eai.sufijo else ''
+        num = eai.lexema
+        if eai.lexema == 'num':
+            reg = r'^%s[0-9]+%s$' % (prefijo, sufijo)
+            num = "%05d" % (Gauser_extra.objects.filter(ronda=ge.ronda, id_entidad__iregex=reg).count() + 1)
+        elif eai.lexema == 'timestamp':
+            num = datetime.now().strftime('%y%m%d%H%M%S')
+        id_entidad = "%s%s%s" % (prefijo, num, sufijo)
+        ok = False
+        incidencias = []
+        inicio = datetime.now()
+        dt = datetime.now() - inicio
+        while not ok or dt.seconds > 4:  # El control del tiempo es para evitar bucles muy grandes
+            num_ids = Gauser_extra.objects.filter(ronda=ge.ronda, id_entidad=id_entidad).count()
+            incidencias.append((id_entidad, num_ids))
+            if num_ids == 0:
+                ok = True
+            else:
+                if eai.lexema == 'num':
+                    num = "%05d" % (int(num) + 1)
+                elif eai.lexema == 'timestamp':
+                    num = datetime.now().strftime('%y%m%d%H%M%S')
+                id_entidad = "%s%s%s" % (prefijo, num, sufijo)
+                dt = datetime.now() - inicio
+        ge.id_entidad = id_entidad
+        ge.save()
+        return incidencias
+    else:
+        return False
+
+
+def ge_id_patron_match(ge):
+    id_entidad = ge.id_entidad
+    eai = ge.ronda.entidad.entidad_auto_id
+    prefijo_match = id_entidad.startswith(eai.prefijo)
+    sufijo_match = id_entidad.endswith(eai.sufijo)
+    quitar_sufijo = -len(eai.sufijo) if len(eai.sufijo) > 0 else 1000
+    lexema = id_entidad[len(eai.prefijo):quitar_sufijo]
+    if eai.lexema == 'num':
+        lexema_match = lexema.isdigit()
+    elif eai == 'timestamp':
+        try:
+            datetime.strptime(lexema, '%y%m%d%H%M%S')
+            lexema_match = True
+        except:
+            lexema_match = False
+    else:
+        lexema_match = False
+    return prefijo_match and sufijo_match and lexema_match
+
+
+@receiver(post_save, sender=Gauser_extra, dispatch_uid="update_id_entidad")
+def update_id(sender, instance, **kwargs):
+    if instance.ronda.entidad.entidad_auto_id.auto:
+        num = Gauser_extra.objects.filter(ronda=instance.ronda, id_entidad=instance.id_entidad).count()
+        if num > 1 or not ge_id_patron_match(instance):
+            user_auto_id(instance)
+
+
+class Entidad_auto_id(models.Model):
+    LEXEMAS = (('num', 'Número incremental'), ('timestamp', 'Instante del alta'))
+    entidad = models.OneToOneField(Entidad, on_delete=models.CASCADE)
+    auto = models.BooleanField('Auto', default=False)
+    prefijo = models.CharField('Prefijo', max_length=15, blank=True, null=True, default='')
+    lexema = models.CharField('Lexema', max_length=15, default='num', choices=LEXEMAS)
+    sufijo = models.CharField('Sufijo', max_length=15, blank=True, null=True, default='')
+
+    def __str__(self):
+        return u'%s -- %s -- %s-%s-%s' % (self.entidad, self.auto, self.prefijo, self.lexema, self.sufijo)
 
 
 # TIPOS = (('gchar', 'Texto con un máximo de 150 caracteres'), ('gselect', 'Seleccionar uno o varios valores'),

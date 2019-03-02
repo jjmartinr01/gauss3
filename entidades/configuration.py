@@ -146,6 +146,10 @@ PERMISOS = [{'code_nombre': 'modifica_datos_entidad',
             {'code_nombre': 'crea_rondas',
              'nombre': 'Tiene permiso para crear rondas de la entidad',
              'menu': 'acceso_gestionar_rondas'
+             },
+            {'code_nombre': 'configura_auto_id',
+             'nombre': 'Tiene permiso para configurar auto identificadores de la entidad',
+             'menu': 'acceso_miembros_entidad'
              }
             ]
 

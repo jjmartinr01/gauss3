@@ -8,7 +8,7 @@ from django.utils.text import normalize_newlines
 # from autenticar.models import Gauser_extra, Permiso
 from autenticar.models import Permiso
 from calendario.models import Vevent
-from entidades.models import Gauser_extra, Menu, Ronda, Filtrado, Cargo, Subentidad
+from entidades.models import Gauser_extra, Menu, Ronda, Filtrado, Cargo, Subentidad, ge_id_patron_match, user_auto_id
 
 import re
 from datetime import date, datetime
@@ -27,6 +27,13 @@ MESES = (
     '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre',
     'diciembre',)
 register = Library()
+
+@register.filter
+def auto_id(g_e):
+    num = Gauser_extra.objects.filter(ronda=g_e.ronda, id_entidad=g_e.id_entidad).count()
+    if num > 1 or not ge_id_patron_match(g_e):
+        user_auto_id(g_e)
+    return g_e.id_entidad
 
 
 @register.filter

@@ -33,5 +33,6 @@ urlpatterns = [
     url(r'^tutores_entidad/$', views.tutores_entidad, name='tutores_entidad'),
     url(r'^configura_rondas/$', views.configura_rondas, name='configura_rondas'),
     url(r'^formulario_ext_reserva_plaza/$', views.formulario_ext_reserva_plaza, name='formulario_ext_reserva_plaza'),
+    url(r'^configura_auto_id/$', views.configura_auto_id, name='configura_auto_id'),
     # url(r'^load_gauser_extra_educa/$', views.load_gauser_extra_educa, name='load_gauser_extra_educa'),
 ]
