@@ -9,13 +9,37 @@
             <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong> Domótica de las viviendas de uso
                 turístico </strong></h4>
         </div>
-        <div id="lista_domoticas">
+
+    <ul class="tabs" data-tab role="tablist">
+            <li class="tab-title active" role="presentation" data-id="0">
+                <a href="#tab1" role="tab" tabindex="0" aria-selected="true" aria-controls="tab1">
+                    <b id="texto0">Dispositivos por vivienda</b></a>
+            </li>
+            <li class="tab-title" role="presentation" data-id="1">
+                <a href="#tab2" role="tab" tabindex="0" aria-selected="false" aria-controls="tab2">
+                    <b id="texto1" style="color:#74bfdd;">Configuración de enlaces</b></a>
+            </li>
+        </ul>
+    <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
+                <div id="lista_domoticas">
             <dl class="accordion" data-accordion id="domotica_list">
                 {% for vivienda in viviendas %}
                     {% include "domotica_vut_accordion.html" %}
                 {% endfor %}
             </dl>
         </div>
+            </section>
+    <section role="tabpanel" aria-hidden="false" class="content" id="tab2">
+                <div id="lista_conf_enlaces">
+            <dl class="accordion" data-accordion id="conf_enlaces_list">
+                {% for conf in configuraciones_enlace %}
+                    {% include "conf_enlace_vut_accordion.html" %}
+                {% endfor %}
+            </dl>
+        </div>
+            </section>
+
+
     </form>
 {% endblock %}
 
