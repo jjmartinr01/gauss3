@@ -790,9 +790,14 @@ def ajax_reservas_vut(request):
             for i in range(n_files):
                 fichero = request.FILES['fichero_xhr' + str(i)]
                 if fichero.content_type == 'text/csv':
-                    reader = csv.DictReader(fichero)
+                    # a = fichero.file
+                    # b= d
+                    from io import TextIOWrapper
+                    # f = TextIOWrapper(fichero.file, encoding=request.encoding)
+                    # datareader = csv.reader(io.TextIOWrapper(webpage))
+                    reader = csv.DictReader(TextIOWrapper(fichero))
                     fieldnames = reader.fieldnames
-                    if air[0].encode('utf-8') in fieldnames and len(fieldnames) == 13:
+                    if air[0] in fieldnames and len(fieldnames) == 13:
                         portal = 'AIR'
                 elif fichero.content_type == 'application/vnd.ms-excel':
                     book = xlrd.open_workbook(file_contents=fichero.read())
@@ -804,11 +809,11 @@ def ajax_reservas_vut(request):
                     if portal == 'AIR':
                         # Equivalencia de campos y nuestro modelo en AIRBNB
                         obs = 'Anuncio'
-                        code = 'Código de confirmación'.encode('utf-8')
+                        code = 'Código de confirmación' #.encode('utf-8')
                         entrada = 'Fecha de inicio'
-                        noches = 'N.º de noches'.encode('utf-8')
-                        adultos = 'N.º de adultos'.encode('utf-8')
-                        ninos = 'N.º de niños'.encode('utf-8')
+                        noches = 'N.º de noches' #.encode('utf-8')
+                        adultos = 'N.º de adultos' #.encode('utf-8')
+                        ninos = 'N.º de niños' #.encode('utf-8')
                         nombre = 'Nombre de la persona'
                         total = 'Ingresos'
                         estado = 'Estado'
@@ -821,7 +826,7 @@ def ajax_reservas_vut(request):
                                 reserva.num_viajeros = int(row[adultos]) + int(row[ninos])
                                 reserva.borrada = False
                                 reserva.estado = estados[row[estado]]
-                                reserva.nombre = row[nombre].decode('utf-8')
+                                reserva.nombre = row[nombre] #.decode('utf-8')
                                 reserva.total = string2float(row[total])
                                 reserva.portal = portal
                                 reserva.save()
@@ -892,7 +897,7 @@ def ajax_reservas_vut(request):
                             if solapadas:
                                 informe_reservas['solapadas'].append(solapadas)
                 else:
-                    return JsonResponse({'ok': False})
+                    return JsonResponse({'ok': False, 'mensaje': 'No se sabe el portal'})
             html = render_to_string('reservas_vut_mensaje_upload_vut_file.html',
                                     {'informe': informe_reservas, 'viviendas': viviendas})
             return JsonResponse({'html': html, 'portal': portal, 'ok': True})
