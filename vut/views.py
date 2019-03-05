@@ -144,14 +144,6 @@ def ajax_viviendas(request):
                 except:
                     return JsonResponse({'ok': False})
             elif request.POST['action'] == 'delete_vivienda':
-
-                vivienda = Vivienda.objects.get(id=request.POST['vivienda'], gpropietario=g_e.gauser)
-                permiso = Permiso.objects.get(code_nombre='borra_viviendas')
-                if has_permiso_on_vivienda(g_e, vivienda, permiso):
-                    vivienda.delete()
-                    return JsonResponse({'ok': True, 'mensaje': "La vivienda se ha borrado sin incidencias."})
-
-
                 try:
                     vivienda = Vivienda.objects.get(id=request.POST['vivienda'], gpropietario=g_e.gauser)
                     permiso = Permiso.objects.get(code_nombre='borra_viviendas')
