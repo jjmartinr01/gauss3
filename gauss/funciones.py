@@ -88,7 +88,7 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
         html_file.write("{0}".format(c.encode('utf-8')))
 
     cabecera = MEDIA_ANAGRAMAS + '%s_cabecera.html' % request.session['gauser_extra'].ronda.entidad.code
-    pie = MEDIA_ANAGRAMAS + '%s_pie.html' % request.session['gauser_extra'].entidad.code
+    pie = MEDIA_ANAGRAMAS + '%s_pie.html' % request.session['gauser_extra'].ronda.entidad.code
     if tipo == 'doc':
         estilo = media + 'estilo.xsl'
         comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 --header-html %s --footer-html %s toc --xsl-style-sheet %s %s %s' % (
