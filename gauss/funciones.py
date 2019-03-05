@@ -87,7 +87,7 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
     with open(fichero_html, "w") as html_file:
         html_file.write("{0}".format(c.encode('utf-8')))
 
-    cabecera = MEDIA_ANAGRAMAS + '%s_cabecera.html' % request.session['gauser_extra'].entidad.code
+    cabecera = MEDIA_ANAGRAMAS + '%s_cabecera.html' % request.session['gauser_extra'].ronda.entidad.code
     pie = MEDIA_ANAGRAMAS + '%s_pie.html' % request.session['gauser_extra'].entidad.code
     if tipo == 'doc':
         estilo = media + 'estilo.xsl'
