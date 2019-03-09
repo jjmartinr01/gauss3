@@ -101,6 +101,16 @@ def mis_datos_ajax(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_num_cuenta_bancaria':
+            try:
+                ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['ge_id'])
+                setattr(ge, 'num_cuenta_bancaria', request.POST['valor'])
+                ge.save()
+                if ge == g_e:
+                    request.session['gauser_extra'] = Gauser_extra.objects.get(id=ge.id)
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
         elif request.POST['action'] == 'change_password':
             try:
                 if request.POST['password1'] == request.POST['password2'] and request.POST['password1'] != '':
@@ -158,6 +168,16 @@ def usuarios_entidad_ajax(request):
                         return JsonResponse({'ok': False, 'error': 'Error. Posiblemente en objects.get()'})
                 else:
                     return JsonResponse({'ok': False, 'error': 'No tienes el permiso necesario'})
+            elif request.POST['action'] == 'update_num_cuenta_bancaria':
+                try:
+                    ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['ge'])
+                    setattr(ge, 'num_cuenta_bancaria', request.POST['valor'])
+                    ge.save()
+                    if ge == g_e:
+                        request.session['gauser_extra'] = Gauser_extra.objects.get(id=ge.id)
+                    return JsonResponse({'ok': True})
+                except:
+                    return JsonResponse({'ok': False})
             elif action == 'mod_gauser_extra_data':
                 if g_e.has_permiso('modifica_datos_usuarios'):
                     try:

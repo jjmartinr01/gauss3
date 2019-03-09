@@ -242,11 +242,12 @@ def number_no_exentos(politica):
 @register.filter
 def no_exentos(politica, total=1000):
     no_ex = []
-    importes = [politica.cantidad] + map(float, re.findall(r"[-+]?\d*\.\d+|\d+", politica.descuentos))
+    # importes = list(map(float, re.findall(r"[-+]?\d*\.\d+|\d+", politica.descuentos)))
     # Hacemos una secuencia de importes añadiendo el último valor lo suficientemente grande como para
     # asegurar que el número de hermanos es superado. Por ejemplo si importes es [30,20,15], después
     # de la siguiente líneas sería [30,20,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15]
-    importes = importes + [importes[-1] for i in range(20)]
+    # importes = importes + [importes[-1] for i in range(20)]
+    importes = politica.array_cuotas
     exentos_id = politica.exentos.all().values_list('id', flat=True)
     usuarios = usuarios_de_gauss(politica.entidad, cargos=[politica.cargo]).exclude(gauser__id__in=exentos_id)[:total]
     usuarios_id = []
@@ -594,7 +595,7 @@ def at_02(nif):  # Diseñado a partir del documento "adeudos_sepa.pdf"
     a = 'ES'  # Primera parte de la identificación devuelta y correspondiente a España
     d = nif
     cad = re.sub('[^0-9a-zA-Z]+', '', d) + a + '00'
-    for k, v in tabla.iteritems():
+    for k, v in tabla.items():
         cad = cad.replace(k, v)
     cad = str(98 - int(cad) % 97)
     b = cad if len(cad) == 2 else '0' + cad

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load vut_extras %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <div>
+            <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong> Viviendas de uso
+                turístico registradas</strong></h4>
+        </div>
+
+    {% for v in viviendas %}
+        {% ifchanged v.gpropietario %}
+            {% if not forloop.first %}
+                <hr><p><b>{{ v.gpropietario.get_full_name }} ({{ v|number_viviendas_same_propietario }})</b></p>
+            {% else %}
+                <p><b>{{ v.gpropietario.get_full_name }} ({{ v|number_viviendas_same_propietario }})</b></p>
+            {% endif %}
+        {% endifchanged %}
+        <i class="fa fa-home"></i> {{ v.nombre }} &nbsp;&nbsp;&nbsp;
+    {% endfor %}
+
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+    </script>
+{% endblock %}

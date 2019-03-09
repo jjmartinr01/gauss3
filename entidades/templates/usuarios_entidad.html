@@ -350,5 +350,194 @@
         {% endif %}
 
         load_user({{ gauser_extra_selected.id }});
+
+    {#    Código necesario para el control de las cuentas bancarias #}
+
+        $('#Contenido').on('keyup change', '#num_cuenta_bancaria', function () {
+            var ok = false;
+            var codigoBanco = '';
+            var codigoSucursal = '';
+            var numeroCuenta = '';
+            var digitoControl = '';
+            var codigoIBAN = '';
+            var ccc = $(this).val();
+            if ((ccc.length > 1 || ccc.length > 20) && ccc.substr(0, 2) != 'ES') {
+                $('#ccc_incompleto').show();
+                $('#errores_iban').show();
+                $('#check_iban').hide();
+                if (ccc.length == 20) {
+                    $('#ccc_incompleto').hide();
+                    codigoBanco = ccc.substr(0, 4);
+                    codigoSucursal = ccc.substr(4, 4);
+                    numeroCuenta = ccc.substr(10, 10);
+                    digitoControl = CalculaDigitoControl(codigoBanco + codigoSucursal, numeroCuenta);
+                    if (digitoControl != ccc.substr(8, 2)) {
+                        $('#iban_error').show();
+                        $('#errores_iban').show();
+                        $('#check_iban').hide();
+                    } else {
+                        codigoIBAN = CalcularIBAN(codigoBanco + codigoSucursal + digitoControl + numeroCuenta);
+                        $(this).val(codigoIBAN + ccc);
+                        ok = true;
+                        $('#iban_error').hide();
+                        $('#errores_iban').hide();
+                        $('#check_iban').show();
+                        $('.warnings').fadeOut();
+                    }
+                }
+            } else if ((ccc.length > 1 || ccc.length > 24) && ccc.substr(0, 2) == 'ES') {
+                $('#iban_incompleto').show();
+                $('#errores_iban').show();
+                $('#check_iban').hide();
+                if (ccc.length == 24) {
+                    $('#iban_incompleto').hide();
+                    codigoBanco = ccc.substr(4, 4);
+                    codigoSucursal = ccc.substr(8, 4);
+                    numeroCuenta = ccc.substr(14, 10);
+                    digitoControl = CalculaDigitoControl(codigoBanco + codigoSucursal, numeroCuenta);
+                    if (digitoControl != ccc.substr(12, 2)) {
+                        $('#iban_error').show();
+                        $('#errores_iban').show();
+                        $('#check_iban').hide();
+                    } else {
+                        codigoIBAN = CalcularIBAN(codigoBanco + codigoSucursal + digitoControl + numeroCuenta);
+                        if (codigoIBAN != ccc.substr(0, 4)) {
+                            $(this).val(codigoIBAN + ccc.substr(4, 20));
+                        }
+                        ok = true;
+                        $('#iban_error').hide();
+                        $('#errores_iban').hide();
+                        $('#check_iban').show();
+                        $('.warnings').fadeOut();
+                    }
+                }
+            }
+            if (ok) {
+                var ge = $('#gauser_extra_selected').val();
+                var valor = $(this).val();
+                $.post("/usuarios_entidad_ajax/", {
+                    action: 'update_num_cuenta_bancaria',
+                    ge: ge,
+                    valor: ccc
+                }, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+            }
+        });
+
+            // Obtenido de:  https://www.gabilos.com/textocalculadoradccuenta.htm
+        // Calculate the checksum and assemble the IBAN.
+        function CalcularIBAN(account) {
+            //var checksum = ChecksumIBAN("ES" + "00" + account);
+
+
+            var iban = "ES" + "00" + account;
+            var code = iban.substring(0, 2);
+            var checksum = iban.substring(2, 4);
+            var bban = iban.substring(4);
+
+            // Assemble digit string
+            var digits = "";
+            for (var i = 0; i < bban.length; ++i) {
+                var ch = bban.charAt(i).toUpperCase();
+                if ("0" <= ch && ch <= "9")
+                    digits += ch;
+                else
+                    digits += convertirMayusculasNumeros(ch);
+            }
+            for (var i = 0; i < code.length; ++i) {
+                var ch = code.charAt(i);
+                digits += convertirMayusculasNumeros(ch);
+            }
+            digits += checksum;
+
+            // Calculate checksum
+            checksum = 98 - modulo97(digits);
+            //return rellenarCeros("" + checksum, 2);
+            //return "ES" + checksum;
+
+            return "ES" + rellenarCeros("" + checksum, 2);
+        }
+
+        // Calculate 2-digit checksum of an IBAN.
+        function ChecksumIBAN(iban) {
+            var code = iban.substring(0, 2);
+            var checksum = iban.substring(2, 4);
+            var bban = iban.substring(4);
+
+            // Assemble digit string
+            var digits = "";
+            for (var i = 0; i < bban.length; ++i) {
+                var ch = bban.charAt(i).toUpperCase();
+                if ("0" <= ch && ch <= "9")
+                    digits += ch;
+                else
+                    digits += convertirMayusculasNumeros(ch);
+            }
+            for (var i = 0; i < code.length; ++i) {
+                var ch = code.charAt(i);
+                digits += convertirMayusculasNumeros(ch);
+            }
+            digits += checksum;
+
+            // Calculate checksum
+            checksum = 98 - modulo97(digits);
+            return rellenarCeros("" + checksum, 2);
+        }
+
+        // Modulo 97 for huge numbers given as digit strings.
+        function modulo97(digit_string) {
+            var m = 0;
+            for (var i = 0; i < digit_string.length; ++i)
+                m = (m * 10 + parseInt(digit_string.charAt(i))) % 97;
+            return m;
+        }
+
+        // Convert a capital letter into digits: A -> 10 ... Z -> 35 (ISO 13616).
+        function convertirMayusculasNumeros(ch) {
+            var capitals = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            for (var i = 0; i < capitals.length; ++i)
+                if (ch == capitals.charAt(i))
+                    break;
+            return i + 10;
+        }
+
+        // Fill the string with leading zeros until length is reached.
+        function rellenarCeros(s, l) {
+            while (s.length < l)
+                s = "0" + s;
+            return s;
+        }
+
+        function CalculaDigitoControl(Banco, Cuenta) {
+            Pesos = new Array(6, 3, 7, 9, 10, 5, 8, 4, 2, 1);
+            var result = '';
+            var iTemp = 0;
+            for (var n = 0; n <= 7; n++) {
+                iTemp = iTemp + Banco.substr(7 - n, 1) * Pesos[n];
+            }
+            result = 11 - iTemp % 11;
+            if (result > 9) {
+                result = 1 - result % 10;
+            }
+            iTemp = 0;
+            for (var n = 0; n <= 9; n++) {
+                iTemp = iTemp + Cuenta.substr(9 - n, 1) * Pesos[n];
+            }
+            iTemp = 11 - (iTemp % 11);
+            if (iTemp > 9) {
+                iTemp = 1 - (iTemp % 10);
+            }
+            result = result * 10 + iTemp;
+
+            if (result.toString().length == 1) {
+                result = '0' + result;
+            }
+            return (result);
+        }
     </script>
 {% endblock %}

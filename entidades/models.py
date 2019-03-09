@@ -572,7 +572,11 @@ def ge_id_patron_match(ge):
 
 @receiver(post_save, sender=Gauser_extra, dispatch_uid="update_id_entidad")
 def update_id(sender, instance, **kwargs):
-    if instance.ronda.entidad.entidad_auto_id.auto:
+    try:
+        eai = instance.ronda.entidad.entidad_auto_id.auto
+    except:
+        eai = Entidad_auto_id.objects.create(entidad=instance.ronda.entidad)
+    if eai:
         num = Gauser_extra.objects.filter(ronda=instance.ronda, id_entidad=instance.id_entidad).count()
         if num > 1 or not ge_id_patron_match(instance):
             user_auto_id(instance)

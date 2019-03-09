@@ -1317,7 +1317,18 @@ def viajeros(request):
 
     return JsonResponse({'ok': False})
 
+################################################################################
 
+@permiso_required('viviendas_registradas_vut')
+def viviendas_registradas_vut(request):
+    g_e = request.session['gauser_extra']
+    return render(request, "viviendas_registradas_vut.html",
+                  {
+                      'formname': 'viviendas_registradas_vut',
+                      'viviendas': Vivienda.objects.filter(entidad=g_e.ronda.entidad).order_by('gpropietario')
+                  })
+
+################################################################################
 ################################################################################
 
 def contabilidades_autorizado(g_e):
