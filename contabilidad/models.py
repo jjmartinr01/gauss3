@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
+import re
+import os
 from django.db import models
 
-# from autenticar.models import Gauser, Gauser_extra
-# from entidades.models import Entidad, Subentidad, Ronda, Cargo
 from autenticar.models import Gauser
 from entidades.models import Entidad, Subentidad, Ronda, Cargo, Gauser_extra
 
 from bancos.models import Banco
-#from entidades.views import pass_generator
-from gauss.funciones import usuarios_de_gauss, pass_generator
-from datetime import datetime, date
-import os
+from gauss.funciones import pass_generator
+
 
 
 
@@ -89,12 +87,21 @@ class Asiento(models.Model):
     def __str__(self):
         return u'%s - %s (%s)' % (self.partida.presupuesto.id, self.concepto, self.cantidad)
 
+###################################################################################################
+################################ CUOTAS ###########################################################
+###################################################################################################
+
 
 class Politica_cuotas(models.Model):
+    TIPOS_CUOTA = (('fija', 'Cuota fija'), ('hermanos', 'Cuota condicionada al número de hermanos'),
+                   ('vut', 'Cuota asociada al número de VUT'),
+                   ('domotica', 'Cuota asociada al número de controles domóticos'))
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
+    tipo = models.CharField('Tipo de cuota', max_length=10, choices=TIPOS_CUOTA, default='fija')
     cargo = models.ForeignKey(Cargo, null=True, blank=True, on_delete=models.CASCADE)
     tipo_cobro = models.CharField('Tipo de cobro', max_length=6, choices=(('MEN', 'Mensual'), ('ANU', 'Anual')))
-    cantidad = models.FloatField('Cantidad monetaria (euros)')
+    cuota = models.CharField('Cuotas separadas por comas', blank=True, null=True, max_length=200)
+    cantidad = models.FloatField('Cantidad monetaria (euros)', blank=True, null=True)
     concepto = models.CharField('Concepto', max_length=100)
     exentos = models.ManyToManyField(Gauser, blank=True, help_text='&nbsp;</span><span style="display:none;">')
     descuentos = models.TextField('Descuentos', null=True, blank=True)
@@ -107,8 +114,23 @@ class Politica_cuotas(models.Model):
         ordering = ['-modificado']
         verbose_name_plural = "Políticas de cuotas"
 
+    @property
+    def array_cuotas(self):
+        if not self.cuota:
+            self.cuota = '0'
+            self.save()
+        importes = list(map(float, re.findall(r"[-+]?\d*\.\d+|\d+", self.cuota)))
+        return importes + [importes[-1]] * 1000
+
+    @property
+    def no_exentos(self):
+        importes = list(map(float, re.findall(r"[-+]?\d*\.\d+|\d+", self.cuota)))
+        return importes + [importes[-1]] * 1000
+
+
     def __str__(self):
         return u'%s - %s (%s)' % (self.entidad.name, self.cargo, self.cantidad)
+
 
 class Remesa_emitida(models.Model):
     politica = models.ForeignKey(Politica_cuotas, on_delete=models.CASCADE)

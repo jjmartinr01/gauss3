@@ -45,6 +45,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 4,
      'parent': 'acceso_vut'
+     },
+    {'code_menu': 'viviendas_registradas_vut',
+     'texto_menu': 'Viviendas registradas',
+     'href': 'viviendas_registradas_vut',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 4,
+     'parent': 'acceso_vut'
      }
 ]
 # Se añaden otros permisos para el usuario

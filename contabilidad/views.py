@@ -24,7 +24,8 @@ from entidades.models import Subentidad, Cargo, Gauser_extra
 from bancos.views import asocia_banco_ge, num_cuenta2iban
 from gauss.rutas import *
 from gauss.funciones import usuarios_de_gauss, pass_generator
-from contabilidad.models import Presupuesto, Partida, Asiento, Politica_cuotas, Remesa, File_contabilidad, Remesa_emitida
+from contabilidad.models import Presupuesto, Partida, Asiento, Politica_cuotas, Remesa, File_contabilidad, \
+    Remesa_emitida
 from autenticar.control_acceso import permiso_required
 from gauss.funciones import html_to_pdf
 from mensajes.views import crear_aviso
@@ -32,6 +33,7 @@ from mensajes.models import Aviso
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 
+from vut.models import Vivienda
 
 locale.setlocale(locale.LC_ALL, 'es_ES.utf8')
 
@@ -58,11 +60,11 @@ class AsientoForm(forms.ModelForm):  # Form accesible por usuario
         model = Asiento
         fields = ('concepto', 'nombre', 'cantidad', 'partida', 'escaneo')
         widgets = {  # 'concepto': forms.Textarea(attrs={'cols': 50, 'rows':4, 'class':'obligatorio'}),
-                     'concepto': forms.TextInput(attrs={'size': '100', 'class': 'obligatorio'}),
-                     # 'nombre': forms.TextInput(attrs={'class':'obligatorio','size':150}),
-                     'nombre': forms.Textarea(attrs={'cols': 100, 'rows': 1, 'class': 'obligatorio'}),
-                     'cantidad': forms.TextInput(attrs={'class': 'obligatorio', 'size': 15}),
-                     }
+            'concepto': forms.TextInput(attrs={'size': '100', 'class': 'obligatorio'}),
+            # 'nombre': forms.TextInput(attrs={'class':'obligatorio','size':150}),
+            'nombre': forms.Textarea(attrs={'cols': 100, 'rows': 1, 'class': 'obligatorio'}),
+            'cantidad': forms.TextInput(attrs={'class': 'obligatorio', 'size': 15}),
+        }
 
 
 @permiso_required('acceso_presupuestos')
@@ -117,21 +119,21 @@ def presupuestos(request):
 
     presupuestos = Presupuesto.objects.filter(entidad=g_e.ronda.entidad)
     return render(request, "presupuestos_list.html",
-                              {
-                                  'formname': 'Presupuestos',
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
-                                        'title': 'Aceptar los cambios realizados', 'permiso': 'edita_presupuestos'},
-                                       {'tipo': 'button', 'nombre': 'plus', 'texto': 'Presupuesto',
-                                        'title': 'Crear un nuevo presupuesto',
-                                        'permiso': 'crea_presupuestos'},
-                                       {'tipo': 'button', 'nombre': 'list-alt', 'texto': 'Presupuestos',
-                                        'title': 'Mostrar la lista de presupuestos',
-                                        'permiso': 'edita_presupuestos'},),
-                                  'presupuestos': presupuestos,
-                                  'avisos': Aviso.objects.filter(usuario=request.session["gauser_extra"],
-                                                                 aceptado=False),
-                              })
+                  {
+                      'formname': 'Presupuestos',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
+                            'title': 'Aceptar los cambios realizados', 'permiso': 'edita_presupuestos'},
+                           {'tipo': 'button', 'nombre': 'plus', 'texto': 'Presupuesto',
+                            'title': 'Crear un nuevo presupuesto',
+                            'permiso': 'crea_presupuestos'},
+                           {'tipo': 'button', 'nombre': 'list-alt', 'texto': 'Presupuestos',
+                            'title': 'Mostrar la lista de presupuestos',
+                            'permiso': 'edita_presupuestos'},),
+                      'presupuestos': presupuestos,
+                      'avisos': Aviso.objects.filter(usuario=request.session["gauser_extra"],
+                                                     aceptado=False),
+                  })
 
 
 @permiso_required('acceso_gastos_ingresos')
@@ -167,29 +169,29 @@ def presupuesto(request, id=False):
     gastos = partidas.filter(tipo='GASTO').aggregate(gasto_total=Sum('cantidad'))
     ingresos = partidas.filter(tipo='INGRE').aggregate(ingreso_total=Sum('cantidad'))
     return render(request, "presupuesto.html",
-                              {
-                                  'formname': 'Presupuesto',
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
-                                        'title': 'Aceptar los cambios realizados', 'permiso': 'edita_presupuestos'},
-                                       {'tipo': 'button', 'nombre': 'plus', 'texto': 'Partida',
-                                        'title': 'Añadir nueva partida al presupuesto',
-                                        'permiso': 'edita_presupuestos'},
-                                       {'tipo': 'button', 'nombre': 'pencil', 'texto': 'Editar',
-                                        'title': 'Editar la partida para su modificación',
-                                        'permiso': 'edita_presupuestos'},
-                                       {'tipo': 'button', 'nombre': 'trash-o', 'texto': 'Borrar',
-                                        'title': 'Borrar la partida seleccionada', 'permiso': 'edita_presupuestos'},
-                                       {'tipo': 'button', 'nombre': 'file-text-o', 'texto': 'PDF',
-                                        'title': 'Generar documento pdf del presupuesto',
-                                        'permiso': 'edita_presupuestos'}),
-                                  'presupuesto': presupuesto,
-                                  'partidas': partidas,
-                                  'gastos': gastos,
-                                  'ingresos': ingresos,
-                                  'avisos': Aviso.objects.filter(usuario=request.session["gauser_extra"],
-                                                                 aceptado=False),
-                              })
+                  {
+                      'formname': 'Presupuesto',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
+                            'title': 'Aceptar los cambios realizados', 'permiso': 'edita_presupuestos'},
+                           {'tipo': 'button', 'nombre': 'plus', 'texto': 'Partida',
+                            'title': 'Añadir nueva partida al presupuesto',
+                            'permiso': 'edita_presupuestos'},
+                           {'tipo': 'button', 'nombre': 'pencil', 'texto': 'Editar',
+                            'title': 'Editar la partida para su modificación',
+                            'permiso': 'edita_presupuestos'},
+                           {'tipo': 'button', 'nombre': 'trash-o', 'texto': 'Borrar',
+                            'title': 'Borrar la partida seleccionada', 'permiso': 'edita_presupuestos'},
+                           {'tipo': 'button', 'nombre': 'file-text-o', 'texto': 'PDF',
+                            'title': 'Generar documento pdf del presupuesto',
+                            'permiso': 'edita_presupuestos'}),
+                      'presupuesto': presupuesto,
+                      'partidas': partidas,
+                      'gastos': gastos,
+                      'ingresos': ingresos,
+                      'avisos': Aviso.objects.filter(usuario=request.session["gauser_extra"],
+                                                     aceptado=False),
+                  })
 
 
 @login_required()
@@ -316,14 +318,14 @@ def gastos_ingresos(request):
               {'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF', 'permiso': 'pdf_gastos_ingresos',
                'title': 'Generar documento pdf con los gastos e ingresos registrados'})
     return render(request, "gastos_ingresos.html",
-                              {
-                                  'formname': 'Ingreso_gasto',
-                                  'iconos': iconos,
-                                  'data': data,
-                                  'presupuesto': presupuesto,
-                                  'presupuestos': presupuestos,
-                                  'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                              })
+                  {
+                      'formname': 'Ingreso_gasto',
+                      'iconos': iconos,
+                      'data': data,
+                      'presupuesto': presupuesto,
+                      'presupuestos': presupuestos,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
 
 
 @login_required()
@@ -388,7 +390,8 @@ def gastos_ingresos_ajax(request):
             }, request=request)
             return HttpResponse(data)
         elif request.POST['action'] == 'save_mod_gasto_ingreso':
-            asiento = Asiento.objects.filter(id=request.POST['asiento_id'], partida__presupuesto__entidad=g_e.ronda.entidad)
+            asiento = Asiento.objects.filter(id=request.POST['asiento_id'],
+                                             partida__presupuesto__entidad=g_e.ronda.entidad)
             data = {'partida': request.POST['partida'], 'concepto': request.POST['concepto'],
                     'nombre': request.POST['nombre'], 'cantidad': request.POST['cantidad']}
             if 'fichero' in request.FILES:
@@ -495,148 +498,37 @@ def politica_cuotas(request):
             ruta = MEDIA_CONTABILIDAD + str(g_e.ronda.entidad.code) + '/'
             grupo = remesa_emitida.grupo
             fichero = '%s.xls' % (grupo)
-            xlsfile = open(ruta + '/' + fichero)
+            xlsfile = open(ruta + '/' + fichero, 'rb')
             response = HttpResponse(xlsfile, content_type='application/vnd.ms-excel')
             response['Content-Disposition'] = 'attachment; filename=Remesas_%s-%s-%s.xls' % (
                 remesa_emitida.creado.year, remesa_emitida.creado.month, remesa_emitida.creado.day)
             return response
 
-        # if request.POST['action'] == 'generar_remesas':
-        #     # Para validar el xml generado
-        #     # http://www.mobilefish.com/services/sepa_xml_validation/sepa_xml_validation.php
-        #     politica = Politica_cuotas.objects.get(id=request.POST['id_politica_cuotas'])
-        #     grupo = pass_generator(size=15, chars=string.ascii_letters + string.digits)
-        #     remesa_emitida = Remesa_emitida.objects.create(grupo=grupo, politica=politica)
-        #     # La siguiente expresión regular identifica los enteros y floats almacenados en descuentos
-        #     # que pueden estar separados por espacios, comas, ... o cualquier secuencia de caracteres:
-        #     importes = [politica.cantidad] + map(float, re.findall(r"[-+]?\d*\.\d+|\d+", politica.descuentos))
-        #     # Hacemos una secuencia de importes añadiendo el último valor lo suficientemente grande como para
-        #     # asegurar que el número de hermanos es superado. Por ejemplo si importes es [30,20,15], después
-        #     # de la siguiente líneas sería [30,20,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15]
-        #     importes = importes + [importes[-1] for i in range(20)]
-        #     exentos_id = politica.exentos.all().values_list('id', flat=True)
-        #     usuarios = usuarios_de_gauss(g_e.ronda.entidad, cargos=[politica.cargo]).exclude(gauser__id__in=exentos_id)
-        #     usuarios_id = []
-        #     n = 0
-        #
-        #     ruta = MEDIA_CONTABILIDAD + str(g_e.ronda.entidad.code) + '/'
-        #     if not os.path.exists(ruta):
-        #         os.makedirs(ruta)
-        #     fichero_xls = '%s.xls' % (grupo)
-        #     wb = xlwt.Workbook()
-        #     wr = wb.add_sheet('Remesas')
-        #     wa = wb.add_sheet('Avisos')
-        #     fila_excel_remesas = 0
-        #     fila_excel_avisos = 0
-        #     estilo = xlwt.XFStyle()
-        #     font = xlwt.Font()
-        #     font.bold = True
-        #     estilo.font = font
-        #     wr.write(fila_excel_remesas, 0, 'Destinatario cobro (dbtrnm)', style=estilo)
-        #     wr.write(fila_excel_remesas, 1, 'Concepto (rmtinf)', style=estilo)
-        #     wr.write(fila_excel_remesas, 2, 'Cuenta bancaria (dbtriban)', style=estilo)
-        #     wr.write(fila_excel_remesas, 3, 'Couta (instdamt)', style=estilo)
-        #
-        #     for usuario in usuarios:
-        #         n += 1
-        #         if usuario.id not in usuarios_id:
-        #             familiares = usuario.unidad_familiar
-        #             deudores = familiares.filter(id__in=usuarios)
-        #             concepto = 'Familia' if deudores.count() > 1 else deudores[0].gauser.first_name
-        #             usuarios_id += list(deudores.values_list('id', flat=True))
-        #             n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
-        #             try:
-        #                 cuenta_banca = [n_c.replace(' ', '') for n_c in n_cs if len(str(n_c)) > 18][0]
-        #                 usuario.num_cuenta_bancaria = num_cuenta2iban(cuenta_banca)
-        #                 usuario.save()
-        #                 asocia_banco_ge(usuario)
-        #                 importe = sum(importes[:deudores.count()])
-        #                 try:
-        #                     deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
-        #                     if politica.tipo_cobro == 'MEN':
-        #                         rmtinf = '%s - Cobro %s, mes de %s (%s)' % (politica.concepto,
-        #                                                                  politica.get_tipo_cobro_display(),
-        #                                                                  date.today().strftime('%B'), deudores_str)
-        #                     else:
-        #                         rmtinf = '%s - Cobro %s, realizado en %s (%s)' % (politica.concepto,
-        #                                                                  politica.get_tipo_cobro_display(),
-        #                                                                  date.today().strftime('%B'), deudores_str)
-        #                     r = Remesa.objects.create(emitida=remesa_emitida,
-        #                                               banco=usuario.banco, dtofsgntr=date(2013, 10, 10),
-        #                                               dbtrnm='%s %s' % (concepto, deudores[0].gauser.last_name),
-        #                                               dbtriban=usuario.num_cuenta_bancaria,
-        #                                               rmtinf=rmtinf, instdamt=importe, counter=n)
-        #                     fila_excel_remesas += 1
-        #                     wr.write(fila_excel_remesas, 0, r.dbtrnm)
-        #                     wr.write(fila_excel_remesas, 1, r.rmtinf)
-        #                     wr.write(fila_excel_remesas, 2, r.dbtriban)
-        #                     wr.write(fila_excel_remesas, 3, r.instdamt)
-        #                 except:
-        #                     fila_excel_avisos += 1
-        #                     aviso = u'No se ha podido crear la remesa para la familia %s' % (
-        #                         deudores[0].gauser.last_name)
-        #                     wa.write(fila_excel_avisos, 0, aviso)
-        #
-        #             except:
-        #                 for deudor in deudores:
-        #                     fila_excel_avisos += 1
-        #                     aviso = u'Falta número de cuenta bancaria en usuario %s. No se crea remesa.' % (
-        #                         deudor.gauser.get_full_name())
-        #                     wa.write(fila_excel_avisos, 0, aviso)
-        #
-        #     fila_excel_remesas += 1
-        #     wr.write(fila_excel_remesas, 3, Formula("SUM(D2:D%s)" % (fila_excel_remesas)), style=estilo)
-        #     wr.col(0).width = 10000
-        #     wr.col(1).width = 15000
-        #     wr.col(2).width = 8000
-        #     wr.col(3).width = 5000
-        #     wb.save(ruta + fichero_xls)
-        #     hoy = date.today()
-        #     remesas = Remesa.objects.filter(emitida=remesa_emitida)
-        #     remesa_emitida.ctrlsum = remesas.aggregate(total=Sum('instdamt'))['total']
-        #     remesa_emitida.nboftxs = remesas.count()
-        #     remesa_emitida.reqdcolltndt = hoy + timedelta(days=4)
-        #     remesa_emitida.save()
-        #     xml = render_to_string("xml_gauss.xml", {'remesas': remesas, 'remesa_emitida': remesa_emitida},
-        #                            request=request)
-        #     # xml = xml.replace('ñ','n').replace('Ñ','N')
-        #     fichero = '%s.xml' % (grupo)
-        #     xmlfile = open(ruta + '/' + fichero, "w+")
-        #     xmlfile.write(xml.encode('utf8'))
-        #     xmlfile.close()
-            # xmlfile = open(ruta + '/' + fichero)
-            # response = HttpResponse(xmlfile, content_type='application/xml')
-            # response['Content-Disposition'] = 'attachment; filename=Remesas_%s-%s-%s.xml' % (
-            #     hoy.year, hoy.month, hoy.day)
-            # response.set_cookie('fileDownload',
-            #                     value='true')  # Creo cookie para controlar la descarga (fileDownload.js)
-            # return response
-
     politicas = Politica_cuotas.objects.filter(entidad=g_e.ronda.entidad)
     return render(request, "politica_cuotas.html",
-                              {
-                                  'formname': 'Politica_cuotas',
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
-                                        'title': 'Aceptar los cambios realizados', 'permiso': 'edita_politica_cuotas'},
-                                       {'tipo': 'button', 'nombre': 'list-alt', 'texto': 'Cuotas',
-                                        'title': 'Ver la lista de cuotas creadas', 'permiso': 'edita_politica_cuotas'},
-                                       {'tipo': 'button', 'nombre': 'plus', 'texto': 'Política',
-                                        'title': 'Añadir una nueva política de cuotas', 'permiso': 'crea_politica_cuotas'},
-                                       {'tipo': 'button', 'nombre': 'pencil', 'texto': 'Editar',
-                                        'title': 'Editar la política de cuotas para su modificación',
-                                        'permiso': 'edita_politica_cuotas'},
-                                       {'tipo': 'button', 'nombre': 'trash-o', 'texto': 'Borrar',
-                                        'title': 'Borrar la política de cuotas seleccionada', 'permiso': 'borra_politica_cuotas'},
-                                       {'tipo': 'button', 'nombre': 'money', 'texto': 'Remesas', 'permiso': 'crea_remesas',
-                                        'title': 'Genera remesas de la política de cuotas seleccionada'},
-                                       {'tipo': 'button', 'nombre': 'file-text-o', 'texto': 'PDF',
-                                        'permiso': 'pdf_gastos_ingresos',
-                                        'title': 'Genera documento PDF con las políticas de cuotas'}),
-                                  'politicas': politicas,
-                                  # 'remesas_emitidas': remesas_emitidas,
-                                  'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                              })
+                  {
+                      'formname': 'Politica_cuotas',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
+                            'title': 'Aceptar los cambios realizados', 'permiso': 'edita_politica_cuotas'},
+                           {'tipo': 'button', 'nombre': 'list-alt', 'texto': 'Cuotas',
+                            'title': 'Ver la lista de cuotas creadas', 'permiso': 'edita_politica_cuotas'},
+                           {'tipo': 'button', 'nombre': 'plus', 'texto': 'Política',
+                            'title': 'Añadir una nueva política de cuotas', 'permiso': 'crea_politica_cuotas'},
+                           {'tipo': 'button', 'nombre': 'pencil', 'texto': 'Editar',
+                            'title': 'Editar la política de cuotas para su modificación',
+                            'permiso': 'edita_politica_cuotas'},
+                           {'tipo': 'button', 'nombre': 'trash-o', 'texto': 'Borrar',
+                            'title': 'Borrar la política de cuotas seleccionada', 'permiso': 'borra_politica_cuotas'},
+                           {'tipo': 'button', 'nombre': 'money', 'texto': 'Remesas', 'permiso': 'crea_remesas',
+                            'title': 'Genera remesas de la política de cuotas seleccionada'},
+                           {'tipo': 'button', 'nombre': 'file-text-o', 'texto': 'PDF',
+                            'permiso': 'pdf_gastos_ingresos',
+                            'title': 'Genera documento PDF con las políticas de cuotas'}),
+                      'politicas': politicas,
+                      # 'remesas_emitidas': remesas_emitidas,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
 
 
 @login_required()
@@ -687,15 +579,16 @@ def ajax_politica_cuotas(request):
                 politica = Politica_cuotas.objects.get(id=request.POST['id'])
                 grupo = pass_generator(size=15, chars=string.ascii_letters + string.digits)
                 remesa_emitida = Remesa_emitida.objects.create(grupo=grupo, politica=politica)
-                # La siguiente expresión regular identifica los enteros y floats almacenados en descuentos
+                # array_coutas identifica los enteros y floats almacenados en cuota
                 # que pueden estar separados por espacios, comas, ... o cualquier secuencia de caracteres:
-                importes = [politica.cantidad] + map(float, re.findall(r"[-+]?\d*\.\d+|\d+", politica.descuentos))
-                # Hacemos una secuencia de importes añadiendo el último valor lo suficientemente grande como para
-                # asegurar que el número de hermanos es superado. Por ejemplo si importes es [30,20,15], después
-                # de la siguiente líneas sería [30,20,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15]
-                importes = importes + [importes[-1] for i in range(20)]
+                importes = politica.array_cuotas
+                # Proporciona una secuencia de importes añadiendo el último valor lo suficientemente grande como para
+                # asegurar que el número elementos sobre los que se aplica la cuota es superado.
+                # Por ejemplo si importes es [30,20,15], después de ser procesado con array_cutoas
+                # sería [30,20,15,15,15,15,15,15,15,15,15,15,15,15,...,15,15,15,15,15] con el 15 prolongado mil veces
                 exentos_id = politica.exentos.all().values_list('id', flat=True)
-                usuarios = usuarios_de_gauss(g_e.ronda.entidad, cargos=[politica.cargo]).exclude(gauser__id__in=exentos_id)
+                usuarios = usuarios_de_gauss(g_e.ronda.entidad, cargos=[politica.cargo]).exclude(
+                    gauser__id__in=exentos_id)
                 usuarios_id = []
                 n = 0
 
@@ -720,49 +613,71 @@ def ajax_politica_cuotas(request):
                 for usuario in usuarios:
                     n += 1
                     if usuario.id not in usuarios_id:
-                        familiares = usuario.unidad_familiar
-                        deudores = familiares.filter(id__in=usuarios)
-                        concepto = 'Familia' if deudores.count() > 1 else deudores[0].gauser.first_name
-                        usuarios_id += list(deudores.values_list('id', flat=True))
-                        n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
-                        try:
-                            cuenta_banca = [n_c.replace(' ', '') for n_c in n_cs if len(str(n_c)) > 18][0]
-                            usuario.num_cuenta_bancaria = num_cuenta2iban(cuenta_banca)
-                            usuario.save()
-                            asocia_banco_ge(usuario)
-                            importe = sum(importes[:deudores.count()])
+                        if politica.tipo == 'hermanos':
+                            familiares = usuario.unidad_familiar
+                            deudores = familiares.filter(id__in=usuarios)
+                            if deudores.count() > 1:
+                                concepto = 'Familia %s' % deudores[0].gauser.last_name
+                            else:
+                                concepto = deudores[0].gauser.get_full_name()
+                            usuarios_id += list(deudores.values_list('id', flat=True))
+                            n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
+                            deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
+                        elif politica.tipo == 'vut':
+                            viviendas = Vivienda.objects.filter(gpropietario=usuario.gauser,
+                                                                entidad=usuario.ronda.entidad)
+                            deudores = [usuario] * viviendas.count()
+                            usuarios_id += [usuario.id]
+                            n_cs = [usuario.num_cuenta_bancaria]
+                            deudores_str = '%s viviendas gestionadas por %s'.join(
+                                deudores.values_list('gauser__first_name', flat=True))
+                            concepto = 'Cuota %s' % usuario.ronda.entidad.name
+                        else:
+                            deudores = []
+                            usuarios_id += [usuario.id]
+                            n_cs = []
+                            deudores_str = ''
+                            concepto = ''
+                        importe = sum(importes[:len(deudores)])
+                        if importe > 0:
                             try:
-                                deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
-                                if politica.tipo_cobro == 'MEN':
-                                    rmtinf = '%s - Cobro %s, mes de %s (%s)' % (politica.concepto,
-                                                                             politica.get_tipo_cobro_display(),
-                                                                             date.today().strftime('%B'), deudores_str)
-                                else:
-                                    rmtinf = '%s - Cobro %s, realizado en %s (%s)' % (politica.concepto,
-                                                                             politica.get_tipo_cobro_display(),
-                                                                             date.today().strftime('%B'), deudores_str)
-                                r = Remesa.objects.create(emitida=remesa_emitida,
-                                                          banco=usuario.banco, dtofsgntr=date(2013, 10, 10),
-                                                          dbtrnm='%s %s' % (concepto, deudores[0].gauser.last_name),
-                                                          dbtriban=usuario.num_cuenta_bancaria,
-                                                          rmtinf=rmtinf, instdamt=importe, counter=n)
-                                fila_excel_remesas += 1
-                                wr.write(fila_excel_remesas, 0, r.dbtrnm)
-                                wr.write(fila_excel_remesas, 1, r.rmtinf)
-                                wr.write(fila_excel_remesas, 2, r.dbtriban)
-                                wr.write(fila_excel_remesas, 3, r.instdamt)
+                                cuenta_banca = [n_c.replace(' ', '') for n_c in n_cs if len(str(n_c)) > 18][0]
+                                usuario.num_cuenta_bancaria = num_cuenta2iban(cuenta_banca)
+                                usuario.save()
+                                asocia_banco_ge(usuario)
+                                try:
+                                    if politica.tipo_cobro == 'MEN':
+                                        rmtinf = '%s - Cobro %s, mes de %s (%s)' % (politica.concepto,
+                                                                                    politica.get_tipo_cobro_display(),
+                                                                                    date.today().strftime('%B'),
+                                                                                    deudores_str)
+                                    else:
+                                        rmtinf = '%s - Cobro %s, realizado en %s (%s)' % (politica.concepto,
+                                                                                          politica.get_tipo_cobro_display(),
+                                                                                          date.today().strftime('%B'),
+                                                                                          deudores_str)
+                                    r = Remesa.objects.create(emitida=remesa_emitida,
+                                                              banco=usuario.banco, dtofsgntr=date(2013, 10, 10),
+                                                              dbtrnm='%s %s' % (concepto, deudores[0].gauser.last_name),
+                                                              dbtriban=usuario.num_cuenta_bancaria,
+                                                              rmtinf=rmtinf, instdamt=importe, counter=n)
+                                    fila_excel_remesas += 1
+                                    wr.write(fila_excel_remesas, 0, r.dbtrnm)
+                                    wr.write(fila_excel_remesas, 1, r.rmtinf)
+                                    wr.write(fila_excel_remesas, 2, r.dbtriban)
+                                    wr.write(fila_excel_remesas, 3, r.instdamt)
+                                except:
+                                    fila_excel_avisos += 1
+                                    aviso = u'No se ha podido crear la remesa para la familia %s' % (
+                                        deudores[0].gauser.last_name)
+                                    wa.write(fila_excel_avisos, 0, aviso)
                             except:
-                                fila_excel_avisos += 1
-                                aviso = u'No se ha podido crear la remesa para la familia %s' % (
-                                    deudores[0].gauser.last_name)
-                                wa.write(fila_excel_avisos, 0, aviso)
-
-                        except:
-                            for deudor in deudores:
-                                fila_excel_avisos += 1
-                                aviso = u'Falta número de cuenta bancaria en usuario %s. No se crea remesa.' % (
-                                    deudor.gauser.get_full_name())
-                                wa.write(fila_excel_avisos, 0, aviso)
+                                if politica.tipo == 'hermanos':
+                                    for deudor in deudores:
+                                        fila_excel_avisos += 1
+                                        aviso = u'Falta número de cuenta bancaria en usuario %s. No se crea remesa.' % (
+                                            deudor.gauser.get_full_name())
+                                        wa.write(fila_excel_avisos, 0, aviso)
 
                 fila_excel_remesas += 1
                 wr.write(fila_excel_remesas, 3, Formula("SUM(D2:D%s)" % (fila_excel_remesas)), style=estilo)
@@ -782,11 +697,10 @@ def ajax_politica_cuotas(request):
                 # xml = xml.replace('ñ','n').replace('Ñ','N')
                 fichero = '%s.xml' % (grupo)
                 xmlfile = open(ruta + '/' + fichero, "w+")
-                xmlfile.write(xml.encode('utf8'))
+                xmlfile.write(xml)
                 xmlfile.close()
                 data = render_to_string("remesas_emitidas.html", {'politica': politica})
                 return HttpResponse(data)
-
 
         if request.method == 'GET':
             if request.GET['action'] == 'exentos':
@@ -794,7 +708,8 @@ def ajax_politica_cuotas(request):
                 texto = request.GET['q']
                 cargo = request.GET['cargo']
                 if cargo:
-                    usuarios = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda, cargos__in=[cargo])
+                    usuarios = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda,
+                                                           cargos__in=[cargo])
                 else:
                     usuarios = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda)
                 usuarios_contain_texto = usuarios.filter(
@@ -832,14 +747,15 @@ def lista_socios(request):
     if request.is_ajax():
         g_e = request.session['gauser_extra']
         politica = Politica_cuotas.objects.get(id=request.POST['id'])
-        #Dependiendo de los perfiles del emisor tendrá unos socios u otros:
+        # Dependiendo de los perfiles del emisor tendrá unos socios u otros:
         socios = {}
         socios_grupo = usuarios_de_gauss(g_e.ronda.entidad)
-        #socios_grupo = Gauser_extra.objects.filter( entidad = g_e.ronda.entidad, ronda = g_e.ronda ).exclude(gauser__username = 'gauss')
+        # socios_grupo = Gauser_extra.objects.filter( entidad = g_e.ronda.entidad, ronda = g_e.ronda ).exclude(gauser__username = 'gauss')
         perfil_elegido = politica.perfil
 
         educandos = socios_grupo.filter(perfiles__in=[perfil_elegido])
-        subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad, perfil=perfil_elegido, fecha_expira__gt=date.today())
+        subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad, perfil=perfil_elegido,
+                                                 fecha_expira__gt=date.today())
         for subentidad in subentidades:
             educandos_rama = educandos.filter(subentidades__in=[subentidad]).distinct()
             if len(educandos_rama) > 0:
@@ -873,8 +789,8 @@ def lista_socios(request):
                                 request=request)
         return HttpResponse(html)
 
-        #---------------------------------------------------------------------------------------------------#
-        #---------------------------------------------------------------------------------------------------#
+        # ---------------------------------------------------------------------------------------------------#
+        # ---------------------------------------------------------------------------------------------------#
 
         # def crea_asientos(request):
         #

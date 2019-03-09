@@ -12,8 +12,8 @@
         </label>
     </div>
     <div class="large-6 columns">
-        <label>Perfil al que se aplica el cobro
-            {{ form.cargo }}
+        <label>Tipo de cuota
+            {{ form.tipo }}
         </label>
     </div>
 </div>
@@ -34,8 +34,8 @@
         </label>
     </div>
     <div class="large-3 columns">
-        <label>Cantidad (euros)
-            {{ form.cantidad }}
+        <label>Perfil al que se aplica el cobro
+            {{ form.cargo }}
         </label>
     </div>
 </div>
@@ -46,13 +46,210 @@
         </label>
     </div>
 </div>
-<div class="row">
-    <div class="large-12 columns">
-        <label> Política de descuentos
-            {{ form.descuentos }}
-        </label>
+
+<div class="row cuotas_viviendas div_cuotas">
+    <div class="columns large-12">
+        <p style="font-weight: 800;">Introduce, separadas por comas, las cantidades en las que se incrementará
+            la cuota por cada
+            vivienda.</p>
+        <p>Por ejemplo si las cantidades separadas por comas fueran:</p>
+        <p>10, 8, 6, 4, 4, 4, 4, 4, 4</p>
+        <p>Significaría que una persona con tres viviendas tendría una cuota de 24€ (esto es: 10€ +
+            8€ + 6€)</p>
+        <p>De igual forma una persona con siete viviendas tendría una cuota de 40€ (10€ +
+            8€ + 6€ + 4€ + 4€ + 4€ + 4€)</p>
     </div>
 </div>
+
+<div class="row cuotas_hermanos div_cuotas">
+    <div class="columns large-12">
+        <p style="font-weight: 800;">Introduce, separadas por comas, las cantidades que se cobrarán a cada uno de los
+            hermanos.</p>
+        <p>Por ejemplo si las cantidades separadas por comas fueran:</p>
+        <p>10, 8, 6, 4, 4, 4, 4, 4, 4</p>
+        <p>Significaría que una familia con tres hermanos tendría una cuota de 24€ (esto es: 10€ +
+            8€ + 6€)</p>
+        <p>De igual forma una familia con siete hermanos tendría una cuota de 40€ (10€ +
+            8€ + 6€ + 4€ + 4€ + 4€ + 4€)</p>
+    </div>
+</div>
+
+<div class="row cuotas_dispositivos div_cuotas">
+    <div class="columns large-12">
+        <p style="font-weight: 800;">Introduce, separadas por comas, las cantidades que se cobrarán por cada dispositivo
+            a medida
+            que aumenta su número.</p>
+        <p>Por ejemplo si las cantidades separadas por comas fueran:</p>
+        <p>10, 8, 6, 4, 4, 4, 4, 4, 4</p>
+        <p>Significaría que una configuración con tres dispositivos tendría una cuota de 24€ (esto es: 10€ +
+            8€ + 6€)</p>
+        <p>De igual forma un usuario con siete dispositivos configurados tendría una cuota de 40€ (10€ +
+            8€ + 6€ + 4€ + 4€ + 4€ + 4€)</p>
+    </div>
+</div>
+
+<div class="row cuota_fija div_cuotas">
+    <div class="columns large-12">
+        <p style="font-weight: 800;">Introduce la cantidad que se cobrará como cuota fija.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <input type="text" id="id_cuota" name="cuota" value="{{ form.cuota.value }}"
+               placeholder="Introduce las cantidades, por ejemplo: 15, 10, 3">
+    </div>
+</div>
+<div class="row cuotas_viviendas div_cuotas">
+    <div class="columns large-12">
+        <table width="100%">
+            <tr>
+                <th>Número de viviendas</th>
+                <th title="Primera vivienda">1ª</th>
+                <th title="Segunda vivienda">2ª</th>
+                <th title="Tercera vivienda">3ª</th>
+                <th title="Cuarta vivienda">4ª</th>
+                <th title="Quinta vivienda">5ª</th>
+                <th title="Sexta vivienda">6ª</th>
+                <th title="Séptima vivienda">7ª</th>
+                <th title="Octava vivienda">8ª</th>
+                <th title="Novena vivienda">9ª</th>
+                <th>...</th>
+            </tr>
+            <tr>
+                <td>Cuota parcial</td>
+                <td class="v1"></td>
+                <td class="v2"></td>
+                <td class="v3"></td>
+                <td class="v4"></td>
+                <td class="v5"></td>
+                <td class="v6"></td>
+                <td class="v7"></td>
+                <td class="v8"></td>
+                <td class="v9"></td>
+                <td class="v10"></td>
+            </tr>
+            <tr>
+                <td>Cuota</td>
+                <td class="va1"></td>
+                <td class="va2"></td>
+                <td class="va3"></td>
+                <td class="va4"></td>
+                <td class="va5"></td>
+                <td class="va6"></td>
+                <td class="va7"></td>
+                <td style="color: red;" class="va8"></td>
+                <td class="va9"></td>
+                <td class="va10"></td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="row cuotas_viviendas div_cuotas">
+    <div class="columns large-12" style="color: grey;"><p>Con las cantidades indicadas, y tal como se muestra
+        en la tabla anterior, una persona con 8 viviendas pagaría: <span class="cuota_ejemplo"></span>€</p></div>
+</div>
+
+<div class="row cuotas_hermanos div_cuotas">
+    <div class="columns large-12">
+        <table width="100%">
+            <tr>
+                <th>Número de hermanos</th>
+                <th title="Primer hermano">1º</th>
+                <th title="Segundo hermano">2º</th>
+                <th title="Tercer hermano">3º</th>
+                <th title="Cuarto hermano">4º</th>
+                <th title="Quinto hermano">5º</th>
+                <th title="Sexto hermano">6º</th>
+                <th title="Séptimo hermano">7º</th>
+                <th title="Octavo hermano">8º</th>
+                <th title="Noveno hermano">9º</th>
+                <th>...</th>
+            </tr>
+            <tr>
+                <td>Cuota parcial</td>
+                <td class="v1"></td>
+                <td class="v2"></td>
+                <td class="v3"></td>
+                <td class="v4"></td>
+                <td class="v5"></td>
+                <td class="v6"></td>
+                <td class="v7"></td>
+                <td class="v8"></td>
+                <td class="v9"></td>
+                <td class="v10"></td>
+            </tr>
+            <tr>
+                <td>Cuota</td>
+                <td class="va1"></td>
+                <td class="va2"></td>
+                <td class="va3"></td>
+                <td class="va4"></td>
+                <td class="va5"></td>
+                <td class="va6"></td>
+                <td class="va7"></td>
+                <td style="color: red;" class="va8"></td>
+                <td class="va9"></td>
+                <td class="va10"></td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="row cuotas_hermanos div_cuotas">
+    <div class="columns large-12" style="color: grey;"><p>Con las cantidades indicadas, y tal como se muestra
+        en la tabla anterior, una familia de 8 hermanos pagaría: <span class="cuota_ejemplo"></span>€</p></div>
+</div>
+
+<div class="row cuotas_dispositivos div_cuotas">
+    <div class="columns large-12">
+        <table width="100%">
+            <tr>
+                <th>Número de dispositivos</th>
+                <th title="Primer dispositivo">1º</th>
+                <th title="Segundo dispositivo">2º</th>
+                <th title="Tercer dispositivo">3º</th>
+                <th title="Cuarto dispositivo">4º</th>
+                <th title="Quinto dispositivo">5º</th>
+                <th title="Sexto dispositivo">6º</th>
+                <th title="Séptimo dispositivo">7º</th>
+                <th title="Octavo dispositivo">8º</th>
+                <th title="Noveno dispositivo">9º</th>
+                <th>...</th>
+            </tr>
+            <tr>
+                <td>Cuota parcial</td>
+                <td class="v1"></td>
+                <td class="v2"></td>
+                <td class="v3"></td>
+                <td class="v4"></td>
+                <td class="v5"></td>
+                <td class="v6"></td>
+                <td class="v7"></td>
+                <td class="v8"></td>
+                <td class="v9"></td>
+                <td class="v10"></td>
+            </tr>
+            <tr>
+                <td>Cuota</td>
+                <td class="va1"></td>
+                <td class="va2"></td>
+                <td class="va3"></td>
+                <td class="va4"></td>
+                <td class="va5"></td>
+                <td class="va6"></td>
+                <td class="va7"></td>
+                <td style="color: red;" class="va8"></td>
+                <td class="va9"></td>
+                <td class="va10"></td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="row cuotas_dispositivos div_cuotas">
+    <div class="columns large-12" style="color: grey;"><p>Con las cantidades indicadas, y tal como se muestra
+        en la tabla anterior, un usuario con 8 dispositivos pagaría: <span class="cuota_ejemplo"></span>€</p></div>
+</div>
+
 
 <script>
     $('#id_tipo_cobro').select2();
@@ -101,4 +298,76 @@
     {% if exentos %}
         $("#id_exentos").select2("data", {% autoescape off %}{{exentos}} {% endautoescape %});
     {% endif %}
+
+    {# Código pra procesar la información proporcionada por el usuario con respecto a las cuotas #}
+    $('#id_tipo').trigger('change');
+
+    $('#Contenido').on('change', '#id_tipo', function () {
+        var tipo = $(this).val();
+        $('.div_cuotas').hide();
+        if (tipo == 'fija') {
+            $('.cuota_fija').show();
+        } else if (tipo == 'hermanos') {
+            $('.cuotas_hermanos').show();
+        } else if (tipo == 'vut') {
+            $('.cuotas_viviendas').show();
+        } else if (tipo == 'domotica') {
+            $('.cuotas_dispositivos').show();
+        }
+    });
+
+    var cuotas_csv = $('#id_cuota');
+
+    function parse_cuotas(secuencia) {
+        var cuotas = secuencia.val().replace(/[^0-9,\,]+/g, "").split(',').reduce(function (prev, curr) {
+            return prev.concat(curr.split(' ').map(Number));
+        }, []);
+        var last_cuota = parseInt(cuotas[cuotas.length - 1]);
+        if (cuotas.length == 0) {
+            last_cuota = 0;
+            cuotas = [0];
+        }
+        for (var i = 0; i < 1000; i++) {
+            cuotas.push(last_cuota);
+        }
+        var cuota_ejemplo = 0;
+        for (var i = 0; i < 8; i++) {
+            cuota_ejemplo = cuota_ejemplo + cuotas[i];
+        }
+        $('.cuota_ejemplo').html(cuota_ejemplo);
+        for (var i = 0; i < 10; i++) {
+            var pos = i + 1;
+            $('.v' + pos).html(cuotas[i]);
+            if (i == 0) {
+                $('.va' + pos).html(cuotas[i]);
+            } else {
+                var va = 0;
+                for (var n = 0; n < pos; n++) {
+                    va = va + cuotas[n];
+                }
+                $('.va' + pos).html(va)
+            }
+        }
+    }
+
+    parse_cuotas(cuotas_csv);
+
+    $('#Contenido').on('keyup change', '#id_cuota', function (e) {
+        var valor = $(this).val();
+        parse_cuotas(cuotas_csv);
+        {#setTimeout(function () {#}
+        {#    if (valor == cuotas_csv.val()) {#}
+        {#        $.post("/cuotas_vut/", {#}
+        {#            action: 'update_cuotas_csv',#}
+        {#            valor: valor#}
+        {#        }, function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $("#update_error").show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {#    }#}
+        {# }, 750);#}
+    });
 </script>

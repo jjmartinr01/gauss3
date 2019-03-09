@@ -9,6 +9,12 @@ register = Library()
 
 
 @register.filter
+def number_viviendas_same_propietario(vivienda):
+    entidad = vivienda.entidad
+    return Vivienda.objects.filter(gpropietario=vivienda.gpropietario, entidad=vivienda.entidad).count()
+
+
+@register.filter
 def is_today_or_yesterday(fecha):
     hoy = datetime.today().date()
     ayer = hoy - timedelta(1)

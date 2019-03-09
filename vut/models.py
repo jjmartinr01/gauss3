@@ -394,7 +394,6 @@ class AsientoVUT(models.Model):
     def __str__(self):
         return u'%s - %s (%s)' % (self.partida.contabilidad.id, self.concepto, self.cantidad)
 
-
 ###################################################################################################
 ############################## DOMÓTICA ###########################################################
 ###################################################################################################
@@ -422,7 +421,7 @@ class ConfEnlacesDomoticaVUT(models.Model):
     inicio = models.DateField('Fecha desde la que está activo el enlace', null=True, blank=True)
     fin = models.DateField('Fecha hasta la que está activo el enlace', null=True, blank=True)
     nombre = models.CharField('Nombre de la configuración', blank=True, null=True, max_length=250)
-    domoticas = models.ManyToManyField(DomoticaVUT, blank=True, null=True)
+    domoticas = models.ManyToManyField(DomoticaVUT, blank=True)
     creado = models.DateField('Fecha de creación', auto_now_add=True)
     modificado = models.DateField('Fecha de modificación', auto_now=True)
 

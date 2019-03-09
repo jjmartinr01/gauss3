@@ -367,10 +367,24 @@
 
 <div class="row formulario_socio">
     <div class="large-6 columns">
-        <label style="font-weight: 800;">IBAN (Cuenta bancaria)
-            <input type="text" data-campo="num_cuenta_bancaria" id="id_num_cuenta_bancaria" maxlength="50"
-                   title="{{ gauser_extra_selected.banco.nombre }}"
-                   value="{{ gauser_extra_selected.num_cuenta_bancaria|default_if_none:"" }}" class="gauser_extra"/>
+        <label style="font-weight: 800;">IBAN (Cuenta bancaria)<span id="errores_iban" style="display: none;color:red"><i
+                        class="fa fa-warning"></i></span> <span id="check_iban" style="display: none;color:green"><i
+                        class="fa fa-check"></i></span>
+                    <input type="text" value="{{ gauser_extra_selected.num_cuenta_bancaria|default_if_none:"" }}"
+                           data-id="{{ miembro_unidad.id }}" id="num_cuenta_bancaria"
+                           data-campo="num_cuenta_bancaria" title="{{ gauser_extra_selected.banco.nombre }}">
+                    <ul style="color:red">
+                        <li id="iban_incompleto" class="warnings" style="display: none;">
+                            El IBAN está compuesto por 24 caracteres
+                        </li>
+                        <li id="ccc_incompleto" class="warnings" style="display: none;">
+                            Una cuenta bancaria está compuesta por 20 dígitos.
+                        </li>
+                        <li id="iban_error" class="warnings" style="display: none;">
+                            Hay algún error en los dígitos introducidos
+                        </li>
+                    </ul>
+                </label>
         </label>
     </div>
     <div class="large-6 columns">
