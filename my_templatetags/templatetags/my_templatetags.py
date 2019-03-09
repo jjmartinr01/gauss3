@@ -579,8 +579,15 @@ def get_adjunto_name(adjunto):  # Devuelve el texto reemplazando los espacios en
 # TEMPLATETAGS PARA POLÍTICAS DE CUOTAS Y REMESAS
 
 @register.filter
+def primera_cuota(descuentos):
+    d = re.findall(r"[-+]?\d*\.\d+|\d+", descuentos)[0]
+    if d == '&#8364;':
+        d = 'Sin descuentos'
+    return d
+
+@register.filter
 def desglosar_descuentos(descuentos):
-    d = '&#8364;, '.join(re.findall(r"[-+]?\d*\.\d+|\d+", descuentos)) + '&#8364;'
+    d = '&#8364;, '.join(re.findall(r"[-+]?\d*\.\d+|\d+", descuentos)[1:]) + '&#8364;'
     if d == '&#8364;':
         d = 'Sin descuentos'
     return d

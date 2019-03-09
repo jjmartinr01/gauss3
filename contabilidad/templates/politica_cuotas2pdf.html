@@ -14,16 +14,16 @@
         <td style="text-align:center;" colspan="3"><strong>Tipo</strong></td>
         <td>&nbsp;</td>
         <td style="text-align:center;" colspan="6"><strong>Cantidad (€)</strong>&nbsp;&nbsp;</td>
-        <td style="text-align:right;" colspan="10"><strong>Descuentos familiares</strong>&nbsp;&nbsp;</td>
+        <td style="text-align:right;" colspan="10"><strong>Secuencia de descuentos</strong>&nbsp;&nbsp;</td>
     </tr>
     {% for politica in politicas %}
         <tr>
             <td colspan="14"><span>{{ politica.concepto }}</span></td>
             <td style="text-align:center;" colspan="3">{{ politica.get_tipo_cobro_display }}</td>
             <td>&nbsp;</td>
-            <td style="text-align:center;" colspan="6">{{ politica.cantidad }}€&nbsp;&nbsp;</td>
+            <td style="text-align:center;" colspan="6">{{ politica.cuota|primera_cuota }}€&nbsp;&nbsp;</td>
             <td style="text-align:right;" colspan="10">{% autoescape off %}
-                {{ politica.descuentos|desglosar_descuentos }} {% endautoescape %}&nbsp;&nbsp;</td>
+                {{ politica.cuota|desglosar_descuentos }} {% endautoescape %}&nbsp;&nbsp;</td>
         </tr>
         {% if politica.exentos.all|length > 0 %}
             {% if politica.exentos.all|length > 1 %}
