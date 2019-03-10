@@ -13,5 +13,5 @@ urlpatterns = [
     url(r'^domotica_vut/$', views.domotica_vut, name='domotica_vut'),
     url(r'^ajax_domotica_vut/$', views.ajax_domotica_vut, name='ajax_domotica_vut'),
     url(r'^viviendas_registradas_vut/$', views.viviendas_registradas_vut, name='viviendas_registradas_vut'),
-    # url(r'^cuotas_vut/$', views.cuotas_vut, name='cuotas_vut'),
+    url(r'^registro_viajero_manual/$', views.registro_viajero_manual, name='registro_viajero_manual'),
 ]

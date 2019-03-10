@@ -629,8 +629,8 @@ def ajax_politica_cuotas(request):
                             deudores = [usuario] * viviendas.count()
                             usuarios_id += [usuario.id]
                             n_cs = [usuario.num_cuenta_bancaria]
-                            deudores_str = '%s viviendas gestionadas por %s'.join(
-                                deudores.values_list('gauser__first_name', flat=True))
+                            deudores_str = '%s viviendas gestionadas por %s' % (viviendas.count(),
+                                                                                usuario.gauser.get_full_name())
                             concepto = 'Cuota %s' % usuario.ronda.entidad.name
                         else:
                             deudores = []

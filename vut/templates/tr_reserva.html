@@ -7,7 +7,8 @@
                                                                                 data-secret="{{ r.secret }}">{{ r.nombre }}<br><span
                 class="label secondary round">{{ r.code }}</span></a></td>
     {% else %}
-        <td style="max-width: 225px;overflow:hidden;" title="{{ r.nombre }}">{{ r.nombre }}<br><span
+        <td style="max-width: 225px;overflow:hidden;" title="{{ r.nombre }}">
+            <a class="viajero_manual" data-secret="{{ r.secret }}" data-code="{{ r.code }}">{{ r.nombre }}</a><br><span
                 class="label secondary round">{{ r.code }}</span></td>
     {% endif %}
     <td style="max-width: 40px;"><input class="num_viajeros" data-id="{{ r.id }}" value="{{ r.num_viajeros }}"></td>
