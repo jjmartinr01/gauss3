@@ -1234,6 +1234,87 @@ def crea_fichero_policia(viajero):
         return False
 
 
+@permiso_required('edita_reservas')
+def registro_viajero_manual(request):
+    g_e = request.session['gauser_extra']
+    year = datetime.today().year
+    anyos = range(year, year - 100, -1)
+    hoy = datetime.today().date()
+    if request.method == 'GET':
+        try:
+            secret = request.GET['s']
+            code = request.GET['c']
+            viviendas = viviendas_con_permiso(g_e, 'edita_reservas')
+            reserva = Reserva.objects.get(secret=secret, code=code)
+            if reserva.vivienda in viviendas:
+                domoticas = DomoticaVUT.objects.filter(vivienda=reserva.vivienda)
+                return render(request, "registro_entrada_viajero.html",
+                              {
+                                  'formname': 'registro_viajero',
+                                  'reserva': reserva,
+                                  'paises': PAISES,
+                                  'secret': secret,
+                                  'code': code,
+                                  'anyos': anyos,
+                                  'domoticas': domoticas
+                              })
+        except:
+            return render(request, "registro_entrada_viajero_error.html", {'mensaje': 'No tienes permisos'})
+    elif request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'enviar_datos':
+            try:
+                secret = request.POST['secret']
+                code = request.POST['code']
+                hoy = datetime.today().date()
+                reserva = Reserva.objects.get(secret=secret, code=code, entrada__lte=hoy)
+                if reserva.salida < hoy:
+                    return JsonResponse({'ok': False})
+                else:
+                    viajero, creado = Viajero.objects.get_or_create(reserva=reserva, ndi=request.POST['ndi'])
+                    if not creado:
+                        ruta = os.path.join(
+                            "%svut/%s/firmas/" % (RUTA_MEDIA, reserva.vivienda.id),
+                            str(reserva.code) + '_' + str(viajero.ndi) + '.png')
+                        if os.path.isfile(ruta):
+                            os.remove(ruta)
+                    firma_data = request.POST['firma']
+                    format, imgstr = firma_data.split(';base64,')
+                    ext = format.split('/')[-1]
+                    viajero.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+                    viajero.tipo_ndi = request.POST['tipo_ndi']
+                    viajero.fecha_exp = datetime.strptime(request.POST['fecha_exp'], '%Y-%m-%d')
+                    viajero.apellido1 = request.POST['apellido1'][:30]
+                    viajero.apellido2 = request.POST['apellido2'][:30]
+                    viajero.nombre = request.POST['nombre'][:30]
+                    viajero.sexo = request.POST['sexo']
+                    viajero.nacimiento = datetime.strptime(request.POST['nacimiento'], '%Y-%m-%d')
+                    viajero.pais = request.POST['pais']
+                    viajero.save()
+                    crea_fichero_policia(viajero)
+                    return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'domotica':
+            try:
+                domotica = DomoticaVUT.objects.get(id=request.POST['domotica'])
+                secret = request.POST['secret']
+                code = request.POST['code']
+                hoy = datetime.today().date()
+                reserva = Reserva.objects.get(secret=secret, code=code, entrada__lte=hoy)
+                if reserva.salida < hoy:
+                    return JsonResponse({'ok': False})
+                else:
+                    s = requests.Session()
+                    s.verify = False
+                    p = s.post(domotica.url, timeout=5)
+                    return JsonResponse({'ok': True, 'response': p.status_code})
+            except:
+                return JsonResponse({'ok': False})
+
+    return JsonResponse({'ok': False})
+
+################################################################################
+
 def viajeros(request):
     year = datetime.today().year
     anyos = range(year, year - 100, -1)

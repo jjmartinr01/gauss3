@@ -508,6 +508,12 @@
                 });
         });
 
+        $('#Contenido').on('click', '.viajero_manual', function () {
+            var code = $(this).data('code');
+            var secret = $(this).data('secret');
+            location.href = '/registro_viajero_manual/?s=' + secret + '&c=' + code;
+        });
+
         $('#Contenido').on('click', '.copy_url_viajero', function () {
             var code = $(this).data('code');
             var secret = $(this).data('secret');
