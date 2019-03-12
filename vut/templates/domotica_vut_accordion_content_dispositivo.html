@@ -1,6 +1,6 @@
 {% load my_templatetags %}
 <fieldset id="fieldset{{ domotica.id }}">
-    <legend id="dispositivo{{ domotica.id }}">{{ domotica.nombre }}</legend>
+    <legend id="dispositivo{{ domotica.id }}" class="nombre{{ domotica.id }}">{{ domotica.nombre }}</legend>
     <div class="row">
         <div class="columns large-4">
             <label>Nombre: <input type="text" class="campo_char" data-id="{{ domotica.id }}" data-campo="nombre"
@@ -19,10 +19,28 @@
             </label>
         </div>
     </div>
-    <ul class="button-group right">
+<div class="row">
+    <div class="columns large-4">
+        <label>Tipo:
+                <select class="tipo_dispositivo" data-id="{{ domotica.id }}">
+                    {% for t in domotica.TIPO_DOMOTICA %}
+                        <option value="{{ t.0 }}">{{ t.1 }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+    </div>
+    <div class="columns large-8">
+        <ul class="button-group right">
         {% if g_e|has_permiso:'delete_dispositivo_domotica' %}
             <li><a class="button delete_dispositivo_domotica alert" data-id="{{ domotica.id }}"><i class="fa fa-trash"
             ></i> Borrar dispositivo</a></li>
         {% endif %}
     </ul>
+    </div>
+</div>
+
+<div class="row panel">
+    {% include "dispositivo_domotico.html" with domotica=domotica %}
+</div>
+
 </fieldset>

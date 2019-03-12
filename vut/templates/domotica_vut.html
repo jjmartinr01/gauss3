@@ -10,7 +10,7 @@
                 turístico </strong></h4>
         </div>
 
-    <ul class="tabs" data-tab role="tablist">
+        <ul class="tabs" data-tab role="tablist">
             <li class="tab-title active" role="presentation" data-id="0">
                 <a href="#tab1" role="tab" tabindex="0" aria-selected="true" aria-controls="tab1">
                     <b id="texto0">Dispositivos por vivienda</b></a>
@@ -20,24 +20,24 @@
                     <b id="texto1" style="color:#74bfdd;">Configuración de enlaces</b></a>
             </li>
         </ul>
-    <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
-                <div id="lista_domoticas">
-            <dl class="accordion" data-accordion id="domotica_list">
-                {% for vivienda in viviendas %}
-                    {% include "domotica_vut_accordion.html" %}
-                {% endfor %}
-            </dl>
-        </div>
-            </section>
-    <section role="tabpanel" aria-hidden="false" class="content" id="tab2">
-                <div id="lista_conf_enlaces">
-            <dl class="accordion" data-accordion id="conf_enlaces_list">
-                {% for conf in configuraciones_enlace %}
-                    {% include "conf_enlace_vut_accordion.html" %}
-                {% endfor %}
-            </dl>
-        </div>
-            </section>
+        <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
+            <div id="lista_domoticas">
+                <dl class="accordion" data-accordion id="domotica_list">
+                    {% for vivienda in viviendas %}
+                        {% include "domotica_vut_accordion.html" %}
+                    {% endfor %}
+                </dl>
+            </div>
+        </section>
+        <section role="tabpanel" aria-hidden="false" class="content" id="tab2">
+            <div id="lista_conf_enlaces">
+                <dl class="accordion" data-accordion id="conf_enlaces_list">
+                    {% for conf in configuraciones_enlace %}
+                        {% include "conf_enlace_vut_accordion.html" %}
+                    {% endfor %}
+                </dl>
+            </div>
+        </section>
 
 
     </form>
@@ -130,6 +130,28 @@
         {% endif %}
 
         {% if request.session.gauser_extra|has_permiso:'edita_dispositivo_domotica' %}
+            $("body").on('keyup change', '.tipo_dispositivo', function () {
+                var domotica = $(this).data('id');
+                var valor = $(this).val();
+                $.post("/ajax_domotica_vut/", {
+                        action: 'update_tipo_dispositivo',
+                        domotica: domotica,
+                        valor: valor
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            {#$("." + data.campo + domotica).html(data.valor);#}
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            setTimeout(function () {
+                                show_mensajes({title: 'Error de edición', texto: data.mensaje});
+                            }, 600);
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+
             $("body").on('keyup change', '.campo_char', function () {
                 var domotica = $(this).data('id');
                 var valor = $(this).val();
@@ -146,9 +168,7 @@
                             },
                             function (data) {
                                 if (data.ok) {
-                                    if (data.campo == 'nombre') {
-                                        $("#dispositivo" + domotica).html(data.valor);
-                                    }
+                                    $("." + data.campo + domotica).html(data.valor);
                                     $("#update_ok").show().delay(1500).fadeOut();
                                 } else {
                                     setTimeout(function () {
