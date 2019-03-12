@@ -1239,7 +1239,6 @@ def registro_viajero_manual(request):
     g_e = request.session['gauser_extra']
     year = datetime.today().year
     anyos = range(year, year - 100, -1)
-    hoy = datetime.today().date()
     if request.method == 'GET':
         try:
             secret = request.GET['s']
@@ -1248,7 +1247,7 @@ def registro_viajero_manual(request):
             reserva = Reserva.objects.get(secret=secret, code=code)
             if reserva.vivienda in viviendas:
                 domoticas = DomoticaVUT.objects.filter(vivienda=reserva.vivienda)
-                return render(request, "registro_entrada_viajero.html",
+                return render(request, "registro_entrada_viajero_manual.html",
                               {
                                   'formname': 'registro_viajero',
                                   'reserva': reserva,
@@ -1265,49 +1264,38 @@ def registro_viajero_manual(request):
             try:
                 secret = request.POST['secret']
                 code = request.POST['code']
-                hoy = datetime.today().date()
-                reserva = Reserva.objects.get(secret=secret, code=code, entrada__lte=hoy)
-                if reserva.salida < hoy:
-                    return JsonResponse({'ok': False})
-                else:
-                    viajero, creado = Viajero.objects.get_or_create(reserva=reserva, ndi=request.POST['ndi'])
-                    if not creado:
-                        ruta = os.path.join(
-                            "%svut/%s/firmas/" % (RUTA_MEDIA, reserva.vivienda.id),
-                            str(reserva.code) + '_' + str(viajero.ndi) + '.png')
-                        if os.path.isfile(ruta):
-                            os.remove(ruta)
-                    firma_data = request.POST['firma']
-                    format, imgstr = firma_data.split(';base64,')
-                    ext = format.split('/')[-1]
-                    viajero.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-                    viajero.tipo_ndi = request.POST['tipo_ndi']
-                    viajero.fecha_exp = datetime.strptime(request.POST['fecha_exp'], '%Y-%m-%d')
-                    viajero.apellido1 = request.POST['apellido1'][:30]
-                    viajero.apellido2 = request.POST['apellido2'][:30]
-                    viajero.nombre = request.POST['nombre'][:30]
-                    viajero.sexo = request.POST['sexo']
-                    viajero.nacimiento = datetime.strptime(request.POST['nacimiento'], '%Y-%m-%d')
-                    viajero.pais = request.POST['pais']
-                    viajero.save()
-                    crea_fichero_policia(viajero)
-                    return JsonResponse({'ok': True})
+                reserva = Reserva.objects.get(secret=secret, code=code)
+                viajero, creado = Viajero.objects.get_or_create(reserva=reserva, ndi=request.POST['ndi'])
+                if not creado:
+                    ruta = os.path.join(
+                        "%svut/%s/firmas/" % (RUTA_MEDIA, reserva.vivienda.id),
+                        str(reserva.code) + '_' + str(viajero.ndi) + '.png')
+                    if os.path.isfile(ruta):
+                        os.remove(ruta)
+                firma_data = request.POST['firma']
+                format, imgstr = firma_data.split(';base64,')
+                ext = format.split('/')[-1]
+                viajero.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+                viajero.tipo_ndi = request.POST['tipo_ndi']
+                viajero.fecha_exp = datetime.strptime(request.POST['fecha_exp'], '%Y-%m-%d')
+                viajero.apellido1 = request.POST['apellido1'][:30]
+                viajero.apellido2 = request.POST['apellido2'][:30]
+                viajero.nombre = request.POST['nombre'][:30]
+                viajero.sexo = request.POST['sexo']
+                viajero.nacimiento = datetime.strptime(request.POST['nacimiento'], '%Y-%m-%d')
+                viajero.pais = request.POST['pais']
+                viajero.save()
+                crea_fichero_policia(viajero)
+                return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'domotica':
             try:
                 domotica = DomoticaVUT.objects.get(id=request.POST['domotica'])
-                secret = request.POST['secret']
-                code = request.POST['code']
-                hoy = datetime.today().date()
-                reserva = Reserva.objects.get(secret=secret, code=code, entrada__lte=hoy)
-                if reserva.salida < hoy:
-                    return JsonResponse({'ok': False})
-                else:
-                    s = requests.Session()
-                    s.verify = False
-                    p = s.post(domotica.url, timeout=5)
-                    return JsonResponse({'ok': True, 'response': p.status_code})
+                s = requests.Session()
+                s.verify = False
+                p = s.post(domotica.url, timeout=5)
+                return JsonResponse({'ok': True, 'response': p.status_code})
             except:
                 return JsonResponse({'ok': False})
 
@@ -1840,6 +1828,17 @@ def ajax_domotica_vut(request):
                     setattr(domotica, campo, valor)
                     domotica.save()
                     return JsonResponse({'ok': True, 'campo': campo, 'valor': valor})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el dispositivo."})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el dispositivo."})
+        elif request.POST['action'] == 'update_tipo_dispositivo':
+            try:
+                domotica = DomoticaVUT.objects.get(id=request.POST['domotica'])
+                if g_e.has_permiso('edita_dispositivo_domotica'):
+                    domotica.tipo = request.POST['valor']
+                    domotica.save()
+                    return JsonResponse({'ok': True, 'campo': 'tipo', 'valor': request.POST['valor']})
                 else:
                     return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el dispositivo."})
             except:
