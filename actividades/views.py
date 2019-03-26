@@ -101,8 +101,8 @@ def gestionar_actividades(request):
 
     def pdf_actividades(actividad):
         if actividad == 'todas' and g_e.has_permiso('crea_informe_actividades'):
-            fecha_inicio = datetime.strptime(request.POST['search_fecha_inicio'], '%d-%m-%Y')
-            fecha_fin = datetime.strptime(request.POST['search_fecha_fin'], '%d-%m-%Y')
+            fecha_inicio = datetime.strptime(request.POST['search_fecha_inicio'], '%d-%m-%Y').date()
+            fecha_fin = datetime.strptime(request.POST['search_fecha_fin'], '%d-%m-%Y').date()
             actividades = Actividad.objects.filter(organizador__ronda__entidad=g_e.ronda.entidad,
                                                    fecha_inicio__gte=fecha_inicio,
                                                    fecha_fin__lte=fecha_fin).order_by(
