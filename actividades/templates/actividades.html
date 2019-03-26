@@ -150,21 +150,21 @@
             });
 
             $('body').on('click', '.go_page', function (e) {
-            e.preventDefault();
-            var page = $(this).data('page');
-            if (page) {
-                var section = $(this).closest('section').prop('id');
-                $.post("/ajax_actividades/", {action: 'paginar_actividades', page: page},
-                    function (data) {
-                        if (data.ok) {
-                            $('#list_actividades_pagination').html(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $('#update_error').show().delay(1500).fadeOut();
-                        }
-                    });
-            }
-        });
+                e.preventDefault();
+                var page = $(this).data('page');
+                if (page) {
+                    var section = $(this).closest('section').prop('id');
+                    $.post("/ajax_actividades/", {action: 'paginar_actividades', page: page},
+                        function (data) {
+                            if (data.ok) {
+                                $('#list_actividades_pagination').html(data.html);
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            });
         {% endif %}
 
         {% if request.session.gauser_extra|has_permiso:"crea_informe_actividades" %}

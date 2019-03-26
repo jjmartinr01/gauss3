@@ -24,7 +24,7 @@
         <label>Tipo:
                 <select class="tipo_dispositivo" data-id="{{ domotica.id }}">
                     {% for t in domotica.TIPO_DOMOTICA %}
-                        <option value="{{ t.0 }}">{{ t.1 }}</option>
+                        <option value="{{ t.0 }}" {% if t.0 == domotica.tipo %}selected{% endif %}>{{ t.1 }}</option>
                     {% endfor %}
                 </select>
             </label>
@@ -39,7 +39,9 @@
     </div>
 </div>
 
-<div class="row panel">
+
+    <div class="row panel" title="Esta es la forma en la que un usuario vería este dispositivo"
+         id="div{{ domotica.id }}">
     {% include "dispositivo_domotico.html" with domotica=domotica %}
 </div>
 

@@ -101,8 +101,11 @@ def gestionar_actividades(request):
 
     def pdf_actividades(actividad):
         if actividad == 'todas' and g_e.has_permiso('crea_informe_actividades'):
+            fecha_inicio = datetime.strptime(request.POST['search_fecha_inicio'], '%d-%m-%Y')
+            fecha_fin = datetime.strptime(request.POST['search_fecha_fin'], '%d-%m-%Y')
             actividades = Actividad.objects.filter(organizador__ronda__entidad=g_e.ronda.entidad,
-                                                   organizador__ronda=g_e.ronda).order_by(
+                                                   fecha_inicio__gte=fecha_inicio,
+                                                   fecha_fin__lte=fecha_fin).order_by(
                 'fecha_inicio')
             fichero = 'memoria_extraescolares_' + str(g_e.ronda.entidad.code) + '.pdf'
             profesores = []

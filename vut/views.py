@@ -1838,7 +1838,8 @@ def ajax_domotica_vut(request):
                 if g_e.has_permiso('edita_dispositivo_domotica'):
                     domotica.tipo = request.POST['valor']
                     domotica.save()
-                    return JsonResponse({'ok': True, 'campo': 'tipo', 'valor': request.POST['valor']})
+                    html = render_to_string('dispositivo_domotico.html', {'domotica': domotica})
+                    return JsonResponse({'ok': True, 'campo': 'tipo', 'valor': request.POST['valor'], 'html': html})
                 else:
                     return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el dispositivo."})
             except:

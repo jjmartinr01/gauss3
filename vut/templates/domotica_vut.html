@@ -140,7 +140,7 @@
                     },
                     function (data) {
                         if (data.ok) {
-                            {#$("." + data.campo + domotica).html(data.valor);#}
+                            $("#div" + domotica).html(data.html);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             setTimeout(function () {

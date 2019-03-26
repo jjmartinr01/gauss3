@@ -1,19 +1,59 @@
-<div class="row">
-    <div class="columns large-12">
-        <label><p style="font-weight: 800;" class="texto{{ domotica.id }}">{{ domotica.texto }}</p></label>
+{% if domotica.tipo == 'SELFLOCKING' %}
+    <div class="row">
+        <div class="columns large-12">
+            <p style="font-weight: 800;" class="texto{{ domotica.id }}">{{ domotica.texto }}</p>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="columns large-12">
-        <a class="button boton_domotico nombre{{ domotica.id }}"
-           data-id="{{ domotica.id }}">{{ domotica.nombre }}</a>
+    <div class="row">
+        <div class="columns large-12">
+            <a class="button boton_domotico nombre{{ domotica.id }}"
+               data-id="{{ domotica.id }}">{{ domotica.nombre }}</a>
+        </div>
     </div>
-</div>
+{% elif domotica.tipo == 'ONOFF' %}
+    <div class="row">
+        <div class="columns large-12">
+            <p style="font-weight: 800;" class="texto{{ domotica.id }}">{{ domotica.texto }}</p>
+        </div>
+    </div>
+    <div class="switch radius large">
+        <div class="columns large-12 nombre{{ domotica.id }}">{{ domotica.nombre }}</div>
+        <div class="columns large-12">
+            <input id="CheckboxSwitch{{ domotica.id }}" type="checkbox">
+            <label for="CheckboxSwitch{{ domotica.id }}"></label>
+        </div>
+    </div>
+{% elif domotica.tipo == 'TERMOSTATO' %}
+    <div class="row">
+        <div class="columns large-12">
+            <p style="font-weight: 800;" class="texto{{ domotica.id }}">{{ domotica.texto }}</p>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="columns large-12"><span class="nombre{{ domotica.id }}">{{ domotica.nombre }}</span> <span
+                 style="font-weight: 800;font-size: xx-large;">(<span id="valor{{ domotica.id }}"></span>&#8451;)</span></div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <div class="range-slider" data-slider data-options="initial: 5; start: 5; end: 30;" data-id="{{ domotica.id }}">
+                <span class="range-slider-handle" role="slider" tabindex="0"></span>
+                <span class="range-slider-active-segment"></span>
+                <input type="hidden" id="hidden{{ domotica.id }}">
+            </div>
+        </div>
+    </div>
+
+{% endif %}
 
 {% block final %}
-
     <script type="application/javascript">
-
+        $(document).foundation();
+        $('[data-slider]').on('change.fndtn.slider', function () {
+            var id = $(this).data('id');
+            $('#valor' + id).html($('#hidden' + id).val());
+        });
         $('#Contenido').on('click', '.boton_domotico', function (e) {
             e.preventDefault();
             $('#action').val('domotica');
@@ -29,386 +69,7 @@
             });
         });
 
-        $('#pais').select2();
 
-        PAISES_EU_CODES = ['A9103AAAAA', 'A9104AAAAA', 'A9105AAAAA', 'A9134AAAAA', 'A9107AAAAA', 'A9140AAAAA', 'A9108AAAAA',
-            'A9158AAAAA', 'A9141AAAAA', 'A9109AAAAA', 'A9137AAAAA', 'A9110AAAAA', 'A9111AAAAA', 'A9113AAAAA',
-            'A9114AAAAA', 'A9115AAAAA', 'A9116AAAAA', 'A9117AAAAA', 'A9138AAAAA', 'A9118AAAAA', 'A9139AAAAA',
-            'A9119AAAAA', 'A9120AAAAA', 'A9122AAAAA', 'A9123AAA1A', 'A9124AAAAA', 'A9125AAAAA', 'A9112AAA1A',
-            'A9157AAAAA', 'A9127AAAAA', 'A9128AAAAA'];
-
-        function are_required_fields_filled() {
-            var firma = document.getElementById('sketchpad').toDataURL();
-            var campos = $('.obl_int');
-            var mensaje = '';
-            $.each(campos, function (key, campo) {
-                if ($(campo).val() === "" || $(campo).val() == "undefined" || $(campo).val() == null) {
-                    var c = $(campo).data('campo');
-                    mensaje += '<p>El campo <b>' + c + '</b> es obligatorio rellenarlo (it is required).</p>'
-                }
-            });
-            if (firma.length < 1000) {
-                mensaje += '<p>Para validar los datos <b>debes firmar</b> dentro del marco.</p>';
-            }
-            if ($('#tipo_ndi').val() == 'D' || $('#pais').val() == 'A9109AAAAA') {
-                var apellido2 = $('#apellido2').val();
-                if (apellido2 === "" || apellido2 == "undefined" || apellido2 == null) {
-                    mensaje += '<p>Para los españoles es obligatorio rellenar el <b>segundo apellido</b>.</p>';
-                }
-            }
-            if (mensaje.length > 10) {
-                return {response: false, mensaje: mensaje};
-            } else {
-                return {response: true};
-            }
-        }
-
-
-        $('#Contenido').on('change', '#pais', function (e) {
-            var value = $(this).val();
-            if (value == 'A9109AAAAA') {
-                $('.ndi_int').hide();
-                $('.ndi_eu').hide();
-                $('.ndi_esp').show();
-            } else if (PAISES_EU_CODES.includes(value)) {
-                $('.ndi_int').hide();
-                $('.ndi_esp').hide();
-                $('.ndi_eu').show();
-            } else {
-                $('.ndi_eu').hide();
-                $('.ndi_esp').hide();
-                $('.ndi_int').show();
-            }
-        });
-
-
-        function generar_letra_nif_nie(b) {
-            var c = ["T", "R", "W", "A", "G", "M", "Y", "F", "P", "D", "X", "B", "N", "J", "Z", "S", "Q", "V", "H", "L", "C", "K", "E"];
-            if (b.substring(0, 1).toUpperCase() === "X") {
-                b = b.replace(/x/i, "0")
-            } else {
-                if (b.substring(0, 1).toUpperCase() === "Y") {
-                    b = b.replace(/y/i, "1")
-                } else {
-                    if (b.substring(0, 1).toUpperCase() === "Z") {
-                        b = b.replace(/z/i, "2")
-                    }
-                }
-            }
-            var a = b % 23;
-            return c[a]
-        }
-
-        function es_creable_nif(a) {
-            return a.substring(0, 1).match(/([A-Z])/i) == null && a.substring(0, 1).match(/[^a-zA-Z0-9]/i) == null
-        }
-
-        function crear_nif(b) {
-            var c = -1;
-            var a;
-            b = b.replace(/[^a-zA-Z0-9]+/g, "");
-            if (b.match(/([A-Z])/i) != null) {
-                c = b.match(/([A-Z])/i).index
-            }
-            if (c != -1) {
-                a = b.substring(0, c)
-            } else {
-                a = b
-            }
-            if (a.length < 8) {
-                var d = "00000000";
-                a = d.substring(0, 8 - (a.length)) + a
-            } else {
-                if (a.length > 8) {
-                    a = a.substring(0, 8)
-                }
-            }
-            return a + this.generar_letra_nif_nie(a)
-        }
-
-        function es_creable_nie(a) {
-            return a.match(/[^a-zA-Z0-9]+/i) == null && a.substring(0, 1).match(/([XYZ])/i) != null && (a.length == 8 || (a.length == 9 && a.substring(8, 9).match(/([A-Z])/i) != null)) && a.substring(1, 8).match(/([A-Z])/i) == null
-        }
-
-        function crear_nie(a) {
-            return a.substring(0, 8) + this.generar_letra_nif_nie(a.substring(0, 8))
-        }
-
-        $('#Contenido').on('click', '#enviar_datos', function (e) {
-            e.preventDefault();
-            $('#action').val('enviar_datos');
-            var firma = document.getElementById('sketchpad').toDataURL();
-            var valido = false;
-            var data = are_required_fields_filled();
-            if (data.response) {
-                if ($('#tipo_ndi').val() == 'D') {
-                    if (es_creable_nif($('#ndi').val())) {
-                        $('#ndi').val(crear_nif($('#ndi').val()));
-                        valido = true;
-                    } else {
-                        show_mensajes({
-                            title: '<i class="fa fa-warning"></i> DNI/NIF Incorrecto',
-                            texto: 'Verifica que el número introducido se corresponde con un DNI/NIF.'
-                        });
-                    }
-                } else if ($('#tipo_ndi').val() == 'N') {
-                    if (es_creable_nie($('#ndi').val())) {
-                        $('#ndi').val(crear_nie($('#ndi').val()));
-                        valido = true;
-                    } else {
-                        show_mensajes({
-                            title: '<i class="fa fa-warning"></i> NIE Incorrecto',
-                            texto: 'Verifica que el número introducido se corresponde con un NIE.'
-                        });
-                    }
-                } else {
-                    valido = true;
-                }
-            } else {
-                valido = false;
-                show_mensajes({
-                    title: '<i class="fa fa-warning"></i> Datos sin rellenar/Required data',
-                    texto: data.mensaje
-                });
-            }
-            if (firma.length < 1000 && valido) {
-                show_mensajes({
-                    title: '<i class="fa fa-warning"></i> Debes firmar/Signature required',
-                    texto: '<li>Para validar los datos debes firmar dentro del marco.</li>'
-                });
-                valido = false;
-            }
-            if (valido) {
-                var nombre = $('#nombre').val().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
-                $('#nombre').val(nombre);
-                var apellido1 = $('#apellido1').val().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
-                $('#apellido1').val(apellido1);
-                var apellido2 = $('#apellido2').val().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
-                $('#apellido2').val(apellido2);
-                $('#firma').val(firma);
-                var formulario = $('#' + '{{formname}}').formSerialize();
-                $.post("/viajeros/", formulario,
-                    function (data) {
-                        if (data.ok) {
-                            $("#update_ok").show().delay(1500).fadeOut();
-                            $('.obl_int').val('');
-                            $('.obl_esp').val('');
-                            $('#pais').val('A9109AAAAA').change();
-                            clearCanvas(canvas, ctx);
-                            window.scrollTo(0, 0);
-                            show_mensajes({
-                                title: '<i class="fa fa-thumbs-up"></i> Registrado',
-                                texto: '<p>Usted se ha registrado correctamente. Si lo desea puede rellenar el formulario para otro viajero.</p><p>You were registered correctly. If you wish to register another person, fill in the form again with the new data.</p>'
-                            });
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                            show_mensajes({
-                                title: '<i class="fa fa-warning"></i> Error',
-                                texto: '<p>Debes rellenar adecuadamente todos los campos.</p><p>All form fields are required. Please review your data.</p>'
-                            })
-                        }
-                    });
-            }
-        });
-
-        $('.obl_int, .obl_esp').keyup(function () {
-            $(this).val($(this).val().toUpperCase());
-        });
-
-        $("#fecha_exp").fdatepicker({
-            format: 'yyyy-mm-dd',
-            weekStart: 1,
-            endDate: new Date(),
-            startView: 'decade',
-            leftArrow: '<<',
-            rightArrow: '>>',
-            language: 'es'
-        });
-
-        $("#nacimiento").fdatepicker({
-            format: 'yyyy-mm-dd',
-            weekStart: 1,
-            endDate: new Date(),
-            startView: 'decade',
-            leftArrow: '<<',
-            rightArrow: '>>',
-            language: 'es'
-        });
-
-        // Variables for referencing the canvas and 2dcanvas context
-        var canvas, ctx;
-
-        // Variables to keep track of the mouse position and left-button status
-        var mouseX, mouseY, mouseDown = 0;
-
-        // Variables to keep track of the touch position
-        var touchX, touchY;
-
-        // Keep track of the old/last position when drawing a line
-        // We set it to -1 at the start to indicate that we don't have a good value for it yet
-        var lastX, lastY = -1;
-
-        // Line width
-        var lw = 5;
-
-        // Draws a line between the specified position on the supplied canvas name
-        // Parameters are: A canvas context, the x position, the y position, the size of the dot
-        function drawLine(ctx, x, y, size) {
-
-            // If lastX is not set, set lastX and lastY to the current position
-            if (lastX == -1) {
-                lastX = x;
-                lastY = y;
-            }
-
-            // Let's use black by setting RGB values to 0, and 255 alpha (completely opaque)
-            r = 0;
-            g = 0;
-            b = 0;
-            a = 255;
-
-            // Select a fill style
-            ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + "," + (a / 255) + ")";
-
-            // Set the line "cap" style to round, so lines at different angles can join into each other
-            ctx.lineCap = "round";
-            //ctx.lineJoin = "round";
-
-
-            // Draw a filled line
-            ctx.beginPath();
-
-            // First, move to the old (previous) position
-            ctx.moveTo(lastX, lastY);
-
-            // Now draw a line to the current touch/pointer position
-            ctx.lineTo(x, y);
-
-            // Set the line thickness and draw the line
-            ctx.lineWidth = size;
-            ctx.stroke();
-
-            ctx.closePath();
-
-            // Update the last position to reference the current position
-            lastX = x;
-            lastY = y;
-        }
-
-        // Clear the canvas context using the canvas width and height
-        function clearCanvas(canvas, ctx) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        // Keep track of the mouse button being pressed and draw a dot at current location
-        function sketchpad_mouseDown() {
-            mouseDown = 1;
-            drawLine(ctx, mouseX, mouseY, lw);
-        }
-
-        // Keep track of the mouse button being released
-        function sketchpad_mouseUp() {
-            mouseDown = 0;
-
-            // Reset lastX and lastY to -1 to indicate that they are now invalid, since we have lifted the "pen"
-            lastX = -1;
-            lastY = -1;
-        }
-
-        // Keep track of the mouse position and draw a dot if mouse button is currently pressed
-        function sketchpad_mouseMove(e) {
-            // Update the mouse co-ordinates when moved
-            getMousePos(e);
-
-            // Draw a dot if the mouse button is currently being pressed
-            if (mouseDown == 1) {
-                drawLine(ctx, mouseX, mouseY, lw);
-            }
-        }
-
-        // Get the current mouse position relative to the top-left of the canvas
-        function getMousePos(e) {
-            if (!e)
-                var e = event;
-
-            if (e.offsetX) {
-                mouseX = e.offsetX;
-                mouseY = e.offsetY;
-            } else if (e.layerX) {
-                mouseX = e.layerX;
-                mouseY = e.layerY;
-            }
-        }
-
-        // Draw something when a touch start is detected
-        function sketchpad_touchStart() {
-            // Update the touch co-ordinates
-            getTouchPos();
-
-            drawLine(ctx, touchX, touchY, lw);
-
-            // Prevents an additional mousedown event being triggered
-            event.preventDefault();
-        }
-
-        function sketchpad_touchEnd() {
-            // Reset lastX and lastY to -1 to indicate that they are now invalid, since we have lifted the "pen"
-            lastX = -1;
-            lastY = -1;
-        }
-
-        // Draw something and prevent the default scrolling when touch movement is detected
-        function sketchpad_touchMove(e) {
-            // Update the touch co-ordinates
-            getTouchPos(e);
-
-            // During a touchmove event, unlike a mousemove event, we don't need to check if the touch is engaged, since there will always be contact with the screen by definition.
-            drawLine(ctx, touchX, touchY, lw);
-
-            // Prevent a scrolling action as a result of this touchmove triggering.
-            event.preventDefault();
-        }
-
-        // Get the touch position relative to the top-left of the canvas
-        // When we get the raw values of pageX and pageY below, they take into account the scrolling on the page
-        // but not the position relative to our target div. We'll adjust them using "target.offsetLeft" and
-        // "target.offsetTop" to get the correct values in relation to the top left of the canvas.
-        function getTouchPos(e) {
-            if (!e)
-                var e = event;
-
-            if (e.touches) {
-                if (e.touches.length == 1) { // Only deal with one finger
-                    var touch = e.touches[0]; // Get the information for finger #1
-                    touchX = touch.pageX - touch.target.offsetLeft;
-                    touchY = touch.pageY - touch.target.offsetTop;
-                }
-            }
-        }
-
-
-        {#// Set-up the canvas and add our event handlers after the page has loaded#}
-        {#function init() {#}
-        {#    // Get the specific canvas element from the HTML document#}
-        {#    canvas = document.getElementById('sketchpad');#}
-        {##}
-        {#    // If the browser supports the canvas tag, get the 2d drawing context for this canvas#}
-        {#    if (canvas.getContext)#}
-        {#        ctx = canvas.getContext('2d');#}
-        {##}
-        {#    // Check that we have a valid context to draw on/with before adding event handlers#}
-        {#    if (ctx) {#}
-        {#        // React to mouse events on the canvas, and mouseup on the entire document#}
-        {#        canvas.addEventListener('mousedown', sketchpad_mouseDown, false);#}
-        {#        canvas.addEventListener('mousemove', sketchpad_mouseMove, false);#}
-        {#        window.addEventListener('mouseup', sketchpad_mouseUp, false);#}
-        {##}
-        {#        // React to touch events on the canvas#}
-        {#        canvas.addEventListener('touchstart', sketchpad_touchStart, false);#}
-        {#        canvas.addEventListener('touchend', sketchpad_touchEnd, false);#}
-        {#        canvas.addEventListener('touchmove', sketchpad_touchMove, false);#}
-        {#    }#}
-        {# }#}
     </script>
 
 
