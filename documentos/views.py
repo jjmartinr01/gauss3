@@ -276,3 +276,14 @@ def contrato_gauss(request):
                                   'formname': 'contrato_gauss',
                                   'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                               })
+
+
+def presentaciones(request):
+    if request.method == 'GET':
+        if request.GET['id'] == 'xhtsl45':
+            return render(request, "presentacion_funcion_directiva_1_3.html")
+        else:
+            return render(request, "no_enlace.html")
+    else:
+        return render(request, "no_enlace.html")
+
