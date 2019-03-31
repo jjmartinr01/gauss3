@@ -609,9 +609,10 @@ def carga_masiva(request):
                 book = xlrd.open_workbook(file_contents=request.FILES['file_masivo'].read())
                 sheet = book.sheet_by_index(0)
                 # Get the keys from line 5 of excel file:
-                keys0 = [sheet.cell(4, col_index).value for col_index in xrange(sheet.ncols)]
+                keys0 = [sheet.cell(4, col_index).value for col_index in range(sheet.ncols)]
                 # Get the keys removing accents:
-                keys = [filter(lambda x: x in set(string.printable), k) for k in keys0]
+                # keys = [filter(lambda x: x in set(string.printable), k) for k in keys0]
+                keys = keys0
                 # Join the two earlier lines in one:
                 # kk = [filter(lambda x: x in set(string.printable), sheet.cell(4, col_index).value) for col_index in xrange(sheet.ncols)]
 
@@ -619,43 +620,44 @@ def carga_masiva(request):
                 krp = {'Empleado': 'empleado', 'DNI/Pasaporte': 'dni', 'Tipo de personal': 'subentidades',
                        'Puesto': 'perfiles',
                        'Fecha de nacimiento': 'nacimiento', 'Activo': 'activo',
-                       'Fecha del ltimo nombramiento': 'fecha_alta',
-                       'Fecha de cese': 'baja', 'Direccin': 'direccion', 'Cdigo Postal': 'cp', 'Sexo': 'sexo',
-                       'Localidad': 'localidad', 'Provincia': 'provincia', 'Telfono 1': 'telefono_fijo',
-                       'Telfono 2': 'telefono_movil', 'Correo electrnico': 'email', 'Especialidad': 'especialidad'}
+                       'Fecha del último nombramiento': 'fecha_alta',
+                       'Fecha de cese': 'baja', 'Dirección': 'direccion', 'Código Postal': 'cp', 'Sexo': 'sexo',
+                       'Localidad': 'localidad', 'Provincia': 'provincia', 'Teléfono 1': 'telefono_fijo',
+                       'Teléfono 2': 'telefono_movil', 'Correo electrónico': 'email', 'Especialidad': 'especialidad'}
                 pdic = {'empleado': '', 'dni': '', 'subentidades': '', 'perfiles': '', 'nacimiento': '', 'activo': '',
                         'fecha_alta': '', 'baja': '', 'direccion': '', 'cp': '', 'sexo': '', 'localidad': '',
                         'iban': '',
                         'provincia': '', 'telefono_fijo': '', 'telefono_movil': '', 'email': '', 'especialidad': ''}
                 # Keys Reference for Alumnos:
-                kra = {'Alumno': 'alumno', 'Estado Matrcula': 'estado_matricula', 'N id. Racima': 'id_socio',
-                       'DNI/Pasaporte': 'dni', 'Direccin': 'direccion', 'Cdigo postal': 'cp',
+                kra = {'Alumno': 'alumno', 'Estado Matrícula': 'estado_matricula', 'Nº id. Racima': 'id_socio',
+                       'DNI/Pasaporte': 'dni', 'Dirección': 'direccion', 'Código postal': 'cp',
                        'Localidad de residencia': 'localidad', 'Fecha de nacimiento': 'nacimiento',
-                       'Provincia de residencia': 'provincia', 'Telfono': 'telefono_fijo',
-                       'Telfono mvil': 'telefono_movil',
-                       'Correo electrnico': 'email', 'Curso': 'curso', 'N historial acadmico': 'id_organizacion',
+                       'Provincia de residencia': 'provincia', 'Teléfono': 'telefono_fijo',
+                       'Teléfono móvil': 'telefono_movil',
+                       'Correo electrónico': 'email', 'Curso': 'curso', 'Nº historial académico': 'id_organizacion',
                        'Grupo': 'subentidades', 'Primer apellido': 'last_name1', 'Segundo apellido': 'last_name2',
                        'Nombre': 'nombre', 'DNI/Pasaporte Primer tutor': 'dni_tutor1',
                        'Primer apellido Primer tutor': 'last_name1_tutor1',
                        'Segundo apellido Primer tutor': 'last_name2_tutor1', 'Nombre Primer tutor': 'nombre_tutor1',
-                       'Tfno. Primer tutor': 'telefono_fijo_tutor1', 'Tfno. Mvil Primer tutor': 'telefono_movil_tutor1',
+                       'Tfno. Primer tutor': 'telefono_fijo_tutor1', 'Tfno. Móvil Primer tutor': 'telefono_movil_tutor1',
                        'Sexo Primer tutor': 'sexo_tutor1', 'DNI/Pasaporte Segundo tutor': 'dni_tutor2',
                        'Primer apellido Segundo tutor': 'last_name1_tutor2',
                        'Segundo apellido Segundo tutor': 'last_name2_tutor2',
                        'Nombre Segundo tutor': 'nombre_tutor2', 'Tfno. Segundo tutor': 'telefono_fijo_tutor2',
-                       'Tfno. Mvil Segundo tutor': 'telefono_movil_tutor2', 'Sexo Segundo tutor': 'sexo_tutor2',
+                       'Tfno. Móvil Segundo tutor': 'telefono_movil_tutor2', 'Sexo Segundo tutor': 'sexo_tutor2',
                        'Localidad de nacimiento': 'localidad_nacimiento', 'Nacionalidad': 'nacionalidad',
-                       'Cdigo Pas nacimiento': 'code_pais_nacimiento', 'Pas de nacimiento': 'pais_nacimiento',
-                       'Cdigo Provincia nacimiento': 'code_provincia_nacimiento',
+                       'Código País nacimiento': 'code_pais_nacimiento', 'País de nacimiento': 'pais_nacimiento',
+                       'Código Provincia nacimiento': 'code_provincia_nacimiento',
                        'Pago   Seguro escolar': 'pago_seguro_escolar', 'Sexo': 'sexo',
-                       'Ao de la matrcula': 'year_matricula', 'N de matrculas en este curso': 'num_matriculas',
-                       'Observaciones de la matrcula': 'observaciones_matricula', 'Nmero SS': 'num_ss',
-                       'N expte. en el centro': 'num_exp', 'Fecha de la matrcula': 'fecha_matricula',
-                       'N de matrculas en el expediente': 'num_matriculas_exp', 'Repeticiones en el curso': 'rep_curso',
+                       'Año de la matrícula': 'year_matricula', 'Nº de matrículas en este curso': 'num_matriculas',
+                       'Observaciones de la matrícula': 'observaciones_matricula', 'Número SS': 'num_ss',
+                       'Nº expte. en el centro': 'num_exp', 'Fecha de la matrícula': 'fecha_matricula',
+                       'Nº de matrículas en el expediente': 'num_matriculas_exp', 'Repeticiones en el curso': 'rep_curso',
                        'Familia numerosa': 'familia_numerosa', 'Lengua materna': 'lengua_materna',
-                       'Ao incorporacin al sistema educativo': 'year_incorporacion', 'Bilinge': 'bilingue',
-                       'Correo electrnico Primer tutor': 'email_tutor1',
-                       'Correo electrnico Segundo tutor': 'email_tutor2'}
+                       'Año incorporación al sistema educativo': 'year_incorporacion', 'Bilinge': 'bilingue',
+                       'Correo electrónico Primer tutor': 'email_tutor1',
+                       'Correo electrónico Segundo tutor': 'email_tutor2',
+                       'Autoriza el uso de imagenes': 'uso_imagenes'}
 
                 adic = {'alumno': '', 'estado_matricula': '', 'id_socio': '', 'dni': '', 'direccion': '', 'cp': '',
                         'localidad': '', 'nacimiento': '', 'provincia': '', 'telefono_fijo': '', 'telefono_movil': '',
@@ -678,11 +680,11 @@ def carga_masiva(request):
                         'perfiles_tutor1': '', 'perfiles_tutor2': '', }
 
                 if len(keys) < 30:  # This implies the file is from Personal (RegInfPerCen.xls)
-                    for row_index in xrange(5, sheet.nrows):
+                    for row_index in range(5, sheet.nrows):
                         d = pdic
                         # d = {krp[keys[col_index]]: sheet.cell(row_index, col_index).value for col_index in
                         #      xrange(sheet.ncols)}
-                        for col_index in xrange(sheet.ncols):
+                        for col_index in range(sheet.ncols):
                             d[krp[keys[col_index]]] = sheet.cell(row_index, col_index).value
                         d['apellidos'] = d['empleado'].split(', ')[0]
                         d['nombre'] = d['empleado'].split(', ')[1]
@@ -746,11 +748,11 @@ def carga_masiva(request):
                     #                                      clave_ex='madres_padres', edad_min=18, edad_max=67)
                     cargoa = Cargo.objects.get_or_create(cargo='Alumno/a', entidad=g_e.ronda.entidad, nivel=6)
                     cargop = Cargo.objects.get_or_create(cargo='Padre/Madre', entidad=g_e.ronda.entidad, nivel=6)
-                    for row_index in xrange(5, sheet.nrows):
+                    for row_index in range(5, sheet.nrows):
                         d = adic
                         # d = {kra[keys[col_index]]: sheet.cell(row_index, col_index).value for col_index in
                         #      xrange(sheet.ncols)}
-                        for col_index in xrange(sheet.ncols):
+                        for col_index in range(sheet.ncols):
                             d[kra[keys[col_index]]] = sheet.cell(row_index, col_index).value
                         d['apellidos'] = '%s %s' % (d['last_name1'], d['last_name2'])
                         d['apellidos_tutor1'] = '%s %s' % (d['last_name1_tutor1'], d['last_name2_tutor1'])

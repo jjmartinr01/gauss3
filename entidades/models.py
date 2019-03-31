@@ -400,6 +400,7 @@ class Gauser_extra(models.Model):
     educa_pk = models.CharField("pk en gauss_educa", max_length=12, blank=True, null=True)
     consentimiento = models.BooleanField('Consentimiento datos en gauss', default=False)
     fecha_consentimiento = models.DateTimeField('Fecha y hora firma de consentimiento', blank=True, null=True)
+    uso_imagenes = models.BooleanField('Autoriza al uso de imágenes', default=False)
 
     # tutor_entidad1 = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
     #                                    related_name='tutor_entidad')
