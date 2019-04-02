@@ -2,6 +2,7 @@
 from __future__ import  unicode_literals
 import logging
 from django.utils import timezone
+from django.core.files.base import ContentFile
 from time import sleep
 from bs4 import BeautifulSoup
 from django.core.mail import EmailMessage
@@ -260,44 +261,100 @@ def comunica_viajero2PNGC():
                         mensaje, idHuesped, idHospederia)
                     logger.info("Se han grabado las observaciones")
                     # Para completar la grabación es necesario llamar a parteViajero a través de una petición GET:
-                    # parte_viajero_url = 'https://webpol.policia.es/e-hotel/hospederia/manual/vista/parteViajero'
-                    # parte_viajero_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
-                    #                          'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                    #                          'Ajax-Referer': '/e-hotel/hospederia/manual/insertar/huesped',
-                    #                          'Connection': 'keep-alive',
-                    #                          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                    #                          'Cookie': cookies_header, 'Host': 'webpol.policia.es',
-                    #                          'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                    #                          'User-Agent': 'python-requests/2.21.0',
-                    #                          'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
-                    # try:
-                    #     p5 = s.get(parte_viajero_url, headers=parte_viajero_headers, cookies=dict(s.cookies), timeout=5)
-                    #     logger.info("Enviado GET a parteViajero")
-                    #     sleep(4)
-                    # except:
-                    #     logger.info("Error al procesar parteViajero")
-                    #     return False
+                    parte_viajero_url = 'https://webpol.policia.es/e-hotel/hospederia/manual/vista/parteViajero'
+                    parte_viajero_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                                             'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                             'Ajax-Referer': '/e-hotel/hospederia/manual/insertar/huesped',
+                                             'Connection': 'keep-alive',
+                                             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                             'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                                             'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                                             'User-Agent': 'python-requests/2.21.0',
+                                             'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                    try:
+                        p5 = s.get(parte_viajero_url, headers=parte_viajero_headers, cookies=dict(s.cookies), timeout=5)
+                        logger.info("Enviado GET a parteViajero")
+                        sleep(4)
+                    except:
+                        logger.info("Error al procesar parteViajero")
+                        return False
                     # En siguiente paso dado a través de un navegador es llamar a tipoDocumentoNacionalidad con una
                     # petición POST enviando como parámetro la "nacionalidad":
-                    # nacionalidad_url = 'https://webpol.policia.es/e-hotel/combo/tipoDocumentoNacionalidad'
-                    # nacionalidad_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
-                    #                         'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                    #                         'Ajax-Referer': '/e-hotel/combo/tipoDocumentoNacionalidad',
-                    #                         'Connection': 'keep-alive',
-                    #                         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                    #                         'Cookie': cookies_header, 'Host': 'webpol.policia.es',
-                    #                         'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                    #                         'User-Agent': 'python-requests/2.21.0',
-                    #                         'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
-                    # payload = {'nacionalidad': viajero.pais}
-                    # try:
-                    #     p6 = s.post(nacionalidad_url, headers=nacionalidad_headers, cookies=dict(s.cookies),
-                    #                 data=payload,
-                    #                 timeout=5)
-                    #     logger.info("Enviado POST a tipoDocumentoNacionalidad")
-                    # except:
-                    #     logger.info("Error al enviar POST a tipoDocumentoNacionalidad")
-                    #     return False
+                    nacionalidad_url = 'https://webpol.policia.es/e-hotel/combo/tipoDocumentoNacionalidad'
+                    nacionalidad_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                                            'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                            'Ajax-Referer': '/e-hotel/combo/tipoDocumentoNacionalidad',
+                                            'Connection': 'keep-alive',
+                                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                            'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                                            'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                                            'User-Agent': 'python-requests/2.21.0',
+                                            'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                    payload = {'nacionalidad': viajero.pais}
+                    try:
+                        p6 = s.post(nacionalidad_url, headers=nacionalidad_headers, cookies=dict(s.cookies),
+                                    data=payload,
+                                    timeout=5)
+                        logger.info("Enviado POST a tipoDocumentoNacionalidad")
+                    except:
+                        logger.info("Error al enviar POST a tipoDocumentoNacionalidad")
+                        return False
+
+                    generar_parte_url = 'https://webpol.policia.es/e-hotel/hospederia/generarParteHuesped'
+                    generar_parte_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                                             'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                             'Ajax-Referer': '/e-hotel/hospederia/generarParteHuesped',
+                                             'Connection': 'keep-alive',
+                                             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                             'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                                             'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                                             'User-Agent': 'python-requests/2.21.0',
+                                             'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                    payload = {'huespedJson': huespedJson, 'idHuesped': idHuesped}
+
+                    try:
+                        p7 = s.post(generar_parte_url, headers=generar_parte_headers, data=payload, timeout=5)
+                        logger.info("Solicitud generar PDF")
+                    except:
+                        logger.info("Error al solicitar generar PDF")
+                        return False
+
+                    previsualiza_url = 'https://webpol.policia.es/e-hotel/previsualizacionPdf/'
+                    previsualiza_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                                            'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                            'Ajax-Referer': '/e-hotel/hospederia/generarParteHuesped',
+                                            'Connection': 'keep-alive',
+                                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                            'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                                            'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                                            'User-Agent': 'python-requests/2.21.0',
+                                            'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                    try:
+                        p8 = s.get(previsualiza_url, headers=previsualiza_headers, timeout=5)
+                        logger.info("Solicitud previsualizar PDF")
+                    except:
+                        logger.info("Error al solicitar previsualizar PDF")
+                        return False
+
+                    genera_url = 'https://webpol.policia.es/e-hotel/hospederia/generarPDFparteHuesped'
+                    genera_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                                      'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                      'Connection': 'keep-alive',
+                                      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                      'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                                      'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                                      'User-Agent': 'python-requests/2.21.0',
+                                      'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                    try:
+                        p9 = s.get(genera_url, headers=genera_headers, timeout=5)
+                        fPN = ContentFile(p9.content)
+                        fPN.name = '%s.pdf' % viajero.id
+                        registro.pdf_PN = fPN
+                        registro.save()
+                        logger.info("Solicitud generar parte PDF ejecutada")
+                    except:
+                        logger.info("Error al solicitar generar parte PDF")
+                        return False
                     # En este punto termina el proceso de grabación
                     if p4.status_code == 200:
                         logger.info(u'Todo correcto')

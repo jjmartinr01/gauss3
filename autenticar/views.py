@@ -303,6 +303,7 @@ def index(request):
 
 
     if request.method == 'POST':
+        # return render(request, "temporalmente_inactivo.html")
         if request.POST['action'] == 'acceso':
             usuario = request.POST['usuario']
             passusuario = request.POST['passusuario']

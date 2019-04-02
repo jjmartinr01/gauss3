@@ -207,7 +207,6 @@ def update_firma(instance, filename):
                         str(instance.reserva.code) + '_' + str(instance.ndi) + '.png')
     return ruta
 
-
 class Viajero(models.Model):
     TIPOS = (('D', 'DNI'), ('P', 'Pasaporte'), ('C', 'Permiso de conducir'), ('I', 'Carta o documento de identidad'),
              ('X', 'Permiso de residencia de la UE'))
@@ -275,6 +274,13 @@ def update_parte(instance, filename):
     ruta = os.path.join("vut/%s/%s/partes/" % (v.entidad.id, v.id), "%s.%s" % (nombre, ext))
     return ruta
 
+def update_pdfPN(instance, filename):
+    v = instance.vivienda
+    viajero = instance.viajero.id
+    ruta = os.path.join("vut/%s/%s/partes/" % (v.entidad.id, v.id), "%s.pdf" % (viajero))
+    return ruta
+
+
 
 class RegistroPolicia(models.Model):
     vivienda = models.ForeignKey(Vivienda, blank=True, on_delete=models.CASCADE)
@@ -282,6 +288,8 @@ class RegistroPolicia(models.Model):
     enviado = models.BooleanField('Ha sido enviado a la PN/GC?', default=False)
     viajeros = models.ManyToManyField(Viajero, blank=True)
     parte = models.FileField('Fichero de registro generado', upload_to=update_parte, blank=True, null=True)
+    pdf_PN = models.FileField('Fichero generado por la PN', upload_to=update_pdfPN, blank=True, null=True)
+    observaciones = models.TextField('Observaciones', blank=True, null=True, default='')
     creado = models.DateTimeField("Fecha y hora en el que el viajero graba sus datos", auto_now_add=True)
     n = models.IntegerField('Número de registro', default=1)
 

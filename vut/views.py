@@ -1130,42 +1130,103 @@ def graba_registro(registro):
                     mensaje, idHuesped, idHospederia)
                 logger.info("Se han grabado las observaciones")
                 # Para completar la grabación es necesario llamar a parteViajero a través de una petición GET:
-                # parte_viajero_url = 'https://webpol.policia.es/e-hotel/hospederia/manual/vista/parteViajero'
-                # parte_viajero_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
-                #                          'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                #                          'Ajax-Referer': '/e-hotel/hospederia/manual/insertar/huesped',
-                #                          'Connection': 'keep-alive',
-                #                          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                #                          'Cookie': cookies_header, 'Host': 'webpol.policia.es',
-                #                          'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                #                          'User-Agent': 'python-requests/2.21.0',
-                #                          'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
-                # try:
-                #     p5 = s.get(parte_viajero_url, headers=parte_viajero_headers, timeout=5)
-                #     logger.info("Enviado GET a parteViajero")
-                #     sleep(4)
-                # except:
-                #     logger.info("Error al procesar parteViajero")
-                #     return False
+                parte_viajero_url = 'https://webpol.policia.es/e-hotel/hospederia/manual/vista/parteViajero'
+                parte_viajero_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                                         'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                         'Ajax-Referer': '/e-hotel/hospederia/manual/insertar/huesped',
+                                         'Connection': 'keep-alive',
+                                         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                         'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                                         'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                                         'User-Agent': 'python-requests/2.21.0',
+                                         'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                try:
+                    p5 = s.get(parte_viajero_url, headers=parte_viajero_headers, timeout=5)
+                    logger.info("Enviado GET a parteViajero")
+                    sleep(4)
+                except:
+                    logger.info("Error al procesar parteViajero")
+                    return False
                 # En siguiente paso dado a través de un navegador es llamar a tipoDocumentoNacionalidad con una
                 # petición POST enviando como parámetro la "nacionalidad":
-                # nacionalidad_url = 'https://webpol.policia.es/e-hotel/combo/tipoDocumentoNacionalidad'
-                # nacionalidad_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
-                #                         'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                #                         'Ajax-Referer': '/e-hotel/combo/tipoDocumentoNacionalidad',
-                #                         'Connection': 'keep-alive',
-                #                         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                #                         'Cookie': cookies_header, 'Host': 'webpol.policia.es',
-                #                         'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                #                         'User-Agent': 'python-requests/2.21.0',
-                #                         'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
-                # payload = {'nacionalidad': viajero.pais}
-                # try:
-                #     p6 = s.post(nacionalidad_url, headers=nacionalidad_headers, data=payload, timeout=5)
-                #     logger.info("Enviado POST a tipoDocumentoNacionalidad")
-                # except:
-                #     logger.info("Error al enviar POST a tipoDocumentoNacionalidad")
-                #     return False
+                nacionalidad_url = 'https://webpol.policia.es/e-hotel/combo/tipoDocumentoNacionalidad'
+                nacionalidad_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                                        'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                        'Ajax-Referer': '/e-hotel/combo/tipoDocumentoNacionalidad',
+                                        'Connection': 'keep-alive',
+                                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                        'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                                        'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                                        'User-Agent': 'python-requests/2.21.0',
+                                        'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                payload = {'nacionalidad': viajero.pais}
+                try:
+                    p6 = s.post(nacionalidad_url, headers=nacionalidad_headers, data=payload, timeout=5)
+                    logger.info("Enviado POST a tipoDocumentoNacionalidad")
+                except:
+                    logger.info("Error al enviar POST a tipoDocumentoNacionalidad")
+                    return False
+
+                generar_parte_url = 'https://webpol.policia.es/e-hotel/hospederia/generarParteHuesped'
+                generar_parte_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                                        'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                        'Ajax-Referer': '/e-hotel/hospederia/generarParteHuesped',
+                                        'Connection': 'keep-alive',
+                                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                        'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                                        'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                                        'User-Agent': 'python-requests/2.21.0',
+                                        'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                payload = {'huespedJson': huespedJson, 'idHuesped': idHuesped}
+
+                try:
+                    p7 = s.post(generar_parte_url, headers=generar_parte_headers, data=payload, timeout=5)
+                    logger.info("Solicitud generar PDF")
+                except:
+                    logger.info("Error al solicitar generar PDF")
+                    return False
+
+
+                previsualiza_url = 'https://webpol.policia.es/e-hotel/previsualizacionPdf/'
+                previsualiza_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                                        'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                        'Ajax-Referer': '/e-hotel/hospederia/generarParteHuesped',
+                                        'Connection': 'keep-alive',
+                                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                        'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                                        'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                                        'User-Agent': 'python-requests/2.21.0',
+                                        'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+
+                try:
+                    p8 = s.get(previsualiza_url, headers=previsualiza_headers, timeout=5)
+                    logger.info("Solicitud previsualizar PDF")
+                except:
+                    logger.info("Error al solicitar previsualizar PDF")
+                    return False
+
+
+                genera_url = 'https://webpol.policia.es/e-hotel/hospederia/generarPDFparteHuesped'
+                genera_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
+                                        'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                        'Connection': 'keep-alive',
+                                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                        'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                                        'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                                        'User-Agent': 'python-requests/2.21.0',
+                                        'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                try:
+                    p9 = s.get(genera_url, headers=genera_headers, timeout=5)
+                    fPN = ContentFile(p9.content)
+                    fPN.name = '%s.pdf' % viajero.id
+                    registro.pdf_PN = fPN
+                    registro.save()
+                    logger.info("Solicitud generar parte PDF")
+                except:
+                    logger.info("Error al solicitar generar parte PDF")
+                    return False
+
+
                 # En este punto termina el proceso de grabación
                 if p4.status_code == 200:
                     logger.info(u'Todo correcto')
@@ -2405,3 +2466,14 @@ def registra_viajero_policia(viajero):
 #             s.close()
 #     else:
 #         return False
+
+
+
+# Ejemplo de convertir base64 descargado de la policía en pdf
+
+# import base64
+#
+# img_data = b'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SV0vRm9udDw8L0YxIDIgMCBSL0YyIDMgMCBSPj4+Pi9QYXJlbnQgNSAwIFIvTWVkaWFCb3hbMCAwIDQyMSA1OTVdPj4KZW5kb2JqCjYgMCBvYmoKWzEgMCBSL1hZWiAwIDYwNSAwXQplbmRvYmoKMiAwIG9iago8PC9TdWJ0eXBlL1R5cGUxL1R5cGUvRm9udC9CYXNlRm9udC9IZWx2ZXRpY2EvRW5jb2RpbmcvV2luQW5zaUVuY29kaW5nPj4KZW5kb2JqCjMgMCBvYmoKPDwvU3VidHlwZS9UeXBlMS9UeXBlL0ZvbnQvQmFzZUZvbnQvSGVsdmV0aWNhLUJvbGQvRW5jb2RpbmcvV2luQW5zaUVuY29kaW5nPj4KZW5kb2JqCjUgMCBvYmoKPDwvS2lkc1sxIDAgUl0vVHlwZS9QYWdlcy9Db3VudCAxL0lUWFQoMi4xLjcpPj4KZW5kb2JqCjcgMCBvYmoKPDwvTmFtZXNbKEpSX1BBR0VfQU5DSE9SXzBfMSkgNiAwIFJdPj4KZW5kb2JqCjggMCBvYmoKPDwvRGVzdHMgNyAwIFI+PgplbmRvYmoKOSAwIG9iago8PC9OYW1lcyA4IDAgUi9UeXBlL0NhdGFsb2cvUGFnZXMgNSAwIFIvVmlld2VyUHJlZmVyZW5jZXM8PC9QcmludFNjYWxpbmcvQXBwRGVmYXVsdD4+Pj4KZW5kb2JqCjEwIDAgb2JqCjw8L01vZERhdGUoRDoyMDE5MDQwMTIyMjAzNCswMicwMCcpL0NyZWF0b3IoSmFzcGVyUmVwb3J0cyBMaWJyYXJ5IHZlcnNpb24gNi4zLjApL0NyZWF0aW9uRGF0ZShEOjIwMTkwNDAxMjIyMDM0KzAyJzAwJykvUHJvZHVjZXIoaVRleHQgMi4xLjcgYnkgMVQzWFQpPj4KZW5kb2JqCnhyZWYKMCAxMQowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDE2MjYgMDAwMDAgbiAKMDAwMDAwMTkxMSAwMDAwMCBuIAowMDAwMDAxOTk5IDAwMDAwIG4gCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMjA5MiAwMDAwMCBuIAowMDAwMDAxODc2IDAwMDAwIG4gCjAwMDAwMDIxNTUgMDAwMDAgbiAKMDAwMDAwMjIwOSAwMDAwMCBuIAowMDAwMDAyMjQxIDAwMDAwIG4gCjAwMDAwMDIzNDQgMDAwMDAgbiAKdHJhaWxlcgo8PC9JbmZvIDEwIDAgUi9JRCBbPDE4OTE2ZDk3YTAyNzE2YTFlMDU5ZjA5YTJiN2YzMzU5PjwyNjFhNjI5ZGFkYzM0YmE5ZmEwZGNmMzM1YjQ1YjYxNj5dL1Jvb3QgOSAwIFIvU2l6ZSAxMT4+CnN0YXJ0eHJlZgoyNTEyCiUlRU9GCg=='
+# with open("imageToSave.pdf", "wb") as fh:
+#     fh.write(base64.decodebytes(img_data))
+
