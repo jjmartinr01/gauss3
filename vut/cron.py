@@ -277,7 +277,6 @@ def comunica_viajero2PNGC():
                         sleep(4)
                     except:
                         logger.info("Error al procesar parteViajero")
-                        return False
                     # En siguiente paso dado a través de un navegador es llamar a tipoDocumentoNacionalidad con una
                     # petición POST enviando como parámetro la "nacionalidad":
                     nacionalidad_url = 'https://webpol.policia.es/e-hotel/combo/tipoDocumentoNacionalidad'
@@ -298,7 +297,6 @@ def comunica_viajero2PNGC():
                         logger.info("Enviado POST a tipoDocumentoNacionalidad")
                     except:
                         logger.info("Error al enviar POST a tipoDocumentoNacionalidad")
-                        return False
 
                     generar_parte_url = 'https://webpol.policia.es/e-hotel/hospederia/generarParteHuesped'
                     generar_parte_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
@@ -317,7 +315,6 @@ def comunica_viajero2PNGC():
                         logger.info("Solicitud generar PDF")
                     except:
                         logger.info("Error al solicitar generar PDF")
-                        return False
 
                     previsualiza_url = 'https://webpol.policia.es/e-hotel/previsualizacionPdf/'
                     previsualiza_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
@@ -334,7 +331,6 @@ def comunica_viajero2PNGC():
                         logger.info("Solicitud previsualizar PDF")
                     except:
                         logger.info("Error al solicitar previsualizar PDF")
-                        return False
 
                     genera_url = 'https://webpol.policia.es/e-hotel/hospederia/generarPDFparteHuesped'
                     genera_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
@@ -354,7 +350,6 @@ def comunica_viajero2PNGC():
                         logger.info("Solicitud generar parte PDF ejecutada")
                     except:
                         logger.info("Error al solicitar generar parte PDF")
-                        return False
                     # En este punto termina el proceso de grabación
                     if p4.status_code == 200:
                         logger.info(u'Todo correcto')
