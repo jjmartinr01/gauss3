@@ -17,11 +17,12 @@ def valorar_cc(gauser_extra, capacidad):
     cma = CompetenciasMateriaAlumno.objects.filter(Q(alumno=gauser_extra), qs[capacidad])
     if cma.count() > 0:
         try:
-            ccs = cma.values_list('materia__' + capacidad, capacidad)
-            total_ponderacion = sum([cc[0] for cc in ccs]) + 0.0000001 #Evitar que sea cero y se pueda hacer la división:
-            total_valoracion = ceil(sum([cc[1] * cc[0] for cc in ccs]) / total_ponderacion)
+            ccs = list(cma.values_list('materia__' + capacidad, capacidad, 'materia__materia__horas'))
+            total_ponderacion = sum([cc[0] * cc[2] for cc in ccs]) + 0.0000001 #Evitar que sea cero y se pueda hacer la división:
+            total_valoracion = ceil(sum([cc[1] * cc[0] * cc[2] for cc in ccs]) / total_ponderacion)
             return min(10, int(total_valoracion))
         except:
+            # Una de las causas de error es que la Materia no tenga el parámetro "horas" definido
             return '<span style="color:red">Error</span>'
     else:
         return '<span style="color:red">SV</span>'

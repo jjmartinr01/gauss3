@@ -34,11 +34,11 @@
                 <label>Selecciona una materia:
                     <select id="materia">
                         <option value="{{ materia_seleccionada.id }}">{{ materia_seleccionada.nombre }}
-                            - {{ materia_seleccionada.curso.nombre }}</option>
+                            - {{ materia_seleccionada.curso.nombre }} ({{ materia_seleccionada.horas }} horas)</option>
                         {% for materia in materias %}
                             {% if materia.id != materia_seleccionada.id %}
                                 <option value="{{ materia.id }}">{{ materia.nombre }}
-                                    - {{ materia.curso.nombre }}</option>
+                                    - {{ materia.curso.nombre }} ({{ materia_seleccionada.horas }} horas)</option>
                             {% endif %}
                         {% endfor %}
                     </select> </label>

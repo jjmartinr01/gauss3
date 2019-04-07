@@ -33,7 +33,7 @@ class CompetenciasMateria(models.Model):
         self.csc = self.csc if self.csc else 0
         self.sie = self.sie if self.sie else 0
         self.cec = self.cec if self.cec else 0
-        return self.ccl + self.cmct + self.cd+ self.cpaa + self.csc + self.sie +self.cec
+        return self.ccl + self.cmct + self.cd + self.cpaa + self.csc + self.sie + self.cec
 
     def __str__(self):
         return u'%s: CCL %s - CMCT %s - CD %s - CPAA %s - CSC %s - SIE %s - CEC %s' % (
