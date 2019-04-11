@@ -289,8 +289,8 @@ def index(request):
                         request.session["ronda"] = request.session["gauser_extra"].ronda
                         request.session['num_items_page'] = 15
                         logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
-                        if request.session['gauser_extra'].entidad.id in [14, 16]:
-                            return render(request, "temporalmente_inactivo.html")
+                        # if request.session['gauser_extra'].entidad.id in [14, 16]:
+                        #     return render(request, "temporalmente_inactivo.html")
                         return redirect('/calendario/')
                     else:
                         logger.info(u'Gauser activo, pero no tiene asociada ninguna entidad.')
@@ -334,8 +334,8 @@ def index(request):
                         request.session["ronda"] = request.session["gauser_extra"].ronda
                         request.session['num_items_page'] = 15
                         logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
-                        if request.session['gauser_extra'].entidad.id in [14, 16]:
-                            return render(request, "temporalmente_inactivo.html")
+                        # if request.session['gauser_extra'].entidad.id in [14, 16]:
+                        #     return render(request, "temporalmente_inactivo.html")
                         return redirect('/calendario/')
                     else:
                         logger.info(u'Gauser activo, pero no tiene asociada ninguna entidad.')
@@ -385,8 +385,8 @@ def index(request):
             request.session["ronda"] = request.session["gauser_extra"].ronda
             request.session['num_items_page'] = 15
             logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
-            if request.session['gauser_extra'].entidad.id in [14, 16]:
-                return render(request, "temporalmente_inactivo.html")
+            # if request.session['gauser_extra'].entidad.id in [14, 16]:
+            #     return render(request, "temporalmente_inactivo.html")
             return redirect('/calendario/')
 
             # elif len(entidad) > 0:
