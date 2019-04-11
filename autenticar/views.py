@@ -7,6 +7,7 @@ import string
 import io
 import os
 import time
+import subprocess
 import xlrd  # Permite leer archivos xls
 # from urllib import unquote
 from difflib import get_close_matches
@@ -29,6 +30,7 @@ from django.utils.encoding import smart_text
 from gauss.rutas import *
 from gauss.constantes import PROVINCIAS
 from gauss.funciones import usuarios_de_gauss, pass_generator
+from gauss.settings import RUTA_BASE_SETTINGS
 from estudios.models import Grupo, Gauser_extra_estudios
 from autenticar.models import Enlace, Permiso, Gauser, Menu_default  # , Candidato
 from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, Subsubentidad, ConfigurationUpdate
@@ -136,7 +138,8 @@ def actualizar_menus_permisos(request):
             else:
                 return JsonResponse({'ok': False, 'aviso': 'Error en la actualización solicitada'})
         return render(request, "actualizar_menus_permisos.html", {'formname': 'actualizar_menus_permisos',
-                                                                  'apps_configuration': ConfigurationUpdate.objects.filter(entidad=g_e.ronda.entidad),
+                                                                  'apps_configuration': ConfigurationUpdate.objects.filter(
+                                                                      entidad=g_e.ronda.entidad),
                                                                   'avisos': Aviso.objects.filter(usuario=g_e,
                                                                                                  aceptado=False)})
     else:
@@ -286,6 +289,8 @@ def index(request):
                         request.session["ronda"] = request.session["gauser_extra"].ronda
                         request.session['num_items_page'] = 15
                         logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+                        if request.session['gauser_extra'].entidad.id in [14, 16]:
+                            return render(request, "temporalmente_inactivo.html")
                         return redirect('/calendario/')
                     else:
                         logger.info(u'Gauser activo, pero no tiene asociada ninguna entidad.')
@@ -300,7 +305,6 @@ def index(request):
                 return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso'})
     #############################################################################
     #############################################################################
-
 
     if request.method == 'POST':
         # return render(request, "temporalmente_inactivo.html")
@@ -330,6 +334,8 @@ def index(request):
                         request.session["ronda"] = request.session["gauser_extra"].ronda
                         request.session['num_items_page'] = 15
                         logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+                        if request.session['gauser_extra'].entidad.id in [14, 16]:
+                            return render(request, "temporalmente_inactivo.html")
                         return redirect('/calendario/')
                     else:
                         logger.info(u'Gauser activo, pero no tiene asociada ninguna entidad.')
@@ -379,6 +385,8 @@ def index(request):
             request.session["ronda"] = request.session["gauser_extra"].ronda
             request.session['num_items_page'] = 15
             logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+            if request.session['gauser_extra'].entidad.id in [14, 16]:
+                return render(request, "temporalmente_inactivo.html")
             return redirect('/calendario/')
 
             # elif len(entidad) > 0:
@@ -492,7 +500,8 @@ def create_usuario(datos, request, tipo):
 
     if gauser:
         try:
-            gauser_extra = Gauser_extra.objects.get(gauser=gauser, entidad=g_e.ronda.entidad, ronda=g_e.ronda.entidad.ronda)
+            gauser_extra = Gauser_extra.objects.get(gauser=gauser, entidad=g_e.ronda.entidad,
+                                                    ronda=g_e.ronda.entidad.ronda)
             mensaje = u'Existe el g_e %s con el dni %s. No se vuelve a crear.' % (gauser, datos['dni' + tipo])
             logger.info(mensaje)
         except ObjectDoesNotExist:
@@ -534,7 +543,8 @@ def create_usuario(datos, request, tipo):
             id_organizacion = datos['id_organizacion' + tipo]
         else:
             id_organizacion = datos['id_socio' + tipo]
-        gauser_extra = Gauser_extra.objects.create(gauser=gauser, entidad=g_e.ronda.entidad, ronda=g_e.ronda, activo=True,
+        gauser_extra = Gauser_extra.objects.create(gauser=gauser, entidad=g_e.ronda.entidad, ronda=g_e.ronda,
+                                                   activo=True,
                                                    id_entidad=datos['id_socio' + tipo],
                                                    num_cuenta_bancaria=datos['iban' + tipo],
                                                    observaciones=datos['observaciones' + tipo],
@@ -544,7 +554,7 @@ def create_usuario(datos, request, tipo):
         except:
             crear_aviso(request, False,
                         u'El IBAN asociado a %s parece no ser correcto. No se ha podido asociar una entidad bancaria al mismo.' % (
-                            gauser.first_name.decode('utf8') + ' ' + gauser.last_name.decode('utf8')))
+                                gauser.first_name.decode('utf8') + ' ' + gauser.last_name.decode('utf8')))
     if gauser_extra:
         logger.info('antes de subentidades')
         if datos['subentidades' + tipo]:
@@ -568,7 +578,7 @@ def create_usuario(datos, request, tipo):
     return gauser_extra
 
 
-# @permiso_required('acceso_carga_masiva')
+@permiso_required('acceso_carga_masiva')
 def carga_masiva(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':
@@ -640,7 +650,8 @@ def carga_masiva(request):
                        'Nombre': 'nombre', 'DNI/Pasaporte Primer tutor': 'dni_tutor1',
                        'Primer apellido Primer tutor': 'last_name1_tutor1',
                        'Segundo apellido Primer tutor': 'last_name2_tutor1', 'Nombre Primer tutor': 'nombre_tutor1',
-                       'Tfno. Primer tutor': 'telefono_fijo_tutor1', 'Tfno. Móvil Primer tutor': 'telefono_movil_tutor1',
+                       'Tfno. Primer tutor': 'telefono_fijo_tutor1',
+                       'Tfno. Móvil Primer tutor': 'telefono_movil_tutor1',
                        'Sexo Primer tutor': 'sexo_tutor1', 'DNI/Pasaporte Segundo tutor': 'dni_tutor2',
                        'Primer apellido Segundo tutor': 'last_name1_tutor2',
                        'Segundo apellido Segundo tutor': 'last_name2_tutor2',
@@ -653,7 +664,8 @@ def carga_masiva(request):
                        'Año de la matrícula': 'year_matricula', 'Nº de matrículas en este curso': 'num_matriculas',
                        'Observaciones de la matrícula': 'observaciones_matricula', 'Número SS': 'num_ss',
                        'Nº expte. en el centro': 'num_exp', 'Fecha de la matrícula': 'fecha_matricula',
-                       'Nº de matrículas en el expediente': 'num_matriculas_exp', 'Repeticiones en el curso': 'rep_curso',
+                       'Nº de matrículas en el expediente': 'num_matriculas_exp',
+                       'Repeticiones en el curso': 'rep_curso',
                        'Familia numerosa': 'familia_numerosa', 'Lengua materna': 'lengua_materna',
                        'Año incorporación al sistema educativo': 'year_incorporacion', 'Bilinge': 'bilingue',
                        'Correo electrónico Primer tutor': 'email_tutor1',
@@ -725,7 +737,7 @@ def carga_masiva(request):
                     fecha_expira = g_e.ronda.entidad.ronda.fin + timedelta(days=5)  # Expiración para los grupos
                     subas = Subentidad.objects.filter(clave_ex='alumnos', entidad=g_e.ronda.entidad)
                     if subas.count() > 0:
-                        suba=subas[0]
+                        suba = subas[0]
                     else:
                         suba = Subentidad.objects.create(nombre='Alumnos', mensajes=True, clave_ex='alumnos',
                                                          entidad=g_e.ronda.entidad, edad_min=12, edad_max=67)
@@ -737,7 +749,7 @@ def carga_masiva(request):
 
                     subps = Subentidad.objects.filter(clave_ex='madres_padres', entidad=g_e.ronda.entidad)
                     if subps.count() > 0:
-                        subp=subps[0]
+                        subp = subps[0]
                     else:
                         subp = Subentidad.objects.create(nombre='Madres/Padres', mensajes=True,
                                                          entidad=g_e.ronda.entidad,
@@ -806,7 +818,6 @@ def carga_masiva(request):
                         gauser_extra.gauser_extra_estudios.save()
                         # elif 'excel' in request.FILES['file_masivo'].content_type:
                         #     pass
-
 
                         # for row in fichero:
                         #     if len(row['id_socio']) > 2:
@@ -990,6 +1001,7 @@ def recupera_password(request):
 
     return render(request, "cambia_password.html", {'formulario': False, 'mensaje': mensaje})
 
+
 # ##############################################################################
 # ##############################################################################
 # Funciones a borrar tras la migración a gauss_asocia
@@ -1087,3 +1099,40 @@ def recupera_password(request):
 #             c.save()
 #             return JsonResponse({'ok': True})
 #     return render(request, "gestionar_candidatos.html", {'candidatos': candidatos})
+
+
+# ------------------------------------------------------------------#
+# DEFINICIÓN DE FUNCIONES PARA ACTUALIZAR GAUSS
+# ------------------------------------------------------------------#
+
+@gauss_required
+def execute_migrations(request):
+    g_e = request.session['gauser_extra']
+    if request.method == 'POST' and request.is_ajax() and g_e.gauser.username == 'gauss':
+        mensajes = ''
+        errores = ''
+        exec_git_pull = ['git', '--git-dir=%s/.git' % RUTA_BASE_SETTINGS, 'pull', 'origin', 'master']
+        exec_makemigrations = ['python', '%s/manage.py' % RUTA_BASE_SETTINGS, 'makemigrations']
+        exec_migrate = ['python', '%s/manage.py' % RUTA_BASE_SETTINGS, 'migrate']
+        exec_apache_restart = 'sudo /etc/init.d/apache2 restart'
+        if request.POST['exec_git_pull'] == 'true':
+            # result = subprocess.run([exec_git_pull], stdout=subprocess.PIPE)
+            result = subprocess.run([exec_git_pull], capture_output=True)
+            return JsonResponse({'mensajes': mensajes, 'errores': errores, 'ok': True})
+            mensajes += result.stdout.decode('utf-8')
+            errores += result.stderr.decode('utf-8')
+        if request.POST['exec_makemigrations'] == '1':
+            result = subprocess.run([exec_makemigrations], stdout=subprocess.PIPE)
+            mensajes += result.stdout
+            errores += result.stderr
+        if request.POST['exec_migrate'] == '1':
+            result = subprocess.run([exec_migrate], stdout=subprocess.PIPE)
+            mensajes += result.stdout
+            errores += result.stderr
+        if request.POST['exec_apache_restart'] == '1':
+            result = subprocess.run([exec_apache_restart], stdout=subprocess.PIPE)
+            mensajes += result.stdout
+            errores += result.stderr
+        return JsonResponse({'mensajes': mensajes, 'errores': errores, 'ok': True})
+    else:
+        return render(request, "execute_migrations.html")
