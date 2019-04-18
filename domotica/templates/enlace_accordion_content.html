@@ -1,0 +1,23 @@
+{% load my_templatetags %}
+{% load vut_extras %}
+
+<div id="list_dispositivos{{ enlace.id }}">
+{% for gdispositivo in gdispositivos %}
+    {% include "enlace_accordion_content_dispositivos.html" %}
+{% endfor %}
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <a class="button add_dispositivo_domotica" data-enlace="{{ enlace.id }}">Añadir un nuevo dispositivo</a>
+    </div>
+</div>
+
+{#<script>#}
+{#    $(".fecha").fdatepicker({#}
+{#        format: 'dd/mm/yyyy',#}
+{#        weekStart: 1,#}
+{#        leftArrow: '<<',#}
+{#        rightArrow: '>>',#}
+{#        language: 'es'#}
+{#    });#}
+{#</script>#}

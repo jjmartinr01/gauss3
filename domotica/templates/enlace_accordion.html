@@ -1,0 +1,10 @@
+<dd class="accordion-navigation" id="accordion{{ enlace.id }}"
+    style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+    <a href="#panel{{ enlace.id }}">
+        <i id="circle{{ enlace.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <span id="span_enlace_nombre{{ enlace.id }}">{{ enlace.nombre }}</span>
+    </a>
+
+    <div id="panel{{ enlace.id }}" class="content accordion-enlace" data-id="{{ enlace.id }}">
+    </div>
+</dd>

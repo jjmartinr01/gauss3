@@ -1,0 +1,109 @@
+{% load my_templatetags %}
+{% load vut_extras %}
+<div class="row" id="div_autorizado{{ autorizado.id }}">
+    <div class="columns large-6">
+        <label title="Persona a la que autorizas acceso a tu vivienda"><b>Nombre</b>
+            <h4 class="subheader">{{ autorizado.autorizado.gauser.get_full_name }}</h4>
+        </label>
+    </div>
+    <div class="columns large-3" title="Estado en el que se encuentra esta autorización">
+        <label><b>Estado</b></label>
+        {% if autorizado.estado == 'OFE' %}
+            <span class="label">Ofertada</span>
+        {% elif autorizado.estado == 'ACE' %}
+            <span class="label success">Aceptada</span>
+        {% else %}
+            <span class="label alert">Rechazada</span>
+        {% endif %}
+
+    </div>
+    <div class="columns large-3" title="Borrar esta persona autorizada">
+        <label>&nbsp;</label>
+        {% if g_e|has_permiso:'delete_autorizado_vut' %}
+            <a class="button tiny delete_autorizado_vut alert" data-id="{{ autorizado.id }}"><i
+                    class="fa fa-user-times"></i> Borrar</a>
+        {% else %}&nbsp;
+        {% endif %}
+    </div>
+
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut"
+               {% if autorizado|has_permiso_vut:'crea_ayudantes' %}checked{% endif %} data-id="{{ autorizado.id }}"
+               data-code="crea_ayudantes"> Crea ayudantes
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut"
+               {% if autorizado|has_permiso_vut:'edita_ayudantes' %}checked{% endif %} data-id="{{ autorizado.id }}"
+               data-code="edita_ayudantes"> Modifica datos de ayudantes
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut"
+               {% if autorizado|has_permiso_vut:'borra_ayudantes' %}checked{% endif %} data-id="{{ autorizado.id }}"
+               data-code="borra_ayudantes"> Borra ayudantes
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'comprueba_conexion_policia' %}checked{% endif %}
+               data-code="comprueba_conexion_policia"> comprueba conexión con policía
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut"
+               {% if autorizado|has_permiso_vut:'add_calendario_vut' %}checked{% endif %} data-id="{{ autorizado.id }}"
+               data-code="add_calendario_vut"> Puede añadir calendarios
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'edita_calendario_vut' %}checked{% endif %}
+               data-code="edita_calendario_vut"> Puede modificar calendarios
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'delete_calendario_vut' %}checked{% endif %}
+               data-code="delete_calendario_vut"> Puede borrar calendarios
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut"
+               {% if autorizado|has_permiso_vut:'add_autorizado_vut' %}checked{% endif %} data-id="{{ autorizado.id }}"
+               data-code="add_autorizado_vut"> Puede añadir autorizados
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'edita_autorizado_vut' %}checked{% endif %}
+               data-code="edita_autorizado_vut"> Puede modificar autorizados
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'delete_autorizado_vut' %}checked{% endif %}
+               data-code="delete_autorizado_vut"> Puede borrar autorizados
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'autorizado_ver_reservas' %}checked{% endif %}
+               data-code="autorizado_ver_reservas"> Puede ver reservas
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut"
+               {% if autorizado|has_permiso_vut:'crea_reservas' %}checked{% endif %} data-id="{{ autorizado.id }}"
+               data-code="crea_reservas"> Puede crear reservas
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut"
+               {% if autorizado|has_permiso_vut:'borra_reservas' %}checked{% endif %} data-id="{{ autorizado.id }}"
+               data-code="borra_reservas"> Puede borrar reservas
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut"
+               {% if autorizado|has_permiso_vut:'edita_reservas' %}checked{% endif %} data-id="{{ autorizado.id }}"
+               data-code="edita_reservas"> Puede modificar reservas
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'genera_libro_registro_policia' %}checked{% endif %}
+               data-code="genera_libro_registro_policia"> Puede generar libro de registros
+    </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'autorizado_ver_viajeros' %}checked{% endif %}
+               data-code="autorizado_ver_viajeros"> Puede ver registros de viajeros
+    </div>
+</div>

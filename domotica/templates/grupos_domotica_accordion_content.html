@@ -1,0 +1,66 @@
+{% load domotica_extras %}
+{% load my_templatetags %}
+
+<div class="row">
+    <div class="columns large-6">
+        Definido por: {{ g_e.gauser.get_full_name }}
+    </div>
+    <div class="columns large-6">
+        <ul class="button-group right">
+            {% if g_e|borra_grupo_domotica:grupo %}
+                <li><a class="button delete_grupo alert" data-id="{{ grupo.id }}"><i class="fa fa-trash"></i>
+                    Borrar grupo</a></li>{% endif %}
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-6">
+        <label><b>Nombre del grupo o ubicación:</b>
+            {% if g_e|edita_grupo_domotica:grupo %}
+                <input type="text" class="campo_char" data-campo="nombre" data-id="{{ grupo.id }}"
+                       value="{{ grupo.nombre }}">
+            {% else %}
+                <br>{{ grupo.nombre }}
+            {% endif %}
+        </label>
+    </div>
+    <div class="columns large-6">
+        <label title="Indica el grupo/ubicación al que pertenece"><b>Está en el interior de:</b>
+            {% if g_e|edita_grupo_domotica:grupo %}
+                <select data-campo="grupo_padre" data-id="{{ grupo.id }}" class="campo_select">
+                    <option value="">No está dentro de otro espacio</option>
+                    {% for l in g_e|grupos_domotica:grupo.id %}
+                        <option value="{{ l.id }}"
+                                {% if l.id == grupo.grupo_padre.id %}selected{% endif %}>{{ l.nombre }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                <br>{% if grupo.grupo_padre %}{{ grupo.grupo_padre }}{% else %}No está dentro de otro
+                grupo o ubicación{% endif %}
+            {% endif %}
+        </label>
+    </div>
+</div>
+
+
+{#<fieldset>#}
+{#    <legend>Autorizados</legend>#}
+{#    <div id="autorizados{{ grupo.id }}">#}
+{#        {% for autorizado in grupo.autorizado_set.all %}#}
+{#            {% if not forloop.first %}#}
+{#                <hr>#}
+{#            {% endif %}#}
+{#            {% include "grupo_accordion_content_autorizado.html" %}#}
+{#        {% endfor %}#}
+{#    </div>#}
+{#    <div class="row">#}
+{#        <div class="columns large-12">#}
+{#            {% if g_e|has_permiso:'add_autorizado_vut' %}#}
+{#                <a class="button add_autorizado_vut" data-id="{{ grupo.id }}"><i#}
+{#                        class="fa fa-user-circle"></i>#}
+{#                    Añadir Autorizado</a>#}
+{#            {% endif %}#}
+{#        </div>#}
+{#    </div>#}
+{#</fieldset>#}

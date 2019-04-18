@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+
+
+        {% if grupos %}
+            <div>
+                <h4 id="h4_title" style="text-align: center;color: #008CBA;">
+                    <strong> Domótica gestionada por {{ request.session.gauser_extra.gauser.get_full_name }} </strong>
+                </h4>
+            </div>
+            <ul class="tabs" data-tab role="tablist">
+                <li class="tab-title active" role="presentation" data-id="0">
+                    <a href="#tab1" role="tab" tabindex="0" aria-selected="true" aria-controls="tab1">
+                        <b id="texto0">Grupos de dispositivos</b></a>
+                </li>
+                <li class="tab-title" role="presentation" data-id="1">
+                    <a href="#tab2" role="tab" tabindex="0" aria-selected="false" aria-controls="tab2">
+                        <b id="texto1" style="color:#74bfdd;">Configuración de enlaces</b></a>
+                </li>
+            </ul>
+            <br>
+            <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
+                <div id="lista_domoticas">
+                    <dl class="accordion" data-accordion id="grupos_list">
+                        {% for grupo in grupos %}
+                            {% include "domotica_accordion.html" %}
+                        {% endfor %}
+                    </dl>
+                </div>
+            </section>
+            <section role="tabpanel" aria-hidden="false" class="content" id="tab2">
+                <div id="lista_conf_enlaces">
+                    <dl class="accordion" data-accordion id="conf_enlaces_list">
+                        {% for conf in configuraciones_enlace %}
+                            {% include "conf_enlace_vut_accordion.html" %}
+                        {% endfor %}
+                    </dl>
+                </div>
+            </section>
+        {% else %}
+            <div>
+                <br>
+                <h4 id="h4_title" style="text-align: center;color: #008CBA;">
+                    <strong> <i class="fa fa-warning"></i> Hola {{ request.session.gauser_extra.gauser.get_full_name }},
+                        Para añadir dispositivos, primero hay que definir los grupos en los que se encuentran.
+                    </strong>
+                </h4>
+                <br>
+                <a class="button" href="/grupos_domotica/"><i class="fa fa-building"></i> Pulsa aquí para empezar a
+                    definir grupos</a>
+            </div>
+        {% endif %}
+
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-grupo')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/ajax_configura_domotica/", {action: 'open_accordion', grupo: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        $(document).foundation('dropdown', 'reflow');
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        {% if request.session.gauser_extra|has_permiso:'crea_dispositivos_domotica' %}
+            $('body').on('click', '.add_dispositivo_domotica', function (event) {
+                event.preventDefault();
+                var grupo = $(this).data('grupo');
+                $.post("/ajax_configura_domotica/", {action: 'add_dispositivo_domotica', grupo: grupo},
+                    function (data) {
+                        if (data.ok) {
+                            $("#list_dispositivos" + grupo).append(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    }, 'json');
+            });
+        {% endif %}
+
+        $('body').on('click', '.delete_dispositivo_domotica', function (e) {
+            e.preventDefault();
+            dispositivo_domotica_borrar = $(this).data('id');
+            show_mensajes({
+                title: 'Borrar dispositivo domótico', texto: 'Si aceptas el dispositivo será eliminado' +
+                    ' de la base de datos.', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/ajax_configura_domotica/", {
+                                action: 'delete_dispositivo_domotica',
+                                dispositivo: dispositivo_domotica_borrar
+                            },
+                            function (data) {
+                                if (data.ok) {
+                                    $('#fieldset' + dispositivo_domotica_borrar).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    setTimeout(function () {
+                                        show_mensajes({title: 'domotica no borrada', texto: data.mensaje});
+                                    }, 600);
+                                    $("#update_error").show().delay(1500).fadeOut();
+
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+        $("body").on('keyup', '.campo_char', function () {
+            var dispositivo = $(this).data('id');
+            var valor = $(this).val();
+            var campo = $(this).data('campo');
+            setTimeout(function (element, valor) {
+                var valor_actual = element.val();
+                if (valor === valor_actual) {
+                    $.post("/ajax_configura_domotica/", {
+                            action: 'update_campo',
+                            dispositivo: dispositivo,
+                            campo: campo,
+                            valor: valor_actual
+                        },
+                        function (data) {
+                            if (data.ok) {
+                                if (campo === 'nombre') {
+                                    $('#dispositivo' + dispositivo).html(valor);
+                                }
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                setTimeout(function () {
+                                    show_mensajes({title: 'Error de edición', texto: data.mensaje});
+                                }, 600);
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 250, $(this), valor);
+        });
+
+        $("body").on('change', '.tipo_dispositivo', function () {
+            var dispositivo = $(this).data('id');
+            var valor = $(this).val();
+            $.post("/ajax_configura_domotica/", {
+                    action: 'update_tipo_dispositivo',
+                    dispositivo: dispositivo,
+                    valor: valor
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('.tipos_dispositivo' + dispositivo).hide();
+                        $('.' + valor + dispositivo).show();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        setTimeout(function () {
+                            show_mensajes({title: 'Error de edición', texto: data.mensaje});
+                        }, 600);
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $("body").on('change', '.select_grupo', function () {
+            var dispositivo = $(this).data('id');
+            var valor = $(this).val();
+            $.post("/ajax_configura_domotica/", {
+                    action: 'update_grupo_dispositivo',
+                    dispositivo: dispositivo,
+                    valor: valor
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#fieldset' + dispositivo).hide();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        setTimeout(function () {
+                            show_mensajes({title: 'Error de edición', texto: data.mensaje});
+                        }, 600);
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+    </script>
+{% endblock %}

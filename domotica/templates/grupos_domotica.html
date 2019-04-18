@@ -1,0 +1,440 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+{% load domotica_extras %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" id="id_grupo" name="id_grupo" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Grupos de dispositivos domóticos</strong>
+            </h4>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_grupos">
+            {% include 'grupos_domotica_accordion.html' %}
+        </dl>
+    </form>
+
+    <div id="div_select_autorizado" class="reveal-modal small" data-reveal>
+        <h3>Selecciona la persona autorizada</h3>
+        <select id="select_autorizado">
+            {% for u in usuarios %}
+                <option value="{{ u.id }}">{{ u.gauser.get_full_name }}</option>
+            {% endfor %}
+        </select>
+
+        <a class="close-reveal-modal">&#215;</a>
+    </div>
+{% endblock %}
+
+{% block final %}
+
+    <script type="application/javascript">
+        {% if request.session.gauser_extra|has_permiso:"crea_grupos_domotica" %}
+            habilita(['s_plus']);
+
+            $('#plus_sign').click(function (event) {
+                event.preventDefault();
+                $.post("/ajax_grupos_domotica/", {action: 'add_grupo'},
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_grupos').prepend(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-grupo')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/ajax_grupos_domotica/", {action: 'open_accordion', grupo: id}, function (data) {
+                                if (data.ok) {
+                                    $('#panel' + id).html(data.html);
+                                    $(document).foundation('dropdown', 'reflow');
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('body').on('click', '.delete_grupo', function (e) {
+                e.preventDefault();
+                grupo_borrar = $(this).data('id');
+                show_mensajes({
+                    title: 'Borrar grupo', texto: 'Si aceptas el grupo/ubicación será eliminado' +
+                        ' completamente de la base de datos.', buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/ajax_grupos_domotica/", {action: 'delete_grupo', grupo: grupo_borrar},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#accordion' + grupo_borrar).remove();
+                                        setTimeout(function () {
+                                            show_mensajes({title: 'Grupo borrado', texto: data.mensaje});
+                                        }, 600);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                        show_mensajes({title: 'Grupo no borrado', texto: data.mensaje})
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+
+
+            $("body").on('keyup', '.campo_char', function () {
+                var grupo = $(this).data('id');
+                var valor = $(this).val();
+                var campo = $(this).data('campo');
+                $.post("/ajax_grupos_domotica/", {
+                        action: 'update_campo',
+                        grupo: grupo,
+                        campo: campo,
+                        valor: valor
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            if (data.campo == 'nombre') {
+                                $("#span_grupo_nombre" + grupo).html(data.valor);
+                            }
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    }, 'json');
+            });
+
+            $("body").on('change', '.campo_select', function () {
+                var grupo = $(this).data('id');
+                var grupo_padre = $(this).val();
+                $.post("/ajax_grupos_domotica/", {
+                        action: 'update_select',
+                        grupo: grupo,
+                        grupo_padre: grupo_padre
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    }, 'json');
+            });
+
+
+
+
+        {% if request.session.gauser_extra|has_permiso:'crea_ayudantes' %}
+            $('body').on('click', '.add_ayudante', function (e) {
+                e.preventDefault();
+                var grupo = $(this).data('id');
+                $.post("/ajax_grupos_domotica/", {action: 'add_ayudante', grupo: grupo},
+                    function (data) {
+                        if (data.ok) {
+                            $('#ayudantes' + data.grupo).append(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'add_autorizado_vut' %}
+            var grupo_id = null;
+            $('body').on('click', '.add_autorizado_vut', function (e) {
+                e.preventDefault();
+                grupo_id = $(this).data('id');
+                $('#div_select_autorizado').foundation('reveal', 'open');
+                setTimeout(function () {
+                    $('#select_autorizado').select2();
+                }, 500);
+            });
+
+            $('body').on('change', '#select_autorizado', function (e) {
+                var autorizado = $(this).val();
+                $.post("/ajax_grupos_domotica/", {
+                        action: 'add_autorizado_vut', grupo: grupo_id, autorizado: autorizado
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#autorizados' + data.grupo).append(data.html);
+                            $('#div_select_autorizado').foundation('reveal', 'close');
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            grupo_id = null;
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'delete_autorizado_vut' %}
+            $('body').on('click', '.delete_autorizado_vut', function (e) {
+                e.preventDefault();
+                autorizado_borrar = $(this).data('id');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Borrar a persona autorizada',
+                    texto: 'Si aceptas, esta persona dejará de estar autorizada para actuar en la grupo.', buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/ajax_grupos_domotica/", {action: 'delete_autorizado_vut', autorizado: autorizado_borrar},
+                                function (data) {
+                                    if (data.ok) {
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                        $('#div_autorizado' + autorizado_borrar).remove();
+                                        setTimeout(function () {
+                                            show_mensajes({title: 'Persona autorizada borrada', texto: data.mensaje});
+                                        }, 600);
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                        show_mensajes({title: 'Persona autorizada no borrada', texto: data.mensaje})
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'edita_autorizado_vut' %}
+            $('body').on('click', '.permiso_autorizado_vut', function (e) {
+                var autorizado = $(this).data('id');
+                var permisos = [];
+                $('.permiso_autorizado_vut:checkbox:checked').each(function () {
+                    permisos.push($(this).data('code'));
+                });
+                $.post("/ajax_grupos_domotica/", {action: 'edita_autorizado_vut', autorizado: autorizado, permisos: permisos},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'add_calendario_vut' %}
+            $('body').on('click', '.add_calendario_vut', function (e) {
+                e.preventDefault();
+                var grupo = $(this).data('id');
+                $.post("/ajax_grupos_domotica/", {action: 'add_calendario_vut', grupo: grupo},
+                    function (data) {
+                        if (data.ok) {
+                            $('#calendarios' + data.grupo).append(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'delete_calendario_vut' %}
+            $('body').on('click', '.delete_calendario_vut', function (e) {
+                e.preventDefault();
+                calendario_borrar = $(this).data('id');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Borrar Calendario',
+                    texto: 'Si aceptas el calendario será borrado completamente de la base de datos.', buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/ajax_grupos_domotica/", {action: 'delete_calendario_vut', calendario: calendario_borrar},
+                                function (data) {
+                                    if (data.ok) {
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                        $('#div_calendario' + calendario_borrar).remove();
+                                        setTimeout(function () {
+                                            show_mensajes({title: 'Calendario borrado', texto: data.mensaje});
+                                        }, 600);
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                        show_mensajes({title: 'Calendario no borrado', texto: data.mensaje})
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'edita_calendario_vut' %}
+            $("body").on('keyup change', '.campo_calendario_vut', function () {
+                var calendario = $(this).data('id');
+                var valor = $(this).val();
+                var campo = $(this).data('campo');
+                $.post("/ajax_grupos_domotica/", {
+                        action: 'update_campo_calendario_vut',
+                        calendario: calendario,
+                        campo: campo,
+                        valor: valor
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    }, 'json');
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'borra_ayudantes' %}
+            $('body').on('click', '.delete_ayudante', function (e) {
+                e.preventDefault();
+                ayudante_borrar = $(this).data('id');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Borrar ayudante',
+                    texto: 'Si aceptas el ayudante será borrado completamente de la base de datos.', buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/ajax_grupos_domotica/", {action: 'delete_ayudante', ayudante: ayudante_borrar},
+                                function (data) {
+                                    if (data.ok) {
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                        $('#div_ayudante' + ayudante_borrar).remove();
+                                        setTimeout(function () {
+                                            show_mensajes({title: 'Ayudante borrado', texto: data.mensaje});
+                                        }, 600);
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                        show_mensajes({title: 'Ayudante no borrado', texto: data.mensaje})
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'edita_ayudantes' %}
+            $("body").on('keyup', '.campo_ayudante', function () {
+                var ayudante = $(this).data('id');
+                var valor = $(this).val();
+                var campo = $(this).data('campo');
+                if (campo == 'cantidad') {
+                    valor = parseFloat(valor);
+                }
+                $.post("/ajax_grupos_domotica/", {
+                        action: 'update_campo_ayudante',
+                        ayudante: ayudante,
+                        campo: campo,
+                        valor: valor
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    }, 'json');
+            });
+
+
+            $("body").on('change', '.ayudante_tipo', function () {
+                var ayudante = $(this).data('id');
+                var valor = $(this).val();
+                var campo = 'tipo';
+                $.post("/ajax_grupos_domotica/", {
+                        action: 'update_campo_ayudante',
+                        ayudante: ayudante,
+                        campo: campo,
+                        valor: valor
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    }, 'json');
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'comprueba_conexion_policia' %}
+            $('#Contenido').on('click', '.test_webpol', function (e) {
+                e.preventDefault();
+                var grupo = $(this).data('id');
+                $.post("/ajax_grupos_domotica/", {
+                        action: 'test_webpol',
+                        grupo: grupo
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            if (data.login_ok) {
+                                show_mensajes({
+                                    title: '<i class="fa fa-smile-o"></i> Conexión realizada!!',
+                                    texto: 'Gauss ahora puede enviar los registros de policía automáticamente.'
+                                })
+                            } else {
+                                show_mensajes({
+                                    title: '<i class="fa fa-warning"></i> Error',
+                                    texto: 'No se ha podido entrar en la web de la policía con el usuario y contraseña que has escrito. Comprueba que ambos datos han sido escritos correctamente.'
+                                })
+                            }
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    }, 'json');
+            });
+        {% endif %}
+
+        {% if request.session.gauser_extra|has_permiso:'genera_libro_registro_policia' %}
+            $('#Contenido').on('click', '.libro_registros', function (e) {
+                e.preventDefault();
+                $('#id_grupo').val($(this).data('id'));
+                $('#action').val('libro_registros');
+                document.{{formname}}.submit();
+            });
+        {% endif %}
+    </script>
+
+{% endblock %}
+
+
+
+	
+
+
+
+
+
+
+

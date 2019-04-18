@@ -1,0 +1,165 @@
+{% load my_templatetags %}
+{% load domotica_extras %}
+<fieldset id="fieldset{{ gdispositivo.dispositivo.id }}">
+    <legend id="dispositivo{{ gdispositivo.dispositivo.id }}"
+            class="nombre{{ gdispositivo.dispositivo.id }}">{{ gdispositivo.dispositivo.nombre }}</legend>
+    <div class="row">
+        <div class="columns large-12">
+            <ul class="button-group right">
+                {% if g_e|borra_dispositivo_domotica:gdispositivo.dispositivo %}
+                    <li><a class="button delete_dispositivo_domotica alert"
+                           data-id="{{ gdispositivo.dispositivo.id }}"><i class="fa fa-trash"
+                    ></i> Borrar dispositivo</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-4">
+            <label>Nombre: <input type="text" class="campo_char" data-id="{{ gdispositivo.dispositivo.id }}"
+                                  data-campo="nombre"
+                                  value="{{ gdispositivo.dispositivo.nombre }}"></label>
+        </div>
+        <div class="columns large-4">
+            <label>Grupo: <select class="select_grupo" data-id="{{ gdispositivo.dispositivo.id }}">
+                {% for l in grupos %}
+                    <option value="{{ l.id }}"
+                            {% if l == gdispositivo.dispositivo.grupo %}selected{% endif %}>{{ l.nombre }}</option>
+                {% endfor %}
+            </select> </label>
+        </div>
+        <div class="columns large-4">
+            <label>Tipo:
+                <select class="tipo_dispositivo" data-id="{{ gdispositivo.dispositivo.id }}">
+                    {% for t in gdispositivo.dispositivo.TIPO_DOMOTICA %}
+                        <option value="{{ t.0 }}"
+                                {% if t.0 == gdispositivo.dispositivo.tipo %}selected{% endif %}>{{ t.1 }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="tipos_dispositivo{{ gdispositivo.dispositivo.id }} hide columns large-12 SELFLOCKING{{ gdispositivo.dispositivo.id }}">
+            <label>URL que ejecuta el autobloqueo:
+                <input type="text" class="campo_char" data-id="{{ gdispositivo.dispositivo.id }}" data-campo="url1"
+                       value="{{ gdispositivo.dispositivo.url1 }}"></label>
+        </div>
+        <div class="tipos_dispositivo{{ gdispositivo.dispositivo.id }} hide columns large-12 ONOFF{{ gdispositivo.dispositivo.id }}">
+            <label>URL que ejecuta el encendido:
+                <input type="text" class="campo_char" data-id="{{ gdispositivo.dispositivo.id }}" data-campo="url1"
+                       value="{{ gdispositivo.dispositivo.url1 }}"></label>
+        </div>
+        <div class="tipos_dispositivo{{ gdispositivo.dispositivo.id }} hide columns large-12 ONOFF{{ gdispositivo.dispositivo.id }}">
+            <label>URL que ejecuta el apagado:
+                <input type="text" class="campo_char" data-id="{{ gdispositivo.dispositivo.id }}" data-campo="url2"
+                       value="{{ gdispositivo.dispositivo.url2 }}"></label>
+        </div>
+        <div class="tipos_dispositivo{{ gdispositivo.dispositivo.id }} hide columns large-12 ONOFF{{ gdispositivo.dispositivo.id }}">
+            <label>URL que ejecuta la conmutación entre encendido y apagado:
+                <input type="text" class="campo_char" data-id="{{ gdispositivo.dispositivo.id }}" data-campo="url3"
+                       value="{{ gdispositivo.dispositivo.url3 }}"></label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="columns large-12">
+            <label>Texto que contiene el enlace:
+                <textarea class="campo_char" data-campo="texto"
+                          data-id="{{ gdispositivo.dispositivo.id }}">{{ gdispositivo.dispositivo.texto }}</textarea>
+            </label>
+        </div>
+    </div>
+
+
+    <div class="row panel" title="Esta es la forma en la que un usuario vería este dispositivo"
+         id="div{{ gdispositivo.dispositivo.id }}">
+        <div class="tipos_dispositivo{{ gdispositivo.dispositivo.id }} hide SELFLOCKING{{ gdispositivo.dispositivo.id }}">
+            <div class="row">
+                <div class="columns large-12">
+                    <p style="font-weight: 800;" class="texto{{ gdispositivo.dispositivo.id }}">{{ gdispositivo.dispositivo.texto }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <a class="button boton_domotico nombre{{ gdispositivo.dispositivo.id }}"
+                       data-id="{{ gdispositivo.dispositivo.id }}">{{ gdispositivo.dispositivo.nombre }}</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="tipos_dispositivo{{ gdispositivo.dispositivo.id }} hide ONOFF{{ gdispositivo.dispositivo.id }}">
+            <div class="row">
+                <div class="columns large-12">
+                    <p style="font-weight: 800;" class="texto{{ gdispositivo.dispositivo.id }}">{{ gdispositivo.dispositivo.texto }}</p>
+                </div>
+            </div>
+            <div class="switch radius large">
+                <div class="columns large-12 nombre{{ gdispositivo.dispositivo.id }}">{{ gdispositivo.dispositivo.nombre }}</div>
+                <div class="columns large-12">
+                    <input id="CheckboxSwitch{{ gdispositivo.dispositivo.id }}" type="checkbox">
+                    <label for="CheckboxSwitch{{ gdispositivo.dispositivo.id }}"></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="tipos_dispositivo{{ gdispositivo.dispositivo.id }} hide TERMOSTATO{{ gdispositivo.dispositivo.id }}">
+            <div class="row">
+                <div class="columns large-12">
+                    <p style="font-weight: 800;" class="texto{{ gdispositivo.dispositivo.id }}">{{ gdispositivo.dispositivo.texto }}</p>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="columns large-12"><span class="nombre{{ gdispositivo.dispositivo.id }}">{{ gdispositivo.dispositivo.nombre }}</span>
+                    <span
+                            style="font-weight: 800;font-size: xx-large;">(<span
+                            id="valor{{ gdispositivo.dispositivo.id }}"></span>&#8451;)</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <div class="range-slider" data-slider data-options="initial: 5; start: 5; end: 30;"
+                         data-id="{{ gdispositivo.dispositivo.id }}">
+                        <span class="range-slider-handle" role="slider" tabindex="0"></span>
+                        <span class="range-slider-active-segment"></span>
+                        <input type="hidden" id="hidden{{ gdispositivo.dispositivo.id }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</fieldset>
+
+<script type="application/javascript">
+    $(document).foundation();
+    $('[data-slider]').on('change.fndtn.slider', function () {
+        var id = $(this).data('id');
+        $('#valor' + id).html($('#hidden' + id).val());
+    });
+
+    $('#Contenido').on('click', '.boton_domotico', function (e) {
+        e.preventDefault();
+        $('#action').val('dispositivo');
+        var secret = $('#secret').val();
+        var code = $('#code').val();
+        var dispositivo = $(this).data('id');
+        $.post("/viajeros/", {
+            action: 'dispositivo',
+            dispositivo: dispositivo,
+            secret: secret,
+            code: code
+        }, function (data) {
+            if (data.ok) {
+                $("#update_ok").show().delay(1500).fadeOut();
+            } else {
+                $("#update_error").show().delay(1500).fadeOut();
+            }
+        });
+    });
+
+    $('.{{ gdispositivo.dispositivo.tipo }}{{ gdispositivo.dispositivo.id }}').show();
+</script>

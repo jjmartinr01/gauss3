@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="execute_migrations" name="execute_migrations">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong>Ejecución remota de migraciones Django</strong></h4>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12">
+                <h3>Ejecuta la siguiente secuencia de operaciones:</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <ol>
+                    <li><input type="checkbox" id="exec_git_pull"> Haz un "git pull" al repositorio.</li>
+                    <li><input type="checkbox" id="exec_makemigrations"> Ejecuta "makemigrations"</li>
+                    <li><input type="checkbox" id="exec_migrate"> Ejectua "migrate"</li>
+                    <li><input type="checkbox" id="exec_apache_restart">Reinicia el servidor Apache</li>
+                </ol>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <a class="button" id="exec_comandos">Ejecuta las operaciones indicadas</a>
+            </div>
+        </div>
+    <hr>
+    <div class="row">
+            <div class="columns large-12" id="mensajes">
+            </div>
+        </div>
+    <hr>
+    <div class="row">
+            <div class="columns large-12" id="errores">
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+
+
+{% block final %}
+    <script>
+
+        $('#exec_comandos').click(function (e) {
+            e.preventDefault();
+            var exec_git_pull = $('#exec_git_pull').prop('checked');
+            var exec_makemigrations = $('#exec_makemigrations').prop('checked');
+            var exec_migrate = $('#exec_migrate').prop('checked');
+            var exec_apache_restart = $('#exec_apache_restart').prop('checked');
+
+            $.post("/execute_migrations/", {
+                    exec_git_pull: exec_git_pull, exec_makemigrations: exec_makemigrations, exec_migrate: exec_migrate,
+                    exec_apache_restart: exec_apache_restart
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#mensajes').html(data.mensajes);
+                        $('#errores').html(data.errores);
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+    </script>
+{% endblock %}
