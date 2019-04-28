@@ -291,7 +291,7 @@ def index(request):
                         logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
                         usernombre = request.session['gauser_extra'].gauser.username
                         if request.session['gauser_extra'].entidad.id in [14, 16] and usernombre != 'jjmartinr01':
-                            return render(request, "temporalmente_inactivo.html")
+                            return render(request, "enlace_gauss_larioja_org.html")
                         return redirect('/calendario/')
                     else:
                         logger.info(u'Gauser activo, pero no tiene asociada ninguna entidad.')
@@ -337,7 +337,7 @@ def index(request):
                         logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
                         usernombre = request.session['gauser_extra'].gauser.username
                         if request.session['gauser_extra'].entidad.id in [14, 16] and usernombre != 'jjmartinr01':
-                            return render(request, "temporalmente_inactivo.html")
+                            return render(request, "enlace_gauss_larioja_org.html")
                         return redirect('/calendario/')
                     else:
                         logger.info(u'Gauser activo, pero no tiene asociada ninguna entidad.')
@@ -389,7 +389,7 @@ def index(request):
             logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
             usernombre = request.session['gauser_extra'].gauser.username
             if request.session['gauser_extra'].entidad.id in [14, 16] and usernombre != 'jjmartinr01':
-                return render(request, "temporalmente_inactivo.html")
+                return render(request, "enlace_gauss_larioja_org.html")
             return redirect('/calendario/')
 
             # elif len(entidad) > 0:
