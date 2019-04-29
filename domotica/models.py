@@ -47,16 +47,32 @@ class GauserPermitidoGrupo(models.Model):
     def __str__(self):
         return u'%s -- %s (%s)' % (self.gauser, self.grupo, self.permiso)
 
+def mqtt_id_generator():
+    generado = pass_generator(size=10, chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+    return 'ID_%s' % generado
+
+def mqtt_topic_generator():
+    generado = pass_generator(size=10, chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+    return '/DOMOTICA/%s' % generado
 
 class Dispositivo(models.Model):
     TIPO_DOMOTICA = (
     ('SELFLOCKING', 'Auto-bloqueo'), ('ONOFF', 'Interruptor'), ('TERMOSTATO', 'Control de temperatura'),
     ('TH', 'Control de temperatura y humedad'))
+    QOS = ((0, 'At most once'), (1, 'At least once'), (2, 'Exactly once'))
+    APP = (('ESPURNA', 'Espurna'), ('IFTTT', 'IFTTT'))
     propietario = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
+    software = models.CharField('Software utilizado', default='ESPURNA', choices=APP, max_length=15)
+    mqtt_broker = models.CharField('MQTT broker', default='localhost', max_length=100)
+    mqtt_port = models.IntegerField('MQTT port', default=1883)
+    mqtt_user = models.CharField('MQTT user', default='gaumentada', max_length=50)
+    mqtt_pass = models.CharField('MQTT password', default='gaumentada', max_length=50)
+    mqtt_id = models.CharField('MQTT client ID', default=mqtt_id_generator, max_length=50)
+    mqtt_qos = models.IntegerField('MQTT QoS', default=2, choices=QOS)
+    mqtt_keepalive = models.IntegerField('MQTT keep alive', default=30)
+    mqtt_topic = models.CharField('MQTT root topic', default=mqtt_topic_generator, max_length=50)
     grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.SET_NULL)
-    url1 = models.CharField('URL 1 comunicación con el dispositivo', blank=True, null=True, max_length=250, default='')
-    url2 = models.CharField('URL 2 comunicación con el dispositivo', blank=True, null=True, max_length=250, default='')
-    url3 = models.CharField('URL 3 comunicación con el dispositivo', blank=True, null=True, max_length=250, default='')
+    ifttt = models.CharField('IFTTT webhook al dispositivo', blank=True, null=True, max_length=250, default='')
     nombre = models.CharField('Nombre dado al dispositivo', blank=True, null=True, max_length=250)
     texto = models.TextField('Texto a enviar', blank=True, null=True, default='')
     tipo = models.CharField('Tipo de dispositivo', max_length=15, default='SELFLOCKING', choices=TIPO_DOMOTICA)
