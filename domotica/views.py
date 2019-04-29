@@ -2,6 +2,8 @@
 from __future__ import unicode_literals
 import logging
 from datetime import datetime, timedelta
+
+import requests
 from django.db.models import Q, Sum
 from django.core.files.base import ContentFile, File
 from django.http import JsonResponse, HttpResponse
@@ -19,6 +21,7 @@ from autenticar.models import Permiso, Gauser
 from mensajes.views import encolar_mensaje, crear_aviso
 from domotica.models import Grupo, Dispositivo, Secuencia, DispositivoSecuencia, GauserPermitidoGrupo, \
     GauserPermitidoDispositivo
+from domotica.mqtt import client
 
 
 # Create your views here.
@@ -111,33 +114,33 @@ def configura_domotica(request):
     # secuencias = Secuencia.objects.filter(Q(propietario=g_e.gauser) | Q(id__in=secuencias_permitidas))
     # conjuntos = Conjunto.objects.filter(Q(propietario=g_e.gauser) | Q(id__in=conjuntos_permitidos))
 
-    if request.method == 'POST':
-        action = request.POST['action']
-        if action == 'libro_contabilidad_vut':
-            permiso = Permiso.objects.get(code_nombre='genera_libro_registro_policia')
-            grupo = Grupo.objects.get(id=request.POST['id_grupo'])
-            if has_permiso_on_grupo(g_e, grupo, permiso):
-                fecha_anterior_limite = datetime.today().date() - timedelta(1100)
-                viajeros = Viajero.objects.filter(reserva__grupo=grupo,
-                                                  reserva__entrada__gte=fecha_anterior_limite)
-                c = render_to_string('libro_registro_policia.html',
-                                     {'grupo': grupo, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                ruta = '%s%s/%s/' % (MEDIA_VUT, grupo.gpropietario.id, grupo.id)
-                fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
-                                   title=u'Libro de registro de viajeros', tipo='sin_cabecera')
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
-                return response
-        elif action == 'download_file_asiento':
-            asiento = AsientoVUT.objects.get(id=request.POST['asiento'])
-            permiso = Permiso.objects.get(code_nombre='edita_asiento_vut')
-            a = AutorizadoContabilidadVut.objects.filter(contabilidad=asiento.partida.contabilidad,
-                                                         autorizado=g_e.gauser, permisos__in=[permiso]).count()
-            if asiento.partida.contabilidad.propietario == g_e.gauser or a > 0:
-                fich = open(RUTA_BASE + asiento.fichero.url)
-                response = HttpResponse(fich, content_type=asiento.content_type)
-                response['Content-Disposition'] = 'attachment; filename=' + asiento.fich_name
-                return response
+    # if request.method == 'POST':
+    #     action = request.POST['action']
+    #     if action == 'libro_contabilidad_vut':
+    #         permiso = Permiso.objects.get(code_nombre='genera_libro_registro_policia')
+    #         grupo = Grupo.objects.get(id=request.POST['id_grupo'])
+    #         if has_permiso_on_grupo(g_e, grupo, permiso):
+    #             fecha_anterior_limite = datetime.today().date() - timedelta(1100)
+    #             viajeros = Viajero.objects.filter(reserva__grupo=grupo,
+    #                                               reserva__entrada__gte=fecha_anterior_limite)
+    #             c = render_to_string('libro_registro_policia.html',
+    #                                  {'grupo': grupo, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
+    #             ruta = '%s%s/%s/' % (MEDIA_VUT, grupo.gpropietario.id, grupo.id)
+    #             fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
+    #                                title=u'Libro de registro de viajeros', tipo='sin_cabecera')
+    #             response = HttpResponse(fich, content_type='application/pdf')
+    #             response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
+    #             return response
+    #     elif action == 'download_file_asiento':
+    #         asiento = AsientoVUT.objects.get(id=request.POST['asiento'])
+    #         permiso = Permiso.objects.get(code_nombre='edita_asiento_vut')
+    #         a = AutorizadoContabilidadVut.objects.filter(contabilidad=asiento.partida.contabilidad,
+    #                                                      autorizado=g_e.gauser, permisos__in=[permiso]).count()
+    #         if asiento.partida.contabilidad.propietario == g_e.gauser or a > 0:
+    #             fich = open(RUTA_BASE + asiento.fichero.url)
+    #             response = HttpResponse(fich, content_type=asiento.content_type)
+    #             response['Content-Disposition'] = 'attachment; filename=' + asiento.fich_name
+    #             return response
 
     grupos_id = GauserPermitidoGrupo.objects.filter(gauser=g_e.gauser).values_list('grupo', flat=True)
     return render(request, "domotica.html",
@@ -206,6 +209,17 @@ def ajax_configura_domotica(request):
                     return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el dispositivo."})
             except:
                 return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el dispositivo."})
+        elif request.POST['action'] == 'update_plataforma':
+            try:
+                d = Dispositivo.objects.get(id=request.POST['dispositivo'])
+                if 'E' in d.permiso(g_e.gauser) or g_e.has_permiso('edita_dispositivos_domotica'):
+                    d.plataforma = request.POST['valor']
+                    d.save()
+                    return JsonResponse({'ok': True, 'campo': 'plataforma', 'valor': request.POST['valor']})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el dispositivo."})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el dispositivo."})
         elif request.POST['action'] == 'update_tipo_dispositivo':
             try:
                 d = Dispositivo.objects.get(id=request.POST['dispositivo'])
@@ -229,3 +243,27 @@ def ajax_configura_domotica(request):
                     return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el dispositivo."})
             except:
                 return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el dispositivo."})
+        elif request.POST['action'] == 'pulsador_domotico':
+            d = Dispositivo.objects.get(id=request.POST['dispositivo'])
+            if d.plataforma == 'IFTTT':
+                try:
+                    s = requests.Session()
+                    s.verify = False
+                    p = s.post(d.ifttt, timeout=5)
+                    return JsonResponse({'ok': True, 'response': p.status_code})
+                except:
+                    return JsonResponse({'ok': False})
+            elif d.plataforma == 'ESPURNA':
+                if d.tipo == 'SELFLOCKING':
+                    topic = '{0}/relay/0/set'.format(d.mqtt_topic)
+                    client.publish(topic, 1)
+                elif d.tipo == 'ONOFF':
+                    topic = '{0}/relay/0/set'.format(d.mqtt_topic)
+                    client.publish(topic, 2)
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No detecta tipo'})
+                # client.disconnect()
+                return JsonResponse({'ok': True})
+            else:
+                return JsonResponse({'ok': False, 'mensaje': 'No detecta plataforma'})
+

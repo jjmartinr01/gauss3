@@ -154,7 +154,9 @@
                         function (data) {
                             if (data.ok) {
                                 if (campo === 'nombre') {
-                                    $('#dispositivo' + dispositivo).html(valor);
+                                    $('.nombre' + dispositivo).html(valor);
+                                }else if (campo === 'texto'){
+                                    $('.texto' + dispositivo).html(valor);
                                 }
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
@@ -166,6 +168,28 @@
                         });
                 }
             }, 250, $(this), valor);
+        });
+
+        $("body").on('change', '.select_plataforma', function () {
+            var dispositivo = $(this).data('id');
+            var valor = $(this).val();
+            $.post("/ajax_configura_domotica/", {
+                    action: 'update_plataforma',
+                    dispositivo: dispositivo,
+                    valor: valor
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('.plataformas' + dispositivo).hide();
+                        $('#' + valor + dispositivo).show();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        setTimeout(function () {
+                            show_mensajes({title: 'Error de edición', texto: data.mensaje});
+                        }, 600);
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
         });
 
         $("body").on('change', '.tipo_dispositivo', function () {
@@ -206,6 +230,21 @@
                         setTimeout(function () {
                             show_mensajes({title: 'Error de edición', texto: data.mensaje});
                         }, 600);
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $("body").on('click', '.pulsador_domotico', function () {
+            var dispositivo = $(this).data('id');
+            $.post("/ajax_configura_domotica/", {
+                    action: 'pulsador_domotico',
+                    dispositivo: dispositivo,
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });

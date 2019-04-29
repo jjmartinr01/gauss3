@@ -62,7 +62,7 @@ class Dispositivo(models.Model):
     QOS = ((0, 'At most once'), (1, 'At least once'), (2, 'Exactly once'))
     APP = (('ESPURNA', 'Espurna'), ('IFTTT', 'IFTTT'))
     propietario = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
-    software = models.CharField('Software utilizado', default='ESPURNA', choices=APP, max_length=15)
+    plataforma = models.CharField('Plataforma utilizada', default='ESPURNA', choices=APP, max_length=15)
     mqtt_broker = models.CharField('MQTT broker', default='localhost', max_length=100)
     mqtt_port = models.IntegerField('MQTT port', default=1883)
     mqtt_user = models.CharField('MQTT user', default='gaumentada', max_length=50)
