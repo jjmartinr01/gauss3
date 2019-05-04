@@ -209,7 +209,7 @@ def update_firma(instance, filename):
 
 class Viajero(models.Model):
     TIPOS = (('D', 'DNI'), ('P', 'Pasaporte'), ('C', 'Permiso de conducir'), ('I', 'Carta o documento de identidad'),
-             ('X', 'Permiso de residencia de la UE'))
+             ('X', 'Permiso de residencia de la UE'), ('N', 'NIE o tarjeta española de extranjeros'))
     SEXOS = (('F', 'Sexo femenino'), ('M', 'Sexo masculino'))
     reserva = models.ForeignKey(Reserva, on_delete=models.CASCADE)
     num = models.IntegerField('Número de parte', blank=True, null=True)

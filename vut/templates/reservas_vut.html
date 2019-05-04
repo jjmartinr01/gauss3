@@ -585,9 +585,13 @@
                 function (data) {
                     if (data['ok']) {
                         $("#update_ok").show().delay(1500).fadeOut();
-                        $('#registro_policia' + viajero).html('<span style="color:green"><i class="fa fa-check"></i></span>');
-                        $('#estado_registro' + viajero).html('<span style="color:green"><i class="fa fa-check"></i></span>');
+                        $('#registro_policia' + viajero).html('<span style="color:green"><i class="fa fa-refresh"></i></span>');
+                        $('#estado_registro' + viajero).html('<span style="color:green"><i class="fa fa-refresh"></i></span>');
                         $('#observaciones' + viajero).html(data['observaciones']);
+                        setTimeout(show_mensajes({
+                            'title': '<i class="fa fa-info-circle"></i> Acción solicitada',
+                            'texto': 'En un par de minutos Gauss intentará registrar al viajero.'
+                        }), 200);
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                         $('#observaciones' + viajero).html(data['observaciones']);
@@ -730,5 +734,63 @@
                 size: 'xlarge'
             });
         {% endif %}
+
+        $('body').on('keyup', '.input_text', function () {
+            var campo = $(this).data('campo');
+            var id_viajero = $(this).data('id');
+            var valor = $(this).val();
+            $.post("/ajax_reservas_vut/", {
+                    action: 'update_viajero',
+                    id_viajero: id_viajero,
+                    campo: campo,
+                    valor: valor
+                },
+                function (data) {
+                    if (data['ok']) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.input_select', function () {
+            var campo = $(this).data('campo');
+            var id_viajero = $(this).data('id');
+            var valor = $(this).val();
+            $.post("/ajax_reservas_vut/", {
+                    action: 'update_viajero',
+                    id_viajero: id_viajero,
+                    campo: campo,
+                    valor: valor
+                },
+                function (data) {
+                    if (data['ok']) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.input_fecha', function () {
+            var campo = $(this).data('campo');
+            var id_viajero = $(this).data('id');
+            var valor = $(this).val();
+            $.post("/ajax_reservas_vut/", {
+                    action: 'update_viajero_fecha',
+                    id_viajero: id_viajero,
+                    campo: campo,
+                    valor: valor
+                },
+                function (data) {
+                    if (data['ok']) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
     </script>
 {% endblock %}

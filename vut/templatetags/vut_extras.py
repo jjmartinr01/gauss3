@@ -2,7 +2,7 @@
 from django.template import Library
 from datetime import datetime, timedelta
 from autenticar.models import Permiso
-from vut.models import Vivienda, ContabilidadVUT, PartidaVUT
+from vut.models import Vivienda, ContabilidadVUT, PartidaVUT, RegistroPolicia
 
 
 register = Library()
@@ -51,3 +51,11 @@ def contabilidades(propietario):
 def partidas_contabilidad(contabilidad):
     return PartidaVUT.objects.filter(contabilidad=contabilidad)
 
+@register.filter
+def registro_enviado(viajero):
+    try:
+        vivienda = viajero.reserva.vivienda
+        r = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
+        return r.enviado
+    except:
+        return True

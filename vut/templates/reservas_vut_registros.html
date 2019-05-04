@@ -1,3 +1,4 @@
+{% load vut_extras %}
 {#<div class="row">#}
 {#    <div class="columns large-12">#}
 {#        <table width="100%">#}
@@ -60,8 +61,12 @@
                 <b>{{ v.reserva.vivienda.nombre }} &nbsp;&nbsp; {{ v.nombre }} {{ v.apellido1 }} {{ v.apellido2 }}
                     &nbsp;&nbsp;<span style="color:gray">(Creado: {{ v.creado|date:'d-m-Y \a \l\a\s H:i' }})</span> </b>
                 <span style="font-weight: 800;" id="estado_registro{{ v.id }}">{% if v.fichero_policia %}
-                    <span style="color:green"><i class="fa fa-check"></i> </span>{% else %}
-                    <span style="color:red"><i class="fa fa-warning"></i> Sin registrar</span> {% endif %}</span>
+                    <span style="color:green"><i class="fa fa-check"></i> </span>
+                {% elif v|registro_enviado %}
+                    <span style="color:red"><i class="fa fa-warning"></i> Sin registrar</span>
+                {% else %}
+                    <span style="color:green"><i class="fa fa-refresh"></i> Registrando</span>
+                {% endif %}</span>
             </a>
             <div id="panel{{ v.id }}" class="content accordion-registro" data-id="{{ v.id }}"></div>
         </dd>

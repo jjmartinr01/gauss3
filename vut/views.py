@@ -668,10 +668,11 @@ def ajax_reservas_vut(request):
                         crea_fichero_policia(viajero)
                         registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
                     if vivienda in viviendas:
-                        estado = graba_registro(registro)
-                        registro.enviado = True
+                        # estado = graba_registro(registro)
+                        registro.enviado = False
                         registro.save()
-                        return JsonResponse({'ok': estado, 'observaciones': viajero.observaciones})
+                        viajero.observaciones += '<br>Se hace un nuevo intento de registro.'
+                        return JsonResponse({'ok': True, 'observaciones': viajero.observaciones})
                     else:
                         return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para realizar esta acción.'})
                 except:
@@ -754,7 +755,7 @@ def ajax_reservas_vut(request):
                     viajero = Viajero.objects.get(id=request.POST['viajero'])
                     reserva = viajero.reserva
                     if reserva.vivienda in viviendas:
-                        html = render_to_string('reservas_vut_registros_content.html', {'v': viajero})
+                        html = render_to_string('reservas_vut_registros_content.html', {'v': viajero, 'paises': PAISES})
                         reserva.save()
                         return JsonResponse({'ok': True, 'html': html})
                     else:
@@ -771,6 +772,33 @@ def ajax_reservas_vut(request):
                     return JsonResponse({'ok': True})
                 except:
                     return JsonResponse({'ok': False})
+            elif request.POST['action'] == 'update_viajero':
+                try:
+                    viviendas = viviendas_con_permiso(g_e, 'crea_reservas')
+                    viajero = Viajero.objects.get(id=request.POST['id_viajero'])
+                    vivienda = viajero.reserva.vivienda
+                    if vivienda in viviendas:
+                        setattr(viajero, request.POST['campo'], request.POST['valor'])
+                        viajero.save()
+                        return JsonResponse({'ok': True})
+                    else:
+                        return JsonResponse({'ok': False, 'mensaje': 'Sin permiso con ese viajero'})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': 'Error'})
+            elif request.POST['action'] == 'update_viajero_fecha':
+                try:
+                    viviendas = viviendas_con_permiso(g_e, 'crea_reservas')
+                    viajero = Viajero.objects.get(id=request.POST['id_viajero'])
+                    vivienda = viajero.reserva.vivienda
+                    if vivienda in viviendas:
+                        fecha = datetime.strptime(request.POST['valor'], '%d/%m/%Y')
+                        setattr(viajero, request.POST['campo'], fecha)
+                        viajero.save()
+                        return JsonResponse({'ok': True})
+                    else:
+                        return JsonResponse({'ok': False, 'mensaje': 'Sin permiso con ese viajero'})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': 'Error'})
     else:
         if request.POST['action'] == 'upload_vut_file':
             portales = {'BOO': 'Booking', 'WIM': 'Wimdu', 'HOM': 'Homeaway', 'AIR': 'Airbnb', 'REN': 'Rentalia',
