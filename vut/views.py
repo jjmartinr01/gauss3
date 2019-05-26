@@ -378,6 +378,12 @@ def reservas_vut(request):
             response = HttpResponse(r_p.parte, content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=%s' % r_p.filename
             return response
+        elif request.POST['action'] == 'descarga_parte_pdf_PN':
+            r_p = RegistroPolicia.objects.get(vivienda__propietario=g_e, id=request.POST['fichero_policia'])
+            response = HttpResponse(r_p.pdf_PN, content_type='text/csv')
+            nombre = os.path.basename(r_p.pdf_PN.name)
+            response['Content-Disposition'] = 'attachment; filename=%s' % nombre
+            return response
 
     return render(request, "reservas_vut.html",
                   {
@@ -668,7 +674,7 @@ def ajax_reservas_vut(request):
                         crea_fichero_policia(viajero)
                         registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
                     if vivienda in viviendas:
-                        # estado = graba_registro(registro)
+                        # estado = graba_registro(registrPo)
                         registro.enviado = False
                         registro.save()
                         viajero.observaciones += '<br>Se hace un nuevo intento de registro.'

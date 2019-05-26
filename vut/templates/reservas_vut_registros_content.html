@@ -1,3 +1,4 @@
+{% load vut_extras %}
 {% if v.fichero_policia %}
     <div class="row">
         <div class="columns large-4">
@@ -48,7 +49,16 @@
             <div id="observaciones{{ v.id }}">{% autoescape off %}{{ v.observaciones }}{% endautoescape %}</div>
         </div>
     </div>
-
+    {% with parte_pdf_PN=v|has_parte_pdf_PN %}
+        {% if parte_pdf_PN %}
+            <div class="row">
+                <div class="columns large-12">
+                    <a data-id="{{ parte_pdf_PN }}" class="parte_pdf_PN">Descargar el parte generado por la Policía
+                        Nacional</a>
+                </div>
+            </div>
+        {% endif %}
+    {% endwith %}
 {% else %}
 
     <div class="row">

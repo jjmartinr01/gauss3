@@ -59,3 +59,14 @@ def registro_enviado(viajero):
         return r.enviado
     except:
         return True
+
+@register.filter
+def has_parte_pdf_PN(viajero):
+    try:
+        r = RegistroPolicia.objects.get(viajero=viajero)
+        if r.pdf_PN:
+            return r.id
+        else:
+            return False
+    except:
+        return False

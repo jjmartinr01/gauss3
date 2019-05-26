@@ -792,5 +792,13 @@
                 });
         });
 
+        $('body').on('click', '.parte_pdf_PN', function () {
+            e.preventDefault();
+            var id = $(this).data('id');
+            $('#fichero_policia').val(id);
+            $('#action').val('descarga_parte_pdf_PN');
+            document.getElementById("{{ formname }}").submit();
+        });
+
     </script>
 {% endblock %}
