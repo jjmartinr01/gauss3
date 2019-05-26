@@ -379,7 +379,8 @@ def reservas_vut(request):
             response['Content-Disposition'] = 'attachment; filename=%s' % r_p.filename
             return response
         elif request.POST['action'] == 'descarga_parte_pdf_PN':
-            r_p = RegistroPolicia.objects.get(vivienda__propietario=g_e, id=request.POST['fichero_policia'])
+            viviendas = viviendas_con_permiso(g_e, 'autorizado_ver_viajeros')
+            r_p = RegistroPolicia.objects.get(vivienda__in=viviendas, id=request.POST['fichero_policia'])
             response = HttpResponse(r_p.pdf_PN, content_type='text/csv')
             nombre = os.path.basename(r_p.pdf_PN.name)
             response['Content-Disposition'] = 'attachment; filename=%s' % nombre
