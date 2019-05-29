@@ -4,6 +4,7 @@ from domotica.models import *
 
 admin.site.register(Grupo)
 admin.site.register(Dispositivo)
+admin.site.register(EnlaceDomotica)
 admin.site.register(Secuencia)
 admin.site.register(DispositivoSecuencia)
 admin.site.register(GauserPermitidoGrupo)

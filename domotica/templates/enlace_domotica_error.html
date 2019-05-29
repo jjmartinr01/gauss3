@@ -1,0 +1,30 @@
+{% extends "base_empty.html" %}
+
+{% block contenido %}
+    {% if tipo == 'temprano' %}
+        <h4 style="text-align: center;color: #008CBA;"><strong>Este enlace no está activo todavía. Estará activo a partir del {{ enlace.valido_desde|date:"SHORT_DATETIME_FORMAT" }}</strong></h4>
+        {% elif tipo == 'pasado' %}
+        <h4 style="text-align: center;color: #008CBA;"><strong>Este enlace ya no está activo desde el {{ enlace.valido_hasta|date:"SHORT_DATETIME_FORMAT" }}.</strong></h4>
+    {% else %}
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Ha habido un error la página solicitada no
+                existe</strong></h4>
+            <p style="text-align: center;color: #008CBA; font-weight: 800;">Por favor, asegúrate de que has escrito bien
+                la url en el navegador</p>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block final %}
+{% endblock %}
+
+
+
+	
+
+
+
+
+
+
+

@@ -1,11 +1,11 @@
-{% extends "base.html" %}
+{% extends "base_select2-4.html" %}
 {% load my_templatetags %}
 
 {% block contenido %}
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
-
+        <input type="text" value="" id="text_to_be_copied" style="position:fixed;top:-3000px;">
 
         {% if grupos %}
             <div>
@@ -24,24 +24,31 @@
                 </li>
             </ul>
             <br>
-            <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
-                <div id="lista_domoticas">
-                    <dl class="accordion" data-accordion id="grupos_list">
-                        {% for grupo in grupos %}
-                            {% include "domotica_accordion.html" %}
-                        {% endfor %}
-                    </dl>
-                </div>
-            </section>
-            <section role="tabpanel" aria-hidden="false" class="content" id="tab2">
-                <div id="lista_conf_enlaces">
-                    <dl class="accordion" data-accordion id="conf_enlaces_list">
-                        {% for conf in configuraciones_enlace %}
-                            {% include "conf_enlace_vut_accordion.html" %}
-                        {% endfor %}
-                    </dl>
-                </div>
-            </section>
+            <div class="tabs-content">
+                <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
+                    <div id="lista_domoticas">
+                        <dl class="accordion" data-accordion id="grupos_list">
+                            {% for grupo in grupos %}
+                                {% include "domotica_accordion.html" %}
+                            {% endfor %}
+                        </dl>
+                    </div>
+                </section>
+                <section role="tabpanel" aria-hidden="false" class="content" id="tab2">
+                    <div id="lista_conf_enlaces">
+                        <div class="row">
+                            <div class="columns large-12 ">
+                                <a class="button add_enlace_domotica right">Crear un nuevo enlace</a>
+                            </div>
+                        </div>
+                        <dl class="accordion" data-accordion id="conf_enlaces_list">
+                            {% for enlace in configuraciones_enlace %}
+                                {% include "enlace_accordion.html" %}
+                            {% endfor %}
+                        </dl>
+                    </div>
+                </section>
+            </div>
         {% else %}
             <div>
                 <br>
@@ -61,6 +68,41 @@
 
 {% block final %}
     <script>
+
+        $(document).foundation({
+            tab: {
+                callback: function (tab) {
+                    var id = $(tab[0]).data('id');
+                    if (id == 0) {
+                        $('#texto0').css('color', 'black');
+                        $('#texto1').css('color', '#74bfdd');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        {#$.post("/ajax_configura_domotica/", {action: 'change_tab_dispositivos'},#}
+                        {#    function (data) {#}
+                        {#        if (data.ok) {#}
+                        {#            $('#grupos_list').html(data.html);#}
+                        {#            $("#update_ok").show().delay(1500).fadeOut();#}
+                        {#        } else {#}
+                        {#            $("#update_error").show().delay(1500).fadeOut();#}
+                        {#        }#}
+                        {#    });#}
+                    } else if (id == 1) {
+                        $('#texto0').css('color', '#74bfdd');
+                        $('#texto1').css('color', 'black');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        {#$.post("/ajax_configura_domotica/", {action: 'change_tab_enlaces'},#}
+                        {#    function (data) {#}
+                        {#        if (data.ok) {#}
+                        {#            $('#conf_enlaces_list').html(data.html);#}
+                        {#            $("#update_ok").show().delay(1500).fadeOut();#}
+                        {#        } else {#}
+                        {#            $("#update_error").show().delay(1500).fadeOut();#}
+                        {#        }#}
+                        {#    });#}
+                    }
+                }
+            }
+        });
 
         $(document).foundation({
             accordion: {
@@ -84,6 +126,26 @@
                         } else {
                             $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#panel' + id).html('');
+                        }
+                    } else if (accordion.hasClass('accordion-enlace')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion_enlace' + id).offset().top - 50);
+                            $.post("/ajax_configura_domotica/", {action: 'open_accordion_enlace', enlace: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel_enlace' + id).html(data.html);
+                                        $(document).foundation('dropdown', 'reflow');
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel_enlace' + id).html('');
                         }
                     }
                 }
@@ -155,7 +217,7 @@
                             if (data.ok) {
                                 if (campo === 'nombre') {
                                     $('.nombre' + dispositivo).html(valor);
-                                }else if (campo === 'texto'){
+                                } else if (campo === 'texto') {
                                     $('.texto' + dispositivo).html(valor);
                                 }
                                 $("#update_ok").show().delay(1500).fadeOut();
@@ -250,5 +312,67 @@
                 });
         });
 
+
+        $("body").on('click', '.add_enlace_domotica', function () {
+            var dispositivo = $(this).data('id');
+            $.post("/ajax_configura_domotica/", {
+                    action: 'add_enlace_domotica'
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#conf_enlaces_list').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $("body").on('keyup change', '.enlace_action', function () {
+            var id = $(this).data('id');
+            var action = $(this).data('action');
+            var valor = $(this).val();
+            $.post("/ajax_configura_domotica/", {
+                    action: action, id: id, valor: valor
+                },
+                function (data) {
+                    if (data.ok) {
+                        if (data.nombre) {
+                            $('#span_enlace_nombre' + id).html(data.nombre);
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $("body").on('click', '.button_action', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var action = $(this).data('action');
+            if (action === 'del_enlace') {
+                $.post("/ajax_configura_domotica/", {
+                        action: action, id: id
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#accordion_enlace' + id).remove();
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            } else if (action === 'reveal_url') {
+                var secret = $(this).data('secret');
+                var c = copiar_al_portapapeles('https://gaumentada.es/lnk/?s=' + secret);
+                if (c) {
+                    show_mensajes({
+                        title: '<i class="fa fa-thumbs-up"></i> Se ha copiado el enlace al portapapeles',
+                        texto: 'Ahora puedes pegarlo en tu aplicación preferida: Whatsapp, Telegram, Correo, ...'
+                    })
+                }
+            }
+        });
     </script>
 {% endblock %}

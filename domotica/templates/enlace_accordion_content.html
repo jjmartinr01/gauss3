@@ -1,23 +1,76 @@
-{% load my_templatetags %}
-{% load vut_extras %}
-
-<div id="list_dispositivos{{ enlace.id }}">
-{% for gdispositivo in gdispositivos %}
-    {% include "enlace_accordion_content_dispositivos.html" %}
-{% endfor %}
-</div>
 <div class="row">
     <div class="columns large-12">
-        <a class="button add_dispositivo_domotica" data-enlace="{{ enlace.id }}">Añadir un nuevo dispositivo</a>
+        <ul class="button-group right">
+            <li><a data-id="{{ enlace.id }}" data-action="reveal_url" data-secret="{{ enlace.secret }}"
+                   class="button button_action"><i class="fa fa-link"></i> Enviar enlace</a></li>
+            <li><a data-id="{{ enlace.id }}" data-action="del_enlace" class="button button_action"><i
+                    class="fa fa-trash-o"></i> Borrar enlace</a></li>
+        </ul>
+    </div>
+</div>
+{{ enlace.secret }}
+<div class="row">
+    <div class="columns large-6">
+        <label>Nombre:
+            <input data-id="{{ enlace.id }}" data-action="enlace_nombre" type="text" name="nombre{{ enlace.id }}"
+                   class="enlace_action" id="nombre{{ enlace.id }}" value="{{ enlace.nombre }}">
+        </label>
+    </div>
+    <div class="columns large-3">
+        <label>Válido desde:
+            <input data-id="{{ enlace.id }}" data-action="enlace_valido_desde" type="text"
+                   name="valido_desde{{ enlace.id }}"
+                   class="enlace_action" id="valido_desde{{ enlace.id }}"
+                   value="{{ enlace.valido_desde|date:'H:i d-m-Y' }}">
+        </label>
+    </div>
+    <div class="columns large-3">
+        <label>Válido hasta:
+            <input data-id="{{ enlace.id }}" data-action="enlace_valido_hasta" type="text"
+                   name="valido_hasta{{ enlace.id }}"
+                   class="enlace_action" id="valido_hasta{{ enlace.id }}"
+                   value="{{ enlace.valido_hasta|date:'H:i d-m-Y' }}">
+        </label>
     </div>
 </div>
 
-{#<script>#}
-{#    $(".fecha").fdatepicker({#}
-{#        format: 'dd/mm/yyyy',#}
-{#        weekStart: 1,#}
-{#        leftArrow: '<<',#}
-{#        rightArrow: '>>',#}
-{#        language: 'es'#}
-{#    });#}
-{#</script>#}
+<div class="row">
+    <div class="columns large-12">
+        <label> Selecciona dispositivos a mostrar en el enlace:
+            <select class="enlace_action" data-action="enlace_dispositivos" multiple
+                    id="select_dispositivo_enlace{{ enlace.id }}" data-id="{{ enlace.id }}">
+                {% for gd in gdispositivos %}
+                    {% ifchanged gd.dispositivo.grupo %}
+                        {% if not forloop.first %}
+                            </optgroup>
+                        {% endif %}
+                        <optgroup label="{{ gd.dispositivo.grupo.nombre }}">
+                    {% endifchanged %}
+                    <option value="{{ gd.dispositivo.id }}" {% if gd.dispositivo in enlace.dispositivos.all %}
+                            selected{% endif %}>{{ gd.dispositivo.nombre }}</option>
+                {% endfor %}
+                </optgroup>
+            </select>
+        </label>
+    </div>
+</div>
+
+<script>
+    $('#select_dispositivo_enlace{{ enlace.id }}').select2();
+
+    $(function () {
+        $('#valido_desde{{ enlace.id }}').fdatetimepicker({
+            format: 'hh:ii dd-mm-yyyy',
+            disableDblClickSelection: true,
+            language: 'es',
+            pickTime: true
+        });
+
+        $('#valido_hasta{{ enlace.id }}').fdatetimepicker({
+            format: 'hh:ii dd-mm-yyyy',
+            disableDblClickSelection: true,
+            language: 'es',
+            pickTime: true
+        });
+    });
+</script>

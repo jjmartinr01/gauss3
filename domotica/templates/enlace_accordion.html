@@ -1,10 +1,11 @@
-<dd class="accordion-navigation" id="accordion{{ enlace.id }}"
+<dd class="accordion-navigation" id="accordion_enlace{{ enlace.id }}"
     style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
-    <a href="#panel{{ enlace.id }}">
+    <a href="#panel_enlace{{ enlace.id }}">
         <i id="circle{{ enlace.id }}" class="fa fa-plus-circle circle_icon"></i>
-        <span id="span_enlace_nombre{{ enlace.id }}">{{ enlace.nombre }}</span>
+        <span id="span_enlace_nombre{{ enlace.id }}">{% if enlace.nombre %}{{ enlace.nombre }}{% else %}
+        Enlace creado a las {{ enlace.creado|date:"H:i \e\l j \d\e F \d\e Y" }}{% endif %}</span>
     </a>
 
-    <div id="panel{{ enlace.id }}" class="content accordion-enlace" data-id="{{ enlace.id }}">
+    <div id="panel_enlace{{ enlace.id }}" class="content accordion-enlace" data-id="{{ enlace.id }}">
     </div>
 </dd>

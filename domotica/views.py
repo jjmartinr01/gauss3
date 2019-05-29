@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 import logging
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 import requests
 from django.db.models import Q, Sum
@@ -20,7 +21,7 @@ from mensajes.models import Aviso
 from autenticar.models import Permiso, Gauser
 from mensajes.views import encolar_mensaje, crear_aviso
 from domotica.models import Grupo, Dispositivo, Secuencia, DispositivoSecuencia, GauserPermitidoGrupo, \
-    GauserPermitidoDispositivo
+    GauserPermitidoDispositivo, EnlaceDomotica
 from domotica.mqtt import client
 
 
@@ -151,8 +152,33 @@ def configura_domotica(request):
                       #       'texto': 'Nuevo dispositivo', 'title': 'Crear un nuevo dispositivo domótico'},
                       #      ),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                      'grupos': Grupo.objects.filter(id__in=grupos_id)
+                      'grupos': Grupo.objects.filter(id__in=grupos_id),
+                      'configuraciones_enlace': EnlaceDomotica.objects.filter(propietario=g_e.gauser)
                   })
+
+
+def pulsador_domotico(d):
+    if d.plataforma == 'IFTTT':
+        try:
+            s = requests.Session()
+            s.verify = False
+            p = s.post(d.ifttt, timeout=5)
+            return {'ok': True, 'response': p.status_code}
+        except:
+            return {'ok': False}
+    elif d.plataforma == 'ESPURNA':
+        if d.tipo == 'SELFLOCKING':
+            topic = '{0}/relay/0/set'.format(d.mqtt_topic)
+            client.publish(topic, 1)
+        elif d.tipo == 'ONOFF':
+            topic = '{0}/relay/0/set'.format(d.mqtt_topic)
+            client.publish(topic, 2)
+        else:
+            return {'ok': False, 'mensaje': 'No detecta tipo'}
+        # client.disconnect()
+        return {'ok': True}
+    else:
+        return {'ok': False, 'mensaje': 'No detecta plataforma'}
 
 
 @login_required()
@@ -245,6 +271,8 @@ def ajax_configura_domotica(request):
                 return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el dispositivo."})
         elif request.POST['action'] == 'pulsador_domotico':
             d = Dispositivo.objects.get(id=request.POST['dispositivo'])
+            respuesta = pulsador_domotico(d)
+            return JsonResponse(respuesta)
             if d.plataforma == 'IFTTT':
                 try:
                     s = requests.Session()
@@ -266,4 +294,90 @@ def ajax_configura_domotica(request):
                 return JsonResponse({'ok': True})
             else:
                 return JsonResponse({'ok': False, 'mensaje': 'No detecta plataforma'})
+        elif request.POST['action'] == 'add_enlace_domotica':
+            enlace = EnlaceDomotica.objects.create(propietario=g_e.gauser, nombre='', valido_desde=timezone.now(),
+                                                   valido_hasta=timezone.now())
+            html = render_to_string('enlace_accordion.html', {'enlace': enlace})
+            return JsonResponse({'ok': True, 'html': html})
+        elif request.POST['action'] == 'open_accordion_enlace':
+            try:
+                enlace = EnlaceDomotica.objects.get(id=request.POST['enlace'], propietario=g_e.gauser)
+                gdispositivos = GauserPermitidoDispositivo.objects.filter(gauser=g_e.gauser).order_by('dispositivo__grupo')
+                html = render_to_string('enlace_accordion_content.html',
+                                        {'enlace': enlace, 'gdispositivos': gdispositivos })
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'enlace_dispositivos':
+            try:
+                enlace = EnlaceDomotica.objects.get(id=request.POST['id'], propietario=g_e.gauser)
+                enlace.dispositivos.clear()
+                enlace.dispositivos.add(*request.POST.getlist('valor[]'))
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'enlace_nombre':
+            try:
+                enlace = EnlaceDomotica.objects.get(id=request.POST['id'], propietario=g_e.gauser)
+                enlace.nombre = request.POST['valor']
+                enlace.save()
+                return JsonResponse({'ok': True, 'nombre': enlace.nombre})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'enlace_valido_hasta':
+            try:
+                enlace = EnlaceDomotica.objects.get(id=request.POST['id'], propietario=g_e.gauser)
+                enlace.valido_hasta = timezone.make_aware(datetime.strptime(request.POST['valor'], '%H:%M %d-%m-%Y'))
+                enlace.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'enlace_valido_desde':
+            try:
+                enlace = EnlaceDomotica.objects.get(id=request.POST['id'], propietario=g_e.gauser)
+                enlace.valido_desde = timezone.make_aware(datetime.strptime(request.POST['valor'], '%H:%M %d-%m-%Y'))
+                enlace.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'del_enlace':
+            try:
+                enlace = EnlaceDomotica.objects.get(id=request.POST['id'], propietario=g_e.gauser)
+                enlace.delete()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
 
+
+def lnk(request):
+    ahora = timezone.make_aware(datetime.today())
+    if request.method == 'GET':
+        try:
+            secret = request.GET['s']
+            enlace = EnlaceDomotica.objects.get(secret=secret)
+            if enlace.valido_desde > ahora:
+                return render(request, "enlace_domotica_error.html", {'tipo': 'temprano'})
+            elif enlace.valido_hasta < ahora:
+                return render(request, "enlace_domotica_error.html", {'tipo': 'pasado'})
+            else:
+                return render(request, "enlace_domotica.html",
+                              {
+                                  'formname': 'enlace_domotica',
+                                  'enlace': enlace
+                              })
+        except:
+            return render(request, "enlace_domotica_error.html", {'tipo': 'noexiste'})
+    elif request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'boton_domotico':
+            try:
+                enlace = EnlaceDomotica.objects.get(id=request.POST['secret'])
+                dispositivo = Dispositivo.objects.get(id=request.POST['id'])
+                if dispositivo in enlace.dispositivos.all():
+                    respuesta = pulsador_domotico(dispositivo)
+                    return JsonResponse(respuesta)
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'Error dispositivo'})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Error getting object'})
+
+    return JsonResponse({'ok': False})

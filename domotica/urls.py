@@ -7,4 +7,5 @@ urlpatterns = [
     url(r'^ajax_grupos_domotica/$', views.ajax_grupos_domotica, name='ajax_grupos_domotica'),
     url(r'^configura_domotica/$', views.configura_domotica, name='configura_domotica'),
     url(r'^ajax_configura_domotica/$', views.ajax_configura_domotica, name='ajax_configura_domotica'),
+    url(r'^lnk/$', views.lnk, name='lnk'),
 ]

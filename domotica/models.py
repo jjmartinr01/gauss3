@@ -212,6 +212,8 @@ class EnlaceDomotica(models.Model):
     valido_hasta = models.DateTimeField("Válido hasta la fecha:", blank=True, null=True)
     dispositivos = models.ManyToManyField(Dispositivo, blank=True)
     secuencias = models.ManyToManyField(Secuencia, blank=True)
+    creado = models.DateTimeField('Fecha de creación', auto_now_add=True)
+    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
     class Meta:
         ordering = ['valido_desde']

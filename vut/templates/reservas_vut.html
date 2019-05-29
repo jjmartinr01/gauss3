@@ -23,7 +23,7 @@
             <h4 style="text-align: center;color: #008CBA;"><strong>Reservas VUT</strong></h4>
         </div>
 
-        <input type="text" value="" id="text_to_be_copied" style="position:fixed;top:-3000px;">
+        {#        <input type="text" value="" id="text_to_be_copied" style="position:fixed;top:-3000px;">#}
         <ul class="tabs" data-tab role="tablist">
             <li class="tab-title active" role="presentation" data-id="0">
                 <a href="#tab1" role="tab" tabindex="0" aria-selected="true" aria-controls="tab1">
@@ -517,32 +517,35 @@
         $('#Contenido').on('click', '.copy_url_viajero', function () {
             var code = $(this).data('code');
             var secret = $(this).data('secret');
-            $('#text_to_be_copied').val('https://gaumentada.es/viajeros/?s=' + secret + '&c=' + code);
-            var isiOSDevice = navigator.userAgent.match(/ipad|iphone/i);
-            if (isiOSDevice) {
-                var input = document.getElementById('text_to_be_copied');
-                var editable = input.contentEditable;
-                var readOnly = input.readOnly;
-                input.contentEditable = true;
-                input.readOnly = false;
-                var range = document.createRange();
-                range.selectNodeContents(input);
-                var selection = window.getSelection();
-                selection.removeAllRanges();
-                selection.addRange(range);
-                input.setSelectionRange(0, 999999);
-                input.contentEditable = editable;
-                input.readOnly = readOnly;
-            } else {
-                $('#text_to_be_copied').select();
-            }
-            document.execCommand("copy");
-            $("#text_to_be_copied").blur();
+            var c = copiar_al_portapapeles('https://gaumentada.es/viajeros/?s=' + secret + '&c=' + code);
+            {#$('#text_to_be_copied').val('https://gaumentada.es/viajeros/?s=' + secret + '&c=' + code);#}
+            {#var isiOSDevice = navigator.userAgent.match(/ipad|iphone/i);#}
+            {#if (isiOSDevice) {#}
+            {#    var input = document.getElementById('text_to_be_copied');#}
+            {#    var editable = input.contentEditable;#}
+            {#    var readOnly = input.readOnly;#}
+            {#    input.contentEditable = true;#}
+            {#    input.readOnly = false;#}
+            {#    var range = document.createRange();#}
+            {#    range.selectNodeContents(input);#}
+            {#    var selection = window.getSelection();#}
+            {#    selection.removeAllRanges();#}
+            {#    selection.addRange(range);#}
+            {#    input.setSelectionRange(0, 999999);#}
+            {#    input.contentEditable = editable;#}
+            {#    input.readOnly = readOnly;#}
+            {# } else {#}
+            {#    $('#text_to_be_copied').select();#}
+            {# }#}
+            {#document.execCommand("copy");#}
+            {#$("#text_to_be_copied").blur();#}
             {# Esto es necesario para que no salga el teclado en el móvil #}
-            show_mensajes({
-                title: 'URL copiada',
-                texto: 'Se ha copiado en el portapapeles la dirección en la que deben registrase los viajeros de esta reserva'
-            });
+            if (c) {
+                show_mensajes({
+                    title: 'URL copiada',
+                    texto: 'Se ha copiado en el portapapeles la dirección en la que deben registrase los viajeros de esta reserva'
+                });
+            }
         });
 
         $('#Contenido').on('click', '.viajeros_list', function () {

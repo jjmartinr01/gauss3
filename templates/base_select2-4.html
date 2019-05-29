@@ -61,6 +61,7 @@
     }
 </style>
 <input type="hidden" name="hay_avisos" id="hay_avisos" value="0">
+<input type="text" value="" id="text_to_be_copied" style="position:fixed;top:-3000px;">
 
 <div class="show-for-medium-up">
     <div class="cabecera" id="cabecera_gauss2"> {# cabecera es la clase que pinta el fondo #}
@@ -484,6 +485,33 @@
     document.onclick = re_adjust_check_time;
     document.onmousemove = re_adjust_check_time;
     document.onkeypress = re_adjust_check_time;
+
+
+    function copiar_al_portapapeles(texto) {
+            $('#text_to_be_copied').val(texto);
+            var isiOSDevice = navigator.userAgent.match(/ipad|iphone/i);
+            if (isiOSDevice) {
+                var input = document.getElementById('text_to_be_copied');
+                var editable = input.contentEditable;
+                var readOnly = input.readOnly;
+                input.contentEditable = true;
+                input.readOnly = false;
+                var range = document.createRange();
+                range.selectNodeContents(input);
+                var selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+                input.setSelectionRange(0, 999999);
+                input.contentEditable = editable;
+                input.readOnly = readOnly;
+            } else {
+                $('#text_to_be_copied').select();
+            }
+            document.execCommand("copy");
+            $("#text_to_be_copied").blur();
+            {# Esto es necesario para que no salga el teclado en el móvil #}
+            return true;
+        }
 </script>
 {% block final %}{% endblock %}
 </body>

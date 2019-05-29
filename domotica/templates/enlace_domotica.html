@@ -1,0 +1,83 @@
+{% extends "base_empty.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+    .tit_p{
+        text-align: center;color: #008CBA;
+    }
+    .subtit_p{
+        text-align: center;
+        font-size: small;
+    }
+    </style>
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="secret" id="secret" value="{{ secret }}">
+
+        <div>
+            <h4 class="tit_p"><strong>Dispositivos domóticos</strong></h4>
+            <h4 class="subtit_p">Activos desde el {{ enlace.valido_desde }} hasta el {{ enlace.valido_hasta }}</h4>
+        </div>
+        <div id="formulario_domotica">
+            {% if enlace.dispositivos.all|length > 0 %}
+                {% for domotica in enlace.dispositivos.all %}
+                    <div class="row">
+                        <div class="columns large-12">
+                            <label><p style="font-weight: 800;">{{ domotica.texto }}</p></label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <a class="button boton_domotico"
+                               data-id="{{ domotica.id }}">{{ domotica.nombre }}</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="row">
+                    <div class="columns large-12 text-center">
+                        <h3 style="font-weight: 800;">
+                            No hay dispositivos domóticos disponibles
+                        </h3>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </form>
+{% endblock %}
+{% block final %}
+
+    <script type="application/javascript">
+
+        $('#Contenido').on('click', '.boton_domotico', function (e) {
+            e.preventDefault();
+            $('#action').val('domotica');
+            var secret = $('#secret').val();
+            var id = $(this).data('id');
+            $.post("/lnk/", {action: 'boton_domotico', id: id, secret: secret}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+
+    </script>
+
+
+{% endblock %}
+
+
+
+	
+
+
+
+
+
+
+
