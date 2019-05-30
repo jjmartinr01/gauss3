@@ -370,7 +370,7 @@ def lnk(request):
     elif request.method == 'POST' and request.is_ajax():
         if request.POST['action'] == 'boton_domotico':
             try:
-                enlace = EnlaceDomotica.objects.get(id=request.POST['secret'])
+                enlace = EnlaceDomotica.objects.get(secret=request.POST['secret'])
                 dispositivo = Dispositivo.objects.get(id=request.POST['id'])
                 if dispositivo in enlace.dispositivos.all():
                     respuesta = pulsador_domotico(dispositivo)

@@ -14,10 +14,10 @@
 
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
-        <input type="hidden" name="secret" id="secret" value="{{ secret }}">
+        <input type="hidden" name="secret" id="secret" value="{{ enlace.secret }}">
 
         <div>
-            <h4 class="tit_p"><strong>Dispositivos domóticos</strong></h4>
+            <h4 class="tit_p"><strong>{{ enlace.nombre }}</strong></h4>
             <h4 class="subtit_p">Activos desde el {{ enlace.valido_desde }} hasta el {{ enlace.valido_hasta }}</h4>
         </div>
         <div id="formulario_domotica">
