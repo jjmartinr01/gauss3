@@ -1,0 +1,14 @@
+<div class="row" id="div_firmante{{ f.id }}">
+    <div class="columns large-4">
+        {{ f.firmante }}
+    </div>
+    <div class="columns large-4">
+        {{ f.cargo }}
+    </div>
+    <div class="columns large-3">
+        {{ f.get_tipo_display }}
+    </div>
+    <div class="columns large-1 medium-1 small-1">
+        <a data-id="{{ f.id }}" class="del_firmante"><i class="fa fa-trash"></i></a>
+    </div>
+</div>

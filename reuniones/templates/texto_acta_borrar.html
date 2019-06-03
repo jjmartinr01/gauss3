@@ -1,0 +1,36 @@
+<table align="center" width="100%" cellspacing="3" cellpadding="3">
+    <tr>
+        <td colspan="4" class="color2"><span>Escribe el contenido del acta:&nbsp;&nbsp;</span><span
+                style="font-size: 12pt;font-weight: 700">{{ convocatoria.nombre }}</span></td>
+    </tr>
+</table>
+<textarea id="id_contenido_html" name="contenido_html" class="formulario">
+    {% if existe %}
+        {{ contenido }}
+    {% else %}
+
+        <p>Siendo las {{ convocatoria.fecha_hora|date:"H:i" }} horas
+            del {{ convocatoria.fecha_hora|date:"l"|lower }} {{ convocatoria.fecha_hora|date:"d" }} de
+            {{ convocatoria.fecha_hora|date:"F"|lower }} de {{ convocatoria.fecha_hora|date:"Y" }} y estando
+            {% if convocatoria.convocados.all|length > 1 %}
+                representadas las secciones de {% else %} representada la sección {% endif %}
+            {% for convocado in convocatoria.convocados.all %}
+                {% if not forloop.first and not forloop.last %}, {% elif forloop.last and not forloop.first %}
+                    y {% else %}{% endif %}{{ convocado.nombre }}{% endfor %} por los usuarios anteriormente indicados
+            se procede a la lectura del acta anterior, que ... (es aprobada por unanimidad, se modifica a petición de
+            ...)</p>
+
+        <p>A continuación se comienza a tratar el primer punto de la convocatoria ...</p>
+
+        <p>No habiendo más puntos que tratar finaliza la reunión a las ...</p>
+
+        <p>&nbsp;</p>
+
+        <p>En {{ convocatoria.convocante.entidad.localidad }} a {{ hoy|date:"d" }} de {{ hoy|date:"F"|lower }} de
+            {{ hoy|date:"Y" }},</p>
+
+        <p>&nbsp;</p>
+        {{ convocatoria.convocante.gauser.get_full_name }}
+        <br>{{ convocatoria.convocante.cargo }}
+    {% endif %}
+</textarea>

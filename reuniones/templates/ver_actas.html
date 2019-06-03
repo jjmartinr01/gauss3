@@ -1,0 +1,233 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+        }
+
+        .opera {
+            margin-right: 20px;
+            cursor: pointer;
+            color: #008CBA;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .opera:hover {
+            -webkit-transform: scale(1.7, 1.7);
+            -webkit-transition-timing-function: ease-out;
+            -webkit-transition-duration: 150ms;
+            -moz-transform: scale(1.7, 1.7);
+            -moz-transition-timing-function: ease-out;
+            -moz-transition-duration: 150ms;
+            position: relative;
+            z-index: 99;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_acta" name="id_acta" value="">
+
+        <div id="div_actas_seleccionadas">
+            {% for acta in actas %}
+                <input type="hidden" name="actas_seleccionadas" value="{{ acta.id }}" id="select{{ acta.id }}">
+            {% endfor %}
+        </div>
+
+        <div>
+            <h4 id="title_page"><strong>Actas de reunión publicadas</strong></h4>
+        </div>
+
+        {#        <div id="formulario_search">#}
+        {#            <div class="row">#}
+        {#                <div class="columns large-4">#}
+        {#                    <label>Buscar entre esta fecha ...</label>#}
+        {#                    <input id="id_fecha_inicio" name="fecha_inicio" type="text" value="01-09-2010">#}
+        {#                </div>#}
+        {#                <div class="columns large-4">#}
+        {#                    <label>... y esta otra</label>#}
+        {#                    <input id="id_fecha_fin" name="fecha_fin" type="text" value="{% now "d-m-Y" %}">#}
+        {#                </div>#}
+        {#                <div class="columns large-4">#}
+        {#                    <label>Buscar en ...</label>#}
+        {#                    <select id="filtra_subentidad" name="filtra_subentidad">#}
+        {#                        <option value="">-------------</option>#}
+        {#                        {% for subentidad in subentidades %}#}
+        {#                            <option value="{{ subentidad.id }}">{{ subentidad.nombre }}</option>#}
+        {#                        {% endfor %}#}
+        {#                    </select>#}
+        {#                </div>#}
+        {#            </div>#}
+        {#            <div class="row">#}
+        {#                <div class="columns large-12">#}
+        {#                    <select id="select_acta">#}
+        {#                    </select>#}
+        {#                </div>#}
+        {#            </div>#}
+        {#        </div>#}
+
+        <br><br>
+        <dl class="accordion" data-accordion id="list_actas_selected"></dl>
+
+        <dl class="accordion" data-accordion id="list_actas">
+            {% for acta in actas %}
+                <dd class="accordion-navigation" id="accordion{{ acta.id }}"
+                    style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+                    <a href="#panel{{ acta.id }}">
+                        <i id="circle{{ acta.id }}" class="fa fa-plus-circle circle_icon"></i>
+                        <b>{{ acta.convocatoria.nombre }}</b> <span style="color: #a3a3a3">
+                        <i class="fa fa-long-arrow-right"></i> {{ acta.convocatoria.fecha_hora|date:"d-m-Y" }} a
+                        las {{ acta.convocatoria.fecha_hora|date:"H:i" }}</span>
+                    </a>
+
+                    <div id="panel{{ acta.id }}" class="content accordion-acta" data-id="{{ acta.id }}">
+                        <div class="row">
+                            <div class="columns large-6">
+                                <b>Creada por:</b> {{ acta.convocatoria.convocante.gauser.get_full_name }}<br>
+                                <b>Fecha de creación:</b> {{ acta.creado }}
+                            </div>
+                            <div class="columns large-6">
+                                <ul class="button-group radius">
+                                    <li title="Descargar el acta en PDF">
+                                        <a data-id="{{ acta.id }}" class="button download_pdf"><i
+                                                class="fa fa-file-pdf-o"></i> PDF</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-4">
+                                <label>Fecha y hora de la convocatoria
+                                    <br><b>{{ acta.convocatoria.fecha_hora|date:'d/m/Y H:i' }}</b></label>
+                            </div>
+                            <div class="columns large-4 end">
+                                <label>Fecha de aprobación
+                                    <br><b>{{ acta.fecha_aprobacion|date:'d/m/Y' }}</b></label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-12">
+                                <label>Asistentes a la reunión:
+                                <br>{% for asistente in acta.asistentes.all %}
+                                            <b>{{ asistente.gauser.get_full_name }}</b>,
+                                        {% endfor %}
+                                </label>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="columns large-12">
+                                <div class="nombre_acta" data-id="{{ acta.id }}"
+                                     style="font-size: xx-large;font-weight: 800; text-align: center">
+                                    Acta de la reunión: {{ acta.convocatoria.nombre }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-12">
+                                    {% autoescape off %}
+                                        {{ acta.contenido_html }}
+                                    {% endautoescape %}
+                            </div>
+                        </div>
+                    </div>
+                </dd>
+            {% endfor %}
+        </dl>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-acta')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#select_acta').select2({
+            placeholder: "Para buscar un acta, escribe parte del texto contenido en él",
+            allowClear: true,
+            ajax: {
+                url: "/ajax_actas/",
+                type: 'POST',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    $('#q').val(params.term);
+                    $('#page').val(params.page);
+                    $('#action').val('busca_acta');
+                    return $('#' + '{{ formname }}').serialize();
+                },
+                processResults: function (data, page) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            }, // let our custom formatter work
+            minimumInputLength: 3,
+            language: {
+                inputTooShort: function () {
+                    return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                }
+            }
+        });
+
+
+        $('#select_acta').change(function (e) {
+            e.preventDefault();
+            var id = $(this).val();
+            if (id) {
+                $('#id_acta').val(id);
+                $('#action').val('acta_append');
+                $.post("/ajax_actas/", $('#' + '{{ formname }}').serialize(), function (data) {
+                    var id = $('#id_acta').val();
+                    $('#list_actas_selected').prepend(data);
+                    $("#select_acta").val(null).trigger('change');
+                    $('<input />', {type: 'hidden', name: 'actas_seleccionadas', value: id, id: 'select' + id})
+                            .appendTo('#div_actas_seleccionadas');
+                });
+            }
+        });
+
+        $('body').on('click', '.download_pdf', function (e) {
+            e.preventDefault();
+            $('#id_acta').val($(this).data('id'));
+            $('#action').val('pdf_acta');
+            document
+            .{{ formname }}.
+            submit();
+        });
+
+
+    </script>
+{% endblock %}

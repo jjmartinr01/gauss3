@@ -1,0 +1,10 @@
+{% for p in puntos %}
+    <div class="row" id="div_punto{{ p.id }}">
+    <div class="columns large-1 medium-1 small-1">
+        <input type="number" value="{{ p.orden }}" data-id="{{ p.id }}" class="orden_punto"></div>
+    <div class="columns large-10 medium-10 small-10">
+        <input type="text" value="{{ p.punto }}" data-id="{{ p.id }}" class="text_punto"></div>
+    <div class="columns large-1 medium-1 small-1">
+        <a data-id="{{ p.id }}" class="del_punto"><i class="fa fa-trash"></i></a></div>
+    </div>
+{% endfor %}

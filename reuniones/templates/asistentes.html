@@ -1,0 +1,38 @@
+{% load my_templatetags %}
+<div class="row">
+    <div class="columns large-12">
+        <label>Selecciona a los asistentes
+            ({% for sub_convocada in sub_convocadas %}
+                <a id="sub___{{ sub_convocada.id }}" class="subentidad_convocada"
+                   title="Pincha aquí para seleccionar/deseleccionar a todos los {{ sub_convocada.nombre }}">{{ sub_convocada.nombre }}</a>
+                <input type="hidden" name="hidden___{{ sub_convocada.id }}" id="hidden___{{ sub_convocada.id }}" value="0">
+                {% if not forloop.last %} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}
+            {% endfor %})
+            <select name="asistentes" id="id_asistentes" multiple>
+                <option></option>
+                {% for asistente in g_es %}
+                    <option class="{% for sub in asistente.subentidades.all %} sub___{{ sub.id }} {% endfor %}"
+                            value="{{ asistente.id }}" {% if asistente in asistentes %}
+                            selected {% endif %}>{{ asistente.gauser.last_name }}, {{ asistente.gauser.first_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+</div>
+
+<script>
+    $("#id_asistentes").select2({placeholder: "Escribe parte del nombre para buscar coincidencias"});
+    $('.subentidad_convocada').click(function(){
+        var id_subentidad_selected = $(this).attr('id').split('___')[1];
+        if ($('#hidden___'+id_subentidad_selected).val()==0){
+            $('.sub___'+id_subentidad_selected).prop('selected',true);
+            $('#hidden___'+id_subentidad_selected).val(1);
+            $('#id_asistentes').trigger('change');
+        }else{
+            $('.sub___'+id_subentidad_selected).prop('selected',false);
+            $('#hidden___'+id_subentidad_selected).val(0);
+            $('#id_asistentes').trigger('change');
+        }
+    })
+</script>

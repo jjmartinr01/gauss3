@@ -1,0 +1,287 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+        }
+
+        .opera {
+            margin-right: 20px;
+            cursor: pointer;
+            color: #008CBA;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .opera:hover {
+            -webkit-transform: scale(1.7, 1.7);
+            -webkit-transition-timing-function: ease-out;
+            -webkit-transition-duration: 150ms;
+            -moz-transform: scale(1.7, 1.7);
+            -moz-transition-timing-function: ease-out;
+            -moz-transition-duration: 150ms;
+            position: relative;
+            z-index: 99;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_conv_template" name="id_conv_template" value="">
+
+        <div>
+            {% if configura %}
+                <h4 id="title_page"><strong>Configuración de Convocatorias</strong></h4>
+            {% else %}
+                <h4 id="title_page"><strong>Convocatorias</strong></h4>
+            {% endif %}
+        </div>
+        <dl class="accordion" data-accordion id="list_configura_convocatorias">
+            {% for c in configuraciones %}
+                {% include "configurar_convocatoria_accordion.html" %}
+            {% endfor %}
+        </dl>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        {% if request.session.gauser_extra|has_permiso:"c_conv_template" and configura %}
+            habilita(['s_plus']);
+            $('#plus_sign').click(function (e) {
+                e.preventDefault();
+                $.post("/conv_template_ajax/", {action: 'nueva_plantilla'}, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#list_configura_convocatorias').prepend(data.html);
+                        $(document).scrollTop($('#list_configura_convocatorias').offset().top - 150);
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+
+                });
+            });
+        {% endif %}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-configura_convocatoria')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/conv_template_ajax/", {action: 'open_accordion', conv_template: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                    } else {
+                                        show_mensajes({
+                                            title: "Error",
+                                            texto: "No se ha podido cargar el contenido de la plantilla"
+                                        })
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('body').on('click', '.delete_conv_template', function (e) {
+            e.preventDefault();
+            var convocatoria = $(this).data('id');
+            title1 = 'Borrar plantilla de convocatorias';
+            texto1 = 'Si aceptas, esta plantilla de convocatorias será eliminada' +
+                ' completamente de la base de datos.';
+            title2 = 'Borrado cancelado';
+            texto2 = 'No tienes permiso para borrar esta configuración';
+            $('#id_conv_template').val(convocatoria);
+            show_mensajes({
+                title: title1,
+                texto: texto1,
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        var conv_template = $('#id_conv_template').val();
+                        $.post("/conv_template_ajax/", {
+                                action: 'delete_conv_template',
+                                conv_template: conv_template,
+                            },
+                            function (data) {
+                                if (data.ok) {
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                    $('#accordion' + conv_template).remove();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                    show_mensajes({
+                                        title: title2,
+                                        texto: texto2
+                                    });
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+        $('body').on('change', '.change_cargo', function (e) {
+            var conv_template = $(this).data('id');
+            var cargo = $(this).val();
+            $.post("/conv_template_ajax/", {
+                    action: 'update_cargo_conv_template',
+                    conv_template: conv_template,
+                    cargo: cargo
+                },
+                function (data) {
+                    if (data.ok) {
+                        {#$('.cargo_convocante').text(data.cargo);#}
+                        var cargo = $('#cargo_convocante' + data.conv_template).find('option:selected').text();
+                        $('#cargo' + data.conv_template).html(cargo);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup', '.lugar', function (e) {
+            var conv_template = $(this).data('id');
+            var lugar = $(this).val();
+            $.post("/conv_template_ajax/", {
+                    action: 'update_lugar_conv_template',
+                    conv_template: conv_template,
+                    lugar: lugar
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('.place').text(lugar);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        editor_contenido_convocatoria.fire('change');
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change.select2', '.subentidades_convocadas', function (e) {
+            var conv_template = $(this).data('id');
+            var subentidades = $(this).val();
+            $.post("/conv_template_ajax/", {
+                    action: 'update_subentidades_convocadas_conv_template',
+                    conv_template: conv_template,
+                    subentidades: subentidades
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('.sub_convocadas').text(data.texto);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        editor_contenido_convocatoria.fire('change');
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup', '.nombre', function (e) {
+            var conv_template = $(this).data('id');
+            var nombre = $(this).text();
+            $.post("/conv_template_ajax/", {
+                    action: 'update_nombre_conv_template',
+                    conv_template: conv_template,
+                    nombre: nombre
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#span_nombre' + conv_template).html(data.nombre);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup change', '.orden_punto', function (e) {
+            var punto = $(this).data('id');
+            var orden = $(this).val();
+            $.post("/conv_template_ajax/", {
+                    action: 'update_orden_conv_template',
+                    punto: punto,
+                    orden: orden
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#puntos' + data.conv_template).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup', '.text_punto', function (e) {
+            var punto = $(this).data('id');
+            var texto = $(this).val();
+            $.post("/conv_template_ajax/", {
+                    action: 'update_punto_conv_template',
+                    texto: texto,
+                    punto: punto
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.add_punto', function (e) {
+            var conv_template = $(this).data('id');
+            $.post("/conv_template_ajax/", {
+                    action: 'add_punto_conv_template',
+                    conv_template: conv_template
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#puntos' + data.conv_template).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.del_punto', function (e) {
+            var punto = $(this).data('id');
+            $.post("/conv_reunion_ajax/", {
+                    action: 'del_punto_conv_reunion',
+                    punto: punto
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#div_punto' + data.punto).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+    </script>
+{% endblock %}

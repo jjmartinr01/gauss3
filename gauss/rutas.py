@@ -80,6 +80,8 @@ MEDIA_CC = RUTA_MEDIA + "competencias_clave/"
 
 MEDIA_VUT = RUTA_MEDIA + "vut/"
 
+MEDIA_REUNIONES = RUTA_MEDIA + "reuniones/"
+
 def buscar_identificador(request, href):
     for menu_creado in request.session['lateral']:
         if menu_creado['href'] == href:

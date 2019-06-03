@@ -1,0 +1,39 @@
+{% load my_templatetags %}
+<p>Siendo las <span id="hora">{{ convocatoria.fecha_hora|date:'H:i' }}</span> horas del <span
+        id="day_name">{{ convocatoria.fecha_hora|date:'l'|lower }}</span> <span
+        id="day_number">{{ convocatoria.fecha_hora|date:'j' }}</span> de
+    <span id="month">{{ convocatoria.fecha_hora|date:'F'|lower }}</span> de <span
+            id="year">{{ convocatoria.fecha_hora|date:'Y' }}</span> y estando presentes: <span
+            id="attendees">las personas abajo firmantes</span>, da comienzo la reunión siguiendo los puntos del orden del día
+    recogidos en la convocatoria:</p>
+
+<div id="puntos_convocatoria">
+    {% for punto in p_conv %}
+        <div id="{{ punto.id }}">
+            <p id="p{{ punto.id }}"><strong>{{ punto.punto }}</strong></p>
+            <p>...</p>
+        </div>
+    {% endfor %}
+
+</div>
+
+
+<p>No habiendo más puntos que tratar finaliza la reunión a las ...</p>
+
+<p>&nbsp;</p>
+
+<p>En {{ convocatoria.entidad.localidad }} a <span
+        id="day_number2">{{ convocatoria.fecha_hora|date:'j' }}</span> de <span
+        id="month2">{{ convocatoria.fecha_hora|date:'F'|lower }}</span> de <span
+        id="year2">{{ convocatoria.fecha_hora|date:'Y' }}</span>,</p>
+
+<p>&nbsp;</p>
+<table>
+    <tr>
+        <td>{{ redacta.get_full_name }}
+            <br/>{{ cargo_redacta.cargo }}</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>VºBº<br></td>
+    </tr>
+</table>

@@ -1,0 +1,15 @@
+<h1 style="text-align: center;">{{ convocatoria.nombre }}</h1>
+{% autoescape off %}
+    {{ convocatoria.texto_convocatoria }}
+{% endautoescape %}
+<ol>
+    {% for p in puntos %}
+        <li>{{ p.punto }}</li>
+    {% endfor %}
+</ol>
+<p>&nbsp;</p>
+<p>En {{ convocatoria.entidad.localidad }} a {{ convocatoria.fecha|date:"j \d\e F \d\e Y"|lower }},</p>
+<p>&nbsp;</p>
+<div>
+    {{ convocatoria.convoca.get_full_name }} <br>{{ convocatoria.cargo_convocante }}
+</div>

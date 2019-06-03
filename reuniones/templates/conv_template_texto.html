@@ -1,0 +1,10 @@
+{% load reuniones_extras %}
+<p>Se convoca a los {{ c.entidad.get_general_user_display }}s de <span title="Aquí se escriben automáticamente los convocados" class="sub_convocadas noeditable" contenteditable="false">{{ c|lista_subentidades_convocadas }}</span>, el
+    <span class="day_name noeditable" contenteditable="false" title="Aquí se escribe automáticamente el nombre del día">&laquo;día&raquo; </span>
+    <span class="day_num noeditable" contenteditable="false" title="Aquí se escribe automáticamente el día del mes">&laquo;número&raquo;</span> de <span
+            class="month_name noeditable" contenteditable="false" title="Aquí se escribe automáticamente el mes">&laquo;mes&raquo;</span>
+    de <span class="year noeditable" contenteditable="false" title="Aquí se escribe automáticamente el año">&laquo;año&raquo;</span> a las
+    <span class="datetime_time noeditable" contenteditable="false" title="Aquí se escribe automáticamente la hora">&laquo;hora&raquo;</span> horas, en la <span
+            class="place noeditable" contenteditable="false" title="Aquí se escribe automáticamente el lugar"> {{ c|lugar }}</span>,
+    con el siguiente</p>
+<p>ORDEN DEL D&Iacute;A</p>
