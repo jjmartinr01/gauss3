@@ -1015,6 +1015,18 @@ def redactar_actas_reunion_ajax(request):
                     return JsonResponse({'ok': True,'asist': asistentes.count()})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'update_control_code':
+            try:
+                acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
+                if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
+                    if acta.publicada or acta.fecha_aprobacion:
+                        return JsonResponse({'ok': False})
+                    acta.control = request.POST['code']
+                    acta.save()
+                    return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+
             # acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
             # if acta.publicada or acta.fecha_aprobacion:
             #     return JsonResponse({'ok': False})
@@ -1125,3 +1137,28 @@ def redactar_actas_reunion_ajax(request):
 #                                     {'g_es': g_es, 'asistentes': asistentes, 'sub_convocadas': sub_convocadas},
 #                                     request=request)
 #         return HttpResponse(json.dumps({'asistentes': asi_html, 'contenido': con_html, 'publicar': publicar}))
+
+
+def control_asistencia_reunion(request):
+    g_e = request.session['gauser_extra']
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'check_code':
+            try:
+                acta = ActaReunion.objects.get(control=request.POST['code'], convocatoria__entidad=g_e.ronda.entidad)
+                delta = timezone.now() - acta.convocatoria.fecha_hora
+                delta_posible = timezone.timedelta(minutes=180)
+                if delta <delta_posible:
+                    acta.asistentes.add(g_e)
+                    asistentes_text_list = [a.gauser.get_full_name() for a in acta.asistentes.all()]
+                    acta.asistentes_text = human_readable_list(asistentes_text_list)
+                    acta.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'Han transcurrido más de tres horas desde el comienzo de la reunión'})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'El código introducido no es válido'})
+
+    return render(request, "control_asistencia_reunion.html",
+                  {
+                      'formname': 'control_asistencia_reunion',
+                  })

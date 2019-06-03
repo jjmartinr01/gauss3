@@ -1,0 +1,63 @@
+{% extends "base_select2-4.html" %}
+
+{% block head %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+            font-weight: 800;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+
+
+        <div>
+            <h4 id="title_page"><strong>Control de asistencia</strong></h4>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <b>Introduce el código de control:</b>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-10">
+                <input type="text" id="control_code" value="">
+            </div>
+            <div class="columns large-2">
+                <a id="button_control_code" class="button">Enviar</a>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('#button_control_code').click(function (e) {
+            e.preventDefault();
+            var code = $('#control_code').val();
+            $.post("/control_asistencia_reunion/", {action: 'check_code', code: code}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    show_mensajes({
+                        texto: "Se ha confirmado tu participación en la reunión",
+                        title: "Confirmación recibida"
+                    })
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                    show_mensajes({
+                        texto: data.mensaje,
+                        title: "<i class='fa fa-warning'></i> Error en la confirmación"
+                    })
+                }
+
+            });
+        });
+
+
+    </script>
+{% endblock %}

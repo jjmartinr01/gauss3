@@ -82,6 +82,7 @@ class ActaReunion(models.Model):
     asistentes = models.ManyToManyField(GE, blank=True, related_name='asisten')
     asistentes_text = models.TextField('Asistentes en formato texto', null=True, blank=True)
     num_last_page = models.IntegerField('Número de la última página', blank=True, null=True)
+    control = models.IntegerField('Código numérico para el control de asistencia', blank=True, null=True)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 

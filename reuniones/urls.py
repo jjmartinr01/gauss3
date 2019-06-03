@@ -14,4 +14,5 @@ urlpatterns = [
     url(r'^ver_actas_reunion_ajax/$', views.ver_actas_reunion_ajax, name='ver_actas_reunion_ajax'),
     # url(r'^actualiza_texto_acta/$', views.actualiza_texto_acta, name='actualiza_texto_acta'),
     url(r'^ajax_actas_reunion/$', views.ajax_actas_reunion, name='ajax_actas_reunion'),
+    url(r'^control_asistencia_reunion/$', views.control_asistencia_reunion, name='control_asistencia_reunion'),
 ]

@@ -24,15 +24,20 @@
             <input type="text" name="fecha_hora" readonly data-id="{{ acta.id }}"
                    value="{{ acta.convocatoria.fecha_hora|date:'d/m/Y H:i' }}"></label>
     </div>
-    <div class="columns large-4">
+    <div class="columns large-3">
         <label>Fecha de aprobación
             <input type="text" name="fecha_aprobacion" class="fecha_aprobacion" data-id="{{ acta.id }}"
                    value="{% if acta.fecha_aprobacion %}{{ acta.fecha_aprobacion|date:'d/m/Y' }}{% endif %}"></label>
     </div>
-    <div class="columns large-4">
-        <label>Hacer pública este acta</label>
+    <div class="columns large-2" title="Marcar para hacer pública este acta">
+        <label>Hacer pública</label>
         <input type="checkbox" name="publicada" class="publicada" {% if acta.publicada %}checked{% endif %}
                value="{{ acta.id }}" id="publicada{{ acta.id }}">
+    </div>
+    <div class="columns large-3" title="Código compuesto únicamente por números">
+        <label>Código de control
+            <input type="text" name="control_code" class="control_code" data-id="{{ acta.id }}" value="{{ acta.control }}">
+        </label>
     </div>
 </div>
 {#<div class="row">#}
@@ -302,6 +307,23 @@
                     action: 'update_asistentes_reunion',
                     acta: acta,
                     asistentes: asistentes
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup', '.control_code', function (e) {
+            var acta = {{ acta.id }};
+            var code = $(this).val();
+            $.post("/redactar_actas_reunion_ajax/", {
+                    action: 'update_control_code',
+                    acta: acta,
+                    code: code
                 },
                 function (data) {
                     if (data.ok) {

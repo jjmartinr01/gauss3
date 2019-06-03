@@ -38,7 +38,15 @@ MENU_DEFAULT = [
      'href': 'redactar_actas_reunion',
      'nivel': 2,
      'tipo': 'Accesible',
-     'pos': 4,
+     'pos': 3,
+     'parent': 'acceso_reuniones'
+     },
+    {'code_menu': 'acceso_control_asistencia_reunion',
+     'texto_menu': 'Control de asistencia',
+     'href': 'control_asistencia_reunion',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 5,
      'parent': 'acceso_reuniones'
      },
     # {'code_menu': 'acceso_actillas2',
