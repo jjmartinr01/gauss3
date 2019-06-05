@@ -18,5 +18,24 @@ Asistentes:<br>
 </span>
 <hr>
 {% autoescape off %}
-    {{ acta.contenido_html }}
+    {{ acta.preambulo }}
 {% endautoescape %}
+
+{% for p in puntos %}
+    {% autoescape off %}
+    <b>{{ p.orden }}.- {{ p.punto }}</b>
+    <p>{{ p.texto_acta }}</p>
+    {% endautoescape %}
+{% endfor %}
+<p>&nbsp;</p>
+{% autoescape off %}
+    {{ acta.epilogo }}
+{% endautoescape %}
+
+{% for firma in firmas %}
+    <div style="width: 280px;display: inline-block;">
+    {% if firma.tipo == 'VB' %}<p>VºBº</p>{% else %}<p>&nbsp;</p>{% endif %}
+    <p>&nbsp;</p>
+    <p>{{ firma.firmante }}<br>{{ firma.cargo }}</p>
+    </div>
+{% endfor %}

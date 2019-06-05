@@ -252,15 +252,6 @@ def conv_template_ajax(request):
             except:
                 return JsonResponse({'ok': False})
 
-
-
-
-
-
-
-
-
-
         # elif action == 'update_cargos_convocados_configura_convocatoria':
         #     try:
         #         configuracion = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['configuracion'])
@@ -871,11 +862,14 @@ def redactar_actas_reunion(request):
                     return response
                 else:
                     fichero = '%s/borradores/acta' % (g_e.ronda.entidad.code)
-                    c = render_to_string('acta2pdf.html', {
+                    firmas = FirmaActa.objects.filter(acta=acta)
+                    c = render_to_string('acta_reunion2pdf.html', {
                         'acta': acta,
+                        'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
                         'MA': MEDIA_ANAGRAMAS,
+                        'firmas': firmas
                     }, request=request)
-                    fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_ACTAS, title=u'Acta de reunión')
+                    fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REUNIONES, title=u'Acta de reunión')
                     response = HttpResponse(fich, content_type='application/pdf')
                     response['Content-Disposition'] = 'attachment; filename=' + nombre_fichero
                     return response
@@ -1012,7 +1006,7 @@ def redactar_actas_reunion_ajax(request):
                     asistentes_text_list = [a.gauser.get_full_name() for a in acta.asistentes.all()]
                     acta.asistentes_text = human_readable_list(asistentes_text_list)
                     acta.save()
-                    return JsonResponse({'ok': True,'asist': asistentes.count()})
+                    return JsonResponse({'ok': True, 'asist': asistentes.count()})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_control_code':
@@ -1024,6 +1018,38 @@ def redactar_actas_reunion_ajax(request):
                     acta.control = request.POST['code']
                     acta.save()
                     return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'obtener_cargos_firmante':
+            try:
+                ge = Gauser_extra.objects.get(id=request.POST['firmante'], ronda=g_e.ronda)
+                cargos = ge.cargos.all()
+                cargos = {c[0]: c[1] for c in cargos.values_list('id', 'cargo')}
+                return JsonResponse({'ok': True, 'cargos': cargos, 'acta': request.POST['acta']})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'add_firmante_reunion':
+            try:
+                acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
+                if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
+                    if acta.publicada or acta.fecha_aprobacion:
+                        return JsonResponse({'ok': False})
+                    ge = Gauser_extra.objects.get(id=request.POST['firmante'], ronda=g_e.ronda)
+                    cargo = Cargo.objects.get(id=request.POST['cargo'], entidad=g_e.ronda.entidad).cargo
+                    f = FirmaActa.objects.create(acta=acta, tipo=request.POST['tipo'], cargo=cargo,
+                                                 firmante=ge.gauser.get_full_name())
+                    html = render_to_string('redactar_actas_reunion_accordion_content_firmante.html', {'f': f})
+                    return JsonResponse({'ok': True, 'html': html, 'acta': acta.id})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'del_firmante_reunion':
+            try:
+                acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
+                if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
+                    if acta.publicada or acta.fecha_aprobacion:
+                        return JsonResponse({'ok': False})
+                    FirmaActa.objects.get(id=request.POST['firmante'], acta=acta).delete()
+                    return JsonResponse({'ok': True, 'firmante': request.POST['firmante']})
             except:
                 return JsonResponse({'ok': False})
 
@@ -1113,6 +1139,7 @@ def redactar_actas_reunion_ajax(request):
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Error al tratar de llevar a cabo la acción solicitada'})
 
+
 # @login_required()
 # def actualiza_texto_acta(request):
 #     if request.is_ajax():
@@ -1147,14 +1174,15 @@ def control_asistencia_reunion(request):
                 acta = ActaReunion.objects.get(control=request.POST['code'], convocatoria__entidad=g_e.ronda.entidad)
                 delta = timezone.now() - acta.convocatoria.fecha_hora
                 delta_posible = timezone.timedelta(minutes=180)
-                if delta <delta_posible:
+                if delta < delta_posible:
                     acta.asistentes.add(g_e)
                     asistentes_text_list = [a.gauser.get_full_name() for a in acta.asistentes.all()]
                     acta.asistentes_text = human_readable_list(asistentes_text_list)
                     acta.save()
                     return JsonResponse({'ok': True})
                 else:
-                    return JsonResponse({'ok': False, 'mensaje': 'Han transcurrido más de tres horas desde el comienzo de la reunión'})
+                    return JsonResponse(
+                        {'ok': False, 'mensaje': 'Han transcurrido más de tres horas desde el comienzo de la reunión'})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'El código introducido no es válido'})
 
