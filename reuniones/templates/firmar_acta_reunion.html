@@ -147,7 +147,7 @@
                         if (data.ok) {
                             $("#update_ok").show().delay(1500).fadeOut();
                             $('#contenido_acta_reunion').html('');
-                            $('#contenido_acta_reunion').html(data.html);
+                            {#$('#contenido_acta_reunion').html(data.html);#}
                             clearCanvas(canvas, ctx);
                             {#window.scrollTo(0, 0);#}
                         } else {
