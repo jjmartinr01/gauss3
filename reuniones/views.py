@@ -1205,7 +1205,7 @@ def firmar_acta_reunion(request):
                     'acta': acta,
                     'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
                     'firmas': firmas,
-                    'ruta_base': RUTA_BASE
+                    'ruta_base': ''
                 }, request=request)
                 return JsonResponse(
                         {'ok': True, 'html': html, 'nombre': firmaacta.firmante})
@@ -1235,7 +1235,7 @@ def firmar_acta_reunion(request):
                     'acta': acta,
                     'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
                     'firmas': firmas,
-                    'ruta_base': RUTA_BASE
+                    'ruta_base': ''
                 }, request=request)
                 return JsonResponse(
                         {'ok': True, 'html': html, 'nombre': firmaacta.firmante})
