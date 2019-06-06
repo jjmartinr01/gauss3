@@ -1230,15 +1230,14 @@ def firmar_acta_reunion(request):
                 firmaacta.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
                 firmaacta.save()
                 acta = firmaacta.acta
-                firmas = FirmaActa.objects.filter(acta=acta)
-                html = render_to_string('acta_reunion2pdf.html', {
-                    'acta': acta,
-                    'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
-                    'firmas': firmas,
-                    'ruta_base': ''
-                }, request=request)
-                return JsonResponse(
-                        {'ok': True, 'html': html, 'nombre': firmaacta.firmante})
+                firmas_requeridas = FirmaActa.objects.filter(ge=g_e, firmada=False)
+                # firmas = FirmaActa.objects.filter(acta=acta)
+                # html = render_to_string('firmar_acta_reunion.html', {
+                #     'firmas_requeridas': firmas_requeridas
+                # }, request=request)
+                # return JsonResponse(
+                #         {'ok': True, 'html': html, 'nombre': firmaacta.firmante})
+                return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Error para encontrar FirmaActa'})
 
