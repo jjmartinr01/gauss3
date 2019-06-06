@@ -118,7 +118,6 @@
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
                         $('#list_actas_reunion').hide();
-                        $('#contenido_acta_reunion').html('');
                         $('#contenido_acta_reunion').html(data.html);
                         clearCanvas(canvas, ctx);
                         $('#nombre_firma').html(data.nombre);
@@ -147,6 +146,7 @@
                     function (data) {
                         if (data.ok) {
                             $("#update_ok").show().delay(1500).fadeOut();
+                            $('#contenido_acta_reunion').html('');
                             $('#contenido_acta_reunion').html(data.html);
                             clearCanvas(canvas, ctx);
                             {#window.scrollTo(0, 0);#}
