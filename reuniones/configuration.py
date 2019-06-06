@@ -49,6 +49,14 @@ MENU_DEFAULT = [
      'pos': 5,
      'parent': 'acceso_reuniones'
      },
+    {'code_menu': 'acceso_firmar_actas_reunion',
+     'texto_menu': 'Firmar actas',
+     'href': 'firmar_acta_reunion',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 5,
+     'parent': 'acceso_reuniones'
+     },
     # {'code_menu': 'acceso_actillas2',
     #  'texto_menu': 'Actillas',
     #  'href': 'actillas',

@@ -127,17 +127,19 @@ class ActaReunion(models.Model):
 
 def update_firma(instance, filename):
     a = instance.acta
-    ruta = os.path.join("reuniones/%s/%s/firmas/" % (a.convocatoria.entidad.id, a.id),
-                        str(a.id) + '_' + str(instance.firmante.id) + '.png')
+    ruta = os.path.join("reuniones/%s/%s/firmas/" % (a.convocatoria.entidad.code, a.id),
+                        str(a.id) + '_' + str(instance.ge.id) + '.png')
     return ruta
 
 class FirmaActa(models.Model):
     TIPOS = (('FIR', 'Firma'), ('VB', 'Visto bueno'))
     acta = models.ForeignKey(ActaReunion, blank=True, null=True, on_delete=models.CASCADE)
+    ge = models.ForeignKey(GE, blank=True, null=True, on_delete=models.SET_NULL)
     tipo = models.CharField('Tipo de firma', max_length=5, choices=TIPOS, default='FIR')
     firmante = models.CharField('Nombre del firmante', blank=True, null=True, max_length=100)
     cargo = models.CharField('Cargo del firmante', blank=True, null=True, max_length=100)
     firma = models.ImageField('Imagen de la firma', upload_to=update_firma, blank=True, null=True)
+    firmada = models.BooleanField('¿Está firmada?', default=False)
 
     class Meta:
         ordering = ['acta']

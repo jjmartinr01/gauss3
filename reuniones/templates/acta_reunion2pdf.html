@@ -23,8 +23,8 @@ Asistentes:<br>
 
 {% for p in puntos %}
     {% autoescape off %}
-    <b>{{ p.orden }}.- {{ p.punto }}</b>
-    <p>{{ p.texto_acta }}</p>
+        <b>{{ p.orden }}.- {{ p.punto }}</b>
+        <p>{{ p.texto_acta }}</p>
     {% endautoescape %}
 {% endfor %}
 <p>&nbsp;</p>
@@ -34,8 +34,12 @@ Asistentes:<br>
 
 {% for firma in firmas %}
     <div style="width: 280px;display: inline-block;">
-    {% if firma.tipo == 'VB' %}<p>VºBº</p>{% else %}<p>&nbsp;</p>{% endif %}
-    <p>&nbsp;</p>
-    <p>{{ firma.firmante }}<br>{{ firma.cargo }}</p>
+        {% if firma.tipo == 'VB' %}<p>VºBº</p>{% else %}<p>&nbsp;</p>{% endif %}
+        {% if firma.firma %}
+            <p><img src="{{ ruta_base }}{{ firma.firma.url }}" width="100px" alt="xxx"></p>
+        {% else %}
+            <p title="Falta la firma" style="color:red;">&nbsp;xxx</p>
+        {% endif %}
+        <p>{{ firma.firmante }}<br>{{ firma.cargo }}</p>
     </div>
 {% endfor %}

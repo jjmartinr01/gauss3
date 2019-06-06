@@ -3,11 +3,12 @@ from __future__ import unicode_literals
 
 # import urlparse
 import urllib  # .parse import parse_qs # Sirve para leer los forms serializados y pasados por ajax
+import base64
 from datetime import datetime
 
 import simplejson as json
 from django.contrib.auth.decorators import login_required
-from django.core.files.base import File
+from django.core.files.base import File, ContentFile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -1037,7 +1038,7 @@ def redactar_actas_reunion_ajax(request):
                     ge = Gauser_extra.objects.get(id=request.POST['firmante'], ronda=g_e.ronda)
                     cargo = Cargo.objects.get(id=request.POST['cargo'], entidad=g_e.ronda.entidad).cargo
                     f = FirmaActa.objects.create(acta=acta, tipo=request.POST['tipo'], cargo=cargo,
-                                                 firmante=ge.gauser.get_full_name())
+                                                 firmante=ge.gauser.get_full_name(), ge=ge)
                     html = render_to_string('redactar_actas_reunion_accordion_content_firmante.html', {'f': f})
                     return JsonResponse({'ok': True, 'html': html, 'acta': acta.id})
             except:
@@ -1189,4 +1190,60 @@ def control_asistencia_reunion(request):
     return render(request, "control_asistencia_reunion.html",
                   {
                       'formname': 'control_asistencia_reunion',
+                  })
+
+def firmar_acta_reunion(request):
+    g_e = request.session['gauser_extra']
+    firmas_requeridas = FirmaActa.objects.filter(ge=g_e, firmada=False)
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'mostrar_acta':
+            try:
+                firmaacta = FirmaActa.objects.get(id=request.POST['firmaacta'], ge=g_e, firmada=False)
+                acta = firmaacta.acta
+                firmas = FirmaActa.objects.filter(acta=acta)
+                html = render_to_string('acta_reunion2pdf.html', {
+                    'acta': acta,
+                    'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
+                    'firmas': firmas,
+                    'ruta_base': RUTA_BASE
+                }, request=request)
+                return JsonResponse(
+                        {'ok': True, 'html': html, 'nombre': firmaacta.firmante})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Error para encontrar FirmaActa'})
+        elif request.POST['action'] == 'guarda_firma':
+            try:
+                firmaacta = FirmaActa.objects.get(id=request.POST['firmaacta'], ge=g_e, firmada=False)
+                try:
+                    os.remove('%s%s' % (RUTA_BASE, firmaacta.firma.url))
+                except:
+                    pass
+                # if not creado:
+                #     ruta = os.path.join(
+                #         "%svut/%s/firmas/" % (RUTA_MEDIA, reserva.vivienda.id),
+                #         str(reserva.code) + '_' + str(viajero.ndi) + '.png')
+                #     if os.path.isfile(ruta):
+                #         os.remove(ruta)
+                firma_data = request.POST['firma']
+                format, imgstr = firma_data.split(';base64,')
+                ext = format.split('/')[-1]
+                firmaacta.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+                firmaacta.save()
+                acta = firmaacta.acta
+                firmas = FirmaActa.objects.filter(acta=acta)
+                html = render_to_string('acta_reunion2pdf.html', {
+                    'acta': acta,
+                    'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
+                    'firmas': firmas,
+                    'ruta_base': RUTA_BASE
+                }, request=request)
+                return JsonResponse(
+                        {'ok': True, 'html': html, 'nombre': firmaacta.firmante})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Error para encontrar FirmaActa'})
+
+    return render(request, "firmar_acta_reunion.html",
+                  {
+                      'formname': 'firmar_acta_reunion',
+                      'firmas_requeridas': firmas_requeridas
                   })
