@@ -868,7 +868,8 @@ def redactar_actas_reunion(request):
                         'acta': acta,
                         'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
                         'MA': MEDIA_ANAGRAMAS,
-                        'firmas': firmas
+                        'firmas': firmas,
+                        'ruta_base': RUTA_BASE
                     }, request=request)
                     fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REUNIONES, title=u'Acta de reunión')
                     response = HttpResponse(fich, content_type='application/pdf')
