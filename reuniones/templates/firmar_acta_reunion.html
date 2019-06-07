@@ -96,8 +96,7 @@
                     <div class="columns large-12 medium-12 text-center">
                         <ul class="button-group">
                             <li><a class="button" id="enviar_datos">Envía firma</a></li>
-                            <li><a class="button alert" id="clearbutton" onclick="clearCanvas(canvas,ctx);">Borrar
-                                firma</a></li>
+                            <li><a class="button alert" id="clearbutton">Borrar firma</a></li>
                         </ul>
                     </div>
                 </div>
@@ -119,7 +118,6 @@
                         $("#update_ok").show().delay(1500).fadeOut();
                         $('#list_actas_reunion').hide();
                         $('#contenido_acta_reunion').html(data.html);
-                        clearCanvas(canvas, ctx);
                         $('#nombre_firma').html(data.nombre);
                         $('#formulario_firma').show();
                         window.scrollTo(0, 0);
@@ -216,7 +214,7 @@
         }
 
         // Clear the canvas context using the canvas width and height
-        function clearCanvas(canvas, ctx) {
+        function limpiarCanvasFirma(canvas, ctx) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
@@ -306,6 +304,11 @@
             }
         }
 
+        $('body').on('click', '#clearbutton', function (e) {
+            e.preventDefault();
+            limpiarCanvasFirma(canvas,ctx);
+        });
+
 
         // Set-up the canvas and add our event handlers after the page has loaded
         function init() {
@@ -328,9 +331,11 @@
                 canvas.addEventListener('touchend', sketchpad_touchEnd, false);
                 canvas.addEventListener('touchmove', sketchpad_touchMove, false);
             }
-        }
+         }
 
-        init();
+         setTimeout(function () {
+             init();
+         }, 500);
     </script>
 
 
