@@ -23,12 +23,16 @@
         }
 
         #sketchpad {
-            padding: 0;
             margin: auto;
             display: block;
             width: 400px;
             height: 300px;
-        {#position: relative;#}{#top: 0;#}{#bottom: 0;#}{#left: 0;#}{#right: 0;#} border: 2px solid #888;
+            position: relative;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border: 2px solid #888;
             margin-bottom: 10px;
         }
     </style>
@@ -54,25 +58,19 @@
         </div>
 
 
-        <div id="formulario_firma" style="display: block;">
-            <div id="sketchpadapp">
-                <div class="row">
-                    <div class="columns large-12 center">
-                        <label class="text-center">Firma de <span id="nombre_firma"></span>:
-                            <canvas id="sketchpad" height="300" width="400"></canvas>
-                        </label>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="columns large-12 medium-12 text-center">
-                        <ul class="button-group">
-                            <li><a class="button" id="enviar_datos">Envía firma</a></li>
-                            <li><a class="button alert" id="clearbutton">Borrar firma</a></li>
-                        </ul>
-                    </div>
-                </div>
+        <div id="sketchpadapp">
+            <label class="text-center">Firma dentro del recuadro:</label>
+            <canvas id="sketchpad" height="300" width="400"></canvas>
+        </div>
+        <div class="row">
+            <div class="columns large-12 medium-12 text-center">
+                <ul class="button-group">
+                    <li><a class="button" id="enviar_datos">Envía firma</a></li>
+                    <li><a class="button alert" id="clearbutton">Borrar firma</a></li>
+                </ul>
             </div>
         </div>
+
     </form>
 {% endblock %}
 {% block final %}
