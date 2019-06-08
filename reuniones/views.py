@@ -956,6 +956,7 @@ def redactar_actas_reunion_ajax(request):
                     texto = request.POST['texto']
                     acta.preambulo = texto
                     acta.save()
+                    borrar_firmas_acta(acta)
                     return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
@@ -968,6 +969,7 @@ def redactar_actas_reunion_ajax(request):
                     texto = request.POST['texto']
                     acta.epilogo = texto
                     acta.save()
+                    borrar_firmas_acta(acta)
                     return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
@@ -981,6 +983,7 @@ def redactar_actas_reunion_ajax(request):
                     texto = request.POST['texto']
                     punto.texto_acta = texto
                     punto.save()
+                    borrar_firmas_acta(acta)
                     return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
@@ -992,6 +995,7 @@ def redactar_actas_reunion_ajax(request):
                         return JsonResponse({'ok': False})
                     acta.nombre = request.POST['nombre'].strip()
                     acta.save()
+                    borrar_firmas_acta(acta)
                     return JsonResponse({'ok': True, 'nombre': acta.nombre})
             except:
                 return JsonResponse({'ok': False})
@@ -1008,6 +1012,7 @@ def redactar_actas_reunion_ajax(request):
                     asistentes_text_list = [a.gauser.get_full_name() for a in acta.asistentes.all()]
                     acta.asistentes_text = human_readable_list(asistentes_text_list)
                     acta.save()
+                    borrar_firmas_acta(acta)
                     return JsonResponse({'ok': True, 'asist': asistentes.count()})
             except:
                 return JsonResponse({'ok': False})
@@ -1193,9 +1198,23 @@ def control_asistencia_reunion(request):
                       'formname': 'control_asistencia_reunion',
                   })
 
+def borrar_firmas_acta(acta):
+    firmas = FirmaActa.objects.filter(acta=acta, firmada=True)
+    for firma in firmas:
+        firma.firmada = False
+        firma.firma = None
+        if firma.firma:
+            if os.path.isfile(firma.firma.path):
+                os.remove(firma.firma.path)
+        firma.save()
+    return True
+
 def firmar_acta_reunion(request):
     g_e = request.session['gauser_extra']
-    firmas_requeridas = FirmaActa.objects.filter(ge=g_e, firmada=False)
+    if request.method == 'GET' and 'f' in request.GET:
+        firmas_requeridas = FirmaActa.objects.filter(id=request.GET['f'], ge=g_e, firmada=False)
+    else:
+        firmas_requeridas = FirmaActa.objects.filter(ge=g_e, firmada=False)
     if request.method == 'POST' and request.is_ajax():
         if request.POST['action'] == 'mostrar_acta':
             try:
@@ -1216,33 +1235,35 @@ def firmar_acta_reunion(request):
             try:
                 firmaacta = FirmaActa.objects.get(id=request.POST['firmaacta'], ge=g_e, firmada=False)
                 try:
-                    os.remove('%s%s' % (RUTA_BASE, firmaacta.firma.url))
+                    os.remove( firmaacta.firma.path)
                 except:
                     pass
-                # if not creado:
-                #     ruta = os.path.join(
-                #         "%svut/%s/firmas/" % (RUTA_MEDIA, reserva.vivienda.id),
-                #         str(reserva.code) + '_' + str(viajero.ndi) + '.png')
-                #     if os.path.isfile(ruta):
-                #         os.remove(ruta)
                 firma_data = request.POST['firma']
                 format, imgstr = firma_data.split(';base64,')
                 ext = format.split('/')[-1]
                 firmaacta.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+                firmaacta.firmada = True
                 firmaacta.save()
-                acta = firmaacta.acta
-                firmas_requeridas = FirmaActa.objects.filter(ge=g_e, firmada=False)
-                # firmas = FirmaActa.objects.filter(acta=acta)
-                # html = render_to_string('firmar_acta_reunion.html', {
-                #     'firmas_requeridas': firmas_requeridas
-                # }, request=request)
-                # return JsonResponse(
-                #         {'ok': True, 'html': html, 'nombre': firmaacta.firmante})
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Error para encontrar FirmaActa'})
 
-    return render(request, "firmar_acta_reunion.html",
+    if firmas_requeridas.count() == 1:
+        firmaacta = firmas_requeridas[0]
+        acta = firmaacta.acta
+        firmas = FirmaActa.objects.filter(acta=acta)
+
+        return render(request, "firmar_acta_reunion.html",
+                      {
+                          'formname': 'firmar_acta_reunion',
+                          'firmaacta': firmaacta,
+                          'acta': acta,
+                          'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
+                          'firmas': firmas,
+                          'num_firmas': 1
+                      })
+    else:
+        return render(request, "firmar_acta_reunion_elegir.html",
                   {
                       'formname': 'firmar_acta_reunion',
                       'firmas_requeridas': firmas_requeridas

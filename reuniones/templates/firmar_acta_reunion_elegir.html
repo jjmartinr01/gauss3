@@ -1,0 +1,96 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{#  https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/  #}
+{#  https://zipso.net/sketchpad/sketchpad-lines.html  #}
+{% block contenido %}
+    <style>
+        .title_page {
+            text-align: center;
+            color: #008CBA;
+            font-weight: 800;
+        }
+
+        /* Some CSS styling */
+        #sketchpadapp {
+            /* Prevent nearby text being highlighted when accidentally dragging mouse outside confines of the canvas */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        #sketchpad {
+            padding: 0;
+            margin: auto;
+            display: block;
+            width: 400px;
+            height: 300px;
+        {#position: relative;#}{#top: 0;#}{#bottom: 0;#}{#left: 0;#}{#right: 0;#} border: 2px solid #888;
+            margin-bottom: 10px;
+        }
+
+        {# #clearbutton {#}
+        {#    padding: 0;#}
+        {#    margin: auto;#}
+        {#    display: block;#}
+        {#    position: relative;#}
+        {#    top: 0;#}
+        {#    bottom: 0;#}
+        {#    left: 0;#}
+        {#    right: 0;#}
+        {#    margin-bottom: 10px;#}
+        {#    height: 50px;#}
+        {# }#}
+    </style>
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <div>
+            <h4 class="title_page" id="titulo">Firma de actas</h4>
+        </div>
+
+        {% if firmas_requeridas|length > 0 %}
+            <div class="row" id="list_actas_reunion">
+                <div class="columns large-12">
+                    <p><b>Se requiere tu firma en las siguientes actas (haz click en el acta que
+                        quieras firmar):</b></p>
+                    <ul>
+                        {% for f in firmas_requeridas %}
+                            <li><a class="firma_requerida" data-id="{{ f.id }}">{{ f.acta.nombre }}
+                                ({{ f.acta.convocatoria.fecha_hora }})</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="columns large-12">
+                    <h3><b>No tienes ningún acta de reunión pendiente de firma</b></h3>
+                </div>
+            </div>
+        {% endif %}
+    </form>
+{% endblock %}
+{% block final %}
+    <script type="application/javascript">
+        $('body').on('click', '.firma_requerida', function (e) {
+            e.preventDefault();
+            var firmaacta = $(this).data('id');
+            window.location.href = '/firmar_acta_reunion/?f=' + firmaacta;
+        });
+    </script>
+{% endblock %}
+
+
+
+	
+
+
+
+
+
+
+

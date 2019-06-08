@@ -1,4 +1,4 @@
-{% extends "base_select2-4.html" %}
+{% extends "base_empty.html" %}
 {% load my_templatetags %}
 
 {#  https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/  #}
@@ -31,59 +31,30 @@
         {#position: relative;#}{#top: 0;#}{#bottom: 0;#}{#left: 0;#}{#right: 0;#} border: 2px solid #888;
             margin-bottom: 10px;
         }
-
-        {# #clearbutton {#}
-        {#    padding: 0;#}
-        {#    margin: auto;#}
-        {#    display: block;#}
-        {#    position: relative;#}
-        {#    top: 0;#}
-        {#    bottom: 0;#}
-        {#    left: 0;#}
-        {#    right: 0;#}
-        {#    margin-bottom: 10px;#}
-        {#    height: 50px;#}
-        {# }#}
     </style>
 
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
         <input type="hidden" name="firma" id="firma" value="">
-        <input type="hidden" name="firmaacta" id="firmaacta" value="">
+        <input type="hidden" name="firmaacta" id="firmaacta" value="{{ firmaacta.id }}">
 
         <div>
-            <h4 class="title_page" id="titulo">Firma de actas</h4>
+            {% if num_firmas == 1 %}
+                <h4 class="title_page" id="titulo">Tienes solo un acta pendiente de firmar:</h4>
+            {% else %}
+                <h4 class="title_page" id="titulo">Tienes {{ num_firmas }} actas sin firmar. Esta firma será para:</h4>
+            {% endif %}
         </div>
-
-        {% if firmas_requeridas|length > 0 %}
-            <div class="row" id="list_actas_reunion">
-                <div class="columns large-12">
-                    <p><b>Se requiere tu firma en las siguientes actas (haz click en el acta que
-                        quieras firmar):</b></p>
-                    <ul>
-                        {% for f in firmas_requeridas %}
-                            <li><a class="firma_requerida" data-id="{{ f.id }}">{{ f.acta.nombre }}
-                                ({{ f.acta.convocatoria.fecha_hora }})</a></li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        {% else %}
-            <div class="row">
-                <div class="columns large-12">
-                    <p><b>No tienes actas de reunión para firmar.</b></p>
-                </div>
-            </div>
-        {% endif %}
 
         <div class="row">
             <div class="columns large-12" id="contenido_acta_reunion">
+                {% include "acta_reunion2pdf.html" %}
             </div>
         </div>
 
 
-        <div id="formulario_firma" style="display: none;">
+        <div id="formulario_firma" style="display: block;">
             <div id="sketchpadapp">
                 <div class="row">
                     <div class="columns large-12 center">
@@ -102,31 +73,11 @@
                 </div>
             </div>
         </div>
-
     </form>
 {% endblock %}
 {% block final %}
 
     <script type="application/javascript">
-        $('body').on('click', '.firma_requerida', function (e) {
-            e.preventDefault();
-            var firmaacta = $(this).data('id');
-            $('#firmaacta').val(firmaacta);
-            $.post("/firmar_acta_reunion/", {firmaacta: firmaacta, action: 'mostrar_acta'},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $('#list_actas_reunion').hide();
-                        $('#contenido_acta_reunion').html(data.html);
-                        $('#nombre_firma').html(data.nombre);
-                        $('#formulario_firma').show();
-                        window.scrollTo(0, 0);
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
         $('#Contenido').on('click', '#enviar_datos', function (e) {
             e.preventDefault();
             $('#action').val('guarda_firma');
@@ -306,36 +257,36 @@
 
         $('body').on('click', '#clearbutton', function (e) {
             e.preventDefault();
-            limpiarCanvasFirma(canvas,ctx);
+            limpiarCanvasFirma(canvas, ctx);
         });
 
 
         // Set-up the canvas and add our event handlers after the page has loaded
-        function init() {
-            // Get the specific canvas element from the HTML document
-            canvas = document.getElementById('sketchpad');
-
-            // If the browser supports the canvas tag, get the 2d drawing context for this canvas
-            if (canvas.getContext)
-                ctx = canvas.getContext('2d');
-
-            // Check that we have a valid context to draw on/with before adding event handlers
-            if (ctx) {
-                // React to mouse events on the canvas, and mouseup on the entire document
-                canvas.addEventListener('mousedown', sketchpad_mouseDown, false);
-                canvas.addEventListener('mousemove', sketchpad_mouseMove, false);
-                window.addEventListener('mouseup', sketchpad_mouseUp, false);
-
-                // React to touch events on the canvas
-                canvas.addEventListener('touchstart', sketchpad_touchStart, false);
-                canvas.addEventListener('touchend', sketchpad_touchEnd, false);
-                canvas.addEventListener('touchmove', sketchpad_touchMove, false);
-            }
-         }
-
-         setTimeout(function () {
-             init();
-         }, 500);
+        {#function init() {#}
+        {#    // Get the specific canvas element from the HTML document#}
+        {#    canvas = document.getElementById('sketchpad');#}
+        {##}
+        {#    // If the browser supports the canvas tag, get the 2d drawing context for this canvas#}
+        {#    if (canvas.getContext)#}
+        {#        ctx = canvas.getContext('2d');#}
+        {##}
+        {#    // Check that we have a valid context to draw on/with before adding event handlers#}
+        {#    if (ctx) {#}
+        {#        // React to mouse events on the canvas, and mouseup on the entire document#}
+        {#        canvas.addEventListener('mousedown', sketchpad_mouseDown, false);#}
+        {#        canvas.addEventListener('mousemove', sketchpad_mouseMove, false);#}
+        {#        window.addEventListener('mouseup', sketchpad_mouseUp, false);#}
+        {##}
+        {#        // React to touch events on the canvas#}
+        {#        canvas.addEventListener('touchstart', sketchpad_touchStart, false);#}
+        {#        canvas.addEventListener('touchend', sketchpad_touchEnd, false);#}
+        {#        canvas.addEventListener('touchmove', sketchpad_touchMove, false);#}
+        {#    }#}
+        {# }#}
+        {##}
+        {#setTimeout(function () {#}
+        {#    init();#}
+        {# }, 500);#}
     </script>
 
 
