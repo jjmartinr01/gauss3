@@ -20,8 +20,8 @@ from calendario.models import Vevent
 from entidades.models import Subentidad, Gauser_extra
 from gauss.funciones import html_to_pdf, human_readable_list
 from gauss.rutas import MEDIA_ANAGRAMAS, MEDIA_REUNIONES, RUTA_BASE
-from mensajes.models import Aviso
-from mensajes.views import crear_aviso, encolar_mensaje
+from mensajes.models import Aviso, Mensaje, Etiqueta
+from mensajes.views import crear_aviso, encolar_mensaje, crea_mensaje_cola
 
 
 # ----------------------------------------------------------------------------------------------------#
@@ -928,6 +928,11 @@ def redactar_actas_reunion_ajax(request):
         action = request.POST['action']
         if action == 'open_accordion':
             acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
+            puntos = PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria)
+            if acta.firmada:
+                html_accordion = render_to_string('redactar_actas_reunion_accordion_content_firmado.html',
+                                                  {'acta': acta, 'g_e': g_e, 'puntos': puntos})
+                return JsonResponse({'html': html_accordion, 'ok': True})
             if not acta.preambulo:
                 try:
                     redacta_ge = Gauser_extra.objects.get(ronda=g_e.ronda, gauser=acta.redacta)
@@ -943,12 +948,11 @@ def redactar_actas_reunion_ajax(request):
             # g_es = acta.asistentes.all().values_list('id', 'gauser__last_name', 'gauser__first_name')
             # keys = ('id', 'text')
             # asistentes = json.dumps([dict(zip(keys, (row[0], '%s, %s' % (row[1], row[2])))) for row in g_es])
-            puntos = PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria)
             html_accordion = render_to_string('redactar_actas_reunion_accordion_content.html',
                                               {'acta': acta, 'g_e': g_e, 'puntos': puntos})
             return JsonResponse({'html': html_accordion, 'ok': True})
         elif action == 'update_preambulo':
-            try:
+            # try:
                 acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
                 if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
                     if acta.publicada or acta.fecha_aprobacion:
@@ -958,8 +962,8 @@ def redactar_actas_reunion_ajax(request):
                     acta.save()
                     borrar_firmas_acta(acta)
                     return JsonResponse({'ok': True})
-            except:
-                return JsonResponse({'ok': False})
+            # except:
+            #     return JsonResponse({'ok': False})
         elif action == 'update_epilogo':
             try:
                 acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
@@ -1201,6 +1205,17 @@ def control_asistencia_reunion(request):
 def borrar_firmas_acta(acta):
     firmas = FirmaActa.objects.filter(acta=acta, firmada=True)
     for firma in firmas:
+        emisor = Gauser_extra.objects.get(gauser__username='gauss', ronda=firma.ge.ronda)
+        etiqueta, c = Etiqueta.objects.get_or_create(propietario=emisor, nombre='aviso_acta_modificada')
+        receptores = [firma.ge.gauser,]
+        fecha = timezone.now()
+        asunto = 'Un acta que tienes firmada, ha sido modificada.'
+        mensaje = '<p>El acta %s ha sido modificada y tu firma ha sido eliminada.</p><p>Debes releer el acta y firmarla de nuevo.</p>' %(firma.acta.nombre)
+        mensaje_texto = 'El acta %s ha sido modificada y tu firma ha sido eliminada. Debes releer el acta y firmarla de nuevo.' % (firma.acta.nombre)
+        mensaje = Mensaje.objects.create(borrador=False, emisor=emisor, fecha=fecha, asunto=asunto, mensaje=mensaje, mensaje_texto=mensaje_texto)
+        mensaje.receptores.add(*receptores)
+        mensaje.etiquetas.add(etiqueta)
+        crea_mensaje_cola(mensaje)
         firma.firmada = False
         firma.firma = None
         if firma.firma:
@@ -1244,6 +1259,10 @@ def firmar_acta_reunion(request):
                 firmaacta.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
                 firmaacta.firmada = True
                 firmaacta.save()
+                acta = firmaacta.acta
+                if acta.firmaacta_set.filter(firmada=True).count() == acta.firmaacta_set.all().count():
+                    acta.firmada = True
+                    acta.save()
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Error para encontrar FirmaActa'})

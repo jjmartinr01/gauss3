@@ -1,0 +1,117 @@
+{% load my_templatetags %}
+
+<div class="row">
+    <div class="columns large-6">
+        <b>Convocada por:</b> {{ acta.convocatoria.convoca.get_full_name }}<br>
+        <b>Fecha de creación:</b> {{ acta.creado }}
+    </div>
+    <div class="columns large-6">
+        <ul class="button-group radius">
+            <li title="Descargar el acta en PDF">
+                <a data-id="{{ acta.id }}" class="button download_pdf"><i
+                        class="fa fa-file-pdf-o"></i> PDF</a></li>
+            {% if g_e|has_permiso:"mail_actas" %}
+                <li title="Mandar el acta por e-mail a todos los convocados">
+                    <a data-id="{{ acta.id }}" class="button send_email"><i
+                            class="fa fa-envelope-o"></i> eMail</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-4">
+        <label>Fecha y hora de la convocatoria</label>{{ acta.convocatoria.fecha_hora|date:'d/m/Y H:i' }}
+    </div>
+    <div class="columns large-4">
+        <label>Fecha de aprobación
+            <input type="text" name="fecha_aprobacion" class="fecha_aprobacion" data-id="{{ acta.id }}"
+                   value="{% if acta.fecha_aprobacion %}{{ acta.fecha_aprobacion|date:'d/m/Y' }}{% endif %}"></label>
+    </div>
+    <div class="columns large-4" title="Marcar para hacer pública este acta">
+        <label>Hacer pública</label>
+        <input type="checkbox" name="publicada" class="publicada" {% if acta.publicada %}checked{% endif %}
+               value="{{ acta.id }}" id="publicada{{ acta.id }}">
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label>Asistentes a la reunión:
+            {% for asistente in acta.asistentes.all %}
+                {{ asistente.gauser.first_name }} {{ asistente.gauser.last_name }},
+            {% endfor %}
+        </label>
+    </div>
+</div>
+<hr>
+
+<div class="row">
+    <div class="columns large-12">
+        <label>Título del acta</label>
+        <div class="nombre text-center"
+             style="font-size: xx-large;font-weight: 800; text-align: center;border: 1px solid lightgrey">
+            {{ acta.nombre }}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label>Preámbulo del acta</label>
+        <div style="border: lightgrey solid 1px; padding:10px;">
+            {% autoescape off %}
+                {{ acta.preambulo|default_if_none:"" }}
+            {% endautoescape %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label>Puntos a tratar</label>
+        {% for p in puntos %}
+            <div class="columns large-12"><b>{{ p.punto }}</b></div>
+            <div class="columns large-12" style="border: #bbbbbb solid 1px">
+                {% autoescape off %}{{ p.texto_acta|default_if_none:"" }}{% endautoescape %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label>Epílogo del acta</label>
+        <div style="border: lightgrey solid 1px; padding:10px;">
+            {% autoescape off %}
+                {{ acta.epilogo|default_if_none:"" }}
+            {% endautoescape %}
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="columns large-12">
+        En {{ acta.convocatoria.entidad.localidad }} a {{ acta.convocatoria.fecha_hora|date:"j \d\e F \d\e Y"|lower }},
+    </div>
+</div>
+<p>&nbsp;</p>
+<div class="row">
+    <div class="columns large-12">
+        <label>Firmantes:</label>
+        <div id="firmantes_list{{ acta.id }}">
+            {% for f in acta.firmaacta_set.all %}
+                {% include "redactar_actas_reunion_accordion_content_firmante.html" %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    {% if g_e|redacta_acta:acta %}
+        $(".fecha_aprobacion").fdatepicker({
+            format: 'dd/mm/yyyy',
+            weekStart: 1
+        });
+    {% endif %}
+
+</script>
