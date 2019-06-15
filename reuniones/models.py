@@ -84,6 +84,7 @@ class ActaReunion(models.Model):
     num_last_page = models.IntegerField('Número de la última página', blank=True, null=True)
     control = models.IntegerField('Código numérico para el control de asistencia', default=0)
     firmada = models.BooleanField('¿La han firmado todos los firmantes?', default=False)
+    onlyread = models.BooleanField('¿Modo de solo lectura?', default=False)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 
