@@ -83,10 +83,24 @@ class ActaReunion(models.Model):
     asistentes_text = models.TextField('Asistentes en formato texto', null=True, blank=True)
     num_last_page = models.IntegerField('Número de la última página', blank=True, null=True)
     control = models.IntegerField('Código numérico para el control de asistencia', default=0)
-    firmada = models.BooleanField('¿La han firmado todos los firmantes?', default=False)
-    onlyread = models.BooleanField('¿Modo de solo lectura?', default=False)
+    # firmada = models.BooleanField('¿La han firmado todos los firmantes?', default=False)
+    # onlyread = models.BooleanField('¿Modo de solo lectura?', default=False)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateField("Fecha de modificación", auto_now=True)
+
+    @property
+    def firmada(self):
+        if self.firmaacta_set.filter(firmada=True).count() == self.firmaacta_set.all().count():
+            return True
+        else:
+            return False
+
+    @property
+    def onlyread(self):
+        if self.publicada or self.fecha_aprobacion:
+            return True
+        else:
+            return False
 
     @property
     def acta_anterior(self):
