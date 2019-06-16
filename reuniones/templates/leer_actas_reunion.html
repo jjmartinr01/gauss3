@@ -1,0 +1,91 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        .title_page {
+            text-align: center;
+            color: #008CBA;
+            font-weight: 800;
+        }
+
+        .opera {
+            margin-right: 20px;
+            cursor: pointer;
+            color: #008CBA;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .opera:hover {
+            -webkit-transform: scale(1.7, 1.7);
+            -webkit-transition-timing-function: ease-out;
+            -webkit-transition-duration: 150ms;
+            -moz-transform: scale(1.7, 1.7);
+            -moz-transition-timing-function: ease-out;
+            -moz-transition-duration: 150ms;
+            position: relative;
+            z-index: 99;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" id="id_acta" name="id_acta" value="">
+
+
+        <div>
+            <h4 class="title_page" id="titulo">Lectura de actas</h4>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_actas_sin_publicar">
+            {% for acta in actas_publicadas %}
+                {% include "leer_actas_reunion_accordion.html" %}
+            {% endfor %}
+        </dl>
+        <br>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-acta')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/lectura_actas_reunion/", {
+                                action: 'open_accordion',
+                                acta: id
+                            }, function (data) {
+                                if (data.ok) {
+                                    $('#panel' + id).html(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('body').on('click', '.download_pdf', function (e) {
+            e.preventDefault();
+            $('#id_acta').val($(this).data('id'));
+            $('#action').val('pdf_acta');
+            document.getElementById("{{ formname }}").submit();
+        });
+    </script>
+{% endblock %}

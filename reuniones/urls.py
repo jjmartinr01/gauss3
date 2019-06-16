@@ -10,10 +10,7 @@ urlpatterns = [
     url(r'^conv_reunion_ajax/$', views.conv_reunion_ajax, name='conv_reunion_ajax'),
     url(r'^redactar_actas_reunion/$', views.redactar_actas_reunion, name='redactar_actas_reunion'),
     url(r'^redactar_actas_reunion_ajax/$', views.redactar_actas_reunion_ajax, name='redactar_actas_reunion_ajax'),
-    url(r'^ver_actas_reunion/$', views.ver_actas_reunion, name='ver_actas_reunion'),
-    url(r'^ver_actas_reunion_ajax/$', views.ver_actas_reunion_ajax, name='ver_actas_reunion_ajax'),
-    # url(r'^actualiza_texto_acta/$', views.actualiza_texto_acta, name='actualiza_texto_acta'),
-    url(r'^ajax_actas_reunion/$', views.ajax_actas_reunion, name='ajax_actas_reunion'),
+    url(r'^lectura_actas_reunion/$', views.lectura_actas_reunion, name='lectura_actas_reunion'),
     url(r'^control_asistencia_reunion/$', views.control_asistencia_reunion, name='control_asistencia_reunion'),
     url(r'^firmar_acta_reunion/$', views.firmar_acta_reunion, name='firmar_acta_reunion'),
 ]

@@ -25,14 +25,6 @@ MENU_DEFAULT = [
      'pos': 2,
      'parent': 'acceso_reuniones'
      },
-    # {'code_menu': 'acceso_ver_actas_reunion_reunion',
-    #  'texto_menu': 'Ver actas',
-    #  'href': 'ver_actas',
-    #  'nivel': 2,
-    #  'tipo': 'Accesible',
-    #  'pos': 3,
-    #  'parent': 'acceso_reuniones'
-    #  },
     {'code_menu': 'acceso_redactar_actas_reunion',
      'texto_menu': 'Redactar actas',
      'href': 'redactar_actas_reunion',
@@ -55,6 +47,14 @@ MENU_DEFAULT = [
      'nivel': 2,
      'tipo': 'Accesible',
      'pos': 5,
+     'parent': 'acceso_reuniones'
+     },
+    {'code_menu': 'acceso_lectura_actas_reunion',
+     'texto_menu': 'Leer actas',
+     'href': 'lectura_actas_reunion',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 6,
      'parent': 'acceso_reuniones'
      },
     # {'code_menu': 'acceso_actillas2',
@@ -116,8 +116,8 @@ PERMISOS = [{'code_nombre': 'c_conv_template',
              'nombre': 'Tiene permiso para enviar por mail las actas',
              'menu': 'acceso_redactar_actas_reunion'
              },
-            # {'code_nombre': 'r_actas_reunion',
-            #  'nombre': 'Tiene permiso para ver cualquier acta',
-            #  'menu': 'acceso_ver_actas_reunion'
-            #  }
+            {'code_nombre': 'r_actas_reunion',
+             'nombre': 'Tiene permiso para ver/leer cualquier acta',
+             'menu': 'acceso_lectura_actas_reunion'
+             }
             ]

@@ -193,6 +193,10 @@
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
+                        var title = '<i class="fa fa-warning"></i> Error';
+                        var texto1 = '<p>El acta está en modo de solo lectura. No se pueden hacer cambios.</p>';
+                        var texto2 = '<p style="font-size:small;">Esto es debido a que el acta está publicada y/o aprobada.</p>';
+                        show_mensajes({title: title, texto: texto1 + texto2});
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
@@ -212,6 +216,10 @@
                         if (data.ok) {
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
+                            var title = '<i class="fa fa-warning"></i> Error';
+                            var texto1 = '<p>El acta está en modo de solo lectura. No se pueden hacer cambios.</p>';
+                            var texto2 = '<p style="font-size:small;">Esto es debido a que el acta está publicada y/o aprobada.</p>';
+                            show_mensajes({title: title, texto: texto1 + texto2});
                             $("#update_error").show().delay(1500).fadeOut();
                         }
                     });
@@ -228,6 +236,10 @@
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
+                        var title = '<i class="fa fa-warning"></i> Error';
+                        var texto1 = '<p>El acta está en modo de solo lectura. No se pueden hacer cambios.</p>';
+                        var texto2 = '<p style="font-size:small;">Esto es debido a que el acta está publicada y/o aprobada.</p>';
+                        show_mensajes({title: title, texto: texto1 + texto2});
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
@@ -276,43 +288,6 @@
             }
         });
 
-        {#if ($("#usuarios_asistentes").val()) {#}
-        {#    var asistentes_actuales = $("#usuarios_asistentes").val();#}
-        {# } else {#}
-        {#    var asistentes_actuales = [];#}
-        {# }#}
-        {##}
-        {#function diff(A, B) {#}
-        {#    if (!A) A = [];#}
-        {#    if (!B) B = [];#}
-        {#    return A.filter(function (a) {#}
-        {#        return B.indexOf(a) == -1;#}
-        {#    });#}
-        {# }#}
-        {##}
-        {#$("#usuarios_asistentes2").change(function () {#}
-        {#    var acta = $(this).data('id');#}
-        {#    var asistentes = $(this).val();#}
-        {#    var removed = diff(asistentes_actuales, asistentes);#}
-        {#    var added = diff(asistentes, asistentes_actuales);#}
-        {#    asistentes_actuales = asistentes;#}
-        {#    $.post("/redactar_actas_reunion_ajax/", {#}
-        {#            action: 'update_usuarios_asistentes',#}
-        {#            asistentes: $(this).val(),#}
-        {#            acta: acta,#}
-        {#            removed: removed,#}
-        {#            added: added#}
-        {#        },#}
-        {#        function (data) {#}
-        {#            if (data.ok) {#}
-        {#                $('#attendees').html(data.ns);#}
-        {#                $("#update_ok").show().delay(1500).fadeOut();#}
-        {#                editor_preambulo_acta.fire('change')#}
-        {#            } else {#}
-        {#                $("#update_error").show().delay(1500).fadeOut();#}
-        {#            }#}
-        {#        });#}
-        {# });#}
 
         $('body').on('change', '#usuarios_asistentes', function (e) {
             var acta = {{ acta.id }};

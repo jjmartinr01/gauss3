@@ -359,7 +359,7 @@ def conv_template_ajax(request):
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
 
-# @permiso_required('acceso_conv_reunion')
+@permiso_required('acceso_conv_reunion')
 def conv_reunion(request):
     g_e = request.session['gauser_extra']
     if g_e.has_permiso('c_conv_reunion'):
@@ -754,100 +754,13 @@ def conv_reunion_ajax(request):
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Error al tratar de llevar a cabo la acción solicitada'})
 
-
-# def puntos_convocatoria(convocatoria):
-#     p_conv = []
-#     text = unicode(BeautifulStoneSoup(convocatoria.texto_convocatoria, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
-#     xml_conv = etree.XML('<div>' + text + '</div>')
-#     ol = xml_conv.find('.//ol[@id="puntos_convocatoria"]')
-#     for li in ol.findall('.//li'):
-#         try:
-#             p_conv.append({'id': li.attrib['id'], 'text': li.text})
-#         except:
-#             p_conv.append({'id': 'sin_id', 'text': li.text})
-#     return p_conv
-
-
-# ----------------------------------------------------------------------------------------------------#
-# ----------------------------------------------------------------------------------------------------#
-# FUNCIONES RELACIONADAS CON LA LECTURA DE ACTAS
-# ----------------------------------------------------------------------------------------------------#
-# ----------------------------------------------------------------------------------------------------#
-def ver_actas_reunion_ajax(request):
-    pass
-
-
-# @permiso_required('acceso_ver_actas_reunion')
-def ver_actas_reunion(request):
-    g_e = request.session['gauser_extra']
-
-    if request.method == 'POST':
-        action = request.POST['action']
-        if request.POST['action'] == 'pdf_acta':
-            try:
-                acta = ActaReunion.objects.get(id=request.POST['id_acta'], convocatoria__entidad=g_e.ronda.entidad)
-                fichero = 'acta_%s_%s' % (g_e.ronda.entidad.code, acta.id)
-                fich = open(MEDIA_ACTAS + fichero)
-                crear_aviso(request, True, u"Descarga pdf: %s" % (acta.convocatoria.nombre))
-                response = HttpResponse(fich, content_type='application/pdf')
-                filename = acta.convocatoria.nombre.replace(' ', '_') + '.pdf'
-                response['Content-Disposition'] = 'attachment; filename=' + filename
-                return response
-            except:
-                try:
-                    acta = ActaReunion.objects.get(id=request.POST['id_acta'], convocatoria__entidad=g_e.ronda.entidad)
-                    fichero = 'acta_%s_%s' % (g_e.ronda.entidad.code, acta.id)
-                    c = render_to_string('acta2pdf.html', {
-                        'acta': acta,
-                        'MA': MEDIA_ANAGRAMAS,
-                    }, request=request)
-                    fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_ACTAS, title=u'Acta de reunión')
-                    response = HttpResponse(fich, content_type='application/pdf')
-                    response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-                    return response
-                except:
-                    crear_aviso(request, False, 'No es posible generar el pdf del acta solicitada')
-
-    if g_e.has_permiso('ve_todas_actas'):
-        actas = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad, publicada=True)
-    else:
-        subentidades = g_e.subentidades.all()
-        actas = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades, publicada=True).distinct()
-    return render(request, "ver_actas_reunion.html",
-                  {
-                      'formname': 'actas',
-                      'actas': actas,
-                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                  })
-
-
-@login_required()
-def ajax_actas_reunion(request):
-    if request.is_ajax():
-        g_e = request.session['gauser_extra']
-        if request.POST['action'] == 'actualiza_convocatoria' and g_e.has_permiso('m40i20'):
-            form = urllib.parse.parse_qs(request.POST['form'])
-            nombre = form['nombre'][0]
-            fecha_hora = form['fecha_hora'][0]
-            convocados = Subentidad.objects.filter(id__in=form['convocados'], entidad=g_e.ronda.entidad,
-                                                   fecha_expira__gt=datetime.today())
-            fecha = datetime.strptime(fecha_hora, "%d/%m/%Y %H:%M")
-            data = render_to_string('convocatoria_texto.html',
-                                    {'convocados': convocados, 'fecha': fecha, 'nombre': nombre},
-                                    request=request)
-            return HttpResponse(data)
-        if request.POST['action'] == 'contenido_acta':
-            acta = ActaReunion.objects.get(id=json.loads(request.POST['id']))
-            return HttpResponse('<h2>' + acta.convocatoria.nombre + '</h2>' + acta.contenido_html)
-
-
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
 # FUNCIONES RELACIONADAS CON LA REDACCIÓN DE ACTAS
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
 
-# @permiso_required('acceso_redactar_actas_reunion')
+@permiso_required('acceso_redactar_actas_reunion')
 def redactar_actas_reunion(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
@@ -1114,33 +1027,7 @@ def redactar_actas_reunion_ajax(request):
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Error al tratar de llevar a cabo la acción solicitada'})
 
-
-# @login_required()
-# def actualiza_texto_acta(request):
-#     if request.is_ajax():
-#         g_e = request.session['gauser_extra']
-#         convocatoria = ConvReunion.objects.get(id=request.POST['id'])
-#         sub_convocadas = convocatoria.convocados.all()  # Subentidades convocadas
-#         g_es = usuarios_de_gauss(g_e.ronda.entidad, subentidades=sub_convocadas)
-#         try:
-#             acta = ActaReunion.objects.get(convocatoria=convocatoria)
-#             publicar = acta.publicar
-#             asistentes = g_es.filter(id__in=acta.asistentes.split(','))
-#             contenido = acta.contenido_html
-#             con_html = render_to_string('texto_acta.html',
-#                                         {'convocatoria': convocatoria, 'existe': True, 'contenido': contenido},
-#                                         request=request)
-#         except:
-#             asistentes = None
-#             publicar = False
-#             con_html = render_to_string('texto_acta.html', {'convocatoria': convocatoria, 'hoy': datetime.today()},
-#                                         request=request)
-#         asi_html = render_to_string('asistentes.html',
-#                                     {'g_es': g_es, 'asistentes': asistentes, 'sub_convocadas': sub_convocadas},
-#                                     request=request)
-#         return HttpResponse(json.dumps({'asistentes': asi_html, 'contenido': con_html, 'publicar': publicar}))
-
-
+@permiso_required('acceso_control_asistencia_reunion')
 def control_asistencia_reunion(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST' and request.is_ajax():
@@ -1187,6 +1074,7 @@ def borrar_firmas_acta(acta):
         firma.save()
     return True
 
+@permiso_required('acceso_firmar_actas_reunion')
 def firmar_acta_reunion(request):
     g_e = request.session['gauser_extra']
     if request.method == 'GET' and 'f' in request.GET:
@@ -1246,3 +1134,37 @@ def firmar_acta_reunion(request):
                       'formname': 'firmar_acta_reunion',
                       'firmas_requeridas': firmas_requeridas
                   })
+
+# ----------------------------------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------------------------------#
+# FUNCIONES RELACIONADAS CON LA LECTURA DE ACTAS
+# ----------------------------------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------------------------------#
+
+
+@permiso_required('acceso_lectura_actas_reunion')
+def lectura_actas_reunion(request):
+    g_e = request.session['gauser_extra']
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'open_accordion':
+            try:
+                acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
+                firmas = FirmaActa.objects.filter(acta=acta)
+                html = render_to_string('acta_reunion2pdf.html', {
+                    'acta': acta,
+                    'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
+                    'firmas': firmas,
+                    'ruta_base': ''
+                }, request=request)
+                return JsonResponse(
+                    {'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Error para encontrar el acta'})
+
+    actas_publicadas = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad,
+                                                    publicada=True).distinct()
+    return render(request, "leer_actas_reunion.html",
+                      {
+                          'formname': 'leer_acta_reunion',
+                          'actas_publicadas': actas_publicadas
+                      })
