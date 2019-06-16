@@ -10,6 +10,9 @@
             <li title="Descargar el acta en PDF">
                 <a data-id="{{ acta.id }}" class="button download_pdf"><i
                         class="fa fa-file-pdf-o"></i> PDF</a></li>
+            <li title="Borrar fecha de aprobación">
+                <a data-id="{{ acta.id }}" class="button del_fecha_aprobacion"><i
+                        class="fa fa-calendar-times-o"></i> Borrar</a></li>
             {% if g_e|has_permiso:"mail_actas" %}
                 <li title="Mandar el acta por e-mail a todos los convocados">
                     <a data-id="{{ acta.id }}" class="button send_email"><i
@@ -27,7 +30,9 @@
     <div class="columns large-3">
         <label>Fecha de aprobación
             <input type="text" name="fecha_aprobacion" class="fecha_aprobacion" data-id="{{ acta.id }}"
-                   value="{% if acta.fecha_aprobacion %}{{ acta.fecha_aprobacion|date:'d/m/Y' }}{% endif %}"></label>
+                   id="fecha_aprobacion{{ acta.id }}"
+                   value="{% if acta.fecha_aprobacion %}{{ acta.fecha_aprobacion|date:'d/m/Y' }}{% endif %}">
+        </label>
     </div>
     <div class="columns large-2" title="Marcar para hacer pública este acta">
         <label>Hacer pública</label>

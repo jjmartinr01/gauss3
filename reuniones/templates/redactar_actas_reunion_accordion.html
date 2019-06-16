@@ -7,6 +7,20 @@
             style="color: #a3a3a3">{% if acta.convocatoria.fecha_hora %}
         <i class="fa fa-long-arrow-right"></i> {{ acta.convocatoria.fecha_hora|date:"d/m/Y" }} a
         las {{ acta.convocatoria.fecha_hora|date:"H:i" }}{% else %} <span style="color:red;">Borrador</span>{% endif %}</span>
+        {% if acta.publicada %}
+            <span id="spanpubli{{ acta.id }}" style="color:green;"><i class="fa fa-eye"></i> Publicada</span>
+            <span id="spannopubli{{ acta.id }}" style="color:red;display: none;"><i class="fa fa-eye-slash"></i> No publicada</span>
+        {% else %}
+            <span id="spanpubli{{ acta.id }}" style="color:green;display: none;"><i class="fa fa-eye"></i> Publicada</span>
+            <span id="spannopubli{{ acta.id }}" style="color:red;"><i class="fa fa-eye-slash"></i> No publicada</span>
+        {% endif %}
+        {% if acta.fecha_aprobacion %}
+            <span id="spanaprob{{ acta.id }}" style="color:green;"><i class="fa fa-thumbs-up"></i> Aprobada</span>
+            <span id="spannoaprob{{ acta.id }}" style="color:red;display: none;"><i class="fa fa-question-circle-o"></i> No aprobada</span>
+        {% else %}
+            <span id="spanaprob{{ acta.id }}" style="color:green;display: none;"><i class="fa fa-thumbs-up"></i> Aprobada</span>
+            <span id="spannoaprob{{ acta.id }}" style="color:red;"><i class="fa fa-question-circle-o"></i> No aprobada</span>
+        {% endif %}
     </a>
 
     <div id="panel{{ acta.id }}" class="content accordion-acta" data-id="{{ acta.id }}">

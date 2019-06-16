@@ -44,65 +44,65 @@
         </div>
 
 
-        <ul class="tabs" data-tab>
-            <li class="tab-title active" data-id="0">
-                <a href="#tab1">
-                    <b id="texto0">Actas sin redactar/publicar</b>
-                </a>
-            </li>
-            <li class="tab-title" data-id="1">
-                <a href="#tab2">
-                    <b id="texto1" style="color:white;">Actas publicadas</b>
-                </a>
-            </li>
-        </ul>
-        <div class="tabs-content">
-            <div class="content active" id="tab1">
-                <dl class="accordion" data-accordion id="list_actas_sin_publicar">
-                    {% if actas_sin_publicar %}
-                        {% for acta in actas_sin_publicar %}
-                            {% include "redactar_actas_reunion_accordion.html" %}
-                        {% endfor %}
-                    {% else %}
-                        <h5 style="color: #008CBA;font-weight: 700;" id="h5_lasp">No hay actas sin
-                            redactar/publicar</h5>
-                    {% endif %}
-                </dl>
-            </div>
-            <div class="content" id="tab2">
-                <dl class="accordion" data-accordion id="list_actas_publicadas">
-                    {% if actas_publicadas %}
-                        {% for acta in actas_publicadas %}
-                            {% include "redactar_actas_reunion_accordion.html" %}
-                        {% endfor %}
-                    {% else %}
-                        <h5 style="color: #008CBA;font-weight: 700;" id="h5_lap">No hay actas publicadas</h5>
-                    {% endif %}
-                </dl>
-            </div>
-        </div>
+        {#        <ul class="tabs" data-tab>#}
+        {#            <li class="tab-title active" data-id="0">#}
+        {#                <a href="#tab1">#}
+        {#                    <b id="texto0">Actas sin redactar/publicar</b>#}
+        {#                </a>#}
+        {#            </li>#}
+        {#            <li class="tab-title" data-id="1">#}
+        {#                <a href="#tab2">#}
+        {#                    <b id="texto1" style="color:white;">Actas publicadas</b>#}
+        {#                </a>#}
+        {#            </li>#}
+        {#        </ul>#}
+        {#        <div class="tabs-content">#}
+        {#            <div class="content active" id="tab1">#}
+        <dl class="accordion" data-accordion id="list_actas_sin_publicar">
+            {#                    {% if actas_publicadas %}#}
+            {% for acta in actas_publicadas %}
+                {% include "redactar_actas_reunion_accordion.html" %}
+            {% endfor %}
+            {#                    {% else %}#}
+            {#                        <h5 style="color: #008CBA;font-weight: 700;" id="h5_lasp">No hay actas sin#}
+            {#                            redactar/publicar</h5>#}
+            {#                    {% endif %}#}
+        </dl>
+        {#            </div>#}
+        {#            <div class="content" id="tab2">#}
+        {#                <dl class="accordion" data-accordion id="list_actas_publicadas">#}
+        {#                    {% if actas_publicadas %}#}
+        {#                        {% for acta in actas_publicadas %}#}
+        {#                            {% include "redactar_actas_reunion_accordion.html" %}#}
+        {#                        {% endfor %}#}
+        {#                    {% else %}#}
+        {#                        <h5 style="color: #008CBA;font-weight: 700;" id="h5_lap">No hay actas publicadas</h5>#}
+        {#                    {% endif %}#}
+        {#                </dl>#}
+        {#            </div>#}
+        {#        </div>#}
         <br>
     </form>
 {% endblock %}
 
 {% block final %}
     <script>
-        $(document).foundation({
-            tab: {
-                callback: function (tab) {
-                    var id = $(tab[0]).data('id');
-                    if (id == 0) {
-                        $('#texto1').css('color', 'white');
-                        $('#texto0').css('color', 'black');
-                        $('#titulo').html('Redacción de actas de reunión (sin publicar)')
-                    } else {
-                        $('#texto0').css('color', 'white');
-                        $('#texto1').css('color', 'black');
-                        $('#titulo').html('Redacción de actas de reunión (publicadas)')
-                    }
-                }
-            }
-        });
+        {#$(document).foundation({#}
+        {#    tab: {#}
+        {#        callback: function (tab) {#}
+        {#            var id = $(tab[0]).data('id');#}
+        {#            if (id == 0) {#}
+        {#                $('#texto1').css('color', 'white');#}
+        {#                $('#texto0').css('color', 'black');#}
+        {#                $('#titulo').html('Redacción de actas de reunión (sin publicar)')#}
+        {#            } else {#}
+        {#                $('#texto0').css('color', 'white');#}
+        {#                $('#texto1').css('color', 'black');#}
+        {#                $('#titulo').html('Redacción de actas de reunión (publicadas)')#}
+        {#            }#}
+        {#        }#}
+        {#    }#}
+        {# });#}
 
         $(document).foundation({
             accordion: {
@@ -139,15 +139,14 @@
             $.post("/redactar_actas_reunion_ajax/", {action: 'update_publicada', acta: acta},
                 function (data) {
                     if (data.ok) {
-                        var a = $('#accordion' + acta).detach();
                         if (data.publicada) {
                             element.prop('checked', true);
-                            $('#list_actas_publicadas').prepend(a);
-                            $('#h5_lap').remove();
+                            $('#spannopubli' + data.acta).hide();
+                            $('#spanpubli' + data.acta).show();
                         } else {
                             element.prop('checked', false);
-                            $('#list_actas_sin_publicar').prepend(a);
-                            $('#h5_lasp').remove();
+                            $('#spanpubli' + data.acta).hide();
+                            $('#spannopubli' + data.acta).show();
                         }
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
@@ -171,7 +170,49 @@
                 },
                 function (data) {
                     if (data.ok) {
-                        $('#publicada' + acta).prop('checked', true);
+                        if (data.aprobada) {
+                            $('#spannoaprob' + data.acta).hide();
+                            $('#spanaprob' + data.acta).show();
+                        } else {
+                            $('#spanaprob' + data.acta).hide();
+                            $('#spannoaprob' + data.acta).show();
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        if (data.mensaje == 17) {
+                            show_mensajes({
+                                title: '<i class="fa fa-warning"></i> Error',
+                                texto: 'No es posible cambiar la fecha de aprobación. Primero deberías borrar la fecha de aprobación ya grabada.'
+                            })
+                        }
+                        if (data.mensaje == 27) {
+                            show_mensajes({
+                                title: '<i class="fa fa-warning"></i> Error',
+                                texto: 'Se ha producido un error con la gestión de los datos.'
+                            })
+                        }
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.del_fecha_aprobacion', function () {
+            var acta = $(this).data('id');
+            $.post("/redactar_actas_reunion_ajax/", {
+                    action: 'update_fecha_aprobacion',
+                    acta: acta,
+                    fecha_aprobacion: 'borrar'
+                },
+                function (data) {
+                    if (data.ok) {
+                        if (data.aprobada) {
+                            $('#spannoaprob' + data.acta).hide();
+                            $('#spanaprob' + data.acta).show();
+                        } else {
+                            $('#spanaprob' + data.acta).hide();
+                            $('#spannoaprob' + data.acta).show();
+                            $('#fecha_aprobacion' + data.acta).val('');
+                        }
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
@@ -192,6 +233,10 @@
                         $('#span_nombre' + acta).html(data.nombre);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
+                        var title = '<i class="fa fa-warning"></i> Error';
+                        var texto1 = '<p>El acta está en modo de solo lectura. No se pueden hacer cambios.</p>';
+                        var texto2 = '<p style="font-size:small;">Esto es debido a que el acta está publicada y/o aprobada.</p>';
+                        show_mensajes({title: title, texto: texto1 + texto2});
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });

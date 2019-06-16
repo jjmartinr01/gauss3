@@ -891,22 +891,19 @@ def redactar_actas_reunion(request):
 
     subentidades = g_e.subentidades.all()
     if g_e.has_permiso('redacta_cualquier_acta'):
-        actas_publicadas = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad,
-                                                      publicada=True).distinct()
-        actas_sin_publicar = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad,
-                                                        publicada=False).distinct()
+        actas_publicadas = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad).distinct()
+        # actas_sin_publicar = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad,
+        #                                                 publicada=False).distinct()
     elif g_e.has_permiso('redacta_actas_subentidades'):
-        actas_publicadas = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades,
-                                                      publicada=True).distinct()
-        actas_sin_publicar = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades,
-                                                        publicada=False).distinct()
+        actas_publicadas = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades).distinct()
+        # actas_sin_publicar = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades,
+        #                                                 publicada=False).distinct()
     elif g_e.has_permiso('redacta_sus_actas'):
         actas_publicadas = ActaReunion.objects.filter(convocatoria__convoca=g_e.gauser,
-                                                      convocatoria__entidad=g_e.ronda.entidad,
-                                                      publicada=True).distinct()
-        actas_sin_publicar = ActaReunion.objects.filter(convocatoria__convoca=g_e.gauser,
-                                                        convocatoria__entidad=g_e.ronda.entidad,
-                                                        publicada=False).distinct()
+                                                      convocatoria__entidad=g_e.ronda.entidad).distinct()
+        # actas_sin_publicar = ActaReunion.objects.filter(convocatoria__convoca=g_e.gauser,
+        #                                                 convocatoria__entidad=g_e.ronda.entidad,
+        #                                                 publicada=False).distinct()
     else:
         actas_publicadas = []
         actas_sin_publicar = []
@@ -915,7 +912,7 @@ def redactar_actas_reunion(request):
                   {
                       'formname': 'actas',
                       'actas_publicadas': actas_publicadas,
-                      'actas_sin_publicar': actas_sin_publicar,
+                      # 'actas_sin_publicar': actas_sin_publicar,
                       'subentidades': subentidades,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
@@ -929,7 +926,7 @@ def redactar_actas_reunion_ajax(request):
         if action == 'open_accordion':
             acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
             puntos = PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria)
-            if acta.firmada:
+            if acta.onlyread:
                 html_accordion = render_to_string('redactar_actas_reunion_accordion_content_firmado.html',
                                                   {'acta': acta, 'g_e': g_e, 'puntos': puntos})
                 return JsonResponse({'html': html_accordion, 'ok': True})
@@ -952,23 +949,23 @@ def redactar_actas_reunion_ajax(request):
                                               {'acta': acta, 'g_e': g_e, 'puntos': puntos})
             return JsonResponse({'html': html_accordion, 'ok': True})
         elif action == 'update_preambulo':
-            # try:
+            try:
                 acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
                 if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
-                    if acta.publicada or acta.fecha_aprobacion:
+                    if acta.onlyread:
                         return JsonResponse({'ok': False, 'mensaje': 'El acta está publicada/aprobada'})
                     texto = request.POST['texto']
                     acta.preambulo = texto
                     acta.save()
                     borrar_firmas_acta(acta)
                     return JsonResponse({'ok': True})
-            # except:
-            #     return JsonResponse({'ok': False})
+            except:
+                return JsonResponse({'ok': False})
         elif action == 'update_epilogo':
             try:
                 acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
                 if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
-                    if acta.publicada or acta.fecha_aprobacion:
+                    if acta.onlyread:
                         return JsonResponse({'ok': False, 'mensaje': 'El acta está publicada/aprobada'})
                     texto = request.POST['texto']
                     acta.epilogo = texto
@@ -982,7 +979,7 @@ def redactar_actas_reunion_ajax(request):
                 punto = PuntoConvReunion.objects.get(id=request.POST['punto'])
                 acta = ActaReunion.objects.get(convocatoria=punto.convocatoria, convocatoria__entidad=g_e.ronda.entidad)
                 if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
-                    if acta.publicada or acta.fecha_aprobacion:
+                    if acta.onlyread:
                         return JsonResponse({'ok': False, 'mensaje': 'El acta está publicada/aprobada'})
                     texto = request.POST['texto']
                     punto.texto_acta = texto
@@ -995,7 +992,7 @@ def redactar_actas_reunion_ajax(request):
             try:
                 acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
                 if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
-                    if acta.publicada or acta.fecha_aprobacion:
+                    if acta.onlyread:
                         return JsonResponse({'ok': False})
                     acta.nombre = request.POST['nombre'].strip()
                     acta.save()
@@ -1007,7 +1004,7 @@ def redactar_actas_reunion_ajax(request):
             try:
                 acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
                 if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
-                    if acta.publicada or acta.fecha_aprobacion:
+                    if acta.onlyread:
                         return JsonResponse({'ok': False, 'mensaje': 'El acta está publicada/aprobada'})
                     asistentes = Gauser_extra.objects.filter(ronda=g_e.ronda,
                                                              id__in=request.POST.getlist('asistentes[]'))
@@ -1024,7 +1021,7 @@ def redactar_actas_reunion_ajax(request):
             try:
                 acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
                 if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
-                    if acta.publicada or acta.fecha_aprobacion:
+                    if acta.onlyread:
                         return JsonResponse({'ok': False})
                     acta.control = request.POST['code']
                     acta.save()
@@ -1043,7 +1040,7 @@ def redactar_actas_reunion_ajax(request):
             try:
                 acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
                 if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
-                    if acta.publicada or acta.fecha_aprobacion:
+                    if acta.onlyread:
                         return JsonResponse({'ok': False})
                     ge = Gauser_extra.objects.get(id=request.POST['firmante'], ronda=g_e.ronda)
                     cargo = Cargo.objects.get(id=request.POST['cargo'], entidad=g_e.ronda.entidad).cargo
@@ -1057,75 +1054,42 @@ def redactar_actas_reunion_ajax(request):
             try:
                 acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
                 if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
-                    if acta.publicada or acta.fecha_aprobacion:
+                    if acta.onlyread:
                         return JsonResponse({'ok': False})
                     FirmaActa.objects.get(id=request.POST['firmante'], acta=acta).delete()
                     return JsonResponse({'ok': True, 'firmante': request.POST['firmante']})
             except:
                 return JsonResponse({'ok': False})
-
-            # acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
-            # if acta.publicada or acta.fecha_aprobacion:
-            #     return JsonResponse({'ok': False})
-            # if 'added[]' in request.POST:
-            #     ges = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('added[]'))
-            #     acta.asistentes.add(*ges)
-            # if 'removed[]' in request.POST:
-            #     ges = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('removed[]'))
-            #     acta.asistentes.remove(*ges)
-            # asistentes = acta.asistentes.all().values_list('gauser__first_name', 'gauser__last_name')
-            # ns = human_readable_list([u'{0} {1}'.format(first_name, last_name) for first_name, last_name in asistentes])
-            # if not asistentes:
-            #     ns = '...'
-            # return JsonResponse({'ok': True, 'ns': ns})
+        elif action == 'update_publicada':
+            try:
+                acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
+                # if acta.fecha_aprobacion:
+                #     return JsonResponse({'ok': False})
+                acta.publicada = not acta.publicada
+                acta.save()
+                return JsonResponse({'ok': True, 'publicada': acta.publicada, 'acta': acta.id})
+            except:
+                return JsonResponse({'ok': False})
         elif action == 'update_fecha_aprobacion':
             try:
                 acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
                 if request.POST['fecha_aprobacion'] == 'borrar':
                     acta.fecha_aprobacion = None
                     acta.save()
-                    return JsonResponse({'ok': True})
-                if acta.publicada or acta.fecha_aprobacion:
-                    return JsonResponse({'ok': False})
+                    return JsonResponse({'ok': True, 'acta': acta.id, 'aprobada': False})
+                if acta.fecha_aprobacion:
+                    return JsonResponse({'ok': False, 'mensaje': 17})
                 fecha_aprobacion = datetime.strptime(request.POST['fecha_aprobacion'], "%d/%m/%Y")
                 acta.fecha_aprobacion = fecha_aprobacion
-                acta.publicada = True
-                try:
-                    os.remove(RUTA_BASE + acta.pdf.url)
-                except:
-                    pass
-                fichero = '%s/borradores/acta' % (g_e.ronda.entidad.code)
-                c = render_to_string('acta2pdf.html', {
-                    'acta': acta,
-                    'MA': MEDIA_ANAGRAMAS,
-                }, request=request)
-                fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_ACTAS, title=u'Acta de reunión')
-                acta.pdf = File(fich)
                 acta.save()
-                return JsonResponse({'ok': True})
+                return JsonResponse({'ok': True, 'acta': acta.id, 'aprobada': True})
             except:
-                return JsonResponse({'ok': False})
+                return JsonResponse({'ok': False, 'mensaje': 27})
 
-        elif action == 'update_publicada':
-            try:
-                acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
-                if acta.fecha_aprobacion:
-                    return JsonResponse({'ok': False})
-                acta.publicada = not acta.publicada
-                if acta.publicada:
-                    fichero = '%s/borradores/acta' % (g_e.ronda.entidad.code)
-                    c = render_to_string('acta2pdf.html', {
-                        'acta': acta,
-                        'MA': MEDIA_ANAGRAMAS,
-                    }, request=request)
-                    fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_ACTAS, title=u'Acta de reunión')
-                    acta.pdf = File(fich)
-                else:
-                    os.remove(RUTA_BASE + acta.pdf.url)
-                acta.save()
-                return JsonResponse({'ok': True, 'publicada': acta.publicada})
-            except:
-                return JsonResponse({'ok': False})
+
+
+
+
         elif action == 'send_email':
             try:
                 acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
@@ -1216,7 +1180,6 @@ def borrar_firmas_acta(acta):
         mensaje.receptores.add(*receptores)
         mensaje.etiquetas.add(etiqueta)
         crea_mensaje_cola(mensaje)
-        firma.firmada = False
         firma.firma = None
         if firma.firma:
             if os.path.isfile(firma.firma.path):
@@ -1259,10 +1222,6 @@ def firmar_acta_reunion(request):
                 firmaacta.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
                 firmaacta.firmada = True
                 firmaacta.save()
-                acta = firmaacta.acta
-                if acta.firmaacta_set.filter(firmada=True).count() == acta.firmaacta_set.all().count():
-                    acta.firmada = True
-                    acta.save()
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Error para encontrar FirmaActa'})
