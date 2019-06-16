@@ -760,7 +760,7 @@ def conv_reunion_ajax(request):
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
 
-@permiso_required('acceso_redactar_actas_reunion')
+# @permiso_required('acceso_redactar_actas_reunion')
 def redactar_actas_reunion(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
@@ -769,25 +769,25 @@ def redactar_actas_reunion(request):
                 acta = ActaReunion.objects.get(id=request.POST['id_acta'], convocatoria__entidad=g_e.ronda.entidad)
                 fecha = acta.convocatoria.fecha_hora.strftime('%Y%m%d')
                 nombre_fichero = slugify('%s-%s' % (acta.nombre, fecha)) + '.pdf'
-                if acta.fecha_aprobacion or acta.publicada:
-                    fichero = acta.pdf.read()
-                    response = HttpResponse(fichero, content_type='application/pdf')
-                    response['Content-Disposition'] = 'attachment; filename=' + nombre_fichero
-                    return response
-                else:
-                    fichero = '%s/borradores/acta' % (g_e.ronda.entidad.code)
-                    firmas = FirmaActa.objects.filter(acta=acta)
-                    c = render_to_string('acta_reunion2pdf.html', {
-                        'acta': acta,
-                        'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
-                        'MA': MEDIA_ANAGRAMAS,
-                        'firmas': firmas,
-                        'ruta_base': RUTA_BASE
-                    }, request=request)
-                    fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REUNIONES, title=u'Acta de reunión')
-                    response = HttpResponse(fich, content_type='application/pdf')
-                    response['Content-Disposition'] = 'attachment; filename=' + nombre_fichero
-                    return response
+                # if acta.fecha_aprobacion or acta.publicada:
+                #     fichero = acta.pdf.read()
+                #     response = HttpResponse(fichero, content_type='application/pdf')
+                #     response['Content-Disposition'] = 'attachment; filename=' + nombre_fichero
+                #     return response
+                # else:
+                fichero = '%s/borradores/acta' % (g_e.ronda.entidad.code)
+                firmas = FirmaActa.objects.filter(acta=acta)
+                c = render_to_string('acta_reunion2pdf.html', {
+                    'acta': acta,
+                    'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
+                    'MA': MEDIA_ANAGRAMAS,
+                    'firmas': firmas,
+                    'ruta_base': RUTA_BASE
+                }, request=request)
+                fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REUNIONES, title=u'Acta de reunión')
+                response = HttpResponse(fich, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename=' + nombre_fichero
+                return response
 
                 #     fich_name = 'parte_temporal%s.txt' % (vivienda.propietario.id)
                 #     ruta = os.path.join("%svut/" % (RUTA_MEDIA), fich_name)
