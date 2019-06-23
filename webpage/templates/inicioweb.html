@@ -1,0 +1,327 @@
+{% extends "base_empty.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <link href="https://fonts.googleapis.com/css?family=Oswald|Raleway|Yanone+Kaffeesatz&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block contenido %}
+    <style>
+        p, li {
+        {#font-family: 'Yanone Kaffeesatz', sans-serif;#} font-family: 'Raleway', sans-serif;
+            font-size: 1.2rem;
+        }
+
+        .title_page {
+            text-align: center;
+            color: #008CBA;
+            font-weight: 800;
+        }
+
+        h3, h2 {
+            font-family: 'Raleway', sans-serif;
+        }
+
+        .h4_list {
+            font-family: 'Oswald', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #FFFFFF !important;
+            text-align: center;
+        }
+
+        #div_presentation {
+            background-image: url(/static/webpage/PANO_20190623_080131_small_combined.jpg);
+            height: 400px;
+            background-position: center;
+        }
+    </style>
+    <div class="sticky">
+        <nav class="top-bar" data-topbar role="navigation">
+            <ul class="title-area">
+                <li class="name">
+                    <h1><a href="#">Gestión Aumentada</a></h1>
+                </li>
+                <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
+                <li class="toggle-topbar menu-icon"><a href="#"><span>Menú</span></a></li>
+            </ul>
+
+            <section class="top-bar-section">
+                <!-- Right Nav Section -->
+                <ul class="right">
+                    <li class="active"><a href="#">Inicia sesión</a></li>
+                    <li class="has-dropdown">
+                        <a href="#">Servicios</a>
+                        <ul class="dropdown">
+                            <li><a href="#id_garajes">Garajes</a></li>
+                            <li><a href="#id_portales">Portales</a></li>
+                            <li><a href="#id_domotica">Viviendas</a></li>
+                            <li class="active"><a href="#id_preguntas">Ayuda</a></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <!-- Left Nav Section -->
+                <ul class="left">
+                    <li><a href="#id_precios">Precios</a></li>
+                </ul>
+            </section>
+        </nav>
+    </div>
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+
+        <div id="div_presentation">
+            <br>
+            <h4 class="h4_list">Abre tu garaje</h4>
+            <h4 class="h4_list" style="">Sube una persiana</h4>
+            <h4 class="h4_list" style="">Abre el portal de tu casa</h4>
+            <h4 class="h4_list" style="">Enciende/Apaga las luces</h4>
+            <h4 class="h4_list" style="">...</h4>
+            <h4 class="h4_list" style="">Todo desde tu móvil y sin instalar nada</h4>
+        </div>
+
+
+        <div class="" style="padding-top: 5px;" id="id_garajes">
+            <div class="row">
+                <div class="columns large-6">
+                    <img src="/static/webpage/parking_comunitario.jpg" alt="Imagen de un parking general">
+                    <h3 style="font-weight: 800;">¿Garajes particulares?</h3>
+                    <p>Funciona tanto en garajes particulares como en comunitarios.</p>
+                    <p>La conexión se realiza a través de wifi. A diferencia de los sistemas que requieren
+                        una conexión bluetooth, puedes abrir/cerrar a cualquier distancia.</p>
+                </div>
+                <div class="columns large-6">
+                    <h3 style="font-weight: 800;">Sin mandos. Solo tu móvil</h3>
+                    <p>Sin necesidad de instalar una app en tu teléfono móvil podrás:</p>
+                    <ul>
+                        <li>Entrar en el garaje</li>
+                        <li>Encender las luces del garaje</li>
+                        <li>Compartir la apertura con quien desees*</li>
+                    </ul>
+                    <p style="font-size: small;">*Puedes indicar quién puede acceder al garaje, qué días y a qué
+                        horas.</p>
+                    <div class="columns large-12">
+                        <img src="/static/webpage/parking_particular.jpg" alt="Imagen de un parking particular">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="" style="padding-top: 5px;">
+            <div class="row" id="id_portales">
+                <div class="columns large-6">
+                    <img src="/static/webpage/portal_vivienda1.jpg" alt="Imagen de un portal">
+                </div>
+                <div class="columns large-6">
+                    <h3 style="font-weight: 800;">¿Acceder a tu portal?</h3>
+                    <h4>No hay problema. Te contamos nuestra solución ...</h4>
+                    <ul>
+                        <li>La instalación no se hace sobre elementos comunitarios. Por tanto, no requiere de
+                            permisos de la comunidad de vecinos.
+                        </li>
+                        <li>Ideal para viviendas de uso turístico con acceso autónomo.</li>
+                        <li>Puedes compartir la apertura con quien desees. Puedes definir horarios de funcionamiento:
+                            días de la semana y horas, dentro de un rango de fechas.
+                        </li>
+                        {#                        <li>La comunicación es segura porque viaja fuertemente encriptada por la red.</li>#}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="" style="padding-top: 5px;">
+            <div class="row" id="id_domotica">
+                <div class="columns large-6">
+                    <h3 style="font-weight: 800;">¿Qué es la domótica?</h3>
+                    <p>La domótica es la técnica que permite controlar de forma remota, por ejemplo a través
+                        de tu móvil, tablet u ordenador los dispositivos electrónicos de tu casa, empresa o
+                        comercio.</p>
+                    <ul>
+                        <li>Control de acceso.</li>
+                        <li>Control de la iluminación.</li>
+                        <li>Cámaras de videovigilancia.</li>
+                        <li>Control de la calefacción. Temperatura, rango de funcionamiento, ...</li>
+                        <li>Control de humo, monóxido de carbono, gases nocivos ...</li>
+                    </ul>
+                </div>
+                <div class="columns large-6">
+                    <img src="/static/webpage/utiliza_domotica.jpg" alt="Utiliza domótica">
+                </div>
+            </div>
+        </div>
+        <div class="row" style="padding-top: 5px;">
+            <div class="columns large-4">
+                <img src="/static/webpage/iot2.svg" alt="Utiliza domótica">
+            </div>
+            <div class="columns large-4">
+                <img src="/static/webpage/iot1.svg" alt="Utiliza domótica">
+            </div>
+            <div class="columns large-4">
+                <img src="/static/webpage/iot3.jpeg" alt="Utiliza domótica">
+            </div>
+        </div>
+
+        <div style="background-color: #fbcb09; padding-top: 35px;margin-top: 25px;" id="id_precios">
+            <div class="row">
+                <div class="columns large-4" style="margin-top: 30px;">
+                    <img src="/static/webpage/logo.png" alt="Utiliza domótica">
+                </div>
+                <div class="columns large-8" style="color:white;">
+                    <h2 style="color:white!important;font-weight: 800;">¿Interesado en aquirir esta solución?</h2>
+                    <p style="color:white!important;font-weight: 800;">Nuestros técnicos se encargarán de todo. Si es
+                        posible, la instalación quedará oculta y
+                        no se apreciará a simple vista su existencia.</p>
+                    <p style="color:white!important;font-weight: 800;">Como puedes imaginar, el presupuesto depende del
+                        lugar en el que debe hacerse la
+                        instalación, pero para que te hagas una idea del coste:</p>
+                    <ul style="color:white!important;font-weight: 800;">
+                        <li>El abrepuertas del portal tiene un coste aproximado de 125€. Por cada dispositivo
+                            adicional (control luz, control calefacción, ...) un incremento de aproximadamente 50€.
+                        </li>
+                        <li>El abrepuertas de un garaje comunitario tiene un coste aproximado de 200€.</li>
+                        <li>El control de una caldera comunitaria (calefacción central) tiene un coste aproximado
+                            de 250€.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+        <div>
+            <div class="row" id="id_preguntas">
+                <div class="columns large-12">
+                    <h3 style="font-weight: 800;">Quizás te preguntes ...</h3>
+                    <ul class="accordion" data-accordion>
+                        <li class="accordion-navigation">
+                            <a href="#panel1a">¿Quiénes sois?</a>
+                            <div id="panel1a" class="content">
+                                <p>Somos una empresa riojana, afincada en Haro. Surgimos como un Spin-Off del IES Ciudad
+                                    de Haro.</p>
+                                <p>Tenemos el conocimiento para desarrollar este proyecto y la ilusión de proporcionar
+                                    unos servicios
+                                    tecnológicos pioneros en La Rioja, con vocación de crecer por todo el territorio
+                                    español.</p>
+                                <p>Si tienes alguna duda puedes contactar con nosotros:</p>
+                                <ul>
+                                    <li>Mail: info@gaumentada.es</li>
+                                    <li>Dirección: C/ Manuel Bartolomé Cossío nº 6</li>
+                                </ul>
+
+                            </div>
+                        </li>
+                        <li class="accordion-navigation">
+                            <a href="#panel2a">¿Cómo funciona el sistema que me propones?</a>
+                            <div id="panel2a" class="content">
+                                <p>Actualmente, la mayor parte de los teléfonos móviles tienen acceso a Internet.
+                                    Nuestra tecnología utiliza
+                                    dispositivos capaces de conectarse a Internet para:</p>
+                                <ul>
+                                    <li>Actuar sobre: luces, abrepuertas, calefacción, persianas, ...</li>
+                                    <li>Medir magnitudes de interés: temperatura, humedad, humo, monóxido de carbono,
+                                        gas butano, ...
+                                    </li>
+                                </ul>
+                                <p>Te proporcionamos acceso a una web que, a su vez, te permitirá controlar y actuar
+                                    sobre todos aquellos
+                                    dispositivos que desees.</p>
+                                <p>No necesitarás instalarte ninguna aplicación en tu móvil. Nuestra tecnología utiliza
+                                    el navegador web
+                                    que tienes instalado por defecto.</p>
+                            </div>
+                        </li>
+                        <li class="accordion-navigation">
+                            <a href="#panel3a">¿Necesito tener una conexión a Internet?</a>
+                            <div id="panel3a" class="content">
+                                <p>Sí. Tu teléfono tiene que tener la posibilidad de conectarse a Internet. No obstante,
+                                    nuestro sistema
+                                    hace un gasto ridículo de datos. No necesitas cambiar de tarifa, ni observarás un
+                                    cambio substancial en tu
+                                    consumo.</p>
+                                <p>A su vez los dispositivos instalados (sensores y/o actuadores) también necesitan
+                                    estar conectados
+                                    a Internet. Esta conexión te la facilitaremos nosotros sin ningún coste
+                                    adicional.</p>
+                            </div>
+                        </li>
+                        <li class="accordion-navigation">
+                            <a href="#panel4a">¿Puedo acceder sin mi teléfono móvil?</a>
+                            <div id="panel4a" class="content">
+                                <p>Sí. El acceso habitual que ya tengas instalado: llaves, mando remoto, portero
+                                    automático, ... no dejará
+                                    de funcionar.</p>
+                                <p>Además, como no se trata de una aplicación instalada en tu móvil, podrás acceder de
+                                    forma remota a
+                                    través de tu ordenador y/o tablet, como si lo hicieras con tu teléfono.</p>
+                            </div>
+                        </li>
+                        <li class="accordion-navigation">
+                            <a href="#panel5a">¿Es seguro?</a>
+                            <div id="panel5a" class="content">
+                                <p>Sí. Las comunicaciones viajan encriptadas por la red. Asimismo, los enrutadores que
+                                    utilizamos no son accesibles.
+                                    Como suele decirse, nadie (ni siquiera el banco donde tienes depositados tus
+                                    ahorros) puede garantizarte
+                                    una seguridad 100%. En cualquier caso, la probabilidad de que alguien pueda saltarse
+                                    la seguridad implementada
+                                    en nuestra solución es remota.</p>
+                            </div>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="panel callout" style="margin-top: 40px;">
+            <div class="row">
+                <div class="columns large-4">
+                    <p>C/ Manuel Bartolomé Cossío nº 6</p>
+                    <p>Haro (La Rioja)</p>
+                    <p>info@gaumentada.es</p>
+                </div>
+                <div class="columns large-4">
+                    <p>&nbsp;</p>
+                    <p><a href="">Términos y condiciones</a></p>
+                    <p>&nbsp;</p>
+                </div>
+                <div class="columns large-4">
+                    <p>Seguir redes sociales:</p>
+                    <p><a href=""><i class="fa fa-3x fa-facebook-official"></i> </a>
+                        <a href=""><i class="fa fa-3x fa-twitter"></i> </a>
+                        <a href=""><i class="fa fa-3x fa-instagram"></i> </a></p>
+                    <p>&nbsp;</p>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+{% block final %}
+
+    <script type="application/javascript">
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+
+
+{% endblock %}
+
+
+
+	
+
+
+
+
+
+
+
