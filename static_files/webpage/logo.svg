@@ -15,7 +15,10 @@
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 (33fec40, 2019-01-16)"
-   sodipodi:docname="logo.svg">
+   sodipodi:docname="logo.svg"
+   inkscape:export-filename="/home/juanjo/django/gauss3/static_files/webpage/logo.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
   <defs
      id="defs2">
     <marker
@@ -451,7 +454,9 @@
     <g
        id="g1721"
        transform="matrix(0.06805823,0,0,0.07048526,84.852721,215.24351)"
-       style="fill:#929396;fill-opacity:1;stroke:#929396;stroke-opacity:1">
+       style="fill:#929396;fill-opacity:1;stroke:#929396;stroke-opacity:1"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96">
       <g
          id="Wi-Fi"
          style="fill:#929396;fill-opacity:1;stroke:#929396;stroke-opacity:1">
