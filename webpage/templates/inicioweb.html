@@ -12,6 +12,12 @@
             font-size: 1.2rem;
         }
 
+        .pie_page {
+        font-family: 'Raleway', sans-serif;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
         .title_page {
             text-align: center;
             color: #008CBA;
@@ -35,12 +41,22 @@
             height: 400px;
             background-position: center;
         }
+
+        #div_alert_cookies {
+            background-color: #f04124;
+            border-color: #de2d0f;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            display: none;
+        }
     </style>
     <div class="sticky">
         <nav class="top-bar" data-topbar role="navigation">
             <ul class="title-area">
                 <li class="name">
-                    <h1><a href="#">Gestión Aumentada</a></h1>
+                    <h1><a href="/inicioweb/">Gestión Aumentada</a></h1>
                 </li>
                 <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
                 <li class="toggle-topbar menu-icon"><a href="#"><span>Menú</span></a></li>
@@ -279,17 +295,18 @@
         <div class="panel callout" style="margin-top: 40px;">
             <div class="row">
                 <div class="columns large-4">
-                    <p>C/ Manuel Bartolomé Cossío nº 6</p>
-                    <p>Haro (La Rioja)</p>
-                    <p>info@gaumentada.es</p>
+                    <p class="pie_page">C/ Manuel Bartolomé Cossío nº 6</p>
+                    <p class="pie_page">Haro (La Rioja)</p>
+                    <p class="pie_page">info@gaumentada.es</p>
                 </div>
                 <div class="columns large-4">
-                    <p>&nbsp;</p>
-                    <p><a href="">Términos y condiciones</a></p>
+                    <p class="pie_page"><a href="/avisolegal/">Aviso legal <i class="fa fa-gavel"></i> </a></p>
+                    <p class="pie_page"><a href="/privacidad/">Política de privacidad <i class="fa fa-clone"></i> </a></p>
+{#                    <p class="pie_page"><a href="/condiciones/">Términos y condiciones <i class="fa fa-handshake-o"></i> </a></p>#}
                     <p>&nbsp;</p>
                 </div>
                 <div class="columns large-4">
-                    <p>Seguir redes sociales:</p>
+                    <p class="pie_page">Seguir redes sociales:</p>
                     <p><a href=""><i class="fa fa-3x fa-facebook-official"></i> </a>
                         <a href=""><i class="fa fa-3x fa-twitter"></i> </a>
                         <a href=""><i class="fa fa-3x fa-instagram"></i> </a></p>
@@ -297,6 +314,29 @@
                 </div>
             </div>
         </div>
+
+        <div class="text-center" id="div_alert_cookies">
+            <div class="row">
+                <div class="columns large-11">
+                    <p style="font-size: large; font-weight: 800;">Esta página utiliza cookies. Las cookies son pequeños
+                        archivos con
+                        información que se almacenan en tu navegador. <a href="/avisolegal/#uso_cookies">Más
+                            información.</a>
+                        {#                        El navegador envía al sitio web la información almacenada cada vez que lo visitas o a medida que navegas en él.#}
+                    </p>
+                    <p style="font-size: large; font-weight: 800;">Si continuas navegando entendemos que aceptas el uso
+                        de estas
+                        cookies.</p>
+                </div>
+                <div class="columns large-1">
+                    <br>
+                    <a href="#" id="alert_cookies" class="button">Aceptar </a>
+                </div>
+            </div>
+
+
+        </div>
+        {#        </div>#}
     </form>
 {% endblock %}
 {% block final %}
@@ -310,6 +350,29 @@
                 });
             });
         });
+
+        setTimeout(function () {
+            var gaumentada = localStorage.getItem('gaumentada');
+            if (gaumentada) {
+                var pasado = new Date(gaumentada);
+                var hoy = new Date();
+                var tiempo = hoy - pasado;
+                {# 3000000000 milisegundos se corresponde con poco más de un mes (34.7 días) #}
+                if (tiempo > 3000000000) {
+                    $('#div_alert_cookies').show();
+                }
+            }
+        }, 1000);
+
+
+        $('body').on('click', '#alert_cookies', function (e) {
+            e.preventDefault();
+            $('#div_alert_cookies').hide();
+            var hoy = new Date();
+            var cadena = hoy.getFullYear() + '/' + (hoy.getMonth() + 1) + '/' + hoy.getDate();
+            localStorage.setItem('gaumentada', cadena);
+        });
+
     </script>
 
 

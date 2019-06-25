@@ -6,11 +6,23 @@ from django.shortcuts import render
 def inicioweb(request):
     return render(request, "inicioweb.html",
                   {
-                      'iconos':
-                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
-                            'title': 'Crear una nueva configuración de convocatoria',
-                            'permiso': 'c_conv_template'},
-                           ),
-                      'configura': True,
                       'formname': 'inicioweb',
+                  })
+
+def avisolegal(request):
+    return render(request, "avisolegal.html",
+                  {
+                      'formname': 'avisolegal',
+                  })
+
+def privacidad(request):
+    return render(request, "privacidad.html",
+                  {
+                      'formname': 'privacidad',
+                  })
+
+def condiciones(request):
+    return render(request, "condiciones.html",
+                  {
+                      'formname': 'condiciones',
                   })

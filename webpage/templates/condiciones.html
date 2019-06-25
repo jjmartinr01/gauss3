@@ -1,0 +1,2123 @@
+{% extends "base_empty.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <link href="https://fonts.googleapis.com/css?family=Oswald|Raleway|Yanone+Kaffeesatz&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block contenido %}
+    <div class="sticky">
+        <nav class="top-bar" data-topbar role="navigation">
+            <ul class="title-area">
+                <li class="name">
+                    <h1><a href="/inicioweb/">Gestión Aumentada</a></h1>
+                </li>
+                <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
+                <li class="toggle-topbar menu-icon"><a href="#"><span>Menú</span></a></li>
+            </ul>
+
+            <section class="top-bar-section">
+                <!-- Right Nav Section -->
+                <ul class="right">
+                    <li class="active"><a href="/">Inicia sesión</a></li>
+                </ul>
+
+                <!-- Left Nav Section -->
+                <ul class="left">
+                    {#                    <li><a href="#id_precios">Precios</a></li>#}
+                </ul>
+            </section>
+        </nav>
+    </div>
+
+    <div class="row">
+        <div class="large-12 columns">
+            <h2 style="text-align: center;color: #008CBA;">TÉRMINOS Y CONDICIONES</h2>
+        </div>
+        <div class="large-12 columns  panel">
+                <h3>Introducción</h3>
+                <p>
+                    Estas condiciones generales regulan el contrato establecido entre Sistemas de Gestión Aumentada,
+                    plataforma domiciliada en Haro, La Rioja con CIF XXXXXX e inscrita en el Registro Mercantil de
+                    XXXX, tomo xxx, Libro xxx, Folio xxx Hoja XXXXXXX, Inscripción X, cuya dirección de correo
+                    electrónico info@gaumentada.es en adelante "GAUMENTADA", y el titular del contrato relativo a la
+                    prestación de servicios, en adelante CLIENTE.
+                </p>
+                <h3>1. INFORMACIÓN PREVIA.</h3>
+
+
+                <p>
+                    La relación entre el CLIENTE y GAUMENTADA se regirá por lo establecido en las presentes Condiciones
+                    Generales de Contratación y, en su caso, a los términos y condiciones específicos de los distintos
+                    Servicios de GAUMENTADA, tal y como los mismos se definen más adelante, o de parte de ellos, que se
+                    establezcan en las web gaumentada.es. Lo establecido en las Condiciones Generales
+                    resulta de plena aplicación a los Servicios que se regulan en el presente documento.
+                </p>
+                <p>
+                    Los Servicios se prestan al CLIENTE en calidad de CLIENTE final, para su uso exclusivo siendo su
+                    usuario y contraseña personal e intransferible.
+                </p>
+                <h4>1.1 Definiciones:</h4>
+
+
+                <ul>
+                    <li>Ubicación de servicios: La zona y listado de ubicaciones de servicio por cada ciudad en que
+                        opere el Servicio de GAUMENTADA se encontrará actualizado en la web gaumentada.es.
+                    </li>
+
+                    <li>Se entenderá por “cliente”, “usuario” o “usuario registrado” a la persona física, y en relación
+                        con el Servicio "cuenta empresa” a la persona física o jurídica, que previa aceptación de las
+                        presentes Condiciones se adhiere al Servicio de GAUMENTADA y, en su caso, hace uso en una o
+                        más ocasiones de los servicios ofrecidos por parte de GAUMENTADA.
+                    </li>
+
+                    <li>Servicio de GAUMENTADA o Servicio: Servicio proporcionado por GAUMENTADA que permite a los
+                        usuarios con smartphones, tablets u ordenadores hacer uso y pago de los servicios
+                        prestados a través de la aplicación web (GAUSS), en adelante SERVICIO.
+                    </li>
+
+                    <li>Aplicaciones de GAUMENTADA Aplicación: Software implementado por GAUMENTADA que permite gestionar
+                        los servicios prestados a través de GAUMENTADA a través de la web en cualquier dispositivo con
+                        un navegador web.
+                    </li>
+
+                    <li>Centro de Atención al Usuario de GAUMENTADA (CAU): Servicio de asistencia telefónica y/o a 
+                        través de medios electrónicos para el CLIENTE de los servicios movilidad de GAUMENTADA.
+                    </li>
+                </ul>
+                <h3>2. SERVICIOS DE GAUMENTADA</h3>
+                <p>
+                    Los servicios ofrecidos por GAUMENTADA posibilitan el uso y pago de diferentes servicios
+                    mediante un dispositivo móvil o un ordenador propiedad del cliente, y disfrutando de diversos 
+                    permisos de acceso dependiendo de los servicios contratados por el CLIENTE de entre los ofrecidos,
+                    en los sucesivo denominados Servicio de GAUMENTADA.
+                </p>
+                <p>
+                    El uso de los Servicios de GAUMENTADA se rigen por las presentes Condiciones Generales
+                    de Contratación, que regulan de manera principal y entre otros aspectos:
+                </p>
+                <ul>
+                    <li>El registro o adhesión al Servicio GAUMENTADA, incluyendo las validaciones previas que se
+                        requieran en cada momento.
+                    </li>
+                    <li>Las tarifas y precios dispuestos por GAUMENTADA para el uso de los mencionados servicios, así
+                        como en su caso los términos y condiciones específicos, que podrán encontrarse para cada
+                        servicio en la web gaumentada.es
+                    </li>
+
+                    <li>Las responsabilidades de las Partes y, en su caso, los seguros aplicables con relación a dichas
+                        responsabilidades.
+                    </li>
+                </ul>
+                <p>
+                    La aceptación de los Términos y Condiciones es obligatoria e imprescindible para el registro en los
+                    SERVICIOS de GAUMENTADA y para el uso de los servicios que se prestan mediante la aplicación GAUSS.
+                    Por tanto, tal aceptación se produce en el momento de registro del usuario en el Servicio.
+                </p>
+                <p>
+                    El registro en los SERVICIOS no se completará hasta que GAUMENTADA confirme la aceptación de tal
+                    registro y/o no complete las comprobaciones previas que se explicitan en las presentes Condiciones.
+                    GAUMENTADA confirmará por medios electrónicos (correo electrónico y/o SMS) que el registro ha sido
+                    aceptado y que por tanto se acepta la adhesión del usuario al Servicio. En todo caso, GAUMENTADA
+                    sólo aceptará el registro de aquellos solicitantes que cumplan con las condiciones establecidas
+                    con carácter previo.
+                </p>
+{#                <p>#}
+{#                    Entre los servicios disponibles en las distintas Ubicaciones, que podrán ampliarse en un futuro, el#}
+{#                    CLIENTE#}
+{#                    podrá, a#}
+{#                    través de las APLICACIONES, (i) realizar el abono de la tasa de estacionamiento regulado; accediendo#}
+{#                    a los#}
+{#                    servicios#}
+{#                    de notificación de denuncias, anulación de las mismas y/o, finalizar ticket, en las ciudades en las#}
+{#                    que la#}
+{#                    ordenanza#}
+{#                    municipal aplicable así permita; (ii) contratar y reservar productos o estancias (bonos, abonos y#}
+{#                    rotación) en#}
+{#                    aparcamientos públicos (también denominados parkings en las presentes condiciones) o titularidad de#}
+{#                    terceros#}
+{#                    usuarios; (iii) pagar el acceso y los tránsitos en autopistas y aparcamientos asociados al servicio#}
+{#                    Via-T; (iv)#}
+{#                    pagar el repostaje de combustible en la red de gasolineras asociadas; (v) controlar el acceso a los#}
+{#                    aparcamientos a#}
+{#                    través de Parkingdoor, (vi) dar de alta una “cuenta empresa”, vinculada a una persona física o#}
+{#                    jurídica, y a la#}
+{#                    que#}
+{#                    ésta, como usuarios-administrador podrá adherir determinados usuarios, de forma que estos puedan ser#}
+{#                    destinatarios#}
+{#                    de los Servicios de GAUMENTADA con cargo a la cuenta empresa bajo determinadas circunstancias y (vii)#}
+{#                    el resto#}
+{#                    que en#}
+{#                    cada momento GAUMENTADA ofrezca a sus usuarios.#}
+{#                </p>#}
+{#                <p>#}
+{#                    GAUMENTADA es responsable de recaudar las tasas municipales en nombre de los Ayuntamientos o de las#}
+{#                    empresas#}
+{#                    concesionarias, así como de realizar la facturación a los gestores/operadores de aparcamientos#}
+{#                    públicos por los#}
+{#                    servicios contratados por el CLIENTE.#}
+{#                </p>#}
+{#                <p>#}
+{#                    Para más detalles sobre los servicios que ofrece GAUMENTADA en cada momento y en cada Ubicación podrá#}
+{#                    consultarse#}
+{#                    la#}
+{#                    página web gaumentada.es , que mantendrá un listado actualizado de todos los servicios que#}
+{#                    presta en cada#}
+{#                    Ubicación y que están disponibles en las Aplicaciones.#}
+{#                </p>#}
+                <p>
+                    Las presentes Condiciones, así como los términos específicos que puedan afectar a los distintos
+                    Servicios, regirán la relación entre las Partes (GAUMENTADA y el usuario o entidad) hasta que el
+                    usuario o entidad no se desvincule del SERVICIO de manera voluntaria o por decisión de GAUMENTADA,
+                    en base a su capacidad para revocar la condición de usuario a cualquier titular de la misma y
+                    resolver la relación entre las Partes por contravención de las presentes Condiciones. En todo caso,
+                    GAUMENTADA podrá revisar y modificar los presentes Términos y Condiciones, bajo su
+                    criterio material y temporal. En tal caso, comunicará la existencia de cambios o modificaciones
+                    mediante los canales o medios electrónicos habituales en la relación con el usuario (correo
+                    electrónico, SMS, redes sociales, ...), estableciendo la fecha concreta a partir de la cual la
+                    nueva versión de las Condiciones pasará a estar en vigor. El uso del SERVICIO a partir de dicha
+                    fecha supondrá la aceptación íntegra y sin reservas de las nuevas Condiciones,
+                    sin perjuicio de lo dispuesto en la condición 10 de las mismas, en lo relativo a la protección de
+                    los datos personales y las opciones de tratamiento basadas en el consentimiento específico del
+                    usuario, según lo previsto en esta condición De cualquier modo, las Condiciones aplicables a cada
+                    registro en los Servicios de movilidad, serán las vigentes al momento de dicho registro o uso.
+                </p>
+                <p>
+                    Para contratar los SERVICIOS ofertados y, en su caso, comenzar el uso del servicio contratado, el
+                    usuario (de modo previo a adquirir tal condición si reúne los requisitos oportunos y aporta la
+                    documentación requerida), deberá:
+                </p>
+                <h4>
+                    2.1. Para el caso de usuarios, que se registren en el servicio a través de la web gaumentada.es
+                    o, cuando así se permita, a través de la Aplicación o App vinculada al SERVICIO
+                </h4>
+                <ul>
+                    <li>Datos personales. Sólo podrán registrarse y hacer uso del Servicio personas mayores de 18 años.
+                        En el momento del registro habrán de aportar todos los datos personales que, de manera
+                        obligatoria, se le soliciten (podrán solicitarse otros datos a aportar de manera voluntaria).
+                        El usuario responderá en todo momento de la  veracidad y actualización de los datos, personales
+                        o de cualquier tipo, que aporte para el registro en el Servicio o con
+                        motivo del uso de este. La mera sospecha sobre la falta de veracidad o actualización de tales
+                        datos habilitará a GAUMENTADA para bloquear al usuario y, si así lo decidiera bajo su propio
+                        criterio, resolver la relación entre las Partes, sin derecho a compensación o indemnización
+                        alguna a favor del usuario.
+                    </li>
+                    <li>Medio de pago y autorización de cargo. Para poder hacer uso del SERVICIO ofrecido por GAUMENTADA,
+                        el usuario
+                        debe
+                        haber elegido una forma de pago (por ejemplo, tarjeta de débito/crédito) asociado a su usuario,
+                        en el
+                        proceso de
+                        registro, y haber introducido los datos correspondientes, para permitir la carga del depósito o
+                        cuenta
+                        virtual
+                        que el usuario mantiene con GAUMENTADA, por el importe que este decide en cada momento, salvo en
+                        cuanto sea
+                        aplicable al Servicio Via-T. El titular o al menos un co-titular del medio de pago debe
+                        coincidir con el
+                        usuario. El usuario autoriza a GAUMENTADA a cargar en el medio de pago designado las cantidades
+                        derivadas de
+                        la
+                        utilización del Servicio y en general de la aplicación de las presente Condiciones (tasas,
+                        tarifas, precios,
+                        daños, gastos de gestión, etc.). Una vez establecida la tarjeta de débito/crédito como medio de
+                        pago ésta
+                        podrá
+                        modificarse por otra con los mismos requisitos anteriores, pero no eliminarse, ya que se
+                        constituye como
+                        medio
+                        de garantía de pago frente a pagos de servicios que puedan llegar en diferido. En el caso de que
+                        así lo
+                        establezca el usuario en las opciones de configuración, y, en todo caso, cuando se haya
+                        contratado un
+                        Servicio y no haya saldo suficiente en el monedero, se podrán realizar recargas automáticas por
+                        los importes
+                        establecidos por el usuario o determinados en las condiciones específicas del Servicio.
+                    </li>
+                    <li>Abonar la cuota de alta especificada en la Política de precios, en caso de existir. Dicha cuota
+                        podrá estar
+                        sujeta a promociones que reduzcan su cuantía. Las promociones tendrán una duración determinada
+                        que se
+                        comunicará
+                        junto con la promoción y podrán estar orientadas a diferentes perfiles de usuarios y no alcanzar
+                        a la
+                        totalidad
+                        de los mismos. Para poder beneficiarse de las promociones es imprescindible que el usuario
+                        introduzca el
+                        código
+                        promocional durante el proceso de registro y obtenga el mensaje de confirmación de su aplicación
+                        en dicho
+                        proceso. En caso contrario, la aplicación de la promoción quedará a criterio de GAUMENTADA.
+                    </li>
+                </ul>
+                <h3>
+                    2.2 Para el caso de usuarios que se descargan e instalan en su teléfono móvil o Smartphone la
+                    Aplicación o App GAUMENTADA.
+                </h3>
+                <ul>
+                    <li>El medio para acceder a los Servicios es la Aplicación GAUMENTADA. Para poder usar la Aplicación
+                        como
+                        herramienta
+                        de acceso, el usuario deberá disponer de un teléfono móvil compatible con los requisitos
+                        técnicos de la
+                        Aplicación GAUMENTADA. En ningún caso GAUMENTADA será responsable, en medida alguna, de los daños
+                        o mal
+                        funcionamiento provocado por la descarga, instalación o uso de la Aplicación o App y/o falta de
+                        actualización de
+                        la misma por parte del cliente.
+                    </li>
+                    <li>El usuario deberá proporcionar personalmente la posibilidad de comunicación por datos móviles y
+                        hacerse
+                        cargo de
+                        los costes de transmisión de datos que en su caso corresponda pagar al proveedor de servicios
+                        móviles del
+                        usuario. El usuario debe garantizar la posibilidad de usar la aplicación durante todo el
+                        Servicio, desde la
+                        reserva de un servicio hasta la finalización del mismo.
+                    </li>
+                    <li>Durante el procedimiento de registro el usuario creará una contraseña para acceder a la
+                        información
+                        confidencial
+                        y las funciones del portal de internet ubicado en gaumentada.es (acceso a sus consumos y
+                        movimientos,
+                        acceso
+                        y modificación de sus datos personales, …) y accesible también a través de la Aplicación. El
+                        usuario está
+                        obligado a mantener su contraseña en estricta confidencialidad y a proteger la información de
+                        cualquier
+                        acceso
+                        por terceros. El usuario responderá de los daños y perjuicios que puedan ocasionarse por la
+                        pérdida de las
+                        herramientas de acceso.
+                    </li>
+                    <li>Teniendo en cuenta el estado de las herramientas técnicas, la prestación del Servicio puede
+                        quedar sujeta a
+                        restricciones o inexactitudes que quedan fuera del control de GAUMENTADA. Lo anterior se aplica
+                        en concreto a
+                        la
+                        disponibilidad de servicios de datos móviles que faciliten los operadores de redes móviles, la
+                        red móvil,
+                        los
+                        servicios de posicionamiento a través del sistema de navegación global por satélite y el acceso
+                        a Internet,
+                        todas las cuales dependen de las capacidades y características del teléfono móvil o smartphone
+                        del usuario
+                        y/o
+                        de los proveedores de acceso a internet contratados por éste. La falta de disponibilidad de la
+                        red móvil
+                        puede,
+                        en casos concretos, provocar que determinados servicios no estén disponibles por no funcionar la
+                        necesaria
+                        transmisión de datos. Asimismo, estos servicios pueden verse afectados por interferencias
+                        atmosféricas, por
+                        las
+                        condiciones u obstáculos topográficos (como, por ejemplo, puentes, túneles, edificios). Lo mismo
+                        ocurre con
+                        los
+                        servicios de posicionamiento basados en el sistema de navegación global por satélite. Además, el
+                        uso de
+                        internet
+                        puede verse sujeto a restricciones adicionales (como, por ejemplo, sobrecarga de la red). Por
+                        otro lado,
+                        pueden
+                        darse déficits temporales de capacidad como consecuencia de picos de carga en los servicios, en
+                        las redes
+                        móviles o de líneas fijas o en internet.
+                    </li>
+                </ul>
+                <h3>
+                    2.3 En el caso de “cuentas empresa”, una persona autorizada debe solicitar la creación de la
+                    cuenta
+                    y aportar la documentación requerida por GAUMENTADA, así como la información de la Empresa, persona
+                    física o
+                    jurídica
+                    titular de la “cuenta empresa”. Una vez se disponga de la documentación y todos los datos, se
+                    procederá a la
+                    creación de la cuenta.
+                </h3>
+                <ul>
+                    <li>La persona autorizada será también usuaria de GAUMENTADA y la administradora de la cuenta
+                        empresa,
+                        usuario-administrador. Esta persona tendrá plena capacidad, dentro de la cuenta de empresa,
+                        pudiendo acceder
+                        a
+                        los datos de todos los usuarios asociados a dicha cuenta: movimientos, uso, costes, etc. Así
+                        mismo, tendrá
+                        potestad para incluir nuevos beneficiarios asociados a la cuenta empresa y a gestionar su acceso
+                        a la misma.
+                    </li>
+                    <li>En todo caso, cada uno de los usuarios asociados a la cuenta deberá aceptar previamente a su
+                        utilización las
+                        presentes Condiciones Generales.
+                    </li>
+                    <li>Medio de pago y autorización de cargo. La empresa debe facilitar un medio de pago (tarjeta de
+                        crédito/débito
+                        o
+                        similar) una vez se haya creado la cuenta como paso previo a su validación.
+                    </li>
+                    <li>El usuario-administrador autoriza a GAUMENTADA a cargar en el medio de pago designado las
+                        cantidades
+                        derivadas de
+                        la utilización del Servicio por los usuarios que aquel determine y en general de la aplicación
+                        de las
+                        presente
+                        Condiciones (tarifas, precios, daños, gastos de gestión, etc.) de todos y cada uno de los
+                        usuarios
+                        vinculados a
+                        la cuenta empresa.
+                    </li>
+                    <li>Abonar la cuota de alta especificada en la Política de precios. Dicha cuota podrá estar sujeta a
+                        promociones
+                        que
+                        reduzcan su cuantía. Las promociones tendrán una duración determinada que se comunicará junto
+                        con la
+                        promoción.
+                    </li>
+                    <li>Desistimiento del registro. El usuario tendrá derecho a desistir del contrato durante un periodo
+                        de 14 días
+                        naturales a partir de su celebración, sin indicar el motivo y sin incurrir en ningún coste,
+                        salvo si los
+                        servicios se hubieran iniciado por voluntad del usuario, de conformidad con la vigente normativa
+                        en materia
+                        de
+                        consumidores y usuarios. A tal efecto, el usuario podrá comunicar su decisión a GAUMENTADA,
+                        dirigiéndose a la
+                        siguiente dirección de correo electrónico info@elparking.com
+                    </li>
+                </ul>
+                <h3>
+                    2.4 En el caso de incluirse como parte del servicio algún dispositivo físico (Dispositivo de
+                    Via-T,
+                    dispositivo de apertura Parkingdoor, …) las condiciones asociadas a cada uno de ellos son:
+                </h3>
+                <ul>
+                    <li>Dispositivo de Via-T:
+                        <ul>
+                            <li>GAUMENTADA cede al CLIENTE el dispositivo durante la vigencia del contrato.</li>
+
+                            <li>El CLIENTE está obligada a introducir los datos de su tarjeta de crédito/débito previo
+                                el inicio de
+                                la
+                                prestación del servicio.
+                            </li>
+
+                            <li>En caso de robo del dispositivo Via-T, GAUMENTADA procederá a la sustitución del mismo
+                                sin costo para
+                                el
+                                CLIENTE, previa presentación de la denuncia correspondiente debidamente diligenciada.
+                                Ante la
+                                notificación de pérdida o robo de un dispositivo GAUMENTADA procederá de la siguiente
+                                forma:
+                                <ul>
+
+                                    <li>Bloquear de forma inmediata el dispositivo. Hay que tener en cuenta que las
+                                        autopistas no
+                                        pueden
+                                        bloquear y desbloquear los dispositivos en tiempo real, este margen de tiempo
+                                        depende de los
+                                        protocolos de funcionamiento de cada autopista, pero oscilan entre las 48/72
+                                        horas (días
+                                        laborables).
+                                    </li>
+
+                                    <li>Solicitar al CLIENTE la denuncia donde venga recogido el robo del dispositivo, a
+                                        ser posible
+                                        incluyendo la numeración del Dispositivo Via-T (30864803******).
+                                    </li>
+
+                                    <li>Enviar dispositivo de sustitución al CLIENTE tras pedido por su parte. Se
+                                        devolverá al
+                                        CLIENTE
+                                        el importe del pedido como saldo en el monedero.
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>En caso de pérdida del dispositivo Via-T por parte del CLIENTE, GAUMENTADA procederá de
+                                la siguiente
+                                manera:
+                                <ul>
+
+                                    <li>Bloquear de forma inmediata el dispositivo.</li>
+
+                                    <li>Ofrecer un plazo de siete días al CLIENTE para recuperar el dispositivo:
+                                        <ul>
+
+                                            <li>Si el CLIENTE lo encuentra: GAUMENTADA procederá con el desbloqueo y a
+                                                informar del
+                                                plazo
+                                                estimado por las autopistas para hacerlo efectivo (48/72 horas días
+                                                laborables).
+                                            </li>
+
+                                            <li>Si el CLIENTE no lo encuentra: dicho dispositivo se mantendrá bloqueado.
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>El CLIENTE se responsabiliza del mantenimiento y buen estado de conservación,
+                                funcionamiento y uso
+                                de
+                                los dispositivos Via-T cedidos, quedando expresamente prohibido al CLIENTE la copia
+                                total o parcial
+                                de
+                                la información contenida en ellos, así como la apertura o manipulación de los mismos, ni
+                                tan
+                                siquiera
+                                para la sustitución de la batería que se encuentra en el interior. El incumplimiento de
+                                estas
+                                prohibiciones será responsabilidad directa del CLIENTE, por sí y por el/los usuario/s
+                                autorizado/s
+                                por
+                                el mismo. En caso de problemas de funcionamiento el CLIENTE deberá enviar el dispositivo
+                                Via-T para
+                                su
+                                reemplazo por una nueva unidad, quedando el retirado a disposición de GAUMENTADA.
+                            </li>
+
+                            <li>GAUMENTADA podrá bloquear el uso del dispositivo Via-T si el CLIENTE no ofrece
+                                suficientes garantías
+                                de
+                                pago.
+                            </li>
+
+                            <li>GAUMENTADA se reserva el derecho de cobrar hasta 30€ por el dispositivo Via-T físico en
+                                caso de
+                                manipulación indebida o pérdida del mismo.
+                            </li>
+
+                            <li>GAUMENTADA podrá aplicar descuentos que ofrecen los propios parkings o autopistas:
+                                <ul>
+
+                                    <li>Descuentos Automáticos: La Sociedad Concesionaria computa y aplica los
+                                        descuentos
+                                        automáticamente sobre los tránsitos, bonificándolos en los cargos que realiza a
+                                        los
+                                        titulares de
+                                        telepeaje Via-T.
+                                    </li>
+
+                                    <li>Descuentos que exigen registro: El CLIENTE debe formalizar su solicitud de
+                                        adhesión al
+                                        programa
+                                        de descuentos. El titular del Via-T se tiene que dar de alta poniéndose en
+                                        contacto con la
+                                        autopista. Esto se debe hacer individualmente con cada una de las autopistas que
+                                        le
+                                        interesen, y
+                                        en algunos casos deberá cumplir una serie de requisitos.
+                                    </li>
+
+                                    <li>Descuentos que requieren registro previo a la fecha de estos términos y
+                                        condiciones y sin
+                                        perjuicio de la creación de nuevos descuentos o los cambios que en las mismas se
+                                        puedan
+                                        introducir por las autopistas:
+
+
+                                    </li>
+
+                                    <p>
+
+                                        En cualquier caso, a través del siguiente enlace el CLIENTE podrá informarse de
+                                        todos
+                                        los
+                                        descuentos que ofrecen las autopistas por el uso del Via-T en <a
+                                            href="http://www.pagatelia.com/descuentos-via-t">http://www.pagatelia.com/descuentos-via-t</a>.
+                                    </p>
+                                    <ul>
+
+                                        <li>Tipos de abonos que puede recibir el CLIENTE, según la autopista:
+                                            <ul>
+
+                                                <li>Abonos mensuales: Estos abonos se aplicarán a mes vencido, ya que la
+                                                    autopista
+                                                    deberá realizar el cálculo en función del número de viajes
+                                                    realizados
+                                                    durante el
+                                                    periodo. El CLIENTE lo verá reflejado en su cuenta como un
+                                                    incremento del
+                                                    saldo
+                                                    (Por ejemplo, AUDENASA/AP15).
+                                                </li>
+
+                                                <li>Reducción de tarifa: Estos abonos se aplicarán en el mismo momento
+                                                    del cargo
+                                                    del
+                                                    peaje. El CLIENTE verá reducida su tarifa en función del porcentaje
+                                                    aplicado
+                                                    por
+                                                    la autopista (Por ejemplo, ACCESOS DE MADRID/R3yR5).
+                                                </li>
+
+                                                <li>Vuelta gratis: Algunas autopistas ofrecen las vueltas gratis,
+                                                    siempre que la
+                                                    ida
+                                                    y la vuelta sean realizadas en menos de 24 horas, por el mismo
+                                                    recorrido y
+                                                    utilizando un vehículo ligero. En este caso el CLIENTE podrá ver
+                                                    reflejado
+                                                    el
+                                                    abono de dos formas:
+                                                    <ul>
+
+                                                        <li>Con apunte en la cuenta: “Vuelta Gratis - importe 0€”. (Por
+                                                            ejemplo:
+                                                            AUDENASA/AP15).
+                                                        </li>
+
+                                                        <li>Sin apunte en la cuenta: Directamente la autopista no envía
+                                                            el
+                                                            tránsito
+                                                            de vuelta y por tanto el CLIENTE sólo verá reflejado el
+                                                            cargo de la
+                                                            ida,
+                                                            pero no el de la vuelta. (Por ejemplo: AUDASA/AP9).
+                                                        </li>
+
+                                                        <li>Bonificación total: Algunas autopistas ofrecen la gratuidad
+                                                            total
+                                                            del
+                                                            trayecto de ida y vuelta, siempre que la ida y la vuelta
+                                                            sean
+                                                            realizadas
+                                                            en menos de 24 horas, por el mismo recorrido y utilizando un
+                                                            vehículo
+                                                            ligero. En este caso el CLIENTE verá primero reflejado el
+                                                            cargo y
+                                                            acto
+                                                            seguido el abono por el mismo importe. (Por ejemplo:
+                                                            AVASA/AP68).
+                                                        </li>
+                                                    </ul>
+                                                </li>
+                                            </ul>
+                                        </li>
+
+                                        <li>Baja del servicio.
+                                            <ul>
+
+                                                <li>Para proceder con la baja del dispositivo o dispositivos es
+                                                    obligatorio que
+                                                    el
+                                                    CLIENTE lo devuelva en buen estado, sin signos de manipulación o
+                                                    deterioro
+                                                    por
+                                                    un mal uso del mismo. Recibido este, GAUMENTADA procederá a la
+                                                    desvinculación. En
+                                                    caso de no recibir el dispositivo en el plazo de 10 días, GAUMENTADA
+                                                    procederá a
+                                                    tomar las acciones legales que considere para la recuperación del
+                                                    dispositivo.
+                                                    La resolución del contrato no exonerará al CLIENTE del pago de las
+                                                    facturaciones, cuotas y comisiones que a la fecha de la efectiva
+                                                    resolución
+                                                    del
+                                                    contrato resulten devengadas y pendientes de pago.
+                                                </li>
+
+                                                <li>De conformidad con lo dispuesto en el artículo 71 de la Ley 3/2014,
+                                                    de 27 de
+                                                    marzo, por la que se modifica el texto refundido de la Ley General
+                                                    para la
+                                                    Defensa de los Consumidores y Usuarios y otras leyes
+                                                    complementarias,
+                                                    aprobado
+                                                    por el Real Decreto Legislativo 1/2007, del 16 de noviembre, el
+                                                    cliente
+                                                    tiene
+                                                    derecho a desistir del contrato en el plazo de 14 días naturales
+                                                    desde el
+                                                    momento en que se ha contratado el servicio.
+                                                </li>
+
+                                                <li>Para ejercer el derecho al desistimiento, el cliente debe
+                                                    solicitarlo por
+                                                    escrito a la siguiente dirección de correo electrónico: <a
+                                                            href="mailto:soporte@elparking.com">soporte@elparking.com</a>
+                                                    indicando
+                                                    expresamente su solicitud de ejercicio del derecho de desistimiento.
+                                                    En
+                                                    cualquier caso, corresponde al consumidor y usuario probar que ha
+                                                    ejercitado
+                                                    su
+                                                    derecho de desistimiento.
+                                                </li>
+
+                                                <li>Una vez ejercitado el derecho de desistimiento, GAUMENTADA vendrá
+                                                    obligado a
+                                                    devolver las sumas abonadas por EL CLIENTE, sin retención de gastos.
+                                                    La
+                                                    devolución de estas sumas deberá efectuarse sin demoras indebidas y,
+                                                    en
+                                                    cualquier caso, antes de que hayan transcurrido 14 días naturales
+                                                    desde la
+                                                    fecha
+                                                    en que haya sido informado de la decisión de desistimiento del
+                                                    contrato por
+                                                    EL
+                                                    CLIENTE.
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li>Dispositivo de Parkingdoor:
+                        <ul>
+
+                            <li>El CLIENTE adquiere en propiedad el dispositivo. Para ello podrá adquirir el
+                                dispositivo
+                                a través de la página web www.parkingdoor.com mediante pago a través de tarjeta de
+                                crédito de débito o de la red de distribuidores de GAUMENTADA.
+                            </li>
+
+                            <li>El CLIENTE deberá registrarse como usuario de GAUMENTADA para poder hacer uso de los
+                                servicios asociados. Con la compra del dispositivo podrá dar de alta hasta 10
+                                usuarios/invitados de forma simultánea.
+                            </li>
+
+                            <li>Existe la opción de contratar un mayor número de usuarios a través del servicio para
+                                Comunidades o Edificios. Para más información sobre tarifas y servicios contactar
+                                con
+                                soporte@elparking.com
+                            </li>
+
+                            <li>GAUMENTADA está obligado a entregar al CLIENTE productos que sean conformes con el
+                                contrato, respondiendo frente a él de cualquier falta de conformidad que exista en
+                                el
+                                momento de la entrega del producto.
+                            </li>
+
+                            <li>El CLIENTE tendrá derecho a la reparación del producto, a su sustitución, a la
+                                rebaja
+                                del precio o a la resolución del contrato, de conformidad con lo dispuesto en el
+                                artículo 118 y siguientes del Real Decreto Legislativo 1/2007, de 16 de noviembre,
+                                por
+                                el que se aprueba el texto refundido de la Ley General para la Defensa de los
+                                Consumidores y Usuarios y otras leyes complementarias.
+                            </li>
+
+                            <li>GAUMENTADA, de acuerdo con la legislación española vigente sobre venta de bienes de
+                                consumo, proporcionará una garantía de 2 años frente a defectos de fábrica,
+                                facilitando
+                                la reparación o sustitución del dispositivo del CLIENTE, siempre y cuando el
+                                dispositivo
+                                se adquiera a través de la página web www.parkingdoor.com mediante pago a través de
+                                tarjeta de crédito de débito o de la red de distribuidores de GAUMENTADA
+                            </li>
+                        </ul>
+                    </li>
+
+                </ul>
+                <h2>3. SERVICIOS DE GESTIÓN DE ACCESOS DE GAUMENTADA</h2>
+
+
+                <p>
+                    Los servicios ofrecidos por GAUMENTADA posibilitan el uso de diferentes servicios de
+                    gestión
+                    de accesos para uso privado mediante un smartphone u ordenador propiedad del cliente, y
+                    disfrutando de diversas capacidades de acceso dependiendo de los servicios que
+                    seleccione el
+                    CLIENTE de entre los ofrecidos en cada momento y Ubicación, en los sucesivo denominados
+                    Servicio de GAUMENTADA.
+                </p>
+                <p>
+                    El uso de los Servicios de gestión de accesos de GAUMENTADA se rigen por las mismas
+                    Condiciones Generales de Contratación del punto 2 de este documento, que regulan de
+                    manera
+                    principal y entre otros aspectos:
+                </p>
+                <ul>
+
+                    <li>El registro o adhesión al Servicio GAUMENTADA, incluyendo las validaciones previas
+                        que se
+                        requieran en cada momento (medio de pago, matrícula del vehículo, datos fiscales,
+                        etc.).
+                    </li>
+
+                    <li>Las tarifas y precios dispuestos por GAUMENTADA para el uso de los mencionados
+                        servicios,
+                        así como en su caso los términos y condiciones específicos, que podrán encontrarse
+                        para
+                        cada servicio en la web www.parkingdoor.com y www.plockapp.com
+                    </li>
+
+                    <li>Las responsabilidades de las Partes y, en su caso, los seguros aplicables con
+                        relación a
+                        dichas responsabilidades.
+                    </li>
+                </ul>
+                <p>
+                    La aceptación de los Términos y Condiciones es obligatoria e imprescindible para el
+                    registro
+                    en los SERVICIOS de GAUMENTADA y para el uso de los servicios que se prestan
+                    mediante las aplicaciones de GAUMENTADA. Por tanto, tal aceptación habrá de producirse en
+                    el
+                    momento de registro del usuario en el Servicio.
+                </p>
+                <p>
+                    El registro en los SERVICIOS no se completará hasta que GAUMENTADA confirme la aceptación
+                    de
+                    tal registro y/o no complete las comprobaciones previas que se explicitan en las
+                    presentes
+                    Condiciones. GAUMENTADA confirmará por medios electrónicos (correo electrónico y/o SMS)
+                    que
+                    el registro ha sido aceptado y que por tanto se acepta la adhesión del usuario al
+                    Servicio.
+                    En todo caso, GAUMENTADA sólo aceptará el registro de aquellos solicitantes que cumplan
+                    con
+                    las condiciones establecidas con carácter previo.
+                </p>
+                <p>
+                    Las presentes Condiciones, así como los términos específicos que puedan afectar a los
+                    distintos Servicios, regirán la relación entre las Partes (GAUMENTADA y el usuario o
+                    empresa)
+                    hasta que el usuario o empresa no se desvincule del SERVICIO de manera voluntaria o por
+                    decisión de GAUMENTADA, en base a su capacidad para revocar la condición de usuario a
+                    cualquier titular de la misma y resolver la relación entre las Partes por contravención
+                    de
+                    las presentes Condiciones. En todo caso, GAUMENTADA podrá revisar y modificar los
+                    presentes
+                    Términos y Condiciones, bajo su criterio material y temporal. En tal caso, comunicará la
+                    existencia de cambios o modificaciones mediante los canales o medios electrónicos
+                    habituales
+                    en la relación con el usuario (correo electrónico, SMS, redes sociales…), estableciendo
+                    la
+                    fecha concreta a partir de la cual la nueva versión de las Condiciones pasará a estar en
+                    vigor. El uso del SERVICIO a partir de dicha fecha supondrá la aceptación íntegra y sin
+                    reservas de las nuevas Condiciones, sin perjuicio de lo dispuesto en la condición 10 de
+                    las
+                    mismas, en lo relativo a la protección de los datos personales y las opciones de
+                    tratamiento
+                    basadas en el consentimiento específico del usuario, según lo previsto en esta condición
+                    De
+                    cualquier modo, las Condiciones aplicables a cada registro en los Servicios de
+                    movilidad,
+                    serán las vigentes al momento de dicho registro o uso.
+                </p>
+                <p>
+                    Para contratar los SERVICIOS ofertados y, en su caso, comenzar el uso del servicio de
+                    gestión de acceso contratado, el usuario (de modo previo a adquirir tal condición si
+                    reúne
+                    los requisitos oportunos y aporta la documentación requerida), deberá:
+                </p>
+                <p>
+                    3.1.- Para el caso de usuarios, que se registren en el servicio a través de la web
+                    www.parkingdoor.com, www.plockapp.com o, cuando así se permita, a través de la
+                    Aplicación o
+                    app vinculada al SERVICIO.
+                </p>
+                <ul>
+
+                    <li>Datos personales. Sólo podrán registrarse y hacer uso del Servicio personas mayores
+                        de
+                        14 años. En el momento del registro habrán de aportar todos los datos personales
+                        que, de
+                        manera obligatoria, se le soliciten (podrán solicitarse otros datos a aportar de
+                        manera
+                        voluntaria). El usuario responderá en todo momento de la veracidad y actualización
+                        de
+                        los datos, personales o de cualquier tipo, que aporte para el registro en el
+                        Servicio o
+                        con motivo del uso de este. La mera sospecha sobre la falta de veracidad o
+                        actualización
+                        de tales datos habilitará a GAUMENTADA para bloquear al usuario y, si así lo
+                        decidiera
+                        bajo su propio criterio, resolver la relación entre las Partes, sin derecho a
+                        compensación o indemnización alguna a favor del usuario.
+                    </li>
+
+                    <li>Abonar la cuota de alta especificada en la Política de precios, en caso de existir.
+                        Dicha cuota podrá estar sujeta a promociones que reduzcan su cuantía. Las
+                        promociones
+                        tendrán una duración determinada que se comunicará junto con la promoción y podrán
+                        estar
+                        orientadas a diferentes perfiles de usuarios y no alcanzar a la totalidad de los
+                        mismos.
+                        Para poder beneficiarse de las promociones es imprescindible que el usuario
+                        introduzca
+                        el código promocional durante el proceso de registro y obtenga el mensaje de
+                        confirmación de su aplicación en dicho proceso. En caso contrario, la aplicación de
+                        la
+                        promoción quedará a criterio de GAUMENTADA.
+                    </li>
+                </ul>
+                <p>
+                    3.2.- Para el caso de usuarios que se descargan e instalan en su teléfono móvil o
+                    Smartphone
+                    la Aplicación o App PARKINGDOOR o PLOCKAPP.
+                </p>
+                <ul>
+
+                    <li>El medio para acceder a los Servicios es la Aplicación PARKINGDOOR o PLOCKAPP. Para
+                        poder usar la Aplicación como herramienta de acceso, el usuario deberá disponer de
+                        un
+                        teléfono móvil compatible con los requisitos técnicos de la Aplicación PARKINGDOOR O
+                        PLOCKAPP. En ningún caso GAUMENTADA será responsable, en medida alguna, de los daños
+                        o
+                        mal funcionamiento provocado por la descarga, instalación o uso de la Aplicación o
+                        App
+                        y/o falta de actualización de la misma por parte del cliente.
+                    </li>
+
+                    <li>El usuario deberá proporcionar personalmente la posibilidad de comunicación por
+                        datos
+                        móviles y hacerse cargo de los costes de transmisión de datos que en su caso
+                        corresponda
+                        pagar al proveedor de servicios móviles del usuario. El usuario debe garantizar la
+                        posibilidad de usar la aplicación durante todo el Servicio, desde la reserva de un
+                        servicio hasta la finalización del mismo.
+                    </li>
+
+                    <li>Durante el procedimiento de registro el usuario creará una contraseña para acceder a
+                        la
+                        información confidencial y las funciones del portal de internet ubicado en
+                        www.parkingdoor.com o www.plockapp.com (acceso a información de acceso y
+                        modificación de
+                        sus datos personales, …) y accesible también a través de la Aplicación. El usuario
+                        está
+                        obligado a mantener su contraseña en estricta confidencialidad y a proteger la
+                        información de cualquier acceso por terceros. El usuario responderá de los daños y
+                        perjuicios que puedan ocasionarse por la pérdida de las herramientas de acceso.
+                    </li>
+
+                    <li>Teniendo en cuenta el estado de las herramientas técnicas, la prestación del
+                        Servicio
+                        puede quedar sujeta a restricciones o inexactitudes que quedan fuera del control de
+                        GAUMENTADA. Lo anterior se aplica en concreto a la disponibilidad de servicios de
+                        datos
+                        móviles que faciliten los operadores de redes móviles, la red móvil, los servicios
+                        de
+                        posicionamiento a través del sistema de navegación global por satélite y el acceso a
+                        Internet, todas las cuales dependen de las capacidades y características del
+                        teléfono
+                        móvil o smartphone del usuario y/o de los proveedores de acceso a internet
+                        contratados
+                        por éste. La falta de disponibilidad de la red móvil puede, en casos concretos,
+                        provocar
+                        que determinados servicios no estén disponibles por no funcionar la necesaria
+                        transmisión de datos. Asimismo, estos servicios pueden verse afectados por
+                        interferencias atmosféricas, por las condiciones u obstáculos topográficos (como,
+                        por
+                        ejemplo, puentes, túneles, edificios). Lo mismo ocurre con los servicios de
+                        posicionamiento basados en el sistema de navegación global por satélite. Además, el
+                        uso
+                        de internet puede verse sujeto a restricciones adicionales (como, por ejemplo,
+                        sobrecarga de la red). Por otro lado, pueden darse déficits temporales de capacidad
+                        como
+                        consecuencia de picos de carga en los servicios, en las redes móviles o de líneas
+                        fijas
+                        o en internet.
+                    </li>
+
+                    <li>Dispositivo de Parkingdoor:
+                        <ul>
+
+                            <li>El CLIENTE adquiere podrá adquirir en propiedad o cesión el dispositivo, de
+                                acuerdo con sus condiciones de compra de producto/servicio. Para ello podrá
+                                adquirir el dispositivo a través de la página web www.parkingdoor.com o
+                                www.plockapp.com mediante pago a través de tarjeta de crédito de débito o de
+                                la
+                                red de distribuidores de GAUMENTADA.
+                            </li>
+
+                            <li>El CLIENTE deberá registrarse como usuario de GAUMENTADA para poder hacer uso
+                                de
+                                los servicios asociados. Con la compra del dispositivo podrá dar de alta
+                                hasta
+                                10 usuarios/invitados de forma simultánea.
+                            </li>
+
+                            <li>Existe la opción de contratar un mayor número de usuarios a través del
+                                servicio
+                                para Comunidades o Edificios. Para más información sobre tarifas y servicios
+                                contactar con soporte@parkingdoor.com o soporte@plockapp.com
+                            </li>
+
+                            <li>GAUMENTADA está obligado a entregar al CLIENTE productos que sean conformes
+                                con
+                                el contrato, respondiendo frente a él de cualquier falta de conformidad que
+                                exista en el momento de la entrega del producto.
+                            </li>
+
+                            <li>El CLIENTE tendrá derecho a la reparación del producto, a su sustitución, a
+                                la
+                                rebaja del precio o a la resolución del contrato, de conformidad con lo
+                                dispuesto en el artículo 118 y siguientes del Real Decreto Legislativo
+                                1/2007,
+                                de 16 de noviembre, por el que se aprueba el texto refundido de la Ley
+                                General
+                                para la Defensa de los Consumidores y Usuarios y otras leyes
+                                complementarias.
+                            </li>
+
+                            <li>GAUMENTADA, de acuerdo con la legislación española vigente sobre venta de
+                                bienes
+                                de consumo, proporcionará una garantía de 2 años frente a defectos de
+                                fábrica,
+                                facilitando la reparación o sustitución del dispositivo del CLIENTE, siempre
+                                y
+                                cuando el dispositivo se adquiera a través de la página web
+                                www.parkingdoor.com
+                                mediante pago a través de tarjeta de crédito de débito o de la red de
+                                distribuidores de GAUMENTADA
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <h2>4<strong>. FACTURACIÓN Y FORMA DE PAGO</strong>.</h2>
+
+
+                <p>
+                    Las facturas presentadas al CLIENTE contendrán debidamente diferenciados los conceptos
+                    de
+                    precios que se tarifican por los Servicios presentados, diferenciando en su caso los
+                    importes recaudados en nombre de terceros. El CLIENTE abonará las cantidades devengadas
+                    por
+                    la prestación de los Servicios solicitados, mediante domiciliación bancaria, tarjeta de
+                    crédito o transferencia bancaria (dependiendo de la modalidad elegida de entre las
+                    ofrecidas
+                    en cada momento) de las facturas en la cuenta corriente que el CLIENTE haya designado y
+                    en
+                    la que el CLIENTE se compromete a tener saldo suficiente para atender los pagos debidos
+                    a
+                    GAUMENTADA. La fecha en la que se debe realizar el pago será aquella en la que la entidad
+                    de
+                    crédito en la que esté domiciliada la cuenta reciba notificación de GAUMENTADA, con el
+                    importe a abonar por el CLIENTE teniendo en cuenta que el servicio de conexión
+                    inalámbrica a
+                    internet del mes en curso tendrá que ser pagada los primeros días del mes en que se
+                    quiera
+                    disfrutar del servicio.
+                </p>
+                <p>
+                    Las facturas no abonadas en las fechas previstas, por causas no imputables a la entidad
+                    de
+                    crédito, devengarán un interés de demora igual al interés legal más dos puntos, sin
+                    perjuicio de las consecuencias que pudieran derivarse de su incumplimiento, y que podrán
+                    suponer, inclusive, la suspensión o cancelación del Servicio, previa comunicación por
+                    parte
+                    de GAUMENTADA de esta circunstancia al CLIENTE en un plazo no inferior a 7 días
+                    naturales.
+                </p>
+                <h2>5. MODIFICACIONES Y CANCELACIÓN DE LOS SERVICIOS.</h2>
+
+
+                <p>
+                    Las características de los Servicios podrán verse modificadas por GAUMENTADA con la
+                    finalidad
+                    de adaptarlos a la evolución técnica, así como cualquier mejora técnica o no, que a
+                    juicio
+                    exclusivo de GAUMENTADA permita incorporar un mayor número de prestaciones a los
+                    Servicios.
+                </p>
+                <p>
+                    Asimismo, el CLIENTE podrá modificar las condiciones del Servicio contratado en
+                    cualquier
+                    momento en términos de cambios de cuotas o baja del servicio, y con las limitaciones
+                    establecidas en estos términos y condiciones o los específicamente aplicables a los
+                    distintos Servicios, a través del panel de usuario del propio CLIENTE, ya que el
+                    servicio no
+                    implica ninguna permanencia ni tiempo mínimo de contratación, teniendo en cuenta siempre
+                    que
+                    un periodo facturado y pagado no podrá ser abonado a no ser que la baja sea causada por
+                    problemas técnicos cuyo responsable sea GAUMENTADA.
+                </p>
+                <p>
+                    La política de cancelación o modificación aplicable a cada producto reservado viene
+                    precisada en las condiciones legales, en el email de confirmación que el usuario ha
+                    indicado
+                    en el proceso de compra y en el justificante de la reserva que el usuario deberá validar
+                    a
+                    su llegada al parking.
+                </p>
+                <ul>
+
+                    <li>Productos con política de cancelación y modificación flexible hasta 24 horas antes
+                        de la
+                        hora de llegada confirmada en la reserva o justificante:
+                        <ul>
+
+                            <li>Los usuarios podrán cancelar o modificar su reserva hasta 24 horas antes de
+                                la
+                                hora confirmada en la compra del producto e indicada en el justificante de
+                                la
+                                reserva. Si el usuario o beneficiario de la reserva no se presentara en el
+                                parking, quisiera cancelar o modificar la reserva pasado el plazo permitido
+                                según la política de cancelación flexible aplicable en función del producto
+                                reservado, o pasada la hora de llegada confirmada en el justificante, no
+                                podrá
+                                en ninguno de dichos casos modificar, cancelar o reclamar el reembolso
+                                completo
+                                o parcial de la compra efectuada.
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <p>
+                    Cualesquiera modificaciones en los servicios serán comunicadas por GAUMENTADA al CLIENTE
+                    con
+                    una antelación mínima de 7 días naturales a la fecha en que hubieran de entrar en vigor,
+                    entendiéndose aceptadas por el CLIENTE si no manifiesta lo contrario en dicho plazo. En
+                    el
+                    caso de que el CLIENTE manifieste su disconformidad con las modificaciones, GAUMENTADA
+                    queda
+                    facultado para terminar unilateralmente la relación de prestación de los Servicios
+                    regulada
+                    en estos Términos y Condiciones, sin que ello depare al CLIENTE penalización o coste
+                    adicional alguno.
+                </p>
+                <h2>6. CENTRO DE ATENCIÓN AL USUARIO Y RESOLUCIÓN DE INCIDENCIAS Y RECLAMACIONES.</h2>
+
+
+                <p>
+                    El Centro de Atención al Cliente, en adelante CAU, de GAUMENTADA presta al CLIENTE un
+                    servicio de asistencia técnica telefónica y/o a través de medios electrónicos como el
+                    correo
+                    electrónico o el foro de soporte, (sin perjuicio del coste de la llamada telefónica o
+                    transmisión de datos que, en su caso, pudiese tener que soportar el CLIENTE).
+                </p>
+                <p>
+                    La dirección a la que podrá dirigirse el CLIENTE para la prestación de estos servicios,
+                    según la línea de producto/servicio, es soporte@elparking.com, soporte@parkingdoor.com o
+                    soporte-plock@elparking.com . Salvo supuestos de fuerza mayor, el CAU recogerá cualquier
+                    incidencia que afecte al funcionamiento de los servicios durante los días
+                    laborables en horario de 09:00 a 21:00 y de 9.00 a 15 horas los sábados, y procurará
+                    razonablemente la resolución de las consultas o incidencias planteadas.
+                </p>
+                <p>
+                    En caso de reclamación el CLIENTE podrá también solicitar hoja de reclamaciones en el
+                    correo
+                    electrónico informado.
+                </p>
+                <p>
+                    En caso de que la incidencia diagnosticada se deba a vicios o defectos originarios de
+                    los
+                    Equipos y/o de los servicios de instalación prestados por GAUMENTADA, este se encargará
+                    de la
+                    reparación del equipo en un periodo máximo de 72 horas laborables.
+                </p>
+                <h2>7<strong>. SEGURIDAD EN LA UTILIZACIÓN DE LOS SERVICIOS</strong>.</h2>
+
+
+                <p>
+                    GAUMENTADA pone todos los medios técnicos y humanos a su disposición, pero debido a la
+                    naturaleza compartida de las conexiones inalámbricas, no puede garantizar la privacidad
+                    y la
+                    seguridad en la utilización de los Servicios por parte del CLIENTE y, en particular, no
+                    garantiza que terceros no autorizados no puedan tener conocimiento de la clase,
+                    condiciones,
+                    características y circunstancias del uso de Internet que haga el CLIENTE o que no pueda
+                    acceder y, en su caso, interceptar, eliminar, alterar, modificar o manipular de
+                    cualquier
+                    modo los contenidos y comunicaciones de toda clase que el CLIENTE transmita, difunda,
+                    almacene, ponga a disposición, reciba, obtenga o acceda a través de los Servicios.
+                </p>
+                <p>
+                    GAUMENTADA excluye, con toda la extensión que permite el ordenamiento jurídico, cualquier
+                    responsabilidad por los daños y perjuicios de cualquier naturaleza que puedan deberse al
+                    conocimiento que puedan tener los terceros de la clase, condiciones, características y
+                    circunstancias del uso de Internet que puedan hacer los usuarios o que puedan deberse al
+                    acceso y, en su caso, a la interceptación, eliminación, alteración, modificación o
+                    manipulación de cualquier modo de los contenidos y comunicaciones de toda clase que los
+                    usuarios transmitan, difundan, almacenen, pongan a disposición, reciban, obtengan o
+                    accedan
+                    a través de los servicios.
+                </p>
+                <h2>8. GARANTÍA DE DISPONIBILIDAD DE LOS SERVICIOS</h2>
+
+
+                <p>
+                    Los diferentes Servicios no son un servicio garantizado, por lo que
+                    GAUMENTADA
+                    no responderá por la falta de disponibilidad del mismo, independientemente de a quién
+                    sea
+                    imputable la causa que origine la indisponibilidad.
+                </p>
+                <p>
+                    No constituirá falta de disponibilidad (a) la interrupción de cualquiera de los
+                    Servicios de
+                    movilidad como consecuencia de las operaciones de mantenimiento de la red; (b) la
+                    discontinuidad o interrupción de los Servicios debida a elementos o
+                    actuaciones
+                    relativas al hardware o software ejecutados por el CLIENTE, o terceras personas ajenas a
+                    GAUMENTADA, que impidan la correcta ejecución o prestación del Servicio contratado; (c)
+                    la
+                    discontinuidad o interrupción de los Servicios debida a inclemencias
+                    meteorológicas, crecimiento de la vegetación circundante, interferencias debidas a otras
+                    fuentes emisoras de señales inalámbricas y en particular al uso de inhibidores por parte
+                    de
+                    los cuerpos y fuerzas de seguridad del estado; (d) la discontinuidad o interrupción de
+                    los
+                    Servicios debido a la instalación de soportes publicitarios u otros
+                    elementos
+                    por terceros, que puedan actuar como pantalla impidiendo o limitando la transmisión de
+                    las
+                    señales inalámbricas.
+                </p>
+                <h2>9.- EXCLUSIÓN DE GARANTÍAS Y DE RESPONSABILIDAD</h2>
+
+
+                <p>
+                    GAUMENTADA no asume responsabilidad alguna por del contenido, funcionalidad, utilidad,
+                    fiabilidad o exactitud de las páginas Web a las que pueda conectarse el CLIENTE a través
+                    de
+                    las fichas disponibles en la aplicación, las cuales son sitios Web pertenecientes a
+                    sociedades independientes sin que exista asociación o relación alguna con GAUMENTADA.
+                </p>
+                <p>
+                    GAUMENTADA no puede visualizar previamente ningún contenido incluido en cualquier página
+                    Web,
+                    tampoco puede editar, suprimir, modificar, eliminar, suprimir, controlar, revisar ni
+                    restringir el acceso a ningún contenido incluido en cualquier página Web previamente a
+                    su
+                    transmisión al CLIENTE, por lo que GAUMENTADA no garantiza que los contenidos de las
+                    páginas
+                    Web a las que se acceda a través de los Servicios prestados por GAUMENTADA vayan a estar
+                    constantemente actualizados, que vayan a ser conformes a la ley, a la moral, buena fe
+                    y/o a
+                    las buenas costumbres, su exactitud, licitud, veracidad y/o exhaustividad, o que vayan a
+                    ser
+                    útiles para el CLIENTE o que no vayan a contener ninguna clase de error, por todo lo
+                    cual,
+                    GAUMENTADA no se responsabiliza de ningún daño y/o perjuicio y/o beneficios dejados de
+                    obtener por el CLIENTE o cualquier otro tercero que no sean imputables única y
+                    exclusivamente a la propia GAUMENTADA, así como tampoco cuando el CLIENTE o las personas
+                    de
+                    las que éste deba responder sean las culpables de tales daños y perjuicios, o bien
+                    cuando el
+                    CLIENTE se vea perjudicado a consecuencia de cualquier contenido, información, opinión,
+                    manifestación y/o dato al que el CLIENTE o cualquier otro tercero acceda o adquiera por
+                    medio de cualquier página Web a la que se haya accedido a través de los Servicios
+                    prestados
+                    por GAUMENTADA.
+                </p>
+                <p>
+                    A pesar de que realizará todos los esfuerzos técnicos y organizativos necesarios,
+                    GAUMENTADA
+                    no garantiza que los Servicios prestados vayan a funcionar con seguridad absoluta,
+                    constante, fiable y permanentemente, sin retrasos o interrupciones, por lo que GAUMENTADA
+                    no
+                    se responsabiliza por ningún daño y/o perjuicio y/o beneficios dejados de obtener por el
+                    CLIENTE o cualquier otro tercero que se vea perjudicado a consecuencia de los mismos así
+                    como tampoco por cualquier circunstancia de fuerza mayor, caso fortuito, fallo o error
+                    de
+                    las líneas de comunicación, o de la prestación defectuosa o fallo de la red de acceso a
+                    Internet, siempre y cuando dichos fallos no sean imputables a GAUMENTADA.
+                </p>
+                <p>
+                    GAUMENTADA no será responsable de ningún daño o perjuicio ocasionado a ningún CLIENTE o a
+                    terceros, ni por ganancias dejadas de obtener por ningún CLIENTE y/o tercero, causados
+                    directa o indirectamente de la utilización y/o acceso y/o conexión a los Servicios
+                    prestados
+                    por GAUMENTADA y/o a páginas Web a ellos enlazadas, no siendo por tanto responsable por
+                    ningún daño y/o perjuicio ocasionado a ningún CLIENTE y/o a terceros, ni por ganancias
+                    dejadas de obtener por ningún CLIENTE y/o terceros a causa del funcionamiento
+                    incorrecto,
+                    defectos, fallos y/o daños causados, totales y/o parciales, a todo hardware, software
+                    y/o
+                    programas informáticos pertenecientes al CLIENTE y/o terceros, así como de la pérdida,
+                    alteración y/o daños, totales y/o parciales sobre información contenida en soportes
+                    magnéticos, discos, cintas, disquetes y otros pertenecientes al CLIENTE y/o terceros,
+                    así
+                    como por la introducción de virus informáticos o de variaciones o alteraciones no
+                    deseadas
+                    sobre toda información, documentos, ficheros, bases de datos, hardware y/o software
+                    pertenecientes al CLIENTE y/o terceros, siempre y cuando estos daños no fueran
+                    imputables a
+                    GAUMENTADA.
+                </p>
+                <p>
+                    El CLIENTE será responsable por todos los daños y/o perjuicios que tanto por dolo como
+                    por
+                    negligencia o culpa ocasione a GAUMENTADA y en el cumplimiento del presente contrato,
+                    específicamente, al contratar los servicios de GAUMENTADA el usuario acepta de forma
+                    expresa
+                    las condiciones de acceso y uso vigentes en los aparcamientos o demás servicios de
+                    movilidad
+                    que vaya a utilizar, y entiende que estas normas son dictadas exclusivamente por los
+                    parkings o proveedores de servicio (concesionarias de autopistas, estaciones de
+                    repostaje de
+                    combustible, etc.). En ningún caso, incluyendo sin limitación la negligencia, GAUMENTADA
+                    será
+                    responsable de los daños y perjuicios de cualquier tipo contra vehículos, personas o
+                    propiedades, incluyendo sin limitación cualquier daño directo, indirecto o advertido
+                    expresamente, que surja de, o en relación con, el acceso, o uso, del/de los parking(s) o
+                    autopistas o estaciones de repostaje, siendo que en dicho caso el usuario deberá
+                    dirigirse
+                    directamente contra los titulares de los aparcamientos públicos (parkings) o terceros
+                    titulares de la plaza de estacionamiento, concesionarias de la gestión de las
+                    autopistas,
+                    titulares de las estaciones de repostaje de combustible, etc.
+                </p>
+                <h2>10. POLÍTICA DE ABONOS POR FALLO DEL SERVICIO</h2>
+
+
+                <p>
+                    GAUMENTADA, se compromete a aplicar una política de abonos a aquellos CLIENTES del
+                    SERVICIO
+                    que se vean afectados por un fallo (entendiendo “fallo del servicio” como la
+                    interrupción
+                    total del servicio), siempre y cuando dicho fallo no sea provocado por los siguientes
+                    motivos:
+                </p>
+                <ul>
+
+                    <li>Operaciones de mantenimiento de la red.</li>
+
+                    <li>Instalación de elementos de hardware o software por el CLIENTE en su equipo
+                        informático
+                        que impidan la ejecución del SERVICIO.
+                    </li>
+
+                    <li>Condiciones meteorológicas adversas.</li>
+
+                    <li>Fallo en la provisión de la línea de comunicación por un proveedor externo a
+                        GAUMENTADA.
+                    </li>
+
+                    <li>Fallo en el suministro eléctrico o manipulación del equipamiento hardware por
+                        personal
+                        no autorizado.
+                    </li>
+
+                    <li>Causas graves de fuerza mayor, tanto naturales (terremotos, inundaciones, etc.),
+                        como
+                        artificiales (incendios provocados o fortuitos, sabotajes, atentados, etc.).
+                    </li>
+
+                    <li>Manipulación, deterioro o robo por parte de terceros ajenos a GAUMENTADA del
+                        equipamiento
+                        electrónico instalado en el parking, necesario para la emisión de la señal de
+                        apertura.
+                    </li>
+
+                    <li>Instalación de elementos de hardware o software en el equipamiento electrónico
+                        instalado
+                        en el parking por parte terceros ajenos a GAUMENTADA.
+                    </li>
+
+                    <li>Lejanía en la posición del CLIENTE con respecto al hardware Parkingdoor de apertura
+                        entendiendo que los parámetros aceptables para una buena conexión Bluetooth es un
+                        radio
+                        máximo de 10m. en horizontal alrededor del punto de entrada.
+                    </li>
+
+                    <li>Crecimientos de la vegetación o instalación por terceros ajenos a GAUMENTADA de
+                        elementos
+                        publicitarios o de otra índole que bloqueen, limitan o impidan la adecuada
+                        transmisión
+                        de las señales inalámbricas.
+                    </li>
+
+                    <li>Uso de inhibidores de frecuencias por parte de los cuerpos y fuerzas de seguridad
+                        del
+                        estado.
+                    </li>
+
+                    <li>Saturación del espectro inalámbrico debida al uso masivo de puntos Bluetooth ajenos
+                        a
+                        GAUMENTADA que bloqueen, impidan o limiten el alcance de la señal del Parkingdoor de
+                        GAUMENTADA.
+                    </li>
+                </ul>
+                <p>
+                    Salvo en dichas excepciones, GAUMENTADA aplicará un abono en la factura del CLIENTE
+                    afectado
+                    por la interrupción total del servicio y se realizará de acuerdo con los siguientes
+                    parámetros:
+                </p>
+                <p>
+                    Se realizará un reembolso de los importes asociados al servicio contratado.
+                </p>
+                <p>
+                    En caso de dispositivo de Parkingdoor defectuoso, GAUMENTADA sustituirá el mismo durante
+                    los
+                    2 primeros años desde la fecha inicial de compra del dispositivo de manera gratuita.
+                </p>
+                <p>
+                    Los días sin SERVICIO se contabilizarán siempre a partir de la fecha de registro de la
+                    incidencia por CAU de GAUMENTADA, teniendo en cuenta que el horario de atención es de 9 a
+                    21
+                    horas en días laborables y de 9 a 15 horas los sábados.
+                </p>
+                <h2>11. PROTECCIÓN DE DATOS PERSONALES
+                </h2>
+
+
+                <p>
+                    El Parking Internet S.L. (GAUMENTADA) cuenta con una política de privacidad adecuada
+                    Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo, de 27 de abril de 2016,
+                    relativo a la protección de las personas físicas en lo que respecta al tratamiento de
+                    datos
+                    personales y a la libre circulación de estos datos y por el que se deroga la Directiva
+                    95/46/CE (en adelante, el “Reglamento General de Protección de Datos”, o el “RGPD”) y
+                    que
+                    afecta a los usuarios que contraten el Servicio, de forma que la utilización de este
+                    implica
+                    la previa aceptación de forma inequívoca de la presente política en los términos y
+                    condiciones descritas en esta condición. GAUMENTADA podrá impedir la utilización de sus
+                    servicios y de las funcionalidades asociadas a ésta en caso de que el usuario no acepte
+                    esta
+                    política, o no consienta en el tratamiento de su información personal de conformidad con
+                    lo
+                    dispuesto en la misma. Ello se entiende sin perjuicio de la posibilidad del usuario de
+                    decidir de forma libre acerca de ciertos tratamientos de sus datos en el momento del
+                    registro y con posterioridad pudiendo a través de la configuración de su privacidad.
+                </p>
+                <h3>11.1. Servicio GAUMENTADA: Uso, Finalidad y Régimen Jurídico aplicable</h3>
+
+
+                <p>
+                    La prestación de los Servicios descrito con anterioridad, y requerido por el usuario, se
+                    rige por las presentes condiciones generales de contratación suscritas por el usuario de
+                    los
+                    Servicios y, en todo lo no dispuesto por las mismas, por la legislación española que
+                    resulte
+                    de aplicación, en particular, el Código Civil español y el Real Decreto Legislativo
+                    1/2007,
+                    de 16 de noviembre, por el que se aprueba el texto refundido de la Ley General para la
+                    Defensa de los Consumidores y Usuarios y otras leyes complementarias (TRLCU). En lo que
+                    respecta al tratamiento de los datos de carácter personal, ésta se ajustará a la
+                    legislación
+                    española y europea de protección de datos personales, con especial atención a lo
+                    previsto en
+                    el RGPD
+                </p>
+                <h3>11.2. Condiciones de Acceso y Utilización</h3>
+
+
+                <p>
+                    El usuario se compromete a hacer un uso adecuado y lícito del Servicio de conformidad
+                    con la
+                    legislación aplicable en cada momento y las presente Condiciones Generales de
+                    Contratación
+                    (CGC) suscritas entre el usuario y GAUMENTADA.
+                </p>
+                <p>
+                    El usuario se obliga asimismo a adoptar las medidas de seguridad necesarias para
+                    mantener la
+                    confidencialidad de los sistemas de acceso y de verificación establecidos por relación
+                    al
+                    Servicio, por lo que GAUMENTADA quedará liberada de cualquier responsabilidad al efecto
+                    por
+                    la negligencia, descuido o uso indebido por parte del usuario o de cualquier tercero en
+                    este
+                    ámbito.
+                </p>
+                <p>
+                    Asimismo, el usuario se compromete específicamente a lo que sigue:
+                </p>
+                <ul>
+
+                    <li>Garantizar la autenticidad, veracidad, actualidad y exactitud de todos aquellos
+                        datos
+                        que comunique a GAUMENTADA, resultando tal usuario el único responsable en caso
+                        contrario.
+                    </li>
+
+                    <li>Usar el Servicio de forma exclusiva para los fines y funcionalidades dispuestas a
+                        tal
+                        fin por GAUMENTADA, presentándose tales funcionalidades tal y como son por parte de
+                        GAUMENTADA, quedando prohibido para el usuario usar el Servicio o los medios
+                        dispuestos
+                        en torno al mismo por GAUMENTADA para cualquier otro fin no autorizado por esta
+                        empresa.
+                    </li>
+
+                    <li>Hacer un uso legal y legítimo del Servicio, evitando un uso no autorizado,
+                        fraudulento,
+                        ilegal o ilegítimo de la misma y/o de los contenidos e información dispuestas a
+                        través
+                        de ésta, evitando vulnerar la presente política y la normativa aplicable, y dañar
+                        los
+                        derechos e intereses legítimos de GAUMENTADA, o de cualquier otro tercero que pudiera
+                        verse afectado como consecuencia de tal actuación.
+                    </li>
+
+                    <li>No provocar daños en los sistemas o elementos asociados al Servicio, ni a sus
+                        proveedores o a terceros colaboradores, o intentar quebrantar las medidas de
+                        seguridad o
+                        autenticación dispuestas por GAUMENTADA para llevar a cabo alguna acción que provoque
+                        una
+                        saturación desproporcionada o innecesaria en la infraestructura o del entorno de
+                        comunicaciones relacionado con el Servicio, la App y demás plataformas que pudieran
+                        estar asociadas a aquel, atacando de cualquier modo al mismo. GAUMENTADA podrá
+                        adoptar
+                        cuantas medidas preventivas o correctoras resulten necesarias para proteger sus
+                        intereses en orden al correcto funcionamiento del Servicio, App y demás plataformas
+                        asociadas a aquel.
+                    </li>
+
+                    <li>No introducir o difundir virus informáticos o malware que sea susceptibles de
+                        provocar
+                        daños.
+                    </li>
+
+                    <li>No intentar acceder, utilizar y/o manipular los datos de GAUMENTADA o bajo su
+                        responsabilidad, o de terceros proveedores o colaboradores y de otros usuarios.
+                    </li>
+
+                    <li>En particular, y a título meramente indicativo y no exhaustivo, el usuario se
+                        compromete
+                        a no transmitir, difundir o poner a disposición de terceros informaciones, datos,
+                        contenidos, mensajes, que puedan ser constitutivos de vulneración de derechos de
+                        GAUMENTADA o de terceros.
+                    </li>
+
+                    <li>Acceder sin autorización o interactuar con una identidad falsa, suplantando o no la
+                        identidad de terceros o utilizando un perfil o realizando cualquier otra acción que
+                        pueda generar confusión o inducir a error acerca de la correcta identificación del
+                        usuario de que se trate.
+                    </li>
+                </ul>
+                <h3>11.3. Usuarios </h3>
+
+
+                <p>
+                    El Servicio se dirige a usuarios mayores de 18 años quedando prohibida su utilización a
+                    menores de edad, salvo para el caso de la gestión de accesos y previa autorización
+                    paternal,
+                    que quedará prohibida a menores de 14 años.
+                </p>
+                <p>
+                    En todo caso, la información personal que aporten los usuarios en el marco del Servicio
+                    será:
+                </p>
+                <ul>
+
+                    <li>Suficiente, aunque ajustada, limitada y proporcionada a los fines legítimos de
+                        tratamiento informados por GAUMENTADA, con el máximo respeto a los principios de la
+                        limitación de la finalidad y de minimización de los datos personales (artículos 5.1
+                        apartados b) y c) del RGPD).
+                    </li>
+
+                    <li>Exacta, actualizada y veraz, a fin de poder verificar de forma adecuada la
+                        identidad,
+                        capacidad y, en su caso, representación del usuario de que se trate, así como poder
+                        ajustar, en cada caso, los tratamientos de datos que se realizan a las necesidades
+                        específicas y la situación real de los usuarios. Todo ello en atención al principio
+                        de
+                        calidad de los datos y el de exactitud de los datos personales (artículo 5.1
+                        apartado d)
+                        del RGPD).
+                    </li>
+                </ul>
+                <p>
+                    Se informa del carácter personal de los servicios, por lo que únicamente los usuarios
+                    registrados habilitados a este respecto podrán hacer uso de los mismos y de las
+                    funcionalidades propias contratadas, debiendo ser plenamente responsables por el uso
+                    correcto de sus cuentas de usuario y claves asociadas a éstas. Si el usuario registrado
+                    considera que ha podido ser comprometida la seguridad de su cuenta y claves asociadas
+                    deberá
+                    ponerse de forma inmediata en contacto con GAUMENTADA a través del correo electrónico de
+                    contacto privacidad@elparking.com y reportar la situación o el incidente que corresponda
+                    a
+                    fin de que está empresa pueda adoptar las correspondientes medidas que resulten
+                    apropiadas a
+                    partir del momento de la comunicación efectuada por el usuario. Toda responsabilidad por
+                    los
+                    daños y perjuicios asociados a un inadecuado uso y gestión personal de las cuentas y
+                    claves
+                    asociadas recaerá en los usuarios titulares de tales cuentas, eximiendo de forma
+                    absoluta a
+                    GAUMENTADA como consecuencia de lo anterior.
+                </p>
+                <h3>11.4. Derecho de Información</h3>
+
+
+                <p>
+                    En cumplimiento de la vigente normativa protectora de datos personales, y atendiendo de
+                    forma particular a lo dispuesto en los artículos 12 a 14 del RGPD, se le informa de lo
+                    que
+                    sigue:
+                </p>
+                <ul>
+
+                    <li>Que el responsable del tratamiento es ElParking Internet, S.L.
+                        https://elparking.com/
+                        con CIF B37546538, con dirección postal en la C/ Albacete, nº. 3, Edif. Mizar, 1ª
+                        planta, 28027- Madrid, España, y dirección de correo electrónico de contacto a los
+                        efectos de la presente política:privacidad@elparking.com
+                    </li>
+
+                    <li>Que los datos personales que los usuarios aporten en el marco del Servicio serán
+                        tratados conforme a los siguientes fines de tratamiento:
+                        <ul>
+
+                            <li>Posibilitar a los usuarios la correcta utilización de los servicios
+                                contratados
+                                por éstos y con ello la correcta ejecución del contrato entre los mismos y
+                                GAUMENTADA, lo que, entre otros fines, puede conllevar la utilización de
+                                datos de
+                                localización geográfica o de geolocalización. El tratamiento de estos datos
+                                personales por GAUMENTADA será plenamente coherente con la normativa
+                                aplicable.
+                                <ul>
+
+                                    <li>Atender las específicas solicitudes y peticiones que los usuarios o
+                                        clientes pudieran realizar por relación al Servicio.
+                                    </li>
+
+                                    <li>Enviar invitaciones para participar en sondeos y encuestas de
+                                        satisfacción y de mejora en la calidad de los servicios desde los
+                                        sitios
+                                        web https://elparking.com/, htpps://parkingdoor.com o
+                                        https://plockapp.com que el usuario podrá libremente aceptar,
+                                        realizar,
+                                        omitir o rechazar en el momento que las reciba.
+                                    </li>
+
+                                    <li>Desarrollar tratamientos estadísticos, o para la realización de
+                                        estudios
+                                        de mercado por parte de GAUMENTADA a fin de mejorar el conocimiento,
+                                        incluso, de forma anonimizada o seudonimizada, en torno a hábitos y
+                                        perfiles de consumo de los usuarios que utilizan el Servicio,
+                                        incluyendo, los datos asociados a su posible navegación por las
+                                        Plataformas asociadas al mismo https://elparking.com/,
+                                        htpps://parkingdoor.com o https://plockapp.com . En caso de
+                                        plantearse
+                                        proyectos de Big Data en este ámbito, GAUMENTADA adoptará cuantas
+                                        medidas
+                                        de protección previas y posteriores resulten aplicables de
+                                        conformidad
+                                        con la normativa vigente, incluyendo, la posible anonimización de
+                                        sus
+                                        datos personales aplicando, para ello, las adecuadas técnicas
+                                        disponibles al efecto. Por consiguiente, en este ámbito, también
+                                        podrán
+                                        realizarse tratamientos de anonimización y seudonimización para la
+                                        mejor
+                                        protección de sus datos personales.
+                                    </li>
+
+                                    <li>Aplicar las pertinentes medidas de seguridad, técnicas y/o
+                                        organizativas
+                                        sobre los datos personales de los usuarios que resulten convenientes
+                                        en
+                                        atención a los riesgos detectados en torno a sus derechos en cada
+                                        momento por GAUMENTADA, incluyendo, el cifrado de datos personales y
+                                        otras medidas que pueden comportar ciertos tratamientos sobre los
+                                        datos
+                                        de los usuarios del Servicio.
+                                    </li>
+
+                                    <li>Elaborar perfiles de usuario/consumo relacionados con la información
+                                        derivada de la efectiva prestación del Servicio o de su navegación a
+                                        través de las plataformas asociadas al mismo https://elparking.com,
+                                        htpps://parkingdoor.com o https://plockapp.com a fin de poder
+                                        ofrecer a
+                                        los usuarios y/o clientes información, promociones o publicidad más
+                                        ajustada, personalizada y adecuada a sus preferencias o intereses
+                                        específicos ya provenga de GAUMENTADA o de colaboradores de GAUMENTADA
+                                        (optimización de los servicios contratados, elaboración de perfiles
+                                        de
+                                        consumo con fines publicitarios).
+                                    </li>
+
+                                    <li>Remitir a los usuarios información sobre campañas promocionales o
+                                        publicitarias destinadas a la contratación de productos y servicios,
+                                        bien de GAUMENTADA, bien de terceras empresas con las que GAUMENTADA
+                                        se
+                                        relacione o colabore y que pudieran ser de interés para el usuario
+                                        (fines publicitarios).
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <p>
+                    Respecto a los fines de tratamiento indicados que no tengan relación directa con el
+                    servicio
+                    y su correcto desarrollo o ejecución, incluyendo su análisis, control y mejora, esto es,
+                    los
+                    posibles, fines de publicitarios, de mercadotecnia y de perfilados asociados a éstos, el
+                    usuario tendrá la posibilidad de seleccionar, si así lo desea, no ser objeto de los
+                    mismos a
+                    través del panel de configuración de privacidad durante el proceso de registro,
+                    activación o
+                    validación de su cuenta, pudiendo seleccionar las opciones que mejor convengan a sus
+                    necesidades e intereses.
+                </p>
+                <p>
+                    Sin perjuicio de lo anterior, y en caso de que usted no esté de acuerdo con tales
+                    finalidades de tratamiento, le instamos a no registrarse, ni a utilizar nuestro
+                    Servicio.
+                    Asimismo, de conformidad con la normativa aplicable, como ya se ha explicado, GAUMENTADA
+                    posibilita al usuario sistemas de aceptación diferenciada, libre y voluntaria de
+                    aquellos
+                    tratamientos relativos a asuntos ajenos a los fines propios del contrato de prestación
+                    de
+                    los servicios entre éste y ElParking en atención a las Condiciones Generales de
+                    Contratación
+                    (CGC) suscritas entre los mismos.
+                </p>
+                <ul>
+
+                    <li>Que la base legítima de tratamiento es, con carácter principal, la necesaria
+                        aplicación
+                        de medidas precontractuales a petición del interesado, cuando así concurra, o la
+                        relativa a la ejecución de un contrato en caso de que el usuario finalmente suscriba
+                        las
+                        presentes condiciones generales de contratación. Que, sin perjuicio de lo anterior,
+                        también resultará aplicable como base del tratamiento respecto ciertos tratamientos
+                        de
+                        datos el consentimiento del usuario, en particular, en lo que concierne a los
+                        tratamientos con fines de publicidad y mercadotecnia directa o la elaboración de
+                        perfiles de usuario/consumo a estos efectos (sin perjuicio de la posible
+                        concurrencia de
+                        un posible interés legítimo de GAUMENTADA, en función del tipo de tratamiento de que
+                        se
+                        trate, y de las medidas adoptadas por GAUMENTADA en este ámbito).
+                    </li>
+
+                    <li>Que, con carácter general, los datos personales de los usuarios recabados a través
+                        del
+                        Servicio no serán cedidos a terceros sin informar previamente a éstos sobre qué
+                        datos se
+                        van a ceder, la identidad de los cesionarios o tipos destinatarios de sus datos, de
+                        su
+                        actividad y de las finalidades específicas de tratamiento a las que dichos
+                        cesionarios
+                        podrán destinar sus datos. Por este motivo, se le informa que sus datos personales
+                        podrán ser cedidos a terceros en los siguientes casos y circunstancias:
+                        <ul>
+
+                            <li>Datos personales asociados a específicas solicitudes realizadas por los
+                                usuarios
+                                de mayor información y/o relativas a la adopción de posibles medidas
+                                precontractuales por parte de terceros con los que se relacione o colabore
+                                GAUMENTADA, y que resulten estrictamente necesarios para la adecuada
+                                contratación
+                                por parte de los usuarios de contenidos, productos o servicios ofrecidos por
+                                tales terceros.
+                            </li>
+
+                            <li>Datos personales asociados a los clientes de GAUMENTADA respecto a los
+                                productos
+                                y servicios contratados por éstos, si así lo autorizaran éstos de forma
+                                específica (ver opciones de privacidad en apartado configuración) a terceros
+                                con
+                                los que se relaciona o colabora GAUMENTADA, a fin de que estos últimos puedan
+                                realizar un perfilado de consumo (fines de perfilado) de sus datos al objeto
+                                de
+                                ofrecerles información, publicidad o promociones acerca de otros servicios y
+                                productos que pudieran ser igualmente de su interés en base a tales datos y
+                                perfilados (fines publicitarios). Podrá oponerse a estos tratamientos de sus
+                                datos y revocar el consentimiento otorgado en este ámbito (cesión de estos
+                                datos
+                                con fines de mercadotecnia por parte de GAUMENTADA, así como de perfilado y
+                                fines
+                                de mercadotecnia/publicidad por parte de tales terceros) en cualquier
+                                momento si
+                                así lo desea. La retirada de su consentimiento en este ámbito en modo alguno
+                                afectará a la correcta prestación de los servicios contratados por el
+                                usuario a
+                                GAUMENTADA, ni se supeditará tal prestación a ello, pudiendo hacer uso de
+                                éstos,
+                                al igual que de los sistemas, plataformas y app asociadas a aquellos.
+                                Asimismo,
+                                tales tratamientos cesarán en el momento en el que el usuario cause baja
+                                efectiva en el Servicio, comprometiéndose GAUMENTADA a comunicarlo de forma
+                                fehaciente a tales terceros a estos fines, siempre que ello sea técnicamente
+                                posible, quienes también deberán de forma responsable cesar en tales
+                                tratamientos.
+                            </li>
+
+                            <li>Datos de localización de los usuarios, si así lo autorizaran de forma
+                                específica
+                                (ver opciones de privacidad en apartado configuración) para que terceros con
+                                los
+                                que se relaciona GAUMENTADA (colaboradores) puedan ofrecerle información,
+                                publicidad o promociones de su interés en función de estos datos, todo ello,
+                                al
+                                objeto de optimizar el servicio ofrecido a través del conocimiento de la
+                                localización del usuario (optimización de servicio y fines publicitarios) y
+                                crear perfiles de usuarios por localización (fines de perfilado). Podrá
+                                oponerse
+                                a estos tratamientos de datos y revocar el consentimiento otorgado en este
+                                ámbito (cesión de estos datos con fines de mercadotecnia por parte de
+                                GAUMENTADA,
+                                así como perfilado y fines de mercadotecnia/publicidad por parte de tales
+                                terceros) en cualquier momento si así lo desea. La retirada de su
+                                consentimiento
+                                en este ámbito en modo alguno afectará a la correcta prestación de los
+                                servicios
+                                contratados por el usuario a GAUMENTADA, ni se supeditará tal prestación a
+                                ello,
+                                pudiendo hacer uso de éstos, al igual que de los sistemas, plataformas y app
+                                asociadas a aquellos. Asimismo, tales tratamientos cesarán en el momento en
+                                el
+                                que el usuario se de baja efectiva en el Servicio, comprometiéndose
+                                GAUMENTADA,
+                                si ello fuera técnicamente posible, a comunicarlo de forma fehaciente a
+                                tales
+                                terceros a estos fines, debiendo estos cesar de forma responsable en tales
+                                tratamientos.
+                            </li>
+
+                            <li>Datos asociados al ID de Publicidad (Advertising ID), esto es, al
+                                identificador
+                                único que ofrece su terminal móvil para publicidad en apps cuando éste no
+                                hubiera sido bloqueado específicamente por el usuario, de forma que
+                                GAUMENTADA
+                                hubiera accedido legítimamente al mismo. Tal compartición se produciría, si
+                                así
+                                lo autorizaran los usuarios de forma específica (ver opciones de privacidad
+                                en
+                                apartado configuración), para que terceros con los que se relaciona o
+                                colabore
+                                GAUMENTADA puedan ofrecerles información, publicidad o promociones de su
+                                interés
+                                en función de estos datos, por relación con los anteriores de localización,
+                                todo
+                                ello, al objeto de optimizar el servicio ofrecido y poder realizar
+                                publicidad
+                                personalizada en este ámbito (optimización de servicio y fines
+                                publicitarios).
+                                Podrá oponerse a estos tratamientos de datos y revocar el consentimiento
+                                otorgado en este ámbito (cesión de estos datos con fines de mercadotecnia
+                                por
+                                parte de GAUMENTADA, así como perfilado y fines de mercadotecnia/publicidad
+                                por
+                                parte de tales terceros) en cualquier momento si así lo desea. La retirada
+                                de su
+                                consentimiento en este ámbito en modo alguno afectará a la correcta
+                                prestación
+                                de los servicios contratados por el usuario a GAUMENTADA, ni se supeditará
+                                tal
+                                prestación a ello, pudiendo hacer uso de éstos, al igual que de los
+                                sistemas,
+                                plataformas y app asociadas a aquellos. Asimismo, tales tratamientos cesarán
+                                en
+                                el momento en el que el usuario se de baja efectiva en el Servicio,
+                                comprometiéndose GAUMENTADA a comunicarlo de forma fehaciente a tales
+                                terceros a
+                                estos fines, siempre que ello sea técnicamente posible, debiendo estos cesar
+                                de
+                                forma responsable en tales tratamientos.
+                            </li>
+
+                            <li>Datos personales estrictamente necesarios a fines meramente administrativos
+                                e
+                                internos a otras entidades que componen el Grupo de empresas en que se
+                                integra
+                                ElParking Internet, S.L. (GRUPO EYSA), en particular, a Estacionamientos y
+                                Servicios, S.A.U., con domicilio en la Calle Albacete, nº. 3, edif.: MIZAR,
+                                1ª.
+                                Planta, 28027 de Madrid y con CIF A-28385458, http://eysaservicios.com/ ,
+                                ostentando un interés legítimo en transmitir a tales fines estos datos
+                                personales dentro del citado grupo empresarial.
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <p>
+                    Fuera de estos casos, los datos personales de los usuarios no serán cedidos a ningún
+                    otro
+                    tercero, salvo que medie el consentimiento del usuario o, en su caso, concurra cualquier
+                    otra base de legitimación del tratamiento según lo previsto en el artículo 6 del RGPD
+                    como,
+                    por ejemplo, el cumplimiento de una obligación legal (licitud del tratamiento).
+                </p>
+                <p>
+                    Sin perjuicio de lo indicado con anterioridad, en caso de que usted no esté de acuerdo
+                    con
+                    tales cesiones de datos personales, le instamos a no contratar el Servicio. Sin
+                    perjuicio de
+                    lo anterior, de conformidad con la normativa aplicable, GAUMENTADA posibilita al usuario
+                    sistemas de aceptación diferenciada, libre y voluntaria de aquellos tratamientos de
+                    datos,
+                    incluyendo posibles cesiones de los mismos, relativos a asuntos ajenos a los fines
+                    propios
+                    del contrato de prestación de los servicios entre éste y GAUMENTADA en atención a las
+                    presentes Condiciones Generales de Contratación, suscritas entre los mismos (ver
+                    opciones de
+                    privacidad en apartado configuración). En particular, le recordamos que podrá configurar
+                    su
+                    privacidad y las opciones de tratamiento que mejor se ajusten a sus intereses tanto en
+                    el
+                    momento del registro y contratación del Servicio, como con posterioridad a este momento.
+                </p>
+                <ul>
+
+                    <li>Que, con carácter general, no están previstas transferencias internacionales de sus
+                        datos personales, adoptándose las medidas necesarias en este ámbito. Sin perjuicio
+                        de lo
+                        anterior, se destaca la posible transferencia de sus datos personales a efectos de
+                        posibilitar el pago por Internet a través de la entidad Stripe Inc. que ofrece
+                        garantías
+                        adecuadas al ostentar una certificación en Privacy Shield en vigor, tal y como puede
+                        comprobarse a través del siguiente enlace web
+                        https://www.privacyshield.gov/participant?id=a2zt0000000TQOUAA4&amp;status=Active
+                    </li>
+
+                    <li>En todos los casos, se estará a la aportación de las adecuadas garantías a las que
+                        se
+                        refieren los artículos 44 y siguientes del RGPD.
+                    </li>
+
+                    <li>Que, en virtud del artículo 30 del Código de Comercio español, en caso de tratarse
+                        de un
+                        cliente de GAUMENTADA, tras la finalización de la relación entre las partes, sus
+                        datos
+                        personales podrán ser conservados durante el plazo de seis años.
+                    </li>
+
+                    <li>Que podrá ejercitar sus derechos de acceso, rectificación, supresión, limitación del
+                        tratamiento, portabilidad de datos y oposición, dirigiendo una comunicación por
+                        escrito
+                        a través del correo electrónico privacidad@elparking.com,con la Ref. “Ejercicio
+                        Derechos” acompañando a su solicitud copia de su documento nacional de identidad o
+                        documento identificativo equivalente (pasaporte, N.I.E….). En caso de no considerar
+                        atendidos de forma debida sus derechos personales, podrá presentar una reclamación
+                        ante
+                        la autoridad de control competente, en este caso, la Agencia Española de Protección
+                        de
+                        Datos, siendo recomendable que, con carácter previo, si así lo estima, contacte a
+                        estos
+                        efectos con el Delegado de Protección de datos designado por el Grupo de Empresas
+                        EYSA,
+                        al que pertenece GAUMENTADA, y cuyos datos de contacto se establecen en el apartado
+                        11.9
+                        de las presentes condiciones.
+                    </li>
+                </ul>
+                <h3>11.5. Consentimiento del Interesado</h3>
+
+
+                <p>
+                    Mediante la aceptación de estas condiciones, el usuario otorga su consentimiento
+                    inequívoco,
+                    libre e informado para el tratamiento de sus datos personales en orden a los fines de
+                    tratamiento descritos en la condición 11.3 de las presentes condiciones conforme lo
+                    dispuesto en éstas.
+                </p>
+                <p>
+                    El usuario tendrá capacidad para elegir el tratamiento y destino de sus datos, según sus
+                    específicos intereses y necesidades en cada caso, de forma que, cuando el tratamiento se
+                    base en el consentimiento del mismo, éste tendrá derecho a retirarlo en cualquier
+                    momento,
+                    aunque tal retirada no afectará en modo alguno a la licitud del tratamiento previo
+                    realizado
+                    por GAUMENTADA. En particular, podrá dirigirse a GAUMENTADA para retirar en cualquier
+                    momento,
+                    si así lo desea, su consentimiento, en caso de que mediara, para la compartición de sus
+                    datos personales con terceros con fines de perfilado y mercadotecnia/publicitarios. Si
+                    tiene
+                    alguna duda o cuestión sobre ello, le recordamos que puede contactar con nuestro
+                    Delegado de
+                    Protección de Datos a través del correo electrónico de contacto siguiente:
+                    privacidad@eysaservicios.com
+                </p>
+                <p>
+                    Asimismo, le recordamos que cuando el tratamiento de los datos personales tenga por
+                    objeto
+                    la publicidad o la mercadotecnia directa, además de poder configurar sus preferencias de
+                    privacidad en este ámbito, el usuario tendrá derecho a oponerse en todo momento al
+                    tratamiento de los datos personales que le conciernan, incluida la elaboración de
+                    perfiles
+                    en la medida en que esté relacionada con la citada mercadotecnia. El usuario podrá
+                    ejercitar
+                    los derechos personales descritos en la condición 10.3 conforme lo indicado en ésta.
+                    GAUMENTADA se asegurará de recordar y de posibilitar a los usuarios el correcto ejercicio
+                    de
+                    su derecho de oposición en cada comunicación comercial que le pudiera dirigir en este
+                    ámbito. Del mismo modo, el usuario podrá oponerse al tratamiento de sus datos con fines
+                    estadísticos en los términos descritos en el apartado 21.6 del RGPD.
+                </p>
+                <p>
+                    En todo caso, y sin perjuicio de lo anterior, GAUMENTADA podrá impedir la utilización de
+                    los
+                    Servicios GAUMENTADA y, en general, de los servicios, contenidos y funcionalidades
+                    asociadas
+                    a éste en caso de que el usuario no acepte la presente política, o no consienta en el
+                    tratamiento de su información personal de conformidad con lo dispuesto en la misma.
+                </p>
+                <h3>11.6. Seguridad</h3>
+
+
+                <p>
+                    GAUMENTADA ha adoptado y aplica los niveles de seguridad requeridos por la legislación
+                    aplicable respecto a los datos personales bajo su responsabilidad, en función del
+                    correspondiente enfoque de riesgo realizado, y procura instalar y/o aplicar medios y
+                    medidas
+                    técnicas u organizativas de protección adicionales de cara a reforzar la seguridad
+                    general
+                    de los tratamientos con datos personales, sistemas, entorno de comunicaciones y
+                    organización
+                    corporativa, así como para garantizar la protección debida frente el tratamiento no
+                    autorizado o ilícito y contra su pérdida, destrucción o daño incidental (principio de
+                    integridad y confidencialidad). No obstante, el usuario debe ser consciente de que las
+                    medidas de seguridad en Internet no son, en modo alguno, inexpugnables y responden al
+                    estado
+                    de la técnica en cada momento y a su coste de aplicación.
+                </p>
+                <p>
+                    A estos efectos, considerará de forma especial los criterios de aplicación y medidas de
+                    seguridad, y demás obligaciones de seguridad asociadas al RGPD, con especial atención a
+                    lo
+                    dispuesto en el artículo 32 del RGPD.
+                </p>
+                <h3>11.7. Deber de Secreto y Confidencialidad</h3>
+
+
+                <p>
+                    GAUMENTADA se compromete a cumplir con el deber de secreto y de confidencialidad respecto
+                    a
+                    la información y datos personales aportados por los usuarios, y que esté bajo su control
+                    y
+                    responsabilidad, de acuerdo con la legislación que resulte de aplicación y el enfoque de
+                    riesgo que corresponda en cada momento.
+                </p>
+                <h3>11.8. Modificación de las Condiciones de Tratamiento de Datos Personales</h3>
+
+
+                <p>
+                    GAUMENTADA se reserva el derecho de modificar esta condición, para adaptarla a futuras
+                    novedades legislativas, doctrinales o jurisprudenciales que resulten de aplicación, o
+                    por
+                    motivos técnicos, operativos, comerciales, corporativos y de negocio, informando previa
+                    y
+                    razonablemente a los usuarios de los cambios que se produzcan cuando ello sea posible.
+                </p>
+                <h3>11.9. Delegado de Protección de Datos Personales (DPD) </h3>
+
+
+                <p>
+                    Nuestro compromiso por la mejor protección de los datos personales de nuestros usuarios
+                    ha
+                    llevado a la designación de un Delegada de Protección de Datos (DPD) en el Grupo EYSA,
+                    al
+                    que pertenece GAUMENTADA, es Dña. Mar Prieto González, con quien los usuarios, si así lo
+                    desean, podrán contactar en lo referente a todas las cuestiones relativas al tratamiento
+                    de
+                    sus datos personales, según lo dispuesto en el RGPD. Puede contactar con nuestra DPD a
+                    través de los siguientes datos de contacto:
+                </p>
+                <p>
+                    Dirección postal: Calle/ Albacete, nº. 3, edif.: Mizar, 1ª. Planta, 28027- Madrid
+                </p>
+                <p>
+                    Correo electrónico de contacto: privacidad@eysaservicios.com
+                </p>
+                <h2>12. NOTIFICACIONES.</h2>
+
+
+                <p>
+                    Todos los avisos, notificaciones, modificaciones y comunicaciones por parte de GAUMENTADA
+                    al
+                    CLIENTE se considerarán eficaces a todos los efectos cuando se realicen de alguna de las
+                    siguientes maneras:
+                </p>
+                <ul>
+
+                    <li>envío por correo postal al domicilio indicado por el CLIENTE;</li>
+
+                    <li>envío por correo electrónico a la dirección facilitada por el CLIENTE en el Alta en
+                        el
+                        SERVICIO;
+                    </li>
+
+                    <li>comunicación por medio de una llamada telefónica al número de teléfono indicado por
+                        el
+                        CLIENTE en el Alta de SERVICIO;
+                    </li>
+
+                    <li>comunicación por medio de las aplicaciones que permiten la autenticación para el uso
+                        del
+                        SERVICIO y/o la Zona de Usuario.
+                    </li>
+                </ul>
+                <h2>13. VALIDEZ DEL CONTRATO.</h2>
+
+
+                <p>
+                    Si por causas tecnológicas ajenas a GAUMENTADA, no se pudiese prestar el SERVICIO al
+                    CLIENTE
+                    en los términos pactados antes del inicio de la prestación del SERVICIO o durante la
+                    prestación del mismo, GAUMENTADA se compromete a comunicar al CLIENTE esta circunstancia
+                    de
+                    forma inmediata. El CLIENTE podrá optar entonces por causar baja del SERVICIO prestado o
+                    por
+                    la resolución del Contrato sin que se derive penalización alguna para las partes.
+                </p>
+                <p>
+                    Dichas causas pueden derivarse de la desincorporación de un aparcamiento perteneciente
+                    al
+                    proyecto por causas ajenas a GAUMENTADA, en tal caso, GAUMENTADA ofrecerá una compensación
+                    económica de la factura abonada y comunicará al CLIENTE los otros puntos de aparcamiento
+                    pertenecientes al proyecto donde el CLIENTE podrá hacer uso del servicio.
+                </p>
+                <p>
+                    La celebración del presente Contrato supone la aceptación expresa y en su totalidad de
+                    las
+                    presentes Condiciones Generales, así como la sumisión de las decisiones interpretativas
+                    que
+                    de las mismas efectúe el prestador del SERVICIO.
+                </p>
+                <h2>14. PROPIEDAD INTELECTUAL</h2>
+
+
+                <p>
+                    Las marcas, logotipos, imágenes, videos, dibujos, etc. Que aparecen en las webs de
+                    servicios
+                    de GAUMENTADA y Parkingdoor son propiedad intelectual de GAUMENTADA y no pueden ser
+                    reproducidos, utilizados o representados sin la autorización expresa y por escrito de
+                    GAUMENTADA.
+                </p>
+                <p>
+                    Está prohibido modificar, copiar, reproducir, descargar, difundir, transmitir, explotar
+                    comercialmente y/o distribuir de cualquier manera los servicios, las páginas del sitio o
+                    los
+                    códigos informáticos de los elementos que componen los Servicios y los sitios web de
+                    elparking.com, parkingdoor.com y plock.app
+                </p>
+                <h2>15. LEGISLACIÓN APLICABLE Y TRIBUNALES COMPETENTES</h2>
+
+
+                <p>
+                    El presente documento de Términos y Condiciones y las relaciones establecidas entre
+                    ElParking y el cliente, en particular el conocimiento y resolución de cualesquiera
+                    litigios,
+                    discrepancias o diferencias que pudieran surgir, se regirán y resolverán de conformidad
+                    con
+                    lo establecido en la normativa española relativa a legislación aplicable y jurisdicción
+                    competente.
+                </p>
+                <p>
+                    No obstante, para los casos en los que la normativa prevea la posibilidad a las partes
+                    de
+                    someterse a un fuero, ElParking y el Cliente, con renuncia expresa a cualquier otro
+                    fuero
+                    que pudiera corresponderles, someterán cualesquiera controversias y/o litigios al
+                    conocimiento de los Juzgados y Tribunales de la ciudad del domicilio de la Entidad
+                    previsto
+                    en el presente Términos y Condiciones.
+                </p>
+                <p>
+                    Estos Términos y Condiciones están disponibles en dos versiones, inglés y español. En el
+                    caso de diferencias entre las dos versiones, la versión en español prevalece.
+                </p>
+                <p>
+                    GAUMENTADA INTERNET, S.L.
+                </p>
+                <p>
+                    C/ Albacete, 3 Edificio Mizar 1ª planta 28027 de Madrid, España
+                </p>
+                <p>
+                    CIF B-37546538
+                </p>
+                <p>
+                    e-mail CAU: <a href="mailto:soporte@elparking.com">soporte@elparking.com</a>
+                </p>
+        </div>
+    </div>
+
+
+{% endblock %}
