@@ -12,6 +12,45 @@
     <meta name="robots" content="all"/>
     <meta name="B-verify" content="d56bcfcd8bbd7ec711d93f32af87428f5e57e11e"/>
 </head>
+<style>
+    #div_alert_cookies {
+        background-color: #f04124;
+        border-color: #de2d0f;
+        color: white;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        display: none;
+    }
+</style>
+
+<div class="sticky" id="top_bar" style="display: none;">
+    <nav class="top-bar" data-topbar role="navigation">
+        <ul class="title-area">
+            <li class="name">
+                <h1><a href="/inicioweb/">Gestión Aumentada</a></h1>
+            </li>
+            <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
+            <li class="toggle-topbar menu-icon"><a href="#"><span>Menú</span></a></li>
+        </ul>
+
+        <section class="top-bar-section">
+            <!-- Right Nav Section -->
+            <ul class="right">
+                <li><a href="/inicioweb/#id_vut" title="Viviendas de uso turístico">VUT</a></li>
+                <li><a href="/inicioweb#id_garajes">Garajes</a></li>
+                <li><a href="/inicioweb/#id_portales">Portales</a></li>
+                <li><a href="/inicioweb/#id_domotica">Viviendas</a></li>
+                <li class="active"><a href="/inicioweb/#id_preguntas">Ayuda</a></li>
+            </ul>
+
+            <!-- Left Nav Section -->
+            <ul class="left">
+
+            </ul>
+        </section>
+    </nav>
+</div>
 
 <form action="" method="post" data-abide id="autenticar_form">
     {% csrf_token %}
@@ -136,16 +175,38 @@
             </div>
         </div>
     </div>
-    <div class="row" id="alerta_cookies">
-        <div class="columns large-12">
-            <div data-alert class="alert-box secondary radius">
-                Esta página utiliza cookies para estudiar de forma ANÓNIMA cómo se utiliza. Si sigues
-                navegando entendemos que aceptas su uso.
-                <a href="#" id="aceptar_cookies"><span class="label">Aceptar</span></a>
-            </div>
+{#    <div class="row" id="alerta_cookies">#}
+{#        <div class="columns large-12">#}
+{#            <div data-alert class="alert-box secondary radius">#}
+{#                Esta página utiliza cookies para estudiar de forma ANÓNIMA cómo se utiliza. Si sigues#}
+{#                navegando entendemos que aceptas su uso.#}
+{#                <a href="#" id="aceptar_cookies"><span class="label">Aceptar</span></a>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+</form>
+
+<div class="text-center" id="div_alert_cookies">
+    <div class="row">
+        <div class="columns large-11">
+            <p style="font-size: large; font-weight: 800;">Esta página utiliza cookies. Las cookies son pequeños
+                archivos con
+                información que se almacenan en tu navegador. <a href="/avisolegal/#uso_cookies">Más
+                    información.</a>
+                {#                        El navegador envía al sitio web la información almacenada cada vez que lo visitas o a medida que navegas en él.#}
+            </p>
+            <p style="font-size: large; font-weight: 800;">Si continuas navegando entendemos que aceptas el uso
+                de estas
+                cookies.</p>
+        </div>
+        <div class="columns large-1">
+            <br>
+            <a href="#" id="alert_cookies" class="button">Aceptar </a>
         </div>
     </div>
-</form>
+
+
+</div>
 
 <script src="/static/foundation-5.5.3/js/vendor/jquery.js"></script>
 <script src="/static/foundation-5.5.3/js/vendor/modernizr.js"></script>
@@ -188,9 +249,43 @@
         document.getElementById("autenticar_form").submit();
     });
 
-    $('#aceptar_cookies').click(function (e) {
+    {#$('#aceptar_cookies').click(function (e) {#}
+    {#    e.preventDefault();#}
+    {#    $('#alerta_cookies').hide();#}
+    {# });#}
+
+    {# **************************************** #}
+    {# ***********Gestión de cookies************#}
+    {# **************************************** #}
+
+    setTimeout(function () {
+        var gaumentada = localStorage.getItem('gaumentada');
+        if (gaumentada) {
+            var pasado = new Date(gaumentada);
+            var hoy = new Date();
+            var tiempo = hoy - pasado;
+            {# 3000000000 milisegundos se corresponde con poco más de un mes (34.7 días) #}
+            if (tiempo > 3000000000) {
+                $('#div_alert_cookies').show();
+            }
+        }
+        var regex1 = /gaumentada/;
+        var regex2 = /localhost/;
+        var url = window.location.href;
+        if (regex1.test(url) || regex2.test(url)){
+            $('#top_bar').show();
+            $(document).foundation();
+            $(document).foundation('topbar', 'reflow');
+        }
+    }, 1000);
+
+
+    $('body').on('click', '#alert_cookies', function (e) {
         e.preventDefault();
-        $('#alerta_cookies').hide();
+        $('#div_alert_cookies').hide();
+        var hoy = new Date();
+        var cadena = hoy.getFullYear() + '/' + (hoy.getMonth() + 1) + '/' + hoy.getDate();
+        localStorage.setItem('gaumentada', cadena);
     });
 </script>
 </html>
