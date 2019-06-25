@@ -175,15 +175,15 @@
             </div>
         </div>
     </div>
-{#    <div class="row" id="alerta_cookies">#}
-{#        <div class="columns large-12">#}
-{#            <div data-alert class="alert-box secondary radius">#}
-{#                Esta página utiliza cookies para estudiar de forma ANÓNIMA cómo se utiliza. Si sigues#}
-{#                navegando entendemos que aceptas su uso.#}
-{#                <a href="#" id="aceptar_cookies"><span class="label">Aceptar</span></a>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
+    {#    <div class="row" id="alerta_cookies">#}
+    {#        <div class="columns large-12">#}
+    {#            <div data-alert class="alert-box secondary radius">#}
+    {#                Esta página utiliza cookies para estudiar de forma ANÓNIMA cómo se utiliza. Si sigues#}
+    {#                navegando entendemos que aceptas su uso.#}
+    {#                <a href="#" id="aceptar_cookies"><span class="label">Aceptar</span></a>#}
+    {#            </div>#}
+    {#        </div>#}
+    {#    </div>#}
 </form>
 
 <div class="text-center" id="div_alert_cookies">
@@ -268,11 +268,13 @@
             if (tiempo > 3000000000) {
                 $('#div_alert_cookies').show();
             }
+        } else {
+            $('#div_alert_cookies').show();
         }
         var regex1 = /gaumentada/;
         var regex2 = /localhost/;
         var url = window.location.href;
-        if (regex1.test(url) || regex2.test(url)){
+        if (regex1.test(url) || regex2.test(url)) {
             $('#top_bar').show();
             $(document).foundation();
             $(document).foundation('topbar', 'reflow');
