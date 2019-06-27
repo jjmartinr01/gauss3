@@ -23,7 +23,6 @@ class Noticia_web(models.Model):
     publicar_to = models.DateField('Publicar hasta', blank=True, null=True)
     modified = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(null=True, blank=True)
-    prueba = models.CharField('prueba para gobierno', default='dfas', max_length=40)
 
     def save(self, *args, **kwargs):
         if not self.id:
