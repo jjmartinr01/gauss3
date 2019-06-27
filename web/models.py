@@ -236,7 +236,6 @@ class Row_web(models.Model):
 class Categoria_web(models.Model):
     entidad = models.ForeignKey(Entidad, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField("Nombre de la categoría", max_length=100, blank=True, null=True)
-    prueba = models.CharField("Prueba DGAD", max_length=100, blank=True, null=True)
 
     def __str__(self):
         return u'%s (%s)' % (self.nombre, self.entidad.name)
