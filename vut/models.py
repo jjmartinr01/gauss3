@@ -100,7 +100,6 @@ class Vivienda(models.Model):
     police_code = models.CharField("Código para web de la policía", blank=True, max_length=150, null=True, default='')
     police_pass = models.CharField("Password para web de la policía", blank=True, max_length=150, null=True, default='')
     borrada = models.BooleanField("Esta vivienda está borrada?", default=False)
-    prueba = models.IntegerField("Campo de prueba", default=34)
 
     class Meta:
         ordering = ['provincia', 'municipio', 'nombre']
@@ -158,6 +157,7 @@ class Ayudante(models.Model):
     tipo = models.CharField("Tipo de cobro", default='P', max_length=3, choices=TIPO)
     cantidad = models.FloatField('Cantidad en euros o porcentaje', blank=True, null=True, default=0)
     iban = models.CharField("IBAN del ayudante", blank=True, max_length=50, null=True)
+    prueba = models.IntegerField("Campo de prueba", default=34)
 
     class Meta:
         ordering = ['apellido1', 'apellido2', 'nombre']
