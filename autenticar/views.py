@@ -290,8 +290,8 @@ def index(request):
                         request.session['num_items_page'] = 15
                         logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
                         usernombre = request.session['gauser_extra'].gauser.username
-                        if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
-                            return render(request, "enlace_gauss_larioja_org.html")
+                        # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
+                        #     return render(request, "enlace_gauss_larioja_org.html")
                         return redirect('/calendario/')
                     else:
                         logger.info(u'Gauser activo, pero no tiene asociada ninguna entidad.')
@@ -336,8 +336,8 @@ def index(request):
                         request.session['num_items_page'] = 15
                         logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
                         usernombre = request.session['gauser_extra'].gauser.username
-                        if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
-                            return render(request, "enlace_gauss_larioja_org.html")
+                        # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
+                        #     return render(request, "enlace_gauss_larioja_org.html")
                         return redirect('/calendario/')
                     else:
                         logger.info(u'Gauser activo, pero no tiene asociada ninguna entidad.')
@@ -388,8 +388,8 @@ def index(request):
             request.session['num_items_page'] = 15
             logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
             usernombre = request.session['gauser_extra'].gauser.username
-            if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
-                return render(request, "enlace_gauss_larioja_org.html")
+            # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
+            #     return render(request, "enlace_gauss_larioja_org.html")
             return redirect('/calendario/')
 
             # elif len(entidad) > 0:
