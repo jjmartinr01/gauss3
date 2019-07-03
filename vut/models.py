@@ -100,6 +100,7 @@ class Vivienda(models.Model):
     police_code = models.CharField("Código para web de la policía", blank=True, max_length=150, null=True, default='')
     police_pass = models.CharField("Password para web de la policía", blank=True, max_length=150, null=True, default='')
     borrada = models.BooleanField("Esta vivienda está borrada?", default=False)
+    nregistro = models.CharField("Núm. registro VUT Com. Aut.", blank=True, max_length=30, null=True, default='')
 
     class Meta:
         ordering = ['provincia', 'municipio', 'nombre']
