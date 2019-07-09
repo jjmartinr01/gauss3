@@ -94,20 +94,20 @@ class Profesores_cupo(models.Model):
 
     @property
     def reparto_profes(self):
-        profes_completos = self.num_periodos / self.cupo.min_completa
+        profes_completos = int(self.num_periodos / self.cupo.min_completa)
         periodos_sobrantes = self.num_periodos % self.cupo.min_completa
         if periodos_sobrantes >= self.cupo.min_dostercios:
-            profes_dostercios = periodos_sobrantes / self.cupo.min_dostercios
+            profes_dostercios = int(periodos_sobrantes / self.cupo.min_dostercios)
             periodos_sobrantes = periodos_sobrantes % self.cupo.min_dostercios
         else:
             profes_dostercios = 0
         if periodos_sobrantes >= self.cupo.min_media:
-            profes_media = periodos_sobrantes / self.cupo.min_media
+            profes_media = int(periodos_sobrantes / self.cupo.min_media)
             periodos_sobrantes = periodos_sobrantes % self.cupo.min_media
         else:
             profes_media = 0
         if periodos_sobrantes >= self.cupo.min_tercio:
-            profes_tercio = periodos_sobrantes / self.cupo.min_tercio
+            profes_tercio = int(periodos_sobrantes / self.cupo.min_tercio)
             periodos_sobrantes = periodos_sobrantes % self.cupo.min_tercio
         else:
             profes_tercio = 0

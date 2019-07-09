@@ -39,7 +39,7 @@ from mensajes.models import Aviso
 from autenticar.models import Permiso, Gauser
 from mensajes.views import encolar_mensaje, crear_aviso
 from vut.models import Vivienda, Ayudante, Reserva, Viajero, RegistroPolicia, PAISES, Autorizado, CalendarioVivienda, \
-    ContabilidadVUT, PartidaVUT, AsientoVUT, AutorizadoContabilidadVut, PORTALES, DomoticaVUT
+    ContabilidadVUT, PartidaVUT, AsientoVUT, AutorizadoContabilidadVut, PORTALES, DomoticaVUT, FotoWebVivienda
 
 # Create your views here.
 logger = logging.getLogger('django')
@@ -169,6 +169,29 @@ def ajax_viviendas(request):
                         return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar la vivienda."})
                 except:
                     return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar la vivienda."})
+            elif request.POST['action'] == 'update_campo_foto':
+                try:
+                    foto = FotoWebVivienda.objects.get(id=request.POST['foto'])
+                    vivienda = foto.vivienda
+                    permiso = Permiso.objects.get(code_nombre='edita_viviendas')
+                    if has_permiso_on_vivienda(g_e, vivienda, permiso):
+                        campo = request.POST['campo']
+                        valor = request.POST['valor']
+                        setattr(foto, campo, valor)
+                        foto.save()
+                        return JsonResponse({'ok': True, 'campo': campo, 'valor': valor})
+                    else:
+                        return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar la vivienda."})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar la vivienda."})
+            elif request.POST['action'] == 'remove_foto':
+                try:
+                    foto = FotoWebVivienda.objects.get(id=request.POST['foto'])
+                    os.remove(RUTA_BASE + foto.foto.url)
+                    foto.delete()
+                    return JsonResponse({'foto': request.POST['foto'], 'ok': True})
+                except:
+                    return JsonResponse({'foto': request.POST['foto'], 'ok': False})
             elif request.POST['action'] == 'add_calendario_vut':
                 try:
                     vivienda = Vivienda.objects.get(id=request.POST['vivienda'])
@@ -342,7 +365,44 @@ def ajax_viviendas(request):
                         return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para hacer la comprobación'})
                 except:
                     return JsonResponse({'ok': False, 'mensaje': 'La conexión sólo es probada por el propietario'})
-
+    else:
+        if request.POST['action'] == 'upload_foto_vut':
+            vivienda = Vivienda.objects.get(id=request.POST['vivienda'], gpropietario=g_e.gauser)
+            n_files = int(request.POST['n_files'])
+            fotos = []
+            for i in range(n_files):
+                fichero = request.FILES['foto_xhr' + str(i)]
+                code = pass_generator(20)
+                fotowebvivienda = FotoWebVivienda.objects.create(vivienda=vivienda, foto=fichero,
+                                                               content_type=fichero.content_type)
+                # http: // www.imagemagick.org / discourse - server / viewtopic.php?t = 28069
+                # If
+                # test = 1, then
+                # landscape.If
+                # test = 0, then
+                # portrait or square
+                # CODE: SELECT
+                # ALL
+                # test = `convert
+                # image - format
+                # "%[fx:(w/h>1)?1:0]"
+                # info:`
+                # if [ $test -eq 1]; then
+                # convert
+                # image - resize
+                # 800
+                # x
+                # result
+                # else
+                # convert
+                # image - resize
+                # x800
+                # result
+                # fi
+                html = render_to_string('vivienda_accordion_content_fotos.html', {'vivienda': vivienda})
+                # fotos.append(
+                #     {'file_name': fotowebvivienda.filename(), 'url': fotowebvivienda.foto.url})
+            return JsonResponse({'html': html, 'vivienda': vivienda.id})
 
 # @permiso_required('acceso_reservas')
 def reservas_vut(request):

@@ -1,0 +1,22 @@
+{% for foto in vivienda.fotowebvivienda_set.all %}
+    <div class="row" id="row_foto_web{{ foto.id }}">
+        <div class="columns large-4">
+            <figure>
+                <img id="grabada{{ foto.id }}" src="/{{ foto.foto.url }}"/>
+                <figcaption><span id="captionfoto{{ foto.id }}">{{ foto.caption }}</span></figcaption>
+            </figure>
+        </div>
+        <div class="columns large-3"><label>Etiquetar/Texto: <input type="text" class="campo_foto"
+                                                                    data-id="{{ foto.id }}"
+                                                                    value="{{ foto.caption }}"
+                                                                    data-campo="caption"></label>
+        </div>
+        <div class="columns large-3"><label>URL para copiar: <input type="text" value="{{ foto.foto.url }}"></label>
+        </div>
+        <div class="columns large-1"><label>Orden: <input type="text" class="campo_foto" data-id="{{ foto.id }}"
+                                                          value="{{ foto.orden }}" data-campo="orden"></label>
+        </div>
+        <div class="columns large-1"><label>&nbsp;</label><a data-id="{{ foto.id }}" class="button tiny remove_foto">Borrar</a>
+        </div>
+    </div>
+{% endfor %}

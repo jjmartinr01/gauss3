@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from PIL import Image
 import random
 import os
 
@@ -101,6 +102,10 @@ class Vivienda(models.Model):
     police_pass = models.CharField("Password para web de la policía", blank=True, max_length=150, null=True, default='')
     borrada = models.BooleanField("Esta vivienda está borrada?", default=False)
     nregistro = models.CharField("Núm. registro VUT Com. Aut.", blank=True, max_length=30, null=True, default='')
+    nombreweb = models.CharField("Título/Nombre", blank=True, null=True, max_length=300, default='')
+    descripcionweb = models.TextField("Descripción de la vivienda", default='', blank=True, null=True)
+    preciosweb = models.CharField("Secuencia de precios", blank=True, null=True, max_length=200, default='')
+    publicarweb = models.BooleanField("Debe mostrarse en web?", default=False)
 
     class Meta:
         ordering = ['provincia', 'municipio', 'nombre']
@@ -133,6 +138,87 @@ class CalendarioVivienda(models.Model):
 
     def __str__(self):
         return u'%s <- %s -> %s' % (self.vivienda, self.get_portal_display(), self.ical)
+
+
+def update_foto(instance, filename):
+    v = instance.vivienda
+    ext = filename.rpartition('.')[-1]
+    nombre = pass_generator()
+    ruta = os.path.join("vut/%s/%s/fotosweb/" % (v.entidad.id, v.id), "%s.%s" % (nombre, ext))
+    return ruta
+
+class FotoWebVivienda(models.Model):
+    vivienda = models.ForeignKey(Vivienda, blank=True, null=True, on_delete=models.CASCADE)
+    foto = models.ImageField('Foto de la vivienda para mostrar en web', upload_to=update_foto, blank=True, null=True)
+    caption = models.CharField("Título/Nombre de la foto", blank=True, null=True, max_length=300, default='')
+    content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
+    orden = models.IntegerField("Orden en el que se muestra", default=0)
+    # portada = models.BooleanField("Es la fotografía de portada?", default=False)
+
+    def filename(self):
+        f = os.path.basename(self.foto.name)
+        return os.path.split(f)[1]
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        """
+            REQUIRES:
+                1.	'from PIL import Image'
+
+            DOES:
+                1.	check to see if the image needs to be resized
+                2.	check how to resize the image based on its aspect ratio
+                3.	resize the image accordingly
+
+            ABOUT:
+                based loosely on djangosnippet #688
+                http://www.djangosnippets.org/snippets/688/
+
+            VERSIONS I'M WORKING WITH:
+                Django 1.0
+                Python 2.5.1
+
+            BY:
+                Tanner Netterville
+                tanner@cabedge.com
+        """
+        fotos = FotoWebVivienda.objects.filter(vivienda=self.vivienda)
+        if not self.orden:
+            self.orden = fotos.count() + 5
+        super(FotoWebVivienda, self).save()
+
+        filename = str(self.foto.path)
+        try:
+            nw = 850
+            nh = 567
+            image = Image.open(filename)
+            pw, ph = image.size
+            pr = float(pw) / float(ph)
+            nr = float(nw) / float(nh)
+
+            if pr > nr:
+                # photo aspect is wider than destination ratio
+                tw = int(round(nh * pr))
+                image = image.resize((tw, nh), Image.ANTIALIAS)
+                l = int(round((tw - nw) / 2.0))
+                image = image.crop((l, 0, l + nw, nh))
+            elif pr < nr:
+                # photo aspect is taller than destination ratio
+                th = int(round(nw / pr))
+                image = image.resize((nw, th), Image.ANTIALIAS)
+                t = int(round((th - nh) / 2.0))
+                print((0, t, nw, t + nh))
+                image = image.crop((0, t, nw, t + nh))
+            else:
+                # photo aspect matches the destination ratio
+                image = image.resize((nw, nh), Image.ANTIALIAS)
+
+            image.save(filename)
+        except:
+            pass
+
+
+    def __str__(self):
+        return u'%s (%s - %s)' % (self.foto, self.caption, self.vivienda.nombre)
 
 
 class Autorizado(models.Model):

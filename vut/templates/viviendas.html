@@ -109,6 +109,58 @@
                     }, 'json');
             });
 
+             $('body').on('click', '.remove_foto', function (e) {
+                e.preventDefault();
+                foto_borrar = $(this).data('id');
+                show_mensajes({
+                    title: 'Borrar foto', texto: 'Si aceptas la foto será eliminada' +
+                        ' completamente de la base de datos.', buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/ajax_viviendas/", {action: 'remove_foto', foto: foto_borrar},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#row_foto_web' + foto_borrar).remove();
+                                        {#setTimeout(function () {#}
+                                        {#    show_mensajes({title: 'Foto borrada', texto: data.mensaje});#}
+                                        {# }, 600);#}
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                        {#show_mensajes({title: 'Foto no borrada', texto: data.mensaje})#}
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+            $("body").on('keyup', '.campo_foto', function () {
+                var foto = $(this).data('id');
+                var valor = $(this).val();
+                var campo = $(this).data('campo');
+                $.post("/ajax_viviendas/", {
+                        action: 'update_campo_foto',
+                        foto: foto,
+                        campo: campo,
+                        valor: valor
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            if (data.campo == 'caption') {
+                                $("#captionfoto" + foto).html(data.valor);
+                            }
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    }, 'json');
+            });
+
+
             $("body").on('keyup', '.campo_int', function () {
                 var vivienda = $(this).data('id');
                 var valor = parseInt($(this).val());

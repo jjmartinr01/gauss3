@@ -89,16 +89,26 @@
                 {% endif %}
             </label>
         </div>
-        <div class="columns large-3">
-            <label title="Cuenta bancaria en la que se hacen los cobros o pagos relacionados con la vivienda"><b>IBAN:</b>
+    <div class="columns large-3">
+            <label title="Número de registro de la vivienda de uso turístico en la Comunidad Autónoma"><b>Nº de registro:</b>
                 {% if g_e|has_permiso:'edita_viviendas' %}
-                    <input type="text" class="campo_char" data-campo="iban" data-id="{{ vivienda.id }}"
-                           value="{{ vivienda.iban }}">
+                    <input type="text" class="campo_char" data-campo="nregistro" data-id="{{ vivienda.id }}"
+                           value="{{ vivienda.nregistro }}">
                 {% else %}
-                    <br>{{ vivienda.iban }}
+                    <br>{{ vivienda.nregistro }}
                 {% endif %}
             </label>
         </div>
+{#        <div class="columns large-3">#}
+{#            <label title="Cuenta bancaria en la que se hacen los cobros o pagos relacionados con la vivienda"><b>IBAN:</b>#}
+{#                {% if g_e|has_permiso:'edita_viviendas' %}#}
+{#                    <input type="text" class="campo_char" data-campo="iban" data-id="{{ vivienda.id }}"#}
+{#                           value="{{ vivienda.iban }}">#}
+{#                {% else %}#}
+{#                    <br>{{ vivienda.iban }}#}
+{#                {% endif %}#}
+{#            </label>#}
+{#        </div>#}
     </div>
 
 
@@ -224,6 +234,13 @@
                     Añadir calendario</a>
             {% endif %}
         </div>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>Información para la web</legend>
+    <div id="info_web{{ vivienda.id }}">
+            {% include "vivienda_accordion_content_web.html" %}
     </div>
 </fieldset>
 

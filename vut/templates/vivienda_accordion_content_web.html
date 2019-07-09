@@ -1,0 +1,180 @@
+{% load my_templatetags %}
+
+<div class="row" id="div_web{{ vivienda.id }}">
+    <div class="columns large-9">
+        <label title="Título o nombre para la vivienda que aparecerá en la web"><b>Texto en el título de la web:</b>
+            <input type="text" class="campo_char" data-campo="nombreweb" data-id="{{ vivienda.id }}"
+                   value="{{ vivienda.nombreweb }}">
+        </label>
+    </div>
+    <div class="columns large-3">
+        <label title="Indica si se publicará en la web o no">&nbsp;<b>¿Publicar?</b>
+        </label>&nbsp;<a class="publicar_vivienda_web" data-id="{{ vivienda.id }}" id="pviviendaw{{ vivienda.id }}">
+        {% if vivienda.publicarweb %}Sí{% else %}No{% endif %}
+    </a>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label>
+            <b>Texto de descripción de la vivienda, que será mostrado en la web:</b>
+            <textarea id="descripcionweb{{ vivienda.id }}">{{ vivienda.descripcionweb }}</textarea></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-6">
+        <label><span class="has-tip" data-tooltip aria-haspopup="true"
+                     title="<p>Indica los precios separados por comas según el número de viajeros</p><p>Por ejemplo si escribiera:</p> <p>50, 70, 95, 115, 150</p> <p>Significaría que un huésped paga 50€, dos huéspedes 70€, tres huéspedes 95€, ..., cinco huéspedes 150€</p>"><b>Introduce
+            los precios: <i class="fa fa-question-circle"></i> </b></span></label>
+        <input type="text" class="campo_char" data-campo="preciosweb" data-id="{{ vivienda.id }}"
+               value="{{ vivienda.preciosweb }}">
+    </div>
+    <div class="columns large-6">
+        <label><span class="has-tip" data-tooltip aria-haspopup="true"
+                     title="<p>Aquí debe introducirse el número de cuenta bancaria en el que harán los huéspedes los ingresos.</p><p>Se debería indicar el IBAN: cuatro caracteres iniciales (código del país + código de control) seguido de los veinte dígitos de la cuenta bancaria.</p>"><b>Cuenta bancaria para realizar cobros <i
+                class="fa fa-question-circle"></i> </b></span></label>
+        <input type="text" class="campo_char" data-campo="iban" data-id="{{ vivienda.id }}"
+               value="{{ vivienda.iban }}">
+    </div>
+</div>
+<div id="fotos_web{{ vivienda.id }}">
+    {% include "vivienda_accordion_content_fotos.html" %}
+</div>
+{# Aquí comienzan las líneas para subir archivos vía ajax #}
+<div class="row">
+    <div class="columns large-12" id="subir_fotos" style="position:relative;">
+        <input type="file" name="gauss_file" id="gauss_file" multiple="multiple"
+               style="position:absolute;top: -3000px;left:-3000px;"
+               accept="video/*,image/*"/>
+        <a id="a_subir_fotos"><i class="fa fa-hand-o-up"></i> Pulsa aquí para subir fotos <span
+                style="display: none" id="span_spin"><i class="fa fa-refresh fa-spin fa-fw"></i> Cargando... </span>
+            <span style="display: none" id="span_porcentage"></span></a>
+    </div>
+</div>
+
+<script>
+    $(document).foundation();
+    $(document).foundation('tooltip', 'reflow');
+    var editor{{ vivienda.id }} = CKEDITOR.replace('descripcionweb{{ vivienda.id }}');
+    editor{{ vivienda.id }}.on('change', function (e) {
+        var texto = e.editor.getData();
+        $.post("/ajax_viviendas/", {
+                action: 'update_campo',
+                vivienda: {{ vivienda.id }},
+                campo: 'descripcionweb',
+                valor: texto
+            },
+            function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $('#update_error').show().delay(1500).fadeOut();
+                }
+            }, 'json');
+    });
+
+    var loading_file = true;
+    $('#a_subir_fotos').on("click", function (e) {
+        e.preventDefault();
+        if (loading_file) {
+            $('#gauss_file').trigger('click');
+            loading_file = false;
+        }
+    });
+
+    function updateProgress(evt) {
+        if (evt.lengthComputable) {
+            var percentComplete = (evt.loaded / evt.total) * 100;
+            $('#span_porcentage').html(parseInt(percentComplete) + '%');
+            console.log(percentComplete);
+        } else {
+            console.log('No es posible calcular el porcentaje de carga en el servidor');
+        }
+    }
+
+    {#    function transferComplete(evt) {#}
+    {#        console.log('Terminado');#}
+    {#        $('#lista_fotos').html('<li>' + evt + '</li>');#}
+    {#        loading_file = true;#}
+    {#        $('#span_spin').hide();#}
+    {#    }#}
+
+    $('body').on('change', '#gauss_file', function () {
+        var input_files = document.getElementById('gauss_file').files;
+        $('#span_spin').show();
+        $('#span_porcentage').show();
+
+        for (var i = 0; i < input_files.length; i++) {
+            console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+        }
+
+        var formData = new FormData();
+        for (var i = 0; i < input_files.length; i++) {
+            formData.append('foto_xhr' + i, input_files[i]);
+        }
+        formData.append('n_files', input_files.length);
+        formData.append('action', 'upload_foto_vut');
+        formData.append('vivienda', {{ vivienda.id }});
+        formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+        var xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener("progress", updateProgress, false);
+        xhr.onload = function () {
+            if (xhr.readyState === xhr.DONE) {
+                if (xhr.status === 200) {
+                    console.log(xhr.responseText);
+                    var b = xhr.responseText;
+                    var data = JSON.parse(xhr.responseText);
+                    {#$.each(data.fotos, function (i, el) {#}
+                    {#    var $a = $('<a/>').attr('data-code', el.code)#}
+                    {#        .attr('class', 'remove_file')#}
+                    {#        .html('<i class="fa fa-times"></i> ');#}
+                    {#    var $li = $('<li/>').attr('data-id', el.code)#}
+                    {#        .attr('class', 'li_foto').addClass(el.code)#}
+                    {#        .append($a).append(el.file_name);#}
+                    {#    $('#lista_fotos').append($li);#}
+                    {#    var $img = $('<img/>').css('display', 'none')#}
+                    {#        .attr('id', 'pre' + el.code)#}
+                    {#        .attr('src', '/' + el.url)#}
+                    {#        .attr('class', el.code);#}
+                    {#    $('#previsualizador').append($img);#}
+                    {# });#}
+                    $('#fotos_web' + data.vivienda).html(data.html);
+                    loading_file = true;
+                    $('#span_spin').hide();
+                    $('#span_porcentage').hide();
+                }
+            }
+        };
+        xhr.open('POST', "/ajax_viviendas/", true);
+        xhr.send(formData);
+    });
+
+    {# Aquí terminan las líneas para subir archivos vía ajax #}
+
+    $('body').on('click', '.remove_file', function (e) {
+        e.preventDefault();
+        var file_code = $(this).data('code');
+        console.log('d', file_code);
+        $.post("/ajax_viviendas/", {action: 'remove_file', file_code: file_code},
+            function (data) {
+                if (data) {
+                    $('.' + data).remove();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $('#update_error').show().delay(1500).fadeOut();
+                }
+            });
+    });
+
+    $('body').on('mouseenter', '.li_foto', function (e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        $('#pre' + id).show();
+    });
+    $('body').on('mouseleave', '.li_foto', function (e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        $('#pre' + id).hide();
+    });
+
+</script>
