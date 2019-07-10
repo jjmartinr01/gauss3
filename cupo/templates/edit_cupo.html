@@ -40,7 +40,7 @@
         <h4 class="cab_title">{{ cupo.nombre }}</h4>
         <div class="sticky" style="background-color: white;">
             <div class="row cab_title cab1" id="reparto_especialidad" style="display: block;">
-                <div class="columns large-6 medium-6 small-12" title="Periodos establecidos para la jornada completa">
+                <div class="columns large-5 medium-5 small-12" title="Periodos establecidos para la jornada completa">
                     <span id="especialidad_profes">{{ profesores_cupo.especialidad }}</span>
                 </div>
                 <div class="columns large-2 medium-2 small-4" title="Periodos asignados al departamento">
@@ -61,6 +61,10 @@
                 <div class="columns large-1 medium-1 small-2"
                      title="Número de profesores con jornada de 1/3 necesarios. Entre {{ cupo.min_tercio }} y {{ cupo.max_tercio }}">
                     1/3: <span id="jornada_13">{{ profesores_cupo.profes_tercio }}</span>
+                </div>
+                <div class="columns large-1 medium-1 small-2" style="color:darkred;"
+                     title="Número de horas sobrantes en el reparto.">
+                    S: <span id="jornada_sobran">{{ profesores_cupo.periodos_sobrantes }}</span>
                 </div>
             </div>
             <div class="row">
@@ -169,6 +173,7 @@
                                 $('#jornada_23').html(data.profesores_cupo.profes_dostercios);
                                 $('#jornada_media').html(data.profesores_cupo.profes_media);
                                 $('#jornada_13').html(data.profesores_cupo.profes_tercio);
+                                $('#jornada_sobran').html(data.profesores_cupo.periodos_sobrantes);
                             }
                         } else {
                             $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
@@ -272,6 +277,7 @@
                             $('#jornada_23').html(data.profesores_cupo.profes_dostercios);
                             $('#jornada_media').html(data.profesores_cupo.profes_media);
                             $('#jornada_13').html(data.profesores_cupo.profes_tercio);
+                            $('#jornada_sobran').html(data.profesores_cupo.periodos_sobrantes);
                         }
                     } else {
                         $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
@@ -299,6 +305,7 @@
                             $('#jornada_23').html(data.profesores_cupo.profes_dostercios);
                             $('#jornada_media').html(data.profesores_cupo.profes_media);
                             $('#jornada_13').html(data.profesores_cupo.profes_tercio);
+                            $('#jornada_sobran').html(data.profesores_cupo.periodos_sobrantes);
                             $('#esp' + data.materia).removeClass('sin_especialidad').addClass('con_especialidad');
                         } else {
                             $('#esp' + data.materia).removeClass('con_especialidad').addClass('sin_especialidad');
@@ -327,6 +334,7 @@
                                 $('#jornada_23').html(data.profesores_cupo.profes_dostercios);
                                 $('#jornada_media').html(data.profesores_cupo.profes_media);
                                 $('#jornada_13').html(data.profesores_cupo.profes_tercio);
+                                $('#jornada_sobran').html(data.profesores_cupo.periodos_sobrantes);
                             }
                         } else {
                             $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
@@ -351,6 +359,7 @@
                             $('#jornada_23').html(data.profesores_cupo.profes_dostercios);
                             $('#jornada_media').html(data.profesores_cupo.profes_media);
                             $('#jornada_13').html(data.profesores_cupo.profes_tercio);
+                            $('#jornada_sobran').html(data.profesores_cupo.periodos_sobrantes);
                         }
                     } else {
                         $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
@@ -374,6 +383,7 @@
                             $('#jornada_23').html(data.profesores_cupo.profes_dostercios);
                             $('#jornada_media').html(data.profesores_cupo.profes_media);
                             $('#jornada_13').html(data.profesores_cupo.profes_tercio);
+                            $('#jornada_sobran').html(data.profesores_cupo.periodos_sobrantes);
                         }
                     } else {
                         $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
@@ -397,6 +407,7 @@
                             $('#jornada_23').html(data.profesores_cupo.profes_dostercios);
                             $('#jornada_media').html(data.profesores_cupo.profes_media);
                             $('#jornada_13').html(data.profesores_cupo.profes_tercio);
+                            $('#jornada_sobran').html(data.profesores_cupo.periodos_sobrantes);
                         }
                     } else {
                         $("#update_error").show().delay(1500).fadeOut().css("z-index", 1000);
