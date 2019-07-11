@@ -2,7 +2,7 @@
     <div class="row" id="row_foto_web{{ foto.id }}">
         <div class="columns large-4">
             <figure>
-                <img id="grabada{{ foto.id }}" src="/{{ foto.foto.url }}"/>
+                <img id="grabada{{ foto.id }}" src="{{ foto.foto.url }}"/>
                 <figcaption><span id="captionfoto{{ foto.id }}">{{ foto.caption }}</span></figcaption>
             </figure>
         </div>
