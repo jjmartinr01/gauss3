@@ -192,6 +192,19 @@ def ajax_viviendas(request):
                     return JsonResponse({'foto': request.POST['foto'], 'ok': True})
                 except:
                     return JsonResponse({'foto': request.POST['foto'], 'ok': False})
+            elif request.POST['action'] == 'publicar_vivienda_web':
+                try:
+                    vivienda = Vivienda.objects.get(id=request.POST['vivienda'])
+                    permiso = Permiso.objects.get(code_nombre='edita_viviendas')
+                    if has_permiso_on_vivienda(g_e, vivienda, permiso):
+                        vivienda.publicarweb = not vivienda.publicarweb
+                        vivienda.save()
+                        valor = ['No', 'Sí'][vivienda.publicarweb]
+                        return JsonResponse({'ok': True, 'vivienda': vivienda.id, 'valor': valor})
+                    else:
+                        return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar la vivienda."})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar la vivienda."})
             elif request.POST['action'] == 'add_calendario_vut':
                 try:
                     vivienda = Vivienda.objects.get(id=request.POST['vivienda'])
@@ -399,7 +412,7 @@ def ajax_viviendas(request):
                 # x800
                 # result
                 # fi
-                html = render_to_string('vivienda_accordion_content_fotos.html', {'vivienda': vivienda})
+                html = render_to_string('vivienda_accordion_content_web_fotos.html', {'vivienda': vivienda})
                 # fotos.append(
                 #     {'file_name': fotowebvivienda.filename(), 'url': fotowebvivienda.foto.url})
             return JsonResponse({'html': html, 'vivienda': vivienda.id})

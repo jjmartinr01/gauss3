@@ -109,7 +109,7 @@
                     }, 'json');
             });
 
-             $('body').on('click', '.remove_foto', function (e) {
+            $('body').on('click', '.remove_foto', function (e) {
                 e.preventDefault();
                 foto_borrar = $(this).data('id');
                 show_mensajes({
@@ -153,6 +153,22 @@
                             if (data.campo == 'caption') {
                                 $("#captionfoto" + foto).html(data.valor);
                             }
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    }, 'json');
+            });
+
+            $("body").on('click', '.publicar_vivienda_web', function () {
+                var vivienda = $(this).data('id');
+                $.post("/ajax_viviendas/", {
+                        action: 'publicar_vivienda_web',
+                        vivienda: vivienda
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#pviviendaw" + data.vivienda).html(data.valor);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
