@@ -23,21 +23,24 @@
 </div>
 <div class="row">
     <div class="columns large-6">
-        <label><span class="has-tip" data-tooltip aria-haspopup="true"
-                     title="<p>Indica los precios separados por comas según el número de viajeros</p><p>Por ejemplo si escribiera:</p> <p>50, 70, 95, 115, 150</p> <p>Significaría que un huésped paga 50€, dos huéspedes 70€, tres huéspedes 95€, ..., cinco huéspedes 150€</p>"><b>Introduce
-            los precios: <i class="fa fa-question-circle"></i> </b></span></label>
+        <label><span><b>Introduce los precios: <a href="#" data-reveal-id="div_help_precios"><i class="fa fa-question-circle"></i></a></b></span></label>
         <input type="text" class="campo_char" data-campo="preciosweb" data-id="{{ vivienda.id }}"
                value="{{ vivienda.preciosweb }}">
     </div>
     <div class="columns large-6">
-        <label><span class="has-tip" data-tooltip aria-haspopup="true"
-                     title="<p>Aquí debe introducirse el número de cuenta bancaria en el que harán los huéspedes los ingresos.</p><p>Se debería indicar el IBAN: cuatro caracteres iniciales (código del país + código de control) seguido de los veinte dígitos de la cuenta bancaria.</p>"><b>Cuenta bancaria para realizar cobros <i
-                class="fa fa-question-circle"></i> </b></span></label>
+        <label><span><b>Cuenta bancaria para realizar cobros: <a href="#" data-reveal-id="div_help_iban"><i
+                class="fa fa-question-circle"></i></a></b></span></label>
         <input type="text" class="campo_char" data-campo="iban" data-id="{{ vivienda.id }}"
                value="{{ vivienda.iban }}">
     </div>
 </div>
 <div id="fotos_web{{ vivienda.id }}">
+    <div class="row">
+        <div class="columns large-12">
+            <label><span><b>
+                Fotos que deseas mostrar: <a href="#" data-reveal-id="div_help_fotos"><i class="fa fa-question-circle"></i></a></b></span></label>
+        </div>
+    </div>
     {% include "vivienda_accordion_content_web_fotos.html" %}
 </div>
 {# Aquí comienzan las líneas para subir archivos vía ajax #}

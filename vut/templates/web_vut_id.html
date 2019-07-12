@@ -1,0 +1,83 @@
+{% extends "base_empty.html" %}
+{% load vut_extras %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" id="id_vivienda" name="id_vivienda" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>{{ vivienda.nombreweb }}</strong>
+            </h4>
+        </div>
+        <div class="row">
+            <div class="columns large-12"><img src="{{ vivienda|portada }}"></div>
+        </div>
+<div class="row">
+    <div class="columns large-12">
+        {% autoescape off %}
+            {{ vivienda.descripcionweb }}
+        {% endautoescape %}
+    </div>
+</div>
+        <div class="row">
+            {% for foto in vivienda.fotowebvivienda_set.all %}
+                <div class="columns large-3 medium-4" data-id="{{ vivienda.id }}">
+                    <figure>
+                        <img src="{{ foto.foto.url }}"/>
+                        <figcaption>
+                            <span style="font-weight: bold;color: grey;">{{ foto.caption }}</span>
+                        </figcaption>
+                    </figure>
+                </div>
+            {% endfor %}
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+
+    <script type="application/javascript">
+
+
+
+        $('body').on('click', '.web_vut_id', function (e) {
+            e.preventDefault();
+            var vivienda_id = $(this).data('id');
+            window.location='/web_vut_id/?v=' + vivienda_id;
+        });
+
+        $('body').on('change', '#select_autorizado', function (e) {
+            var autorizado = $(this).val();
+            $.post("/ajax_viviendas/", {
+                    action: 'add_autorizado_vut', vivienda: vivienda_id, autorizado: autorizado
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#autorizados' + data.vivienda).append(data.html);
+                        $('#div_select_autorizado').foundation('reveal', 'close');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        vivienda_id = null;
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+    </script>
+
+{% endblock %}
+
+
+
+	
+
+
+
+
+
+
+

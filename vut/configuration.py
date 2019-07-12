@@ -53,6 +53,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 4,
      'parent': 'acceso_vut'
+     },
+    {'code_menu': 'web_vut',
+     'texto_menu': 'Web VUT',
+     'href': 'web_vut',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 4,
+     'parent': 'acceso_vut'
      }
 ]
 # Se añaden otros permisos para el usuario

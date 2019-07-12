@@ -70,3 +70,13 @@ def has_parte_pdf_PN(viajero):
             return False
     except:
         return False
+
+@register.filter
+def portada(vivienda):
+    fotos = vivienda.fotowebvivienda_set.filter(orden=1)
+    if fotos.count() == 0:
+        try:
+            return vivienda.fotowebvivienda_set.filter(orden__gt=0)[0].foto.url
+        except:
+            return None
+    return fotos[0].foto.url

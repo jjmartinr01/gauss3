@@ -26,12 +26,13 @@ from bs4 import BeautifulSoup
 from django.db.models import Q, Sum
 from django.core.files.base import ContentFile, File
 from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.core.paginator import Paginator
 
-from entidades.models import Gauser_extra
+from entidades.models import Gauser_extra, Entidad
 from gauss.funciones import html_to_pdf, pass_generator, usuarios_ronda
 from gauss.rutas import RUTA_MEDIA, MEDIA_VUT, RUTA_BASE
 from autenticar.control_acceso import permiso_required
@@ -2580,3 +2581,85 @@ def registra_viajero_policia(viajero):
 # with open("imageToSave.pdf", "wb") as fh:
 #     fh.write(base64.decodebytes(img_data))
 
+def web_vut(request):
+    if request.method == 'GET':
+        try:
+            entidad = Entidad.objects.get(id=request.GET['e'])
+        except:
+            entidades_id = Vivienda.objects.all().values_list('entidad__id', flat=True).distinct()
+            entidades = Entidad.objects.filter(id__in=entidades_id)
+            c = entidades.count()
+            if c == 0:
+                from autenticar.views import CaptchaForm
+                form = CaptchaForm()
+                return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso'})
+            elif c == 1:
+                entidad = entidades[0]
+            else:
+                return render(request, "elige_entidad.html", {'entidades': entidades})
+
+        viviendas = Vivienda.objects.filter(entidad=entidad, borrada=False, publicarweb=True)
+        paginator = Paginator(viviendas, 15)
+        try:
+            page = paginator.get_page(request.GET.get('p'))
+        except:
+            page = paginator.get_page(1)
+
+    if request.method == 'POST':
+        action = request.POST['action']
+        if action == 'libro_contabilidad_vut':
+            permiso = Permiso.objects.get(code_nombre='genera_libro_registro_policia')
+            vivienda = Vivienda.objects.get(id=request.POST['id_vivienda'])
+            if has_permiso_on_vivienda(g_e, vivienda, permiso):
+                fecha_anterior_limite = datetime.today().date() - timedelta(1100)
+                viajeros = Viajero.objects.filter(reserva__vivienda=vivienda,
+                                                  reserva__entrada__gte=fecha_anterior_limite)
+                c = render_to_string('libro_registro_policia.html',
+                                     {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
+                ruta = '%s%s/%s/' % (MEDIA_VUT, vivienda.gpropietario.id, vivienda.id)
+                fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
+                                   title=u'Libro de registro de viajeros', tipo='sin_cabecera')
+                response = HttpResponse(fich, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
+                return response
+
+
+    return render(request, "web_vut.html",
+                  {
+                      'formname': 'web_vut',
+                      'page': page,
+                      'entidad': entidad,
+                      'localidades': viviendas.values_list('municipio', flat=True).distinct()
+                  })
+
+def web_vut_id(request):
+    if request.method == 'GET':
+        try:
+            vivienda = Vivienda.objects.get(id=request.GET['v'])
+        except:
+            return redirect(web_vut)
+
+    if request.method == 'POST':
+        action = request.POST['action']
+        if action == 'libro_contabilidad_vut':
+            permiso = Permiso.objects.get(code_nombre='genera_libro_registro_policia')
+            vivienda = Vivienda.objects.get(id=request.POST['id_vivienda'])
+            if has_permiso_on_vivienda(g_e, vivienda, permiso):
+                fecha_anterior_limite = datetime.today().date() - timedelta(1100)
+                viajeros = Viajero.objects.filter(reserva__vivienda=vivienda,
+                                                  reserva__entrada__gte=fecha_anterior_limite)
+                c = render_to_string('libro_registro_policia.html',
+                                     {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
+                ruta = '%s%s/%s/' % (MEDIA_VUT, vivienda.gpropietario.id, vivienda.id)
+                fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
+                                   title=u'Libro de registro de viajeros', tipo='sin_cabecera')
+                response = HttpResponse(fich, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
+                return response
+
+
+    return render(request, "web_vut_id.html",
+                  {
+                      'formname': 'web_vut_id',
+                      'vivienda': vivienda
+                  })

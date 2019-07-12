@@ -1,0 +1,105 @@
+{% extends "base_empty.html" %}
+{% load vut_extras %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" id="id_vivienda" name="id_vivienda" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>{{ entidad.name }}</strong>
+            </h4>
+        </div>
+        <div class="row">
+            <div class="columns large-2"><img src="{{ entidad.anagrama.url }}"></div>
+            <div class="columns large-3">
+                <label><b>Localidad:</b>
+                    <select id="select_localidad">
+                        <option value="">Cualquiera</option>
+                        {% for localidad in localidades %}
+                            <option value="{{ localidad }}">{{ localidad }}</option>
+                        {% endfor %}
+                    </select></label>
+            </div>
+            <div class="columns large-2">
+                <label><b>Entrada:</b>
+                    <input type="text" id="fecha_entrada" value="" class="fecha"> </label>
+            </div>
+            <div class="columns large-2">
+                <label><b>Salida:</b>
+                    <input type="text" id="fecha_salida" class="fecha" value=""> </label>
+            </div>
+            <div class="columns large-2"><label><b>Huéspedes:</b>
+                <input type="number" value="1"></label></div>
+            <div class="columns large-1"><label><b>&nbsp;</b></label>
+            <a id="buscar_viviendas"><i class="fa fa-2x fa-search"></i></a></div>
+        </div>
+
+        <div class="row">
+            {% for vivienda in page %}
+                <div class="columns large-3 medium-4 web_vut_id" data-id="{{ vivienda.id }}"
+                style="cursor:pointer;">
+                    <figure>
+                        <img src="{{ vivienda|portada }}"/>
+                        <figcaption>
+                            <span style="font-weight: bold;color: grey;">Hasta {{ vivienda.inquilinos }} huéspedes</span><br>
+                            <span style="font-weight: bold;">{{ vivienda.nombreweb }}</span>
+                        </figcaption>
+                    </figure>
+                </div>
+            {% endfor %}
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+
+    <script type="application/javascript">
+
+        $(".fecha").fdatepicker({
+            format: 'dd/mm/yyyy',
+            weekStart: 1,
+            startDate: new Date(),
+            language: 'es'
+        });
+
+        $('body').on('click', '.web_vut_id', function (e) {
+            e.preventDefault();
+            var vivienda_id = $(this).data('id');
+            window.location='/web_vut_id/?v=' + vivienda_id;
+        });
+
+        $('body').on('change', '#select_autorizado', function (e) {
+            var autorizado = $(this).val();
+            $.post("/ajax_viviendas/", {
+                    action: 'add_autorizado_vut', vivienda: vivienda_id, autorizado: autorizado
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#autorizados' + data.vivienda).append(data.html);
+                        $('#div_select_autorizado').foundation('reveal', 'close');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        vivienda_id = null;
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+    </script>
+
+{% endblock %}
+
+
+
+	
+
+
+
+
+
+
+
