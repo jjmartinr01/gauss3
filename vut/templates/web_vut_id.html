@@ -43,14 +43,35 @@
                 </div>
             {% endfor %}
         </div>
+
+        <div class="row carousel">
+            {% for foto in vivienda.fotowebvivienda_set.all %}
+                <div class="slide">
+                    <figure>
+                        <img src="{{ foto.foto.url }}"/>
+                        <figcaption>
+                            <span style="font-weight: bold;color: grey;">{{ foto.caption }}</span>
+                        </figcaption>
+                    </figure>
+                </div>
+            {% endfor %}
+        </div>
     </form>
 
 {% endblock %}
 
 {% block final %}
+    <script src="/static/jR3DCarousel.min.js"></script>
 
     <script type="application/javascript">
 
+        var myjR3DCarousel = $('.carousel').jR3DCarousel({
+            width: 600,
+            height: 450,
+            {#slides: slides,#}
+            slideClass: 'slide',
+            animation: "slide3D"
+        });
 
         $('body').on('click', '.web_vut_id', function (e) {
             e.preventDefault();
