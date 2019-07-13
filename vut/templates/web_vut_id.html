@@ -7,6 +7,8 @@
             transition: transform .2s;
             transform: scale(2.5);
         }
+    .previous { display: block!important;}
+    .next { display: block!important;}
     </style>
     }
 {% endblock %}
@@ -31,18 +33,18 @@
                 {% endautoescape %}
             </div>
         </div>
-        <div class="row">
-            {% for foto in vivienda.fotowebvivienda_set.all %}
-                <div class="columns large-3 medium-4 zoom" data-id="{{ vivienda.id }}">
-                    <figure>
-                        <img src="{{ foto.foto.url }}"/>
-                        <figcaption>
-                            <span style="font-weight: bold;color: grey;">{{ foto.caption }}</span>
-                        </figcaption>
-                    </figure>
-                </div>
-            {% endfor %}
-        </div>
+{#        <div class="row">#}
+{#            {% for foto in vivienda.fotowebvivienda_set.all %}#}
+{#                <div class="columns large-3 medium-4 zoom" data-id="{{ vivienda.id }}">#}
+{#                    <figure>#}
+{#                        <img src="{{ foto.foto.url }}"/>#}
+{#                        <figcaption>#}
+{#                            <span style="font-weight: bold;color: grey;">{{ foto.caption }}</span>#}
+{#                        </figcaption>#}
+{#                    </figure>#}
+{#                </div>#}
+{#            {% endfor %}#}
+{#        </div>#}
 
         <div class="row carousel">
             {% for foto in vivienda.fotowebvivienda_set.all %}
@@ -61,14 +63,15 @@
 {% endblock %}
 
 {% block final %}
-    <script src="/static/jR3DCarousel.min.js"></script>
+    <script src="/static/jR3DCarousel.js"></script>
 
     <script type="application/javascript">
 
         var myjR3DCarousel = $('.carousel').jR3DCarousel({
-            width: 600,
-            height: 450,
+            {#width: 600,#}
+            {#height: 450,#}
             {#slides: slides,#}
+            slideLayout: 'cover',
             slideClass: 'slide',
             animation: "slide3D"
         });
