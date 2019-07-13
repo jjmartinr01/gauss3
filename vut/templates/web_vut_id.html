@@ -1,6 +1,16 @@
 {% extends "base_empty.html" %}
 {% load vut_extras %}
 
+{% block head %}
+    <style>
+        .zoom:hover {
+            transition: transform .2s;
+            transform: scale(2.5);
+        }
+    </style>
+    }
+{% endblock %}
+
 {% block contenido %}
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
@@ -14,16 +24,16 @@
         <div class="row">
             <div class="columns large-12"><img src="{{ vivienda|portada }}"></div>
         </div>
-<div class="row">
-    <div class="columns large-12">
-        {% autoescape off %}
-            {{ vivienda.descripcionweb }}
-        {% endautoescape %}
-    </div>
-</div>
+        <div class="row">
+            <div class="columns large-12">
+                {% autoescape off %}
+                    {{ vivienda.descripcionweb }}
+                {% endautoescape %}
+            </div>
+        </div>
         <div class="row">
             {% for foto in vivienda.fotowebvivienda_set.all %}
-                <div class="columns large-3 medium-4" data-id="{{ vivienda.id }}">
+                <div class="columns large-3 medium-4 zoom" data-id="{{ vivienda.id }}">
                     <figure>
                         <img src="{{ foto.foto.url }}"/>
                         <figcaption>
@@ -42,11 +52,10 @@
     <script type="application/javascript">
 
 
-
         $('body').on('click', '.web_vut_id', function (e) {
             e.preventDefault();
             var vivienda_id = $(this).data('id');
-            window.location='/web_vut_id/?v=' + vivienda_id;
+            window.location = '/web_vut_id/?v=' + vivienda_id;
         });
 
         $('body').on('change', '#select_autorizado', function (e) {

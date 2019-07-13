@@ -18,6 +18,11 @@
                     <h3><b>{{ entidad.name }}</b></h3>
                 </div>
             </div>
+            {% if not forloop.last %}
+                <div class="row">
+                    <hr>
+                </div>
+            {% endif %}
         {% endfor %}
     </form>
 
