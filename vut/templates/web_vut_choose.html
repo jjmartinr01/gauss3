@@ -1,0 +1,47 @@
+{% extends "base_empty.html" %}
+{% load vut_extras %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" id="id_vivienda" name="id_vivienda" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Elige la entidad con alquileres turísticos</strong>
+            </h4>
+        </div>
+        {% for entidad in entidades %}
+            <div class="row select_entidad" style="cursor: pointer;" data-id="{{ entidad.id }}">
+                <div class="columns large-2"><img src="{{ entidad.anagrama.url }}"></div>
+                <div class="columns large-10">
+                    <h3><b>{{ entidad.name }}</b></h3>
+                </div>
+            </div>
+        {% endfor %}
+    </form>
+
+{% endblock %}
+
+{% block final %}
+
+    <script type="application/javascript">
+        $('body').on('click', '.select_entidad', function (e) {
+            e.preventDefault();
+            var entidad_id = $(this).data('id');
+            window.location = '/web_vut/?e=' + entidad_id;
+        });
+    </script>
+
+{% endblock %}
+
+
+
+	
+
+
+
+
+
+
+

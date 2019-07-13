@@ -2596,7 +2596,7 @@ def web_vut(request):
             elif c == 1:
                 entidad = entidades[0]
             else:
-                return render(request, "elige_entidad.html", {'entidades': entidades})
+                return render(request, "web_vut_choose.html", {'entidades': entidades})
 
         viviendas = Vivienda.objects.filter(entidad=entidad, borrada=False, publicarweb=True)
         paginator = Paginator(viviendas, 15)
