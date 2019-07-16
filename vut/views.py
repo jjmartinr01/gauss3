@@ -2586,7 +2586,7 @@ def web_vut(request):
         try:
             entidad = Entidad.objects.get(id=request.GET['e'])
         except:
-            entidades_id = Vivienda.objects.all().values_list('entidad__id', flat=True).distinct()
+            entidades_id = Vivienda.objects.filter(publicarweb=True).values_list('entidad__id', flat=True).distinct()
             entidades = Entidad.objects.filter(id__in=entidades_id)
             c = entidades.count()
             if c == 0:
@@ -2632,10 +2632,11 @@ def web_vut(request):
                       'localidades': viviendas.values_list('municipio', flat=True).distinct()
                   })
 
-def web_vut_id(request):
+def web_vut_id(request, vivienda_id):
     if request.method == 'GET':
         try:
-            vivienda = Vivienda.objects.get(id=request.GET['v'])
+            vivienda = Vivienda.objects.get(id=vivienda_id)
+            # vivienda = Vivienda.objects.get(id=request.GET['v'])
         except:
             return redirect(web_vut)
 
