@@ -68,7 +68,7 @@
         $('body').on('click', '.web_vut_id', function (e) {
             e.preventDefault();
             var vivienda_id = $(this).data('id');
-            window.location='/web_vut_id/?v=' + vivienda_id;
+            window.location='/web_vut_id/' + vivienda_id + '/';
         });
 
         $('body').on('change', '#select_autorizado', function (e) {
