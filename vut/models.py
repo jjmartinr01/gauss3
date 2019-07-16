@@ -188,33 +188,49 @@ class FotoWebVivienda(models.Model):
 
         filename = str(self.foto.path)
         try:
-            nw = 850
-            nh = 567
+            mw = 1024 # maximum allowed width
+            mh = 567
             image = Image.open(filename)
-            pw, ph = image.size
-            pr = float(pw) / float(ph)
-            nr = float(nw) / float(nh)
+            pw, ph = image.size # actual picture width (and picture height)
 
-            if pr > nr:
-                # photo aspect is wider than destination ratio
-                tw = int(round(nh * pr))
-                image = image.resize((tw, nh), Image.ANTIALIAS)
-                l = int(round((tw - nw) / 2.0))
-                image = image.crop((l, 0, l + nw, nh))
-            elif pr < nr:
-                # photo aspect is taller than destination ratio
-                th = int(round(nw / pr))
-                image = image.resize((nw, th), Image.ANTIALIAS)
-                t = int(round((th - nh) / 2.0))
-                print((0, t, nw, t + nh))
-                image = image.crop((0, t, nw, t + nh))
-            else:
-                # photo aspect matches the destination ratio
+            if pw > mw:
+                nw = mw
+                nh = ph * nw / pw
                 image = image.resize((nw, nh), Image.ANTIALIAS)
-
-            image.save(filename)
+                image.save(filename)
+            image.close()
         except:
             pass
+
+        # filename = str(self.foto.path)
+        # try:
+        #     nw = 850
+        #     nh = 567
+        #     image = Image.open(filename)
+        #     pw, ph = image.size
+        #     pr = float(pw) / float(ph)
+        #     nr = float(nw) / float(nh)
+        #
+        #     if pr > nr:
+        #         # photo aspect is wider than destination ratio
+        #         tw = int(round(nh * pr))
+        #         image = image.resize((tw, nh), Image.ANTIALIAS)
+        #         l = int(round((tw - nw) / 2.0))
+        #         image = image.crop((l, 0, l + nw, nh))
+        #     elif pr < nr:
+        #         # photo aspect is taller than destination ratio
+        #         th = int(round(nw / pr))
+        #         image = image.resize((nw, th), Image.ANTIALIAS)
+        #         t = int(round((th - nh) / 2.0))
+        #         print((0, t, nw, t + nh))
+        #         image = image.crop((0, t, nw, t + nh))
+        #     else:
+        #         # photo aspect matches the destination ratio
+        #         image = image.resize((nw, nh), Image.ANTIALIAS)
+        #
+        #     image.save(filename)
+        # except:
+        #     pass
 
 
     def __str__(self):
