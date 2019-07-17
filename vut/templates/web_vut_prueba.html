@@ -46,11 +46,17 @@
             position: absolute;
             bottom: 200px;
             padding-left: 20px;
+            z-index: 150;
         }
 
         .title_web_page_font {
             font-weight: bold;
             font-family: 'Bitstream Vera Sans';
+        }
+
+        #imagen_portada {
+            z-index: 120;
+            position: relative;
         }
     </style>
 {% endblock %}
@@ -64,7 +70,7 @@
         {#        https://stackoverflow.com/questions/12463658/parent-child-with-position-fixed-parent-overflowhidden-bug#}
         <div class="parent-container">
             <div class="parent">
-                <div class="child red"><img style="position: relative;" id="imagen_portada" src="{{ vivienda|portada1 }}" width="100%"></div>
+                <div class="child red"><img id="imagen_portada" src="{{ vivienda|portada1 }}" width="100%"></div>
             </div>
         </div>
 
@@ -240,7 +246,7 @@
             return (zeros + str).slice(-len);
         }
 
-        var medio = getAverageRGB(document.getElementById('imagen_portada2'));
+        var medio = getAverageRGB(document.getElementById('imagen_portada'));
         console.log(medio);
 
         var invertido = invertColor(medio.r, medio.g, medio.b, true);
