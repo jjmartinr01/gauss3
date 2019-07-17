@@ -2633,6 +2633,12 @@ def web_vut(request):
                   })
 
 def web_vut_id(request, vivienda_id):
+    if vivienda_id==7334:
+        return render(request, "web_vut_prueba.html",
+                  {
+                      'formname': 'web_vut_prueba',
+                      'vivienda': Vivienda.objects.get(id=1)
+                  })
     if request.method == 'GET':
         try:
             vivienda = Vivienda.objects.get(id=vivienda_id)

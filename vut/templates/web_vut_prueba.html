@@ -1,0 +1,180 @@
+{% extends "base_empty.html" %}
+{% load vut_extras %}
+
+{% block head %}
+    <style>
+        .parent-container {
+            position: relative;
+            width: 100%;
+            {#height: 800px;#}
+            height: 90vh;
+            z-index: 10;
+        }
+
+        .parent {
+            position: absolute;
+            width: 100%;
+            {#height: 800px;#}
+            height: 90vh;
+        clip: rect(0, auto, auto, 0);
+            -webkit-backface-visibility: hidden;
+-moz-backface-visibility: hidden;
+backface-visibility: hidden;
+        }
+
+        .child {
+            position: fixed;
+            width: 100%;
+            {#height: 800px;#}
+            height: 90vh;
+            top: 1px;
+            left: 1px;
+            padding: 1em;
+            background-color: red;
+            z-index: 10;
+        }
+        .child2 {
+            position: fixed;
+            width: 100%;
+            {#height: 800px;#}
+            height: 90vh;
+            top: 30px;
+            left: 1px;
+            padding: 1em;
+            background-color: red;
+            z-index: 10;
+        }
+
+        .child.pink {
+            background-color: pink;
+        }
+
+        .info_contenido {
+            z-index: 120;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" id="id_vivienda" name="id_vivienda" value="">
+
+{#        https://stackoverflow.com/questions/12463658/parent-child-with-position-fixed-parent-overflowhidden-bug#}
+        <div class="parent-container">
+            <div class="parent">
+                <div class="child red"><img src="{{ vivienda|portada }}">a</div>
+            </div>
+        </div>
+
+        <div class="info_contenido">
+            <div style="z-index: 1000;position: sticky; top:0px;">
+{#                <div class="row">#}
+                    <nav class="top-bar" data-topbar role="navigation">
+                        <ul class="title-area">
+                            <li class="name">
+                                <h1><a href="/inicioweb/">Gestión Aumentada</a></h1>
+                            </li>
+                            <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
+                            <li class="toggle-topbar menu-icon"><a href="#"><span>Menú</span></a></li>
+                        </ul>
+
+                        <section class="top-bar-section">
+                            <!-- Right Nav Section -->
+                            <ul class="right">
+                                <li class="active"><a href="/">Inicia sesión</a></li>
+                                <li class="has-dropdown">
+                                    <a href="#">Servicios</a>
+                                    <ul class="dropdown">
+                                        <li><a href="#id_garajes">Garajes</a></li>
+                                        <li><a href="#id_portales">Portales</a></li>
+                                        <li><a href="#id_domotica">Viviendas</a></li>
+                                        <li><a href="#id_vut" title="Viviendas de uso turístico">VUT</a></li>
+                                        <li class="active"><a href="#id_preguntas">Ayuda</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            <!-- Left Nav Section -->
+                            <ul class="left">
+                                <li><a href="#id_precios">Precios</a></li>
+                            </ul>
+                        </section>
+                    </nav>
+{#                </div>#}
+            </div>
+            <div class="parent-container">
+                <div class="parent">
+                    <div class="child2 pink">
+                        <img src="{{ vivienda|portada }}">
+                    </div>
+                </div>
+            </div>
+
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+            <p>Scroll</p>
+        </div>
+
+        {#        <div style="position:relative;">#}
+        {#            <div style="height: 800px;width: 100%;">#}
+        {#                <div style="height: 800px; width: 100%; background-color: #fbcb09;position: fixed; top: 0px; left: 0px">#}
+        {#                    Primera#}
+        {#                </div>#}
+        {#            </div>#}
+        {#            <div style="height: 800px;width: 100%;position: absolute;top:100px;overflow: hidden;">#}
+        {#                <div style="height: 800px;width: 100%; background-color: #0f74a8;position: fixed; top: 0px; left: 0px">#}
+        {#                    Segunda#}
+        {#                </div>#}
+        {#            </div>#}
+        {#        </div>#}
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+
+
+    </script>
+
+{% endblock %}
+
+
+
+	
+
+
+
+
+
+
+

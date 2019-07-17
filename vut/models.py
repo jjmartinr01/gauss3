@@ -195,7 +195,7 @@ class FotoWebVivienda(models.Model):
 
             if pw > mw:
                 nw = mw
-                nh = ph * nw / pw
+                nh = int(ph * nw / pw)
                 image = image.resize((nw, nh), Image.ANTIALIAS)
                 image.save(filename)
             image.close()
