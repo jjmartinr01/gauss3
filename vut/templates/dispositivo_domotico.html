@@ -56,11 +56,8 @@
         });
         $('#Contenido').on('click', '.boton_domotico', function (e) {
             e.preventDefault();
-            $('#action').val('domotica');
-            var secret = $('#secret').val();
-            var code = $('#code').val();
             var domotica = $(this).data('id');
-            $.post("/viajeros/", {action: 'domotica', domotica: domotica, secret: secret, code: code}, function (data) {
+            $.post("/domotica_vut/", {action: 'boton_domotico', domotica: domotica}, function (data) {
                 if (data.ok) {
                     $("#update_ok").show().delay(1500).fadeOut();
                 } else {

@@ -2,6 +2,16 @@
 {% load vut_extras %}
 
 {% block head %}
+    <link href='/static/fullcalendar/packages/core/main.css' rel='stylesheet'/>
+    <link href='/static/fullcalendar/packages/daygrid/main.css' rel='stylesheet'/>
+    <link href='/static/fullcalendar/packages/timegrid/main.css' rel='stylesheet'/>
+    <link href='/static/fullcalendar/packages/list/main.css' rel='stylesheet'/>
+    <script src='/static/fullcalendar/packages/core/locales-all.js'></script>
+    <script src='/static/fullcalendar/packages/core/main.js' type="application/javascript"></script>
+    <script src='/static/fullcalendar/packages/interaction/main.js' type="application/javascript"></script>
+    <script src='/static/fullcalendar/packages/daygrid/main.js' type="application/javascript"></script>
+    <script src='/static/fullcalendar/packages/timegrid/main.js' type="application/javascript"></script>
+    <script src='/static/fullcalendar/packages/list/main.js' type="application/javascript"></script>
     <style>
         .parent-container {
             position: relative;
@@ -76,16 +86,15 @@
 
         <div class="info_contenido">
             <div class="title_web_page">
-                <h1 class="title_web_page_font"> Esto es un texto de prueba</h1>
-                <p class="title_web_page_font">Apartamento con encanto</p>
+                <h1 class="title_web_page_font">{{ vivienda.nombreweb }}</h1>
+                <p class="title_web_page_font">{{ vivienda.subnombreweb }}</p>
             </div>
-            <div style="z-index: 1000;position: sticky; top:0px;">
-                {#                <div class="row">#}
-
+            <div style="z-index: 1000;position: sticky; top:0px;" id="topbarid">
                 <nav class="top-bar" data-topbar role="navigation">
                     <ul class="title-area">
                         <li class="name">
-                            <h1 style="color:white;font-family:'Bitstream Vera Sans'">{{ vivienda.nombreweb }}</h1>
+                            <h1 id="h1_topbar" style="font-weight:800;color:white;font-family:'Bitstream Vera Sans'">
+                                &nbsp;</h1>
                         </li>
                         <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
                         <li class="toggle-topbar menu-icon"><a href="#"><span>Menú</span></a></li>
@@ -94,26 +103,28 @@
                     <section class="top-bar-section">
                         <!-- Right Nav Section -->
                         <ul class="right">
-                            <li class="active"><a href="/">Inicia sesión</a></li>
-                            <li class="has-dropdown">
-                                <a href="#">Servicios</a>
-                                <ul class="dropdown">
-                                    <li><a href="#id_garajes">Garajes</a></li>
-                                    <li><a href="#id_portales">Portales</a></li>
-                                    <li><a href="#id_domotica">Viviendas</a></li>
-                                    <li><a href="#id_vut" title="Viviendas de uso turístico">VUT</a></li>
-                                    <li class="active"><a href="#id_preguntas">Ayuda</a></li>
-                                </ul>
-                            </li>
+                            <li><a href="#information">Información</a></li>
+                            <li><a href="#precios">Precios</a></li>
+                            <li><a href="#fotos">Fotos</a></li>
+                            <li><a href="#calendario">Calendario</a></li>
+                            {#                            <li class="has-dropdown">#}
+                            {#                                <a href="#">Servicios</a>#}
+                            {#                                <ul class="dropdown">#}
+                            {#                                    <li><a href="#id_garajes">Garajes</a></li>#}
+                            {#                                    <li><a href="#id_portales">Portales</a></li>#}
+                            {#                                    <li><a href="#id_domotica">Viviendas</a></li>#}
+                            {#                                    <li><a href="#id_vut" title="Viviendas de uso turístico">VUT</a></li>#}
+                            {#                                    <li class="active"><a href="#id_preguntas">Ayuda</a></li>#}
+                            {#                                </ul>#}
+                            {#                            </li>#}
                         </ul>
 
                         <!-- Left Nav Section -->
                         <ul class="left">
-                            <li><a href="#id_precios">Precios</a></li>
+                            {#                            <li><a href="#id_precios">Precios</a></li>#}
                         </ul>
                     </section>
                 </nav>
-                {#                </div>#}
             </div>
             <div class="parent-container">
                 <div class="parent">
@@ -123,56 +134,65 @@
                 </div>
             </div>
 
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
-            <p>Scroll</p>
+            <div id="information" class="row">
+                <div class="columns large-12" style="padding-top: 60px;">
+                    {% autoescape off %}
+                        {{ vivienda.descripcionweb }}
+                    {% endautoescape %}
+                </div>
+            </div>
+            <div class="row" id="precios">
+                <div class="columns large-12">
+                    <h4 style="margin-top: 60px;">Precios</h4>
+                    <p>Los precios, con carácter general, se muestran a continuación. No obstante,
+                        en algunas fechas estos precios pueden cambiar. Ve al calendario para obtener
+                        información más detallada.</p>
+                    <ul>
+                        {% for p in vivienda.preciosweb|split_by_comma %}
+                            <li>{{ p.0 }}{{ p.1 }}€</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div id="calendario" style="padding-top: 60px;">
+                <div class="row">
+                    <div class="columns large-12">
+                        <div id='calendar'></div>
+                    </div>
+                </div>
+            </div>
+            <div id="fotos">
+                <div class="row carousel" style="padding-top: 60px;">
+                    {% for foto in vivienda.fotowebvivienda_set.all %}
+                        <div class="slide">
+                            <figure>
+                                <img src="{{ foto.foto.url }}"/>
+                                <figcaption>
+                                    <span style="font-weight: bold;color: grey;">{{ foto.caption }}</span>
+                                </figcaption>
+                            </figure>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
-
-        {#        <div style="position:relative;">#}
-        {#            <div style="height: 800px;width: 100%;">#}
-        {#                <div style="height: 800px; width: 100%; background-color: #fbcb09;position: fixed; top: 0px; left: 0px">#}
-        {#                    Primera#}
-        {#                </div>#}
-        {#            </div>#}
-        {#            <div style="height: 800px;width: 100%;position: absolute;top:100px;overflow: hidden;">#}
-        {#                <div style="height: 800px;width: 100%; background-color: #0f74a8;position: fixed; top: 0px; left: 0px">#}
-        {#                    Segunda#}
-        {#                </div>#}
-        {#            </div>#}
-        {#        </div>#}
     </form>
 
 {% endblock %}
 
 {% block final %}
+
+    <script src="/static/jR3DCarousel.js"></script>
+
     <script>
+        var myjR3DCarousel = $('.carousel').jR3DCarousel({
+            {#width: 600,#}
+            {#height: 450,#}
+            {#slides: slides,#}
+            slideLayout: 'cover',
+            slideClass: 'slide',
+            animation: "slide3D"
+        });
 
         {#https://stackoverflow.com/questions/2541481/get-average-color-of-image-via-javascript#}
 
@@ -252,6 +272,93 @@
         var invertido = invertColor(medio.r, medio.g, medio.b, true);
         console.log(invertido);
         $('.title_web_page_font').css('color', invertido);
+
+        {#https://stackoverflow.com/questions/16302483/event-when-positionsticky-is-triggered#}
+        $(window).scroll(function () {
+            var currentOffset = document.getElementById('topbarid').getBoundingClientRect().top;
+            if (currentOffset == 0) {
+                $('#h1_topbar').html('{{ vivienda.nombreweb }}');
+            } else {
+                $('#h1_topbar').html('&nbsp;');
+            }
+            console.log('position: ' + currentOffset);
+        });
+
+
+        {# Líneas de codigo para el fullCalendar #}
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                plugins: ['interaction', 'dayGrid', 'timeGrid', 'list'],
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+                },
+                defaultDate: '2019-06-12',
+                locale: 'es',
+                buttonIcons: true,
+                navLinks: true, // can click day/week names to navigate views
+                businessHours: true, // display business hours
+                editable: true,
+                events: [
+                    {
+                        title: 'Business Lunch',
+                        start: '2019-06-03T13:00:00',
+                        constraint: 'businessHours'
+                    },
+                    {
+                        title: 'Meeting',
+                        start: '2019-06-13T11:00:00',
+                        constraint: 'availableForMeeting', // defined below
+                        color: '#257e4a'
+                    },
+                    {
+                        title: 'Conference',
+                        start: '2019-06-18',
+                        end: '2019-06-20'
+                    },
+                    {
+                        title: 'Party',
+                        start: '2019-06-29T20:00:00'
+                    },
+
+                    // areas where "Meeting" must be dropped
+                    {
+                        groupId: 'availableForMeeting',
+                        start: '2019-06-11T10:00:00',
+                        end: '2019-06-11T16:00:00',
+                        rendering: 'background'
+                    },
+                    {
+                        groupId: 'availableForMeeting',
+                        start: '2019-06-13T10:00:00',
+                        end: '2019-06-13T16:00:00',
+                        rendering: 'background'
+                    },
+
+                    // red areas where no events can be dropped
+                    {
+                        start: '2019-06-24',
+                        end: '2019-06-28',
+                        overlap: false,
+                        rendering: 'background',
+                        color: '#ff9f89'
+                    },
+                    {
+                        start: '2019-06-06',
+                        end: '2019-06-08',
+                        overlap: false,
+                        rendering: 'background',
+                        color: '#ff9f89'
+                    }
+                ]
+            });
+
+            calendar.render();
+        });
     </script>
 
 {% endblock %}

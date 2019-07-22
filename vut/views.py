@@ -1906,21 +1906,15 @@ def domotica_vut(request):
 
     if request.method == 'POST':
         action = request.POST['action']
-        if action == 'libro_contabilidad_vut':
-            permiso = Permiso.objects.get(code_nombre='genera_libro_registro_policia')
-            vivienda = Vivienda.objects.get(id=request.POST['id_vivienda'])
-            if has_permiso_on_vivienda(g_e, vivienda, permiso):
-                fecha_anterior_limite = datetime.today().date() - timedelta(1100)
-                viajeros = Viajero.objects.filter(reserva__vivienda=vivienda,
-                                                  reserva__entrada__gte=fecha_anterior_limite)
-                c = render_to_string('libro_registro_policia.html',
-                                     {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                ruta = '%s%s/%s/' % (MEDIA_VUT, vivienda.gpropietario.id, vivienda.id)
-                fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
-                                   title=u'Libro de registro de viajeros', tipo='sin_cabecera')
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
-                return response
+        if action == 'boton_domotico' and request.is_ajax():
+            try:
+                domotica = DomoticaVUT.objects.get(id=request.POST['domotica'])
+                s = requests.Session()
+                s.verify = False
+                p = s.post(domotica.url, timeout=5)
+                return JsonResponse({'ok': True, 'response': p.status_code})
+            except:
+                return JsonResponse({'ok': False})
         elif action == 'download_file_asiento':
             asiento = AsientoVUT.objects.get(id=request.POST['asiento'])
             permiso = Permiso.objects.get(code_nombre='edita_asiento_vut')

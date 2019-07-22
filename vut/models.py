@@ -103,6 +103,7 @@ class Vivienda(models.Model):
     borrada = models.BooleanField("Esta vivienda está borrada?", default=False)
     nregistro = models.CharField("Núm. registro VUT Com. Aut.", blank=True, max_length=30, null=True, default='')
     nombreweb = models.CharField("Título/Nombre", blank=True, null=True, max_length=300, default='')
+    subnombreweb = models.CharField("Sub-Título/Texto bajo nombre", blank=True, null=True, max_length=300, default='')
     descripcionweb = models.TextField("Descripción de la vivienda", default='', blank=True, null=True)
     preciosweb = models.CharField("Secuencia de precios", blank=True, null=True, max_length=200, default='')
     publicarweb = models.BooleanField("Debe mostrarse en web?", default=False)

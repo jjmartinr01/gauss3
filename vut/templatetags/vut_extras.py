@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from django.template import Library
 from datetime import datetime, timedelta
+from django.utils import timezone
 from autenticar.models import Permiso
 from vut.models import Vivienda, ContabilidadVUT, PartidaVUT, RegistroPolicia
-
+import json
 
 register = Library()
 
@@ -23,6 +24,7 @@ def is_today_or_yesterday(fecha):
     else:
         return False
 
+
 @register.filter
 def contains_hoy(reserva):
     hoy = datetime.today().date()
@@ -30,6 +32,7 @@ def contains_hoy(reserva):
         return True
     else:
         return False
+
 
 @register.filter
 def has_permiso_vut(autorizado, permiso):
@@ -39,17 +42,21 @@ def has_permiso_vut(autorizado, permiso):
     else:
         return False
 
+
 @register.filter
 def viviendas(propietario):
     return Vivienda.objects.filter(gpropietario=propietario)
+
 
 @register.filter
 def contabilidades(propietario):
     return ContabilidadVUT.objects.filter(propietario=propietario)
 
+
 @register.filter
 def partidas_contabilidad(contabilidad):
     return PartidaVUT.objects.filter(contabilidad=contabilidad)
+
 
 @register.filter
 def registro_enviado(viajero):
@@ -59,6 +66,7 @@ def registro_enviado(viajero):
         return r.enviado
     except:
         return True
+
 
 @register.filter
 def has_parte_pdf_PN(viajero):
@@ -71,6 +79,7 @@ def has_parte_pdf_PN(viajero):
     except:
         return False
 
+
 @register.filter
 def portada(vivienda):
     fotos = vivienda.fotowebvivienda_set.filter(orden=1)
@@ -80,6 +89,7 @@ def portada(vivienda):
         except:
             return None
     return fotos[0].foto.url
+
 
 @register.filter
 def portada1(vivienda):
@@ -91,6 +101,7 @@ def portada1(vivienda):
             return None
     return fotos[0].foto.url
 
+
 @register.filter
 def portada2(vivienda):
     fotos = vivienda.fotowebvivienda_set.filter(orden=2)
@@ -100,3 +111,25 @@ def portada2(vivienda):
         except:
             return None
     return fotos[0].foto.url
+
+
+@register.filter
+def split_by_comma(texto):
+    precios = texto.split(',')
+    personas = ['Un huésped: ', 'Dos huéspedes: ', 'Tres huéspedes: ', 'Cuatro huéspedes: ', 'Cinco huéspedes: ',
+                'Seis huéspedes: ', 'Siete huéspedes: ', 'Ocho huéspedes: ', 'Nueve huéspedes: ', 'Diez huéspedes: ',
+                'Once huéspedes: ', 'Doce huéspedes:', 'Trece huéspedes: ', 'Catorce huéspedes: ', 'Quince huéspedes: ']
+    return [(personas[i], precios[i]) for i in range(len(precios))]
+
+
+@register.filter
+def reservas2eventos(vivienda):
+    today = timezone.datetime.today()
+    reservas = vivienda.reserva_set.filter(salida__gte=today)
+    eventos = [{'start': r.entrada.strftime('%Y-%m-%d'),
+                'end': r.salida.strftime('%Y-%m-%d'),
+                'overlap': False,
+                'color': '#bbbbbb',
+                'title': '%s (%s)' % (r.get_portal_display(), r.nombre)} for r in reservas]
+    return json.dumps(eventos)
+    # return eventos
