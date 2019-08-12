@@ -7,8 +7,9 @@ class ReservaAdmin(admin.ModelAdmin):
     # list_filter = ['vivienda',]
 
 class ViviendaAdmin(admin.ModelAdmin):
-    search_fields = ['nombre']
-    list_filter = ['gpropietario__first_name']
+    list_display = ['nombre', 'gpropietario__first_name']
+    search_fields = ['nombre', 'gpropietario__first_name']
+    # list_filter = ['gpropietario__first_name']
 
 admin.site.register(Vivienda, ViviendaAdmin)
 admin.site.register(Ayudante)
