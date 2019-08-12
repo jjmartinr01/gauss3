@@ -220,13 +220,10 @@
 
     {# Líneas de codigo para el fullCalendar #}
 
-    function pad(s) {
-        return (s < 10) ? '0' + s : s;
-    }
 
-    var calendarEl = document.getElementById('calendar{{ vivienda.id }}');
+    var calendarEl{{ vivienda.id }} = document.getElementById('calendar{{ vivienda.id }}');
 
-    var calendar = new FullCalendar.Calendar(calendarEl, {
+    calendar[{{ vivienda.id }}] = new FullCalendar.Calendar(calendarEl{{ vivienda.id }}, {
         validRange: {
             start: new Date(),
         },
@@ -238,42 +235,50 @@
         },
         defaultDate: new Date(),
         locale: 'es',
+        selectOverlap: false,
         buttonIcons: true,
         navLinks: true, // can click day/week names to navigate views
         businessHours: false,
         editable: true,
+        eventClick: function (info) {
+            alert('Event: ' + info.event.title + 'vivienda: ' + info.event.extendedProps['vivienda']);
+
+            // change the border color just for fun
+            info.el.style.borderColor = 'red';
+        },
         selectable: true,
         {#selectMirror: true,#}
         select: function (arg) {
-            {#var title = prompt('Event Title:');#}
-            {#if (title) {#}
-            {#    calendar.addEvent({#}
-            {#        title: title,#}
-            {#        start: arg.start,#}
-            {#        end: arg.end,#}
-            {#        allDay: arg.allDay#}
-            {#    })#}
-            {# }#}
-            $('#reveal_web_calendar_precios').val('{{ vivienda.preciosweb }}');
             var d = arg.start;
-            var fecha = [pad(d.getDate()), pad(d.getMonth() + 1), d.getFullYear()].join('/');
-            console.log(arg.start);
-            $('#reveal_web_calendar_fecha').html(fecha);
-            $('#reveal_web_calendar').foundation('reveal', 'open');
-            calendar.unselect()
+            var fecha0 = [d.getFullYear(), pad(d.getMonth() + 1), pad(d.getDate())].join('-');
+            if (!$(".fc-day[data-date='" + fecha0 + "']").hasClass('date-blocked')) {
+                var fecha = d.toLocaleString();
+                $('#reveal_web_calendar_precios').val('{{ vivienda.preciosweb }}')
+                    .data('vivienda', '{{ vivienda.id }}')
+                    .data('fecha', fecha0);
+                $('#reveal_web_calendar_bloquear').data('vivienda', '{{ vivienda.id }}').data('fecha', fecha0);
+                $('#reveal_web_calendar_fecha').html(fecha);
+                $('#reveal_web_calendar').foundation('reveal', 'open');
+            } else {
+                alert('Día bloqueado');
+            }
+
+            calendar[{{ vivienda.id }}].unselect()
         },
         events: {% autoescape off %}{{ vivienda|reservas2eventos }}{% endautoescape %},
     });
 
-    calendar.render();
+    calendar[{{ vivienda.id }}].render();
 
-    calendar.addEvent({
+    calendar[{{ vivienda.id }}].addEvent({
         title: 'Prueba',
-        start: '2019-07-23',
+        start: '2019-07-30',
         end: '2019-07-23',
-        rendering: 'background',
+        className: 'date-blocked'
+        {#rendering: 'background',#}
     });
-    $('td').css('border', '1px solid #cccccc');
+
+    {#$('td').css('border', '1px solid #cccccc');#}
     var fecha = '';
     {#$('#calendario{{ vivienda.id }}').on('mouseenter', '.fc-day', function () {#}
     {#    if (!$(this).hasClass('fc-disabled-day')){#}

@@ -40,7 +40,8 @@ from mensajes.models import Aviso
 from autenticar.models import Permiso, Gauser
 from mensajes.views import encolar_mensaje, crear_aviso
 from vut.models import Vivienda, Ayudante, Reserva, Viajero, RegistroPolicia, PAISES, Autorizado, CalendarioVivienda, \
-    ContabilidadVUT, PartidaVUT, AsientoVUT, AutorizadoContabilidadVut, PORTALES, DomoticaVUT, FotoWebVivienda
+    ContabilidadVUT, PartidaVUT, AsientoVUT, AutorizadoContabilidadVut, PORTALES, DomoticaVUT, FotoWebVivienda, \
+    DayWebVivienda
 
 # Create your views here.
 logger = logging.getLogger('django')
@@ -202,6 +203,21 @@ def ajax_viviendas(request):
                         vivienda.save()
                         valor = ['No', 'Sí'][vivienda.publicarweb]
                         return JsonResponse({'ok': True, 'vivienda': vivienda.id, 'valor': valor})
+                    else:
+                        return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar la vivienda."})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar la vivienda."})
+            elif request.POST['action'] == 'bloquear_dia_vivienda_web':
+                try:
+                    vivienda = Vivienda.objects.get(id=request.POST['vivienda'])
+                    permiso = Permiso.objects.get(code_nombre='edita_viviendas')
+                    if has_permiso_on_vivienda(g_e, vivienda, permiso):
+                        fecha = timezone.datetime.strptime(request.POST['fecha'], '%Y-%m-%d')
+                        d, c = DayWebVivienda.objects.get_or_create(vivienda=vivienda, fecha=fecha)
+                        d.bloqueado = False if d.bloqueado else True
+                        d.save()
+                        return JsonResponse({'ok': True, 'vivienda': vivienda.id, 'bloqueado': d.bloqueado,
+                                             'fecha': request.POST['fecha'], 'id': d.id})
                     else:
                         return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar la vivienda."})
                 except:

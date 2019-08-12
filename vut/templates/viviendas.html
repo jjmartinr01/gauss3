@@ -12,6 +12,8 @@
     <script src='/static/fullcalendar/packages/daygrid/main.js' type="application/javascript"></script>
     <script src='/static/fullcalendar/packages/timegrid/main.js' type="application/javascript"></script>
     <script src='/static/fullcalendar/packages/list/main.js' type="application/javascript"></script>
+
+
 {% endblock %}
 
 {% block contenido %}
@@ -85,19 +87,14 @@
         <a class="close-reveal-modal">&#215;</a>
     </div>
 
-    <div id="reveal_web_calendar" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true"
+    <div id="reveal_web_calendar" class="reveal-modal" data-reveal aria-labelledby="bloquear_precios" aria-hidden="true"
          role="dialog">
-        <h3 id="modalTitle">Bloquear día o cambiar precios el <span id="reveal_web_calendar_fecha"></span></h3>
+        <h3 id="bloquear_precios">Bloquear día o cambiar precios el <span id="reveal_web_calendar_fecha"></span></h3>
         <div class="row">
             <div class="columns large-12">
                 <label>Indica los precios separados por comas:
-                    <input type="text" value="" data-vivienda="" id="reveal_web_calendar_precios"> </label>
-            </div>
-        </div>
-        <div class="row">
-            <div class="columns large-12">
-                <label>Bloquear/Impedir alquiler:
-                    <input type="checkbox" data-vivienda=""> </label>
+                    <input type="text" value="" data-fecha="" data-vivienda="" id="reveal_web_calendar_precios">
+                </label>
             </div>
         </div>
         <div class="row">
@@ -105,6 +102,32 @@
                 <a class="button">Aceptar</a>
             </div>
         </div>
+        <div class="row">
+            <div class="columns large-12">
+                <hr>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label>Bloquear/Desbloquear alquiler:
+                    <a class="button" data-vivienda="" data-fecha="" id="reveal_web_calendar_bloquear">Bloquear</a></label>
+            </div>
+        </div>
+
+        <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+
+    <div id="reveal_web_calendar_event" class="reveal-modal" data-reveal aria-labelledby="borrar_evento" aria-hidden="true"
+         role="dialog">
+        <h3 id="borrar_evento">¿Borrar?</h3>
+
+        <div class="row">
+            <div class="columns large-12">
+                <label>Eliminar el bloqueo:
+                    <a class="button" data-vivienda="" data-fecha="" id="reveal_web_calendar_desbloquear">Desbloquear</a></label>
+            </div>
+        </div>
+
         <a class="close-reveal-modal" aria-label="Close">&#215;</a>
     </div>
 {% endblock %}
@@ -594,6 +617,57 @@
                 document.{{formname}}.submit();
             });
         {% endif %}
+
+        {# Líneas dedicadas a la gestión de los eventos web #}
+
+        var calendar = {}; {# Diccionario donde se guardarán los full calendar asociados a cada vivienda #}
+
+        function precio_dia(string_date, precio) {
+            $('.fc-day[data-date="' + string_date + '"]').html('<div style="position: absolute;bottom: 10px;color:grey;font-weight:800">' +
+                precio + '€</div>');
+        }
+
+        function bloquea_dia(string_date) {
+            console.log('date: ' + string_date);
+            $('.fc-day[data-date="' + string_date + '"]').css('background-color', 'rgba(240,240,240,1)').addClass('date-blocked');
+        }
+
+        function pad(s) {
+            return (s < 10) ? '0' + s : s;
+        }
+
+        $('#reveal_web_calendar_bloquear').on('click', function () {
+            var vivienda = $(this).data('vivienda');
+            var fecha = $(this).data('fecha');
+            console.log(vivienda + ' ' + fecha);
+            $.post("/ajax_viviendas/", {
+                    action: 'bloquear_dia_vivienda_web',
+                    vivienda: vivienda,
+                    fecha: fecha
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#reveal_web_calendar').foundation('reveal', 'close');
+                        calendar[data.vivienda].addEvent({
+                            id: data.id,
+                            title: 'Bloqueado',
+                            start: data.fecha,
+                            end: data.fecha,
+                            className: 'date-blocked',
+                            color: '#bbbbbb',
+                            extendedProps: {'vivienda': data.vivienda, 'fecha': data.fecha}
+                        });
+
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+        });
+
+        $('body').on('click', '.date-blocked', function () {
+            console.log('fafafa5');
+        });
     </script>
 
 {% endblock %}

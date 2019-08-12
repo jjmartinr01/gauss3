@@ -51,17 +51,25 @@ MENU_DEFAULT = [
      'href': 'viviendas_registradas_vut',
      'nivel': 2,
      'tipo': 'Accesible',
-     'pos': 4,
+     'pos': 7,
      'parent': 'acceso_vut'
      },
-    {'code_menu': 'web_vut',
-     'texto_menu': 'Web VUT',
-     'href': 'web_vut',
-     'nivel': 2,
-     'tipo': 'Accesible',
-     'pos': 4,
-     'parent': 'acceso_vut'
-     }
+    # {'code_menu': 'web_vut',
+    #  'texto_menu': 'Web VUT',
+    #  'href': 'web_vut',
+    #  'nivel': 2,
+    #  'tipo': 'Accesible',
+    #  'pos': 6,
+    #  'parent': 'acceso_vut'
+    #  },
+    # {'code_menu': 'miweb_vut',
+    #  'texto_menu': 'Mi Web Vivienda',
+    #  'href': 'web_vut',
+    #  'nivel': 2,
+    #  'tipo': 'Accesible',
+    #  'pos': 5,
+    #  'parent': 'acceso_vut'
+    #  }
 ]
 # Se añaden otros permisos para el usuario
 

@@ -128,7 +128,8 @@ def reservas2eventos(vivienda):
     reservas = vivienda.reserva_set.filter(salida__gte=today)
     eventos = [{'start': r.entrada.strftime('%Y-%m-%d'),
                 'end': r.salida.strftime('%Y-%m-%d'),
-                'overlap': False,
+                'className': 'booked',
+                # 'overlap': False,
                 'color': '#bbbbbb',
                 'title': '%s (%s)' % (r.get_portal_display(), r.nombre)} for r in reservas]
     return json.dumps(eventos)

@@ -131,6 +131,19 @@ PORTALES = (('BOO', 'Booking'), ('AIR', 'Airbnb'), ('HOM', 'Homeaway'), ('REN', 
             ('OAP', 'Only Apartments'), ('WIM', 'Wimdu'), ('TRI', 'TripAdvisor'), ('OTR', 'Otros/Privado'))
 
 
+class DayWebVivienda(models.Model):
+    vivienda = models.ForeignKey(Vivienda, blank=True, null=True, on_delete=models.CASCADE)
+    fecha = models.DateField('Fecha con nuevo precio', blank=True, null=True)
+    preciosweb = models.CharField("Secuencia de precios", blank=True, null=True, max_length=200, default='')
+    bloqueado = models.BooleanField('Esta fecha el alquiler está bloqueado', default=False)
+
+    def __str__(self):
+        if self.bloqueado:
+            return u'%s - %s (Bloqueado)' % (self.vivienda, self.fecha)
+        else:
+            return u'%s - %s (%s)' % (self.vivienda, self.fecha, self.preciosweb)
+
+
 # http://q2housing.com/portales-de-alquiler-vivienda-turistica/
 class CalendarioVivienda(models.Model):
     vivienda = models.ForeignKey(Vivienda, blank=True, null=True, on_delete=models.CASCADE)
@@ -148,12 +161,14 @@ def update_foto(instance, filename):
     ruta = os.path.join("vut/%s/%s/fotosweb/" % (v.entidad.id, v.id), "%s.%s" % (nombre, ext))
     return ruta
 
+
 class FotoWebVivienda(models.Model):
     vivienda = models.ForeignKey(Vivienda, blank=True, null=True, on_delete=models.CASCADE)
     foto = models.ImageField('Foto de la vivienda para mostrar en web', upload_to=update_foto, blank=True, null=True)
     caption = models.CharField("Título/Nombre de la foto", blank=True, null=True, max_length=300, default='')
     content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
     orden = models.IntegerField("Orden en el que se muestra", default=0)
+
     # portada = models.BooleanField("Es la fotografía de portada?", default=False)
 
     def filename(self):
@@ -189,10 +204,10 @@ class FotoWebVivienda(models.Model):
 
         filename = str(self.foto.path)
         try:
-            mw = 1024 # maximum allowed width
+            mw = 1024  # maximum allowed width
             mh = 567
             image = Image.open(filename)
-            pw, ph = image.size # actual picture width (and picture height)
+            pw, ph = image.size  # actual picture width (and picture height)
 
             if pw > mw:
                 nw = mw
@@ -232,7 +247,6 @@ class FotoWebVivienda(models.Model):
         #     image.save(filename)
         # except:
         #     pass
-
 
     def __str__(self):
         return u'%s (%s - %s)' % (self.foto, self.caption, self.vivienda.nombre)
@@ -311,6 +325,7 @@ def update_firma(instance, filename):
                         str(instance.reserva.code) + '_' + str(instance.ndi) + '.png')
     return ruta
 
+
 class Viajero(models.Model):
     TIPOS = (('D', 'DNI'), ('P', 'Pasaporte'), ('C', 'Permiso de conducir'), ('I', 'Carta o documento de identidad'),
              ('X', 'Permiso de residencia de la UE'), ('N', 'NIE o tarjeta española de extranjeros'))
@@ -378,12 +393,12 @@ def update_parte(instance, filename):
     ruta = os.path.join("vut/%s/%s/partes/" % (v.entidad.id, v.id), "%s.%s" % (nombre, ext))
     return ruta
 
+
 def update_pdfPN(instance, filename):
     v = instance.vivienda
     viajero = instance.viajero.id
     ruta = os.path.join("vut/%s/%s/partes/" % (v.entidad.id, v.id), "%s.pdf" % (viajero))
     return ruta
-
 
 
 class RegistroPolicia(models.Model):
@@ -506,12 +521,14 @@ class AsientoVUT(models.Model):
     def __str__(self):
         return u'%s - %s (%s)' % (self.partida.contabilidad.id, self.concepto, self.cantidad)
 
+
 ###################################################################################################
 ############################## DOMÓTICA ###########################################################
 ###################################################################################################
 
 class DomoticaVUT(models.Model):
-    TIPO_DOMOTICA=(('SELFLOCKING', 'Auto-bloqueo'), ('ONOFF', 'Interruptor'), ('TERMOSTATO', 'Control de temperatura'))
+    TIPO_DOMOTICA = (
+    ('SELFLOCKING', 'Auto-bloqueo'), ('ONOFF', 'Interruptor'), ('TERMOSTATO', 'Control de temperatura'))
     vivienda = models.ForeignKey(Vivienda, blank=True, null=True, on_delete=models.CASCADE)
     url = models.CharField('URL para la activación del dispositivo', blank=True, null=True, max_length=250)
     nombre = models.CharField('Nombre dado al dispositivo', blank=True, null=True, max_length=250)
