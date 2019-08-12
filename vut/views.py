@@ -404,7 +404,7 @@ def ajax_viviendas(request):
                 fichero = request.FILES['foto_xhr' + str(i)]
                 code = pass_generator(20)
                 fotowebvivienda = FotoWebVivienda.objects.create(vivienda=vivienda, foto=fichero,
-                                                               content_type=fichero.content_type)
+                                                                 content_type=fichero.content_type)
                 # http: // www.imagemagick.org / discourse - server / viewtopic.php?t = 28069
                 # If
                 # test = 1, then
@@ -433,6 +433,7 @@ def ajax_viviendas(request):
                 # fotos.append(
                 #     {'file_name': fotowebvivienda.filename(), 'url': fotowebvivienda.foto.url})
             return JsonResponse({'html': html, 'vivienda': vivienda.id})
+
 
 # @permiso_required('acceso_reservas')
 def reservas_vut(request):
@@ -549,9 +550,11 @@ def update_calendarios_vut(viviendas):
                                 if 'vailable' not in summary:
                                     nombre = summary.replace('CLOSED -', '')
                                     entrada = c.get('dtstart').dt
-                                    reserva, creada = Reserva.objects.get_or_create(vivienda=v, entrada=entrada)
-                                    reserva.nombre = nombre
-                                    reserva.portal = calviv.portal
+                                    reserva, creada = Reserva.objects.get_or_create(vivienda=v, entrada=entrada,
+                                                                                    estado='ACE', nombre=nombre,
+                                                                                    portal=calviv.portal)
+                                    # reserva.nombre = nombre
+                                    # reserva.portal = calviv.portal
                                     reserva.noches = int((c.get('dtend').dt - c.get('dtstart').dt).days)
                                     if creada:
                                         reserva.code = pass_generator(size=10)
@@ -559,6 +562,15 @@ def update_calendarios_vut(viviendas):
                                     else:
                                         u += 1
                                     reserva.save()
+                                else:
+                                    try:
+                                        reserva = Reserva.objects.get(vivienda=v, entrada=entrada, estado='ACE',
+                                                                      nombre=nombre, portal=calviv.portal)
+                                        reserva.estado = 'CAN'
+                                        reserva.save()
+                                    except:
+                                        pass
+
                             elif calviv.portal == 'HOM':
                                 if 'vailable' not in summary or 'loqueado' not in summary:
                                     nombre = summary.split('-')[1].strip()
@@ -934,11 +946,11 @@ def ajax_reservas_vut(request):
                     if portal == 'AIR':
                         # Equivalencia de campos y nuestro modelo en AIRBNB
                         obs = 'Anuncio'
-                        code = 'Código de confirmación' #.encode('utf-8')
+                        code = 'Código de confirmación'  # .encode('utf-8')
                         entrada = 'Fecha de inicio'
-                        noches = 'N.º de noches' #.encode('utf-8')
-                        adultos = 'N.º de adultos' #.encode('utf-8')
-                        ninos = 'N.º de niños' #.encode('utf-8')
+                        noches = 'N.º de noches'  # .encode('utf-8')
+                        adultos = 'N.º de adultos'  # .encode('utf-8')
+                        ninos = 'N.º de niños'  # .encode('utf-8')
                         nombre = 'Nombre de la persona'
                         total = 'Ingresos'
                         estado = 'Estado'
@@ -951,7 +963,7 @@ def ajax_reservas_vut(request):
                                 reserva.num_viajeros = int(row[adultos]) + int(row[ninos])
                                 reserva.borrada = False
                                 reserva.estado = estados[row[estado]]
-                                reserva.nombre = row[nombre] #.decode('utf-8')
+                                reserva.nombre = row[nombre]  # .decode('utf-8')
                                 reserva.total = string2float(row[total])
                                 reserva.portal = portal
                                 reserva.save()
@@ -1292,14 +1304,14 @@ def graba_registro(registro):
 
                 generar_parte_url = 'https://webpol.policia.es/e-hotel/hospederia/generarParteHuesped'
                 generar_parte_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
-                                        'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                                        'Ajax-Referer': '/e-hotel/hospederia/generarParteHuesped',
-                                        'Connection': 'keep-alive',
-                                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                                        'Cookie': cookies_header, 'Host': 'webpol.policia.es',
-                                        'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                        'User-Agent': 'python-requests/2.21.0',
-                                        'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                                         'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                         'Ajax-Referer': '/e-hotel/hospederia/generarParteHuesped',
+                                         'Connection': 'keep-alive',
+                                         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                         'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                                         'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                                         'User-Agent': 'python-requests/2.21.0',
+                                         'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
                 payload = {'huespedJson': huespedJson, 'idHuesped': idHuesped}
 
                 try:
@@ -1307,7 +1319,6 @@ def graba_registro(registro):
                     logger.info("Solicitud generar PDF")
                 except:
                     logger.info("Error al solicitar generar PDF")
-
 
                 previsualiza_url = 'https://webpol.policia.es/e-hotel/previsualizacionPdf/'
                 previsualiza_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
@@ -1326,16 +1337,15 @@ def graba_registro(registro):
                 except:
                     logger.info("Error al solicitar previsualizar PDF")
 
-
                 genera_url = 'https://webpol.policia.es/e-hotel/hospederia/generarPDFparteHuesped'
                 genera_headers = {'Accept': 'text/html, */*; q=0.01', 'Accept-Encoding': 'gzip, deflate, br',
-                                        'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                                        'Connection': 'keep-alive',
-                                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                                        'Cookie': cookies_header, 'Host': 'webpol.policia.es',
-                                        'Referer': 'https://webpol.policia.es/e-hotel/inicio',
-                                        'User-Agent': 'python-requests/2.21.0',
-                                        'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
+                                  'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                  'Connection': 'keep-alive',
+                                  'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                  'Cookie': cookies_header, 'Host': 'webpol.policia.es',
+                                  'Referer': 'https://webpol.policia.es/e-hotel/inicio',
+                                  'User-Agent': 'python-requests/2.21.0',
+                                  'X-CSRF-TOKEN': csrf_token, 'X-Requested-With': 'XMLHttpRequest'}
                 try:
                     p9 = s.get(genera_url, headers=genera_headers, timeout=5)
                     fPN = ContentFile(p9.content)
@@ -1345,7 +1355,6 @@ def graba_registro(registro):
                     logger.info("Solicitud generar parte PDF")
                 except:
                     logger.info("Error al solicitar generar parte PDF")
-
 
                 # En este punto termina el proceso de grabación
                 if p4.status_code == 200:
@@ -1482,6 +1491,7 @@ def registro_viajero_manual(request):
 
     return JsonResponse({'ok': False})
 
+
 ################################################################################
 
 def viajeros(request):
@@ -1567,6 +1577,7 @@ def viajeros(request):
 
     return JsonResponse({'ok': False})
 
+
 ################################################################################
 
 @permiso_required('viviendas_registradas_vut')
@@ -1577,6 +1588,7 @@ def viviendas_registradas_vut(request):
                       'formname': 'viviendas_registradas_vut',
                       'viviendas': Vivienda.objects.filter(entidad=g_e.ronda.entidad).order_by('gpropietario')
                   })
+
 
 ################################################################################
 ################################################################################
@@ -2228,6 +2240,7 @@ def registra_viajero_policia(viajero):
             driver.close()
             return False
 
+
 #
 # def registra_viajero(viajero):
 #     if type(viajero) is not Viajero:
@@ -2582,7 +2595,6 @@ def registra_viajero_policia(viajero):
 #         return False
 
 
-
 # Ejemplo de convertir base64 descargado de la policía en pdf
 
 # import base64
@@ -2633,7 +2645,6 @@ def web_vut(request):
                 response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
                 return response
 
-
     return render(request, "web_vut.html",
                   {
                       'formname': 'web_vut',
@@ -2642,13 +2653,14 @@ def web_vut(request):
                       'localidades': viviendas.values_list('municipio', flat=True).distinct()
                   })
 
+
 def web_vut_id(request, vivienda_id):
-    if vivienda_id==7334:
+    if vivienda_id == 7334:
         return render(request, "web_vut_prueba.html",
-                  {
-                      'formname': 'web_vut_prueba',
-                      'vivienda': Vivienda.objects.get(id=1)
-                  })
+                      {
+                          'formname': 'web_vut_prueba',
+                          'vivienda': Vivienda.objects.get(id=1)
+                      })
     if request.method == 'GET':
         try:
             vivienda = Vivienda.objects.get(id=vivienda_id)
@@ -2673,7 +2685,6 @@ def web_vut_id(request, vivienda_id):
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
                 return response
-
 
     return render(request, "web_vut_id.html",
                   {
