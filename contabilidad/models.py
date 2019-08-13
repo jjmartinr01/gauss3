@@ -10,18 +10,18 @@ from bancos.models import Banco
 from gauss.funciones import pass_generator
 
 
-
-
 def update_file(instance, filename):
     nombre = filename.partition('.')
     nombre = '%s.%s' % (pass_generator(size=10), nombre[2])
     return os.path.join('contabilidad/', nombre)
+
 
 def update_fichero(instance, filename):
     nombre = filename.rpartition('.')
     instance.fich_name = filename
     fichero = pass_generator(size=20) + '.' + nombre[2]
     return '/'.join(['contabilidad', str(instance.entidad.code), fichero])
+
 
 class File_contabilidad(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
@@ -39,6 +39,7 @@ class File_contabilidad(models.Model):
     def __str__(self):
         return u'%s (%s)' % (self.fichero, self.entidad.name)
 
+
 class Presupuesto(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     # ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE)
@@ -47,6 +48,7 @@ class Presupuesto(models.Model):
     nombre = models.CharField('Nombre del presupuesto', max_length=300, blank=True, null=True)
     describir = models.TextField('Descripción del presupuesto (opcional)', null=True, blank=True)
     archivado = models.BooleanField('Está archivado?', default=False)
+
     class Meta:
         ordering = ['-creado']
 
@@ -59,12 +61,12 @@ class Partida(models.Model):
     tipo = models.CharField('Tipo de partida', max_length=6, choices=(('GASTO', 'Gasto'), ('INGRE', 'Ingreso')))
     nombre = models.CharField('Nombre de la partida', max_length=150)
     cantidad = models.FloatField('Cantidad monetaria (euros)')
-    creado = models.DateField('Fecha de creación', auto_now_add=True)  #carga automaticamente la fecha al crearse
+    creado = models.DateField('Fecha de creación', auto_now_add=True)  # carga automaticamente la fecha al crearse
     modificado = models.DateField('Fecha de modificación',
-                                  auto_now=True)  #carga automaticamente la fecha al modificarse
+                                  auto_now=True)  # carga automaticamente la fecha al modificarse
 
     def __str__(self):
-        #return u'%s - Partida de %s (%s)' % (self.presupuesto.id, self.get_tipo_display(),self.nombre)
+        # return u'%s - Partida de %s (%s)' % (self.presupuesto.id, self.get_tipo_display(),self.nombre)
         return u'%s (%s)' % (self.nombre, self.get_tipo_display())
 
 
@@ -73,8 +75,9 @@ class Asiento(models.Model):
     concepto = models.CharField('Concepto', max_length=100)
     nombre = models.CharField('Pequeña descripción', max_length=250, null=True, blank=True)
     cantidad = models.FloatField('Cantidad monetaria (euros)')
-    escaneo = models.ForeignKey(File_contabilidad, blank=True, null=True, related_name='escaneo', on_delete=models.CASCADE)
-    creado = models.DateField('Fecha de creación', auto_now_add=True)  #carga automaticamente la fecha al crearse
+    escaneo = models.ForeignKey(File_contabilidad, blank=True, null=True, related_name='escaneo',
+                                on_delete=models.CASCADE)
+    creado = models.DateField('Fecha de creación', auto_now_add=True)  # carga automaticamente la fecha al crearse
     modificado = models.DateField('Fecha de modificación', auto_now=True)
 
     def filename(self):
@@ -87,6 +90,7 @@ class Asiento(models.Model):
     def __str__(self):
         return u'%s - %s (%s)' % (self.partida.presupuesto.id, self.concepto, self.cantidad)
 
+
 ###################################################################################################
 ################################ CUOTAS ###########################################################
 ###################################################################################################
@@ -96,6 +100,8 @@ class Politica_cuotas(models.Model):
     TIPOS_CUOTA = (('fija', 'Cuota fija'), ('hermanos', 'Cuota condicionada al número de hermanos'),
                    ('vut', 'Cuota asociada al número de VUT'),
                    ('domotica', 'Cuota asociada al número de controles domóticos'))
+    MESES = ((1, 'Enero'), (2, 'Febrero'), (3, 'Marzo'), (4, 'Abril'), (5, 'Mayo'), (6, 'Junio'), (7, 'Julio'),
+             (8, 'Agosto'), (9, 'Septiembre'), (10, 'Octubre'), (11, 'Noviembre'), (12, 'Diciembre'))
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     tipo = models.CharField('Tipo de cuota', max_length=10, choices=TIPOS_CUOTA, default='fija')
     cargo = models.ForeignKey(Cargo, null=True, blank=True, on_delete=models.CASCADE)
@@ -106,8 +112,8 @@ class Politica_cuotas(models.Model):
     exentos = models.ManyToManyField(Gauser, blank=True, help_text='&nbsp;</span><span style="display:none;">')
     descuentos = models.TextField('Descuentos', null=True, blank=True)
     dia = models.IntegerField('Día del mes que se pasa la couta', null=True, blank=True)
-    mes = models.IntegerField('Mes de cobro (en caso de couta anual)', null=True, blank=True)
-    creado = models.DateField('Fecha de creación', auto_now_add=True)  #carga automaticamente la fecha al crearse
+    mes = models.IntegerField('Mes de cobro (en caso de couta anual)', null=True, blank=True, choices=MESES)
+    creado = models.DateField('Fecha de creación', auto_now_add=True)  # carga automaticamente la fecha al crearse
     modificado = models.DateField('Fecha de modificación', auto_now=True)
 
     class Meta:
@@ -126,7 +132,6 @@ class Politica_cuotas(models.Model):
     def no_exentos(self):
         importes = list(map(float, re.findall(r"[-+]?\d*\.\d+|\d+", self.cuota)))
         return importes + [importes[-1]] * 1000
-
 
     def __str__(self):
         return u'%s - %s (%s)' % (self.entidad.name, self.cargo, self.cantidad)
@@ -148,6 +153,7 @@ class Remesa_emitida(models.Model):
     def __str__(self):
         return u'%s - %s (%s)' % (self.politica.entidad.name, self.politica.cargo.cargo, self.grupo)
 
+
 class Remesa(models.Model):
     emitida = models.ForeignKey(Remesa_emitida, on_delete=models.CASCADE)
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
@@ -165,5 +171,3 @@ class Remesa(models.Model):
 
     def __str__(self):
         return u'%s - %s - %s' % (self.emitida.politica.entidad.name, self.rmtinf, self.dbtrnm)
-
-

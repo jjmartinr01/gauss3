@@ -252,7 +252,7 @@
 
 
 <script>
-    $('#id_tipo_cobro').select2();
+    {#$('#id_tipo_cobro').select2();#}
     $('#id_cargo').select2();
     $("#id_exentos").select2({
         placeholder: "Escribe parte del nombre",
@@ -300,7 +300,10 @@
     {% endif %}
 
     {# Código pra procesar la información proporcionada por el usuario con respecto a las cuotas #}
-    $('#id_tipo').trigger('change');
+    setTimeout(function () {
+        $('#id_tipo').trigger('change');
+    }, 300);
+
 
     $('#Contenido').on('change', '#id_tipo', function () {
         var tipo = $(this).val();

@@ -21,7 +21,7 @@
                 {% for politica in politicas %}
                     <dd class="accordion-navigation" id="accordion{{ politica.id }}"
                         style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
-                        <a href="#panel___{{ politica.id }}">
+                        <a href="#panel___{{ politica.id }}" style="font-weight: bold;">
                             <i id="circle{{ politica.id }}" class="fa fa-plus-circle circle_icon"></i>
                             {{ politica.concepto }} ({{ politica.cargo.cargo }}). {{ politica.get_tipo_cobro_display }}
                             de {{ politica.cuota }}€
@@ -61,7 +61,10 @@
                                 <div class="columns large-12">
                                     <dl>
                                         <dt>Personas sujetas al pago de esta cuota
-                                            ({{ politica|number_no_exentos }})
+                                            ({{ politica|number_no_exentos }}) <span data-tooltip aria-haspopup="true"
+                                                                                     class="has-tip"
+                                                                                     title="En rojo aparecen los usuarios que no tienen definida cuenta bancaria"><i
+                                                    class="fa fa-info-circle"></i></span>
                                         </dt>
                                         <dd id="lista_no_exentos{{ politica.id }}">
                                         </dd>
@@ -279,11 +282,9 @@
             var num_hidden = $("input[name='politica'][value!='']").length;
             if (num_hidden == 1) {
                 habilita(['h_plus', 's_pencil', 's_trash-o', 'h_file-text-o', 's_money', 'h_check']);
-            }
-            else if (num_hidden == 0) {
+            } else if (num_hidden == 0) {
                 habilita(['s_plus', 'h_pencil', 'h_trash-o', 's_file-text-o', 'h_money', 'h_check']);
-            }
-            else {
+            } else {
                 habilita(['h_plus', 'h_pencil', 's_trash-o', 'h_file-text-o', 's_money', 'h_check']);
             }
         });

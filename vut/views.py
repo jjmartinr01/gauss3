@@ -570,7 +570,7 @@ def update_calendarios_vut(viviendas):
                                         reserva.estado = 'CAN'
                                         reserva.save()
                                     except:
-                                        mensaje += '<li>Error en la lectura de una reserva de Booking.</li>'
+                                        mensaje += '<li>Error en la lectura de una reserva de Booking (%s).</li>' % (v.nombre)
 
                             elif calviv.portal == 'HOM':
                                 if 'vailable' not in summary or 'loqueado' not in summary:
@@ -594,7 +594,7 @@ def update_calendarios_vut(viviendas):
                                         reserva.estado = 'CAN'
                                         reserva.save()
                                     except:
-                                        mensaje += '<li>Error en la lectura de una reserva de Homeaway.</li>'
+                                        mensaje += '<li>Error en la lectura de una reserva de Homeaway (%s).</li>' % (v.nombre)
                             elif calviv.portal == 'TRI':
                                 if 'vailable' not in summary or 'loqueado' not in summary:
                                     nombre, code = [b for b in summary.split(':')[1].replace(')', '').split('(')]
@@ -618,7 +618,7 @@ def update_calendarios_vut(viviendas):
                                         reserva.estado = 'CAN'
                                         reserva.save()
                                     except:
-                                        mensaje += '<li>Error en la lectura de una reserva de TripAdvisor.</li>'
+                                        mensaje += '<li>Error en la lectura de una reserva de TripAdvisor (%s).</li>' % (v.nombre)
                             else:
                                 nombre = summary
                                 entrada = c.get('dtstart').dt
@@ -638,7 +638,7 @@ def update_calendarios_vut(viviendas):
                         except:
                             e += c.get('summary') + v.nombre
             except:
-                mensaje += '<li>Error en la lectura de un calendario. Posiblemente esté vacío.</li>'
+                mensaje += '<li>Error en la lectura de un calendario. Posiblemente esté vacío (%s).</li>' % (v.nombre)
     html = render_to_string('mensaje_update_calendarios_vut.html',
                             {'nuevas': n, 'actualizadas': u, 'errores': e, 'mensaje': mensaje, 'solapadas': s})
     return {'nuevas': n, 'actualizadas': u, 'errores': e, 'mensaje': mensaje, 'html': html}
