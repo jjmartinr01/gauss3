@@ -526,6 +526,8 @@ def update_calendarios_vut(viviendas):
                     calviv.portal = 'TRI'
                 elif 'homeaway' in calviv.ical:
                     calviv.portal = 'HOM'
+                else:
+                    calviv.portal = 'OTR'
                 calviv.save()
                 ical = requests.get(calviv.ical, allow_redirects=True)
                 gcal = Calendar.from_ical(ical.content)
@@ -551,10 +553,8 @@ def update_calendarios_vut(viviendas):
                                     nombre = summary.replace('CLOSED -', '')
                                     entrada = c.get('dtstart').dt
                                     reserva, creada = Reserva.objects.get_or_create(vivienda=v, entrada=entrada,
-                                                                                    estado='ACE', nombre=nombre,
-                                                                                    portal=calviv.portal)
-                                    # reserva.nombre = nombre
-                                    # reserva.portal = calviv.portal
+                                                                                    estado='ACE', portal=calviv.portal)
+                                    reserva.nombre = nombre
                                     reserva.noches = int((c.get('dtend').dt - c.get('dtstart').dt).days)
                                     if creada:
                                         reserva.code = pass_generator(size=10)
@@ -564,20 +564,21 @@ def update_calendarios_vut(viviendas):
                                     reserva.save()
                                 else:
                                     try:
+                                        entrada = c.get('dtstart').dt
                                         reserva = Reserva.objects.get(vivienda=v, entrada=entrada, estado='ACE',
-                                                                      nombre=nombre, portal=calviv.portal)
+                                                                      portal=calviv.portal)
                                         reserva.estado = 'CAN'
                                         reserva.save()
                                     except:
-                                        pass
+                                        mensaje += '<li>Error en la lectura de una reserva de Booking.</li>'
 
                             elif calviv.portal == 'HOM':
                                 if 'vailable' not in summary or 'loqueado' not in summary:
                                     nombre = summary.split('-')[1].strip()
                                     entrada = c.get('dtstart').dt
-                                    reserva, creada = Reserva.objects.get_or_create(vivienda=v, entrada=entrada)
+                                    reserva, creada = Reserva.objects.get_or_create(vivienda=v, entrada=entrada,
+                                                                                    estado='ACE', portal=calviv.portal)
                                     reserva.nombre = nombre
-                                    reserva.portal = calviv.portal
                                     reserva.noches = int((c.get('dtend').dt - c.get('dtstart').dt).days)
                                     if creada:
                                         reserva.code = pass_generator(size=10)
@@ -585,11 +586,21 @@ def update_calendarios_vut(viviendas):
                                     else:
                                         u += 1
                                     reserva.save()
+                                else:
+                                    try:
+                                        entrada = c.get('dtstart').dt
+                                        reserva = Reserva.objects.get(vivienda=v, entrada=entrada, estado='ACE',
+                                                                      portal=calviv.portal)
+                                        reserva.estado = 'CAN'
+                                        reserva.save()
+                                    except:
+                                        mensaje += '<li>Error en la lectura de una reserva de Homeaway.</li>'
                             elif calviv.portal == 'TRI':
                                 if 'vailable' not in summary or 'loqueado' not in summary:
                                     nombre, code = [b for b in summary.split(':')[1].replace(')', '').split('(')]
                                     entrada = c.get('dtstart').dt
-                                    reserva, creada = Reserva.objects.get_or_create(vivienda=v, entrada=entrada)
+                                    reserva, creada = Reserva.objects.get_or_create(vivienda=v, entrada=entrada,
+                                                                                    estado='ACE', portal=calviv.portal)
                                     reserva.code = code
                                     reserva.nombre = nombre
                                     reserva.portal = calviv.portal
@@ -599,6 +610,15 @@ def update_calendarios_vut(viviendas):
                                     else:
                                         u += 1
                                     reserva.save()
+                                else:
+                                    try:
+                                        entrada = c.get('dtstart').dt
+                                        reserva = Reserva.objects.get(vivienda=v, entrada=entrada, estado='ACE',
+                                                                      portal=calviv.portal)
+                                        reserva.estado = 'CAN'
+                                        reserva.save()
+                                    except:
+                                        mensaje += '<li>Error en la lectura de una reserva de TripAdvisor.</li>'
                             else:
                                 nombre = summary
                                 entrada = c.get('dtstart').dt
@@ -618,7 +638,7 @@ def update_calendarios_vut(viviendas):
                         except:
                             e += c.get('summary') + v.nombre
             except:
-                mensaje += 'Error en la lectura de un calendario. Posiblemente esté vacío.'
+                mensaje += '<li>Error en la lectura de un calendario. Posiblemente esté vacío.</li>'
     html = render_to_string('mensaje_update_calendarios_vut.html',
                             {'nuevas': n, 'actualizadas': u, 'errores': e, 'mensaje': mensaje, 'solapadas': s})
     return {'nuevas': n, 'actualizadas': u, 'errores': e, 'mensaje': mensaje, 'html': html}

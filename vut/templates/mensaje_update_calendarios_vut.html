@@ -42,5 +42,7 @@
 {#    </li>#}
 {#{% endif %}#}
 {% if mensaje %}
-    <li>{{ mensaje }}</li>
+    {% autoescape off %}
+        {{ mensaje }}
+    {% endautoescape %}
 {% endif %}
