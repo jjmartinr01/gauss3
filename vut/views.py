@@ -570,7 +570,16 @@ def update_calendarios_vut(viviendas):
                                         reserva.estado = 'CAN'
                                         reserva.save()
                                     except:
-                                        mensaje += '<li>Error en la lectura de una reserva de Booking (%s).</li>' % (v.nombre)
+                                        # Si llega a este punto es porque seguramente hay un VEVENT del tipo:
+                                        # BEGIN: VEVENT
+                                        # DTSTART;DTEND;
+                                        # VALUE = DATE:20190824
+                                        # UID: 6e5f3f2c0b862c4b8821b890d549d4d7 @ booking.com
+                                        # SUMMARY: CLOSED - Not Available
+                                        # END: VEVENT
+                                        # Por tanto no hay que hacer nada:
+                                        pass
+                                        #mensaje += '<li>Error en la lectura de una reserva de Booking (%s).</li>' % (v.nombre)
 
                             elif calviv.portal == 'HOM':
                                 if 'vailable' not in summary or 'loqueado' not in summary:
@@ -594,7 +603,9 @@ def update_calendarios_vut(viviendas):
                                         reserva.estado = 'CAN'
                                         reserva.save()
                                     except:
-                                        mensaje += '<li>Error en la lectura de una reserva de Homeaway (%s).</li>' % (v.nombre)
+                                        # Mirar mensaje escrito en BOOKING
+                                        pass
+                                        # mensaje += '<li>Error en la lectura de una reserva de Homeaway (%s).</li>' % (v.nombre)
                             elif calviv.portal == 'TRI':
                                 if 'vailable' not in summary or 'loqueado' not in summary:
                                     nombre, code = [b for b in summary.split(':')[1].replace(')', '').split('(')]
@@ -618,7 +629,9 @@ def update_calendarios_vut(viviendas):
                                         reserva.estado = 'CAN'
                                         reserva.save()
                                     except:
-                                        mensaje += '<li>Error en la lectura de una reserva de TripAdvisor (%s).</li>' % (v.nombre)
+                                        # Mirar mensaje escrito en BOOKING
+                                        pass
+                                        # mensaje += '<li>Error en la lectura de una reserva de TripAdvisor (%s).</li>' % (v.nombre)
                             else:
                                 nombre = summary
                                 entrada = c.get('dtstart').dt
