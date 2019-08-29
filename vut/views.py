@@ -380,14 +380,65 @@ def ajax_viviendas(request):
                             s.close()
                             return JsonResponse({'ok': True, 'login_ok': login_ok})
                         elif vivienda.police == 'GC':
-                            fichero = open(RUTA_BASE + '/vut/PARTE_COMPROBACION.001')
-                            url = 'https://%s:%s@hospederias.guardiacivil.es/hospederias/servlet/ControlRecepcionFichero' % (
-                                vivienda.police_code, vivienda.police_pass)
-                            r = requests.post(url, files={'fichero': fichero}, data={}, verify=False)
-                            if r.status_code == 200:
-                                return JsonResponse({'ok': True, 'login_ok': True})
-                            else:
-                                return JsonResponse({'ok': True, 'login_ok': False})
+                            s = requests.Session()
+                            s.verify = False
+                            try:
+                                p1 = s.get('https://hospederias.guardiacivil.es/hospederias/configuracion.do', timeout=5)
+                            except:
+                                return False
+                            cookies_header = ''
+                            for c in dict(s.cookies):
+                                cookies_header += '%s=%s;' % (c, dict(s.cookies)[c])
+                            soup1 = BeautifulSoup(p1.content.decode(p1.encoding), 'html.parser')
+                            adaptadores = soup1.find('input', {'name': 'adaptadores'})['value']
+                            payload = {'usuario': vivienda.police_code, 'adaptadores': adaptadores,
+                                       'pswd': vivienda.police_pass}
+
+                            # 26261AAX00
+                            # 251653613716
+                            execute_login_headers = {
+                                'Accept': 'text/html,  application/xhtml+xml, application/xml;q=0.9,*/*;q=0.8',
+                                'Accept-Encoding': 'gzip, deflate, br',
+                                'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+                                'Connection': 'keep-alive',
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'Content-Length': '64',
+                                'Cookie': cookies_header,
+                                'Host': 'hospederias.guardiacivil.es',
+                                'Referer': 'https://hospederias.guardiacivil.es/hospederias/configuracion.do',
+                                'Upgrade-Insecure-Requests': '1', 'User-Agent': 'python-requests/2.21.0'}
+                            try:
+                                p2 = s.post('https://hospederias.guardiacivil.es/hospederias/login.do', data=payload,
+                                            headers=execute_login_headers, timeout=5)
+                                if vivienda.police_code in p2.content.decode(p2.encoding):
+                                    login_ok = True
+                                else:
+                                    login_ok = False
+                            except:
+                                login_ok = False
+                            s.close()
+                            return JsonResponse({'ok': True, 'login_ok': login_ok})
+
+                            # viajero = {'ndi': '', 'fecha_exp': '', 'apellido1': '', 'apellido2': '', 'nombre': '',
+                            #            'sexo': '', 'nacimiento': '', 'fecha_entrada': ''}
+                            # ruta = os.path.join("%svut/" % (RUTA_MEDIA), fich_name)
+                            # f = open(ruta, "wb+")
+                            # contenido = render_to_string('fichero_registro_policia.vut',
+                            #                              {'v': vivienda, 'vs': [viajero]})
+                            # f.write(contenido.encode('utf-8'))
+                            # RegistroPolicia.objects.create(vivienda=vivienda, parte=File(f), viajero=viajero)
+                            # f.close()
+                            # if os.path.isfile(ruta):
+                            #     os.remove(ruta)
+                            #
+                            # fichero = open(RUTA_BASE + '/vut/PARTE_COMPROBACION.001')
+                            # url = 'https://%s:%s@hospederias.guardiacivil.es/hospederias/servlet/ControlRecepcionFichero' % (
+                            #     vivienda.police_code, vivienda.police_pass)
+                            # r = requests.post(url, files={'fichero': fichero}, data={}, verify=False, timeout=5)
+                            # if r.status_code == 200:
+                            #     return JsonResponse({'ok': True, 'login_ok': True})
+                            # else:
+                            #     return JsonResponse({'ok': True, 'login_ok': False})
                         else:
                             mensaje = 'Debes indicar si la conexión es con Guardia Civil o con Policía Nacional.'
                             return JsonResponse({'ok': False, 'mensaje': mensaje})
@@ -579,7 +630,7 @@ def update_calendarios_vut(viviendas):
                                         # END: VEVENT
                                         # Por tanto no hay que hacer nada:
                                         pass
-                                        #mensaje += '<li>Error en la lectura de una reserva de Booking (%s).</li>' % (v.nombre)
+                                        # mensaje += '<li>Error en la lectura de una reserva de Booking (%s).</li>' % (v.nombre)
 
                             elif calviv.portal == 'HOM':
                                 if 'vailable' not in summary or 'loqueado' not in summary:

@@ -1,0 +1,2 @@
+1|{{ v.codigo_entidad_emisora }}|{{ v.nombre|upper }}|{% now "Ymd" %}|{% now "Hi" %}|1|
+2|{{ viajero[ndi]|upper }}||D|{{ viajero[fecha_exp]|date:'Ymd' }}|{{ viajero[apellido1]|upper }}|{{ viajero[apellido2]|upper }}|{{ viajero[nombre]|upper }}|{{ viajero[sexo] }}|{{ viajero[nacimiento]|date:'Ymd' }}|ESPAÑA|{{ viajero[fecha_entrada]|date:'Ymd' }}|
