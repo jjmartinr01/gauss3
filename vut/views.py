@@ -393,8 +393,7 @@ def ajax_viviendas(request):
                             adaptadores = soup1.find('input', {'name': 'adaptadores'})['value']
                             payload = {'usuario': vivienda.police_code, 'adaptadores': adaptadores,
                                        'pswd': vivienda.police_pass}
-
-                            # 26261AAX00
+                            # Registro de Abel Yécora: 26261AAX00
                             # 251653613716
                             execute_login_headers = {
                                 'Accept': 'text/html,  application/xhtml+xml, application/xml;q=0.9,*/*;q=0.8',
@@ -418,27 +417,6 @@ def ajax_viviendas(request):
                                 login_ok = False
                             s.close()
                             return JsonResponse({'ok': True, 'login_ok': login_ok})
-
-                            # viajero = {'ndi': '', 'fecha_exp': '', 'apellido1': '', 'apellido2': '', 'nombre': '',
-                            #            'sexo': '', 'nacimiento': '', 'fecha_entrada': ''}
-                            # ruta = os.path.join("%svut/" % (RUTA_MEDIA), fich_name)
-                            # f = open(ruta, "wb+")
-                            # contenido = render_to_string('fichero_registro_policia.vut',
-                            #                              {'v': vivienda, 'vs': [viajero]})
-                            # f.write(contenido.encode('utf-8'))
-                            # RegistroPolicia.objects.create(vivienda=vivienda, parte=File(f), viajero=viajero)
-                            # f.close()
-                            # if os.path.isfile(ruta):
-                            #     os.remove(ruta)
-                            #
-                            # fichero = open(RUTA_BASE + '/vut/PARTE_COMPROBACION.001')
-                            # url = 'https://%s:%s@hospederias.guardiacivil.es/hospederias/servlet/ControlRecepcionFichero' % (
-                            #     vivienda.police_code, vivienda.police_pass)
-                            # r = requests.post(url, files={'fichero': fichero}, data={}, verify=False, timeout=5)
-                            # if r.status_code == 200:
-                            #     return JsonResponse({'ok': True, 'login_ok': True})
-                            # else:
-                            #     return JsonResponse({'ok': True, 'login_ok': False})
                         else:
                             mensaje = 'Debes indicar si la conexión es con Guardia Civil o con Policía Nacional.'
                             return JsonResponse({'ok': False, 'mensaje': mensaje})

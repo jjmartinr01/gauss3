@@ -581,7 +581,7 @@ def create_usuario(datos, request, tipo):
     return gauser_extra
 
 
-@permiso_required('acceso_carga_masiva')
+# @permiso_required('acceso_carga_masiva')
 def carga_masiva(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':
@@ -670,7 +670,7 @@ def carga_masiva(request):
                        'Nº de matrículas en el expediente': 'num_matriculas_exp',
                        'Repeticiones en el curso': 'rep_curso',
                        'Familia numerosa': 'familia_numerosa', 'Lengua materna': 'lengua_materna',
-                       'Año incorporación al sistema educativo': 'year_incorporacion', 'Bilinge': 'bilingue',
+                       'Año incorporación al sistema educativo': 'year_incorporacion', 'Bilingüe': 'bilingue',
                        'Correo electrónico Primer tutor': 'email_tutor1',
                        'Correo electrónico Segundo tutor': 'email_tutor2',
                        'Autoriza el uso de imagenes': 'uso_imagenes'}
