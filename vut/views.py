@@ -1642,13 +1642,17 @@ def viajeros(request):
 
 ################################################################################
 
-@permiso_required('viviendas_registradas_vut')
+# @permiso_required('viviendas_registradas_vut')
 def viviendas_registradas_vut(request):
     g_e = request.session['gauser_extra']
+    viviendas = Vivienda.objects.filter(entidad=g_e.ronda.entidad)
+    # gpropietarios = len(set(viviendas.values_list('gpropietario__id', flat=True)))
     return render(request, "viviendas_registradas_vut.html",
                   {
                       'formname': 'viviendas_registradas_vut',
-                      'viviendas': Vivienda.objects.filter(entidad=g_e.ronda.entidad).order_by('gpropietario')
+                      'num_socios': usuarios_ronda(g_e.ronda).count(),
+                      'num_propietarios': len(set(viviendas.values_list('gpropietario__id', flat=True))),
+                      'viviendas': viviendas.order_by('gpropietario')
                   })
 
 

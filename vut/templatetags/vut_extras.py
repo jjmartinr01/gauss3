@@ -134,3 +134,7 @@ def reservas2eventos(vivienda):
                 'title': '%s (%s)' % (r.get_portal_display(), r.nombre)} for r in reservas]
     return json.dumps(eventos)
     # return eventos
+
+@register.filter
+def num_registradas(viviendas):
+    return viviendas.filter(nregistro__iregex=r'^[0-9a-fA-F]').count()

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import  unicode_literals
+from __future__ import unicode_literals
 import logging
 from django.utils import timezone
 from django.core.files.base import ContentFile
@@ -17,15 +17,17 @@ from autenticar.models import Gauser, Permiso
 from entidades.models import Gauser_extra
 from mensajes.views import encolar_mensaje
 from vut.models import RegistroPolicia, Viajero, Autorizado
+from gtelegram.views import envia_telegram
 
 logger = logging.getLogger('django')
+
 
 @kronos.register('*/2 * * * *')
 def comunica_viajero2PNGC():
     registros = RegistroPolicia.objects.filter(enviado=False)[:5]
     for registro in registros:
         sleep(1)
-        registro.enviado = True #Esto evitará que se ejecute de nuevo el reenvío del registro
+        registro.enviado = True  # Esto evitará que se ejecute de nuevo el reenvío del registro
         registro.save()
         viajero = registro.viajero
         vivienda = registro.viajero.reserva.vivienda
@@ -60,6 +62,9 @@ def comunica_viajero2PNGC():
                         encolar_mensaje(emisor=emisor, receptores=receptores,
                                         asunto='Error en comunicación a la Guardia Civil', html=mensaje,
                                         etiqueta='guardia_civl%s' % vivienda.id)
+                        gtexto = 'Error con registro en Guardia Civil del viajero: %s %s (%s)' % (
+                            viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                        envia_telegram(emisor, gtexto)
                     else:
                         viajero.fichero_policia = True
                         mensaje = '<p>En el registro de %s, reserva %s</p><p>La Guardia Civil dice:</p>%s' % (
@@ -69,6 +74,9 @@ def comunica_viajero2PNGC():
                         encolar_mensaje(emisor=emisor, receptores=[vivienda.gpropietario],
                                         asunto='Comunicación a la Guardia Civil', html=mensaje,
                                         etiqueta='guardia_civl%s' % vivienda.id)
+                        gtexto = 'Registrado en Guardia Civil el viajero: %s %s (%s)' % (
+                            viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                        envia_telegram(emisor, gtexto)
                     viajero.save()
                     fichero.close()
                     return True
@@ -82,6 +90,9 @@ def comunica_viajero2PNGC():
                     encolar_mensaje(emisor=emisor, receptores=receptores,
                                     asunto='Error en comunicación a la Guardia Civil', html=mensaje,
                                     etiqueta='guardia_civl%s' % vivienda.id)
+                    gtexto = 'Error con registro en Guardia Civil del viajero: %s %s (%s)' % (
+                        viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                    envia_telegram(emisor, gtexto)
                     viajero.save()
                     fichero.close()
                     return False
@@ -358,18 +369,30 @@ def comunica_viajero2PNGC():
                         viajero.observaciones += '<br><span style="color:green;">Registro finalizado con todas las comunicaciones correctas.</span>'
                         viajero.observaciones += '<hr>Información JSON: <br> %s' % huespedJson
                         viajero.save()
+                        emisor = Gauser_extra.objects.get(gauser=vivienda.gpropietario, ronda=vivienda.entidad.ronda)
+                        gtexto = 'Registrado en Policía el viajero: %s %s (%s)' % (
+                        viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                        envia_telegram(emisor, gtexto)
                         return True
                     else:
                         logger.info('Error durante el grabado del viajero. Hacer el registro manualmente.')
                         viajero.observaciones += '<br><span style="color:red;">Error durante el grabado del viajero. Hacer el registro manualmente.</span>'
                         viajero.save()
                         s.close()
+                        emisor = Gauser_extra.objects.get(gauser=vivienda.gpropietario, ronda=vivienda.entidad.ronda)
+                        gtexto = 'Error durante el grabado del viajero. Hacer el registro manualmente. Viajero: %s %s (%s)' % (
+                            viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                        envia_telegram(emisor, gtexto)
                         return p4
                 else:
                     logger.info(u'Error al hacer el login en webpol para el viajero: %s' % (viajero))
                     viajero.observaciones += 'Error al hacer el login en webpol para el viajero'
                     viajero.save()
                     s.close()
+                    emisor = Gauser_extra.objects.get(gauser=vivienda.gpropietario, ronda=vivienda.entidad.ronda)
+                    gtexto = 'Error al hacer el login en la web de la Policía Nacional. Viajero: %s %s (%s)' % (
+                        viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                    envia_telegram(emisor, gtexto)
             else:
                 return False
         except:
@@ -382,14 +405,16 @@ def comunica_viajero2PNGC():
             emisor = Gauser_extra.objects.get(gauser=vivienda.gpropietario, ronda=vivienda.entidad.ronda)
             encolar_mensaje(emisor=emisor, receptores=receptores,
                             asunto='Error en RegistroPolicia', html=mensaje, etiqueta='error%s' % ronda.id)
+            gtexto = 'Error en la comunicación con Policía/Guardia Civil. Se debe hacer el registro manualmente. Viajero: %s %s (%s)' % (
+                viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+            envia_telegram(emisor, gtexto)
             return False
-
 
 
 def comunica_viajero2PNGC2(registro):
     registros = [registro]
     for registro in registros:
-        registro.enviado = True #Esto evitará que se ejecute de nuevo el reenvío del registro
+        registro.enviado = True  # Esto evitará que se ejecute de nuevo el reenvío del registro
         registro.save()
         viajero = registro.viajero
         vivienda = registro.viajero.reserva.vivienda
@@ -706,6 +731,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 
+
 def registra_viajero_policia(viajero):
     hoy = timezone.now().date()
     ayer = hoy - timezone.timedelta(1)
@@ -733,7 +759,7 @@ def registra_viajero_policia(viajero):
     # wait.until(EC.presence_of_element_located((By.ID, 'nombre')))
     wait.until(lambda gdriver: driver.execute_script("return jQuery.active == 0"))
     sleep(2)
-    #------------- nombre
+    # ------------- nombre
     driver.execute_script("$('#nombre').focus()")
     driver.execute_script("$('#nombre').val('%s')" % viajero.nombre)
     driver.execute_script("$('#nombre').keyup()")

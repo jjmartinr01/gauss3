@@ -9,17 +9,29 @@
             <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong> Viviendas de uso
                 turístico registradas</strong></h4>
         </div>
-
-    {% for v in viviendas %}
-        {% ifchanged v.gpropietario %}
-            {% if not forloop.first %}
-                <hr><p><b>{{ v.gpropietario.get_full_name }} ({{ v|number_viviendas_same_propietario }})</b></p>
-            {% else %}
-                <p><b>{{ v.gpropietario.get_full_name }} ({{ v|number_viviendas_same_propietario }})</b></p>
-            {% endif %}
-        {% endifchanged %}
-        <i class="fa fa-home"></i> {{ v.nombre }} &nbsp;&nbsp;&nbsp;
-    {% endfor %}
+        <table width="100%">
+            <tbody>
+            <tr><th>Nº de socios</th><th>Nº de propietarios</th><th>Nº de viviendas</th><th>Con Nº de registro</th></tr>
+            <tr><td>{{ num_socios }}</td><td>{{ num_propietarios }}</td><td>{{ viviendas|length }}</td>
+            <td>{{ viviendas|num_registradas }}</td></tr>
+            </tbody>
+        </table>
+        {% for v in viviendas %}
+            {% ifchanged v.gpropietario %}
+                {% if not forloop.first %}
+                    <hr><p><b>{{ v.gpropietario.get_full_name }} ({{ v|number_viviendas_same_propietario }})</b>
+                    {% if v.gauser_extra.num_cuenta_bancaria|length > 20 %}<span class="label round">IBAN</span>
+                        ****{{ v.gauser_extra.num_cuenta_bancaria|slice:'20:' }}{% else %}
+                        <span class="label round alert">IBAN no definido</span>{% endif %}</p>
+                {% else %}
+                    <p><b>{{ v.gpropietario.get_full_name }} ({{ v|number_viviendas_same_propietario }})</b>
+                        {% if v.gauser_extra.num_cuenta_bancaria|length > 20 %}<span class="label round">IBAN</span>
+                            ****{{ v.gauser_extra.num_cuenta_bancaria|slice:'20:' }}{% else %}
+                            <span class="label round alert">IBAN no definido</span>{% endif %}</p>
+                {% endif %}
+            {% endifchanged %}
+            <i class="fa fa-home"></i> {{ v.nombre }} {% if v.nregistro %}(<span style="color:green;">{{ v.nregistro }}</span>) {% else %}&nbsp;(<span style="color:red;">Falta nº de registro</span>) {% endif %}
+        {% endfor %}
 
     </form>
 {% endblock %}

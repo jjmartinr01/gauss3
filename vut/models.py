@@ -123,6 +123,10 @@ class Vivienda(models.Model):
     def codigo_entidad_emisora(self):
         return self.police_code[-10:]
 
+    @property
+    def gauser_extra(self):
+        return Gauser_extra.objects.get(ronda=self.entidad.ronda, gauser=self.gpropietario)
+
     def __str__(self):
         return u'%s (%s)' % (self.nombre, self.municipio)
 
