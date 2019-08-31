@@ -137,4 +137,4 @@ def reservas2eventos(vivienda):
 
 @register.filter
 def num_registradas(viviendas):
-    return viviendas.filter(nregistro__iregex=r'^[0-9a-fA-F]').count()
+    return viviendas.filter(nregistro__iregex=r'^[0-9a-zA-Z]').count()
