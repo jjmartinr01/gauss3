@@ -1,0 +1,9 @@
+<dd class="accordion-navigation" id="accordion{{ moscoso.id }}"
+    style="border-bottom: dotted 1px black">
+    <a href="#moscoso{{ moscoso.id }}">
+        <b>{{ moscoso.solicita.gauser.get_full_name }}</b> -- {{ moscoso.fecha|date:"d-m-Y" }} ({{ moscoso.get_estado_display }})
+    </a>
+
+    <div id="moscoso{{ moscoso.id }}" class="content">
+    </div>
+</dd>

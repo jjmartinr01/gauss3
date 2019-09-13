@@ -1,0 +1,27 @@
+<div class="row">
+    <div class="columns large-4">
+        <b>Solicita:</b><br>
+
+        {{ moscoso.solicita }}<br>
+
+        <b>Autoriza:</b><br>
+
+        {{ moscoso.receptor }}
+    </div>
+    <div class="columns large-8">
+        <p id="asunto_{{ moscoso.id }}"><b>{{ moscoso.asunto }}</b></p>
+
+        {#                                <div>{{ moscoso.texto|safe }}</div>#}
+        {% autoescape off %}
+            {{ moscoso.texto }}
+        {% endautoescape %}
+        {% if moscoso.ficheros.all|length > 0 %}
+            <hr>
+            <b>{% if moscoso.ficheros.all|length > 1 %}Archivos:{% else %}Archivo{% endif %}</b>
+            {% for fichero in moscoso.ficheros.all %}
+                <a class="ficheros" data-id="{{ fichero.id }}">{{ fichero.fich_name }}</a>
+                &nbsp;&nbsp;&nbsp;
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>

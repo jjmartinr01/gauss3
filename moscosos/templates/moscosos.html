@@ -1,0 +1,232 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+        }
+
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_moscoso" name="id_moscoso" value="">
+
+        <div id="div_moscosos_seleccionados"></div>
+
+        <div>
+            <h4 id="title_page"><strong>Días de libre disposición solicitados</strong></h4>
+        </div>
+        <div id="configura_moscosos" style="display: block;">
+            <div class="row">
+                <strong>Configuración de los días de libre disposición</strong>
+            </div>
+            <div class="row">
+                <div class="columns large-4">
+                    <label>Nº trabajadores máximo por día
+                    <input type="number" id="max_personas_day" value="{{ cm.max_personas_day }}"></label>
+                </div>
+                <div class="columns large-4">
+                    <label>Nº máximo de días por persona
+                    <input type="number" id="max_persona" value="{{ cm.max_persona }}"></label>
+                </div>
+                <div class="columns large-4">
+                    <label>Persona que autoriza
+                        <select id="autoriza">
+                            <option value="{{ cm.autoriza.id }}" selected>{{ cm.autoriza.gauser.get_full_name }}</option>
+                        </select></label>
+                </div>
+            </div>
+            <hr>
+        </div>
+
+        <br><br>
+        <dl class="accordion" data-accordion id="list_moscosos_selected"></dl>
+
+        <dl class="accordion" data-accordion id="list_moscosos_recientes">
+            {% for moscoso in moscosos %}
+                {% include "moscosos_accordion.html" %}
+            {% endfor %}
+        </dl>
+    </form>
+{% endblock %}
+
+{% block final %}
+{#    <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js"></script>#}
+    <script>
+        IDLE_TIMEOUT = 2000; //seconds
+
+        $('#autoriza').select2({
+            placeholder: "Para buscar un acta, escribe parte del texto contenido en él",
+            allowClear: true,
+            ajax: {
+                url: "/ajax_moscosos/",
+                type: 'POST',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    $('#q').val(params.term);
+                    $('#page').val(params.page);
+                    $('#action').val('busca_autorizador');
+                    return $('#' + '{{ formname }}').serialize();
+                },
+                processResults: function (data, page) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            }, // let our custom formatter work
+            minimumInputLength: 3,
+            language: {
+                inputTooShort: function () {
+                    return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                }
+            }
+        });
+
+
+
+
+        $("body").on('click', '#busca_moscosos_manual', function (e) {
+            var texto = $('#busca_moscosos').val();
+            var id_fecha_inicio = $('#id_fecha_inicio').val();
+            var id_fecha_fin = $('#id_fecha_fin').val();
+            var tipo_busqueda = $('#tipo_busqueda').val();
+            $.post("/ajax_moscosos/", {action: 'busca_moscosos', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda},
+                function (data) {
+                    $('#list_moscosos_selected').html(data['html']);
+                    $(document).foundation();
+                });
+        });
+        $("body").on('keyup', '#busca_moscosos', function (e) {
+            var texto = $('#busca_moscosos').val();
+            var id_fecha_inicio = $('#id_fecha_inicio').val();
+            var id_fecha_fin = $('#id_fecha_fin').val();
+            var tipo_busqueda = $('#tipo_busqueda').val();
+            $.post("/ajax_moscosos/", {action: 'busca_moscosos', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda},
+                function (data) {
+                    $('#list_moscosos_selected').html(data['html']);
+                    $(document).foundation();
+                });
+        });
+
+{#        $('#select_moscoso').select2({#}
+{#            placeholder: "Para buscar un moscoso, escribe parte del texto contenido en él",#}
+{#            allowClear: true,#}
+{#            ajax: {#}
+{#                url: "/ajax_moscosos/",#}
+{#                type: 'POST',#}
+{#                dataType: 'json',#}
+{#                delay: 250,#}
+{#                data: function (params) {#}
+{#                    $('#q').val(params.term);#}
+{#                    $('#page').val(params.page);#}
+{#                    $('#action').val('busca_moscoso');#}
+{#                    return $('#' + '{{ formname }}').serialize();#}
+{#                },#}
+{#                processResults: function (data, page) {#}
+{#                    return {#}
+{#                        results: $.map(data, function (item) {#}
+{#                            return {#}
+{#                                text: item.text,#}
+{#                                id: item.id#}
+{#                            }#}
+{#                        })#}
+{#                    };#}
+{#                },#}
+{#                cache: true#}
+{#            },#}
+{#            escapeMarkup: function (markup) {#}
+{#                return markup;#}
+{#            }, // let our custom formatter work#}
+{#            minimumInputLength: 3,#}
+{#            language: {#}
+{#                inputTooShort: function () {#}
+{#                    return "Introduce al menos 3 caracteres para iniciar búsqueda";#}
+{#                }#}
+{#            }#}
+{#        });#}
+
+
+{#        $('#select_moscoso').change(function (e) {#}
+{#            e.preventDefault();#}
+{#            var id = $(this).val();#}
+{#            if (id) {#}
+{#                $('#id_moscoso').val(id);#}
+{#                $('#action').val('moscoso_append');#}
+{#                $.post("/ajax_moscosos/", $('#' + '{{ formname }}').serialize(), function (data) {#}
+{#                    var id = $('#id_moscoso').val();#}
+{#                    $('#list_moscosos_selected').prepend(data);#}
+{#                    $("#select_moscoso").val(null).trigger('change');#}
+{#                    $('<input />', {type: 'hidden', name: 'moscosos_seleccionados', value: id, id: 'selec' + id})#}
+{#                            .appendTo('#div_moscosos_seleccionados');#}
+{#                });#}
+{#            }#}
+{#        });#}
+
+        {% if request.session.gauser_extra|has_permiso:"acceso_moscosos" %}
+            habilita(['s_plus']);
+            $('#plus_sign').click(function (event) {
+                event.preventDefault();
+                $('#action').val('add_moscoso');
+                $.post("/ajax_moscosos/", $('#' + '{{ formname }}').serialize(), function (data) {
+                    $('#formulario_search').hide();
+                    $('#formulario_add').show().html(data);
+                    $(document).scrollTop($('#title_page').offset().top - 150);
+                    habilita(['h_plus', 's_check', 's_search']);
+                });
+            });
+        {% endif %}
+
+
+{#        $('body').on('click', '.delete_moscoso', function (e) {#}
+{#            e.preventDefault();#}
+{#            var id = $(this).data('id');#}
+{#            $('#id_moscoso').val(id);#}
+{#            show_mensajes({#}
+{#                title: 'Borrar moscoso', texto: 'Si aceptas el moscoso será eliminado' +#}
+{#                ' completamente de la base de datos.', buttons: {#}
+{#                    "Cancelar": function () {#}
+{#                        hide_mensajes();#}
+{#                    },#}
+{#                    "Aceptar": function () {#}
+{#                        var id = $('#id_moscoso').val();#}
+{#                        $('#action').val('del_moscoso');#}
+{#                        hide_mensajes();#}
+{#                        $.post("/ajax_moscosos/", {action: 'delete_moscoso', id: id}, function (data) {#}
+{#                            if (data) {#}
+{#                                $('#accordion' + id).hide();#}
+{#                                $('#selec' + id).remove();#}
+{#                            }#}
+{#                        });#}
+{#                    }#}
+{#                }#}
+{#            });#}
+{#        });#}
+
+        $('body').on('click', '.ficheros', function (e) {
+            e.preventDefault();
+            $('#id_moscoso').val($(this).data('id'));
+            $('#action').val('pdf_moscoso');
+            document.{{ formname }}.submit();
+        });
+
+
+    </script>
+
+{% endblock %}
