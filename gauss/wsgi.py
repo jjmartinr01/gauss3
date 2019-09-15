@@ -7,13 +7,16 @@ For more information on this file, see
 https://docs.djangoproject.com/en/1.9/howto/deployment/wsgi/
 """
 
-python_home = '/home/gauss/django/gauss3'
 import sys
 import site
+try:
+    from gauss.settings import RUTA_PYTHON_HOME
+except:
+    RUTA_PYTHON_HOME = '/home/gauss/django/gauss3'
 
 # Calculate path to site-packages directory.
 python_version = '.'.join(map(str, sys.version_info[:2]))
-site_packages = python_home + '/lib/python%s/site-packages' % python_version
+site_packages = RUTA_PYTHON_HOME + '/lib/python%s/site-packages' % python_version
 # Add the site-packages directory.
 site.addsitedir(site_packages)
 

@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from gauss.rutas import MEDIA_DOCUMENTOS, MEDIA_ANAGRAMAS
-from entidades.models import Alta_Baja, Gauser_extra
+from entidades.models import Alta_Baja, Gauser_extra, DocConfEntidad
 
 logger = logging.getLogger('django')
 
@@ -72,6 +72,7 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
     logger.info(u'html_to_pdf')
     fichero_html = media + fichero + '.html'
     fichero_pdf = media + fichero + '.pdf'
+    docconf, c = DocConfEntidad.objects.get_or_create(entidad=request.session['gauser_extra'].ronda.entidad)
 
     if not os.path.exists(os.path.dirname(fichero_pdf)):
         os.makedirs(os.path.dirname(fichero_pdf))
@@ -101,17 +102,17 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
         # logger.info(u'Ejecuta: %s' % (comando))
         # os.system(comando)
         options = {
-            'page-size': 'A4',
-            'margin-top': '52',
-            'margin-right': '20',
-            'margin-bottom': '20',
-            'margin-left': '20',
-            'encoding': "UTF-8",
+            'page-size': docconf.pagesize,
+            'margin-top': docconf.margintop,
+            'margin-right': docconf.marginright,
+            'margin-bottom': docconf.marginbottom,
+            'margin-left': docconf.marginleft,
+            'encoding': docconf.encoding,
             'no-outline': None,
             '--header-html': 'file://%s' % cabecera,
             '--footer-html': 'file://%s' % pie,
-            '--header-spacing': '5',
-            '--load-error-handling': 'ignore'
+            '--header-spacing': docconf.headerspacing,
+            '--load-error-handling': 'ignore',
         }
         pdfkit.from_string(c, fichero_pdf, options)
     elif tipo == 'sin_cabecera':

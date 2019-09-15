@@ -132,6 +132,21 @@ class Entidad(models.Model):
     def __str__(self):
         return u'%s (%s)' % (self.name, self.code)
 
+class DocConfEntidad(models.Model):
+    entidad = models.OneToOneField(Entidad, on_delete=models.CASCADE)
+    header = models.TextField("Cabecera de página", blank=True, null=True)
+    footer = models.TextField("Pie de página", blank=True, null=True)
+    pagesize = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='A4')
+    margintop = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='52')
+    marginright = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='20')
+    marginbottom = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='10')
+    marginleft = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='20')
+    encoding = models.CharField('Tamaño del papel', max_length=15, blank=True, null=True, default='UTF-8')
+    headerspacing = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='5')
+
+    def __str__(self):
+        return u'%s (top: %s, bottom: %s, left: %s, right: %s)' % (self.entidad, self.margintop, self.marginbottom, self.marginleft, self.marginright)
+
 
 class Subentidad(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)

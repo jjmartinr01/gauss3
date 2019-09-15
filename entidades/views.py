@@ -925,12 +925,53 @@ def configura_rondas(request):
                   })
 
 
-@permiso_required('acceso_datos_entidad')
+# @permiso_required('acceso_datos_entidad')
 def datos_entidad(request):
     g_e = request.session["gauser_extra"]
+    docConf, c = DocConfEntidad.objects.get_or_create(entidad=g_e.ronda.entidad)
     if request.method == 'POST':
         action = request.POST['action']
-        if action == 'aceptar':
+        if action == 'update_cabecera_html' and request.is_ajax():
+            try:
+                docConf.header = request.POST['header']
+                docConf.save()
+                html_header = render_to_string('documentos_cabecera.html', {'cabecera': docConf.header})
+                f = open(MEDIA_ANAGRAMAS + '%s_cabecera.html' % (docConf.entidad.code), 'w+')
+                f.write(html_header)
+                f.close()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_pie_html' and request.is_ajax():
+            try:
+                docConf.footer = request.POST['footer']
+                docConf.save()
+                html_footer = render_to_string('documentos_pie.html', {'pie': docConf.footer})
+                f = open(MEDIA_ANAGRAMAS + '%s_pie.html' % (docConf.entidad.code), 'w+')
+                f.write(html_footer)
+                f.close()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_campo' and request.is_ajax():
+            try:
+                mensaje = ''
+                objeto = docConf if request.POST['objeto'] == 'docconfentidad' else g_e.ronda.entidad
+                valor = request.POST['valor']
+                campo = request.POST['campo']
+                if campo == 'iban' and len(valor) == 24:
+                    correcto = asocia_banco_entidad(g_e.ronda.entidad)
+                    if not correcto:
+                        mensaje = "No se ha podido asociar un banco a esa cuenta bancaria."
+                setattr(objeto, campo, valor)
+                objeto.save()
+                entidad = Entidad.objects.get(id=g_e.ronda.entidad.id)
+                request.session['gauser_extra'] = Gauser_extra.objects.get(gauser=g_e.gauser, ronda=entidad.ronda)
+                return JsonResponse({'ok': True, 'mensaje': mensaje})
+            except:
+                return JsonResponse({'ok': False})
+
+        elif action == 'update_ronda':
             try:
                 form = EntidadForm(request.POST)
                 ronda = Ronda.objects.get(id=request.POST['ronda'])
@@ -939,12 +980,6 @@ def datos_entidad(request):
                 if form.is_valid():
                     form = EntidadForm(request.POST, instance=g_e.ronda.entidad)
                     form.save()
-                    try:
-                        asocia_banco_entidad(request)
-                    except:
-                        crear_aviso(request, False,
-                                    u'<p>No se puede asociar una entidad bancaria con el IBAN de la entidad.</p>')
-                    crear_aviso(request, False, u'<p>Datos modificados correctamente.</p>')
                     entidad = Entidad.objects.get(id=g_e.ronda.entidad.id)
                     request.session['gauser_extra'] = Gauser_extra.objects.get(gauser=g_e.gauser, ronda=entidad.ronda)
                 else:
@@ -986,10 +1021,6 @@ def datos_entidad(request):
                   {
                       'formname': 'datos_entidad',
                       'entidad': Entidad.objects.get(id=g_e.ronda.entidad.id),
-                      'iconos':
-                          ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
-                            'title': 'Aceptar los cambios realizados',
-                            'permiso': 'modifica_datos_entidad'},),
                       'form': form,
                       'avisos': Aviso.objects.filter(usuario=request.session["gauser_extra"],
                                                      aceptado=False),

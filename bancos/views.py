@@ -90,8 +90,8 @@ def asocia_bancos(request):
             # except:
         # pass
 
-def asocia_banco_entidad(request):
-    entidad = request.session['gauser_extra'].ronda.entidad
+def asocia_banco_entidad(entidad):
+    banco_encontrado = True
     banco_code = re.sub("[^0-9a-zA-Z]", "", entidad.iban)[4:8]
     if banco_code == '2097':  # 2097 era Vital kutxa
         entidad.banco = Banco.objects.get(codigo='2095')  # le asignamos bankia que es el 2095 kutxabank
@@ -113,9 +113,13 @@ def asocia_banco_entidad(request):
     elif banco_code == '0103':  # Era el Banco Zaragozano
         entidad.banco = Banco.objects.get(codigo='0065')  # BARCLAYS BANK
     else:
-        entidad.banco = Banco.objects.get(codigo=banco_code)
+        try:
+            entidad.banco = Banco.objects.get(codigo=banco_code)
+        except:
+            banco_encontrado = False
     # crear_aviso(request,False,'Graba %s'%entidad.banco.nombre)
     entidad.save()
+    return banco_encontrado
 
 
 def asocia_banco_ge(g_e):
