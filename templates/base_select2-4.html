@@ -213,6 +213,8 @@
                             &nbsp;&nbsp;Actualizar los configuration.py</a></li>
                         <li><a class="menu_nivel2" href="/asignar_menus_entidad/">
                             &nbsp;&nbsp;Menús de la entidad</a></li>
+                        <li><a class="menu_nivel2" href="/borrar_entidades/">
+                            &nbsp;&nbsp;Borrar entidades</a></li>
                     {% endif %}
                     {% for menu in g_e.ronda.entidad|menus %}
                         {% if g_e|has_permiso:menu.menu_default.code_menu %}
@@ -249,6 +251,11 @@
                                     <a href="/asignar_menus_entidad/" class="">
                                         <div class="menu_element">
                                             Menús de la entidad
+                                        </div>
+                                    </a>
+                                    <a href="/borrar_entidades/" class="">
+                                        <div class="menu_element">
+                                            Borrar entidades
                                         </div>
                                     </a>
                                 </div>

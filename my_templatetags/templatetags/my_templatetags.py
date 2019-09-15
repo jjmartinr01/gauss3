@@ -513,6 +513,21 @@ def posibles_participantes_actividad(actividad):  # Devuelve la lista de posible
 #     return Participante.objects.filter(actividad=actividad, educando=gauser_extra).count() > 0
 
 @register.filter
+def num_usuarios_ronda(ronda):
+    g_es = Gauser_extra.objects.filter(ronda=ronda)
+    return g_es.count()
+
+@register.filter
+def list_usuarios_ronda(ronda):
+    g_es = Gauser_extra.objects.filter(ronda=ronda)
+    return g_es
+
+@register.filter
+def num_usuarios_entidad(entidad):
+    g_es = Gauser_extra.objects.filter(ronda__entidad=entidad)
+    return g_es.count()
+
+@register.filter
 def has_usuarios_ronda(subentidad, ronda):  # Comprueba si la subentidad tiene ususarios de esta ronda
     g_es = usuarios_ronda(ronda, subentidades=[subentidad])
     return g_es.count() > 0

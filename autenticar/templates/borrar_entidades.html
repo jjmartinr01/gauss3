@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Borrar entidades</strong></h4>
+        </div>
+        {% for entidad in entidades %}
+            {% if not forloop.first %}
+                <hr>
+            {% endif %}
+            <div class="columns large-8">
+            <span style="font-weight: 800;font-variant: small-caps;">
+                <input type="checkbox" data-id="{{ entidad.id }}" class="entidad"> {{ entidad.name }} ({{ entidad|num_usuarios_entidad }} usuarios)</span>
+            </div>
+            <div class="columns large-4">
+            {% if entidad|num_usuarios_entidad == 0 %}
+                <a class="button tiny borrar_entidad" data-entidad="{{ entidad.id }}">Borrar {{ entidad.name }}</a>
+            {% endif %}
+            </div>
+            <div id="div{{ entidad.id }}"></div>
+        {% endfor %}
+
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('.entidad').change(function (e) {
+            var id = $(this).data('id');
+            $.post("/borrar_entidades/", {action: 'datos_entidad', id: id}, function (data) {
+                $('#div' + id).html(data.html);
+                $("#update_ok").show().delay(1500).fadeOut();
+            }, 'json');
+        });
+        $('body').on('click', '.borrar_usuarios', function () {
+            var ronda = $(this).data('ronda');
+            $.post("/borrar_entidades/", {action: 'borrar_usuarios', ronda: ronda}, function (data) {
+                if (data.ok){
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }else{
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+
+            }, 'json');
+        });
+        $('body').on('click', '.borrar_entidad', function () {
+            var entidad = $(this).data('entidad');
+            $.post("/borrar_entidades/", {action: 'borrar_entidad', entidad: entidad}, function (data) {
+                if (data.ok){
+                    $("#update_ok").show().delay(1500).fadeOut();
+                }else{
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+
+            }, 'json');
+        });
+    </script>
+{% endblock %}

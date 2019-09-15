@@ -1,0 +1,18 @@
+{% load my_templatetags %}
+{% for ronda in rondas %}
+    <div class="row">
+        <div class="columns large-6">
+            {{ ronda }} - {{ ronda|num_usuarios_ronda }} usuarios
+        </div>
+        <div class="columns large-6">
+            <a class="button tiny borrar_usuarios" data-ronda="{{ ronda.id }}">Borrar usuarios</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            {% for usuario in ronda|list_usuarios_ronda %}
+                {{ usuario.gauser.get_full_name }},
+                {% endfor %}
+        </div>
+    </div>
+{% endfor %}

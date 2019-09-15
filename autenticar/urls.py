@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^recarga_captcha/$', views.recarga_captcha, name='recarga_captcha'),
     url(r'^asignar_menus_entidad/$', views.asignar_menus_entidad, name='asignar_menus_entidad'),
     url(r'^actualizar_menus_permisos/$', views.actualizar_menus_permisos, name='actualizar_menus_permisos'),
+    url(r'^borrar_entidades/$', views.borrar_entidades, name='borrar_entidades'),
     url(r'^execute_migrations/$', views.execute_migrations, name='execute_migrations'),
     # url(r'^load_gauser_educa/$', views.load_gauser_educa, name='load_gauser_educa'),
     # url(r'^gestionar_candidatos/$', views.gestionar_candidatos, name='gestionar_candidatos'),

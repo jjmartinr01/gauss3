@@ -33,7 +33,7 @@ from gauss.funciones import usuarios_de_gauss, pass_generator
 from gauss.settings import RUTA_BASE_SETTINGS
 from estudios.models import Grupo, Gauser_extra_estudios
 from autenticar.models import Enlace, Permiso, Gauser, Menu_default  # , Candidato
-from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, Subsubentidad, ConfigurationUpdate
+from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, Subsubentidad, ConfigurationUpdate, Ronda
 from mensajes.views import crear_aviso, crea_mensaje_cola
 from mensajes.models import Aviso, Mensaje
 from bancos.views import asocia_banco_ge
@@ -64,9 +64,79 @@ def recarga_captcha(request):
 
 
 ##########################################################################
+###############  FUNCIONES RELACIONADAS CON USUARIO GAUSS
+# @gauss_required
+def borrar_entidades(request):
+    g_e = request.session['gauser_extra']
+    if g_e.gauser.username == 'gauss':
+        if request.method == 'POST':
+            action = request.POST['action']
+            if action == 'datos_entidad' and request.is_ajax():
+                try:
+                    entidad = Entidad.objects.get(id=request.POST['id'])
+                    rondas = Ronda.objects.filter(entidad=entidad)
+                    html = render_to_string('borrar_entidades_content.html', {'rondas': rondas})
+                    return JsonResponse({'ok': True, 'html': html})
+                except:
+                    return JsonResponse({'ok': False})
+            elif action == 'borrar_usuarios' and request.is_ajax():
+                ronda = Ronda.objects.get(id=request.POST['ronda'])
+                usuarios_ronda = Gauser_extra.objects.filter(ronda=ronda)
+                num_ge_borrados = 0
+                num_g_borrados = 0
+                num_g_vaciados = 0
+                for usuario in usuarios_ronda:
+                    g = usuario.gauser
+                    ges = Gauser_extra.objects.filter(gauser=g)
+                    if ges.count() == 1 and ges[0] == usuario:
+                        usuario.delete()
+                        num_ge_borrados += 1
+                        try:
+                            g.delete()
+                            num_g_borrados += 1
+                        except:
+                            campos = {'first_name': 'borrado', 'last_name': '', 'email': '', 'sexo': None, 'dni': None,
+                                      'address': None, 'postalcode': None, 'localidad': None, 'provincia': None,
+                                      'nacimiento': None, 'telfij': None, 'telmov': None, 'familia': False,
+                                      'fecha_alta': None, 'fecha_baja': None, 'ficticio': True, 'educa_pk': None}
+                            for key, value in campos.items():
+                                setattr(g, key, value)
+                            g.save()
+                            num_g_vaciados += 1
+                    else:
+                        usuario.delete()
+                        num_ge_borrados += 1
+                return JsonResponse({'ok': True, 'num_g_borrados': num_g_borrados, 'num_ge_borrados': num_ge_borrados,
+                                     'num_g_vaciados': num_g_vaciados})
+            elif action == 'borrar_entidad' and request.is_ajax():
+                entidad = Entidad.objects.get(id=request.POST['entidad'])
+                try:
+                    entidad.delete()
+                    entidad_borrada = 1
+                    entidad_vaciada = 0
+                except:
+                    campos = {'organization': None, 'ronda': None, 'code': None, 'nif': None, 'banco': None,
+                              'iban': None, 'name': None, 'address': None, 'localidad': None, 'postalcode': None,
+                              'tel': None, 'fax': None, 'web': None, 'mail': None, 'dominio': None}
+                    for key, value in campos.items():
+                        setattr(entidad, key, value)
+                    entidad.save()
+                    entidad_borrada = 0
+                    entidad_vaciada = 1
+                return JsonResponse({'ok': True, 'entidad_borrada': entidad_borrada,
+                                     'entidad_vaciada': entidad_vaciada})
+        entidades = Entidad.objects.all()
+        return render(request, "borrar_entidades.html",
+                      {'formname': 'borrar_entidades',
+                       'entidades': entidades,
+                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                       })
+
+
+##########################################################################
 ###############  FUNCIONES RELACIONADAS CON LOS MENÚS
 
-
+@gauss_required
 def actualizar_menus_permisos(request):
     g_e = request.session['gauser_extra']
     if g_e.gauser.username == 'gauss':
