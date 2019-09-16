@@ -33,7 +33,7 @@ from gauss.funciones import usuarios_de_gauss, pass_generator
 from gauss.settings import RUTA_BASE_SETTINGS
 from estudios.models import Grupo, Gauser_extra_estudios
 from autenticar.models import Enlace, Permiso, Gauser, Menu_default  # , Candidato
-from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, Subsubentidad, ConfigurationUpdate, Ronda
+from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, Subsubentidad, ConfigurationUpdate, Ronda, Reserva_plaza
 from mensajes.views import crear_aviso, crea_mensaje_cola
 from mensajes.models import Aviso, Mensaje
 from bancos.views import asocia_banco_ge
@@ -80,36 +80,95 @@ def borrar_entidades(request):
                 except:
                     return JsonResponse({'ok': False})
             elif action == 'borrar_usuarios' and request.is_ajax():
+                try:
+                    gauser_comodin = Gauser.objects.get(username='qazwsxedcrfvtgbyhnujmikolp')
+                except:
+                    ahora = datetime.now()
+                    gauser_comodin = Gauser.objects.create(username='qazwsxedcrfvtgbyhnujmikolp', last_login=ahora)
                 ronda = Ronda.objects.get(id=request.POST['ronda'])
                 usuarios_ronda = Gauser_extra.objects.filter(ronda=ronda)
                 num_ge_borrados = 0
                 num_g_borrados = 0
                 num_g_vaciados = 0
+                mensaje = ''
                 for usuario in usuarios_ronda:
                     g = usuario.gauser
                     ges = Gauser_extra.objects.filter(gauser=g)
                     if ges.count() == 1 and ges[0] == usuario:
-                        usuario.delete()
-                        num_ge_borrados += 1
+                        try:
+                            usuario.delete()
+                            num_ge_borrados += 1
+                        except:
+                            mensaje += '%s no borrado' % usuario.gauser.get_full_name()
+                            usuario.permisos.clear()
+                            usuario.cargos.clear()
+                            usuario.subentidades.clear()
+                            usuario.subsubentidades.clear()
+                            usuario.hermanos.clear()
+                            campos = {'id_organizacion': None, 'id_entidad': None, 'alias': None, 'observaciones': None,
+                                      'foto': None, 'tutor1': None, 'tutor2': None, 'ocupacion': None, 'banco': None,
+                                      'entidad_bancaria': None, 'num_cuenta_bancaria': None, 'clave_ex': None,
+                                      'educa_pk': None, 'fecha_consentimiento': None, 'activo': False}
+                            usuario.gauser = gauser_comodin
+                            for key, value in campos.items():
+                                setattr(usuario, key, value)
+                            usuario.save()
                         try:
                             g.delete()
                             num_g_borrados += 1
                         except:
+                            nuevo_username = pass_generator(30)
                             campos = {'first_name': 'borrado', 'last_name': '', 'email': '', 'sexo': None, 'dni': None,
                                       'address': None, 'postalcode': None, 'localidad': None, 'provincia': None,
                                       'nacimiento': None, 'telfij': None, 'telmov': None, 'familia': False,
-                                      'fecha_alta': None, 'fecha_baja': None, 'ficticio': True, 'educa_pk': None}
+                                      'fecha_alta': None, 'fecha_baja': None, 'ficticio': True, 'educa_pk': None,
+                                      'username': nuevo_username}
                             for key, value in campos.items():
                                 setattr(g, key, value)
                             g.save()
                             num_g_vaciados += 1
                     else:
-                        usuario.delete()
-                        num_ge_borrados += 1
+                        try:
+                            usuario.delete()
+                            num_ge_borrados += 1
+                        except:
+                            mensaje += '%s modificado a gauser comodín' % usuario.gauser.get_full_name()
+                            usuario.permisos.clear()
+                            usuario.cargos.clear()
+                            usuario.subentidades.clear()
+                            usuario.subsubentidades.clear()
+                            usuario.hermanos.clear()
+                            campos = {'id_organizacion': None, 'id_entidad': None, 'alias': None, 'observaciones': None,
+                                      'foto': None, 'tutor1': None, 'tutor2': None, 'ocupacion': None, 'banco': None,
+                                      'entidad_bancaria': None, 'num_cuenta_bancaria': None, 'clave_ex': None,
+                                      'educa_pk': None, 'fecha_consentimiento': None, 'activo': False}
+                            usuario.gauser = gauser_comodin
+                            for key, value in campos.items():
+                                setattr(usuario, key, value)
+                            usuario.save()
                 return JsonResponse({'ok': True, 'num_g_borrados': num_g_borrados, 'num_ge_borrados': num_ge_borrados,
-                                     'num_g_vaciados': num_g_vaciados})
+                                     'num_g_vaciados': num_g_vaciados, 'mensaje': mensaje})
             elif action == 'borrar_entidad' and request.is_ajax():
+                mensaje = ''
                 entidad = Entidad.objects.get(id=request.POST['entidad'])
+                reservas = Reserva_plaza.objects.filter(entidad=entidad)
+                subentidades = Subentidad.objects.filter(entidad=entidad)
+                cargos = Cargo.objects.filter(entidad=entidad)
+                try:
+                    reservas.delete()
+                    mensaje += 'Borradas las reservas de plaza'
+                except:
+                    mensaje += 'No se han podido borrar las reservas de plaza'
+                try:
+                    subentidades.delete()
+                    mensaje += 'Borradas las subentidades'
+                except:
+                    mensaje += 'No se han podido borrar las subentidades'
+                try:
+                    cargos.delete()
+                    mensaje += 'Borradas los cargos'
+                except:
+                    mensaje += 'No se han podido borrar los cargos'
                 try:
                     entidad.delete()
                     entidad_borrada = 1
