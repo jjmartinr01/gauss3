@@ -1030,9 +1030,9 @@ def xml_racima(xml_file, request):
         nombre = elemento.find('dato[@nombre_dato="T_HORCEN"]').text
         tramo_codigo = elemento.find('dato[@nombre_dato="X_TRAMO"]').text
         inicio = int(elemento.find('dato[@nombre_dato="N_INICIO"]').text)
-        h_inicio = str(inicio / 60) + ':' + str(inicio % 60)
+        h_inicio = '%d:%d' % (int(inicio / 60), int(inicio % 60))
         fin = int(elemento.find('dato[@nombre_dato="N_FIN"]').text)
-        h_fin = str(fin / 60) + ':' + str(fin % 60)
+        h_fin = '%d:%d' % (int(fin / 60), int(fin % 60))
         # jornada_codigo = elemento.find('dato[@nombre_dato="X_PLAJORESCCEN"]').text
         # jornada = Jornada_escolar.objects.get(entidad=g_e_entidad,
         #                                       curso_escolar=g_e_entidad.curso_escolar,
