@@ -86,7 +86,7 @@ def borrar_entidades(request):
                     ahora = datetime.now()
                     gauser_comodin = Gauser.objects.create(username='qazwsxedcrfvtgbyhnujmikolp', last_login=ahora)
                 ronda = Ronda.objects.get(id=request.POST['ronda'])
-                usuarios_ronda = Gauser_extra.objects.filter(ronda=ronda)
+                usuarios_ronda = Gauser_extra.objects.filter(Q(ronda=ronda), ~Q(gauser=gauser_comodin))
                 num_ge_borrados = 0
                 num_g_borrados = 0
                 num_g_vaciados = 0
