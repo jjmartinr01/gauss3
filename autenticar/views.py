@@ -411,6 +411,21 @@ def index(request):
                         else:
                             gauser_extras = gauser_extras.exclude(pk=gauser_extra.id)
                     if entidades_disponibles > 1:
+
+                        # Líneas de código para evitar los duplicados en gauser_extra
+                        rondas = gauser_extras.values_list('ronda__id')
+                        for id_r in rondas:
+                            r=Ronda.objects.get(id=id_r)
+                            try:
+                                ges_ronda = gauser_extras.objects.get(ronda=r)
+                            except:
+                                ge_ronda = gauser_extras.objects.latest('id')
+                                gauser_comodin = Gauser.objects.get(username='qazwsxedcrfvtgbyhnujmikolp')
+                                ge_ronda.gauser = gauser_comodin
+                                ge_ronda.save()
+                                gauser_extras = gauser_extras.exclude(pk=ge_ronda.id)
+                        # Fin de las líneas de código para evitar duplicados
+
                         logger.info(u'Gauser con acceso a múltiples entidades.')
                         return render(request, "select_entidad.html", {'gauser_extras': gauser_extras, })
                     elif entidades_disponibles == 1:
