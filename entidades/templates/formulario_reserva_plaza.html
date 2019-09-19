@@ -43,74 +43,6 @@
                     {#                        {{ form.nacimiento }}#}
                     <input id="id_nacimiento" class="fdatepicker" name="nacimiento" value="" data-start-view="year"
                            placeholder="dd/mm/yyyy" type="text">
-
-                    {#                    <label><b>{{ c.texto }}:</b>{% if c.required %}#}
-                    {#                        <span style="color:gray;">(Obligatorio)</span>{% endif %}#}
-                    {#                        <div class="row">#}
-                    {#                            <div class="columns large-3 medium-3 small-3">#}
-                    {#                                <select name="dia_nacimiento" id="dia_nacimiento" class="fecha_nacimiento">#}
-                    {#                                    <option value="">Día</option>#}
-                    {#                                    <option value="1">1</option>#}
-                    {#                                    <option value="2">2</option>#}
-                    {#                                    <option value="3">3</option>#}
-                    {#                                    <option value="4">4</option>#}
-                    {#                                    <option value="5">5</option>#}
-                    {#                                    <option value="6">6</option>#}
-                    {#                                    <option value="7">7</option>#}
-                    {#                                    <option value="8">8</option>#}
-                    {#                                    <option value="9">9</option>#}
-                    {#                                    <option value="10">10</option>#}
-                    {#                                    <option value="11">11</option>#}
-                    {#                                    <option value="12">12</option>#}
-                    {#                                    <option value="13">13</option>#}
-                    {#                                    <option value="14">14</option>#}
-                    {#                                    <option value="15">15</option>#}
-                    {#                                    <option value="16">16</option>#}
-                    {#                                    <option value="17">17</option>#}
-                    {#                                    <option value="18">18</option>#}
-                    {#                                    <option value="19">19</option>#}
-                    {#                                    <option value="20">20</option>#}
-                    {#                                    <option value="21">21</option>#}
-                    {#                                    <option value="22">22</option>#}
-                    {#                                    <option value="23">23</option>#}
-                    {#                                    <option value="24">24</option>#}
-                    {#                                    <option value="25">25</option>#}
-                    {#                                    <option value="26">26</option>#}
-                    {#                                    <option value="27">27</option>#}
-                    {#                                    <option value="28">28</option>#}
-                    {#                                    <option value="29">29</option>#}
-                    {#                                    <option value="30">30</option>#}
-                    {#                                    <option value="31">31</option>#}
-                    {#                                </select>#}
-                    {#                            </div>#}
-                    {#                            <div class="columns large-5 medium-5 small-5">#}
-                    {#                                <select name="mes_nacimiento" id="mes_nacimiento" class="fecha_nacimiento">#}
-                    {#                                    <option value="">Mes</option>#}
-                    {#                                    <option value="1">enero</option>#}
-                    {#                                    <option value="2">febrero</option>#}
-                    {#                                    <option value="3">marzo</option>#}
-                    {#                                    <option value="4">abril</option>#}
-                    {#                                    <option value="5">mayo</option>#}
-                    {#                                    <option value="6">junio</option>#}
-                    {#                                    <option value="7">julio</option>#}
-                    {#                                    <option value="8">agosto</option>#}
-                    {#                                    <option value="9">septiembre</option>#}
-                    {#                                    <option value="10">octubre</option>#}
-                    {#                                    <option value="11">noviembre</option>#}
-                    {#                                    <option value="12">diciembre</option>#}
-                    {#                                </select>#}
-                    {#                            </div>#}
-                    {#                            <div class="columns large-4 medium-4 small-4">#}
-                    {#                                <select name="anyo_nacimiento" id="anyo_nacimiento" class="fecha_nacimiento">#}
-                    {#                                    <option value="">Año</option>#}
-                    {#                                    {% for a in anyos %}#}
-                    {#                                        <option value="{{ a }}">{{ a }}</option>#}
-                    {#                                    {% endfor %}#}
-                    {#                                </select>#}
-                    {#                            </div>#}
-                    {#                            <input type="hidden" value="" name="nacimiento" id="nacimiento">#}
-                    {#                        </div>#}
-                    {#                    </label>#}
                 {% elif c.campo == 'telfij' %}
                     <label><b>{{ c.texto }}</b> {% if c.required %}
                         <span style="color:gray;">(Obligatorio)</span>{% endif %}
@@ -181,6 +113,11 @@
                         <span style="color:gray;">(Obligatorio)</span>{% endif %}
                         {{ form.dni_tutor2 }}
                     </label>
+                {% elif c.campo == 'num_cuenta_bancaria' %}
+                    <label><b>{{ c.texto }}</b> {% if c.required %}
+                        <span style="color:gray;">(Obligatorio)</span>{% endif %}
+                        {{ form.num_cuenta_bancaria }}
+                    </label>
                 {% elif c.campo == 'observaciones' %}
                     <label><b>{{ c.texto }}</b> {% if c.required %}
                         <span style="color:gray;">(Obligatorio)</span>{% endif %}
@@ -191,3 +128,72 @@
         {% endif %}
     {% endfor %}
 </div>
+
+{# Líneas de código para capturar fecha sin formulario porque Apple no funciona con datetimepicker ????? #}
+{#                    <label><b>{{ c.texto }}:</b>{% if c.required %}#}
+{#                        <span style="color:gray;">(Obligatorio)</span>{% endif %}#}
+{#                        <div class="row">#}
+{#                            <div class="columns large-3 medium-3 small-3">#}
+{#                                <select name="dia_nacimiento" id="dia_nacimiento" class="fecha_nacimiento">#}
+{#                                    <option value="">Día</option>#}
+{#                                    <option value="1">1</option>#}
+{#                                    <option value="2">2</option>#}
+{#                                    <option value="3">3</option>#}
+{#                                    <option value="4">4</option>#}
+{#                                    <option value="5">5</option>#}
+{#                                    <option value="6">6</option>#}
+{#                                    <option value="7">7</option>#}
+{#                                    <option value="8">8</option>#}
+{#                                    <option value="9">9</option>#}
+{#                                    <option value="10">10</option>#}
+{#                                    <option value="11">11</option>#}
+{#                                    <option value="12">12</option>#}
+{#                                    <option value="13">13</option>#}
+{#                                    <option value="14">14</option>#}
+{#                                    <option value="15">15</option>#}
+{#                                    <option value="16">16</option>#}
+{#                                    <option value="17">17</option>#}
+{#                                    <option value="18">18</option>#}
+{#                                    <option value="19">19</option>#}
+{#                                    <option value="20">20</option>#}
+{#                                    <option value="21">21</option>#}
+{#                                    <option value="22">22</option>#}
+{#                                    <option value="23">23</option>#}
+{#                                    <option value="24">24</option>#}
+{#                                    <option value="25">25</option>#}
+{#                                    <option value="26">26</option>#}
+{#                                    <option value="27">27</option>#}
+{#                                    <option value="28">28</option>#}
+{#                                    <option value="29">29</option>#}
+{#                                    <option value="30">30</option>#}
+{#                                    <option value="31">31</option>#}
+{#                                </select>#}
+{#                            </div>#}
+{#                            <div class="columns large-5 medium-5 small-5">#}
+{#                                <select name="mes_nacimiento" id="mes_nacimiento" class="fecha_nacimiento">#}
+{#                                    <option value="">Mes</option>#}
+{#                                    <option value="1">enero</option>#}
+{#                                    <option value="2">febrero</option>#}
+{#                                    <option value="3">marzo</option>#}
+{#                                    <option value="4">abril</option>#}
+{#                                    <option value="5">mayo</option>#}
+{#                                    <option value="6">junio</option>#}
+{#                                    <option value="7">julio</option>#}
+{#                                    <option value="8">agosto</option>#}
+{#                                    <option value="9">septiembre</option>#}
+{#                                    <option value="10">octubre</option>#}
+{#                                    <option value="11">noviembre</option>#}
+{#                                    <option value="12">diciembre</option>#}
+{#                                </select>#}
+{#                            </div>#}
+{#                            <div class="columns large-4 medium-4 small-4">#}
+{#                                <select name="anyo_nacimiento" id="anyo_nacimiento" class="fecha_nacimiento">#}
+{#                                    <option value="">Año</option>#}
+{#                                    {% for a in anyos %}#}
+{#                                        <option value="{{ a }}">{{ a }}</option>#}
+{#                                    {% endfor %}#}
+{#                                </select>#}
+{#                            </div>#}
+{#                            <input type="hidden" value="" name="nacimiento" id="nacimiento">#}
+{#                        </div>#}
+{#                    </label>#}

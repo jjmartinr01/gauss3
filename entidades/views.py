@@ -1095,6 +1095,8 @@ class CaptchaForm(Form):
 
 
 def formulario_ext_reserva_plaza(request):
+    # ARVUTUR:
+    # https://gaumentada.es/formulario_ext_reserva_plaza/?c=4rkISXIGXJ
     year = datetime.today().year
     anyos = range(year, year - 100, -1)
     if request.method == 'GET':
@@ -1889,7 +1891,8 @@ def ajax_entidades(request):
                 ge.save()
             except:
                 ge = Gauser_extra.objects.create(gauser=g, tutor1=g_e1, tutor2=g_e2, activo=True, ronda=g_e.ronda,
-                                                 observaciones=reserva.observaciones)
+                                                 observaciones=reserva.observaciones,
+                                                 num_cuenta_bancaria=reserva.num_cuenta_bancaria)
             ge.cargos.add(*cargos)
             ge.subentidades.add(*subs)
             receptores = [i for i in [g1, g2, g] if i]

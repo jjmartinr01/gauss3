@@ -294,7 +294,7 @@ CAMPOS_RESERVA = (('first_name', 'Nombre'), ('last_name', 'Apellidos'), ('addres
                   ('last_name_tutor2', 'Apellidos del segundo tutor'),
                   ('telfij_tutor2', 'Teléfono fijo del segundo tutor'),
                   ('telmov_tutor2', 'Teléfono móvil del segundo tutor'), ('email_tutor2', 'e-mail del segundo tutor'),
-                  ('observaciones', 'Observaciones'))
+                  ('observaciones', 'Observaciones'), ('num_cuenta_bancaria', 'IBAN cuenta bancaria'))
 
 
 class ConfiguraReservaPlaza(models.Model):
@@ -340,6 +340,7 @@ class Reserva_plaza(models.Model):
     email_tutor2 = models.CharField("Correo electrónico del primer tutor", max_length=100, blank=True, default='')
     dni_tutor2 = models.CharField("Teléfono móvil", max_length=30, null=True, blank=True, default='')
     observaciones = models.TextField('Observaciones', blank=True, null=True, default='')
+    num_cuenta_bancaria = models.CharField("IBAN", max_length=30, null=True, blank=True, default='')
     creado = models.DateTimeField('Fecha y hora de la solicitud de reserva', auto_now_add=True)
 
     def subentidades(self):  # Devuelve las subentidades a las que podría pertenecer
