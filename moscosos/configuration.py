@@ -13,7 +13,7 @@ MENU_DEFAULT = [
      'nivel': 2,
      'tipo': 'Accesible',
      'pos': 1,
-     'parent': 'acceso_gestion_entidad'
+     'parent': 'acceso_acciones_usuarios1'
      },
 ]
 # Se añaden otros permisos para el usuario

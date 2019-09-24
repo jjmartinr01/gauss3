@@ -23,12 +23,12 @@ class FechaNoPermitida(models.Model):
         return u'%s - (%s)' % (self.fecha, self.cm)
 
 class Moscoso(models.Model):
-    ESTADO = (('ACE', 'Aceptado'), ('NAC', 'No aceptado'))
+    ESTADO = (('ACE', 'Aceptado'), ('NAC', 'No aceptado'), ('PRO', 'En proceso'), ('PEN', 'Pendiente de valorar'))
     cm = models.ForeignKey(ConfiguraMoscosos, on_delete=models.CASCADE, blank=True, null=True)
     solicita = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
     fecha = models.DateField('Fecha y hora de entrada', blank=True, null=True, default=now)
-    estado = models.CharField('Estado', max_length=3, default='NAC', choices=ESTADO)
-    observaciones = models.TextField('Observaciones', blank=True, null=True)
+    estado = models.CharField('Estado', max_length=3, default='PRO', choices=ESTADO)
+    observaciones = models.TextField('Observaciones', blank=True, null=True, default='')
     creado = models.DateTimeField("Fecha y hora en el que se graba la reserva", auto_now_add=True)
 
     class Meta:

@@ -769,7 +769,7 @@ def horarios_ajax(request):
                                  'na': aulas.count(), 'libres': len(libres)})
 
 
-# @permiso_required('acceso_carga_masiva_horarios')
+@permiso_required('acceso_carga_masiva_horarios')
 def carga_masiva_horarios(request):
     g_e = request.session["gauser_extra"]
     incidencias = {}
@@ -791,7 +791,10 @@ def carga_masiva_horarios(request):
                                                                           'especialidades': especialidades,
                                                                           'departamentos': departamentos})
                 elif xml_file.tag == 'HORARIO':  # Si ocurre esto es el archivo de exportación de PEÑALARA
-                    xml_penalara(xml_file, request)
+                    CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo'], tipo='PLUMIER')
+                    # from entidades.cron import carga_masiva_from_file
+                    # carga_masiva_from_file()
+                    # xml_penalara(xml_file, request)
             else:
                 crear_aviso(request, False, u'El archivo cargado no tiene el formato adecuado.')
         elif action == 'update_especialidad' and request.is_ajax():

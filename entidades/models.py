@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
+# from __future__ import unicode_literals
+import random
+import string
 from datetime import date, timedelta, datetime
 from django.db import models
 from django.utils import timezone
@@ -12,6 +14,9 @@ from gauss.rutas import *
 from bancos.models import Banco
 from django.db.models import Q
 from autenticar.models import Gauser, Permiso, Menu_default
+
+def pass_generator(size=6, chars=string.ascii_letters + string.digits):
+    return ''.join(random.choice(chars) for x in range(size))
 
 
 # post_save.connect(update_stock, sender=TransactionDetail, dispatch_uid="update_stock_count")
@@ -617,8 +622,7 @@ class Entidad_auto_id(models.Model):
 #          ('gtext', 'Texto de longitud ilimitada'), ('gfile', 'Archivo'))
 #
 #
-# def pass_generator(size=6, chars=string.ascii_letters + string.digits):
-#     return ''.join(random.choice(chars) for x in range(size))
+
 #
 #
 # def guarda_archivo(instance, filename):
@@ -782,6 +786,25 @@ class ConfigurationUpdate(models.Model):
 
     def __str__(self):
         return u'%s -- %s (%s)' % (self.entidad, self.app, self.updated)
+
+
+def update_fichero_carga_masiva(instance, filename):
+    nombre = filename.partition('.')
+    nombre = '%s_%s.%s' % (str(instance.ronda.entidad.code), pass_generator(), nombre[2])
+    return os.path.join("carga_masiva/", nombre)
+
+class CargaMasiva(models.Model):
+    TIPOS = (('PLUMIER', 'Horarios Peñalara Plumier'), ('', ''), ('', ''), ('', ''), ('', ''), )
+    ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE)
+    fichero = models.FileField("Fichero con datos", upload_to=update_fichero_carga_masiva, blank=True)
+    tipo = models.CharField("Tipo de archivo", max_length=15, choices=TIPOS)
+    incidencias = models.TextField("Incidencias producidas", blank=True, null=True, default='')
+    cargado = models.BooleanField("¿Se ha cargado el archivo?", default=False)
+
+    def __str__(self):
+        return u'%s -- Cargado: %s' % (self.ronda, self.cargado)
+
+
 
 # n='cosa'
 # m='valor de la cosa'

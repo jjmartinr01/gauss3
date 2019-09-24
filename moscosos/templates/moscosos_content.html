@@ -1,0 +1,35 @@
+<div class="row">
+    <div class="columns large-6">
+        <b>Solicitando moscoso:</b><br>
+        {{ moscoso.solicita.gauser.get_full_name }}
+    </div>
+    <div class="columns large-6">
+        <b>Fecha solicitada:</b> <span style="color:grey;">(Obligatorio)</span> <br>
+        <input type="text" data-objname="Moscoso" data-objid="{{ moscoso.id }}" class="campo_select fecha_moscoso"
+               data-campo="fecha" data-p="acceso_moscosos" readonly="readonly">
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <b>Observaciones:</b> <span style="color:grey;">(Opcional)</span><br>
+        <textarea id="observaciones" class="campo" data-objname="Moscoso" data-objid="{{ moscoso.id }}"
+                  data-campo="observaciones" data-p="acceso_moscosos"></textarea>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <a class="button borrar_moscoso alert"  data-objid="{{ moscoso.id }}">Borrar</a>
+    </div>
+</div>
+
+<script>
+        $(".fecha_moscoso").fdatepicker({
+            format: 'dd/mm/yyyy',
+            weekStart: 1,
+            {#endDate: new Date(),#}
+            {#startView: 'decade',#}
+            {#leftArrow: '<<',#}
+            {#rightArrow: '>>',#}
+            language: 'es'
+        });
+</script>
