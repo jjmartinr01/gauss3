@@ -801,6 +801,10 @@ class CargaMasiva(models.Model):
     incidencias = models.TextField("Incidencias producidas", blank=True, null=True, default='')
     cargado = models.BooleanField("¿Se ha cargado el archivo?", default=False)
 
+    class Meta:
+        verbose_name_plural = "Cargas Masivas"
+        ordering = ['-ronda']
+
     def __str__(self):
         return u'%s -- Cargado: %s' % (self.ronda, self.cargado)
 
