@@ -61,16 +61,16 @@
                 </div>
             </div>
             <hr>
-            </div>
-    <div id="solicitud_moscoso"></div>
-
-    <div id="calendario_moscosos" style="padding-top: 60px;">
-    <div class="row">
-        <div class="columns large-12">
-            <div id='calendar{{ vivienda.id }}'></div>
         </div>
-    </div>
-</div>
+        <div id="solicitud_moscoso"></div>
+
+        <div id="calendario_moscosos" style="padding-top: 60px;">
+            <div class="row">
+                <div class="columns large-12">
+                    <div id='calendar{{ vivienda.id }}'></div>
+                </div>
+            </div>
+        </div>
         <br><br>
         <dl class="accordion" data-accordion id="list_moscosos_selected"></dl>
 
@@ -174,60 +174,61 @@
 
         var calendarEl = document.getElementById('calendario_moscosos');
 
-    calendar = new FullCalendar.Calendar(calendarEl, {
-        validRange: {
-            start: new Date(),
-        },
-        plugins: ['interaction', 'dayGrid', 'timeGrid', 'list'],
-        header: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
-        },
-        defaultDate: new Date(),
-        locale: 'es',
-        selectOverlap: false,
-        buttonIcons: true,
-        navLinks: true, // can click day/week names to navigate views
-        businessHours: false,
-        editable: true,
-        eventClick: function (info) {
-            alert('Event: ' + info.event.title + 'vivienda: ' + info.event.extendedProps['vivienda']);
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            validRange: {
+                start: new Date(),
+            },
+            plugins: ['interaction', 'dayGrid', 'timeGrid', 'list'],
+            header: {
+                right: 'prev,next today',
+                center: 'title',
+                left: ''
+                //right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+            },
+            defaultDate: new Date(),
+            locale: 'es',
+            selectOverlap: true,
+            buttonIcons: true,
+            navLinks: true, // can click day/week names to navigate views
+            businessHours: true,
+            editable: true,
+            eventClick: function (info) {
+                alert('Event: ' + info.event.title + 'vivienda: ' + info.event.extendedProps['vivienda']);
 
-            // change the border color just for fun
-            info.el.style.borderColor = 'red';
-        },
-        selectable: true,
-        {#selectMirror: true,#}
-        select: function (arg) {
-            var d = arg.start;
-            var fecha0 = [d.getFullYear(), pad(d.getMonth() + 1), pad(d.getDate())].join('-');
-            if (!$(".fc-day[data-date='" + fecha0 + "']").hasClass('date-blocked')) {
-                var fecha = d.toLocaleString();
-                $('#reveal_web_calendar_precios').val('{{ vivienda.preciosweb }}')
-                    .data('vivienda', '')
-                    .data('fecha', fecha0);
-                $('#reveal_web_calendar_bloquear').data('vivienda', '').data('fecha', fecha0);
-                $('#reveal_web_calendar_fecha').html(fecha);
-                $('#reveal_web_calendar').foundation('reveal', 'open');
-            } else {
-                alert('Día bloqueado');
-            }
+                // change the border color just for fun
+                info.el.style.borderColor = 'red';
+            },
+            selectable: false,
+            {#selectMirror: true,#}
+            {#select: function (arg) {#}
+            {#    var d = arg.start;#}
+            {#    var fecha0 = [d.getFullYear(), pad(d.getMonth() + 1), pad(d.getDate())].join('-');#}
+            {#    if (!$(".fc-day[data-date='" + fecha0 + "']").hasClass('date-blocked')) {#}
+            {#        var fecha = d.toLocaleString();#}
+            {#        $('#reveal_web_calendar_precios').val('{{ vivienda.preciosweb }}')#}
+            {#            .data('vivienda', '')#}
+            {#            .data('fecha', fecha0);#}
+            {#        $('#reveal_web_calendar_bloquear').data('vivienda', '').data('fecha', fecha0);#}
+            {#        $('#reveal_web_calendar_fecha').html(fecha);#}
+            {#        $('#reveal_web_calendar').foundation('reveal', 'open');#}
+            {#    } else {#}
+            {#        alert('Día bloqueado');#}
+            {#    }#}
+            {##}
+            {#    calendar.unselect()#}
+            {# },#}
+            {#events: {% autoescape off %}{{ vivienda|reservas2eventos }}{% endautoescape %},#}
+        });
 
-            calendar.unselect()
-        },
-        {#events: {% autoescape off %}{{ vivienda|reservas2eventos }}{% endautoescape %},#}
-    });
+        calendar.render();
 
-    calendar.render();
-
-    calendar.addEvent({
-        title: 'Prueba',
-        start: '2019-07-30',
-        end: '2019-07-23',
-        className: 'date-blocked'
-        {#rendering: 'background',#}
-    });
+        calendar.addEvent({
+            title: 'Prueba adsfafd afds 66666',
+            start: '2019-10-03',
+            {#end: '2019-10-2',#}
+            className: 'date-blocked'
+            {#rendering: 'background',#}
+        });
 
         {#        $('body').on('click', '.delete_moscoso', function (e) {#}
         {#            e.preventDefault();#}
@@ -253,7 +254,6 @@
         {#                }#}
         {#            });#}
         {#        });#}
-
 
 
     </script>

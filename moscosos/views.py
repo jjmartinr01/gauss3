@@ -5,7 +5,7 @@ from django.utils.timezone import datetime
 from django.template.loader import render_to_string
 
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required
-from entidades.models import Gauser_extra
+from entidades.models import Gauser_extra, Ronda
 from mensajes.models import Aviso
 from moscosos.models import Moscoso, ConfiguraMoscosos, FechaNoPermitida
 
@@ -15,19 +15,14 @@ from moscosos.models import Moscoso, ConfiguraMoscosos, FechaNoPermitida
 def moscosos(request):
     g_e = request.session['gauser_extra']
     cm, c = ConfiguraMoscosos.objects.get_or_create(ronda=g_e.ronda)
+    mes = datetime.today().month
     if cm.autoriza == g_e:
-        moscosos = Moscoso.objects.filter(cm=cm).order_by('fecha')
+        propios = Moscoso.objects.filter(cm=cm, fecha__month=mes).order_by('fecha')
     else:
-        moscosos = Moscoso.objects.filter(cm=cm, estado='NAC', solicita=g_e)
+        propios = Moscoso.objects.filter(cm=cm, solicita=g_e)
 
     if request.method == 'POST':
-        miembro_unidad = Gauser_extra.objects.get(id=request.POST['miembro_unidad'])
-        if request.POST['action'] != 'miembro_unidad':
-            form2 = Gauser_extra_mis_datos_Form(request.POST, request.FILES, instance=miembro_unidad)
-            if form2.is_valid():
-                form2.save()
-            else:
-                crear_aviso(request, False, form2.errors)
+        pass
 
     respuesta = {
         'iconos':
@@ -36,7 +31,8 @@ def moscosos(request):
              ),
         'formname': 'moscosos',
         'cm': cm,
-        'moscosos': moscosos,
+        'moscosos': Moscoso.objects.filter(cm=cm, fecha__month=mes).order_by('fecha'),
+        'propios': propios,
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)
     }
     return render(request, "moscosos.html", respuesta)
@@ -81,3 +77,19 @@ def ajax_moscosos(request):
                     return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+
+@permiso_required('acceso_moscosos')
+def calendario_moscosos(request):
+    if request.method == 'GET':
+        ronda = Ronda.objects.get(id=request.GET['r'])
+        cm = ConfiguraMoscosos.objects.get(ronda=ronda)
+        mes = datetime.today().month
+    elif request.method == 'POST':
+        ronda = Ronda.objects.get(id=request.POST['r'])
+        cm = ConfiguraMoscosos.objects.get(ronda=ronda)
+        mes = datetime.today().month
+
+    respuesta = {
+        'moscosos': Moscoso.objects.filter(cm=cm, fecha__month=mes).order_by('fecha'),
+    }
+    return render(request, "moscosos.html", respuesta)

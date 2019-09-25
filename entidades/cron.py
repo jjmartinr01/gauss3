@@ -8,8 +8,7 @@ from horarios.views import xml_penalara
 from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios
 from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia
 
-logger = logging.getLogger('django')
-
+# logger = logging.getLogger('django')
 
 @kronos.register('*/2 * * * *')
 def carga_masiva_from_file():
@@ -26,7 +25,7 @@ def carga_masiva_from_file():
                     docente = Gauser_extra.objects.get(entidad=carga.ronda.entidad, ronda=carga.ronda,
                                                        clave_ex=clave_docente)
                 except:
-                    logger.info(u'No se encuentra el docente con clave: %s' % clave_docente)
+                    # logger.info(u'No se encuentra el docente con clave: %s' % clave_docente)
                     docente = None
 
                 dia = dias[sesion.find('DIA').text]
@@ -35,7 +34,7 @@ def carga_masiva_from_file():
                 try:
                     tramo_horario = Tramo_horario.objects.get(horario=horario, clave_ex=clave_tramo_horario)
                 except:
-                    logger.info(u'No se encuentra el tramo horario con clave: %s' % clave_tramo_horario)
+                    # logger.info(u'No se encuentra el tramo horario con clave: %s' % clave_tramo_horario)
                     tramo_horario = None
 
                 clave_materia = sesion.find('MATERIA').text
@@ -44,11 +43,13 @@ def carga_masiva_from_file():
                         materia = Materia.objects.get(clave_ex=clave_materia, curso__ronda=carga.ronda)
                     except:
                         if '#' in clave_materia:
-                            logger.info('Encontrada materia con #. Se buscará la actividad equivalente de código %s' % (
-                                            clave_materia))
+                            pass
+                            # logger.info('Encontrada materia con #. Se buscará la actividad equivalente de código %s' % (
+                            #                 clave_materia))
                         else:
-                            logger.info('No se encuentra la materia con clave: %s. Clave del grupo: %s' % (
-                                            clave_materia, sesion.find('GRUPO').text))
+                            pass
+                            # logger.info('No se encuentra la materia con clave: %s. Clave del grupo: %s' % (
+                            #                 clave_materia, sesion.find('GRUPO').text))
                         materia = None
                 else:
                     materia = None
