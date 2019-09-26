@@ -970,7 +970,12 @@ def datos_entidad(request):
                 return JsonResponse({'ok': True, 'mensaje': mensaje})
             except:
                 return JsonResponse({'ok': False})
-
+        elif action == 'borrar_ge' and request.is_ajax():
+            try:
+                Gauser_extra.objects.get(id=request.POST['id']).delete()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
         elif action == 'update_ronda':
             try:
                 form = EntidadForm(request.POST)
@@ -1017,6 +1022,8 @@ def datos_entidad(request):
         entidad = Entidad.objects.get(id=g_e.ronda.entidad.id)
         form = EntidadForm(instance=entidad)
 
+    sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+    docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
     return render(request, "datos_entidad.html",
                   {
                       'formname': 'datos_entidad',
@@ -1025,6 +1032,7 @@ def datos_entidad(request):
                       'avisos': Aviso.objects.filter(usuario=request.session["gauser_extra"],
                                                      aceptado=False),
                       'rondas': Ronda.objects.filter(entidad=g_e.ronda.entidad),
+                      'docentes': docentes
                   })
 
 

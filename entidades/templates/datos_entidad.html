@@ -159,12 +159,32 @@
                 </div>
             </div>
         </div>
+
+{% for docente in docentes %}
+    {{ docente.gauser.get_full_name }}, clave: {{ docente.clave_ex }}, id: {{ docente.id }}
+    <input type="checkbox" data-id="{{ docente.id }}" class="docente"> <br>
+    {% endfor %}
+
+
     </form>
 {% endblock %}
 
 
 {% block final %}
     <script>
+    $('.docente').on('click', function () {
+       var id=$(this).data('id');
+       $.post("/datos_entidad/", {action: 'borrar_ge', id: id},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+    });
+
+
         $("#id_ronda").on('change', function () {
                 $('#action').val('update_ronda');
                 document

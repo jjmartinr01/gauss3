@@ -27,7 +27,7 @@
                 <select name="gauser_extra" id="gauser_extra">
                     <option value="">Haz click aquí para seleccionar una entidad</option>
                     {% for gauser_extra in gauser_extras %}
-                        <option value="{{ gauser_extra.id }}">{{ gauser_extra.ronda.entidad.name }}</option>
+                        <option value="{{ gauser_extra.id }}">{{ gauser_extra.ronda.entidad.name }} ({{ gauser_extra.clave_ex }} - {{ gauser_extra.id }})</option>
                     {% endfor %}
                 </select>
             </div>
