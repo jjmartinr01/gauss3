@@ -971,6 +971,8 @@ def datos_entidad(request):
             except:
                 return JsonResponse({'ok': False})
         elif action == 'borrar_ge' and request.is_ajax():
+            Gauser_extra.objects.get(id=request.POST['id']).delete()
+            return JsonResponse({'ok': True})
             try:
                 Gauser_extra.objects.get(id=request.POST['id']).delete()
                 return JsonResponse({'ok': True})
