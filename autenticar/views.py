@@ -65,7 +65,7 @@ def recarga_captcha(request):
 
 ##########################################################################
 ###############  FUNCIONES RELACIONADAS CON USUARIO GAUSS
-# @gauss_required
+@gauss_required
 def borrar_entidades(request):
     g_e = request.session['gauser_extra']
     if g_e.gauser.username == 'gauss':

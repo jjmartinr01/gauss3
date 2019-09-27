@@ -925,7 +925,7 @@ def configura_rondas(request):
                   })
 
 
-# @permiso_required('acceso_datos_entidad')
+@permiso_required('acceso_datos_entidad')
 def datos_entidad(request):
     g_e = request.session["gauser_extra"]
     docConf, c = DocConfEntidad.objects.get_or_create(entidad=g_e.ronda.entidad)
@@ -971,16 +971,19 @@ def datos_entidad(request):
             except:
                 return JsonResponse({'ok': False})
         elif action == 'borrar_ge' and request.is_ajax():
-            nueva_ronda = Ronda.objects.filter(entidad__name__icontains='Borrar')[0]
             ge_borrar = Gauser_extra.objects.get(id=request.POST['id'])
-            ge_borrar.ronda = nueva_ronda
-            ge_borrar.save()
-            return JsonResponse({'ok': True})
-            try:
-                Gauser_extra.objects.get(id=request.POST['id']).delete()
-                return JsonResponse({'ok': True})
-            except:
-                return JsonResponse({'ok': False})
+            num_ges = Gauser_extra.objects.filter(ronda=ge_borrar.ronda, gauser=ge_borrar.gauser).count()
+            if num_ges > 1:
+                try:
+                    ge_borrar.delete()
+                    return JsonResponse({'ok': True})
+                except:
+                    nueva_ronda = Ronda.objects.filter(entidad__name__icontains='Borrar')[0]
+                    ge_borrar.ronda = nueva_ronda
+                    ge_borrar.save()
+                    return JsonResponse({'ok': True})
+            else:
+                return JsonResponse({'ok': False, 'm': 'Solo hay un usuario en esta ronda'})
         elif action == 'update_ronda':
             try:
                 form = EntidadForm(request.POST)
@@ -1064,7 +1067,7 @@ class Reserva_plazaForm(ModelForm):
         exclude = ('entidad',)
 
 
-# @permiso_required('acceso_reserva_plazas')
+@permiso_required('acceso_reserva_plazas')
 def reserva_plazas(request):
     g_e = request.session['gauser_extra']
     # Creamos la clave secreta asociada a una entidad, en el caso de no existir:
@@ -1166,7 +1169,7 @@ def formulario_ext_reserva_plaza(request):
                                  'mensaje': 'Debes introducir el texto mostrado en la imagen. Si no lo ves claro pulsa en "Recargar"'})
 
 
-# @permiso_required('acceso_crear_usuarios')
+@permiso_required('acceso_listados_usuarios')
 def listados_usuarios_entidad(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST' and request.is_ajax():
@@ -1282,7 +1285,7 @@ def add_usuario(request):
                   })
 
 
-# @permiso_required('acceso_tutores_entidad')
+@permiso_required('acceso_tutores_entidad')
 def tutores_entidad(request):
     g_e = request.session['gauser_extra']
     sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
@@ -1512,7 +1515,7 @@ def bajas_usuarios(request):
                   })
 
 
-# @permiso_required('acceso_gestionar_perfiles')
+@permiso_required('acceso_gestionar_perfiles')
 def organigrama(request):
     g_e = request.session['gauser_extra']
     crear_aviso(request, True, request.META['PATH_INFO'])
@@ -1692,7 +1695,7 @@ def subentidades(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
-
+@login_required()
 def subentidades_ajax(request):
     g_e = request.session['gauser_extra']
     if request.is_ajax():
