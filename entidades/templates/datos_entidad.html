@@ -161,7 +161,7 @@
         </div>
 
 {% for docente in docentes %}
-    {{ docente.gauser.get_full_name }}, clave: {{ docente.clave_ex }}, id: {{ docente.id }}
+    {{ docente.gauser.get_full_name }}, clave: {{ docente.clave_ex }}, id: {{ docente.id }} -- {{ docente.ronda }} -- {{ docente.gauser.id }}
     <input type="checkbox" data-id="{{ docente.id }}" class="docente"> <br>
     {% endfor %}
 

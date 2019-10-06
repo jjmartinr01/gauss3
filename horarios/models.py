@@ -9,6 +9,7 @@ from entidades.models import Entidad, Subentidad, Ronda, Dependencia, Gauser_ext
 from estudios.models import Curso as ECurso
 from estudios.models import Grupo as EGrupo
 from estudios.models import Materia as EMateria
+from gauss.funciones import pass_generator
 
 DIAS_SEMANA = (
     ('lunes', 'lunes'),
@@ -454,6 +455,26 @@ class Gauser_extra_horarios(models.Model):
         return u'%s - %s' % (self.ge, self.grupo)
 
 
+def update_fichero_carga_masiva(instance, filename):
+    nombre = filename.partition('.')
+    nombre = '%s_%s.%s' % (str(instance.ronda.entidad.code), pass_generator(), nombre[2])
+    return os.path.join("carga_masiva/", nombre)
+
+
+class CargaMasiva(models.Model):
+    TIPOS = (('PLUMIER', 'Horarios Peñalara Plumier'), ('', ''), ('', ''), ('', ''), ('', ''), )
+    ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE, related_name='horarios')
+    fichero = models.FileField("Fichero con datos", upload_to=update_fichero_carga_masiva, blank=True)
+    tipo = models.CharField("Tipo de archivo", max_length=15, choices=TIPOS)
+    incidencias = models.TextField("Incidencias producidas", blank=True, null=True, default='')
+    cargado = models.BooleanField("¿Se ha cargado el archivo?", default=False)
+
+    class Meta:
+        verbose_name_plural = "Cargas Masivas"
+        ordering = ['-ronda']
+
+    def __str__(self):
+        return u'%s -- Cargado: %s' % (self.ronda, self.cargado)
 
 
 

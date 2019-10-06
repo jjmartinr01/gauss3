@@ -17,6 +17,7 @@ from django.template.loader import render_to_string
 
 from autenticar.control_acceso import permiso_required
 from mensajes.models import Mensaje, Aviso, Adjunto, Borrado, Importante, Leido, Etiqueta, Mensaje_cola
+from mensajes.tasks import mail_mensajes_cola
 from gauss.rutas import *
 
 # from entidades.models import Subentidad
@@ -87,6 +88,7 @@ def crea_mensaje_cola(mensaje):
         m = Mensaje_cola.objects.create(mensaje=mensaje, receptores=';'.join(correo), enviado=False)
     m.ultima_parte = True
     m.save()
+    mail_mensajes_cola.delay()
 
 
 @permiso_required('acceso_redactar_mensaje')

@@ -22,7 +22,7 @@ from gtelegram.views import envia_telegram
 logger = logging.getLogger('django')
 
 
-@kronos.register('*/2 * * * *')
+# @kronos.register('*/2 * * * *')
 def comunica_viajero2PNGC():
     registros = RegistroPolicia.objects.filter(enviado=False)[:5]
     for registro in registros:

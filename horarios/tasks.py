@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
+from celery import shared_task
 import logging
-import kronos
 from lxml import etree as ElementTree
 from django.db.models import Q
 from entidades.models import CargaMasiva, Gauser_extra, Dependencia
-from horarios.views import xml_penalara
 from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios
 from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia
+from gauss.rutas import MEDIA_FILES
 
-# logger = logging.getLogger('django')
+logger = logging.getLogger('django')
 
-# @kronos.register('*/2 * * * *')
+@shared_task
 def carga_masiva_from_file():
+    # f = open(MEDIA_FILES + 'prueba_rabitt.txt', 'w+')
+    # f.write('Esta es el contenido PLUMIER')
+    # f.close()
     cargas_necesarias = CargaMasiva.objects.filter(cargado=False)
     for carga in cargas_necesarias:
         if carga.tipo == 'PLUMIER':
@@ -116,3 +119,4 @@ def carga_masiva_from_file():
 
             carga.cargado = True
             carga.save()
+    return True

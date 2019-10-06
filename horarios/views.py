@@ -22,6 +22,7 @@ from gauss.funciones import usuarios_de_gauss, html_to_pdf
 from gauss.rutas import MEDIA_ACTILLAS
 from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios
 from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia
+from horarios.tasks import carga_masiva_from_file
 from entidades.models import *
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
@@ -793,7 +794,7 @@ def carga_masiva_horarios(request):
                 elif xml_file.tag == 'HORARIO':  # Si ocurre esto es el archivo de exportación de PEÑALARA
                     CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo'], tipo='PLUMIER')
                     # from entidades.cron import carga_masiva_from_file
-                    # carga_masiva_from_file()
+                    carga_masiva_from_file.delay()
                     # xml_penalara(xml_file, request)
             else:
                 crear_aviso(request, False, u'El archivo cargado no tiene el formato adecuado.')

@@ -42,6 +42,7 @@ from mensajes.views import encolar_mensaje, crear_aviso
 from vut.models import Vivienda, Ayudante, Reserva, Viajero, RegistroPolicia, PAISES, Autorizado, CalendarioVivienda, \
     ContabilidadVUT, PartidaVUT, AsientoVUT, AutorizadoContabilidadVut, PORTALES, DomoticaVUT, FotoWebVivienda, \
     DayWebVivienda
+from vut.tasks import comunica_viajero2PNGC
 
 # Create your views here.
 logger = logging.getLogger('django')
@@ -1468,6 +1469,7 @@ def crea_fichero_policia(viajero):
         contenido = render_to_string('fichero_registro_policia.vut', {'v': vivienda, 'vs': [viajero]})
         f.write(contenido.encode('utf-8'))
         RegistroPolicia.objects.create(vivienda=vivienda, parte=File(f), viajero=viajero)
+        comunica_viajero2PNGC.delay()
         f.close()
         if os.path.isfile(ruta):
             os.remove(ruta)
