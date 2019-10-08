@@ -374,6 +374,6 @@ def carga_masiva_from_excel():
                     gauser_extra.save()
                     gauser_extra.gauser_extra_estudios.grupo = grupo
                     gauser_extra.gauser_extra_estudios.save()
-        carga.cargado = True
-        carga.save()
+            carga.cargado = True
+            carga.save()
     return True

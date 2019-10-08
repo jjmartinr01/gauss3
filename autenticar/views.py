@@ -750,7 +750,7 @@ def carga_masiva(request):
         if action == 'carga_masiva_racima':
             if 'excel' in request.FILES['file_masivo'].content_type:
                 CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo'], tipo='EXCEL')
-                carga_masiva_from_excel.delay()
+                carga_masiva_from_excel.apply_async(expires=300)
                 crear_aviso(request, False, u'El archivo cargado puede tardar unos minutos en ser procesado.')
         else:
             crear_aviso(request, False, u'El archivo cargado no tiene el formato adecuado.')
