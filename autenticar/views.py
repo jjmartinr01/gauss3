@@ -374,7 +374,6 @@ def enlazar(request):
         form = CaptchaForm()
         return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso'})
 
-
 ##########################################################################
 ###############  PÁGINA DE ACCESO
 
@@ -417,6 +416,9 @@ def index(request):
                         request.session["gauser_extra"] = gauser_extras[0]
                         request.session["ronda"] = request.session["gauser_extra"].ronda
                         request.session['num_items_page'] = 15
+                        # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
+                        gauss = Gauser.objects.get(username='gauss')
+                        Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
                         logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
                         usernombre = request.session['gauser_extra'].gauser.username
                         # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
@@ -463,6 +465,9 @@ def index(request):
                         request.session["gauser_extra"] = gauser_extras[0]
                         request.session["ronda"] = request.session["gauser_extra"].ronda
                         request.session['num_items_page'] = 15
+                        # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
+                        gauss = Gauser.objects.get(username='gauss')
+                        Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
                         logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
                         usernombre = request.session['gauser_extra'].gauser.username
                         # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
@@ -515,6 +520,9 @@ def index(request):
             request.session["gauser_extra"] = Gauser_extra.objects.get(pk=request.POST['gauser_extra'])
             request.session["ronda"] = request.session["gauser_extra"].ronda
             request.session['num_items_page'] = 15
+            # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
+            gauss = Gauser.objects.get(username='gauss')
+            Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
             logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
             usernombre = request.session['gauser_extra'].gauser.username
             # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
