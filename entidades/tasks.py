@@ -9,7 +9,7 @@ from django.utils.timezone import timedelta, datetime, now
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils.encoding import smart_text
 from estudios.models import Grupo, Gauser_extra_estudios
-from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva
+from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva, Entidad
 from autenticar.models import Gauser
 from gauss.constantes import PROVINCIAS
 from bancos.views import asocia_banco_ge
@@ -105,7 +105,16 @@ def create_usuario(datos, carga, tipo):
         except MultipleObjectsReturned:
             ges = Gauser_extra.objects.filter(gauser=gauser, ronda=carga.ronda)
             gauser_extra = ges[0]
-            ges.exclude(id=gauser_extra.id).delete()
+            # Podríamos escribir ges.exclude(id=gauser_extra.id).delete(), pero como hay un error porque
+            # falta el nregistro en vut_vivienda necesito hacer esta triquiñuela para no duplicar usuarios:
+            for ge_borrar in ges.exclude(id=gauser_extra.id):
+                try:
+                    ge_borrar.delete()
+                except:
+                    entidad = Entidad.objects.get(code='101010')
+                    ge_borrar.ronda = entidad.ronda
+                    ge_borrar.save()
+                    logger.warning('Gauser_extra asociados al Gauser %s, desplazado al contenedor.' % (gauser))
             logger.warning('Varios Gauser_extra asociados al Gauser %s, se borran todos menos uno.' % (gauser))
             mensaje = 'Varios Gauser_extra asociados al Gauser %s, se borran todos menos uno.' % (gauser)
             logger.info(mensaje)
