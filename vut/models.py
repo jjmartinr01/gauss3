@@ -135,7 +135,7 @@ class Vpropietario(models.Model):
     vivienda = models.ForeignKey(Vivienda, blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return u'%s (%s)' % (self.gpropietario, self.vivienda)
+        return u'%s (%s)' % (self.propietario, self.vivienda)
 
 
 PORTALES = (('BOO', 'Booking'), ('AIR', 'Airbnb'), ('HOM', 'Homeaway'), ('REN', 'Rentalia'), ('NIU', 'Niumba'),
