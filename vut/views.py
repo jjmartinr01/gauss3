@@ -84,6 +84,11 @@ def has_permiso_on_vivienda(g_e, vivienda, permiso):
 @permiso_required('acceso_viviendas')
 def viviendas(request):
     g_e = request.session['gauser_extra']
+    # Líneas que deben ser borradas:
+    # v_a_cambiar = Vivienda.objects.all()
+    # for v in v_a_cambiar:
+    #     Vpropietario.objects.get_or_create(propietario=v.gpropietario, vivienda=v)
+    # ttg######################
     vvs = viviendas_autorizado(g_e)
     if request.method == 'POST':
         action = request.POST['action']
@@ -130,7 +135,6 @@ def ajax_viviendas(request):
                     vivienda = Vivienda.objects.create(nombre='Nueva vivienda', entidad=g_e.ronda.entidad,
                                                        address='Aquí escribir la dirección de la vivienda',
                                                        habitaciones=1, camas=2, inquilinos=2, iban='',
-                                                       # propietario=g_e,
                                                        nif='', municipio='', provincia='', gpropietario=g_e.gauser)
                     html = render_to_string('vivienda_accordion.html', {'viviendas': [vivienda]})
                     return JsonResponse({'html': html, 'ok': True})

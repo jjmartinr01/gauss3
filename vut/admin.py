@@ -10,6 +10,10 @@ class ViviendaAdmin(admin.ModelAdmin):
     search_fields = ['nombre', 'gpropietario__first_name']
     # list_filter = ['gpropietario__first_name']
 
+# class VpropietarioAdmin(admin.ModelAdmin):
+#     search_fields = ['vivienda__nombre', 'propietario__first_name', 'entrada']
+    # list_filter = ['vivienda',]
+
 admin.site.register(Vivienda, ViviendaAdmin)
 admin.site.register(Ayudante)
 admin.site.register(Reserva, ReservaAdmin)
@@ -23,4 +27,4 @@ admin.site.register(PartidaVUT)
 admin.site.register(AsientoVUT)
 admin.site.register(FotoWebVivienda)
 admin.site.register(DayWebVivienda)
-admin.site.register(Vpropietario)
+# admin.site.register(Vpropietario, VpropietarioAdmin)

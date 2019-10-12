@@ -130,12 +130,12 @@ class Vivienda(models.Model):
     def __str__(self):
         return u'%s (%s)' % (self.nombre, self.municipio)
 
-class Vpropietario(models.Model):
-    propietario = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
-    vivienda = models.ForeignKey(Vivienda, blank=True, null=True, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return u'%s (%s)' % (self.propietario, self.vivienda)
+# class Vpropietario(models.Model):
+#     propietario = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
+#     vivienda = models.ForeignKey(Vivienda, blank=True, null=True, on_delete=models.CASCADE)
+#
+#     def __str__(self):
+#         return u'%s (%s)' % (self.propietario, self.vivienda)
 
 
 PORTALES = (('BOO', 'Booking'), ('AIR', 'Airbnb'), ('HOM', 'Homeaway'), ('REN', 'Rentalia'), ('NIU', 'Niumba'),
