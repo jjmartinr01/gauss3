@@ -624,7 +624,7 @@ def ajax_politica_cuotas(request):
                             n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
                             deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
                         elif politica.tipo == 'vut':
-                            viviendas = Vivienda.objects.filter(gpropietario=usuario.gauser,
+                            viviendas = Vivienda.objects.filter(propietarios__in=[usuario.gauser],
                                                                 entidad=usuario.ronda.entidad)
                             deudores = [usuario] * viviendas.count()
                             usuarios_id += [usuario.id]

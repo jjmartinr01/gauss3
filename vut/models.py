@@ -84,8 +84,9 @@ PAISES = (('A9401AAAAA', 'AFGANISTAN'), ('A9399AAAAA', 'AFRICA'), ('A9102AAAAA',
 
 class Vivienda(models.Model):
     POL = (('PN', 'Policía Nacional'), ('GC', 'Guardia Civil'))
-    propietario = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.CASCADE)
-    gpropietario = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
+    propietario = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.CASCADE, related_name='borrar')
+    gpropietario = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE, related_name='gborrar')
+    propietarios = models.ManyToManyField(Gauser, blank=True, null=True)
     entidad = models.ForeignKey(Entidad, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField("Nombre de la vivienda", blank=True, max_length=200, null=True)
     address = models.CharField("Dirección", blank=True, max_length=200, null=True)
@@ -130,16 +131,23 @@ class Vivienda(models.Model):
     def __str__(self):
         return u'%s (%s)' % (self.nombre, self.municipio)
 
-# class Vpropietario(models.Model):
-#     propietario = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
-#     vivienda = models.ForeignKey(Vivienda, blank=True, null=True, on_delete=models.CASCADE)
-#
-#     def __str__(self):
-#         return u'%s (%s)' % (self.propietario, self.vivienda)
-
 
 PORTALES = (('BOO', 'Booking'), ('AIR', 'Airbnb'), ('HOM', 'Homeaway'), ('REN', 'Rentalia'), ('NIU', 'Niumba'),
             ('OAP', 'Only Apartments'), ('WIM', 'Wimdu'), ('TRI', 'TripAdvisor'), ('OTR', 'Otros/Privado'))
+
+
+def fecha_limite():
+    return now().date()+timedelta(7)
+
+class PropuestaPropietario(models.Model):
+    propone = models.ForeignKey(Gauser, blank=True, null=True, related_name='propietario', on_delete=models.CASCADE)
+    propuesto = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
+    aceptada = models.BooleanField('La persona propuesta acepta la propiedad de la vivienda?', default=False)
+    vivienda = models.ForeignKey(Vivienda, blank=True, null=True,on_delete=models.CASCADE)
+    deadline = models.DateField('Fecha límite para aceptar la propuesta', default=fecha_limite)
+
+    def __str__(self):
+        return 'Propone %s - Propuesto %s (%s) -- %s' % (self.propone, self.propuesto, self.aceptada, self.deadline)
 
 
 class DayWebVivienda(models.Model):
@@ -271,6 +279,9 @@ class Autorizado(models.Model):
     autorizado = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.CASCADE)
     estado = models.CharField('Estado de la autorización', max_length=3, default='OFE', choices=ESTADOS)
     permisos = models.ManyToManyField(Permiso, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Autorizados en viviendas"
 
     def __str__(self):
         return u'%s <-> %s' % (self.vivienda, self.autorizado)
@@ -439,6 +450,7 @@ class RegistroPolicia(models.Model):
 
     class Meta:
         ordering = ['-creado']
+        verbose_name_plural = "Registros de Policía"
 
     def __str__(self):
         return u'%s - %s (%s)' % (self.ext, self.vivienda.nombre, self.creado)
@@ -471,6 +483,7 @@ class ContabilidadVUT(models.Model):
 
     class Meta:
         ordering = ['-creado']
+        verbose_name_plural = "Contabilidades VUT"
 
     def __str__(self):
         return u'Contabilidad para %s (%s) - B: %s' % (self.propietario.get_full_name(), self.modificado, self.borrada)
@@ -485,6 +498,9 @@ class AutorizadoContabilidadVut(models.Model):
     estado = models.CharField('Estado de la autorización', max_length=3, default='OFE', choices=ESTADOS)
     permisos = models.ManyToManyField(Permiso, blank=True)
 
+    class Meta:
+        verbose_name_plural = "Autorizados en Contabilidad VUT"
+
     def __str__(self):
         return u'%s <-> %s' % (self.contabilidad, self.autorizado)
 
@@ -498,6 +514,9 @@ class PartidaVUT(models.Model):
     nombre = models.CharField('Nombre de la partida', max_length=150)
     creado = models.DateField('Fecha de creación', auto_now_add=True)  # Se graba automaticamente al crearse
     modificado = models.DateField('Fecha de modificación', auto_now=True)  # Se graba automaticamente al modificarse
+
+    class Meta:
+        verbose_name_plural = "Partidas VUT"
 
     def __str__(self):
         return u'%s (%s)' % (self.nombre, self.get_tipo_display())
@@ -529,6 +548,9 @@ class AsientoVUT(models.Model):
         fileName, fileExtension = os.path.splitext(self.fich_name)
         return fileExtension
 
+    class Meta:
+        verbose_name_plural = "Asientos de partidas VUT"
+
     def __str__(self):
         return u'%s - %s (%s)' % (self.partida.contabilidad.id, self.concepto, self.cantidad)
 
@@ -550,6 +572,7 @@ class DomoticaVUT(models.Model):
 
     class Meta:
         ordering = ['-creado']
+        verbose_name_plural = "Domótica VUT"
 
     def __str__(self):
         return u'%s (%s)' % (self.nombre, self.vivienda)
@@ -567,6 +590,7 @@ class ConfEnlacesDomoticaVUT(models.Model):
 
     class Meta:
         ordering = ['-creado']
+        verbose_name_plural = "Configuración de enlaces VUT"
 
     def __str__(self):
         return u'%s (%s)' % (self.nombre, self.vivienda)

@@ -10,9 +10,17 @@ register = Library()
 
 
 @register.filter
-def number_viviendas_same_propietario(vivienda):
-    entidad = vivienda.entidad
-    return Vivienda.objects.filter(gpropietario=vivienda.gpropietario, entidad=vivienda.entidad).count()
+def number_viviendas_same_propietario(g_e):
+    return Vivienda.objects.filter(propietarios__in=[g_e.gauser], entidad=g_e.ronda.entidad).count()
+
+@register.filter
+def viviendas_same_propietario(g_e):
+    return Vivienda.objects.filter(propietarios__in=[g_e.gauser], entidad=g_e.ronda.entidad)
+
+@register.filter
+def copropietarios(vivienda, g_e):
+    return vivienda.propietarios.exclude(id=g_e.gauser.id)
+
 
 
 @register.filter
@@ -45,7 +53,7 @@ def has_permiso_vut(autorizado, permiso):
 
 @register.filter
 def viviendas(propietario):
-    return Vivienda.objects.filter(gpropietario=propietario)
+    return Vivienda.objects.filter(propietarios__in=[propietario])
 
 
 @register.filter

@@ -9,6 +9,7 @@ from django.utils.text import normalize_newlines
 from autenticar.models import Permiso
 from calendario.models import Vevent
 from entidades.models import Gauser_extra, Menu, Ronda, Filtrado, Cargo, Subentidad, ge_id_patron_match, user_auto_id
+from vut.models import Vivienda
 
 import re
 from datetime import date, datetime
@@ -255,18 +256,44 @@ def no_exentos(politica, total=1000):
     for usuario in usuarios:
         n += 1
         if usuario.id not in usuarios_id:
+            if politica.tipo == 'hermanos':
+                familiares = usuario.unidad_familiar
+                deudores = familiares.filter(id__in=usuarios)
+                if deudores.count() > 1:
+                    concepto = 'Familia %s' % deudores[0].gauser.last_name
+                else:
+                    concepto = deudores[0].gauser.get_full_name()
+                usuarios_id += list(deudores.values_list('id', flat=True))
+                n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
+                deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
+            elif politica.tipo == 'vut':
+                viviendas = Vivienda.objects.filter(propietarios__in=[usuario.gauser],
+                                                    entidad=usuario.ronda.entidad)
+                deudores = [usuario] * viviendas.count()
+                usuarios_id += [usuario.id]
+                n_cs = [usuario.num_cuenta_bancaria]
+                deudores_str = '%s viviendas gestionadas por %s' % (viviendas.count(),
+                                                                    usuario.gauser.get_full_name())
+                concepto = 'Cuota %s' % usuario.ronda.entidad.name
+            else:
+                deudores = []
+                usuarios_id += [usuario.id]
+                n_cs = []
+                deudores_str = ''
+                concepto = ''
+
+
             familiares = usuario.unidad_familiar
-            deudores = familiares.filter(id__in=usuarios)
-            concepto = 'Familia' if deudores.count() > 1 else deudores[0].gauser.first_name
-            usuarios_id += list(deudores.values_list('id', flat=True))
-            n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
+            # deudores = familiares.filter(id__in=usuarios)
+
             try:
                 cuenta_banca = [n_c.replace(' ', '') for n_c in n_cs if len(str(n_c)) > 18][0]
                 estilo, title = "", "Cuenta bancaria: " + str(cuenta_banca)
             except:
                 estilo, title = "color:red", "No hay cuenta bancaria asignada"
-            no_ex.append('<span title="%s" style="%s">%s %s (%s)</span>' % (
-                title, estilo, concepto, deudores[0].gauser.last_name, str(sum(importes[:deudores.count()]))))
+            if len(deudores) > 0:
+                no_ex.append('<span title="%s" style="%s">%s %s (%s)</span>' % (
+                    title, estilo, concepto, deudores[0].gauser.last_name, str(sum(importes[:len(deudores)]))))
     return no_ex
 
 

@@ -1067,10 +1067,11 @@ def borrar_firmas_acta(acta):
         mensaje.receptores.add(*receptores)
         mensaje.etiquetas.add(etiqueta)
         crea_mensaje_cola(mensaje)
-        firma.firma = None
         if firma.firma:
             if os.path.isfile(firma.firma.path):
                 os.remove(firma.firma.path)
+            firma.firma = None
+        firma.firmada = False
         firma.save()
     return True
 

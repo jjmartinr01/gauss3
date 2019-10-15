@@ -54,7 +54,7 @@ def viviendas_con_permiso(g_e, permiso):
     autorizado = Autorizado.objects.filter(autorizado=g_e, vivienda__borrada=False, permisos__in=[permiso])
     q1 = Q(id__in=autorizado.values_list('vivienda__id', flat=True))
     if g_e.has_permiso(permiso.code_nombre):
-        q2 = Q(gpropietario=g_e.gauser)
+        q2 = Q(propietarios__in=[g_e.gauser])
         return Vivienda.objects.filter(q1 | q2)
     else:
         return Vivienda.objects.filter(q1)
@@ -62,7 +62,7 @@ def viviendas_con_permiso(g_e, permiso):
 
 def viviendas_autorizado(g_e):
     vvs_id = Autorizado.objects.filter(autorizado=g_e, vivienda__borrada=False).values_list('vivienda__id', flat=True)
-    q1 = Q(gpropietario=g_e.gauser)
+    q1 = Q(propietarios__in=[g_e.gauser])
     q2 = Q(borrada=False)
     q3 = Q(id__in=vvs_id)
     return Vivienda.objects.filter((q1 & q2) | q3).distinct()
@@ -71,7 +71,7 @@ def viviendas_autorizado(g_e):
 def has_permiso_on_vivienda(g_e, vivienda, permiso):
     if type(permiso) is str:
         permiso = Permiso.objects.get(code_nombre=permiso)
-    if vivienda.gpropietario == g_e.gauser:
+    if g_e.gauser in vivienda.propietarios.all():
         return g_e.has_permiso(permiso.code_nombre)
     else:
         try:
@@ -85,9 +85,9 @@ def has_permiso_on_vivienda(g_e, vivienda, permiso):
 def viviendas(request):
     g_e = request.session['gauser_extra']
     # Líneas que deben ser borradas:
-    # v_a_cambiar = Vivienda.objects.all()
-    # for v in v_a_cambiar:
-    #     Vpropietario.objects.get_or_create(propietario=v.gpropietario, vivienda=v)
+    v_a_cambiar = Vivienda.objects.all()
+    for v in v_a_cambiar:
+        v.propietarios.add(v.gpropietario)
     # ttg######################
     vvs = viviendas_autorizado(g_e)
     if request.method == 'POST':
@@ -102,7 +102,7 @@ def viviendas(request):
                 if viajeros.count() > 0:
                     c = render_to_string('libro_registro_policia.html',
                                          {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                    ruta = '%s%s/%s/' % (MEDIA_VUT, vivienda.entidad.id, vivienda.id)
+                    ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, vivienda.entidad.code, vivienda.id)
                     fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
                                        title=u'Libro de registro de viajeros', tipo='sin_cabecera')
                     response = HttpResponse(fich, content_type='application/pdf')
@@ -135,7 +135,8 @@ def ajax_viviendas(request):
                     vivienda = Vivienda.objects.create(nombre='Nueva vivienda', entidad=g_e.ronda.entidad,
                                                        address='Aquí escribir la dirección de la vivienda',
                                                        habitaciones=1, camas=2, inquilinos=2, iban='',
-                                                       nif='', municipio='', provincia='', gpropietario=g_e.gauser)
+                                                       nif='', municipio='', provincia='')
+                    vivienda.propietarios.add(g_e.gauser)
                     html = render_to_string('vivienda_accordion.html', {'viviendas': [vivienda]})
                     return JsonResponse({'html': html, 'ok': True})
                 except:
@@ -152,7 +153,7 @@ def ajax_viviendas(request):
                     return JsonResponse({'ok': False})
             elif request.POST['action'] == 'delete_vivienda':
                 try:
-                    vivienda = Vivienda.objects.get(id=request.POST['vivienda'], gpropietario=g_e.gauser)
+                    vivienda = Vivienda.objects.get(id=request.POST['vivienda'], propietarios__in=[g_e.gauser])
                     permiso = Permiso.objects.get(code_nombre='borra_viviendas')
                     if has_permiso_on_vivienda(g_e, vivienda, permiso):
                         vivienda.delete()
@@ -431,7 +432,7 @@ def ajax_viviendas(request):
                     return JsonResponse({'ok': False, 'mensaje': 'La conexión sólo es probada por el propietario'})
     else:
         if request.POST['action'] == 'upload_foto_vut':
-            vivienda = Vivienda.objects.get(id=request.POST['vivienda'], gpropietario=g_e.gauser)
+            vivienda = Vivienda.objects.get(id=request.POST['vivienda'], propietarios__in=[g_e.gauser])
             n_files = int(request.POST['n_files'])
             fotos = []
             for i in range(n_files):
@@ -531,7 +532,7 @@ def reservas_vut(request):
 def get_viviendas(g_e):
     viviendas_autorizadas = Autorizado.objects.filter(autorizado=g_e, vivienda__propietario__entidad=g_e.ronda.entidad)
     viviendas_autorizadas_id = viviendas_autorizadas.values_list('vivienda__id', flat=True)
-    viviendas = Vivienda.objects.filter(Q(id__in=viviendas_autorizadas_id) | Q(gpropietario=g_e.gauser))
+    viviendas = Vivienda.objects.filter(Q(id__in=viviendas_autorizadas_id) | Q(propietarios__in=[g_e.gauser]))
     return viviendas
 
 
@@ -1125,11 +1126,11 @@ def graba_registro(registro):
                     gauser_autorizados = Autorizado.objects.filter(vivienda=vivienda).values_list('gauser__id',
                                                                                                   flat=True)
                     receptores = Gauser.objects.filter(
-                        Q(id__in=gauser_autorizados) | Q(id=vivienda.gpropietario.id))
+                        Q(id__in=gauser_autorizados) | Q(id__in=vivienda.propietarios.all()))
                     mensaje = '<p>En el registro de %s, reserva %s</p><p>La Guardia Civil dice:</p>%s' % (
                         viajero.nombre_completo, viajero.reserva, r.text.replace('\r\n', '<br>'))
                     viajero.observaciones += mensaje
-                    emisor = Gauser_extra.objects.get(gauser=vivienda.gpropietario, ronda=vivienda.entidad.ronda)
+                    emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
                     encolar_mensaje(emisor=emisor, receptores=receptores,
                                     asunto='Error en comunicación a la Guardia Civil', html=mensaje,
                                     etiqueta='guardia_civl%s' % vivienda.id)
@@ -1138,8 +1139,8 @@ def graba_registro(registro):
                     mensaje = '<p>En el registro de %s, reserva %s</p><p>La Guardia Civil dice:</p>%s' % (
                         viajero.nombre_completo, viajero.reserva, r.text.replace('\r\n', '<br>'))
                     viajero.observaciones += mensaje
-                    emisor = Gauser_extra.objects.get(gauser=vivienda.gpropietario, ronda=vivienda.entidad.ronda)
-                    encolar_mensaje(emisor=emisor, receptores=[vivienda.gpropietario],
+                    emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
+                    encolar_mensaje(emisor=emisor, receptores=vivienda.propietarios.all(),
                                     asunto='Comunicación a la Guardia Civil', html=mensaje,
                                     etiqueta='guardia_civl%s' % vivienda.id)
                 viajero.save()
@@ -1151,7 +1152,7 @@ def graba_registro(registro):
                 receptores = Gauser.objects.filter(id__in=gauser_autorizados)
                 mensaje = '<p>No se ha podido establecer comunicación con la Guardia Civil.</p>'
                 viajero.observaciones += mensaje
-                emisor = Gauser_extra.objects.get(gauser=vivienda.gpropietario, ronda=vivienda.entidad.ronda)
+                emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
                 encolar_mensaje(emisor=emisor, receptores=receptores,
                                 asunto='Error en comunicación a la Guardia Civil', html=mensaje,
                                 etiqueta='guardia_civl%s' % vivienda.id)
@@ -1452,7 +1453,7 @@ def graba_registro(registro):
         permiso = Permiso.objects.get(code_nombre='recibe_errores_de_viajeros')
         receptores_ge = Gauser_extra.objects.filter(ronda=ronda, permisos__in=[permiso])
         receptores = Gauser.objects.filter(id__in=receptores_ge.values_list('gauser__id', flat=True))
-        emisor = Gauser_extra.objects.get(gauser=vivienda.gpropietario, ronda=vivienda.entidad.ronda)
+        emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
         encolar_mensaje(emisor=emisor, receptores=receptores,
                         asunto='Error en RegistroPolicia', html=mensaje, etiqueta='error%s' % ronda.id)
         return False
@@ -1482,7 +1483,7 @@ def crea_fichero_policia(viajero):
     except:
         mensaje = 'Error en la elaboración del RegistroPolicia. No se ha podido crear el fichero de registro.'
         ronda = viajero.reserva.vivienda.entidad.ronda
-        emisor = Gauser_extra.objects.get(gauser=viajero.reserva.vivienda.gpropietario, ronda=ronda)
+        emisor = Gauser_extra.objects.get(gauser=viajero.reserva.vivienda.propietarios.all()[0], ronda=ronda)
         permiso = Permiso.objects.get(code_nombre='recibe_errores_de_viajeros')
         receptores_ge = Gauser_extra.objects.filter(ronda=ronda, permisos__in=[permiso], activo=True)
         receptores = Gauser.objects.filter(id__in=receptores_ge.values_list('gauser__id', flat=True))
@@ -1651,14 +1652,13 @@ def viajeros(request):
 # @permiso_required('viviendas_registradas_vut')
 def viviendas_registradas_vut(request):
     g_e = request.session['gauser_extra']
-    viviendas = Vivienda.objects.filter(entidad=g_e.ronda.entidad)
-    # gpropietarios = len(set(viviendas.values_list('gpropietario__id', flat=True)))
+    viviendas = Vivienda.objects.filter(entidad=g_e.ronda.entidad, borrada=False)
     return render(request, "viviendas_registradas_vut.html",
                   {
                       'formname': 'viviendas_registradas_vut',
-                      'num_socios': usuarios_ronda(g_e.ronda).count(),
-                      'num_propietarios': len(set(viviendas.values_list('gpropietario__id', flat=True))),
-                      'viviendas': viviendas.order_by('gpropietario')
+                      'socios': usuarios_ronda(g_e.ronda),
+                      'num_propietarios': len(set(viviendas.values_list('propietarios', flat=True))),
+                      'viviendas': viviendas
                   })
 
 
@@ -1700,7 +1700,7 @@ def contabilidad_vut(request):
                                                   reserva__entrada__gte=fecha_anterior_limite)
                 c = render_to_string('libro_registro_policia.html',
                                      {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                ruta = '%s%s/%s/' % (MEDIA_VUT, vivienda.gpropietario.id, vivienda.id)
+                ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, vivienda.entidad.code, vivienda.id)
                 fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
                                    title=u'Libro de registro de viajeros', tipo='sin_cabecera')
                 response = HttpResponse(fich, content_type='application/pdf')
@@ -1808,7 +1808,7 @@ def ajax_contabilidad_vut(request):
                 try:
                     contabilidad = ContabilidadVUT.objects.get(id=request.POST['contabilidad'])
                     vivienda = Vivienda.objects.get(id=request.POST['vivienda'])
-                    if vivienda in Vivienda.objects.filter(gpropietario=contabilidad.propietario):
+                    if vivienda in Vivienda.objects.filter(propietarios__in=[contabilidad.propietario]):
                         permiso = Permiso.objects.get(code_nombre='edita_contabilidad_vut')
                         a = AutorizadoContabilidadVut.objects.filter(contabilidad=contabilidad, autorizado=g_e.gauser,
                                                                      permisos__in=[permiso]).count()
@@ -2710,7 +2710,7 @@ def web_vut(request):
                                                   reserva__entrada__gte=fecha_anterior_limite)
                 c = render_to_string('libro_registro_policia.html',
                                      {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                ruta = '%s%s/%s/' % (MEDIA_VUT, vivienda.gpropietario.id, vivienda.id)
+                ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, vivienda.entidad.code, vivienda.id)
                 fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
                                    title=u'Libro de registro de viajeros', tipo='sin_cabecera')
                 response = HttpResponse(fich, content_type='application/pdf')
@@ -2751,7 +2751,7 @@ def web_vut_id(request, vivienda_id):
                                                   reserva__entrada__gte=fecha_anterior_limite)
                 c = render_to_string('libro_registro_policia.html',
                                      {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                ruta = '%s%s/%s/' % (MEDIA_VUT, vivienda.gpropietario.id, vivienda.id)
+                ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, vivienda.entidad.code, vivienda.id)
                 fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
                                    title=u'Libro de registro de viajeros', tipo='sin_cabecera')
                 response = HttpResponse(fich, content_type='application/pdf')
