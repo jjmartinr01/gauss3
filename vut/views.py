@@ -81,7 +81,7 @@ def has_permiso_on_vivienda(g_e, vivienda, permiso):
             return False
 
 
-@permiso_required('acceso_viviendas')
+# @permiso_required('acceso_viviendas')
 def viviendas(request):
     g_e = request.session['gauser_extra']
     # Líneas que deben ser borradas:
