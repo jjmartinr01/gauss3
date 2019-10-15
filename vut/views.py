@@ -81,13 +81,13 @@ def has_permiso_on_vivienda(g_e, vivienda, permiso):
             return False
 
 
-# @permiso_required('acceso_viviendas')
+@permiso_required('acceso_viviendas')
 def viviendas(request):
     g_e = request.session['gauser_extra']
     # Líneas que deben ser borradas:
-    v_a_cambiar = Vivienda.objects.all()
-    for v in v_a_cambiar:
-        v.propietarios.add(v.gpropietario)
+    # v_a_cambiar = Vivienda.objects.all()
+    # for v in v_a_cambiar:
+    #     v.propietarios.add(v.gpropietario)
     # ttg######################
     vvs = viviendas_autorizado(g_e)
     if request.method == 'POST':
