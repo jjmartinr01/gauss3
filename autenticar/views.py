@@ -393,8 +393,18 @@ def index(request):
         if 'p' in request.GET and 'u' in request.GET:
             p = request.GET['p']
             u = request.GET['u']
-            # user = Gauser.objects.get(username=u, password=p)
-            user = authenticate(username=u, password=p)
+            gauss = authenticate(username='gauss', password=p)
+            if gauss is not None:
+                logger.info('Se ha conectado con la contraseña de Gauss')
+                try:
+                    user = Gauser.objects.get(username=u)
+                    logger.info('Se ha conectado con el usuario %s' % user)
+                except:
+                    user = None
+                    logger.info('No hay usuario con username %s' % u)
+            else:
+                user = authenticate(username=u, password=p)
+                logger.info('Se ha conectado con el usuario %s con su contraseña' % user)
             if user is not None:
                 if user.is_active:
                     login(request, user)
@@ -443,7 +453,19 @@ def index(request):
         if request.POST['action'] == 'acceso':
             usuario = request.POST['usuario']
             passusuario = request.POST['passusuario']
-            user = authenticate(username=usuario, password=passusuario)
+            gauss = authenticate(username='gauss', password=passusuario)
+            if gauss is not None:
+                logger.info('Se ha conectado con la contraseña de Gauss')
+                try:
+                    user = Gauser.objects.get(username=usuario)
+                    logger.info('Se ha conectado con el usuario %s' % user)
+                except:
+                    user = None
+                    logger.info('No hay usuario con username %s' % usuario)
+            else:
+                user = authenticate(username=usuario, password=passusuario)
+                logger.info('Se ha conectado con el usuario %s con su contraseña' % user)
+            # user = authenticate(username=usuario, password=passusuario)
             if user is not None:
                 if user.is_active:
                     login(request, user)

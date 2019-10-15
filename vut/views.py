@@ -839,16 +839,22 @@ def ajax_reservas_vut(request):
                     viviendas = viviendas_con_permiso(g_e, 'comunica_registro_policia')
                     viajero = Viajero.objects.get(id=request.POST['viajero'])
                     vivienda = viajero.reserva.vivienda
-                    try:
-                        registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
-                    except:
-                        crea_fichero_policia(viajero)
-                        registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
                     if vivienda in viviendas:
+                        try:
+                            registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
+                            if isinstance(registro.observaciones, str):
+                                registro.observaciones += '<br>Se hace un nuevo intento de registro.'
+                            else:
+                                registro.observaciones = '<br>Se hace un nuevo intento de registro.'
+                            registro.enviado = False
+                            registro.save()
+                            comunica_viajero2PNGC.delay()
+                            viajero.observaciones += '<br>Se hace un nuevo intento de registro.'
+                        except:
+                            crea_fichero_policia(viajero)
+                            # registro = RegistroPolicia.objects.get(viajero=viajero, vivienda=vivienda)
                         # estado = graba_registro(registrPo)
-                        registro.enviado = False
-                        registro.save()
-                        viajero.observaciones += '<br>Se hace un nuevo intento de registro.'
+
                         return JsonResponse({'ok': True, 'observaciones': viajero.observaciones})
                     else:
                         return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para realizar esta acción.'})
