@@ -27,6 +27,36 @@
             </h4>
         </div>
 
+        {% if propuestas_copropiedad|length > 0 %}
+            {% for propuesta in propuestas_copropiedad %}
+                <fieldset id="fieldset{{ propuesta.id }}">
+                    <legend>Propuesta para ser copropietario/a de una VUT</legend>
+                    <div id="propuesta{{ propuesta.id }}">
+                        <div class="row">
+                            <div class="columns large-12">
+                                <p><span style="color:grey">{{ propuesta.propone.get_full_name }}</span>
+                                    te invita a que seas co-propietario/a de la vivienda:
+                                    <i>{{ propuesta.vivienda.nombre }}</i>.</p>
+                                <p>Si aceptas la co-propiedad haz click en "Acepto co-propiedad"; en caso contrario
+                                    haz click sobre "No acepto co-propiedad".</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-6">
+                                <a class="button aceptar_copropiedad" data-id="{{ propuesta.vivienda.id }}"
+                                   data-acepta="1" data-propuesta="{{ propuesta.id }}">Acepto co-propiedad</a>
+                            </div>
+                            <div class="columns large-6">
+                                <a class="button alert aceptar_copropiedad" data-id="{{ propuesta.vivienda.id }}"
+                                   data-acepta="0" data-propuesta="{{ propuesta.id }}">No acepto co-propiedad</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </fieldset>
+            {% endfor %}
+        {% endif %}
+
         <dl class="accordion" data-accordion id="list_viviendas">
             {% include 'vivienda_accordion.html' %}
         </dl>
@@ -110,21 +140,24 @@
         <div class="row">
             <div class="columns large-12">
                 <label>Bloquear/Desbloquear alquiler:
-                    <a class="button" data-vivienda="" data-fecha="" id="reveal_web_calendar_bloquear">Bloquear</a></label>
+                    <a class="button" data-vivienda="" data-fecha=""
+                       id="reveal_web_calendar_bloquear">Bloquear</a></label>
             </div>
         </div>
 
         <a class="close-reveal-modal" aria-label="Close">&#215;</a>
     </div>
 
-    <div id="reveal_web_calendar_event" class="reveal-modal" data-reveal aria-labelledby="borrar_evento" aria-hidden="true"
+    <div id="reveal_web_calendar_event" class="reveal-modal" data-reveal aria-labelledby="borrar_evento"
+         aria-hidden="true"
          role="dialog">
         <h3 id="borrar_evento">¿Borrar?</h3>
 
         <div class="row">
             <div class="columns large-12">
                 <label>Eliminar el bloqueo:
-                    <a class="button" data-vivienda="" data-fecha="" id="reveal_web_calendar_desbloquear">Desbloquear</a></label>
+                    <a class="button" data-vivienda="" data-fecha=""
+                       id="reveal_web_calendar_desbloquear">Desbloquear</a></label>
             </div>
         </div>
 
@@ -618,9 +651,67 @@
             });
         {% endif %}
 
+        $('body').on('click', '.send_propuesta', function () {
+            var vivienda = $(this).data('id');
+            var propuestos = $('#select_propietarios' + vivienda).val();
+            $.post("/ajax_viviendas/", {
+                    action: 'send_propuesta_copropiedad',
+                    vivienda: vivienda,
+                    propuestos: propuestos
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+        });
+
+        $('body').on('click', '.aceptar_copropiedad', function () {
+            var vivienda = $(this).data('id');
+            var acepta = $(this).data('acepta');
+            var propuesta = $(this).data('propuesta');
+            $.post("/ajax_viviendas/", {
+                    action: 'aceptar_copropiedad',
+                    vivienda: vivienda,
+                    acepta: acepta,
+                    propuesta: propuesta
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#fieldset' + propuesta).hide();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        if (data.recarga){
+                            location.reload();
+                        }
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+        });
+
+        $('body').on('click', '.define_pagador', function () {
+            var vivienda = $(this).data('id');
+            var gpropietario = $(this).val();
+            $.post("/ajax_viviendas/", {
+                    action: 'define_pagador',
+                    vivienda: vivienda,
+                    gpropietario: gpropietario
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+        });
+
         {# Líneas dedicadas a la gestión de los eventos web #}
 
-        var calendar = {}; {# Diccionario donde se guardarán los full calendar asociados a cada vivienda #}
+        var calendar = {};
+        {# Diccionario donde se guardarán los full calendar asociados a cada vivienda #}
 
         function precio_dia(string_date, precio) {
             $('.fc-day[data-date="' + string_date + '"]').html('<div style="position: absolute;bottom: 10px;color:grey;font-weight:800">' +
@@ -668,6 +759,8 @@
         $('body').on('click', '.date-blocked', function () {
             console.log('fafafa5');
         });
+
+
     </script>
 
 {% endblock %}

@@ -146,8 +146,11 @@ class PropuestaPropietario(models.Model):
     vivienda = models.ForeignKey(Vivienda, blank=True, null=True,on_delete=models.CASCADE)
     deadline = models.DateField('Fecha límite para aceptar la propuesta', default=fecha_limite)
 
+    class Meta:
+        verbose_name_plural = "Propuestas emitidas para ser copropietarios"
+
     def __str__(self):
-        return 'Propone %s - Propuesto %s (%s) -- %s' % (self.propone, self.propuesto, self.aceptada, self.deadline)
+        return 'Propone: %s - Propuesto: %s (%s) -- %s' % (self.propone, self.propuesto, self.aceptada, self.deadline)
 
 
 class DayWebVivienda(models.Model):

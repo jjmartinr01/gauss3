@@ -89,8 +89,9 @@
                 {% endif %}
             </label>
         </div>
-    <div class="columns large-3">
-            <label title="Número de registro de la vivienda de uso turístico en la Comunidad Autónoma"><b>Nº de registro:</b>
+        <div class="columns large-3">
+            <label title="Número de registro de la vivienda de uso turístico en la Comunidad Autónoma"><b>Nº de
+                registro:</b>
                 {% if g_e|has_permiso:'edita_viviendas' %}
                     <input type="text" class="campo_char" data-campo="nregistro" data-id="{{ vivienda.id }}"
                            value="{{ vivienda.nregistro }}">
@@ -99,16 +100,16 @@
                 {% endif %}
             </label>
         </div>
-{#        <div class="columns large-3">#}
-{#            <label title="Cuenta bancaria en la que se hacen los cobros o pagos relacionados con la vivienda"><b>IBAN:</b>#}
-{#                {% if g_e|has_permiso:'edita_viviendas' %}#}
-{#                    <input type="text" class="campo_char" data-campo="iban" data-id="{{ vivienda.id }}"#}
-{#                           value="{{ vivienda.iban }}">#}
-{#                {% else %}#}
-{#                    <br>{{ vivienda.iban }}#}
-{#                {% endif %}#}
-{#            </label>#}
-{#        </div>#}
+        {#        <div class="columns large-3">#}
+        {#            <label title="Cuenta bancaria en la que se hacen los cobros o pagos relacionados con la vivienda"><b>IBAN:</b>#}
+        {#                {% if g_e|has_permiso:'edita_viviendas' %}#}
+        {#                    <input type="text" class="campo_char" data-campo="iban" data-id="{{ vivienda.id }}"#}
+        {#                           value="{{ vivienda.iban }}">#}
+        {#                {% else %}#}
+        {#                    <br>{{ vivienda.iban }}#}
+        {#                {% endif %}#}
+        {#            </label>#}
+        {#        </div>#}
     </div>
 
 
@@ -238,9 +239,40 @@
 </fieldset>
 
 <fieldset>
+    <legend>Propietarios</legend>
+    <div id="propietarios{{ vivienda.id }}">
+        {% for p in vivienda.propietarios.all %}
+            <input type="radio" name="pagador" value="{{ p.id }}" class="define_pagador"
+                   {% if vivienda.gpropietario == p %}checked{% endif %} data-id="{{ vivienda.id }}">
+            <span class="label warning radius">{{ p.get_full_name }}</span>
+            {% if not forloop.last %}&nbsp;{% endif %}
+        {% endfor %}
+    <p class="small" style="color:grey;">El propietario seleccionado será quien se haga cargo de la cuota.</p>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <hr>
+            <label style="font-weight: bold;">Selecciona un usuario (o varios) de GAUSS que quieras que figure como
+                propietario/a de esta vivienda:
+                <select id="select_propietarios{{ vivienda.id }}" multiple="multiple">
+                    {% for u in usuarios %}
+                        <option value="{{ u.gauser.id }}">{{ u.gauser.get_full_name }}</option>
+                    {% endfor %}
+                </select></label>
+            <p>Ser propietario implica asumir una serie responsabilidades. Por esa razón puedes enviar propuestas a
+                otros usuarios para que sean copropietarios de tu vivienda, pero para que realmente lo sean, ellos
+                deben estar de acuerdo y aceptar la propuesta de copropiedad.</p>
+            <p>Pulsa el botón para enviar propuestas a las personas seleccionadas.</p>
+            <a class="button send_propuesta" data-id="{{ vivienda.id }}"><i class="fa fa-male"></i><i class="fa fa-male"></i><i
+                    class="fa fa-male"></i> Envíar propuesta de copropiedad</a>
+        </div>
+    </div>
+</fieldset>
+
+<fieldset>
     <legend>Información para la web</legend>
     <div id="info_web{{ vivienda.id }}">
-            {% include "vivienda_accordion_content_web.html" %}
+        {% include "vivienda_accordion_content_web.html" %}
     </div>
 </fieldset>
 
@@ -285,3 +317,6 @@
     </div>
 </fieldset>
 
+<script>
+    $('#select_propietarios' + {{ vivienda.id }}).select2();
+</script>

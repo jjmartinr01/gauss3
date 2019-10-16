@@ -41,7 +41,7 @@ from autenticar.models import Permiso, Gauser
 from mensajes.views import encolar_mensaje, crear_aviso
 from vut.models import Vivienda, Ayudante, Reserva, Viajero, RegistroPolicia, PAISES, Autorizado, CalendarioVivienda, \
     ContabilidadVUT, PartidaVUT, AsientoVUT, AutorizadoContabilidadVut, PORTALES, DomoticaVUT, FotoWebVivienda, \
-    DayWebVivienda
+    DayWebVivienda, PropuestaPropietario
 from vut.tasks import comunica_viajero2PNGC
 
 # Create your views here.
@@ -85,9 +85,11 @@ def has_permiso_on_vivienda(g_e, vivienda, permiso):
 def viviendas(request):
     g_e = request.session['gauser_extra']
     # Líneas que deben ser borradas:
-    # v_a_cambiar = Vivienda.objects.all()
-    # for v in v_a_cambiar:
-    #     v.propietarios.add(v.gpropietario)
+    v_a_cambiar = Vivienda.objects.all()
+    for v in v_a_cambiar:
+        if not v.gpropietario:
+            v.gpropietario = v.propietarios.all()[0]
+            v.save()
     # ttg######################
     vvs = viviendas_autorizado(g_e)
     if request.method == 'POST':
@@ -121,7 +123,8 @@ def viviendas(request):
                            ),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                       'viviendas': vvs,
-                      'usuarios': usuarios_ronda(g_e.ronda)
+                      'usuarios': usuarios_ronda(g_e.ronda),
+                      'propuestas_copropiedad': PropuestaPropietario.objects.filter(propuesto=g_e.gauser, aceptada=False, deadline__gt=timezone.now())
                   })
 
 
@@ -135,7 +138,7 @@ def ajax_viviendas(request):
                     vivienda = Vivienda.objects.create(nombre='Nueva vivienda', entidad=g_e.ronda.entidad,
                                                        address='Aquí escribir la dirección de la vivienda',
                                                        habitaciones=1, camas=2, inquilinos=2, iban='',
-                                                       nif='', municipio='', provincia='')
+                                                       nif='', municipio='', provincia='', gpropietario=g_e.gauser)
                     vivienda.propietarios.add(g_e.gauser)
                     html = render_to_string('vivienda_accordion.html', {'viviendas': [vivienda]})
                     return JsonResponse({'html': html, 'ok': True})
@@ -145,7 +148,8 @@ def ajax_viviendas(request):
                 try:
                     vivienda = Vivienda.objects.get(id=request.POST['vivienda'])
                     if vivienda in viviendas_autorizado(g_e):
-                        html = render_to_string('vivienda_accordion_content.html', {'vivienda': vivienda, 'g_e': g_e})
+                        usuarios = usuarios_ronda(g_e.ronda)
+                        html = render_to_string('vivienda_accordion_content.html', {'vivienda': vivienda, 'g_e': g_e, 'usuarios': usuarios})
                         return JsonResponse({'ok': True, 'html': html})
                     else:
                         return JsonResponse({'ok': False})
@@ -177,6 +181,39 @@ def ajax_viviendas(request):
                         return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar la vivienda."})
                 except:
                     return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar la vivienda."})
+            elif request.POST['action'] == 'send_propuesta_copropiedad':
+                try:
+                    vivienda = Vivienda.objects.get(id=request.POST['vivienda'], propietarios__in=[g_e.gauser])
+                    propuestos = Gauser.objects.filter(id__in=request.POST.getlist('propuestos[]'))
+                    for p in propuestos:
+                        PropuestaPropietario.objects.get_or_create(propone=g_e.gauser, propuesto=p, vivienda=vivienda)
+                    return JsonResponse({'ok': True, 'p': request.POST.getlist('propuestos[]')})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar la vivienda."})
+            elif request.POST['action'] == 'aceptar_copropiedad':
+                try:
+                    vivienda = Vivienda.objects.get(id=request.POST['vivienda'])
+                    propuesta = PropuestaPropietario.objects.get(id=request.POST['propuesta'], vivienda=vivienda)
+                    if request.POST['acepta'] == '1':
+                        vivienda.propietarios.add(propuesta.propuesto)
+                        propuesta.aceptada = True
+                        propuesta.save()
+                        return JsonResponse({'ok': True, 'recarga': True, 'p':propuesta.aceptada})
+                    else:
+                        propuesta.deadline = timezone.now().date()
+                        propuesta.save()
+                        return JsonResponse({'ok': True,'recarga': False})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': "Error al tratar de realizar la acción solicitada."})
+            elif request.POST['action'] == 'define_pagador':
+                try:
+                    vivienda = Vivienda.objects.get(id=request.POST['vivienda'], propietarios__in=[g_e.gauser])
+                    gpropietario = Gauser.objects.get(id=request.POST['gpropietario'])
+                    vivienda.gpropietario = gpropietario
+                    vivienda.save()
+                    return JsonResponse({'ok': True})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': "Error al tratar de realizar la acción solicitada."})
             elif request.POST['action'] == 'update_campo_foto':
                 try:
                     foto = FotoWebVivienda.objects.get(id=request.POST['foto'])
