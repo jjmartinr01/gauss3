@@ -303,8 +303,7 @@ def sancionar_conductas_ajax(request):
             return JsonResponse(options, safe=False)
         elif action == 'seleccionar_usuario':
             try:
-                sancionado = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, ronda=g_e.ronda,
-                                                      id=request.POST['user'])
+                sancionado = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['user'])
                 Informe_sancionador.objects.filter(sancionado=sancionado, fichero='').delete()
                 sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
                 docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
