@@ -232,5 +232,9 @@ PERMISOS = [{'code_nombre': 'crea_viviendas',
             {'code_nombre': 'ver_dispositivo_domotica',
              'nombre': 'Permiso para ver dispositivos domóticos en viviendas autorizadas',
              'menu': 'acceso_domotica_vut'
+             },
+            {'code_nombre': 'borra_viviendas_registradas',
+             'nombre': 'Permiso para borrar viviendas registradas por otros usuarios',
+             'menu': 'acceso_viviendas'
              }
             ]

@@ -1698,12 +1698,26 @@ def viviendas_registradas_vut(request):
     usuarios = usuarios_ronda(g_e.ronda)
     propietarios = usuarios.values_list('gauser__id', flat=True)
     viviendas = Vivienda.objects.filter(propietarios__in=propietarios, borrada=False)
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'borrar_viviendas_registradas':
+            try:
+                usuario = Gauser_extra.objects.get(id=request.POST['usuario'], ronda=g_e.ronda)
+                vs = viviendas.filter(propietarios__in=[usuario.gauser], entidad=usuario.ronda.entidad)
+                for v in vs:
+                    if v.propietarios.all().count() >= 1:
+                        v.propietarios.remove(usuario.gauser)
+                    else:
+                        v.delete()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
     return render(request, "viviendas_registradas_vut.html",
                   {
                       'formname': 'viviendas_registradas_vut',
                       'socios': usuarios,
                       'num_propietarios': len(set(viviendas.values_list('propietarios', flat=True))),
-                      'viviendas': viviendas
+                      'viviendas': viviendas,
+                      'g_e': g_e
                   })
 
 
