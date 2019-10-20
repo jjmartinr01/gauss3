@@ -140,8 +140,7 @@ def ajax_compraventa(request):
                         asunto = u'Oferta en subasta del artículo %s' % (articulo.nombre)
                     if action == 'servicio':
                         asunto = u'Solicitud del servicio %s' % (articulo.nombre)
-                    gauss = Gauser_extra.objects.get(gauser__username='gauss', entidad=g_e.ronda.entidad,
-                                                     ronda=g_e.ronda.entidad.ronda)
+                    gauss = Gauser_extra.objects.get(gauser__username='gauss', ronda=g_e.ronda)
                     m = Mensaje.objects.create(emisor=gauss, fecha=datetime.now(), asunto=asunto, mensaje=texto_mensaje,
                                                tipo='mail', mensaje_texto=texto_mensaje_PT)
                     m.receptores.add(articulo.vendedor)

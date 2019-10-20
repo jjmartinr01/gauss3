@@ -42,7 +42,7 @@ class UniformeForm(ModelForm):
 @login_required()
 def uniformes(request):
     g_e = request.session['gauser_extra']
-    hijos = Gauser_extra.objects.filter(Q(entidad=g_e.ronda.entidad), Q(ronda=g_e.ronda), Q(tutor1=g_e) | Q(tutor2=g_e))
+    hijos = Gauser_extra.objects.filter(Q(ronda=g_e.ronda), Q(tutor1=g_e) | Q(tutor2=g_e))
     uniformes = Uniforme.objects.filter(Q(solicitante__entidad=g_e.ronda.entidad),
                                         Q(entregado=False) | Q(pagado=False)).order_by('tipo')
     uniformes_solicitados = Uniforme.objects.filter(Q(solicitante=g_e) | Q(gauser_extra__in=hijos)).distinct()

@@ -21,7 +21,7 @@ from django.core.files.base import File
 from autenticar.control_acceso import permiso_required
 from autenticar.models import Gauser
 # from autenticar.control_acceso import access_required
-from gauss.funciones import html_to_pdf, usuarios_ronda
+from gauss.funciones import html_to_pdf, usuarios_ronda, usuarios_de_gauss
 from programaciones.models import *
 from gauss.rutas import RUTA_BASE, MEDIA_PROGRAMACIONES
 from mensajes.views import crear_aviso
@@ -292,7 +292,7 @@ def departamentos_centro_educativo_ajax(request):
             try:
                 departamento = Departamento.objects.get(pk=request.POST['id'], entidad=g_e.ronda.entidad)
                 old_users = usuarios_de_gauss(g_e.ronda.entidad, departamentos=[departamento])
-                new_users = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('users[]'))
+                new_users = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=request.POST.getlist('users[]'))
                 added_users = new_users.exclude(id__in=old_users)
                 removed_users = old_users.exclude(id__in=new_users)
                 for u in added_users:
@@ -1284,7 +1284,7 @@ def ajax_titulos(request):
             return HttpResponse(json.dumps({'accordion': accordion, 'id': copia.id}))
         elif action == 'busca_receptor':
             texto = request.POST['q']
-            g_es = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda, perfiles__in=[12])
+            g_es = Gauser_extra.objects.filter(ronda=g_e.ronda, perfiles__in=[12])
             g_es1 = g_es.filter(Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto) | Q(
                 cargo__icontains=texto)).values_list('id', 'gauser__last_name', 'gauser__first_name', 'cargo')
             g_es2 = Contacto.objects.filter(Q(nombre__icontains=texto) | Q(cargo__icontains=texto),
@@ -1304,8 +1304,7 @@ def ajax_titulos(request):
                 return HttpResponse(json.dumps({'id': str(contacto.id) + "___contacto", 'text': texto}))
         elif action == 'busca_gausers':
             texto = request.POST['q']
-            g_es = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda,
-                                               perfiles__in=[12, 13, 14])
+            g_es = Gauser_extra.objects.filter(ronda=g_e.ronda, perfiles__in=[12, 13, 14])
             g_es1 = g_es.filter(Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto) | Q(
                 cargo__icontains=texto)).values_list('gauser__id', 'gauser__last_name', 'gauser__first_name', 'cargo')
             keys = ('id', 'text')

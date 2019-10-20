@@ -823,10 +823,10 @@ def redactar_actas_ajax(request):
             if acta.publicada or acta.fecha_aprobacion:
                 return JsonResponse({'ok': False})
             if 'added[]' in request.POST:
-                ges = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('added[]'))
+                ges = Gauser_extra.objects.filter(ronda__entidad=g_e.ronda.entidad, id__in=request.POST.getlist('added[]'))
                 acta.asistentes.add(*ges)
             if 'removed[]' in request.POST:
-                ges = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('removed[]'))
+                ges = Gauser_extra.objects.filter(ronda__entidad=g_e.ronda.entidad, id__in=request.POST.getlist('removed[]'))
                 acta.asistentes.remove(*ges)
             asistentes = acta.asistentes.all().values_list('gauser__first_name', 'gauser__last_name')
             ns = human_readable_list([u'{0} {1}'.format(first_name, last_name) for first_name, last_name in asistentes])

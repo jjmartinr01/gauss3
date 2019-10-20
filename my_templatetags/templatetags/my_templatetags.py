@@ -282,17 +282,13 @@ def no_exentos(politica, total=1000):
                 deudores_str = ''
                 concepto = ''
 
-
-            familiares = usuario.unidad_familiar
-            # deudores = familiares.filter(id__in=usuarios)
-
             try:
                 cuenta_banca = [n_c.replace(' ', '') for n_c in n_cs if len(str(n_c)) > 18][0]
                 estilo, title = "", "Cuenta bancaria: " + str(cuenta_banca)
             except:
                 estilo, title = "color:red", "No hay cuenta bancaria asignada"
             if len(deudores) > 0:
-                no_ex.append('<span title="%s" style="%s">%s %s (%s)</span>' % (
+                no_ex.append('<span title="%s" style="%s">%s %s (%s)dddd</span>' % (
                     title, estilo, concepto, deudores[0].gauser.last_name, str(sum(importes[:len(deudores)]))))
     return no_ex
 
@@ -495,7 +491,7 @@ def edad(g_e):  # Devuelve la edad que tiene gauser_extra (g_e)
 
 @register.filter
 def posibles_participantes_actividad(actividad):  # Devuelve la lista de posibles participantes en la actividad
-    return Gauser_extra.objects.filter(entidad=actividad.organizador.entidad,
+    return Gauser_extra.objects.filter(ronda=actividad.organizador.ronda,
                                        subentidad__in=actividad.subentidades.all()).order_by('subentidad__nombre')
 
 

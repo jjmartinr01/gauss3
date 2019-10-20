@@ -366,7 +366,7 @@ def horario_ge(request):
             horario.save()
             logger.info(u'Existen varios horarios predeterminados. Se reconvierten para dejar uno solo.')
     g_es_id = horario.sesion_set.all().values_list('g_e__id', flat=True).distinct()
-    g_es = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, id__in=g_es_id)
+    g_es = Gauser_extra.objects.filter(ronda__entidad=g_e.ronda.entidad, id__in=g_es_id)
     try:
         ge = g_es.get(id=request.GET['u'])
     except:
@@ -450,7 +450,7 @@ def horarios_ajax(request):
                                  'actividad': a_nombre})
         elif action == 'ok_sesion':
             horario = Horario.objects.get(id=request.POST['horario'], entidad=g_e.ronda.entidad)
-            ge = Gauser_extra.objects.get(id=request.POST['g_e'], entidad=g_e.ronda.entidad)
+            ge = Gauser_extra.objects.get(id=request.POST['g_e'], ronda=g_e.ronda)
             try:
                 h_inicio = request.POST['inicio'].split(':')
                 inicio = time(int(h_inicio[0]), int(h_inicio[1]))
@@ -551,8 +551,8 @@ def horarios_ajax(request):
                                  'materia': sesion.materia.nombre, 'id': sesion.id,
                                  'actividad': sesion.actividad.nombre})
         elif action == 'copia_horario':
-            destinatario = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, id=request.POST['destinatario'])
-            origen = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, id=request.POST['origen'])
+            destinatario = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['destinatario'])
+            origen = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['origen'])
             horario = Horario.objects.get(entidad=g_e.ronda.entidad, id=request.POST['horario'])
             destinatario.sesion_set.filter(horario=horario).delete()
             sesiones = origen.sesion_set.filter(horario=horario)
@@ -562,7 +562,7 @@ def horarios_ajax(request):
                 s.save()
             return JsonResponse({'ok': True})
         elif action == 'nuevo_horario_usuario':
-            nuevo_ge = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, id=request.POST['nuevo_ge'])
+            nuevo_ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['nuevo_ge'])
             horario = Horario.objects.get(entidad=g_e.ronda.entidad, id=request.POST['horario'])
             sesiones = nuevo_ge.sesion_set.filter(horario=horario)
             if sesiones.count() == 0:
@@ -574,7 +574,7 @@ def horarios_ajax(request):
             return JsonResponse({'ok': True})
         elif action == 'del_horario_usuario':
             horario = Horario.objects.get(entidad=g_e.ronda.entidad, id=request.POST['horario'])
-            usuario = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, id=request.POST['ge'])
+            usuario = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['ge'])
             usuario.sesion_set.filter(horario=horario).delete()
             return JsonResponse({'ok': True})
         elif action == 'asistencia_sesion':
@@ -602,13 +602,13 @@ def horarios_ajax(request):
         elif action == 'add_falta':
             fecha_falta = datetime.strptime(request.POST['fecha_falta'], '%d/%m/%Y')
             sesion = Sesion.objects.get(id=int(request.POST['sesion']), tramo_horario__horario__entidad=g_e.ronda.entidad)
-            ge = Gauser_extra.objects.get(id=int(request.POST['ge']), entidad=g_e.ronda.entidad)
+            ge = Gauser_extra.objects.get(id=int(request.POST['ge']), ronda=g_e.ronda)
             Falta_asistencia.objects.get_or_create(fecha_falta=fecha_falta, sesion=sesion, g_e=ge)
             return HttpResponse(True)
         elif action == 'del_falta':
             fecha_falta = datetime.strptime(request.POST['fecha_falta'], '%d/%m/%Y')
             sesion = Sesion.objects.get(id=int(request.POST['sesion']), tramo_horario__horario__entidad=g_e.ronda.entidad)
-            ge = Gauser_extra.objects.get(id=int(request.POST['ge']), entidad=g_e.ronda.entidad)
+            ge = Gauser_extra.objects.get(id=int(request.POST['ge']), ronda=g_e.ronda)
             Falta_asistencia.objects.get(fecha_falta=fecha_falta, sesion=sesion, g_e=ge).delete()
             return HttpResponse(True)
         elif action == 'alumnos_sesion':
@@ -619,12 +619,12 @@ def horarios_ajax(request):
             return HttpResponse(texto)
         elif action == 'add_asistente':
             sesion = Sesion.objects.get(id=int(request.POST['sesion']), tramo_horario__horario__entidad=g_e.ronda.entidad)
-            ge = Gauser_extra.objects.get(id=int(request.POST['ge']), entidad=g_e.ronda.entidad)
+            ge = Gauser_extra.objects.get(id=int(request.POST['ge']), ronda=g_e.ronda)
             sesion.asistentes.add(ge)
             return HttpResponse(True)
         elif action == 'del_asistente':
             sesion = Sesion.objects.get(id=int(request.POST['sesion']), tramo_horario__horario__entidad=g_e.ronda.entidad)
-            ge = Gauser_extra.objects.get(id=int(request.POST['ge']), entidad=g_e.ronda.entidad)
+            ge = Gauser_extra.objects.get(id=int(request.POST['ge']), ronda=g_e.ronda)
             sesion.asistentes.remove(ge)
             return HttpResponse(True)
         elif action == 'buscar_usuarios':
@@ -651,7 +651,7 @@ def horarios_ajax(request):
                 horario = Horario.objects.get(id=request.POST['horario'], entidad=g_e.ronda.entidad)
                 sesiones = Sesion.objects.filter(tramo_horario__horario=horario)
                 g_es_id = sesiones.values_list('g_e__id', flat=True)
-                usuarios = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, id__in=g_es_id)
+                usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=g_es_id)
 
             q = q1 | q2 | q3 | q4 | qa | qe | qi | qo | qu | qaf | qef | qif | qof | quf
             usuarios_contain_texto = usuarios.filter(q).distinct().values_list('id',
@@ -1100,7 +1100,7 @@ def xml_racima(xml_file, request):
     sub_docentes = Subentidad.objects.filter(Q(entidad=g_e.ronda.entidad), Q(fecha_expira__gt=datetime.today()),
                                              Q(nombre__icontains='docente') | Q(nombre__icontains='profesor') | Q(
                                                  nombre__icontains='maestro'))
-    docentes = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, subentidades__in=sub_docentes, ronda=g_e.ronda)
+    docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, subentidades__in=sub_docentes)
     nombres_docentes = [(d.id, d.gauser.get_full_name()) for d in docentes]
     for elemento in xml_file.findall(".//grupo_datos[@seq='EMPLEADOS']/grupo_datos"):
         profesor_nombre = elemento.find('dato[@nombre_dato="NOMBRE"]').text
@@ -1184,7 +1184,7 @@ def xml_penalara(xml_file, request):
     for sesion in xml_file.findall('.//SESION'):
         clave_docente = sesion.find('DOCENTE').text
         try:
-            docente = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, ronda=g_e.ronda, clave_ex=clave_docente)
+            docente = Gauser_extra.objects.get(ronda=g_e.ronda, clave_ex=clave_docente)
         except:
             crear_aviso(request, False, u'No se encuentra el docente con clave: %s' % clave_docente)
             logger.info(u'No se encuentra el docente con clave: %s' % clave_docente)
@@ -1295,7 +1295,7 @@ def guardias_horario(request):
     # dia = dias[fecha.weekday()]
     guardias = Guardia.objects.filter(fecha=fecha, sesion__horario=horario)
     id_usuarios = Sesion.objects.filter(horario=horario).values_list('g_e__id')
-    usuarios = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, id__in=id_usuarios).distinct()
+    usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=id_usuarios).distinct()
     tramos = Sesion.objects.filter(horario=horario).values_list('horario', 'inicio', 'fin').distinct().order_by(
         'inicio')
 
@@ -1320,7 +1320,7 @@ def guardias_ajax(request):
     if request.is_ajax():
         if action == 'add_guardia2':
             observaciones = ' - ' + request.POST['observaciones']
-            ge = Gauser_extra.objects.get(id=request.POST['g_e'], entidad=g_e.ronda.entidad)
+            ge = Gauser_extra.objects.get(id=request.POST['g_e'], ronda=g_e.ronda)
             horario = Horario.objects.get(id=request.POST['horario'])
             inicio = time(int(request.POST['inicio_hora']), int(request.POST['inicio_minutos']))
             fin = time(int(request.POST['fin_hora']), int(request.POST['fin_minutos']))
@@ -1355,7 +1355,7 @@ def guardias_ajax(request):
     else:
         if action == 'add_guardia':
             observaciones = ' - ' + request.POST['observaciones']
-            ge = Gauser_extra.objects.get(id=request.POST['g_e'], entidad=g_e.ronda.entidad)
+            ge = Gauser_extra.objects.get(id=request.POST['g_e'], ronda=g_e.ronda)
             horario = Horario.objects.get(id=request.POST['horario'])
             inicio = time(int(request.POST['inicio_hora']), int(request.POST['inicio_minutos']))
             fin = time(int(request.POST['fin_hora']), int(request.POST['fin_minutos']))

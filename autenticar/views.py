@@ -646,14 +646,14 @@ def create_usuario(datos, request, tipo):
     except ObjectDoesNotExist:
         logger.warning('No existe Gauser con dni %s' % (dni))
         try:
-            gauser_extra = Gauser_extra.objects.get(id_entidad=datos['id_socio'], entidad=g_e.ronda.entidad)
+            gauser_extra = Gauser_extra.objects.get(id_entidad=datos['id_socio'], ronda=g_e.ronda)
             gauser = gauser_extra.gauser
             logger.warning('Encontrado Gauser y Gauser_extra con id_socio %s' % (datos['id_socio']))
         except ObjectDoesNotExist:
             gauser = None
             logger.warning('No existe Gauser con id_socio %s' % (datos['id_socio']))
         except MultipleObjectsReturned:
-            gauser_extra = Gauser_extra.objects.filter(id_entidad=datos['id_socio'], entidad=g_e.ronda.entidad)[0]
+            gauser_extra = Gauser_extra.objects.filter(id_entidad=datos['id_socio'], ronda=g_e.ronda)[0]
             logger.warning('Existen varios Gauser_extra asociados al Gauser encontrado. Se elige %s' % (gauser_extra))
             gauser = gauser_extra.gauser
     except MultipleObjectsReturned:
@@ -662,8 +662,7 @@ def create_usuario(datos, request, tipo):
 
     if gauser:
         try:
-            gauser_extra = Gauser_extra.objects.get(gauser=gauser, entidad=g_e.ronda.entidad,
-                                                    ronda=g_e.ronda.entidad.ronda)
+            gauser_extra = Gauser_extra.objects.get(gauser=gauser, ronda=g_e.ronda)
             mensaje = u'Existe el g_e %s con el dni %s. No se vuelve a crear.' % (gauser, datos['dni' + tipo])
             logger.info(mensaje)
         except ObjectDoesNotExist:
@@ -804,31 +803,31 @@ class Gauser_per_Form(ModelForm):
 @permiso_required('acceso_perfiles_permisos')
 def perfiles_permisos(request):
     g_e = request.session['gauser_extra']
-    usuarios = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda).distinct()
+    usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda).distinct()
     gauser_extra = usuarios[0]
     form = Gauser_per_Form(instance=gauser_extra)
     if request.is_ajax() and request.method == 'POST':
         action = request.POST['action']
         if action == 'add_cargo' and g_e.has_permiso('asigna_perfiles'):
             cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
-            ge = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, id=request.POST['ge'])
+            ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['ge'])
             ge.cargos.add(cargo)
             permisos_cargo = dict(ge.cargos.all().values_list('permisos__id', 'permisos__id'))
             return JsonResponse(permisos_cargo)
         elif action == 'del_cargo' and g_e.has_permiso('asigna_perfiles'):
             cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
-            ge = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, id=request.POST['ge'])
+            ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['ge'])
             ge.cargos.remove(cargo)
             permisos_cargo = dict(ge.cargos.all().values_list('permisos__id', 'permisos__id'))
             return JsonResponse(permisos_cargo)
         elif action == 'add_permiso' and g_e.has_permiso('asigna_permisos'):
             permiso = Permiso.objects.get(id=request.POST['permiso'])
-            ge = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, id=request.POST['ge'])
+            ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['ge'])
             ge.permisos.add(permiso)
             return HttpResponse(True)
         elif action == 'del_permiso' and g_e.has_permiso('asigna_permisos'):
             permiso = Permiso.objects.get(id=request.POST['permiso'])
-            ge = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, id=request.POST['ge'])
+            ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['ge'])
             ge.permisos.remove(permiso)
             return HttpResponse(True)
         elif action == 'change_nombre' and g_e.has_permiso('modifica_texto_menu'):
@@ -909,7 +908,7 @@ def del_entidad_gausers(request):
         if request.method == 'POST':
             if request.POST['action'] == 'borrar_entidad' and request.POST['pass'] == 'jucarihu':
                 entidad = Entidad.objects.get(id=request.POST['entidad'])
-                ges = Gauser_extra.objects.filter(entidad=entidad)
+                ges = Gauser_extra.objects.filter(ronda__entidad=entidad)
                 for ge in ges:
                     g = ge.gauser
                     ge.delete()

@@ -40,8 +40,7 @@ def carga_masiva_from_file():
             for sesion in xml_file.findall('.//SESION'):
                 clave_docente = sesion.find('DOCENTE').text
                 try:
-                    docente = Gauser_extra.objects.get(entidad=carga.ronda.entidad, ronda=carga.ronda,
-                                                       clave_ex=clave_docente)
+                    docente = Gauser_extra.objects.get(ronda=carga.ronda, clave_ex=clave_docente)
                 except:
                     logger.info('No se encuentra el docente con clave: %s' % clave_docente)
                     docente = None
@@ -377,8 +376,7 @@ def carga_masiva_from_file():
                                                      Q(nombre__icontains='docente') | Q(
                                                          nombre__icontains='profesor') | Q(
                                                          nombre__icontains='maestro'))
-            docentes = Gauser_extra.objects.filter(entidad=carga.ronda.entidad, subentidades__in=sub_docentes,
-                                                   ronda=carga.ronda)
+            docentes = Gauser_extra.objects.filter(subentidades__in=sub_docentes, ronda=carga.ronda)
             nombres_docentes = [(d.id, d.gauser.get_full_name()) for d in docentes]
             for elemento in xml_file.findall(".//grupo_datos[@seq='EMPLEADOS']/grupo_datos"):
                 profesor_nombre = elemento.find('dato[@nombre_dato="NOMBRE"]').text

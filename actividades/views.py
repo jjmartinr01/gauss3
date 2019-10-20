@@ -290,7 +290,7 @@ def ajax_actividades(request):
             elif request.POST['action'] == 'update_organizador':
                 actividad = Actividad.objects.get(id=request.POST['actividad'], organizador__ronda__entidad=g_e.ronda.entidad)
                 try:
-                    organizador = Gauser_extra.objects.get(id=request.POST['organizador'], entidad=g_e.ronda.entidad)
+                    organizador = Gauser_extra.objects.get(id=request.POST['organizador'], ronda=g_e.ronda)
                     actividad.organizador = organizador
                     actividad.save()
                     try:
@@ -309,10 +309,10 @@ def ajax_actividades(request):
                 actividad = Actividad.objects.get(id=request.POST['actividad'], organizador__ronda__entidad=g_e.ronda.entidad)
                 try:
                     if 'added[]' in request.POST:
-                        ges = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('added[]'))
+                        ges = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=request.POST.getlist('added[]'))
                         actividad.colaboradores.add(*ges)
                     if 'removed[]' in request.POST:
-                        ges = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('removed[]'))
+                        ges = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=request.POST.getlist('removed[]'))
                         actividad.colaboradores.remove(*ges)
                     try:
                         evento = Vevent.objects.get(entidad=g_e.ronda.entidad, uid='extraescolar' + str(actividad.id))
@@ -356,7 +356,7 @@ def ajax_actividades(request):
             elif request.POST['action'] == 'todos_ninguno':
                 try:
                     alumnos_id = request.POST.getlist('alumnos_id[]')
-                    alumnos = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, id__in=alumnos_id)
+                    alumnos = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=alumnos_id)
                     actividad = Actividad.objects.get(id=request.POST['actividad'], organizador__ronda__entidad=g_e.ronda.entidad)
                     if request.POST['operation'] == 'select_ninguno':
                         actividad.alumnos_incluidos.remove(*alumnos)
@@ -367,7 +367,7 @@ def ajax_actividades(request):
                     return JsonResponse({'ok': False})
             elif request.POST['action'] == 'update_alumnos_incluidos':
                 actividad = Actividad.objects.get(id=request.POST['actividad'], organizador__ronda__entidad=g_e.ronda.entidad)
-                ge = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, id=request.POST['alumno'])
+                ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['alumno'])
                 if request.POST['operation'] == 'added':
                     actividad.alumnos_incluidos.add(ge)
                 else:

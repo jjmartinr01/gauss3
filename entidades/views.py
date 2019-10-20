@@ -1776,8 +1776,7 @@ def subentidades_ajax(request):
             try:
                 subentidad = Subentidad.objects.get(pk=request.POST['id'], entidad=g_e.ronda.entidad)
                 old_users = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[subentidad])
-                new_users = Gauser_extra.objects.filter(ronda__entidad=g_e.ronda.entidad,
-                                                        id__in=request.POST.getlist('users[]'))
+                new_users = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=request.POST.getlist('users[]'))
                 added_users = new_users.exclude(id__in=old_users)
                 removed_users = old_users.exclude(id__in=new_users)
                 for u in added_users:

@@ -605,7 +605,7 @@ def ajax_mensajes(request):
     if request.method == 'GET':
         if request.GET['action'] == 'receptores':
             texto = request.GET['q']
-            socios = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda)
+            socios = Gauser_extra.objects.filter(ronda=g_e.ronda)
             socios_contain_texto = socios.filter(
                 Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)).values_list(
                 'gauser__id',

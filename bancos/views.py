@@ -43,7 +43,7 @@ def crea_bancos(request):
 
 # http://bandir.infotelefonica.es/3191 página que me permite ver los datos y evolución de las entidades el 3191 es el código de entidad
 def asocia_bancos(request):
-    g_es = Gauser_extra.objects.filter(entidad=request.session['gauser_extra'].entidad)
+    g_es = Gauser_extra.objects.filter(ronda__entidad=request.session['gauser_extra'].entidad)
     codes = ''
     for g_e in g_es:
         num_cuenta_bancaria = re.sub("[^0-9a-zA-Z]", "", str(g_e.num_cuenta_bancaria))

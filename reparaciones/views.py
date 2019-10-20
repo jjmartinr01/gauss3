@@ -131,8 +131,7 @@ def gestionar_reparaciones_ajax(request):
                 permisos = ['controla_reparaciones_%s' % reparacion.tipo, 'controla_reparaciones']
                 cargos = Cargo.objects.filter(permisos__code_nombre__in=permisos, entidad=g_e.ronda.entidad).distinct()
 
-                receptores = Gauser_extra.objects.filter(Q(entidad=g_e.ronda.entidad), Q(ronda=g_e.ronda),
-                                                         Q(permisos__code_nombre__in=permisos) | Q(
+                receptores = Gauser_extra.objects.filter(Q(ronda=g_e.ronda), Q(permisos__code_nombre__in=permisos) | Q(
                                                              cargos__in=cargos)).values_list('gauser__id', flat=True)
                 encolar_mensaje(emisor=g_e, receptores=receptores, asunto='Solicitud de reparación', html=mensaje,
                                 etiqueta='reparacion%s' % reparacion.id)

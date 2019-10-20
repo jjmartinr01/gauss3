@@ -63,8 +63,7 @@ def ajax_absentismo(request):
                 options.append({'id': u.id, 'text': u.gauser.get_full_name() + ' (' + u.gauser_extra_estudios.grupo.nombre + ')'})
             return JsonResponse(options, safe=False)
         elif request.POST['action'] == 'get_expedientado':
-            expedientado = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, ronda=g_e.ronda,
-                                                    id=request.POST['expedientado'])
+            expedientado = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['expedientado'])
             expediente, creado = ExpedienteAbsentismo.objects.get_or_create(expedientado=expedientado)
             if creado:
                 exs = ExpedienteAbsentismo.objects.filter(director__iregex=r'[a-z]+', presidente__iregex=r'[a-z]+',
@@ -130,7 +129,7 @@ def ajax_absentismo(request):
                 expediente = ExpedienteAbsentismo.objects.get(expedientado__entidad=g_e.ronda.entidad,
                                                               expedientado__ronda=g_e.ronda,
                                                               id=request.POST['expediente'])
-                tutor = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, ronda=g_e.ronda, id=request.POST['tutor'])
+                tutor = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['tutor'])
                 expediente.expedientado.gauser_extra_estudios.tutor = tutor
                 expediente.expedientado.gauser_extra_estudios.save()
                 return HttpResponse(True)

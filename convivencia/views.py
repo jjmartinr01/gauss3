@@ -372,7 +372,7 @@ def sancionar_conductas_ajax(request):
             try:
                 inf_actual = Informe_sancionador.objects.get(sancionado__entidad=g_e.ronda.entidad,
                                                              id=request.POST['inf_actual'])
-                tutor = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, id=request.POST['tutor'])
+                tutor = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['tutor'])
                 sancionado = inf_actual.sancionado
                 sancionado.gauser_extra_estudios.tutor = tutor
                 sancionado.gauser_extra_estudios.save()
@@ -383,7 +383,7 @@ def sancionar_conductas_ajax(request):
             try:
                 inf_actual = Informe_sancionador.objects.get(sancionado__entidad=g_e.ronda.entidad,
                                                              id=request.POST['inf_actual'])
-                sancionador = Gauser_extra.objects.get(entidad=g_e.ronda.entidad, id=request.POST['sancionador'])
+                sancionador = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['sancionador'])
                 inf_actual.sanciones.clear()
                 inf_actual.sancionador = sancionador
                 inf_actual.save()
@@ -437,7 +437,7 @@ def sancionar_conductas_ajax(request):
         elif action == 'open_accordion_s':
             informe = Informe_sancionador.objects.get(id=request.POST['informe'], sancionado__entidad=g_e.ronda.entidad)
             sanciones = Sancion.objects.filter(tipo=request.POST['tipo'], entidad=g_e.ronda.entidad)
-            sancionador = Gauser_extra.objects.get(id=request.POST['sancionador'], entidad=g_e.ronda.entidad)
+            sancionador = Gauser_extra.objects.get(id=request.POST['sancionador'], ronda=g_e.ronda)
             data = render_to_string("lista_de_sanciones.html",
                                     {'sanciones': sanciones, 'sancionador': sancionador, 'inf_actual': informe})
             return HttpResponse(data)

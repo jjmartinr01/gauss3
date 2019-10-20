@@ -189,12 +189,12 @@ def configura_grupos(request):
             grupo = Grupo.objects.get(id=request.POST['grupo'], ronda=g_e.ronda)
             if request.POST['campo'] == 'tutor':
                 try:
-                    grupo.tutor = Gauser_extra.objects.get(id=request.POST['value'], entidad=g_e.ronda.entidad)
+                    grupo.tutor = Gauser_extra.objects.get(id=request.POST['value'], ronda=g_e.ronda)
                 except:
                     grupo.tutor = None
             elif request.POST['campo'] == 'cotutor':
                 try:
-                    grupo.cotutor = Gauser_extra.objects.get(id=request.POST['value'], entidad=g_e.ronda.entidad)
+                    grupo.cotutor = Gauser_extra.objects.get(id=request.POST['value'], ronda=g_e.ronda)
                 except:
                     grupo.cotutor = None
             elif request.POST['campo'] == 'ronda':

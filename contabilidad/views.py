@@ -708,10 +708,9 @@ def ajax_politica_cuotas(request):
                 texto = request.GET['q']
                 cargo = request.GET['cargo']
                 if cargo:
-                    usuarios = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda,
-                                                           cargos__in=[cargo])
+                    usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
                 else:
-                    usuarios = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda)
+                    usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda)
                 usuarios_contain_texto = usuarios.filter(
                     Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)).values_list(
                     'gauser__id', 'gauser__last_name', 'gauser__first_name', 'subentidades__nombre')

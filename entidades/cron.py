@@ -22,8 +22,7 @@ def carga_masiva_from_file():
             for sesion in xml_file.findall('.//SESION'):
                 clave_docente = sesion.find('DOCENTE').text
                 try:
-                    docente = Gauser_extra.objects.get(entidad=carga.ronda.entidad, ronda=carga.ronda,
-                                                       clave_ex=clave_docente)
+                    docente = Gauser_extra.objects.get(ronda=carga.ronda, clave_ex=clave_docente)
                 except:
                     # logger.info(u'No se encuentra el docente con clave: %s' % clave_docente)
                     docente = None

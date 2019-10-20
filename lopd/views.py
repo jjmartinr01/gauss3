@@ -75,7 +75,7 @@ def responsables_lopd(request):
     # cargos = Gauser_extra.objects.filter(cargos__in = cargos_entidad)
     hoy = datetime.date.today()
     fecha_minima = datetime.datetime(hoy.year, hoy.month, hoy.day)
-    cargos = Gauser_extra.objects.filter(entidad=g_e.ronda.entidad, gauser__nacimiento__lte=fecha_minima)
+    cargos = Gauser_extra.objects.filter(ronda=g_e.ronda, gauser__nacimiento__lte=fecha_minima)
     return render(request, "responsables_lopd.html",
                               {
                                   'formname': 'estructura_lopd',
