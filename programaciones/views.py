@@ -732,39 +732,43 @@ def ajax_programaciones(request):
             programacion.delete()
             return HttpResponse(True)
         elif action == 'copy_programacion':
-            prog_original = Programacion_modulo.objects.get(id=request.POST['id'])
+            try:
+                prog_original = Programacion_modulo.objects.get(id=request.POST['id'])
+            except Exception as e:
+                return JsonResponse({'ok': False, 'mensaje': str(e)})
             try:
                 Programacion_modulo.objects.get(modulo=prog_original.modulo, gep__ge__ronda=g_e.ronda)
                 return JsonResponse({'ok': False})  # No copiar porque ya existe una programación
             except:
-                #Al copiar la programación se quedará con el curso en el que fue creada, al igual que la materia
-                #Esto no debería plantear ningún problema ya que el propietario se corresponde con la ronda actual.
-                programacion = Programacion_modulo.objects.get(id=request.POST['id'])
-                programacion.g_e = g_e
-                programacion.gep = g_e.gauser_extra_programaciones
-                programacion.pk = None
-                programacion.file_path = None
-                programacion.save()
-                programacion.obj_gen.add(*prog_original.obj_gen.all())
-                uds = prog_original.ud_modulo_set.all()
-                for ud in uds:
-                    ud_original = UD_modulo.objects.get(id=ud.id)
-                    ud.pk = None
-                    ud.programacion = programacion
-                    ud.save()
-                    ud.objetivos.add(*ud_original.objetivos.all())
-                    conts = ud_original.cont_unidad_modulo_set.all()
-                    for cont in conts:
-                        cont.pk = None
-                        cont.unidad = ud
-                        cont.save()
-                accordion = render_to_string('programacion_append.html', {'programacion': programacion, },
-                                             request=request)
-                crear_aviso(request, True, u'Ejecuta copiar programacion: %s' % (programacion.modulo))
-                # return HttpResponse(json.dumps({'ok': True, 'accordion': accordion, 'id': programacion.id}))
-                return JsonResponse({'ok': True, 'accordion': accordion, 'id': programacion.id})
-
-
+                try:
+                    #Al copiar la programación se quedará con el curso en el que fue creada, al igual que la materia
+                    #Esto no debería plantear ningún problema ya que el propietario se corresponde con la ronda actual.
+                    programacion = Programacion_modulo.objects.get(id=request.POST['id'])
+                    programacion.g_e = g_e
+                    programacion.gep = g_e.gauser_extra_programaciones
+                    programacion.pk = None
+                    programacion.file_path = None
+                    programacion.save()
+                    programacion.obj_gen.add(*prog_original.obj_gen.all())
+                    uds = prog_original.ud_modulo_set.all()
+                    for ud in uds:
+                        ud_original = UD_modulo.objects.get(id=ud.id)
+                        ud.pk = None
+                        ud.programacion = programacion
+                        ud.save()
+                        ud.objetivos.add(*ud_original.objetivos.all())
+                        conts = ud_original.cont_unidad_modulo_set.all()
+                        for cont in conts:
+                            cont.pk = None
+                            cont.unidad = ud
+                            cont.save()
+                    accordion = render_to_string('programacion_append.html', {'programacion': programacion, },
+                                                 request=request)
+                    crear_aviso(request, True, u'Ejecuta copiar programacion: %s' % (programacion.modulo))
+                    # return HttpResponse(json.dumps({'ok': True, 'accordion': accordion, 'id': programacion.id}))
+                    return JsonResponse({'ok': True, 'accordion': accordion, 'id': programacion.id})
+                except Exception as e:
+                    return JsonResponse({'ok': False, 'mensaje': str(e)})
         elif action == 'busca_ccff':
             texto = request.POST['q']
             familias = dict(FAMILIAS)
