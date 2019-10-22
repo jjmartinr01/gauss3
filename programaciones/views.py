@@ -570,25 +570,28 @@ def programaciones(request):
             response = HttpResponse(fichero, content_type='text/html')
             response['Content-Disposition'] = 'attachment; filename=' + fich_name
             return response
-    cursos = Curso.objects.filter(ronda__entidad=g_e.ronda.entidad, etapa__in=['ga', 'ha'])
-    cursos_clave_ex = cursos.values_list('clave_ex', flat=True)
-    progs = Programacion_modulo.objects.filter(modulo__isnull=False, modulo__materia__curso__clave_ex__in=cursos_clave_ex)
+
+    # if request.method == 'GET':
+    # Si no es POST será GET y por tanto no hay que comprobarlo. En caso de que el POST se haga
+    # con una 'action' incorrecta se procederá como si fuera una petición GET:
     rondas = Ronda.objects.filter(entidad=g_e.ronda.entidad, id__gt=25)
-    if request.method == 'GET':
-        if 'ronda' in request.GET:
-            ronda = rondas.get(id=request.GET['ronda'])
-        else:
-            ronda = g_e.ronda
-
-        if 'curso' in request.GET:
-            try:
-                curso_clave_ex = cursos.get(id=request.GET['curso']).clave_ex
-            except:
-                curso_clave_ex = cursos[0].clave_ex
-        else:
+    if 'ronda' in request.GET:
+        ronda = rondas.get(id=request.GET['ronda'])
+    else:
+        ronda = g_e.ronda
+    cursos = Curso.objects.filter(ronda=ronda, etapa__in=['ga', 'ha'])
+    cursos_clave_ex = cursos.values_list('clave_ex', flat=True)
+    progs = Programacion_modulo.objects.filter(modulo__isnull=False,
+                                               modulo__materia__curso__clave_ex__in=cursos_clave_ex)
+    if 'curso' in request.GET:
+        try:
+            curso_clave_ex = cursos.get(id=request.GET['curso']).clave_ex
+        except:
             curso_clave_ex = cursos[0].clave_ex
+    else:
+        curso_clave_ex = cursos[0].clave_ex
 
-        progs = progs.filter(g_e__ronda=ronda, modulo__materia__curso__clave_ex=curso_clave_ex)
+    progs = progs.filter(g_e__ronda=ronda, modulo__materia__curso__clave_ex=curso_clave_ex)
 
     return render(request, "programaciones_foundation.html",
                   {

@@ -1,8 +1,11 @@
 {% load my_templatetags %}
+{{ politica|no_exentos:numero }}
 {% if numero < 6 %}
     {% for no_exento in politica|no_exentos:numero %}
         &nbsp;<span class="radius label">{% autoescape off %}{{ no_exento }}{% endautoescape %}</span>
-        {% if forloop.last and politica|number_no_exentos > numero %}
+{#        {% if forloop.last and politica|number_no_exentos > numero %}#}
+        dsafa
+    {% if forloop.last %}
             &nbsp;<span class="secondary radius label">
             <a class="mostrar_no_exentos" data-id="{{ politica.id }}">
                 ... (mostrar todos)
@@ -12,7 +15,8 @@
 {% else %}
     {% for no_exento in politica|no_exentos:1000 %}
             &nbsp;<span class="radius label">{% autoescape off %}{{ no_exento }}{% endautoescape %}</span>
-        {% if forloop.last and forloop.counter > 10 %}
+{#        {% if forloop.last and forloop.counter > 10 %}#}
+            {% if forloop.last %}
             &nbsp;<span class="secondary radius label">
             <a class="ocultar_no_exentos" data-id="{{ politica.id }}">
                 ... (ocultar)

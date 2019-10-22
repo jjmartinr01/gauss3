@@ -250,7 +250,7 @@ def no_exentos(politica, total=1000):
     # importes = importes + [importes[-1] for i in range(20)]
     importes = politica.array_cuotas
     exentos_id = politica.exentos.all().values_list('id', flat=True)
-    usuarios = usuarios_de_gauss(politica.entidad, cargos=[politica.cargo]).exclude(gauser__id__in=exentos_id)[:total]
+    usuarios = usuarios_ronda(politica.entidad.ronda, cargos=[politica.cargo]).exclude(gauser__id__in=exentos_id)[:total]
     usuarios_id = []
     n = 0
     for usuario in usuarios:
