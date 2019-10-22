@@ -303,17 +303,23 @@ def sancionar_conductas_ajax(request):
             return JsonResponse(options, safe=False)
         elif action == 'seleccionar_usuario':
             try:
-                sancionado = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['user'])
+                try:
+                    sancionado = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['user'])
+                except Exception as e:
+                    return JsonResponse({'ok': False, 'mensaje': str(e)})
                 Informe_sancionador.objects.filter(sancionado=sancionado, fichero='').delete()
-                sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+                try:
+                    sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+                except Exception as e:
+                    return JsonResponse({'ok': False, 'mensaje': str(e)})
                 docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
                 inf_actual = Informe_sancionador.objects.create(sancionado=sancionado, sancionador=g_e,
                                                                 fecha_incidente=date.today())
                 html = render_to_string('sancionar_conductas_datos_sancionado.html',
                                         {'inf_actual': inf_actual, 'docentes': docentes, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
-            except:
-                return JsonResponse({'ok': False})
+            except Exception as e:
+                return JsonResponse({'ok': False, 'mensaje': str(e)})
         elif action == 'cargar_informe':
             try:
                 sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
