@@ -1030,8 +1030,11 @@ def datos_entidad(request):
         entidad = Entidad.objects.get(id=g_e.ronda.entidad.id)
         form = EntidadForm(instance=entidad)
 
-    sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
-    docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+    try:
+        sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+        docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+    except:
+        docentes = []
     return render(request, "datos_entidad.html",
                   {
                       'formname': 'datos_entidad',
