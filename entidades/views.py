@@ -925,7 +925,7 @@ def configura_rondas(request):
                   })
 
 
-@permiso_required('acceso_datos_entidad')
+# @permiso_required('acceso_datos_entidad')
 def datos_entidad(request):
     g_e = request.session["gauser_extra"]
     docConf, c = DocConfEntidad.objects.get_or_create(entidad=g_e.ronda.entidad)
