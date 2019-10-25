@@ -207,7 +207,7 @@ def sancionar_conductas(request):
     inf_actual = None
     if request.method == 'POST' and not request.is_ajax():
         if request.POST['action'] == 'genera_pdf':
-            informe = Informe_sancionador.objects.get(sancionado__entidad=g_e.ronda.entidad,
+            informe = Informe_sancionador.objects.get(sancionado__ronda=g_e.ronda,
                                                       id=request.POST['inf_actual'])
             coherente, mensaje = informe.is_coherente
             if coherente:
@@ -262,7 +262,7 @@ def sancionar_conductas(request):
                 inf_actual = informe
                 crear_aviso(request, False, '<ul>%s</ul>' % mensaje)
         if request.POST['action'] == 'descargar_informe':
-            informe = Informe_sancionador.objects.get(sancionado__entidad=g_e.ronda.entidad,
+            informe = Informe_sancionador.objects.get(sancionado__ronda=g_e.ronda,
                                                       id=request.POST['inf_descargar'])
             filename = informe.fichero.name.split('/')[-1]
             response = HttpResponse(informe.fichero, content_type='application/pdf')
@@ -332,7 +332,7 @@ def sancionar_conductas_ajax(request):
                 return JsonResponse({'ok': False})
         elif action == 'check_conductas':
             try:
-                informe = Informe_sancionador.objects.get(sancionado__entidad=g_e.ronda.entidad,
+                informe = Informe_sancionador.objects.get(sancionado__ronda=g_e.ronda,
                                                           id=request.POST['inf_actual'])
                 conductas_borrar = informe.conductas.filter(tipo=request.POST['tipo'])
                 informe.conductas.remove(*conductas_borrar)
@@ -345,7 +345,7 @@ def sancionar_conductas_ajax(request):
                 return JsonResponse({'ok': False})
         elif action == 'check_sanciones':
             try:
-                informe = Informe_sancionador.objects.get(sancionado__entidad=g_e.ronda.entidad,
+                informe = Informe_sancionador.objects.get(sancionado__ronda=g_e.ronda,
                                                           id=request.POST['inf_actual'])
                 sanciones_borrar = informe.sanciones.filter(tipo=request.POST['tipo'])
                 informe.sanciones.remove(*sanciones_borrar)
@@ -358,7 +358,7 @@ def sancionar_conductas_ajax(request):
                 return JsonResponse({'ok': False})
         elif action == 'describe_conducta':
             try:
-                informe = Informe_sancionador.objects.get(sancionado__entidad=g_e.ronda.entidad,
+                informe = Informe_sancionador.objects.get(sancionado__ronda=g_e.ronda,
                                                           id=request.POST['inf_actual'])
                 informe.texto_motivo = request.POST['texto']
                 informe.save()
@@ -367,7 +367,7 @@ def sancionar_conductas_ajax(request):
                 return JsonResponse({'ok': False})
         elif action == 'describe_sancion':
             try:
-                informe = Informe_sancionador.objects.get(sancionado__entidad=g_e.ronda.entidad,
+                informe = Informe_sancionador.objects.get(sancionado__ronda=g_e.ronda,
                                                           id=request.POST['inf_actual'])
                 informe.texto_sancion = request.POST['texto']
                 informe.save()
@@ -376,7 +376,7 @@ def sancionar_conductas_ajax(request):
                 return JsonResponse({'ok': False})
         elif action == 'change_tutor':
             try:
-                inf_actual = Informe_sancionador.objects.get(sancionado__entidad=g_e.ronda.entidad,
+                inf_actual = Informe_sancionador.objects.get(sancionado__ronda=g_e.ronda,
                                                              id=request.POST['inf_actual'])
                 tutor = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['tutor'])
                 sancionado = inf_actual.sancionado
@@ -387,7 +387,7 @@ def sancionar_conductas_ajax(request):
                 return JsonResponse({'ok': False})
         elif action == 'change_sancionador':
             try:
-                inf_actual = Informe_sancionador.objects.get(sancionado__entidad=g_e.ronda.entidad,
+                inf_actual = Informe_sancionador.objects.get(sancionado__ronda=g_e.ronda,
                                                              id=request.POST['inf_actual'])
                 sancionador = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['sancionador'])
                 inf_actual.sanciones.clear()
@@ -407,7 +407,7 @@ def sancionar_conductas_ajax(request):
                 return JsonResponse({'ok': False})
         elif action == 'fecha_informe':
             try:
-                informe = Informe_sancionador.objects.get(sancionado__entidad=g_e.ronda.entidad,
+                informe = Informe_sancionador.objects.get(sancionado__ronda=g_e.ronda,
                                                           id=request.POST['informe'])
                 informe.fecha_incidente = datetime.strptime(request.POST['valor'], '%d/%m/%Y')
                 informe.save()
@@ -416,7 +416,7 @@ def sancionar_conductas_ajax(request):
                 return JsonResponse({'ok': False})
         elif action == 'fechas_expulsion':
             try:
-                informe = Informe_sancionador.objects.get(sancionado__entidad=g_e.ronda.entidad,
+                informe = Informe_sancionador.objects.get(sancionado__ronda=g_e.ronda,
                                                           id=request.POST['informe'])
                 informe.fechaexpulsion_set.all().delete()
                 for fecha in request.POST.getlist('fechas[]'):
@@ -426,14 +426,14 @@ def sancionar_conductas_ajax(request):
                 return JsonResponse({'ok': False})
         # elif action == 'fecha_fin':
         #     try:
-        #         informe = Informe_sancionador.objects.get(sancionado__entidad=g_e.ronda.entidad, id=request.POST['informe'])
+        #         informe = Informe_sancionador.objects.get(sancionado__ronda=g_e.ronda, id=request.POST['informe'])
         #         informe.fecha_fin = datetime.strptime(request.POST['valor'], '%d/%m/%Y')
         #         informe.save()
         #         return JsonResponse({'ok': True})
         #     except:
         #         return JsonResponse({'ok': False})
         elif request.POST['action'] == 'borrar_informe':
-            informe = Informe_sancionador.objects.get(id=request.POST['informe'], sancionado__entidad=g_e.ronda.entidad)
+            informe = Informe_sancionador.objects.get(id=request.POST['informe'], sancionado__ronda=g_e.ronda)
             if informe.sancionador == g_e or g_e.has_permiso('borra_informes_sancionadores'):
                 informe.fichero.delete()
                 informe.delete()
@@ -441,14 +441,14 @@ def sancionar_conductas_ajax(request):
             else:
                 return JsonResponse({'ok': False})
         elif action == 'open_accordion_s':
-            informe = Informe_sancionador.objects.get(id=request.POST['informe'], sancionado__entidad=g_e.ronda.entidad)
+            informe = Informe_sancionador.objects.get(id=request.POST['informe'], sancionado__ronda=g_e.ronda)
             sanciones = Sancion.objects.filter(tipo=request.POST['tipo'], entidad=g_e.ronda.entidad)
             sancionador = Gauser_extra.objects.get(id=request.POST['sancionador'], ronda=g_e.ronda)
             data = render_to_string("lista_de_sanciones.html",
                                     {'sanciones': sanciones, 'sancionador': sancionador, 'inf_actual': informe})
             return HttpResponse(data)
         elif action == 'open_accordion_c':
-            informe = Informe_sancionador.objects.get(id=request.POST['informe'], sancionado__entidad=g_e.ronda.entidad)
+            informe = Informe_sancionador.objects.get(id=request.POST['informe'], sancionado__ronda=g_e.ronda)
             conductas = Conducta.objects.filter(tipo=request.POST['tipo'], entidad=g_e.ronda.entidad)
             data = render_to_string("lista_de_conductas.html", {'conductas': conductas, 'inf_actual': informe})
             return HttpResponse(data)
