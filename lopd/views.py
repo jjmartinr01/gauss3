@@ -193,9 +193,9 @@ def derechos_arco(request):
 @login_required()
 def incidencias_lopd(request):
     g_e = request.session["gauser_extra"]
-    incidencias = Incidencia_lopd.objects.filter(emisor_incidencia__entidad=g_e.ronda.entidad, resuelta=False).order_by(
+    incidencias = Incidencia_lopd.objects.filter(emisor_incidencia__ronda=g_e.ronda, resuelta=False).order_by(
         '-fecha_emite')
-    incidencias_solved = Incidencia_lopd.objects.filter(emisor_incidencia__entidad=g_e.ronda.entidad, resuelta=True).order_by(
+    incidencias_solved = Incidencia_lopd.objects.filter(emisor_incidencia__ronda=g_e.ronda, resuelta=True).order_by(
         '-fecha_emite')
     estructura_lopd = Estructura_lopd.objects.filter(entidad=g_e.ronda.entidad)
     form_emitir = Incidencia_lopdForm()

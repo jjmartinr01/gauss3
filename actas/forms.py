@@ -23,9 +23,9 @@ class ActaForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.g_e = kwargs.pop('g_e')
         super(ActaForm, self).__init__(*args, **kwargs)
-        conv_usadas = Acta.objects.filter(convocatoria__convocante__entidad=self.g_e.ronda.entidad,
+        conv_usadas = Acta.objects.filter(convocatoria__convocante__ronda__entidad=self.g_e.ronda.entidad,
                                           fecha_aprobacion__gt=datetime.date.min).values_list('convocatoria__id')
-        convocatorias = Convocatoria.objects.filter(Q(convocante__entidad=self.g_e.ronda.entidad) & ~Q(id__in=conv_usadas))
+        convocatorias = Convocatoria.objects.filter(Q(convocante__ronda__entidad=self.g_e.ronda.entidad) & ~Q(id__in=conv_usadas))
         self.fields['convocatoria'] = MiModelChoiceField(queryset=convocatorias)
 
     class Meta:

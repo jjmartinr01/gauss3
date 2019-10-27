@@ -366,7 +366,7 @@ def horario_ge(request):
             horario.save()
             logger.info(u'Existen varios horarios predeterminados. Se reconvierten para dejar uno solo.')
     g_es_id = horario.sesion_set.all().values_list('g_e__id', flat=True).distinct()
-    g_es = Gauser_extra.objects.filter(ronda__entidad=g_e.ronda.entidad, id__in=g_es_id)
+    g_es = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=g_es_id)
     try:
         ge = g_es.get(id=request.GET['u'])
     except:
@@ -1345,7 +1345,7 @@ def guardias_ajax(request):
                 return JsonResponse({'ok': False, 'usuario': ge.gauser.get_full_name()})
         elif action == 'del_guardia':
             try:
-                guardia = Guardia.objects.get(id=request.POST['guardia'], ge__entidad=g_e.ronda.entidad)
+                guardia = Guardia.objects.get(id=request.POST['guardia'], ge__ronda=g_e.ronda)
                 if guardia.tarea:
                     os.remove(RUTA_BASE + guardia.tarea.url)
                 guardia.delete()

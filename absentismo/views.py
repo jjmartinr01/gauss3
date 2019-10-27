@@ -23,12 +23,11 @@ logger = logging.getLogger('django')
 @permiso_required('acceso_absentismo')
 def gestionar_absentismo(request):
     g_e = request.session['gauser_extra']
-    expedientes = ExpedienteAbsentismo.objects.filter(expedientado__entidad=g_e.ronda.entidad)[:10]
+    expedientes = ExpedienteAbsentismo.objects.filter(expedientado__ronda=g_e.ronda)[:10]
 
     if request.method == 'POST':
         if request.POST['action'] == 'pdf_absentismo' and g_e.has_permiso('crea_informe_absentismo'):
-            expediente = ExpedienteAbsentismo.objects.get(expedientado__entidad=g_e.ronda.entidad,
-                                                          expedientado__ronda=g_e.ronda,
+            expediente = ExpedienteAbsentismo.objects.get(expedientado__ronda=g_e.ronda,
                                                           id=request.POST['expediente_id'])
             fichero = 'expediente_absentismo_%s_%s' % (g_e.ronda.entidad.code, expediente.id)
             c = render_to_string('absentismo2pdf.html', {'expediente': expediente, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
@@ -67,8 +66,7 @@ def ajax_absentismo(request):
             expediente, creado = ExpedienteAbsentismo.objects.get_or_create(expedientado=expedientado)
             if creado:
                 exs = ExpedienteAbsentismo.objects.filter(director__iregex=r'[a-z]+', presidente__iregex=r'[a-z]+',
-                                                          expedientado__entidad=g_e.ronda.entidad,
-                                                          expedientado__entidad__ronda=g_e.ronda)
+                                                          expedientado__ronda=g_e.ronda)
                 if exs.count() > 0:
                     expediente.director, expediente.presidente = exs[0].director, exs[0].presidente
                 else:
@@ -82,8 +80,7 @@ def ajax_absentismo(request):
                 data = render_to_string('absentismo_accordion.html', {'expediente': expediente})
                 return JsonResponse({'html': data, 'ok': True})
         elif request.POST['action'] == 'create_actuacion' and g_e.has_permiso('crea_actuacion_absentismo'):
-            expediente = ExpedienteAbsentismo.objects.get(expedientado__entidad=g_e.ronda.entidad,
-                                                          expedientado__ronda=g_e.ronda,
+            expediente = ExpedienteAbsentismo.objects.get(expedientado__ronda=g_e.ronda,
                                                           expedientado__id=request.POST['expedientado'])
             Actuacion.objects.create(expediente=expediente, contacto=' ', fecha=date.today(), faltas=12,
                                      observaciones='Esta actuación ha sido creada por defecto por GAUSS. El número de faltas, la persona de contacto y las observaciones las tienes que modicar para adecuarlas a tu situación.',
@@ -93,14 +90,12 @@ def ajax_absentismo(request):
         elif request.POST['action'] == 'open_accordion':
             sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
             docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
-            expediente = ExpedienteAbsentismo.objects.get(expedientado__entidad=g_e.ronda.entidad,
-                                                          expedientado__ronda=g_e.ronda, id=request.POST['expediente'])
+            expediente = ExpedienteAbsentismo.objects.get(expedientado__ronda=g_e.ronda, id=request.POST['expediente'])
             data = render_to_string('absentismo_accordion_content.html',
                                     {'expediente': expediente, 'g_e': g_e, 'docentes': docentes})
             return HttpResponse(data)
         elif request.POST['action'] == 'add_actuacion_absentismo' and g_e.has_permiso('crea_actuacion_absentismo'):
-            expediente = ExpedienteAbsentismo.objects.get(expedientado__entidad=g_e.ronda.entidad,
-                                                          expedientado__ronda=g_e.ronda, id=request.POST['expediente'])
+            expediente = ExpedienteAbsentismo.objects.get(expedientado__ronda=g_e.ronda, id=request.POST['expediente'])
             actuacion = Actuacion.objects.create(expediente=expediente, contacto=' ', fecha=date.today(), faltas=80,
                                                  observaciones='Estas son las observaciones de la actuación',
                                                  realizada_por=g_e)
@@ -110,8 +105,7 @@ def ajax_absentismo(request):
         elif request.POST['action'] == 'delete_actuacion':
             ok = False
             try:
-                actuacion = Actuacion.objects.get(expediente__expedientado__entidad=g_e.ronda.entidad,
-                                                  expediente__expedientado__ronda=g_e.ronda,
+                actuacion = Actuacion.objects.get(expediente__expedientado__ronda=g_e.ronda,
                                                   id=request.POST['actuacion'])
                 expediente = actuacion.expediente
                 if g_e.has_permiso('borra_actuacion_absentismo') or actuacion.realizada_por == g_e:
@@ -126,8 +120,7 @@ def ajax_absentismo(request):
                 return JsonResponse({'ok': ok})
         elif request.POST['action'] == 'update_tutor':
             try:
-                expediente = ExpedienteAbsentismo.objects.get(expedientado__entidad=g_e.ronda.entidad,
-                                                              expedientado__ronda=g_e.ronda,
+                expediente = ExpedienteAbsentismo.objects.get(expedientado__ronda=g_e.ronda,
                                                               id=request.POST['expediente'])
                 tutor = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['tutor'])
                 expediente.expedientado.gauser_extra_estudios.tutor = tutor
@@ -138,8 +131,7 @@ def ajax_absentismo(request):
         elif request.POST['action'] == 'update_configura':
             ok = False
             try:
-                expediente = ExpedienteAbsentismo.objects.get(expedientado__entidad=g_e.ronda.entidad,
-                                                              expedientado__ronda=g_e.ronda,
+                expediente = ExpedienteAbsentismo.objects.get(expedientado__ronda=g_e.ronda,
                                                               id=request.POST['expediente'])
                 setattr(expediente, request.POST['campo'], request.POST['valor'])
                 if g_e.has_permiso('configura_expediente_absentismo'):
@@ -151,8 +143,7 @@ def ajax_absentismo(request):
         elif request.POST['action'] == 'update_configura_matricula':
             ok = False
             try:
-                expediente = ExpedienteAbsentismo.objects.get(expedientado__entidad=g_e.ronda.entidad,
-                                                              expedientado__ronda=g_e.ronda,
+                expediente = ExpedienteAbsentismo.objects.get(expedientado__ronda=g_e.ronda,
                                                               id=request.POST['expediente'])
                 expediente.matricula = not expediente.matricula
                 if g_e.has_permiso('configura_expediente_absentismo'):
@@ -165,8 +156,7 @@ def ajax_absentismo(request):
         elif request.POST['action'] == 'update_observaciones':
             ok = False
             try:
-                actuacion = Actuacion.objects.get(expediente__expedientado__entidad=g_e.ronda.entidad,
-                                                  expediente__expedientado__ronda=g_e.ronda,
+                actuacion = Actuacion.objects.get(expediente__expedientado__ronda=g_e.ronda,
                                                   id=request.POST['actuacion'])
                 actuacion.observaciones = request.POST['texto']
                 if g_e.has_permiso('edita_actuacion_absentismo') or actuacion.realizada_por == g_e:
@@ -178,8 +168,7 @@ def ajax_absentismo(request):
         elif request.POST['action'] == 'update_fecha':
             ok = False
             try:
-                actuacion = Actuacion.objects.get(expediente__expedientado__entidad=g_e.ronda.entidad,
-                                                  expediente__expedientado__ronda=g_e.ronda,
+                actuacion = Actuacion.objects.get(expediente__expedientado__ronda=g_e.ronda,
                                                   id=request.POST['actuacion'])
                 actuacion.fecha = datetime.strptime(request.POST['fecha'], '%d-%m-%Y')
                 if g_e.has_permiso('edita_actuacion_absentismo') or actuacion.realizada_por == g_e:
@@ -191,8 +180,7 @@ def ajax_absentismo(request):
         elif request.POST['action'] == 'update_faltas':
             ok = True
             try:
-                actuacion = Actuacion.objects.get(expediente__expedientado__entidad=g_e.ronda.entidad,
-                                                  expediente__expedientado__ronda=g_e.ronda,
+                actuacion = Actuacion.objects.get(expediente__expedientado__ronda=g_e.ronda,
                                                   id=request.POST['actuacion'])
                 actuacion.faltas = int(request.POST['faltas'])
                 if g_e.has_permiso('edita_actuacion_absentismo') or actuacion.realizada_por == g_e:
@@ -204,8 +192,7 @@ def ajax_absentismo(request):
         elif request.POST['action'] == 'update_contacto':
             ok = False
             try:
-                actuacion = Actuacion.objects.get(expediente__expedientado__entidad=g_e.ronda.entidad,
-                                                  expediente__expedientado__ronda=g_e.ronda,
+                actuacion = Actuacion.objects.get(expediente__expedientado__ronda=g_e.ronda,
                                                   id=request.POST['actuacion'])
                 actuacion.contacto = request.POST['contacto']
                 if g_e.has_permiso('edita_actuacion_absentismo') or actuacion.realizada_por == g_e:

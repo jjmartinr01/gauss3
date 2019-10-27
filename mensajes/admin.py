@@ -4,7 +4,7 @@ from mensajes.models import Mensaje, Aviso, Adjunto, Borrado, Importante, Leido,
 
 class Aviso_extraAdmin(admin.ModelAdmin):
     search_fields = ['usuario__gauser__last_name']
-    list_filter = ['usuario__entidad', 'usuario__ronda']
+    list_filter = ['usuario__ronda']
 
 admin.site.register(Mensaje)
 admin.site.register(Mensaje_cola)
