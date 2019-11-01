@@ -48,20 +48,21 @@ def cargar_programaciones(request):
                 crear_aviso(request, False, 'No tienes permiso para descargar programaciones cargadas por otros')
         elif action == 'generar_zip_pga' and g_e.has_permiso('descarga_pga'):
             curso_escolar = g_e.ronda.nombre.replace('/', '-')
-            ruta = MEDIA_PROGRAMACIONES + "{0}/{1}/".format(g_e.entidad.code, curso_escolar)
+            ruta_centro = MEDIA_PROGRAMACIONES + "{0}/".format(g_e.entidad.code)
+            ruta_curso_escolar = "{0}{1}/".format(ruta_centro, curso_escolar)
             fichero = "programaciones_{0}_{1}.zip".format(g_e.entidad.code, curso_escolar)
-            ruta_fichero = "{0}{1}".format(ruta, fichero)
-            # try:
-            #     fecha_zip = time.gmtime(os.stat(ruta_fichero).st_ctime)
-            #     existe_zip = time.strftime("%d de %B de %Y a las %H:%M", fecha_zip)
-            # except:
-            #     existe_zip = ''
+            ruta_fichero = "{0}{1}".format(ruta_centro, fichero)
+            # Comprobamos si existe un fichero zip en el directorio de las programaciones. Esto solo
+            # ocurre hasta el curso 2019-2020. A partir de ese curso las programaciones se guardan
+            # en el directorio asociado al centro y no al del curso:
+            if os.path.exists("{0}{1}".format(ruta_curso_escolar, fichero)):
+                os.remove("{0}{1}".format(ruta_curso_escolar, fichero))
             try:
                 # Create target Directory
-                os.mkdir(ruta)
-                os.chdir(ruta)  # Determino el directorio de trabajo
+                os.mkdir(ruta_centro)
+                os.chdir(ruta_centro)  # Determino el directorio de trabajo
             except FileExistsError:
-                os.chdir(ruta)  # Determino el directorio de trabajo
+                os.chdir(ruta_centro)  # Determino el directorio de trabajo
 
             # zip_file = zipfile.ZipFile(ruta_fichero, 'w')
             # for root, dirs, files in os.walk('./'):  # Se comprime el directorio actual determinado por "ruta"
@@ -69,12 +70,12 @@ def cargar_programaciones(request):
             #         zip_file.write(os.path.join(root, file))
             # zip_file.close()
             output_filename = "programaciones_{0}_{1}".format(g_e.entidad.code, curso_escolar)
-            shutil.make_archive(output_filename, 'zip', ruta)
-            fich = open(ruta_fichero, 'rb')
+            shutil.make_archive(output_filename, 'zip', ruta_curso_escolar)
+            fich = open(ruta_fichero)
             crear_aviso(request, True,
                         "Genera y descarga .zip con programaciones: %s" % (g_e.gauser.get_full_name()))
             response = HttpResponse(fich, content_type='application/zip')
-            response['Content-Disposition'] = 'attachment; filename=%s' % (fichero)
+            response['Content-Disposition'] = 'attachment; filename=%s' % fichero
             return response
 
     return render(request, "cargar_programaciones.html",

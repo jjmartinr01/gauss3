@@ -22,7 +22,7 @@ def update_programacion(instance, filename):
         instance.materia.curso.nombre,
         file_nombre)
     ruta = ruta.replace(' ', '_').replace(',', '').replace(';', '').replace('.', '')
-    filename_normalizado = unicodedata.normalize('NFKD', ruta).encode('ascii', 'ignore') #.decode('utf-8')
+    filename_normalizado = unicodedata.normalize('NFKD', ruta).encode('ascii', 'ignore').decode('utf-8')
     return '%s.%s' %(filename_normalizado, ext)
 
 
