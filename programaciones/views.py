@@ -70,7 +70,7 @@ def cargar_programaciones(request):
             # zip_file.close()
             output_filename = "programaciones_{0}_{1}".format(g_e.entidad.code, curso_escolar)
             shutil.make_archive(output_filename, 'zip', ruta)
-            fich = open(ruta_fichero)
+            fich = open(ruta_fichero, 'rb')
             crear_aviso(request, True,
                         "Genera y descarga .zip con programaciones: %s" % (g_e.gauser.get_full_name()))
             response = HttpResponse(fich, content_type='application/zip')
