@@ -55,7 +55,13 @@ def cargar_programaciones(request):
             #     existe_zip = time.strftime("%d de %B de %Y a las %H:%M", fecha_zip)
             # except:
             #     existe_zip = ''
-            os.chdir(ruta)  # Determino el directorio de trabajo
+            try:
+                # Create target Directory
+                os.mkdir(ruta)
+                os.chdir(ruta)  # Determino el directorio de trabajo
+            except FileExistsError:
+                os.chdir(ruta)  # Determino el directorio de trabajo
+
             zip_file = zipfile.ZipFile(ruta_fichero, 'w')
             for root, dirs, files in os.walk('./'):  # Se comprime el directorio actual determinado por "ruta"
                 for file in files:
