@@ -12,14 +12,18 @@ from entidades.models import Gauser_extra, Ronda, Entidad
 # Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
 def update_programacion(instance, filename):
     ext = filename.rpartition('.')[2]
-    file_nombre = u'%s' % (instance.materia.nombre)
+    file_nombre = '%s' % (instance.materia.nombre)
     curso = instance.materia.curso.ronda.nombre.replace('/', '-')
-    ruta = u'programaciones/%s/%s/%s/%s/%s/%s' % (
-        instance.materia.curso.ronda.entidad.code, curso, instance.sube.gauser_extra_programaciones.departamento.nombre,
-        instance.materia.curso.get_etapa_display(), instance.materia.curso.nombre, file_nombre)
+    ruta = 'programaciones/%s/%s/%s/%s/%s/%s' % (
+        instance.materia.curso.ronda.entidad.code,
+        curso,
+        instance.sube.gauser_extra_programaciones.departamento.nombre,
+        instance.materia.curso.get_etapa_display(),
+        instance.materia.curso.nombre,
+        file_nombre)
     ruta = ruta.replace(' ', '_').replace(',', '').replace(';', '').replace('.', '')
     filename_normalizado = unicodedata.normalize('NFKD', ruta).encode('ascii', 'ignore')
-    return u'%s.%s' %(filename_normalizado, ext)
+    return '%s.%s' %(filename_normalizado, ext)
 
 
 class ProgramacionSubida(models.Model):

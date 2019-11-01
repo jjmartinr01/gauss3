@@ -4,6 +4,7 @@ import simplejson as json
 import unicodedata
 import os
 import zipfile
+import shutil
 import locale
 from math import modf
 import logging
@@ -62,14 +63,16 @@ def cargar_programaciones(request):
             except FileExistsError:
                 os.chdir(ruta)  # Determino el directorio de trabajo
 
-            zip_file = zipfile.ZipFile(ruta_fichero, 'w')
-            for root, dirs, files in os.walk('./'):  # Se comprime el directorio actual determinado por "ruta"
-                for file in files:
-                    zip_file.write(os.path.join(root, file))
-            zip_file.close()
+            # zip_file = zipfile.ZipFile(ruta_fichero, 'w')
+            # for root, dirs, files in os.walk('./'):  # Se comprime el directorio actual determinado por "ruta"
+            #     for file in files:
+            #         zip_file.write(os.path.join(root, file))
+            # zip_file.close()
+            output_filename = "programaciones_{0}_{1}".format(g_e.entidad.code, curso_escolar)
+            shutil.make_archive(output_filename, 'zip', ruta)
             fich = open(ruta_fichero)
             crear_aviso(request, True,
-                        u"Genera y descarga .zip con programaciones: %s" % (g_e.gauser.get_full_name()))
+                        "Genera y descarga .zip con programaciones: %s" % (g_e.gauser.get_full_name()))
             response = HttpResponse(fich, content_type='application/zip')
             response['Content-Disposition'] = 'attachment; filename=%s' % (fichero)
             return response
