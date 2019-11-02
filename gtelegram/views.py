@@ -71,6 +71,13 @@ def envia_telegram(g_e, texto, gausers=Gauser.objects.none(), gauser_extras=Gaus
         time.sleep(0.05)
     return True
 
+def envia_telegram_gausers(gausers=Gauser.objects.none(), texto=''):
+    usuarios_telegram = User.objects.filter(gauser__in=gausers).distinct()
+    for usuario in usuarios_telegram:
+        url = url_myBot + 'sendMessage?chat_id=%s&text=%s' % (usuario.id_telegram, texto)
+        requests.get(url)
+        time.sleep(0.1)
+    return True
 
 def gform_respuesta(m):
     # Si durante el tratamiento 'texto' toma un valor implicará que se ha producido un error:

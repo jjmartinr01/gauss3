@@ -11,7 +11,7 @@ from autenticar.models import Gauser, Permiso
 from entidades.models import Gauser_extra
 from mensajes.views import encolar_mensaje
 from vut.models import RegistroPolicia, Viajero, Autorizado
-from gtelegram.views import envia_telegram
+from gtelegram.views import envia_telegram, envia_telegram_gausers
 
 logger = logging.getLogger('django')
 
@@ -27,8 +27,13 @@ def comunica_viajero2PNGC():
         vivienda = registro.viajero.reserva.vivienda
         logger.info("1")
         if type(viajero) is not Viajero:
+            gtexto = 'Error durante el proceso de registro. No existe viajero'
+            envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
             return False
         if viajero.fichero_policia:
+            gtexto = 'Se ha tratado de registrar un mismo viajero varias veces. Viajero: %s %s (%s)' % (
+                viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+            envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
             return False
         if not viajero.observaciones:
             viajero.observaciones = ''
@@ -42,6 +47,9 @@ def comunica_viajero2PNGC():
                 try:
                     r = requests.post(url, files={'fichero': fichero}, data={}, verify=False, timeout=5)
                 except:
+                    gtexto = 'Error al tratar de enviar el fichero de datos a la Guardia Civil. Viajero: %s %s (%s)' % (
+                        viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                    envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                     return False
                 if r.status_code == 200:
                     if 'Errores' in r.text:
@@ -58,7 +66,7 @@ def comunica_viajero2PNGC():
                                         etiqueta='guardia_civl%s' % vivienda.id)
                         gtexto = 'Error con registro en Guardia Civil del viajero: %s %s (%s)' % (
                             viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
-                        envia_telegram(emisor, gtexto)
+                        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                     else:
                         viajero.fichero_policia = True
                         mensaje = '<p>En el registro de %s, reserva %s</p><p>La Guardia Civil dice:</p>%s' % (
@@ -70,7 +78,7 @@ def comunica_viajero2PNGC():
                                         etiqueta='guardia_civl%s' % vivienda.id)
                         gtexto = 'Registrado en Guardia Civil el viajero: %s %s (%s)' % (
                             viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
-                        envia_telegram(emisor, gtexto)
+                        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                     viajero.save()
                     fichero.close()
                     return True
@@ -86,7 +94,7 @@ def comunica_viajero2PNGC():
                                     etiqueta='guardia_civl%s' % vivienda.id)
                     gtexto = 'Error con registro en Guardia Civil del viajero: %s %s (%s)' % (
                         viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
-                    envia_telegram(emisor, gtexto)
+                    envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                     viajero.save()
                     fichero.close()
                     return False
@@ -99,6 +107,9 @@ def comunica_viajero2PNGC():
                 try:
                     p1 = s.get('https://webpol.policia.es/e-hotel/', timeout=5)
                 except:
+                    gtexto = 'Error al tratar de acceder a la web de la Policía Nacional. Viajero: %s %s (%s)' % (
+                        viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                    envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                     return False
                 # Escribimos las cookies en una cadena de texto, para introducirlas en las distintas cabeceras
                 cookies_header = ''
@@ -124,6 +135,9 @@ def comunica_viajero2PNGC():
                 try:
                     p11 = s.post(obtener_etiquetas_url, headers=obtener_etiquetas_headers, timeout=5)
                 except:
+                    gtexto = 'Error durante la obtención de etiquetas en la Policía Nacional. Viajero: %s %s (%s)' % (
+                        viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                    envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                     return False
                 # Cargamos los valores de los inputs demandados para hacer el login y enviamos el post con el payload
                 # En este caso enviamos: headers, cookies y parámetros (payload)
@@ -140,6 +154,9 @@ def comunica_viajero2PNGC():
                     p2 = s.post('https://webpol.policia.es/e-hotel/execute_login', data=payload,
                                 headers=execute_login_headers, timeout=5)
                 except:
+                    gtexto = 'Error durante el proceso de login en la Policía Nacional. Viajero: %s %s (%s)' % (
+                        viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                    envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                     return False
                 # A continuación hacemos una petición GET a inicio sin ningún parámetro
                 execute_inicio_headers = {
@@ -153,6 +170,9 @@ def comunica_viajero2PNGC():
                     p21 = s.get('https://webpol.policia.es/e-hotel/inicio', headers=execute_inicio_headers,
                                 cookies=dict(s.cookies), timeout=5)
                 except:
+                    gtexto = 'Error tras el proceso de login en la Policía Nacional. Viajero: %s %s (%s)' % (
+                        viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                    envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                     return False
                 # Hacemos una comprabción para asegurarnos de que se ha accedido correctamente a la webpol.
                 # Si la respuesta es correcta la respuesta contendrá el usuario:
@@ -191,6 +211,9 @@ def comunica_viajero2PNGC():
                     try:
                         p23 = s.post(limpiar_sesion_temporal_url, headers=limpiar_sesion_temporal_headers, timeout=5)
                     except:
+                        gtexto = 'Error durante el proceso de envío de los datos del huésped. Viajero: %s %s (%s)' % (
+                            viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                         return False
                     # Ahora es cuando se hace otra petición POST para llegar a la grabación manual sin payload
                     logger.info("5")
@@ -212,6 +235,9 @@ def comunica_viajero2PNGC():
                         sleep(10)
                     except:
                         logger.info("Error al entrar en grabador manual")
+                        gtexto = 'Error al entrar en el grabador manual de la Policía Nacional. Viajero: %s %s (%s)' % (
+                            viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                         return False
                     # En esta petición nos han devuelto el id de la hospedería. Lo tenemos que guardar:
                     soup3 = BeautifulSoup(p3.content.decode(p3.encoding), 'html.parser')
@@ -251,6 +277,9 @@ def comunica_viajero2PNGC():
                         sleep(4)
                     except:
                         logger.info("Error al enviar datos del huesped")
+                        gtexto = 'Error al enviar los datos del huésped. Viajero: %s %s (%s)' % (
+                            viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                         return False
                     # En esta petición nos devuelven datos que no vamos a necesitar, pero que almacenamos para guarar en
                     # la información del registro.
@@ -366,7 +395,7 @@ def comunica_viajero2PNGC():
                         emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
                         gtexto = 'Registrado en Policía el viajero: %s %s (%s)' % (
                         viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
-                        envia_telegram(emisor, gtexto)
+                        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                         return True
                     else:
                         logger.info('Error durante el grabado del viajero. Hacer el registro manualmente.')
@@ -376,7 +405,7 @@ def comunica_viajero2PNGC():
                         emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
                         gtexto = 'Error durante el grabado del viajero. Hacer el registro manualmente. Viajero: %s %s (%s)' % (
                             viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
-                        envia_telegram(emisor, gtexto)
+                        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                         return p4
                 else:
                     logger.info(u'Error al hacer el login en webpol para el viajero: %s' % (viajero))
@@ -386,8 +415,11 @@ def comunica_viajero2PNGC():
                     emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
                     gtexto = 'Error al hacer el login en la web de la Policía Nacional. Viajero: %s %s (%s)' % (
                         viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
-                    envia_telegram(emisor, gtexto)
+                    envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
             else:
+                gtexto = 'Error. Debes indicar en GAUSS si el registro se hace en Policía Nacional o Guardia Civil. Vivienda: %s' % (
+                    viajero.reserva.vivienda.nombre)
+                envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                 return False
         except:
             logger.info("6")
@@ -401,5 +433,5 @@ def comunica_viajero2PNGC():
                             asunto='Error en RegistroPolicia', html=mensaje, etiqueta='error%s' % ronda.id)
             gtexto = 'Error en la comunicación con Policía/Guardia Civil. Se debe hacer el registro manualmente. Viajero: %s %s (%s)' % (
                 viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
-            envia_telegram(emisor, gtexto)
+            envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
             return False
