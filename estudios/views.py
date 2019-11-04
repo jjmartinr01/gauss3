@@ -263,7 +263,7 @@ def configura_materias_pendientes(request):
                     fichero = request.FILES['fichero_xhr' + str(i)]
                     if fichero.content_type == 'application/vnd.ms-excel':
                         CargaMasiva.objects.create(ronda=g_e.ronda, fichero=fichero, tipo='PENDIENTES')
-                carga_masiva_from_excel.apply_async()
+                carga_masiva_from_excel.delay()
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
