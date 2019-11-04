@@ -9,7 +9,8 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 
 from autenticar.control_acceso import permiso_required
-from entidades.models import Subentidad, Gauser_extra, Ronda
+from entidades.models import Subentidad, Gauser_extra, Ronda, CargaMasiva
+from entidades.tasks import carga_masiva_from_excel
 from estudios.models import Curso, Materia, ETAPAS, Grupo, Matricula
 from gauss.funciones import usuarios_de_gauss, usuarios_ronda
 from programaciones.models import Materia_programaciones
@@ -260,49 +261,8 @@ def configura_materias_pendientes(request):
             for i in range(n_files):
                 fichero = request.FILES['fichero_xhr' + str(i)]
                 if fichero.content_type == 'application/vnd.ms-excel':
-                    book = xlrd.open_workbook(file_contents=fichero.read())
-                    sheet = book.sheet_by_index(0)
-
-                    # Get the keys from line 5 of excel file:
-                    dict_names = {}
-                    for col_index in xrange(sheet.ncols):
-                        dict_names[sheet.cell(4, col_index).value] = col_index
-
-                    errores = []
-                    errores_ge = []
-                    errores_materia = []
-                    for row_index in xrange(5, sheet.nrows):
-                        try:
-                            alumno_matricula = sheet.cell(row_index, dict_names['Nº Racima']).value
-                            ge = Gauser_extra.objects.get(id_entidad=alumno_matricula, ronda=g_e.ronda)
-                        except:
-                            if alumno_matricula not in errores_ge:
-                                errores.append('No se encuentra alumno con Nº de Racima: %s' % (alumno_matricula))
-                                ge = None
-                                errores_ge.append(alumno_matricula)
-                        try:
-                            materia_matricula = str(int(sheet.cell(row_index, dict_names['X_MATERIAOMG']).value))
-                            materia = Materia.objects.get(clave_ex=materia_matricula, curso__ronda=g_e.ronda)
-                        except:
-                            if materia_matricula not in errores_materia:
-                                errores.append('No se encuentra materia con código: %s' % (materia_matricula))
-                                materia = None
-                                errores_materia.append(materia_matricula)
-                        estado_matricula = sheet.cell(row_index, dict_names['Estado materia']).value
-                        if 'Matriculada' in estado_matricula:
-                            estado = 'MA'
-                        elif 'Convalidada' in estado_matricula:
-                            estado = 'CV'
-                        elif 'Pendiente' in estado_matricula:
-                            estado = 'PE'
-                        else:
-                            estado = 'AP'
-                        if materia and ge:
-                            m, c = Matricula.objects.get_or_create(ge=ge, materia=materia)
-                            m.estado = estado
-                            m.save()
-
-                    return JsonResponse({'ok': True, 'errores': errores})
+                    CargaMasiva.objects.create(ronda=g_e.ronda, fichero=fichero, tipo='PENDIENTES')
+            carga_masiva_from_excel.apply_async()
     respuesta = {
         'formname': 'configura_materias_pendientes',
         'cursos': Curso.objects.filter(ronda=g_e.ronda),

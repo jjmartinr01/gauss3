@@ -8,7 +8,7 @@ from celery import shared_task
 from django.utils.timezone import timedelta, datetime, now
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils.encoding import smart_text
-from estudios.models import Grupo, Gauser_extra_estudios
+from estudios.models import Grupo, Gauser_extra_estudios, Materia, Matricula
 from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva, Entidad
 from autenticar.models import Gauser
 from gauss.constantes import PROVINCIAS
@@ -385,4 +385,49 @@ def carga_masiva_from_excel():
                     gauser_extra.gauser_extra_estudios.save()
             carga.cargado = True
             carga.save()
+        elif carga.tipo == 'PENDIENTES':
+            f = carga.fichero.read()
+            book = xlrd.open_workbook(file_contents=f)
+            sheet = book.sheet_by_index(0)
+
+            # Get the keys from line 5 of excel file:
+            dict_names = {}
+            for col_index in range(sheet.ncols):
+                dict_names[sheet.cell(4, col_index).value] = col_index
+
+            errores = []
+            errores_ge = []
+            errores_materia = []
+            for row_index in range(5, sheet.nrows):
+                try:
+                    alumno_matricula = sheet.cell(row_index, dict_names['Nº Racima']).value
+                    ge = Gauser_extra.objects.get(id_entidad=alumno_matricula, ronda=carga.ronda)
+                except:
+                    if alumno_matricula not in errores_ge:
+                        errores.append('No se encuentra alumno con Nº de Racima: %s' % (alumno_matricula))
+                        ge = None
+                        errores_ge.append(alumno_matricula)
+                try:
+                    materia_matricula = str(int(sheet.cell(row_index, dict_names['X_MATERIAOMG']).value))
+                    materia = Materia.objects.get(clave_ex=materia_matricula, curso__ronda=carga.ronda)
+                except:
+                    if materia_matricula not in errores_materia:
+                        errores.append('No se encuentra materia con código: %s' % (materia_matricula))
+                        materia = None
+                        errores_materia.append(materia_matricula)
+                estado_matricula = sheet.cell(row_index, dict_names['Estado materia']).value
+                if 'Matriculada' in estado_matricula:
+                    estado = 'MA'
+                elif 'Convalidada' in estado_matricula:
+                    estado = 'CV'
+                elif 'Pendiente' in estado_matricula:
+                    estado = 'PE'
+                else:
+                    estado = 'AP'
+                if materia and ge:
+                    m, c = Matricula.objects.get_or_create(ge=ge, materia=materia)
+                    m.estado = estado
+                    m.save()
+        carga.cargado = True
+        carga.save()
     return True
