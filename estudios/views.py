@@ -257,12 +257,16 @@ def configura_materias_pendientes(request):
                 return JsonResponse({'ok': False})
     elif request.method == 'POST':
         if request.POST['action'] == 'upload_file_matriculas':
-            n_files = int(request.POST['n_files'])
-            for i in range(n_files):
-                fichero = request.FILES['fichero_xhr' + str(i)]
-                if fichero.content_type == 'application/vnd.ms-excel':
-                    CargaMasiva.objects.create(ronda=g_e.ronda, fichero=fichero, tipo='PENDIENTES')
-            carga_masiva_from_excel.apply_async()
+            try:
+                n_files = int(request.POST['n_files'])
+                for i in range(n_files):
+                    fichero = request.FILES['fichero_xhr' + str(i)]
+                    if fichero.content_type == 'application/vnd.ms-excel':
+                        CargaMasiva.objects.create(ronda=g_e.ronda, fichero=fichero, tipo='PENDIENTES')
+                carga_masiva_from_excel.apply_async()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
     respuesta = {
         'formname': 'configura_materias_pendientes',
         'cursos': Curso.objects.filter(ronda=g_e.ronda),
