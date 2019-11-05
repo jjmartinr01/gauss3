@@ -25,7 +25,7 @@
                             <td>{{ materia.nombre }}</td>
                             <td>{% if programacion %}
                                 <a class="descargar_fichero_programacion" id="dfp{{ programacion.id }}"
-                                   data-id="{{ programacion.id }}"><b>{{ programacion.filename }}</b></a>
+                                   data-id="{{ programacion.id }}" title="{{ programacion.archivo }}--{{ programacion.archivo.url }}"><b>{{ programacion.filename }}</b></a>
                             {% else %}
                                 <input type="file" name="fm{{ materia.id }}" id="fm{{ materia.id }}">
                             {% endif %}
