@@ -623,6 +623,12 @@ def ajax_politica_cuotas(request):
                             usuarios_id += list(deudores.values_list('id', flat=True))
                             n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
                             deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
+                        elif politica.tipo == 'fija':
+                            deudores = [usuario]
+                            usuarios_id += [usuario.id]
+                            n_cs = [usuario.num_cuenta_bancaria]
+                            deudores_str = '%s ' % (usuario.gauser.get_full_name())
+                            concepto = 'Cuota %s' % usuario.ronda.entidad.name
                         elif politica.tipo == 'vut':
                             viviendas = Vivienda.objects.filter(propietarios__in=[usuario.gauser],
                                                                 entidad=usuario.ronda.entidad)

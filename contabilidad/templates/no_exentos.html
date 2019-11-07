@@ -1,5 +1,4 @@
 {% load contabilidad_extras %}
-{{ politica|no_exentos:numero }}
 {% if numero < 6 %}
     {% for no_exento in politica|no_exentos:numero %}
         {#        &nbsp;<span class="radius label">{% autoescape off %}{{ no_exento }}{% endautoescape %}</span>#}
