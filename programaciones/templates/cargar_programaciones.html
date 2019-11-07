@@ -12,7 +12,7 @@
         <input type="hidden" id="action" name="action" value="">
         <input type="hidden" id="programacion" name="programacion" value="">
 
-        <dl class="accordion" data-accordion id="list_cursos" title="Lista de cursos">
+        <dl class="accordion" data-accordion id="list_cursos">
             {% for curso in cursos %}
                 {% include "cargar_programaciones_formulario.html" %}
             {% endfor %}

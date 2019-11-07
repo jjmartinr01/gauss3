@@ -25,6 +25,15 @@
             </div>
         </div>
 
+        {% if carga.incidencias|length > 5 %}
+            <div class="panel">
+                <h3>Incidencias de la última carga:</h3>
+                {% autoescape off %}
+                    {{ carga.incidencias }}
+                {% endautoescape %}
+            </div>
+        {% endif %}
+
         <dl class="accordion" data-accordion id="list_cursos" title="Lista de cursos">
             {% for curso in cursos %}
                 {% include "configura_materias_pendientes_curso.html" %}

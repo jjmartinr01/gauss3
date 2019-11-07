@@ -223,7 +223,7 @@ def configura_grupos(request):
     return render(request, "configura_grupos.html", respuesta)
 
 
-# @permiso_required('acceso_configura_pendientes')
+@permiso_required('acceso_configura_pendientes')
 def configura_materias_pendientes(request):
     g_e = request.session['gauser_extra']
     if request.method == 'GET' and request.is_ajax():
@@ -267,10 +267,15 @@ def configura_materias_pendientes(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
+    try:
+        carga = CargaMasiva.objects.filter(ronda=g_e.ronda, tipo='PENDIENTES', cargado=True).latest('id')
+    except:
+        carga = CargaMasiva.objects.none()
     respuesta = {
         'formname': 'configura_materias_pendientes',
         'cursos': Curso.objects.filter(ronda=g_e.ronda),
-        'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)}
+        'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+        'carga': carga}
     return render(request, "configura_materias_pendientes.html", respuesta)
 
 

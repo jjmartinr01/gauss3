@@ -404,7 +404,7 @@ def carga_masiva_from_excel():
                     ge = Gauser_extra.objects.get(id_entidad=alumno_matricula, ronda=carga.ronda)
                 except:
                     if alumno_matricula not in errores_ge:
-                        errores.append('No se encuentra alumno con Nº de Racima: %s' % (alumno_matricula))
+                        carga.incidencias += '<p>No se encuentra alumno con Nº de Racima: %s</p>' % (alumno_matricula)
                         ge = None
                         errores_ge.append(alumno_matricula)
                 try:
@@ -412,7 +412,7 @@ def carga_masiva_from_excel():
                     materia = Materia.objects.get(clave_ex=materia_matricula, curso__ronda=carga.ronda)
                 except:
                     if materia_matricula not in errores_materia:
-                        errores.append('No se encuentra materia con código: %s' % (materia_matricula))
+                        carga.incidencias += '<p>No se encuentra materia con código: %s</p>' % (materia_matricula)
                         materia = None
                         errores_materia.append(materia_matricula)
                 estado_matricula = sheet.cell(row_index, dict_names['Estado materia']).value
