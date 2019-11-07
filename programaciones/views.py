@@ -1109,7 +1109,7 @@ def replace_normalize(string):
     for ch in [',', ';', '.', ')', '(']:
         string = string.replace(ch, '')
     string = string.replace(' ', '_')
-    return u'%s' % (unicodedata.normalize('NFKD', string).encode('ascii', 'ignore'))
+    return slugify(string)
 
 
 # @permiso_required('acceso_programaciones_ccff')

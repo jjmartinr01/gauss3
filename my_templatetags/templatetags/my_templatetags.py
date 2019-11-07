@@ -224,73 +224,73 @@ def fecha_eq(fecha1, fecha2):
 
 
 # Módulo de Contabilidad
-@register.filter
-def remesas_emitidas(politica):
-    return Remesa_emitida.objects.filter(politica=politica, visible=True)[:3]
-
-
-@register.filter
-def total_remesas_emitidas(politica):
-    return Remesa_emitida.objects.filter(politica=politica, visible=True).count()
-
-
-@register.filter
-def number_no_exentos(politica):
-    exentos_id = politica.exentos.all().values_list('id', flat=True)
-    return usuarios_de_gauss(politica.entidad, cargos=[politica.cargo]).exclude(gauser__id__in=exentos_id).count()
-
-
-@register.filter
-def no_exentos(politica, total=1000):
-    no_ex = []
-    # importes = list(map(float, re.findall(r"[-+]?\d*\.\d+|\d+", politica.descuentos)))
-    # Hacemos una secuencia de importes añadiendo el último valor lo suficientemente grande como para
-    # asegurar que el número de hermanos es superado. Por ejemplo si importes es [30,20,15], después
-    # de la siguiente líneas sería [30,20,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15]
-    # importes = importes + [importes[-1] for i in range(20)]
-    importes = politica.array_cuotas
-    exentos_id = politica.exentos.all().values_list('id', flat=True)
-    usuarios = usuarios_ronda(politica.entidad.ronda, cargos=[politica.cargo]).exclude(gauser__id__in=exentos_id)[:total]
-    usuarios_id = []
-    n = 0
-    for usuario in usuarios:
-        n += 1
-        if usuario.id not in usuarios_id:
-            if politica.tipo == 'hermanos':
-                familiares = usuario.unidad_familiar
-                deudores = familiares.filter(id__in=usuarios)
-                if deudores.count() > 1:
-                    concepto = 'Familia %s' % deudores[0].gauser.last_name
-                else:
-                    concepto = deudores[0].gauser.get_full_name()
-                usuarios_id += list(deudores.values_list('id', flat=True))
-                n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
-                deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
-            elif politica.tipo == 'vut':
-                viviendas = Vivienda.objects.filter(propietarios__in=[usuario.gauser],
-                                                    entidad=usuario.ronda.entidad)
-                deudores = [usuario] * viviendas.count()
-                usuarios_id += [usuario.id]
-                n_cs = [usuario.num_cuenta_bancaria]
-                deudores_str = '%s viviendas gestionadas por %s' % (viviendas.count(),
-                                                                    usuario.gauser.get_full_name())
-                concepto = 'Cuota %s' % usuario.ronda.entidad.name
-            else:
-                deudores = []
-                usuarios_id += [usuario.id]
-                n_cs = []
-                deudores_str = ''
-                concepto = ''
-
-            try:
-                cuenta_banca = [n_c.replace(' ', '') for n_c in n_cs if len(str(n_c)) > 18][0]
-                estilo, title = "", "Cuenta bancaria: " + str(cuenta_banca)
-            except:
-                estilo, title = "color:red", "No hay cuenta bancaria asignada"
-            if len(deudores) > 0:
-                no_ex.append('<span title="%s" style="%s">%s %s (%s)dddd</span>' % (
-                    title, estilo, concepto, deudores[0].gauser.last_name, str(sum(importes[:len(deudores)]))))
-    return no_ex
+# @register.filter
+# def remesas_emitidas(politica):
+#     return Remesa_emitida.objects.filter(politica=politica, visible=True)[:3]
+#
+#
+# @register.filter
+# def total_remesas_emitidas(politica):
+#     return Remesa_emitida.objects.filter(politica=politica, visible=True).count()
+#
+#
+# @register.filter
+# def number_no_exentos(politica):
+#     exentos_id = politica.exentos.all().values_list('id', flat=True)
+#     return usuarios_de_gauss(politica.entidad, cargos=[politica.cargo]).exclude(gauser__id__in=exentos_id).count()
+#
+#
+# @register.filter
+# def no_exentos(politica, total=1000):
+#     no_ex = []
+#     # importes = list(map(float, re.findall(r"[-+]?\d*\.\d+|\d+", politica.descuentos)))
+#     # Hacemos una secuencia de importes añadiendo el último valor lo suficientemente grande como para
+#     # asegurar que el número de hermanos es superado. Por ejemplo si importes es [30,20,15], después
+#     # de la siguiente líneas sería [30,20,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15]
+#     # importes = importes + [importes[-1] for i in range(20)]
+#     importes = politica.array_cuotas
+#     exentos_id = politica.exentos.all().values_list('id', flat=True)
+#     usuarios = usuarios_ronda(politica.entidad.ronda, cargos=[politica.cargo]).exclude(gauser__id__in=exentos_id)[:total]
+#     usuarios_id = []
+#     n = 0
+#     for usuario in usuarios:
+#         n += 1
+#         if usuario.id not in usuarios_id:
+#             if politica.tipo == 'hermanos':
+#                 familiares = usuario.unidad_familiar
+#                 deudores = familiares.filter(id__in=usuarios)
+#                 if deudores.count() > 1:
+#                     concepto = 'Familia %s' % deudores[0].gauser.last_name
+#                 else:
+#                     concepto = deudores[0].gauser.get_full_name()
+#                 usuarios_id += list(deudores.values_list('id', flat=True))
+#                 n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
+#                 deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
+#             elif politica.tipo == 'vut':
+#                 viviendas = Vivienda.objects.filter(propietarios__in=[usuario.gauser],
+#                                                     entidad=usuario.ronda.entidad)
+#                 deudores = [usuario] * viviendas.count()
+#                 usuarios_id += [usuario.id]
+#                 n_cs = [usuario.num_cuenta_bancaria]
+#                 deudores_str = '%s viviendas gestionadas por %s' % (viviendas.count(),
+#                                                                     usuario.gauser.get_full_name())
+#                 concepto = 'Cuota %s' % usuario.ronda.entidad.name
+#             else:
+#                 deudores = []
+#                 usuarios_id += [usuario.id]
+#                 n_cs = []
+#                 deudores_str = ''
+#                 concepto = ''
+#
+#             try:
+#                 cuenta_banca = [n_c.replace(' ', '') for n_c in n_cs if len(str(n_c)) > 18][0]
+#                 estilo, title = "", "Cuenta bancaria: " + str(cuenta_banca)
+#             except:
+#                 estilo, title = "color:red", "No hay cuenta bancaria asignada"
+#             if len(deudores) > 0:
+#                 no_ex.append('<span title="%s" style="%s">%s %s (%s)dddd</span>' % (
+#                     title, estilo, concepto, deudores[0].gauser.last_name, str(sum(importes[:len(deudores)]))))
+#     return no_ex
 
 
 # Entidades
@@ -583,11 +583,6 @@ def tabular(number):  # Devuelve tantas tabulaciones como indicada en number
 # -------------------------------------------------------------------------------------------------------------#
 # TEMPLATETAGS PARA IMPRIMIR CORRECTAMENTE LA LOCALIDAD EN LUGARES DONDE HAY VARIOS CÓDIGOS POSTALES
 
-@register.filter
-def nombre_mes(entero):  # Devuelve tantas tabulaciones como indicada en number
-    return MESES[entero]
-
-
 # -------------------------------------------------------------------------------------------------------------#
 # TEMPLATETAGS PARA IMPRIMIR CORRECTAMENTE LA LOCALIDAD EN LUGARES DONDE HAY VARIOS CÓDIGOS POSTALES
 
@@ -623,12 +618,7 @@ def primera_cuota(descuentos):
         d = 'Sin descuentos'
     return d
 
-@register.filter
-def desglosar_descuentos(descuentos):
-    d = '&#8364;, '.join(re.findall(r"[-+]?\d*\.\d+|\d+", descuentos)[1:]) + '&#8364;'
-    if d == '&#8364;':
-        d = 'Sin descuentos'
-    return d
+
 
 
 @register.filter

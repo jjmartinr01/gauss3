@@ -1,11 +1,12 @@
-{% load my_templatetags %}
+{% load contabilidad_extras %}
 {{ politica|no_exentos:numero }}
 {% if numero < 6 %}
     {% for no_exento in politica|no_exentos:numero %}
-        &nbsp;<span class="radius label">{% autoescape off %}{{ no_exento }}{% endautoescape %}</span>
+        {#        &nbsp;<span class="radius label">{% autoescape off %}{{ no_exento }}{% endautoescape %}</span>#}
+        <span class="radius label"><span title="{{ no_exento.title }}" style="{{ no_exento.estilo }}"
+        >{{ no_exento.concepto }} {{ no_exento.deudor }} ({{ no_exento.cantidad }})</span></span>
 {#        {% if forloop.last and politica|number_no_exentos > numero %}#}
-        dsafa
-    {% if forloop.last %}
+            {% if forloop.last %}
             &nbsp;<span class="secondary radius label">
             <a class="mostrar_no_exentos" data-id="{{ politica.id }}">
                 ... (mostrar todos)
@@ -14,9 +15,11 @@
     {% endfor %}
 {% else %}
     {% for no_exento in politica|no_exentos:1000 %}
-            &nbsp;<span class="radius label">{% autoescape off %}{{ no_exento }}{% endautoescape %}</span>
-{#        {% if forloop.last and forloop.counter > 10 %}#}
-            {% if forloop.last %}
+{#        &nbsp;<span class="radius label">{% autoescape off %}{{ no_exento }}{% endautoescape %}</span>#}
+        <span class="radius label"><span title="{{ no_exento.title }}" style="{{ no_exento.estilo }}"
+        >{{ no_exento.concepto }} {{ no_exento.deudor }} ({{ no_exento.cantidad }})</span></span>
+        {#        {% if forloop.last and forloop.counter > 10 %}#}
+        {% if forloop.last %}
             &nbsp;<span class="secondary radius label">
             <a class="ocultar_no_exentos" data-id="{{ politica.id }}">
                 ... (ocultar)
