@@ -672,11 +672,12 @@ def ajax_politica_cuotas(request):
                                     wr.write(fila_excel_remesas, 1, r.rmtinf)
                                     wr.write(fila_excel_remesas, 2, r.dbtriban)
                                     wr.write(fila_excel_remesas, 3, r.instdamt)
-                                except:
+                                except Exception as e:
                                     fila_excel_avisos += 1
-                                    aviso = u'No se ha podido crear la remesa para la familia %s' % (
-                                        deudores[0].gauser.last_name)
+                                    aviso = u'No se ha podido crear la remesa para %s' % (
+                                        deudores[0].gauser.get_full_name())
                                     wa.write(fila_excel_avisos, 0, aviso)
+                                    wa.write(fila_excel_avisos, 5, str(e))
                             except:
                                 if politica.tipo == 'hermanos':
                                     for deudor in deudores:
