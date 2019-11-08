@@ -651,38 +651,62 @@ def ajax_politica_cuotas(request):
                                 usuario.num_cuenta_bancaria = num_cuenta2iban(cuenta_banca)
                                 usuario.save()
                                 asocia_banco_ge(usuario)
-                                try:
-                                    if politica.tipo_cobro == 'MEN':
-                                        rmtinf = '%s - Cobro %s, mes de %s (%s)' % (politica.concepto,
-                                                                                    politica.get_tipo_cobro_display(),
-                                                                                    date.today().strftime('%B'),
-                                                                                    deudores_str)
-                                    else:
-                                        rmtinf = '%s - Cobro %s, realizado en %s (%s)' % (politica.concepto,
-                                                                                          politica.get_tipo_cobro_display(),
-                                                                                          date.today().strftime('%B'),
-                                                                                          deudores_str)
-                                    r = Remesa.objects.create(emitida=remesa_emitida,
-                                                              banco=usuario.banco, dtofsgntr=date(2013, 10, 10),
-                                                              dbtrnm='%s %s' % (concepto, deudores[0].gauser.last_name),
-                                                              dbtriban=usuario.num_cuenta_bancaria,
-                                                              rmtinf=rmtinf, instdamt=importe, counter=n)
-                                    fila_excel_remesas += 1
-                                    wr.write(fila_excel_remesas, 0, r.dbtrnm)
-                                    wr.write(fila_excel_remesas, 1, r.rmtinf)
-                                    wr.write(fila_excel_remesas, 2, r.dbtriban)
-                                    wr.write(fila_excel_remesas, 3, r.instdamt)
-                                except Exception as e:
-                                    fila_excel_avisos += 1
-                                    aviso = u'No se ha podido crear la remesa para %s' % (
-                                        deudores[0].gauser.get_full_name())
-                                    wa.write(fila_excel_avisos, 0, aviso)
-                                    wa.write(fila_excel_avisos, 5, str(e))
+
+                                if politica.tipo_cobro == 'MEN':
+                                    rmtinf = '%s - Cobro %s, mes de %s (%s)' % (politica.concepto,
+                                                                                politica.get_tipo_cobro_display(),
+                                                                                date.today().strftime('%B'),
+                                                                                deudores_str)
+                                else:
+                                    rmtinf = '%s - Cobro %s, realizado en %s (%s)' % (politica.concepto,
+                                                                                      politica.get_tipo_cobro_display(),
+                                                                                      date.today().strftime('%B'),
+                                                                                      deudores_str)
+                                r = Remesa.objects.create(emitida=remesa_emitida,
+                                                          banco=usuario.banco, dtofsgntr=date(2013, 10, 10),
+                                                          dbtrnm='%s %s' % (concepto, deudores[0].gauser.last_name),
+                                                          dbtriban=usuario.num_cuenta_bancaria,
+                                                          rmtinf=rmtinf, instdamt=importe, counter=n)
+                                fila_excel_remesas += 1
+                                wr.write(fila_excel_remesas, 0, r.dbtrnm)
+                                wr.write(fila_excel_remesas, 1, r.rmtinf)
+                                wr.write(fila_excel_remesas, 2, r.dbtriban)
+                                wr.write(fila_excel_remesas, 3, r.instdamt)
+
+
+
+                                # try:
+                                #     if politica.tipo_cobro == 'MEN':
+                                #         rmtinf = '%s - Cobro %s, mes de %s (%s)' % (politica.concepto,
+                                #                                                     politica.get_tipo_cobro_display(),
+                                #                                                     date.today().strftime('%B'),
+                                #                                                     deudores_str)
+                                #     else:
+                                #         rmtinf = '%s - Cobro %s, realizado en %s (%s)' % (politica.concepto,
+                                #                                                           politica.get_tipo_cobro_display(),
+                                #                                                           date.today().strftime('%B'),
+                                #                                                           deudores_str)
+                                #     r = Remesa.objects.create(emitida=remesa_emitida,
+                                #                               banco=usuario.banco, dtofsgntr=date(2013, 10, 10),
+                                #                               dbtrnm='%s %s' % (concepto, deudores[0].gauser.last_name),
+                                #                               dbtriban=usuario.num_cuenta_bancaria,
+                                #                               rmtinf=rmtinf, instdamt=importe, counter=n)
+                                #     fila_excel_remesas += 1
+                                #     wr.write(fila_excel_remesas, 0, r.dbtrnm)
+                                #     wr.write(fila_excel_remesas, 1, r.rmtinf)
+                                #     wr.write(fila_excel_remesas, 2, r.dbtriban)
+                                #     wr.write(fila_excel_remesas, 3, r.instdamt)
+                                # except Exception as e:
+                                #     fila_excel_avisos += 1
+                                #     aviso = 'No se ha podido crear la remesa para %s' % (
+                                #         deudores[0].gauser.get_full_name())
+                                #     wa.write(fila_excel_avisos, 0, aviso)
+                                #     wa.write(fila_excel_avisos, 5, str(e))
                             except:
                                 if politica.tipo == 'hermanos':
                                     for deudor in deudores:
                                         fila_excel_avisos += 1
-                                        aviso = u'Falta número de cuenta bancaria en usuario %s. No se crea remesa.' % (
+                                        aviso = 'Falta número de cuenta bancaria en usuario %s. No se crea remesa.' % (
                                             deudor.gauser.get_full_name())
                                         wa.write(fila_excel_avisos, 0, aviso)
 
