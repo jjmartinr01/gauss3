@@ -616,10 +616,10 @@ def ajax_politica_cuotas(request):
                         if politica.tipo == 'hermanos':
                             familiares = usuario.unidad_familiar
                             deudores = familiares.filter(id__in=usuarios)
-                            if deudores.count() > 1:
-                                concepto = 'Familia %s' % deudores[0].gauser.last_name
-                            else:
-                                concepto = deudores[0].gauser.get_full_name()
+                            # if deudores.count() > 1:
+                            #     concepto = 'Familia %s' % deudores[0].gauser.last_name
+                            # else:
+                            #     concepto = deudores[0].gauser.get_full_name()
                             usuarios_id += list(deudores.values_list('id', flat=True))
                             n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
                             deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
@@ -628,7 +628,7 @@ def ajax_politica_cuotas(request):
                             usuarios_id += [usuario.id]
                             n_cs = [usuario.num_cuenta_bancaria]
                             deudores_str = '%s ' % (usuario.gauser.get_full_name())
-                            concepto = 'Cuota %s' % usuario.ronda.entidad.name
+                            # concepto = 'Cuota %s' % usuario.ronda.entidad.name
                         elif politica.tipo == 'vut':
                             viviendas = Vivienda.objects.filter(propietarios__in=[usuario.gauser],
                                                                 entidad=usuario.ronda.entidad)
@@ -637,42 +637,15 @@ def ajax_politica_cuotas(request):
                             n_cs = [usuario.num_cuenta_bancaria]
                             deudores_str = '%s viviendas gestionadas por %s' % (viviendas.count(),
                                                                                 usuario.gauser.get_full_name())
-                            concepto = 'Cuota %s' % usuario.ronda.entidad.name
+                            # concepto = 'Cuota %s' % usuario.ronda.entidad.name
                         else:
                             deudores = []
                             usuarios_id += [usuario.id]
                             n_cs = []
                             deudores_str = ''
-                            concepto = ''
+                            # concepto = ''
                         importe = sum(importes[:len(deudores)])
                         if importe > 0:
-                            ######################################
-                            cuenta_banca = [n_c.replace(' ', '') for n_c in n_cs if len(str(n_c)) > 18][0]
-                            usuario.num_cuenta_bancaria = num_cuenta2iban(cuenta_banca)
-                            usuario.save()
-                            asocia_banco_ge(usuario)
-                            if politica.tipo_cobro == 'MEN':
-                                rmtinf = '%s - Cobro %s, mes de %s (%s)' % (politica.concepto,
-                                                                            politica.get_tipo_cobro_display(),
-                                                                            date.today().strftime('%B'),
-                                                                            deudores_str)
-                            else:
-                                rmtinf = '%s - Cobro %s, realizado en %s (%s)' % (politica.concepto,
-                                                                                  politica.get_tipo_cobro_display(),
-                                                                                  date.today().strftime('%B'),
-                                                                                  deudores_str)
-                            r = Remesa.objects.create(emitida=remesa_emitida,
-                                                      banco=usuario.banco, dtofsgntr=date(2013, 10, 10),
-                                                      dbtrnm='%s %s' % (concepto, deudores[0].gauser.last_name),
-                                                      dbtriban=usuario.num_cuenta_bancaria,
-                                                      rmtinf=rmtinf, instdamt=importe, counter=n)
-                            fila_excel_remesas += 1
-                            wr.write(fila_excel_remesas, 0, r.dbtrnm)
-                            wr.write(fila_excel_remesas, 1, r.rmtinf)
-                            wr.write(fila_excel_remesas, 2, r.dbtriban)
-                            wr.write(fila_excel_remesas, 3, r.instdamt)
-                            ######################################
-
                             try:
                                 cuenta_banca = [n_c.replace(' ', '') for n_c in n_cs if len(str(n_c)) > 18][0]
                                 usuario.num_cuenta_bancaria = num_cuenta2iban(cuenta_banca)
@@ -689,11 +662,12 @@ def ajax_politica_cuotas(request):
                                                                                           politica.get_tipo_cobro_display(),
                                                                                           date.today().strftime('%B'),
                                                                                           deudores_str)
+                                    dbtrnm = '%s %s' % (deudores[0].gauser.last_name, politica.concepto)
                                     r = Remesa.objects.create(emitida=remesa_emitida,
                                                               banco=usuario.banco, dtofsgntr=date(2013, 10, 10),
-                                                              dbtrnm='%s %s' % (concepto, deudores[0].gauser.last_name),
+                                                              dbtrnm=dbtrnm[:69],
                                                               dbtriban=usuario.num_cuenta_bancaria,
-                                                              rmtinf=rmtinf, instdamt=importe, counter=n)
+                                                              rmtinf=rmtinf[:139], instdamt=importe, counter=n)
                                     fila_excel_remesas += 1
                                     wr.write(fila_excel_remesas, 0, r.dbtrnm)
                                     wr.write(fila_excel_remesas, 1, r.rmtinf)
