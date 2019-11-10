@@ -1733,7 +1733,7 @@ def contabilidades_autorizado(g_e):
     return ContabilidadVUT.objects.filter((q1 & q2) | q3).distinct()
 
 
-# @permiso_required('acceso_contabilidad_vut')
+@permiso_required('acceso_contabilidad_vut')
 def contabilidad_vut(request):
     g_e = request.session['gauser_extra']
     ca = AutorizadoContabilidadVut.objects.filter(autorizado=g_e.gauser).values_list('contabilidad__id', flat=True)
