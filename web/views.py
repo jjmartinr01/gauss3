@@ -373,7 +373,7 @@ def web_design(request):
             file_web.delete()
         elif action == 'descarga_fileweb':
             file_web = File_web.objects.get(id=request.POST['file_web_id'])
-            fichero = open(RUTA_BASE + file_web.fichero.url)
+            fichero = open(RUTA_BASE + file_web.fichero.url, 'rb')
             response = HttpResponse(fichero, content_type=file_web.content_type)
             response['Content-Disposition'] = 'attachment; filename=' + file_web.fich_name
             return response

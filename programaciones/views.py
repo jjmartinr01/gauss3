@@ -71,7 +71,7 @@ def cargar_programaciones(request):
             # zip_file.close()
             output_filename = "programaciones_{0}_{1}".format(g_e.entidad.code, curso_escolar)
             shutil.make_archive(output_filename, 'zip', ruta_curso_escolar)
-            fich = open(ruta_fichero)
+            fich = open(ruta_fichero, 'rb')
             crear_aviso(request, True,
                         "Genera y descarga .zip con programaciones: %s" % (g_e.gauser.get_full_name()))
             response = HttpResponse(fich, content_type='application/zip')
@@ -550,7 +550,7 @@ def programaciones(request):
             programacion = Programacion_modulo.objects.get(id=request.POST['id_programacion'])
             try:
                 fich_name = replace_normalize(programacion.modulo.nombre) + '.pdf'
-                fichero = open(programacion.file_path + '.pdf')
+                fichero = open(programacion.file_path + '.pdf', 'rb')
                 crear_aviso(request, True, u"Descarga programacion (pdf): %s" % (programacion))
                 response = HttpResponse(fichero, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + fich_name
@@ -1220,7 +1220,7 @@ def titulos(request):
             titulo = Titulo_FP.objects.get(id=request.POST['id_titulo'])
             fichero = '%s_%s.pdf' % (g_e.ronda.entidad.code, titulo.id)
             try:
-                fich = open(MEDIA_ESCRITOS + fichero)
+                fich = open(MEDIA_ESCRITOS + fichero, 'rb')
                 crear_aviso(request, True, u"Descarga pdf: %s" % (titulo.asunto))
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + titulo.asunto.replace(' ', '_') + '.pdf'

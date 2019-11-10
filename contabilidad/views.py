@@ -287,7 +287,7 @@ def gastos_ingresos(request):
             asiento = Asiento.objects.get(id=request.POST['asiento_id'])
             url_file = asiento.escaneo.fichero.url
             fichero = url_file.replace('/media/contabilidad/', MEDIA_CONTABILIDAD)
-            response = HttpResponse(open(fichero))
+            response = HttpResponse(open(fichero, 'rb'))
             response['Content-Disposition'] = 'attachment; filename=' + asiento.escaneo.fich_name
             return response
     else:
@@ -487,7 +487,7 @@ def politica_cuotas(request):
             ruta = MEDIA_CONTABILIDAD + str(g_e.ronda.entidad.code) + '/'
             grupo = remesa_emitida.grupo
             fichero = '%s.xml' % (grupo)
-            xmlfile = open(ruta + '/' + fichero)
+            xmlfile = open(ruta + '/' + fichero, 'rb')
             response = HttpResponse(xmlfile, content_type='application/xml')
             response['Content-Disposition'] = 'attachment; filename=Remesas_%s-%s-%s.xml' % (
                 remesa_emitida.creado.year, remesa_emitida.creado.month, remesa_emitida.creado.day)

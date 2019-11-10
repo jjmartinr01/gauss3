@@ -25,7 +25,7 @@ from bs4 import BeautifulSoup
 
 from django.db.models import Q, Sum
 from django.core.files.base import ContentFile, File
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
@@ -1733,7 +1733,7 @@ def contabilidades_autorizado(g_e):
     return ContabilidadVUT.objects.filter((q1 & q2) | q3).distinct()
 
 
-@permiso_required('acceso_contabilidad_vut')
+# @permiso_required('acceso_contabilidad_vut')
 def contabilidad_vut(request):
     g_e = request.session['gauser_extra']
     ca = AutorizadoContabilidadVut.objects.filter(autorizado=g_e.gauser).values_list('contabilidad__id', flat=True)
@@ -1762,7 +1762,7 @@ def contabilidad_vut(request):
                 ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, vivienda.entidad.code, vivienda.id)
                 fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
                                    title=u'Libro de registro de viajeros', tipo='sin_cabecera')
-                response = HttpResponse(fich, content_type='application/pdf')
+                response = FileResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
                 return response
         elif action == 'download_file_asiento':
@@ -1771,8 +1771,8 @@ def contabilidad_vut(request):
             a = AutorizadoContabilidadVut.objects.filter(contabilidad=asiento.partida.contabilidad,
                                                          autorizado=g_e.gauser, permisos__in=[permiso]).count()
             if asiento.partida.contabilidad.propietario == g_e.gauser or a > 0:
-                fich = open(RUTA_BASE + asiento.fichero.url)
-                response = HttpResponse(fich, content_type=asiento.content_type)
+                fich = open(RUTA_BASE + asiento.fichero.url, 'rb')
+                response = FileResponse(fich, content_type=asiento.content_type)
                 response['Content-Disposition'] = 'attachment; filename=' + asiento.fich_name
                 return response
 
@@ -2080,8 +2080,8 @@ def domotica_vut(request):
             a = AutorizadoContabilidadVut.objects.filter(contabilidad=asiento.partida.contabilidad,
                                                          autorizado=g_e.gauser, permisos__in=[permiso]).count()
             if asiento.partida.contabilidad.propietario == g_e.gauser or a > 0:
-                fich = open(RUTA_BASE + asiento.fichero.url)
-                response = HttpResponse(fich, content_type=asiento.content_type)
+                fich = open(RUTA_BASE + asiento.fichero.url, 'rb')
+                response = FileResponse(fich, content_type=asiento.content_type)
                 response['Content-Disposition'] = 'attachment; filename=' + asiento.fich_name
                 return response
 

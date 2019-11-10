@@ -629,7 +629,7 @@ def ver_actas(request):
             try:
                 acta = Acta.objects.get(id=request.POST['id_acta'], convocatoria__entidad=g_e.ronda.entidad)
                 fichero = 'acta_%s_%s' % (g_e.ronda.entidad.code, acta.id)
-                fich = open(MEDIA_ACTAS + fichero)
+                fich = open(MEDIA_ACTAS + fichero, 'rb')
                 crear_aviso(request, True, u"Descarga pdf: %s" % (acta.convocatoria.nombre))
                 response = HttpResponse(fich, content_type='application/pdf')
                 filename = acta.convocatoria.nombre.replace(' ', '_') + '.pdf'

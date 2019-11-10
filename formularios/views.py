@@ -124,7 +124,7 @@ def formularios(request):
 
             wb.save(ruta + fichero_xls)
 
-            xlsfile = open(ruta + '/' + fichero_xls)
+            xlsfile = open(ruta + '/' + fichero_xls, 'rb')
             response = HttpResponse(xlsfile, content_type='application/vnd.ms-excel')
             response['Content-Disposition'] = 'attachment; filename=%s' % (fichero_xls)
             return response

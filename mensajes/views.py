@@ -395,7 +395,7 @@ def recibidos(request):
                 for adjunto in mensaje.adjuntos.all():
                     zip_file.write(adjunto.filename())
             zip_file.close()
-            fich = open(fichero)
+            fich = open(fichero, 'rb')
             crear_aviso(request, True, u"Genera y descarga .zip con adjuntos")
             response = HttpResponse(fich, content_type='application/zip')
             # response.set_cookie('fileDownload', value='true')  # Creo cookie para controlar la descarga (fileDownload.js)
