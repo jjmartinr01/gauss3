@@ -414,7 +414,7 @@ def configura_auto_id(request):
 ########################### FUNCIONES LIGADAS AL LISTADO DE USUARIOS ###########################
 
 
-# @permiso_required('acceso_listados_usuarios')
+@permiso_required('acceso_listados_usuarios')
 def listados_usuarios(request):
     g_e = request.session['gauser_extra']
     filtrados = Filtrado.objects.filter(propietario__ronda__entidad=g_e.ronda.entidad, propietario__gauser=g_e.gauser)
