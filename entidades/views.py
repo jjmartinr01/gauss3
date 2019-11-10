@@ -26,7 +26,7 @@ from mensajes.views import encolar_mensaje
 from autenticar.models import Gauser, Permiso
 from estudios.models import Gauser_extra_estudios, Grupo
 from entidades.models import *
-
+# from entidades.configuration import FILTROS
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from bancos.views import asocia_banco_entidad, asocia_banco_ge, num_cuenta2iban
@@ -35,7 +35,7 @@ from gauss.funciones import usuarios_de_gauss, pass_generator, html_to_pdf, usua
 from datetime import date
 import simplejson as json
 from django.template.loader import render_to_string
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from entidades.forms import GauserForm, Gauser_extraForm, EntidadForm, Gauser_mis_datos_Form, \
     Gauser_extra_mis_datos_Form
 from gauss.constantes import PROVINCIAS
@@ -410,16 +410,20 @@ def configura_auto_id(request):
     return render(request, "configura_auto_id.html", respuesta)
 
 
-@permiso_required('acceso_listados_usuarios')
+
+########################### FUNCIONES LIGADAS AL LISTADO DE USUARIOS ###########################
+
+
+# @permiso_required('acceso_listados_usuarios')
 def listados_usuarios(request):
     g_e = request.session['gauser_extra']
-    filtrados = Filtrado.objects.filter(propietario__entidad=g_e.ronda.entidad, propietario__gauser=g_e.gauser)
+    filtrados = Filtrado.objects.filter(propietario__ronda__entidad=g_e.ronda.entidad, propietario__gauser=g_e.gauser)
     g_es = None
 
     if request.method == 'POST':
 
         if request.POST['action'] == 'download_file':
-            filtrado = Filtrado.objects.get(propietario__entidad=g_e.ronda.entidad, id=request.POST['filtrado'])
+            filtrado = Filtrado.objects.get(propietario__ronda__entidad=g_e.ronda.entidad, id=request.POST['filtrado'])
 
             query = crea_query(filtrado)
             if 'ronda__id' in filtrado.filtroq_set.all().values_list('filtro', flat=True):
@@ -462,8 +466,8 @@ def listados_usuarios(request):
                     col += 1
                 fila_excel_listado += 1
             wb.save(ruta + fichero_xls)
-            xlsfile = open(ruta + '/' + fichero_xls)
-            response = HttpResponse(xlsfile, content_type='application/vnd.ms-excel')
+            xlsfile = open(ruta + fichero_xls, 'rb')
+            response = FileResponse(xlsfile, content_type='application/vnd.ms-excel')
             response['Content-Disposition'] = 'attachment; filename=listado.xls'
             return response
     return render(request, "filtro.html", {'formname': 'filtros',
@@ -474,6 +478,7 @@ def listados_usuarios(request):
                                                  'permiso': 'acceso_listados_usuarios',
                                                  'title': 'Añadir un filtro para obtener un listado de usuarios'},
                                                 )})
+
 
 
 def crea_query(filtrado):
@@ -677,6 +682,8 @@ def ajax_filtro(request):
             except:
                 return JsonResponse({'ok': False})
 
+
+####################### FIN DE LAS FUNCIONES LIGADAS AL LISTADO DE USUARIOS #######################
 
 @LogGauss
 @login_required()

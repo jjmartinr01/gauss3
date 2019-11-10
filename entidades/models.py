@@ -15,6 +15,7 @@ from bancos.models import Banco
 from django.db.models import Q
 from autenticar.models import Gauser, Permiso, Menu_default
 
+
 def pass_generator(size=6, chars=string.ascii_letters + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
@@ -137,6 +138,7 @@ class Entidad(models.Model):
     def __str__(self):
         return u'%s (%s)' % (self.name, self.code)
 
+
 class DocConfEntidad(models.Model):
     entidad = models.OneToOneField(Entidad, on_delete=models.CASCADE)
     header = models.TextField("Cabecera de página", blank=True, null=True)
@@ -150,7 +152,8 @@ class DocConfEntidad(models.Model):
     headerspacing = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='5')
 
     def __str__(self):
-        return u'%s (top: %s, bottom: %s, left: %s, right: %s)' % (self.entidad, self.margintop, self.marginbottom, self.marginleft, self.marginright)
+        return u'%s (top: %s, bottom: %s, left: %s, right: %s)' % (
+            self.entidad, self.margintop, self.marginbottom, self.marginleft, self.marginright)
 
 
 class Subentidad(models.Model):
@@ -700,6 +703,31 @@ class Menu(models.Model):
             self.menu_default.texto_menu, self.texto_menu, self.entidad.code, parent)
 
 
+########################### CONFIGURACIÓN FILTROS ###########################
+
+# class FiltroEntidad(models.Model):
+#     TIPOSVALOR = (('str', 'Cadena de texto'), ('date', 'Fecha'), ('datetime', 'Fecha y hora'), ('int', 'Entero'),
+#                   ('float', 'Decimal'),)
+#     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
+#     clase = models.CharField("Clase sobre la que se hace el queryset", max_length=30, default='')
+#     q = models.CharField("Query", max_length=75, default='')
+#     nombre = models.CharField("Nombre del filtro", max_length=75, default='')
+#     tipo_valor = models.CharField("Tipo de valor", max_length=15, choices=TIPOSVALOR)
+#
+#     def __str__(self):
+#         return '%s - %s - %s' % (self.entidad, self.clase, self.nombre)
+#
+#
+# class CampoFiltroEntidad(models.Model):
+#     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
+#     clase = models.CharField("Clase sobre la que se hace el queryset", max_length=30, default='')
+#     campo = models.CharField("Campo", max_length=75, default='')
+#     nombre = models.CharField("Nombre del campo", max_length=75, default='')
+#
+#     def __str__(self):
+#         return '%s - %s - %s' % (self.entidad, self.clase, self.campo)
+
+
 class Filtrado(models.Model):
     propietario = models.ForeignKey(Gauser_extra, on_delete=models.SET_NULL, null=True, blank=True)
     nombre = models.CharField("Nombre del filtro", max_length=200)
@@ -774,6 +802,8 @@ class CampoF(models.Model):
     def __str__(self):
         return u'%s (%s)' % (self.filtrado, self.campo)
 
+########################### FIN CONFIGURACIÓN FILTROS ###########################
+
 
 class ConfigurationUpdate(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
@@ -793,9 +823,10 @@ def update_fichero_carga_masiva(instance, filename):
     nombre = '%s_%s.%s' % (str(instance.ronda.entidad.code), pass_generator(), nombre[2])
     return os.path.join("carga_masiva/", nombre)
 
+
 class CargaMasiva(models.Model):
     TIPOS = (('EXCEL', 'Usuarios cargados desde Racima'),
-             ('PENDIENTES', 'Alumnos con materias pendientes cargados desde Racima'), ('', ''), ('', ''), ('', ''), )
+             ('PENDIENTES', 'Alumnos con materias pendientes cargados desde Racima'), ('', ''), ('', ''), ('', ''),)
     ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE)
     fichero = models.FileField("Fichero con datos", upload_to=update_fichero_carga_masiva, blank=True)
     tipo = models.CharField("Tipo de archivo", max_length=15, choices=TIPOS)
@@ -808,8 +839,6 @@ class CargaMasiva(models.Model):
 
     def __str__(self):
         return u'%s -- Cargado: %s' % (self.ronda, self.cargado)
-
-
 
 # n='cosa'
 # m='valor de la cosa'
