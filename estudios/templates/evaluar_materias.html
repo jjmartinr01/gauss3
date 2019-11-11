@@ -8,22 +8,67 @@
         <div class="">
             <h4 style="text-align: center;color: #008CBA;"><strong> Evaluar materias pendientes</strong></h4>
         </div>
+        <input type="hidden" name="action" value="cartas_examen">
+        {% if materias_evalua|length == 0 %}
+            <div class="panel callout">
+                <h5 style="text-align: center; font-weight: bold">Envío de cartas a tutores legales informando sobre
+                    exámenes</h5>
+                <p>Tienes a tu cargo la evaluación de las siguientes materias:</p>
 
-    {% if materias_evalua|length > 0 %}
-        <div class="panel callout">
-        <p>Tienes a tu cargo la evaluación de las siguientes materias:</p>
-        {% for m in materias_evalua %}
-            <div class="columns large-6">
-            <input type="checkbox" value="{{ m.id }}" class="materias_seleccionadas"> {{ m.nombre }}
-                ({{ m.curso.nombre }})
+
+                <div class="columns large-6">
+                    <input type="checkbox" value="2002" name="materias_seleccionadas" class="materias_seleccionadas"> Educación Plástica, Visual y
+                    Audiovisual
+                    (1º E.S.O.)
+                </div>
+
+                <div class="columns large-6">
+                    <input type="checkbox" value="1912" name="materias_seleccionadas" class="materias_seleccionadas"> Matemáticas
+                    (1º E.S.O.)
+                </div>
+
+                <div class="columns large-6">
+                    <input type="checkbox" value="1858" name="materias_seleccionadas" class="materias_seleccionadas"> Geografía e Historia
+                    (2º E.S.O.)
+                </div>
+
+                <div class="columns large-6">
+                    <input type="checkbox" value="1894" name="materias_seleccionadas" class="materias_seleccionadas"> Matemáticas
+                    (2º E.S.O.)
+                </div>
+
+
+
+
+                {% for m in materias_evalua %}
+                    <div class="columns large-6">
+                        <input type="checkbox" value="{{ m.id }}" class="materias_seleccionadas"> {{ m.nombre }}
+                        ({{ m.curso.nombre }})
+                    </div>
+                {% endfor %}
+                <hr>
+                <p>Selecciona aquellas materias que desees e introduce en los siguientes campos la fecha, hora y lugar
+                    para la realización del examen/prueba de pendientes. Después pulsa en "Generar cartas" para obtener
+                    un PDF con las cartas de información para los tutores legales del alumno.</p>
+                <div class="row">
+                    <div class="columns large-3">
+                        <label>Fecha:<input type="date" name="fecha_examen" id="fecha_examen"></label>
+                    </div>
+                    <div class="columns large-3">
+                        <label>Hora:<input type="time" name="hora_examen" id="hora_examen"></label>
+                    </div>
+                    <div class="columns large-6">
+                        <label>Lugar:<input type="text" name="lugar_examen" id="lugar_examen"></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns large-12">
+                        <a class="button" id="cartas_examen">Generar cartas</a>
+                    </div>
+                </div>
             </div>
-        {% endfor %}
-        <hr>
-        <p>Selecciona aquellas materias que desees e introduce en los siguientes campos la fecha, hora y lugar
-        en que se realizará el examen/prueba de pendientes. Después pulsa en "Generar cartas" para obtener un
-        PDF con las cartas de información para los tutores legales del alumno.</p>
-        </div>
-    {% endif %}
+
+        {% endif %}
 
         <dl class="accordion" data-accordion id="list_cursos" title="Lista de cursos">
             {% for curso in cursos %}
@@ -86,5 +131,27 @@
                 }
             }, 750);
         });
+
+        $('#cartas_examen').on('click', function (e) {
+            e.preventDefault();
+            var selected = [];
+            $('.materias_seleccionadas:checked').each(function () {
+                selected.push($(this).val());
+            });
+            document.getElementById("{{ formname }}").submit();
+            {#$.post("/evaluar_materias/", {#}
+            {#    action: 'cartas_examen',#}
+            {#    fecha: $('#fecha_examen').val(),#}
+            {#    hora: $('#hora_examen').val(),#}
+            {#    lugar: $('#lugar_examen').val(),#}
+            {#    materias_seleccionadas: selected#}
+            {# }, function (data) {#}
+            {#    if (data.ok) {#}
+            {#        $("#update_ok").show().delay(1500).fadeOut();#}
+            {#    } else {#}
+            {#        $("#update_error").show().delay(1500).fadeOut();#}
+            {#    }#}
+            {# });#}
+        })
     </script>
 {% endblock %}

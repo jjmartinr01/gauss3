@@ -1,0 +1,23 @@
+<style>
+    html {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11pt;
+        text-align: justify;
+    }
+</style>
+{% for alumno in alumnos %}
+    <div style="padding-left: 200px;">
+        Padres/Tutores legales de:<br>
+        {{ alumno.gauser.get_full_name }}<br>
+        {{ alumno.gauser.address }}<br>
+        {{ alumno.gauser.localidad }}- {{ alumno.gauser.postalcode }} -- {{ alumno.gauser.get_provincia_display }}
+    </div>
+    <p>&nbsp;</p>
+    <p>Estimada familia:</p>
+    <p>Le informamos de que el {{ alumnos.ronda.entidad.name }} celebra el próximo {{ fecha|date:"j" }} de
+        {{ fecha|date:"F"|lower }}, a las {{ hora }} horas, las pruebas para recuperar las siguientes materias
+        que {{ alumno.gauser.get_full_name }} podría tener pendientes del curso anterior:</p>
+    <p>{{ materias }}</p>
+    <p>Esperando que esta información resulte de su interés, reciban un cordial saludo.</p>
+    <p>{{ evaluador.gauser.get_full_name }}<br>Responsable de la evaluación de pendientes</p>
+{% endfor %}

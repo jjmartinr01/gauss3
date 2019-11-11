@@ -82,6 +82,8 @@ MEDIA_VUT = RUTA_MEDIA + "vut/"
 
 MEDIA_REUNIONES = RUTA_MEDIA + "reuniones/"
 
+MEDIA_PENDIENTES = RUTA_MEDIA + "pendientes/"
+
 def buscar_identificador(request, href):
     for menu_creado in request.session['lateral']:
         if menu_creado['href'] == href:

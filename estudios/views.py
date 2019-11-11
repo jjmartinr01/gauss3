@@ -12,7 +12,8 @@ from autenticar.control_acceso import permiso_required
 from entidades.models import Subentidad, Gauser_extra, Ronda, CargaMasiva
 from entidades.tasks import carga_masiva_from_excel
 from estudios.models import Curso, Materia, ETAPAS, Grupo, Matricula
-from gauss.funciones import usuarios_de_gauss, usuarios_ronda
+from gauss.funciones import usuarios_de_gauss, usuarios_ronda, human_readable_list, html_to_pdf
+from gauss.rutas import MEDIA_PENDIENTES
 from programaciones.models import Materia_programaciones
 from mensajes.models import Aviso
 
@@ -310,7 +311,27 @@ def evaluar_materias(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
-
+    elif request.method == 'POST' and not request.is_ajax():
+        if request.POST['action'] == 'cartas_examen':
+            try:
+                fichero = 'carta%s_%s' % (g_e.ronda.entidad.code, g_e.id)
+                fecha = datetime.strptime(request.POST['fecha_examen'], '%Y-%m-%d')
+                ms = Materia.objects.filter(id__in=request.POST.getlist('materias_seleccionadas[]'))
+                ms_text_array = ['%s (%s)' % (m[0], m[1]) for m in ms.values_list('nombre', 'curso__nombre')]
+                materias = human_readable_list(ms_text_array, separator=', ', last_separator=' y ', type='lower')
+                alumnos_id = Matricula.objects.filter(materia__in=materias, evaluador=g_e).values_list('ge__id')
+                alumnos = Gauser_extra.objects.filter(id__in=alumnos_id).distinct()
+                texto_html = render_to_string('carta_pendientes2pdf.html', {'materias': materias, 'alumnos': alumnos,
+                                                                            'fecha': fecha,
+                                                                            'hora': request.POST['hora_examen'],
+                                                                            'lugar': request.POST['lugar_examen']})
+                ruta = MEDIA_PENDIENTES + '%s/' % g_e.ronda.entidad.code
+                fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Carta tutores legales')
+                response = HttpResponse(fich, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+                return response
+            except:
+                return JsonResponse({'ok': False})
     respuesta = {
         'formname': 'evaluar_materias',
         'cursos': Curso.objects.filter(ronda=g_e.ronda),
