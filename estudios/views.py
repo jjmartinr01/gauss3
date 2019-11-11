@@ -282,6 +282,8 @@ def configura_materias_pendientes(request):
 @permiso_required('acceso_evaluar_materias')
 def evaluar_materias(request):
     g_e = request.session['gauser_extra']
+    materias_evalua_id = Matricula.objects.filter(evaluador=g_e).values_list('materia__id')
+    materias_evalua = Materia.objects.filter(id__in=materias_evalua_id)
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
         if action == 'open_accordion':
@@ -312,6 +314,7 @@ def evaluar_materias(request):
     respuesta = {
         'formname': 'evaluar_materias',
         'cursos': Curso.objects.filter(ronda=g_e.ronda),
+        'materias_evalua': materias_evalua,
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)}
     return render(request, "evaluar_materias.html", respuesta)
 

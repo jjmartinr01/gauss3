@@ -1,5 +1,5 @@
 {% extends "base_select2-4.html" %}
-{% load my_templatetags %}
+{#{% load my_templatetags %}#}
 
 {% block contenido %}
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
@@ -8,6 +8,22 @@
         <div class="">
             <h4 style="text-align: center;color: #008CBA;"><strong> Evaluar materias pendientes</strong></h4>
         </div>
+
+    {% if materias_evalua|length > 0 %}
+        <div class="panel callout">
+        <p>Tienes a tu cargo la evaluación de las siguientes materias:</p>
+        {% for m in materias_evalua %}
+            <div class="columns large-6">
+            <input type="checkbox" value="{{ m.id }}" class="materias_seleccionadas"> {{ m.nombre }}
+                ({{ m.curso.nombre }})
+            </div>
+        {% endfor %}
+        <hr>
+        <p>Selecciona aquellas materias que desees e introduce en los siguientes campos la fecha, hora y lugar
+        en que se realizará el examen/prueba de pendientes. Después pulsa en "Generar cartas" para obtener un
+        PDF con las cartas de información para los tutores legales del alumno.</p>
+        </div>
+    {% endif %}
 
         <dl class="accordion" data-accordion id="list_cursos" title="Lista de cursos">
             {% for curso in cursos %}
