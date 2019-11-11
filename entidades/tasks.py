@@ -394,8 +394,6 @@ def carga_masiva_from_excel():
             dict_names = {}
             for col_index in range(sheet.ncols):
                 dict_names[sheet.cell(4, col_index).value] = col_index
-
-            errores = []
             errores_ge = []
             errores_materia = []
             for row_index in range(5, sheet.nrows):
@@ -403,17 +401,27 @@ def carga_masiva_from_excel():
                     alumno_matricula = sheet.cell(row_index, dict_names['Nº Racima']).value
                     ge = Gauser_extra.objects.get(id_entidad=alumno_matricula, ronda=carga.ronda)
                 except:
+                    ge = None
                     if alumno_matricula not in errores_ge:
-                        carga.incidencias += '<p>No se encuentra alumno con Nº de Racima: %s</p>' % (alumno_matricula)
-                        ge = None
+                        if Gauser_extra.objects.filter(id_entidad=alumno_matricula, ronda=carga.ronda).count() > 1:
+                            carga.incidencias += '<p>Duplicidad con alumno  %s (Nº de Racima: %s)</p>' % (
+                                sheet.cell(row_index, dict_names['Alumno']).value, alumno_matricula)
+                        else:
+                            carga.incidencias += '<p>No existe alumno con Nº de Racima: %s</p>' % (alumno_matricula)
+                        carga.save()
                         errores_ge.append(alumno_matricula)
                 try:
                     materia_matricula = str(int(sheet.cell(row_index, dict_names['X_MATERIAOMG']).value))
                     materia = Materia.objects.get(clave_ex=materia_matricula, curso__ronda=carga.ronda)
                 except:
+                    materia = None
                     if materia_matricula not in errores_materia:
-                        carga.incidencias += '<p>No se encuentra materia con código: %s</p>' % (materia_matricula)
-                        materia = None
+                        if Materia.objects.filter(clave_ex=materia_matricula, curso__ronda=carga.ronda).count() > 1:
+                            carga.incidencias += '<p>Duplicidad con materia %s (código: %s)</p>' % (
+                                sheet.cell(row_index, dict_names['Materia']).value, materia_matricula)
+                        else:
+                            carga.incidencias += '<p>No se encuentra materia con código: %s</p>' % (materia_matricula)
+                        carga.save()
                         errores_materia.append(materia_matricula)
                 estado_matricula = sheet.cell(row_index, dict_names['Estado materia']).value
                 if 'Matriculada' in estado_matricula:
