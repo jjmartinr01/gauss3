@@ -407,7 +407,8 @@ def carga_masiva_from_excel():
                             carga.incidencias += '<p>Duplicidad con alumno  %s (Nº de Racima: %s)</p>' % (
                                 sheet.cell(row_index, dict_names['Alumno']).value, alumno_matricula)
                         else:
-                            carga.incidencias += '<p>No existe alumno con Nº de Racima: %s</p>' % (alumno_matricula)
+                            carga.incidencias += '<p>No existe el alumno %s con Nº de Racima: %s</p>' % (
+                                sheet.cell(row_index, dict_names['Alumno']).value, alumno_matricula)
                         carga.save()
                         errores_ge.append(alumno_matricula)
                 try:
