@@ -17,8 +17,8 @@
 
                 {% for m in materias_evalua %}
                     <div class="columns large-6">
-                        <input type="checkbox" value="{{ m.id }}" class="materias_seleccionadas"> {{ m.nombre }}
-                        ({{ m.curso.nombre }})
+                        <input type="checkbox" value="{{ m.id }}" class="materias_seleccionadas"
+                               name="materias_seleccionadas"> {{ m.nombre }} ({{ m.curso.nombre }})
                     </div>
                 {% endfor %}
                 <hr>
