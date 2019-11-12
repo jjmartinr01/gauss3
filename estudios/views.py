@@ -326,7 +326,7 @@ def evaluar_materias(request):
                 alumnos_id = Matricula.objects.filter(materia__in=ms, evaluador__ronda=g_e.ronda).values_list('ge__id')
                 alumnos = Gauser_extra.objects.filter(id__in=alumnos_id).distinct()
                 texto_html = render_to_string('carta_pendientes2pdf.html', {'materias': materias, 'alumnos': alumnos,
-                                                                            'fecha': fecha,
+                                                                            'fecha': fecha, 'evaluador': g_e,
                                                                             'hora': request.POST['hora_examen'],
                                                                             'lugar': request.POST['lugar_examen']})
                 ruta = MEDIA_PENDIENTES + '%s/' % g_e.ronda.entidad.code
