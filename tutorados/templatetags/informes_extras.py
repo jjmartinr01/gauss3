@@ -10,6 +10,10 @@ register = Library()
 
 
 @register.filter
+def existen_ficheros_tarea(informe):
+    return Fichero_tarea.objects.filter(tarea__informe=informe).count() > 0
+
+@register.filter
 def respuesta(pregunta, g_e):
     try:
         r = Respuesta.objects.get(informe=pregunta.informe, pregunta=pregunta, usuario=g_e).respuesta

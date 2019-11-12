@@ -28,10 +28,14 @@
     <div class="columns large-5">
         <ul class="button-group right">
             {% if informe.solicitante == g_e or g_e|has_permiso:'ve_informes_tareas' %}
-                <li title="Generar pdf con el informe de tareas">
-                    <a href="#" class="button pdf_informe_tareas" data-id="{{ informe.id }}"><i
-                            class="fa fa-file-pdf-o"></i>
-                        PDF</a></li>
+                <li title="Generar zip con el informe de tareas y otros archivos adjuntos">
+                    {% if informe|existen_ficheros_tarea %}
+                        <a href="#" class="button pdf_informe_tareas" data-id="{{ informe.id }}"><i
+                                class="fa fa-file-zip-o"></i> ZIP</a></li>
+                    {% else %}
+                        <a href="#" class="button pdf_informe_tareas" data-id="{{ informe.id }}"><i
+                                class="fa fa-file-pdf-o"></i> PDF</a></li>
+                    {% endif %}
             {% endif %}
             {% if informe.solicitante == g_e or g_e|has_permiso:'borra_informes_tareas' %}
                 <li title="Borrar el informe de tareas de la base de datos">

@@ -19,7 +19,7 @@ from django.core.mail import EmailMessage
 import simplejson as json
 from mensajes.views import crear_aviso, encolar_mensaje
 from mensajes.models import Aviso
-import unicodedata
+from zipfile import ZipFile
 from django.utils.text import slugify
 
 logger = logging.getLogger('django')
@@ -288,17 +288,33 @@ def informes_tareas(request):
                 }, request=request)
 
                 ruta = MEDIA_INFORMES + '%s/' % g_e.ronda.entidad.code
-                attach = ''
-                for archivo in ficheros_list:
-                    attach += RUTA_BASE + archivo.fichero.url + ' '
-                logger.info(attach)
-                fich = html_to_pdf(request, c, media=ruta, fichero=fichero,
-                                   title=u'Expediente de informe_tareas', attach=attach)
-                logger.info(u'%s, pdf_informe_tareas %s' % (g_e, informe.id))
-                response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=informe_informe_tareas_%s_%s.pdf' % (
-                    slugify(informe.usuario.gauser.get_full_name()), str(informe.id))
-                return response
+                # attach = ''
+                # for archivo in ficheros_list:
+                #     attach += RUTA_BASE + archivo.fichero.url + ' '
+                # logger.info(attach)
+                # fich = html_to_pdf(request, c, media=ruta, fichero=fichero,
+                #                    title=u'Expediente de informe_tareas', attach=attach)
+                fich = html_to_pdf(request, c, media=ruta, fichero=fichero, title=u'Expediente de informe_tareas')
+                if ficheros_list.count() > 0:
+                    ruta_zip = ruta + 'informe_informe_tareas_%s_%s.zip' % (g_e.ronda.entidad.code, informe.id)
+                    with ZipFile(ruta_zip, 'w') as zipObj:
+                        # Add multiple files to the zip
+                        informe_pdf = ruta + fichero + '.pdf'
+                        zipObj.write(informe_pdf, os.path.basename(informe_pdf))
+                        for f in ficheros_list:
+                            zipObj.write(f.fichero.path, os.path.basename(f.fichero.path))
+                    fich = open(ruta_zip, 'rb')
+                    logger.info(u'%s, pdf_informe_tareas %s' % (g_e, informe.id))
+                    response = HttpResponse(fich, content_type='application/zip')
+                    response['Content-Disposition'] = 'attachment; filename=informe_informe_tareas_%s_%s.zip' % (
+                        slugify(informe.usuario.gauser.get_full_name()), str(informe.id))
+                    return response
+                else:
+                    logger.info('%s, pdf_informe_tareas %s' % (g_e, informe.id))
+                    response = HttpResponse(fich, content_type='application/pdf')
+                    response['Content-Disposition'] = 'attachment; filename=informe_informe_tareas_%s_%s.pdf' % (
+                        slugify(informe.usuario.gauser.get_full_name()), str(informe.id))
+                    return response
 
     return render(request, "informes_tareas.html",
                   {
