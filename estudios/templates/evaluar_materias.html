@@ -9,36 +9,11 @@
             <h4 style="text-align: center;color: #008CBA;"><strong> Evaluar materias pendientes</strong></h4>
         </div>
         <input type="hidden" name="action" value="cartas_examen">
-        {% if materias_evalua|length == 0 %}
+        {% if materias_evalua|length > 0 %}
             <div class="panel callout">
                 <h5 style="text-align: center; font-weight: bold">Envío de cartas a tutores legales informando sobre
                     exámenes</h5>
                 <p>Tienes a tu cargo la evaluación de las siguientes materias:</p>
-
-
-                <div class="columns large-6">
-                    <input type="checkbox" value="2002" name="materias_seleccionadas" class="materias_seleccionadas"> Educación Plástica, Visual y
-                    Audiovisual
-                    (1º E.S.O.)
-                </div>
-
-                <div class="columns large-6">
-                    <input type="checkbox" value="1912" name="materias_seleccionadas" class="materias_seleccionadas"> Matemáticas
-                    (1º E.S.O.)
-                </div>
-
-                <div class="columns large-6">
-                    <input type="checkbox" value="1858" name="materias_seleccionadas" class="materias_seleccionadas"> Geografía e Historia
-                    (2º E.S.O.)
-                </div>
-
-                <div class="columns large-6">
-                    <input type="checkbox" value="1894" name="materias_seleccionadas" class="materias_seleccionadas"> Matemáticas
-                    (2º E.S.O.)
-                </div>
-
-
-
 
                 {% for m in materias_evalua %}
                     <div class="columns large-6">
