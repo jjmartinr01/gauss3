@@ -14,11 +14,11 @@
     </div>
     <p>&nbsp;</p>
     <p>Estimada familia,</p>
-    <p>Le informamos de que el {{ alumno.ronda.entidad.name }} celebrará el próximo {{ fecha|date:"j" }} de
+    <p>Les informamos de que el {{ alumno.ronda.entidad.name }} celebrará el próximo {{ fecha|date:"j" }} de
         {{ fecha|date:"F"|lower }}, a las {{ hora }} horas, las pruebas para recuperar
         {% if ms|length > 1 %}las materias {% else %} la materia {% endif %} {{ materias }},
         que {{ alumno.gauser.get_full_name }} podría tener pendientes del curso anterior.</p>
-    <p>&nbsp;</p><p>Resumiendo:</p>
+    <p>&nbsp;</p><p>Resumen:</p>
     <p><b>Fecha de la prueba/examen:</b> {{ fecha|date:"j" }} de {{ fecha|date:"F"|lower }}</p>
     <p><b>Hora de la prueba/examen:</b> {{ hora }} horas</p>
     <p><b>Lugar de la prueba/examen:</b> {{ lugar }}</p>
