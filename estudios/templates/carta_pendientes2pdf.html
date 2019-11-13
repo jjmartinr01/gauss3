@@ -13,11 +13,17 @@
         {{ alumno.gauser.localidad }}- {{ alumno.gauser.postalcode }} -- {{ alumno.gauser.get_provincia_display }}
     </div>
     <p>&nbsp;</p>
-    <p>Estimada familia:</p>
-    <p>Le informamos de que el {{ alumno.ronda.entidad.name }} celebra el próximo {{ fecha|date:"j" }} de
-        {{ fecha|date:"F"|lower }}, a las {{ hora }} horas, las pruebas para recuperar las siguientes materias
-        que {{ alumno.gauser.get_full_name }} podría tener pendientes del curso anterior:</p>
-    <p>{{ materias }}</p>
+    <p>Estimada familia,</p>
+    <p>Le informamos de que el {{ alumno.ronda.entidad.name }} celebrará el próximo {{ fecha|date:"j" }} de
+        {{ fecha|date:"F"|lower }}, a las {{ hora }} horas, las pruebas para recuperar
+        {% if ms|length > 1 %}las materias {% else %} la materia {% endif %} {{ materias }},
+        que {{ alumno.gauser.get_full_name }} podría tener pendientes del curso anterior.</p>
+    <p>&nbsp;</p><p>Resumiendo:</p>
+    <p><b>Fecha de la prueba/examen:</b> {{ fecha|date:"j" }} de {{ fecha|date:"F"|lower }}</p>
+    <p><b>Hora de la prueba/examen:</b> {{ hora }} horas</p>
+    <p><b>Lugar de la prueba/examen:</b> {{ lugar }}</p>
+    <p><b>Materia{{ materias|length|pluralize }}:</b> {{ materias }}</p>
+    <p>&nbsp;</p><p>&nbsp;</p>
     <p>Esperando que esta información resulte de su interés, reciban un cordial saludo.</p>
     <p>&nbsp;</p><p>&nbsp;</p>
     <p>{{ evaluador.gauser.get_full_name }}<br>Responsable de la evaluación de pendientes</p>
