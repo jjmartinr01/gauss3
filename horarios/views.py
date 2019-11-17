@@ -18,7 +18,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.text import slugify
 
 from autenticar.control_acceso import permiso_required
-from gauss.funciones import usuarios_de_gauss, html_to_pdf
+from gauss.funciones import usuarios_de_gauss, html_to_pdf, usuarios_ronda
 from gauss.rutas import MEDIA_ACTILLAS
 from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios
 from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia
@@ -1392,7 +1392,8 @@ def alumnos_horarios(request):
     ronda = request.session['ronda']
     horario = Horario.objects.get(entidad=g_e.ronda.entidad, ronda=ronda, predeterminado=True)
     grupos = Grupo.objects.filter(ronda=ronda)
-    alumnos = Gauser_extra_estudios.objects.filter(grupo__in=grupos)
+    usuarios = usuarios_ronda(g_e.ronda)
+    alumnos = Gauser_extra_estudios.objects.filter(grupo__in=grupos, ge__in=usuarios)
     tutores_id = alumnos.values_list('tutor__id', flat=True).distinct()
     tutores = Gauser_extra.objects.filter(id__in=tutores_id)
     cotutores_id = alumnos.values_list('cotutor__id', flat=True).distinct()
