@@ -885,6 +885,7 @@ def perfiles_permisos(request):
         'gauser_extra': gauser_extra,
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
         'cargos': Cargo.objects.filter(entidad=g_e.ronda.entidad).order_by('nivel'),
+        'g_e': g_e,
         'menus': menus,
     }
     return render(request, "perfiles_permisos.html", respuesta)

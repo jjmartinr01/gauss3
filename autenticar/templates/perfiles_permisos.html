@@ -70,7 +70,7 @@
                 {% for cargo in cargos %}
                     <div class="large-3 columns" id="div_cargos">
                         <input type="checkbox" name="cargos" class="cargos" value="{{ cargo.id }}"
-                                {% if cargo in gauser_extra.cargos.all %}checked="checked"{% endif %}>{{ cargo.cargo }}
+                               {% if cargo in gauser_extra.cargos.all %}checked="checked"{% endif %}>{{ cargo.cargo }}
                     </div>
                     {% if forloop.counter|divisibleby:"4" %}
                         </div><br>
@@ -86,6 +86,7 @@
             </div>
             <dl class="accordion" data-accordion>
                 {% for menu in entidad|menus %}
+                    {% if g_e|has_permiso:menu.menu_default.code_menu %}
                     <dd class="accordion-navigation" id="accordion{{ menu.id }}">
                         <a href="#panel_{{ menu.id }}" style="padding-left: {{ menu.menu_default.nivel }}em;">
                             <span class="heading pos{{ menu.id }}">{{ menu.pos }}</span>
@@ -103,23 +104,26 @@
                                 </div>
                             </div>
                             {% for p in menu.permisos %}
-                                <div class="row">
-                                    <div class="columns large-2">
-                                        &nbsp;
+                                {% if g_e|has_permiso:p.code_nombre %}
+                                    <div class="row">
+                                        <div class="columns large-2">
+                                            &nbsp;
+                                        </div>
+                                        <div class="columns large-10">
+                                            <input type="checkbox" class="permiso_cargo" id="pc{{ p.id }}"
+                                                   title="Permiso según cargo" disabled
+                                                    {% if p in gauser_extra.permisos_cargos %} checked{% endif %}>
+                                            <input type="checkbox" class="permiso" id="p{{ p.id }}"
+                                                   title="Permiso asignado al usuario" value="{{ p.id }}"
+                                                    {% if p in gauser_extra.permisos.all %} checked{% endif %}>
+                                            {{ p.nombre }}
+                                        </div>
                                     </div>
-                                    <div class="columns large-10">
-                                        <input type="checkbox" class="permiso_cargo" id="pc{{ p.id }}"
-                                               title="Permiso según cargo" disabled
-                                                {% if p in gauser_extra.permisos_cargos %} checked{% endif %}>
-                                        <input type="checkbox" class="permiso" id="p{{ p.id }}"
-                                               title="Permiso asignado al usuario" value="{{ p.id }}"
-                                                {% if p in gauser_extra.permisos.all %} checked{% endif %}>
-                                        {{ p.nombre }}
-                                    </div>
-                                </div>
+                                {% endif %}
                             {% endfor %}
                             <hr>
                             {% for m in menu.children %}
+                                {% if g_e|has_permiso:m.menu_default.code_menu %}
                                 <div id="child{{ m.id }}">
                                     <div class="row">
                                         <div class="columns large-1 heading" style="text-align: right;">
@@ -135,26 +139,30 @@
                                         </div>
                                     </div>
                                     {% for p in m.permisos %}
-                                        <div class="row">
-                                            <div class="columns large-3">
-                                                &nbsp;
+                                        {% if g_e|has_permiso:p.code_nombre %}
+                                            <div class="row">
+                                                <div class="columns large-3">
+                                                    &nbsp;
+                                                </div>
+                                                <div class="columns large-9">
+                                                    <input type="checkbox" class="permiso_cargo" id="pc{{ p.id }}"
+                                                           title="Permiso según cargo" disabled
+                                                            {% if p in gauser_extra.permisos_cargos %}
+                                                           checked{% endif %}>
+                                                    <input type="checkbox" class="permiso" id="p{{ p.id }}"
+                                                           title="Permiso asignado al usuario" value="{{ p.id }}"
+                                                            {% if p in gauser_extra.permisos.all %}
+                                                           checked{% endif %}> {{ p.nombre }}
+                                                </div>
                                             </div>
-                                            <div class="columns large-9">
-                                                <input type="checkbox" class="permiso_cargo" id="pc{{ p.id }}"
-                                                       title="Permiso según cargo" disabled
-                                                        {% if p in gauser_extra.permisos_cargos %}
-                                                       checked{% endif %}>
-                                                <input type="checkbox" class="permiso" id="p{{ p.id }}"
-                                                       title="Permiso asignado al usuario" value="{{ p.id }}"
-                                                        {% if p in gauser_extra.permisos.all %}
-                                                       checked{% endif %}> {{ p.nombre }}
-                                            </div>
-                                        </div>
+                                        {% endif %}
                                     {% endfor %}
                                 </div>
+                                {% endif %}
                             {% endfor %}
                         </div>
                     </dd>
+                    {% endif %}
                 {% endfor %}
             </dl>
         {% endwith %}
@@ -176,7 +184,7 @@
                     $("#update_ok").show().delay(1500).fadeOut();
                 }, 'json');
             });
-            {% else %}
+        {% else %}
             $('.permiso').hide();
         {% endif %}
 
@@ -278,7 +286,7 @@
                     $("#update_ok").show().delay(1500).fadeOut();
                 }, 'json');
             });
-            {% else %}
+        {% else %}
             $('.cargos').prop('disabled', true);
         {% endif %}
 
@@ -325,8 +333,7 @@
         $("#input_search_select2").change(function () {
             $('#action').val('gauser_extra_selected');
             document
-            .{{formname}}.
-            submit();
+                .{{formname}}.submit();
         });
 
     </script>

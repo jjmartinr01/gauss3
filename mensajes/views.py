@@ -22,7 +22,7 @@ from gauss.rutas import *
 
 # from entidades.models import Subentidad
 # from autenticar.models import Gauser_extra, Gauser
-from entidades.models import Subentidad, Gauser_extra
+from entidades.models import Subentidad, Gauser_extra, Cargo
 from autenticar.models import Gauser
 
 from gauss.funciones import usuarios_de_gauss, pass_generator, html_to_pdf, paginar
@@ -147,6 +147,7 @@ def encolar_mensaje(emisor=None, receptores=[], asunto='', html='', texto='', et
 def correo(request):
     g_e = request.session['gauser_extra']
     sub_accesibles = Subentidad.objects.filter(entidad=g_e.ronda.entidad, fecha_expira__gt=datetime.today())
+    car_accesibles = Cargo.objects.filter(entidad=g_e.ronda.entidad)
 
     mensaje = None
     receptores = None
@@ -290,6 +291,7 @@ def correo(request):
                       'formname': 'correo',
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                       'sub_accesibles': sub_accesibles,
+                      'car_accesibles': car_accesibles,
                       'mensaje': mensaje,
                       'receptores': receptores,
                       'adjuntos': adjuntos,
