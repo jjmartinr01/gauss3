@@ -1095,14 +1095,14 @@ def reserva_plazas(request):
             crp.save()
     # Desarrollo de la función propiamente dicha
     reservas = Reserva_plaza.objects.filter(entidad=g_e.ronda.entidad)
-    if request.method == 'POST':
-        crear_aviso(request, True, request.META['PATH_INFO'] + ' POST')
-        reserva = Reserva_plaza.objects.create(entidad=g_e.ronda.entidad)
-        form = Reserva_plazaForm(request.POST, instance=reserva)
-        form.save()
-    else:
-        form = Reserva_plazaForm()
-
+    # if request.method == 'POST':
+    #     crear_aviso(request, True, request.META['PATH_INFO'] + ' POST')
+    #     reserva = Reserva_plaza.objects.create(entidad=g_e.ronda.entidad)
+    #     form = Reserva_plazaForm(request.POST, instance=reserva)
+    #     form.save()
+    # else:
+    #     form = Reserva_plazaForm()
+    form = Reserva_plazaForm()
     return render(request, "reserva_plazas.html",
                   {
                       'formname': 'Reserva_plaza',

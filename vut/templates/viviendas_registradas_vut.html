@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 {% load vut_extras %}
 
+{% block head %}
+    <style>
+        table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+            width: 100%;
+        }
+    </style>
+{% endblock %}
+
 {% block contenido %}
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
@@ -9,7 +20,7 @@
             <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong> Viviendas de uso
                 turístico registradas</strong></h4>
         </div>
-        <table width="100%">
+        <table>
             <tbody>
             <tr>
                 <th>Nº de socios</th>
@@ -25,7 +36,7 @@
             </tr>
             </tbody>
         </table>
-        <table width="100%">
+        <table>
             <tbody>
             <tr>
                 <th>Socio</th>
