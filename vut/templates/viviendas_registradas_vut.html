@@ -16,6 +16,7 @@
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="usuario" id="usuario" value="">
         <div>
             <h4 id="h4_title" style="text-align: center;color: #008CBA;"><strong> Viviendas de uso
                 turístico registradas</strong></h4>
@@ -46,9 +47,22 @@
             {% for s in socios %}
                 <tr id="fila_socio{{ s.id }}">
                     {% if g_e|has_permiso_vut:"borra_viviendas_registradas" %}
-                        <td title="Si haces click aquí se eliminarán las viviendas propiedad de este usuario"><a
-                                class="borrar_viviendas_registradas" data-id="{{ s.id }}">{{ s.gauser.get_full_name }}
-                            ({{ s|number_viviendas_same_propietario }})</a></td>
+                        <td><a data-dropdown="drop{{ s.id }}" aria-controls="drop{{ s.id }}"
+                               aria-expanded="false" title="Si haces click aquí se muestran posibles acciones con este
+                               usuario">{{ s.gauser.get_full_name }} ({{ s|number_viviendas_same_propietario }})</a>
+                            <ul id="drop{{ s.id }}" class="f-dropdown content medium" data-dropdown-content
+                                aria-hidden="true" tabindex="-1">
+                                {% for v in s|viviendas_same_propietario %}
+                                    <li><a class="borra_vivienda_registrada" data-s="{{ s.id }}"
+                                           data-v="{{ v.id }}">
+                                        <span style="color:red"> <i class="fa fa-times"></i> Borra la vivienda:</span>
+                                        <b>{{ v.nombre }}</b></a></li>
+                                {% endfor %}
+                                <li><a class="crea_nueva_vivienda" data-s="{{ s.id }}">
+                                    <span style="color:green"> <i class="fa fa-plus"></i> Crea una nueva vivienda
+                                    </span></a></li>
+                            </ul>
+                        </td>
                     {% else %}
                         <td>{{ s.gauser.get_full_name }} ({{ s|number_viviendas_same_propietario }})</td>
                     {% endif %}
@@ -56,11 +70,14 @@
                         ****{{ s.num_cuenta_bancaria|slice:'20:' }}{% else %}
                         <span class="label round alert">IBAN no definido</span>{% endif %}
                     </td>
-                    <td>
+                    <td id="viviendas_registradas{{ s.id }}">
                         {% for v in s|viviendas_same_propietario %}
-                            <p><i class="fa fa-home"></i> {{ v.nombre }} {% if v.nregistro %}
-                                <span class="label round success">{{ v.nregistro }}</span> {% else %}&nbsp;
-                                <span class="label round alert">Falta nº de registro</span> {% endif %}
+                            <p id="vivienda_registrada{{ v.id }}"><i class="fa fa-home"></i> {{ v.nombre }}
+                                {% if v.nregistro %}
+                                    <span class="label round success">{{ v.nregistro }}</span>
+                                {% else %}&nbsp;
+                                    <span class="label round alert">Falta nº de registro</span>
+                                {% endif %}
                                 {% for copropietario in v|copropietarios:s %}
                                     <small>- {{ copropietario.get_full_name }}</small>
                                 {% endfor %}
@@ -71,46 +88,35 @@
             {% endfor %}
             </tbody>
         </table>
-        {#        {% for v in viviendas %}#}
-        {#            {% ifchanged v.gpropietario %}#}
-        {#                {% if not forloop.first %}#}
-        {#                    <hr><p><b>{{ v.gpropietario.get_full_name }} ({{ v.gpropietario|number_viviendas_same_propietario }})</b>#}
-        {#                    {% if v.gauser_extra.num_cuenta_bancaria|length > 20 %}<span class="label round">IBAN</span>#}
-        {#                        ****{{ v.gauser_extra.num_cuenta_bancaria|slice:'20:' }}{% else %}#}
-        {#                        <span class="label round alert">IBAN no definido</span>{% endif %}</p>#}
-        {#                {% else %}#}
-        {#                    <p><b>{{ v.gpropietario.get_full_name }} ({{ v.gpropietario|number_viviendas_same_propietario }})</b>#}
-        {#                        {% if v.gauser_extra.num_cuenta_bancaria|length > 20 %}<span class="label round">IBAN</span>#}
-        {#                            ****{{ v.gauser_extra.num_cuenta_bancaria|slice:'20:' }}{% else %}#}
-        {#                            <span class="label round alert">IBAN no definido</span>{% endif %}</p>#}
-        {#                {% endif %}#}
-        {#            {% endifchanged %}#}
-        {#            <i class="fa fa-home"></i> {{ v.nombre }} {% if v.nregistro %}(<span style="color:green;">{{ v.nregistro }}</span>) {% else %}&nbsp;(<span style="color:red;">Falta nº de registro</span>) {% endif %}#}
-        {#        {% endfor %}#}
-
     </form>
     <div id="mensajes_asociados_page" style="display: none;">
-        <span id="title0"><i class="fa fa-warning"></i> ¿Borrar viviendas/propietario?</span>
-        <span id="texto0"><p>Si aceptas, esta persona dejará de ser propietario de la/s vivienda/s.</p>
+        <span id="title0"><i class="fa fa-warning"></i> ¿Borrar vivienda/propietario?</span>
+        <span id="texto0"><p>Si aceptas, esta persona dejará de ser propietario de la vivienda.</p>
             <p>Si fuera propietario único, la vivienda se eliminará.</p></span>
-        <span id="title1"><i class="fa fa-info-circle"></i> Propietario/a borrado/a</span>
-        <span id="texto1"><p>Recuerda que el usuario no ha sido borrado de GAUSS.</p>
-        <p>El borrado completo del usuario debe hacers a través del procedimiento habitual y se deben tener los permisos
-            necesarios.</p></span>
-        <span id="title2"><i class="fa fa-info-circle"></i> Propietario/a <b>no</b> borrado/a</span>
-        <span id="texto2"><p>Ha ocurrido un error y no se ha podido borrar al propietario.</p>
+        <span id="title1"><i class="fa fa-info-circle"></i> Vivienda borrada</span>
+        <span id="texto1"><p>Recuerda que el usuario no ha sido borrado de GAUSS, solo la vivienda seleccionada.</p>
+        </span>
+        <span id="title2"><i class="fa fa-info-circle"></i> Vivienda <b>no</b> borrada</span>
+        <span id="texto2"><p>Ha ocurrido un error y no se ha podido borrar la vivienda.</p>
         <p>Contacta con el administrador del sistema si el problema persiste.</p></span>
     </div>
 
-
+    <div id="reveal_num_registro_vivienda" class="reveal-modal" data-reveal aria-labelledby="modalTitle"
+         aria-hidden="true" role="dialog">
+        <h4 id="modalTitle">Introduce el número de registro de la vivienda:</h4>
+        <input id="num_registro_vivienda" placeholder="Por ejemplo: VT-LR-3456" type="text">
+        <a class="button" id="aceptar_num_registro_vivienda">Aceptar</a>
+        <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
 {% endblock %}
 
 {% block final %}
     <script>
         {% if request.session.gauser_extra|has_permiso_vut:'borra_viviendas_registradas' %}
-            $('body').on('click', '.borrar_viviendas_registradas', function (e) {
+            $('body').on('click', '.borra_vivienda_registrada', function (e) {
                 e.preventDefault();
-                usuario = $(this).data('id');
+                vivienda = $(this).data('v');
+                usuario = $(this).data('s');
                 show_mensajes({
                     title: $('#title0').html(),
                     texto: $('#texto0').html(),
@@ -121,13 +127,15 @@
                         "Aceptar": function () {
                             hide_mensajes();
                             $.post("/viviendas_registradas_vut/", {
-                                    action: 'borrar_viviendas_registradas',
-                                    usuario: usuario
+                                    action: 'borra_vivienda_registrada',
+                                    usuario: usuario,
+                                    vivienda: vivienda
                                 },
                                 function (data) {
                                     if (data.ok) {
                                         $("#update_ok").show().delay(1500).fadeOut();
-                                        $('#fila_socio' + usuario).remove();
+                                        $('#vivienda_registrada' + vivienda).remove();
+                                        {#$('#fila_socio' + usuario).remove();#}
                                         setTimeout(function () {
                                             show_mensajes({
                                                 title: $('#title1').html(),
@@ -150,20 +158,33 @@
             });
         {% endif %}
 
-        $('body').on('click', '.borrar_viviendas_registradas', function () {
-            var usuario = $(this).data('id');
+        $('body').on('click', '.crea_nueva_vivienda', function () {
+            $('#usuario').val($(this).data('s'));
+            $('#reveal_num_registro_vivienda').foundation('reveal', 'open');
+        });
+
+        $('body').on('click', '#aceptar_num_registro_vivienda', function () {
+            var usuario = $('#usuario').val();
+            var num_registro = $('#num_registro_vivienda').val();
+            $('#reveal_num_registro_vivienda').foundation('reveal', 'close');
             $.post("/viviendas_registradas_vut/", {
-                    action: 'borrar_viviendas_registradas',
-                    usuario: usuario
+                    action: 'crea_nueva_vivienda',
+                    usuario: usuario,
+                    num_registro: num_registro
                 },
                 function (data) {
+                    $('#num_registro_vivienda').val('');
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
+                        $('#viviendas_registradas' + usuario).append('<p id="vivienda_registrada' + data.id + '">' +
+                            '<i class="fa fa-home"></i> Vivienda creada' +
+                            '<span class="label round success">' + data.reg + '</span></p>');
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 }, 'json');
         });
+
 
     </script>
 {% endblock %}

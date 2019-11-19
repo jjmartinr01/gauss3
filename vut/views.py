@@ -1699,16 +1699,24 @@ def viviendas_registradas_vut(request):
     propietarios = usuarios.values_list('gauser__id', flat=True)
     viviendas = Vivienda.objects.filter(propietarios__in=propietarios, borrada=False)
     if request.method == 'POST' and request.is_ajax():
-        if request.POST['action'] == 'borrar_viviendas_registradas':
+        if request.POST['action'] == 'borra_vivienda_registrada':
             try:
                 usuario = Gauser_extra.objects.get(id=request.POST['usuario'], ronda=g_e.ronda)
-                vs = viviendas.filter(propietarios__in=[usuario.gauser], entidad=usuario.ronda.entidad)
-                for v in vs:
-                    if v.propietarios.all().count() >= 1:
-                        v.propietarios.remove(usuario.gauser)
-                    else:
-                        v.delete()
+                vivienda = Vivienda.objects.get(id=request.POST['vivienda'], propietarios__in=[usuario.gauser])
+                if vivienda.propietarios.all().count() >= 1:
+                    vivienda.propietarios.remove(usuario.gauser)
+                else:
+                    vivienda.delete()
                 return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'crea_nueva_vivienda':
+            try:
+                usuario = Gauser_extra.objects.get(id=request.POST['usuario'], ronda=g_e.ronda)
+                vivienda = Vivienda.objects.create(nregistro=request.POST['num_registro'], gpropietario=usuario.gauser,
+                                                   nombre='Vivienda creada', entidad=g_e.ronda.entidad)
+                vivienda.propietarios.add(usuario.gauser)
+                return JsonResponse({'ok': True, 'id': vivienda.id, 'reg': vivienda.nregistro})
             except:
                 return JsonResponse({'ok': False})
     return render(request, "viviendas_registradas_vut.html",
