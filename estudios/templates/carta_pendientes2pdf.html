@@ -1,3 +1,4 @@
+{% load estudios_extras %}
 <style>
     html {
         font-family: Arial, Helvetica, sans-serif;
@@ -16,13 +17,14 @@
     <p>Estimada familia,</p>
     <p>Les informamos de que el {{ alumno.ronda.entidad.name }} celebrará el próximo {{ fecha|date:"j" }} de
         {{ fecha|date:"F"|lower }}, a las {{ hora }} horas, las pruebas para recuperar
-        {% if ms|length > 1 %}las materias {% else %} la materia {% endif %} {{ materias }},
-        que {{ alumno.gauser.get_full_name }} podría tener pendientes del curso anterior.</p>
+        {% if ms|length > 1 %}las materias {% else %} la materia {% endif %} {{ materias }}.
+        {{ alumno.gauser.get_full_name }} tiene que asistir a la citada convocatoria.</p>
     <p>&nbsp;</p><p>Resumen:</p>
     <p><b>Fecha de la prueba/examen:</b> {{ fecha|date:"j" }} de {{ fecha|date:"F"|lower }}</p>
     <p><b>Hora de la prueba/examen:</b> {{ hora }} horas</p>
     <p><b>Lugar de la prueba/examen:</b> {{ lugar }}</p>
-    <p><b>Materia{{ materias|length|pluralize }}:</b> {{ materias }}</p>
+    <p><b>Materia{{ ms|pendientes_alumno:alumno|length|pluralize }}:</b>
+        {{ ms|pendientes_alumno:alumno|human_readable_pendientes }}</p>
     <p>&nbsp;</p><p>&nbsp;</p>
     <p>Esperando que esta información resulte de su interés, reciban un cordial saludo.</p>
     <p>&nbsp;</p><p>&nbsp;</p>
