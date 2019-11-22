@@ -28,7 +28,7 @@ def pendientes_alumno(ms, alumno):
 
 @register.filter
 def human_readable_pendientes(matriculas):
-    materias = matriculas.values_list('id', flat=True)
+    materias = matriculas.values_list('materia__id', flat=True)
     ms = Materia.objects.filter(id__in=materias)
     ms_text_array = ['%s (%s)' % (m[0], m[1]) for m in ms.values_list('nombre', 'curso__nombre')]
     return human_readable_list(ms_text_array)
