@@ -427,11 +427,11 @@
                 valido = false;
             }
             if (valido) {
-                var nombre = $('#nombre').val().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+                var nombre = $('#nombre').val().normalize('NFD').replace(/[\u0300-\u036f]/g, "").trim();
                 $('#nombre').val(nombre);
-                var apellido1 = $('#apellido1').val().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+                var apellido1 = $('#apellido1').val().normalize('NFD').replace(/[\u0300-\u036f]/g, "").trim();
                 $('#apellido1').val(apellido1);
-                var apellido2 = $('#apellido2').val().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+                var apellido2 = $('#apellido2').val().normalize('NFD').replace(/[\u0300-\u036f]/g, "").trim();
                 $('#apellido2').val(apellido2);
                 $('#firma').val(firma);
                 var formulario = $('#' + '{{formname}}').formSerialize();
