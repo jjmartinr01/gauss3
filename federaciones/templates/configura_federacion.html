@@ -1,0 +1,203 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags federaciones_extras %}
+
+{% block head %}
+    <style>
+        table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <input type="hidden" name="action" id="action" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Configuración</strong></h4>
+        </div>
+
+        {#        <input type="text" value="" id="text_to_be_copied" style="position:fixed;top:-3000px;">#}
+        <ul class="tabs" data-tab role="tablist">
+            <li class="tab-title active" role="presentation" data-id="0">
+                <a href="#tab1" role="tab" tabindex="0" aria-selected="true" aria-controls="tab1">
+                    <b id="texto0">Federación</b></a>
+            </li>
+            <li class="tab-title" role="presentation" data-id="1">
+                <a href="#tab2" role="tab" tabindex="0" aria-selected="false" aria-controls="tab2">
+                    <b id="texto1" style="color:#74bfdd;">Federados</b></a>
+            </li>
+        </ul>
+        <div class="tabs-content">
+            <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
+                <dl class="accordion" data-accordion id="list_federaciones">
+                    {% for federacion in federaciones %}
+                        {% include "configura_federacion_accordion.html" %}
+                    {% endfor %}
+                </dl>
+                {% if federaciones|length == 0 %}
+                    <br><br>
+                    <hr>
+                    {% if g_e|has_permiso:'crea_federaciones' %}
+                        <a class="button" id="crear_federacion"><i class="fa fa-plus"></i> Nueva Federación</a>
+                    {% endif %}
+                {% endif %}
+            </section>
+
+            <section role="tabpanel" aria-hidden="true" class="content" id="tab2">
+                <table>
+                    <tbody>
+                    <tr>
+                        <th>Nº de entidades federadas</th>
+                        <th>Nº de entidades con IBAN</th>
+                        <th>Nº de socios totales</th>
+                    </tr>
+                    <tr>
+                        <td>{{ federados|length }}</td>
+                        <td>{{ federados|federados_iban }}</td>
+                        <td>{{ federados|socios_totales }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table>
+                    <tbody>
+                    <tr>
+                        <th>Entidad</th>
+                        <th>IBAN</th>
+                        <th>Nº de socios</th>
+                        <th>Acepta entidad</th>
+                        <th>Acepta federación</th>
+                    </tr>
+                    {% for f in federados %}
+                        <tr id="fila_socio{{ f.id }}">
+                            <td>{{ f.entidad.name }} ({{ f.entidad.mail }})</td>
+                            <td>{% if f.piban %}{% if f.entidad.iban|length == 24 %}
+                                <span class="label round">IBAN</span>****{{ f.entidad.iban|slice:'20:' }}{% else %}
+                                <span class="label round alert">IBAN no definido</span>{% endif %}{% else %}
+                                <span class="label round alert">Acceso no permitido</span>{% endif %}
+                            </td>
+                            <td>{% if f.pnum %}{{ f.entidad.num_usuarios }}{% else %}<span
+                                    class="label round alert">Acceso no permitido</span>{% endif %}
+                            </td>
+                            <td>{% if f.acepta_entidad %}<i class="fa fa-check-square-o"></i>{% else %}<i
+                                    class="fa fa-square-o"></i> {% endif %}
+                            </td>
+                            <td><input type="checkbox" {% if f.acepta_federacion %}checked{% endif %}
+                                       class="acepta_federacion" data-id="{{ f.id }}"></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        $(document).foundation({
+            tab: {
+                callback: function (tab) {
+                    var id = $(tab[0]).data('id');
+                    {#$('.tab-title > a').css('color', '#74bfdd');#}
+                    {#$('.tab-title.active > a').css('color', 'red');#}
+                    if (id == 0) {
+                        $('#texto0').css('color', 'black');
+                        $('#texto1').css('color', '#74bfdd');
+                    } else if (id == 1) {
+                        $('#texto0').css('color', '#74bfdd');
+                        $('#texto1').css('color', 'black');
+                    }
+                }
+            }
+        });
+
+        {% if g_e|has_permiso:'crea_federaciones' %}
+            $('#Contenido').on('click', '#crear_federacion', function () {
+                $.post("/configura_federacion/", {action: 'crear_federacion'},
+                    function (data) {
+                        if (data['ok']) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $("#list_federaciones").append(data.html);
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+        {% endif %}
+
+        {% if g_e|has_permiso:'borra_sus_federaciones' %}
+            $('#Contenido').on('click', '.borra_federacion', function (e) {
+                e.preventDefault();
+                federacion = $(this).data('id');
+                show_mensajes({
+                    title: 'Borrar federación', texto: 'Si aceptas la federación será eliminada' +
+                        ' de la base de datos.', buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/configura_federacion/", {action: 'borra_federacion', federacion: federacion},
+                                function (data) {
+                                    if (data['ok']) {
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                        $("#accordion" + data.federacion).remove();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+        {% endif %}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-federacion')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/configura_federacion/", {action: 'open_accordion_federacion', federacion: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        $(document).foundation('dropdown', 'reflow');
+                                        $("#update_ok").show().delay(1500).fadeOut();
+
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#Contenido').on('click', '.copiar_code_portapapeles', function (e) {
+            e.preventDefault();
+            var code = $(this).data('code');
+            var c = copiar_al_portapapeles(code);
+            if (c) {
+                show_mensajes({
+                    title: 'Código copiado',
+                    texto: 'Se ha copiado en el portapapeles el código de la federación para que puedas enviarlo.'
+                });
+            }
+        });
+    </script>
+{% endblock %}

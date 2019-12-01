@@ -1,0 +1,9 @@
+<dd class="accordion-navigation" id="accordion{{ federacion.id }}">
+    <a href="#panel{{ federacion.id }}">
+        <i id="circle{{ federacion.id }}" class="fa fa-plus-circle circle_icon"></i> {{ federacion.entidad.name }} --
+        <span style="font-weight: 800;" id="span_federacion_nombre{{ federacion.id }}">{{ federacion.nombre }}</span>
+    </a>
+    <div id="panel{{ federacion.id }}" class="content accordion-federacion"
+         data-id="{{ federacion.id }}">
+    </div>
+</dd>

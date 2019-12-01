@@ -1,0 +1,25 @@
+<div class="row">
+    <div class="columns large-12">
+        <table>
+            <tbody>
+            <tr>
+                <th>Federación</th>
+                <th>Acepta entidad</th>
+                <th>Acepta federación</th>
+            </tr>
+            {% for f in federados %}
+                <tr id="fila_socio{{ f.id }}">
+                    <td>{{ f.federacion.entidad.name }} ({{ f.federacion.entidad.mail }}) {{ f.acepta_entidad }}</td>
+                    <td><input type="checkbox" {% if f.acepta_entidad %}checked{% endif %}
+                                   class="acepta_entidad" data-id="{{ f.id }}"></td>
+                    <td><input type="checkbox" {% if f.acepta_federacion %}checked{% endif %} disabled></td>
+                </tr>
+                <tr>
+                    <td colspan="3">{% autoescape off %}
+                        {{ f.federacion.condiciones_fedaracion }}{% endautoescape %}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

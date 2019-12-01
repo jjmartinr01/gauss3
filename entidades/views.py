@@ -410,7 +410,6 @@ def configura_auto_id(request):
     return render(request, "configura_auto_id.html", respuesta)
 
 
-
 ########################### FUNCIONES LIGADAS AL LISTADO DE USUARIOS ###########################
 
 
@@ -478,7 +477,6 @@ def listados_usuarios(request):
                                                  'permiso': 'acceso_listados_usuarios',
                                                  'title': 'Añadir un filtro para obtener un listado de usuarios'},
                                                 )})
-
 
 
 def crea_query(filtrado):
@@ -1705,6 +1703,7 @@ def subentidades(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
+
 @login_required()
 def subentidades_ajax(request):
     g_e = request.session['gauser_extra']
@@ -2092,7 +2091,7 @@ class eForm(ModelForm):
         exclude = ['organization', 'ronda', 'anagrama']
 
 
-@gauss_required
+# @gauss_required
 def crea_entidad(request):
     g_e = request.session['gauser_extra']
     oform = oForm()
@@ -2100,45 +2099,73 @@ def crea_entidad(request):
     eform = eForm()
     if g_e.gauser.username == 'gauss':
         if request.method == 'POST':
-
+            o_creada, e_creada, r_credada = False, False, False
+            # Código para determinar la organización:
             if request.POST['organization_id']:
                 organization = Organization.objects.get(id=request.POST['organization_id'])
+                o_creada = True
             else:
                 oform = oForm(request.POST, request.FILES)
                 if oform.is_valid():
                     organization = oform.save()
+                    o_creada = True
                     crear_aviso(request, False, 'La organization ha sido creada')
                 else:
                     crear_aviso(request, False, oform.errors)
 
-            rform = rForm(request.POST)
-            if rform.is_valid():
-                ronda = rform.save()
-            else:
-                crear_aviso(request, False, rform.errors)
-
-            eform = eForm(request.POST, request.FILES)
-            if eform.is_valid():
-                entidad = eform.save()
+            if o_creada:
+                # Código para definir la entidad
+                eform = eForm(request.POST, request.FILES)
+                if eform.is_valid():
+                    entidad = eform.save()
+                    # entidad.ronda = ronda
+                    entidad.organization = organization
+                    entidad.save()
+                    # ronda.entidad = entidad
+                    # ronda.save()
+                    e_creada = True
+                    crear_aviso(request, False,
+                                'La entidad y la ronda han sido creadas. El usuario gauss tiene su gauser_extra')
+                else:
+                    crear_aviso(request, False, eform.errors)
+            if e_creada:
+                # Código para determinar la ronda asociada a la entidad
+                inicio = datetime.strptime(request.POST['inicio_ronda'], '%Y-%m-%d')
+                fin = datetime.strptime(request.POST['fin_ronda'], '%Y-%m-%d')
+                ronda, c = Ronda.objects.get_or_create(nombre=request.POST['nombre_ronda'], entidad=entidad,
+                                                       inicio=inicio, fin=fin)
+                r_credada = True
+            if r_credada:
+                # Asignamos ronda a la entidad:
                 entidad.ronda = ronda
-                entidad.organization = organization
                 entidad.save()
-                ronda.entidad = entidad
-                ronda.save()
+                # Código para establecer el usuario gauss en la nueva entidad
                 ge = Gauser_extra.objects.create(gauser=g_e.gauser, ronda=ronda, activo=True)
                 permisos = Permiso.objects.all()
                 ge.permisos.add(*permisos)
-                crear_aviso(request, False,
-                            'La entidad y la ronda han sido creadas. El usuario gauss tiene su gauser_extra')
 
-                # menus = Menu_default.objects.all()
-                # for menu in menus:
-                #     Menu.objects.create(entidad=entidad, code_menu=menu.code_menu, href=menu.href,
-                #                               texto_menu_default=menu.texto_menu, tipo=menu.tipo, nivel=menu.nivel,
-                #                               texto_menu=menu.texto_menu, acceso=True)
-            else:
-                crear_aviso(request, False, eform.errors)
-                ronda.delete()
+                try:
+                    e_copiar = Entidad.objects.get(id=request.POST['entidad_copiar'])
+                    subentidades = Subentidad.objects.filter(entidad=e_copiar)
+                    cargos = Cargo.objects.filter(entidad=e_copiar)
+                    menus = Menu.objects.filter(entidad=e_copiar)
+                    for s in subentidades:
+                        s.pk = None
+                        s.entidad = entidad
+                        s.save()
+                    for c in cargos:
+                        permisos = c.permisos.all()
+                        c.pk = None
+                        c.entidad = entidad
+                        c.save()
+                        c.permisos.add(*permisos)
+                    for m in menus:
+                        m.pk = None
+                        m.entidad = entidad
+                        m.save()
+                    crear_aviso(request, False, 'Se ha copiado la estructura de la entidad: %s' % e_copiar.name)
+                except:
+                    crear_aviso(request, False, 'No se ha copiado la estructura de ninguna otra entidad.')
 
         return render(request, "crea_entidad.html",
                       {
@@ -2151,6 +2178,7 @@ def crea_entidad(request):
                           'rform': rform,
                           'eform': eform,
                           'organizations': Organization.objects.all(),
+                          'entidades': Entidad.objects.filter(name__iregex='[A-Z]'),
                           'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                       })
     else:

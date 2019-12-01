@@ -1,0 +1,211 @@
+{% load my_templatetags %}
+{% if federacion.entidad == g_e.ronda.entidad %}
+    {% if g_e|has_permiso:'borra_sus_federaciones' %}
+        <div class="row">
+            <div class="columns large-12">
+                <ul class="button-group right">
+                    <li><a class="button borra_federacion alert" data-id="{{ federacion.id }}"><i
+                            class="fa fa-trash"></i>
+                        Borrar federacion</a></li>
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
+
+<div class="row">
+    <div class="columns large-7">
+        <label><b>Nombre o subtítulo de la federación</b>
+            {% if g_e|has_permiso:'edita_sus_federaciones' %}
+                <input type="text" class="campo_char" data-campo="nombre" data-id="{{ federacion.id }}"
+                       value="{{ federacion.nombre }}">
+            {% else %}
+                <br>{{ federacion.nombre }}
+            {% endif %}</label>
+    </div>
+    <div class="columns large-5">
+        <label title="Este es el código que deben utilizar las entidades que quieran inscribirse en la fedaración"
+        ><b>Código de solicitud de inscripción</b> <a href="#" data-reveal-id="help_code"><i
+                class="fa fa-info-circle"></i> </a></label>
+        <a href="#" class="copiar_code_portapapeles" data-code="{{ federacion.code_inscribir }}">
+            <span style="font-size: 15pt;font-weight: bold;" class="label">{{ federacion.code_inscribir }}</span></a>
+    </div>
+
+    <div id="help_code" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+        <h2 id="modalTitle">Instrucciones para los posibles federados</h2>
+        <p class="lead">Para que otra entidad pueda federarse es necesario que te haga una solicitud de ingreso
+            en la federación.</p>
+        <p class="lead">Para poder hacer esta solicitud debe conocer el código que estás viendo. Haz click sobre el
+            código y será copiado en el portapapeles para que puedas enviarlo a tus posibles federados.</p>
+        <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+
+    {#    {% if g_e|has_permiso:'edita_sus_federaciones' %}#}
+    {#        <div class="columns large-5">#}
+    {#            <label><b title="Archivo con las condiciones de funcionamiento de la federación (opcional)">Condiciones#}
+    {#                de funcionamiento:</b>#}
+    {#                <input type="file" class="campo_file" data-campo="condiciones_fedaracion_file"#}
+    {#                       data-id="{{ federacion.id }}">#}
+    {#            </label>#}
+    {#        </div>#}
+    {#        <div class="columns large-1">#}
+    {#            <label>&nbsp;#}
+    {#                <a class="download_condiciones_fedaracion_file" data-id="{{ federacion.id }}"><i#}
+    {#                        class="fa fa-download"></i></a></label>#}
+    {#        </div>#}
+    {#    {% else %}#}
+    {#        {% if federacion.condiciones_fedaracion_file %}#}
+    {#            <div class="columns large-6">#}
+    {#                <a class="download_condiciones_fedaracion_file" data-id="{{ federacion.id }}"><i#}
+    {#                        class="fa fa-download"></i>#}
+    {#                    Descargar condiciones</a>#}
+    {#            </div>#}
+    {#        {% else %}#}
+    {#            <div class="columns large-6">#}
+    {#                &nbsp;#}
+    {#            </div>#}
+    {#        {% endif %}#}
+    {#    {% endif %}#}
+</div>
+{% if g_e|has_permiso:'edita_sus_federaciones' %}
+    <div class="row">
+        <div class="columns large-12">
+            <label>
+                <b>Condiciones de funcionamiento de la federación:</b>
+                <textarea id="condiciones_fedaracion{{ federacion.id }}"
+                >{% autoescape off %}{{ federacion.condiciones_fedaracion }}{% endautoescape %}</textarea></label>
+        </div>
+    </div>
+{% else %}
+    <div class="row">
+        <div class="columns large-12">
+            <label>
+                <b>Condiciones de funcionamiento de la federación:</b>
+                {% autoescape off %}{{ federacion.condiciones_fedaracion }}{% endautoescape %}</label>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+    {% if g_e|has_permiso:'edita_sus_federaciones' %}
+        var editor{{ federacion.id }} = CKEDITOR.replace('condiciones_fedaracion{{ federacion.id }}');
+        editor{{ federacion.id }}.on('change', function (e) {
+            var texto = e.editor.getData();
+            $.post("/configura_federacion/", {
+                    action: 'update_campo',
+                    federacion: {{ federacion.id }},
+                    campo: 'condiciones_fedaracion',
+                    valor: texto
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+        });
+
+        $("body").on('keyup', '.campo_char', function () {
+            var federacion = $(this).data('id');
+            var valor = $(this).val();
+            var campo = $(this).data('campo');
+            setTimeout(function (element, valor) {
+                var valor_actual = element.val();
+                if (valor === valor_actual) {
+                    $.post("/configura_federacion/", {
+                            action: 'update_campo',
+                            federacion: federacion,
+                            campo: campo,
+                            valor: valor_actual
+                        },
+                        function (data) {
+                            if (data.ok) {
+                                if (campo === 'nombre') {
+                                    $('#span_federacion_nombre' + federacion).html(valor);
+                                }
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                setTimeout(function () {
+                                    show_mensajes({title: 'Error de edición', texto: data.mensaje});
+                                }, 600);
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 250, $(this), valor);
+        });
+
+        {#var loading_file = true;#}
+        {#$('#a_subir_fotos{{ federacion.id }}').on("click", function (e) {#}
+        {#    e.preventDefault();#}
+        {#    if (loading_file) {#}
+        {#        $('#gauss_file{{ federacion.id }}').trigger('click');#}
+        {#        loading_file = false;#}
+        {#    }#}
+        {# });#}
+        {##}
+        {#function updateProgress(evt) {#}
+        {#    if (evt.lengthComputable) {#}
+        {#        var percentComplete = (evt.loaded / evt.total) * 100;#}
+        {#        $('#span_porcentage').html(parseInt(percentComplete) + '%');#}
+        {#        console.log(percentComplete);#}
+        {#    } else {#}
+        {#        console.log('No es posible calcular el porcentaje de carga en el servidor');#}
+        {#    }#}
+        {# }#}
+        {##}
+        {#$('body').on('change', '#gauss_file{{ federacion.id }}', function () {#}
+        {#    var input_files = document.getElementById('gauss_file{{ federacion.id }}').files;#}
+        {#    $('#span_spin').show();#}
+        {#    $('#span_porcentage').show();#}
+        {##}
+        {#    for (var i = 0; i < input_files.length; i++) {#}
+        {#        console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');#}
+        {#    }#}
+        {##}
+        {#    var formData = new FormData();#}
+        {#    for (var i = 0; i < input_files.length; i++) {#}
+        {#        formData.append('foto_xhr' + i, input_files[i]);#}
+        {#    }#}
+        {#    formData.append('n_files', input_files.length);#}
+        {#    formData.append('action', 'upload_foto_vut');#}
+        {#    formData.append('federacion', {{ federacion.id }});#}
+        {#    formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());#}
+        {#    var xhr = new XMLHttpRequest();#}
+        {#    xhr.upload.addEventListener("progress", updateProgress, false);#}
+        {#    xhr.onload = function () {#}
+        {#        if (xhr.readyState === xhr.DONE) {#}
+        {#            if (xhr.status === 200) {#}
+        {#                console.log(xhr.responseText);#}
+        {#                var b = xhr.responseText;#}
+        {#                var data = JSON.parse(xhr.responseText);#}
+        {#                $('#fotos_web' + data.federacion).html(data.html);#}
+        {#                loading_file = true;#}
+        {#                $('#span_spin').hide();#}
+        {#                $('#span_porcentage').hide();#}
+        {#            }#}
+        {#        }#}
+        {#    };#}
+        {#    xhr.open('POST', "/ajax_federacions/", true);#}
+        {#    xhr.send(formData);#}
+        {# });#}
+        {##}
+        {# Aquí terminan las líneas para subir archivos vía ajax #}
+        {##}
+        {#$('body').on('click', '.remove_file', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var file_code = $(this).data('code');#}
+        {#    console.log('d', file_code);#}
+        {#    $.post("/ajax_federacions/", {action: 'remove_file', file_code: file_code},#}
+        {#        function (data) {#}
+        {#            if (data) {#}
+        {#                $('.' + data).remove();#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
+    {% endif %}
+</script>

@@ -12,7 +12,7 @@
         <div class="panel callout" style="position: relative;" id="datos_organizacion">
             <h4><strong>Selecciona la organización a la que pertenece o crea una nueva</strong></h4>
             <div class="row">
-                <div class="columns large-5">
+                <div class="columns large-12">
                     <label>Selecciona organización
                         <select name="organization_id">
                             <option value="">Selecciona una organización</option>
@@ -21,28 +21,104 @@
                             {% endfor %}
                         </select></label>
                 </div>
-                <div class="columns large-7">
-                    <div class="row">
-                        {{ oform }}
-                    </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="columns large-12">
+                    <p><b>Si no has podido seleccionar la Organización, ahora puedes crear una nueva:</b></p>
                 </div>
             </div>
-        </div>
-        <div class="panel callout" style="position: relative;" id="datos_ronda">
-            <h4><strong>Crea la ronda/curso escolar en la que estará activa la entidad</strong></h4>
             <div class="row">
-                {{ rform }}
+                <div class="columns large-5"><label>Nombre: {{ oform.organization }}</label></div>
+                <div class="columns large-4"><label>Iniciales: {{ oform.iniciales }}</label></div>
+                <div class="columns large-3"><label>Fecha fundación:
+                    <input type="date" name="fecha_fundada" value=""></label></div>
+            </div>
+            <div class="row">
+                <div class="columns large-5"><label>Página web: {{ oform.web }}</label></div>
+                <div class="columns large-7">
+                    <label>Anagrama: {{ oform.anagrama }}</label>
+                </div>
             </div>
         </div>
 
         <div class="panel callout" style="position: relative;" id="datos_ronda">
             <h4><strong>Introduce los datos de la entidad</strong></h4>
             <div class="row">
-                {{ eform }}
+                <div class="columns large-4"><label>Nombre: {{ eform.name }}</label></div>
+                <div class="columns large-4"><label>Código entidad: {{ eform.code }}</label></div>
+                <div class="columns large-4"><label>Subdominio: {{ eform.dominio }}</label></div>
+                <div class="columns large-4"><label>NIF: {{ eform.nif }}</label></div>
+                <div class="columns large-4"><label>Banco: {{ eform.banco }}</label></div>
+                <div class="columns large-4"><label>IBAN: {{ eform.iban }}</label></div>
+                <div class="columns large-3"><label>Dirección: {{ eform.address }}</label></div>
+                <div class="columns large-3"><label>Localidad: {{ eform.localidad }}</label></div>
+                <div class="columns large-3"><label>Provincia: {{ eform.provincia }}</label></div>
+                <div class="columns large-3"><label>Código Postal: {{ eform.postalcode }}</label></div>
+                <div class="columns large-3"><label>Teléfono: {{ eform.tel }}</label></div>
+                <div class="columns large-3"><label>Fax: {{ eform.fax }}</label></div>
+                <div class="columns large-3"><label>Página web: {{ eform.web }}</label></div>
+                <div class="columns large-3"><label>e-mail: {{ eform.mail }}</label></div>
+                <div class="columns large-4"><label>Tipo de entidad: {{ eform.general_name }}</label></div>
+                <div class="columns large-4"><label>Tipo de usuario: {{ eform.general_user }}</label></div>
+                <div class="columns large-4"><label>Clave secreta: {{ eform.secret }}</label></div>
+            </div>
+
+
+            {#    anagrama = models.ImageField("Anagrama", upload_to=update_anagrama_entidad, blank=True)#}
+            {#    general_name = models.IntegerField("Nombre general", default=1, choices=GNS)#}
+            {#    general_user = models.IntegerField("Nombre general de usuario", default=101, choices=GUS)#}
+            {#    secret = models.CharField("Clave secreta asociada a la entidad", blank=True, null=True, max_length=50)#}
+
+            {#            <div class="row">#}
+            {#                {{ eform }}#}
+            {#            </div>#}
+        </div>
+
+        <div class="panel callout" style="position: relative;" id="datos_ronda">
+            <h4><strong>Crea la ronda/curso escolar en la que estará activa la entidad</strong></h4>
+            <div class="row">
+                <div class="columns large-4">
+                    <label>Nombre del periodo de funcionamiento:
+                        <input type="text" name="nombre_ronda" value="">
+                    </label>
+                </div>
+                <div class="columns large-4">
+                    <label>Fecha de inicio:
+                        <input type="date" name="inicio_ronda" value="">
+                    </label>
+                </div>
+                <div class="columns large-4">
+                    <label>Fecha de inicio:
+                        <input type="date" name="fin_ronda" value="">
+                    </label>
+                </div>
             </div>
         </div>
 
-
+        <div class="panel callout" style="position: relative;" id="datos_copia">
+            <h4><strong>Copiar estructura de cargos/perfiles y departamentos/secciones</strong></h4>
+            <div class="row">
+                <div class="columns large-12">
+                    <p><b>Al crear la nueva entidad no tiene definido ningún cargo/perfil y tampoco ninguna
+                        sección/departamento. Si lo deseas se puede copiar la estrutura de la entidad existente
+                        que desees.</b></p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <label>Selecciona la entidad de la que se copiara la estructura (cargos/perfiles,
+                        departamentos/secciones y los menús de acceso):
+                        <select name="entidad_copiar">
+                            <option value=""> -----------</option>
+                            {% for entidad in entidades %}
+                                <option value="{{ entidad.id }}">{{ entidad.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+            </div>
+        </div>
     </form>
 
 {% endblock %}
@@ -54,8 +130,7 @@
             e.preventDefault();
             $('#action').val('aceptar');
             document
-            .{{formname}}.
-            submit();
+                .{{formname}}.submit();
         });
 
     </script>

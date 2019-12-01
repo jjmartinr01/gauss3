@@ -68,10 +68,10 @@ def update_anagrama_entidad(instance, filename):
 
 GNS = ((1, 'Entidad'), (2, 'Asociación'), (3, 'Asociación de Padres de Alumnos'),
        (4, 'Asociación de Madres y Padres de Alumnos'), (101, 'Grupo'), (102, 'Grupo Scout'),
-       (5, 'Asociación Deportiva'), (103, 'Club Deportivo'), (104, 'IES'), (105, 'Colegio'))
+       (5, 'Asociación Deportiva'), (103, 'Club Deportivo'), (104, 'IES'), (105, 'Colegio'), (6, 'Federación'))
 PLURAL_GN = {1: 'Entidades', 2: 'Asociaciones', 3: 'Asociaciones de Padres de Alumnos',
              4: 'Asociaciones de Madres y Padres de Alumnos', 101: 'Grupos', 102: 'Grupos Scout',
-             5: 'Asociaciones Deportivas', 103: 'Clubes Deportivos', 104: 'IES', 105: 'Colegios'}
+             5: 'Asociaciones Deportivas', 103: 'Clubes Deportivos', 104: 'IES', 105: 'Colegios', 6: 'Federaciones'}
 
 GUS = ((101, 'usuario'), (102, 'miembro'), (103, 'socio'))
 
@@ -135,8 +135,22 @@ class Entidad(models.Model):
         gn = self.get_general_name_display()
         return 'las %s' % (gn) if self.general_name < 100 else 'los %s' % (gn)
 
+    @property
+    def num_usuarios(self):
+        bajas = Alta_Baja.objects.filter(entidad=self, fecha_baja__isnull=False).values_list('gauser__id', flat=True)
+        nacimiento_early = date(date.today().year - 100, 1, 1)
+        nacimiento_last = date(date.today().year - 3, 12, 31)
+        filtro = ~Q(gauser__id__in=bajas) & ~Q(gauser__username='gauss') & Q(ronda=self.ronda) & Q(
+                gauser__nacimiento__gte=nacimiento_early) & Q(gauser__nacimiento__lte=nacimiento_last)
+        return Gauser_extra.objects.filter(filtro).count()
+
     def __str__(self):
         return u'%s (%s)' % (self.name, self.code)
+
+
+@receiver(post_save, sender=Entidad, dispatch_uid="entidad_auto_id_creation")
+def crea_entidad_auto_id(sender, instance, **kwargs):
+    Entidad_auto_id.objects.get_or_create(entidad=instance)
 
 
 class DocConfEntidad(models.Model):
@@ -165,6 +179,7 @@ class Subentidad(models.Model):
     observaciones = models.TextField("Observaciones", null=True, blank=True)
     parent = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL)
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
+    clave_ex_editable = models.BooleanField("Se puede modificar la Clave externa?", default=True)
     fecha_expira = models.DateField('Fecha de expiración', default=date(3000, 1, 1))
     creado = models.DateField('Fecha de creación', auto_now_add=True)
 
@@ -598,10 +613,11 @@ def ge_id_patron_match(ge):
 @receiver(post_save, sender=Gauser_extra, dispatch_uid="update_id_entidad")
 def update_id(sender, instance, **kwargs):
     try:
-        eai = instance.ronda.entidad.entidad_auto_id.auto
+        eai_auto = instance.ronda.entidad.entidad_auto_id.auto
     except:
         eai = Entidad_auto_id.objects.create(entidad=instance.ronda.entidad)
-    if eai:
+        eai_auto = eai.auto
+    if eai_auto:
         num = Gauser_extra.objects.filter(ronda=instance.ronda, id_entidad=instance.id_entidad).count()
         if num > 1 or not ge_id_patron_match(instance):
             user_auto_id(instance)
@@ -839,6 +855,8 @@ class CargaMasiva(models.Model):
 
     def __str__(self):
         return u'%s -- Cargado: %s' % (self.ronda, self.cargado)
+
+
 
 # n='cosa'
 # m='valor de la cosa'

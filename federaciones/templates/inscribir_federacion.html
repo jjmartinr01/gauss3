@@ -1,0 +1,110 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags federaciones_extras %}
+
+{% block head %}
+    <style>
+        table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <input type="hidden" name="action" id="action" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Inscripción en federación</strong></h4>
+        </div>
+        {% if federados|length > 0 %}
+            <div class="row">
+                {% if federados|length == 1 %}
+                    <div class="columns large-12">
+                        <p>{{ federados.0.entidad.name }} está federada en la organización mostrada a continuación con
+                            las características indicadas:</p>
+                    </div>
+                {% else %}
+                    <div class="columns large-12">
+                        <p>A continuación se muestran las organizaciones en las que {{ federados.0.entidad.name }} está
+                            federada. También se muestra información relativa a su relación con dicha organización:</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div id="federados_list">
+                {% include "inscribir_federacion_federados.html" %}
+            </div>
+        {% else %}
+            <div class="columns large-12">
+                <p style="font-weight: bold">{{ g_e.ronda.entidad.name }} no está federada todavía a
+                    ninguna organización.</p>
+            </div>
+        {% endif %}
+        <hr>
+        <div class="panel callout">
+            <div class="row">
+                <div class="columns large-12">
+                    <h3>Solicitar pertenecer a una federación</h3>
+                    <p>Cada federación tiene asignado un código único que la diferencia. Para pertenecer a una
+                        federación debes solicitarlo introduciendo el código que ella misma te debe proporcionar.</p>
+                    <p>Una vez introducido el código, solo tienes que pulsar el botón "Enviar solicitud" y
+                        automáticamente se comunicará a la federación que podrá, o no, aceptar dicha solicitud en un
+                        plazo no superior a siete días. Transcurrido ese plazo tu solicitud caducará y no podrá ser
+                        aceptada. En tal caso, y si así lo deseas, debes volver a enviar otra solicitud.</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-8">
+                    <label><b>Introduce código de solicitud de inscripción:</b>
+                        <input type="text" id="solicitud_inscripcion" value=""></label>
+                </div>
+                <div class="columns large-4">
+                    <a class="button" id="enviar_solicitud">Enviar solicitud</a>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        {% if g_e|has_permiso:'acceso_inscribir_federacion' %}
+            $('#Contenido').on('click', '#enviar_solicitud', function () {
+                var code = $('#solicitud_inscripcion').val();
+                $.post("/inscribir_federacion/", {action: 'solicitud_inscripcion', code: code},
+                    function (data) {
+                        if (data['ok']) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $("#federados_list").html(data.html);
+                            show_mensajes({
+                                'title': 'Solicitud completada',
+                                'texto': 'Se ha enviado la solicitud a ' + data.federacion
+                            });
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                            show_mensajes({'title': 'Error', 'texto': data.mensaje});
+                        }
+                    });
+            });
+
+            $('#Contenido').on('click', '.acepta_entidad', function () {
+                var federado = $(this).data('id');
+                var acepta = $(this).is(':checked');
+                $.post("/inscribir_federacion/", {action: 'acepta_entidad', federado: federado, acepta:acepta},
+                    function (data) {
+                        if (data['ok']) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                            show_mensajes({'title': 'Error', 'texto': data.mensaje});
+                        }
+                    }, 'json');
+            });
+        {% endif %}
+    </script>
+{% endblock %}

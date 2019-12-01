@@ -215,6 +215,8 @@
                             &nbsp;&nbsp;Menús de la entidad</a></li>
                         <li><a class="menu_nivel2" href="/borrar_entidades/">
                             &nbsp;&nbsp;Borrar entidades</a></li>
+                        <li><a class="menu_nivel2" href="/crea_entidad/">
+                            &nbsp;&nbsp;Crea entidad</a></li>
                     {% endif %}
                     {% for menu in g_e.ronda.entidad|menus %}
                         {% if g_e|has_permiso:menu.menu_default.code_menu %}
@@ -256,6 +258,11 @@
                                     <a href="/borrar_entidades/" class="">
                                         <div class="menu_element">
                                             Borrar entidades
+                                        </div>
+                                    </a>
+                                    <a href="/crea_entidad/" class="">
+                                        <div class="menu_element">
+                                            Crea entidad
                                         </div>
                                     </a>
                                 </div>
