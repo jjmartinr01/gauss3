@@ -255,10 +255,9 @@
                             $("#update_ok").show().delay(1500).fadeOut();
                             $('#span_spin').hide();
                             $('#span_porcentage').hide();
-                            $('#image_anagrama').attr('src', '');
-                            setTimeout(function () {
-                                $('#image_anagrama').attr('src', data.url)
-                            }, 200);
+                            {# Para evitar el cacheo de la imagen y que la vuelva a cargar: #}
+                            var d = new Date();
+                            $('#image_anagrama').attr('src', data.url + '?' + d.getTime());
                         } else {
                             $("#update_error").show().delay(1500).fadeOut();
                             $('#span_spin').hide();
