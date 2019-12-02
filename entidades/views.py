@@ -1005,32 +1005,25 @@ def datos_entidad(request):
                     form = EntidadForm(request.POST)
             except:
                 crear_aviso(request, False, 'Error. <br>Deben existir usuarios asociados a la nueva ronda o curso.')
-
-
-        elif action == 'imagen_anagrama':
+        elif action == 'upload_file_anagrama':
             entidad = Entidad.objects.get(id=g_e.ronda.entidad.id)
-            fichero = request.FILES['fichero_xhr']
-            if fichero.content_type in 'image/jpeg, image/png, image/gif':
-                try:
-                    os.remove(RUTA_BASE + entidad.anagrama.url)
-                    entidad.anagrama = fichero
-                    entidad.save()
-                except:
-                    entidad.anagrama = fichero
-                    entidad.save()
-                cabecera_html = MEDIA_ANAGRAMAS + str(entidad.code) + '_cabecera.html'
-                pie_html = MEDIA_ANAGRAMAS + str(entidad.code) + '_pie.html'
-
-                c = render_to_string('cabecera.html', {'MA': MEDIA_ANAGRAMAS, 'RB': RUTA_BASE, 'entidad': entidad})
-                with open(cabecera_html, "w") as html_file:
-                    html_file.write("{0}".format(c.encode('utf-8')))
-                c = render_to_string('pie.html', {'MA': MEDIA_ANAGRAMAS, 'entidad': entidad})
-                with open(pie_html, "w") as html_file:
-                    html_file.write("{0}".format(c.encode('utf-8')))
-            else:
-                crear_aviso(request, False, "ERROR.<br>El archivo debe ser una imagen.")
-            return HttpResponse(entidad.anagrama.url)
-
+            try:
+                n_files = int(request.POST['n_files'])
+                for i in range(n_files):
+                    fichero = request.FILES['fichero_xhr' + str(i)]
+                    if fichero.content_type in 'image/jpeg, image/png, image/gif':
+                        try:
+                            os.remove(entidad.anagrama.path)
+                            entidad.anagrama = fichero
+                            entidad.save()
+                        except:
+                            entidad.anagrama = fichero
+                            entidad.save()
+                    else:
+                        return JsonResponse({'ok': False, 'mensaje': 'El fichero debe ser una imagen.'})
+                return JsonResponse({'ok': True, 'url': entidad.anagrama.url})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Ha habido un error al procesar el archivo.'})
     else:
         entidad = Entidad.objects.get(id=g_e.ronda.entidad.id)
         form = EntidadForm(instance=entidad)
