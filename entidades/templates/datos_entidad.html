@@ -109,7 +109,11 @@
         </div>
         <div class="row">
             <div class="large-12 columns">
-                <img id="image_anagrama" src="{{ entidad.anagrama.url }}">
+                {% if entidad.anagrama %}
+                    <img id="image_anagrama" src="{{ entidad.anagrama.url }}">
+                {% else %}
+                    <img id="image_anagrama" src="">
+                {% endif %}
             </div>
         </div>
         {#        <div class="row">#}
