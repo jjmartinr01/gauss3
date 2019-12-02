@@ -255,7 +255,10 @@
                             $("#update_ok").show().delay(1500).fadeOut();
                             $('#span_spin').hide();
                             $('#span_porcentage').hide();
-                            $('#image_anagrama').attr('src', data.url)
+                            $('#image_anagrama').attr('src', '');
+                            setTimeout(function () {
+                                $('#image_anagrama').attr('src', data.url)
+                            }, 200);
                         } else {
                             $("#update_error").show().delay(1500).fadeOut();
                             $('#span_spin').hide();
