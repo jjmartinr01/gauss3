@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <style>
+        label {
+            font-weight: bold;
+        }
+    </style>
+{% endblock %}
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Datos
+                {% if request.session.gauser_extra.ronda.entidad.organization.id == 1 %}
+                    del Grupo Scout
+                {% elif request.session.gauser_extra.ronda.entidad.organization.id == 7 %}
+                    del Centro de Estudios
+                {% else %} {{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}{% endif %}
+                {{ request.session.gauser_extra.ronda.entidad.name }}</strong></h4>
+        </div>
+
+        <div class="row">
+            <div class="large-4 columns">
+                <label>Ronda o curso
+                    <select name="ronda" id="id_ronda" data-campo="ronda" data-objeto="entidad">
+                        {% for ronda in rondas %}
+                            <option value="{{ ronda.id }}"
+                                    {% if request.session.gauser_extra.ronda.entidad.ronda.id == ronda.id %}selected{% endif %}>{{ ronda.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>NIF {{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}
+                    {{ form.nif }}
+                </label>
+            </div>
+            <div class="large-4 columns">
+                <label>IBAN (Identificación bancaria)
+                    {{ form.iban }}
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>Subdominio
+                    {{ form.dominio }}
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="large-4 columns">
+                <label>Dirección {{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}
+                    {{ form.address }}
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>Código postal
+                    {{ form.postalcode }}
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Localidad
+                    {{ form.localidad }}
+                </label>
+            </div>
+            <div class="large-3 columns">
+                <label>Provincia
+                    {#                    <select class="selectable" ></select>#}
+                    {{ form.provincia }}
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="large-4 columns">
+                <label>Página web {{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}
+                    {{ form.web }}
+                </label>
+            </div>
+            <div class="large-4 columns">
+                <label>E-mail de contacto
+                    {{ form.mail }}
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>Teléfono
+                    {{ form.tel }}
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label>Fax
+                    {{ form.fax }}
+                </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="columns large-6">
+                <label>Anagrama o logotipo {{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}
+                    <input type="file" id="file_anagrama"></label></div>
+            <div class="columns large-3">
+                <a class="button tiny" id="upload_file_anagrama"><i class="fa fa-upload"></i> Subir</a>
+            </div>
+            <div class="columns large-3">
+                    <span style="display: none" id="span_spin"><i class="fa fa-refresh fa-spin fa-fw"></i> Procesando...
+                    </span> <span style="display: none" id="span_porcentage"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="large-12 columns">
+                {% if entidad.anagrama %}
+                    <img id="image_anagrama" src="{{ entidad.anagrama.url }}">
+                {% else %}
+                    <img id="image_anagrama" src="">
+                {% endif %}
+            </div>
+        </div>
+        {#        <div class="row">#}
+        {#            <div class="large-6 columns">#}
+        {#                <label>Anagrama o logotipo {{ request.session.gauser_extra.ronda.entidad.de_la_entidad }}#}
+        {#                    <input id="file_anagrama" type="file" name="file_anagrama" style="position: fixed; top: -3000px">#}
+        {#                </label>#}
+        {#            </div>#}
+        {#            <div class="large-6 columns">#}
+        {#                {% if entidad.anagrama %}#}
+        {#                    <img id="image_anagrama" src="{{ entidad.anagrama.url }}">#}
+        {#                {% else %}#}
+        {#                    <a id="image_anagrama">Click para cargar imagen</a>#}
+        {#                {% endif %}#}
+        {#            </div>#}
+        {#        </div>#}
+        <hr>
+        <div class="row">
+            <div class="columns large-12">
+                <h3>Configuración de los documentos generados por GAUSS</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-3">
+                <label>Margen sup.
+                    <input type="text" data-campo="margintop" value="{{ entidad.docconfentidad.margintop }}"
+                           data-objeto="docconfentidad" class="campo_char"></label>
+            </div>
+            <div class="columns large-3">
+                <label>Margen inf.
+                    <input type="text" data-campo="marginbottom" value="{{ entidad.docconfentidad.marginbottom }}"
+                           data-objeto="docconfentidad" class="campo_char"></label>
+            </div>
+            <div class="columns large-3">
+                <label>Margen izq.
+                    <input type="text" data-campo="marginleft" value="{{ entidad.docconfentidad.marginleft }}"
+                           data-objeto="docconfentidad" class="campo_char"></label>
+            </div>
+            <div class="columns large-3">
+                <label>Margen der.
+                    <input type="text" data-campo="marginright" value="{{ entidad.docconfentidad.marginright }}"
+                           data-objeto="docconfentidad" class="campo_char"></label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12">
+                <label>Definir la cabecera de la página en los documentos</label>
+                <div contenteditable="true" id="cabecera_html"
+                     style="border: lightgrey solid 1px; padding:10px;">
+                    {% autoescape off %}
+                        {{ entidad.docconfentidad.header|default_if_none:"" }}
+                    {% endautoescape %}
+                </div>
+            </div>
+            <div class="columns large-12">
+                <label>Definir el pie de página en los documentos</label>
+                <div contenteditable="true" id="pie_html"
+                     style="border: lightgrey solid 1px; padding:10px;">
+                    {% autoescape off %}
+                        {{ entidad.docconfentidad.footer|default_if_none:"" }}
+                    {% endautoescape %}
+                </div>
+            </div>
+        </div>
+
+        {% for docente in docentes %}
+            {{ docente.gauser.get_full_name }}, clave: {{ docente.clave_ex }}, id: {{ docente.id }} --
+            {{ docente.ronda }} -- {{ docente.gauser.id }}
+            <input type="checkbox" data-id="{{ docente.id }}" class="docente"> <br>
+        {% endfor %}
+
+
+    </form>
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        $('.docente').on('click', function () {
+            var id = $(this).data('id');
+            $.post("/datos_entidad/", {action: 'borrar_ge', id: id},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+        $("#id_ronda").on('change', function () {
+            $('#action').val('update_ronda');
+            document
+                .{{formname}}.submit();
+        });
+
+        $('#id_iban').attr('title', '{{request.session.gauser_extra.ronda.entidad.banco.nombre}}');
+
+        {#  --------------------------- Upload Anagrama: -------------------- #}
+
+        function updateProgress(evt) {
+            if (evt.lengthComputable) {
+                var percentComplete = (evt.loaded / evt.total) * 100;
+                $('#span_porcentage').html(parseInt(percentComplete) + '%');
+                if (percentComplete == 100) {
+                    $('#span_porcentage').hide();
+                }
+                console.log(percentComplete);
+            } else {
+                console.log('No es posible calcular el porcentaje de carga en el servidor');
+            }
+        }
+
+        $('body').on('click', '#upload_file_anagrama', function () {
+            $('#span_spin').show();
+            $('#span_porcentage').show();
+            var input_files = document.getElementById('file_anagrama').files;
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('fichero_xhr' + i, input_files[i]);
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'upload_file_anagrama');
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener("progress", updateProgress, false);
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log('Terminado');
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#span_spin').hide();
+                            $('#span_porcentage').hide();
+                            {# Para evitar el cacheo de la imagen y que la vuelva a cargar: #}
+                            var d = new Date();
+                            $('#image_anagrama').attr('src', data.url + '?' + d.getTime());
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                            $('#span_spin').hide();
+                            $('#span_porcentage').hide();
+                            show_mensajes({title: 'Error', texto: data.mensaje})
+                        }
+                    }
+                }
+            };
+            xhr.open('POST', "/datos_entidad/", true);
+            xhr.send(formData);
+        });
+
+        {#$('body').on('click', '#image_anagrama', function () {#}
+        {#    $('#file_anagrama').trigger('click');#}
+        {#    console.log('click imagen_anagrama');#}
+        {# });#}
+        {##}
+        {##}
+        {#$('#file_anagrama').change(function () {#}
+        {#    var data = sube_archivo({#}
+        {#        gauss_file: 'file_anagrama',#}
+        {#        action: 'imagen_anagrama',#}
+        {#        tipos: 'image/jpeg, image/png, image/gif',#}
+        {#        ajaxFuncion: '/datos_entidad/',#}
+        {#        data1: '',#}
+        {#        data2: '',#}
+        {#        onOk: function (data) {#}
+        {#            $('#image_anagrama').attr('src', data);#}
+        {#            hide_mensajes();#}
+        {#        }#}
+        {#    });#}
+        {# });#}
+
+        {# ----------------- FIN LINEAS SUBIR ARCHIVO ---------------- #}
+
+        $('body').on('click', '.remove_file', function (e) {
+            e.preventDefault();
+            var file_code = $(this).data('code');
+            console.log('d', file_code);
+            $.post("/ajax_federacions/", {action: 'remove_file', file_code: file_code},
+                function (data) {
+                    if (data) {
+                        $('.' + data).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        {# ------------------------------------------------- #}
+
+        var cabecera_html = CKEDITOR.replace('cabecera_html');
+        cabecera_html.config.allowedContent = true;
+        cabecera_html.config.extraAllowedContent = '*(*)';
+        var pie_html = CKEDITOR.replace('pie_html');
+        pie_html.config.allowedContent = true;
+        pie_html.config.extraAllowedContent = 'span';
+
+
+        cabecera_html.on('change', function (e) {
+            var header = cabecera_html.getData();
+            $.post("/datos_entidad/", {action: 'update_cabecera_html', header: header},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        pie_html.on('change', function (e) {
+            var footer = pie_html.getData();
+            $.post("/datos_entidad/", {action: 'update_pie_html', footer: footer},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        {# ------------------------------------------------- #}
+
+        function update_campo() {
+            var valor = $(this).val();
+            var campo = $(this).data('campo');
+            var objeto = $(this).data('objeto');
+            $.post("/datos_entidad/", {action: 'update_campo', valor: valor, campo: campo, objeto: objeto},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        if (data.mensaje) {
+                            show_mensajes({title: 'Aviso', texto: data.mensaje})
+                        }
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        }
+
+        $('.campo_char').on('keyup', update_campo);
+        $('.campo_select').on('change', update_campo);
+    </script>
+{% endblock %}
