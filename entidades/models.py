@@ -179,7 +179,7 @@ class Subentidad(models.Model):
     observaciones = models.TextField("Observaciones", null=True, blank=True)
     parent = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL)
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
-    # clave_ex_editable = models.BooleanField("Se puede modificar la Clave externa?", default=True)
+    clave_ex_editable = models.BooleanField("Se puede modificar la Clave externa?", default=True)
     fecha_expira = models.DateField('Fecha de expiración', default=date(3000, 1, 1))
     creado = models.DateField('Fecha de creación', auto_now_add=True)
 
