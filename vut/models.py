@@ -85,7 +85,7 @@ PAISES = (('A9401AAAAA', 'AFGANISTAN'), ('A9399AAAAA', 'AFRICA'), ('A9102AAAAA',
 class Vivienda(models.Model):
     POL = (('PN', 'Policía Nacional'), ('GC', 'Guardia Civil'))
     propietario = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.CASCADE, related_name='borrar')
-    gpropietario = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE, related_name='gborrar')
+    gpropietario = models.ForeignKey(Gauser, blank=True, on_delete=models.CASCADE, related_name='gborrar')
     propietarios = models.ManyToManyField(Gauser, blank=True, null=True)
     entidad = models.ForeignKey(Entidad, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField("Nombre de la vivienda", blank=True, max_length=200, null=True)
