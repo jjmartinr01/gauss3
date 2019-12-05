@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
 from django.contrib import admin
+from faqs.models import *
 
-# Register your models here.
+admin.site.register(FaqEntidad)
+admin.site.register(FaqGauss)
+admin.site.register(FaqSection)

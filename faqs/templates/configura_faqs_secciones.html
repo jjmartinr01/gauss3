@@ -1,0 +1,15 @@
+<table id="lista_faqsections">
+    <thead>
+    <tr>
+        <th>Sección</th>
+        <th title="Nº de preguntas en la sección">Preguntas</th>
+        <th title="Nº de preguntas publicadas, es decir, accesibles">Publicadas</th>
+        <th title="Haz click aquí para borrar la sección">Borrar</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for s in faqssections %}
+        {% include "configura_faqs_secciones_tr.html" %}
+    {% endfor %}
+    </tbody>
+</table>
