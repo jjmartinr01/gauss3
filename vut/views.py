@@ -606,12 +606,15 @@ def update_calendarios_vut(viviendas):
                 for c in gcal.walk():  # for component in gcal.walk
                     if c.name == 'VEVENT':
                         try:
-                            summary = c.get('summary')
+                            summary = c.get('SUMMARY')
                             if calviv.portal == 'AIR':
-                                if 'vailable' not in summary:
-                                    nombre, code = summary.replace(')', '').split('(')
+                                if 'Reserved' in summary:
+                                    description = c.get('DESCRIPTION')
+                                    code = description.split('code=')[1].split('\n')[0]
+                                    nombre = 'Anónimo Airbnb'
                                     reserva, creada = Reserva.objects.get_or_create(vivienda=v, code=code)
-                                    reserva.nombre = nombre
+                                    if creada:
+                                        reserva.nombre = nombre
                                     reserva.entrada = c.get('dtstart').dt
                                     reserva.noches = int((c.get('dtend').dt - c.get('dtstart').dt).days)
                                     reserva.portal = calviv.portal
