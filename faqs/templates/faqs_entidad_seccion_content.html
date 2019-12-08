@@ -1,0 +1,14 @@
+{% load my_templatetags %}
+{% for p in s.faqentidad_set.all %}
+    {% if p.publicada %}
+        <fieldset>
+            <legend>{{ p.pregunta }}</legend>
+            <div class="row">
+                <div class="columns large-12">
+                    {% autoescape off %}{{ p.respuesta }}{% endautoescape %}
+                </div>
+            </div>
+            <br>
+        </fieldset>
+    {% endif %}
+{% endfor %}

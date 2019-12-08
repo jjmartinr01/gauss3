@@ -22,56 +22,53 @@
             <h4 style="text-align: center;color: #008CBA;"><strong>Configuración de preguntas frecuentes</strong></h4>
         </div>
 
-        <ul class="tabs" data-tab role="tablist">
-            <li class="tab-title active" role="presentation" data-id="0">
-                <a href="#tab1" role="tab" tabindex="0" aria-selected="true" aria-controls="tab1">
-                    <b id="texto0">Secciones</b></a>
-            </li>
-            <li class="tab-title" role="presentation" data-id="1">
-                <a href="#tab2" role="tab" tabindex="0" aria-selected="false" aria-controls="tab2">
-                    <b id="texto1" style="color:#74bfdd;">Preguntas entidad</b></a>
-            </li>
-            {% if g_e|has_permiso:'crea_faqs_gauss' %}
-                <li class="tab-title" role="presentation" data-id="2">
-                    <a href="#tab3" role="tab" tabindex="0" aria-selected="false" aria-controls="tab3">
-                        <b id="texto2" style="color:#74bfdd;">Preguntas GAUSS</b></a>
+        <div class="panel callout">
+            <h4 style="font-weight: bold;">Algunos consejos para manejar este módulo</h4>
+            <p>Las preguntas frecuentes, y sus correspondientes respuestas, siempre van asociadas a lo que en Gauss se
+                denominan "<i>secciones</i>".</p>
+            <p>Así pues, una pregunta siempre está dentro de una sección. Para crear una pregunta frecuente deberías
+                seguir los siguientes pasos:</p>
+            <ol>
+                <li>Si tienes los permisos necesarios, crea una sección o abre alguna que ya esté creada.</li>
+                <li>El nombre de la sección puede ser cambiado. Es necesario tener un permiso especial para poder
+                    cambiarlo.
                 </li>
-            {% endif %}
-        </ul>
-        <div class="tabs-content">
-            <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
-                {% include "configura_faqs_secciones.html" %}
-                <br>
-                <a class="button" id="add_seccion"><i class="fa fa-plus"></i> Sección </a>
-            </section>
-
-            <section role="tabpanel" aria-hidden="true" class="content" id="tab2">
-
-            </section>
-
-            {% if g_e|has_permiso:'crea_faqs_gauss' %}
-                <section role="tabpanel" aria-hidden="true" class="content" id="tab3">
-                    {#                <dl class="accordion" data-accordion id="div_registros">#}
-                    <div id="div_registros"></div>
-                    {#                </dl>#}
-                </section>
-            {% endif %}
+                <li>Si tienes permiso para crear una pregunta frecuente, haz click sobre el botón
+                    <span class="label"><i class="fa fa-plus"></i> Pregunta</span></li>
+                <li>Para editar una pregunta frecuente deberás tener el permiso requerido. Si lo tienes, podrás cambiar
+                    tanto la pregunta como la respuesta.
+                </li>
+                <li>Para que la pregunta sea visible para otros usuarios de Gauss es necesario publicarla. Al igual que
+                    en las anteriores operaciones, el control de la publicación requiere tener un permiso especial.
+                </li>
+            </ol>
         </div>
+
+        <dl class="accordion" data-accordion id="lista_faqsections">
+            {% for s in faqssections %}
+                {% include "configura_faqs_secciones.html" %}
+            {% endfor %}
+        </dl>
+
+        <br>
+        <hr>
+        <a class="button" id="add_seccion"><i class="fa fa-plus"></i> Sección </a>
+
     </form>
 {% endblock %}
 
 {% block final %}
     <script>
-        {% if g_e|has_permiso:'crea_faqs_gauss' %}
+        {% if g_e|has_permiso:'crea_secciones_faqs' %}
             $('#Contenido').on('click', '#add_seccion', function (e) {
                 e.preventDefault();
                 $.post("/configura_faqs/", {action: 'add_seccion'}, function (data) {
                     if (data.ok) {
-                        $('#lista_faqsections > tbody').after(data.html);
+                        $('#lista_faqsections').append(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
-                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje})
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
                     }
                 });
             });
@@ -80,159 +77,44 @@
                 var seccion = $(this).data('id');
                 $.post("/configura_faqs/", {action: 'borrar_seccion', seccion: seccion}, function (data) {
                     if (data.ok) {
-                        $('#tr_seccion' + data.fs_id).remove();
+                        $('#accordion' + data.fs_id).remove();
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
-                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje})
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
+                    }
+                });
+            });
+            $('#Contenido').on('keyup', '.campo_nombre', function (e) {
+                e.preventDefault();
+                var fs = $(this).data('id');
+                var nombre = $(this).val();
+                $.post("/configura_faqs/", {
+                    action: 'edit_seccion',
+                    fs: fs,
+                    nombre: nombre
+                }, function (data) {
+                    if (data.ok) {
+                        $('#span_s_nombre' + data.fs_id).html(data.nombre);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
                     }
                 });
             });
         {% endif %}
 
-
-        $('#Contenido').on('change', '#selecciona_portal', function (e) {
-            var portal = $(this).val();
-            $('.ayuda_reservas').hide();
-            $('#reservas_' + portal).show();
-        });
-
-        $('#Contenido').on('click', '#add_next_days_reserva_vut', function (e) {
-            e.preventDefault();
-            $.post("/ajax_reservas_vut/", {action: 'add_next_days_reserva_vut'}, function (data) {
-                $('#list_reservas > tbody > tr:first-of-type').after(data.html);
-                $('#fecha_next_days_reserva_vut').html(data.fecha);
-                {#$('#tr_resultados_filtro').remove();#}
-
-                $("#update_ok").show().delay(1500).fadeOut();
-            });
-        });
-
-        $('#Contenido').on('click', '#add_prev_days_reserva_vut', function (e) {
-            e.preventDefault();
-            $.post("/ajax_reservas_vut/", {action: 'add_prev_days_reserva_vut'}, function (data) {
-                $('#list_reservas > tbody > tr:last-of-type').before(data.html);
-                $('#fecha_prev_days_reserva_vut').html(data.fecha);
-                {#$('#tr_resultados_filtro').remove();#}
-
-                $("#update_ok").show().delay(1500).fadeOut();
-            });
-        });
-
-        $('#Contenido').on('click', '#add_nueva_reserva', function (e) {
-            e.preventDefault();
-            var vivienda = $('#vivienda_nueva_reserva').val();
-            var nombre = $('#nombre_nueva_reserva').val();
-            var entrada = $('#entrada_nueva_reserva').val();
-            var salida = $('#salida_nueva_reserva').val();
-            var total = parseFloat($('#total_nueva_reserva').val());
-            $.post("/ajax_reservas_vut/", {
-                action: 'add_nueva_reserva', vivienda: vivienda, nombre: nombre,
-                entrada: entrada, salida: salida, total: total.toFixed(2)
-            }, function (data) {
-                if (data.ok) {
-                    $('#list_reservas > tbody:last-child').append(data.html);
-                    $('.nueva_reserva').val('');
-
-                    $("#update_ok").show().delay(1500).fadeOut();
-                } else {
-                    show_mensajes({'title': 'Error', 'texto': 'Hay algún error en los datos introducidos'});
-                }
-            });
-        });
-
-        $('#Contenido').on('keyup', '.num_viajeros', function (e) {
-            var valor = $(this).val();
-            var reserva = $(this).data('id');
-            $.post("/ajax_reservas_vut/", {
-                action: 'change_num_viajeros', reserva: reserva, valor: valor
-            }, function (data) {
-                if (data.ok) {
-
-                    $("#update_ok").show().delay(1500).fadeOut();
-                } else {
-                    $("#update_error").show().delay(1500).fadeOut();
-                }
-            });
-        });
-
-        $('#Contenido').on('click keyup', '.configura', function (e) {
-            e.preventDefault();
-            var campo = $(this).data('campo');
-            var valor = $(this).val();
-            $.post("/ajax_reservas_vut/", {action: 'change_configuracion', campo: campo, valor: valor},
-                function (data) {
-                    if (data['ok']) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $(document).foundation({
-            tab: {
-                callback: function (tab) {
-                    var id = $(tab[0]).data('id');
-                    {#$('.tab-title > a').css('color', '#74bfdd');#}
-                    {#$('.tab-title.active > a').css('color', 'red');#}
-                    if (id == 0) {
-                        $('#texto0').css('color', 'black');
-                        $('#texto1').css('color', '#74bfdd');
-                        $('#texto2').css('color', '#74bfdd');
-                        $.post("/ajax_reservas_vut/", {action: 'change_tab_reservas'},
-                            function (data) {
-                                if (data.ok) {
-                                    $('#tab1').html(data.html);
-
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $("#update_error").show().delay(1500).fadeOut();
-                                }
-                            });
-                    } else if (id == 1) {
-                        $('#texto0').css('color', '#74bfdd');
-                        $('#texto1').css('color', 'black');
-                        $('#texto2').css('color', '#74bfdd');
-                        $.post("/ajax_reservas_vut/", {action: 'update_calendarios', tipo: 'change_tab'},
-                            function (data) {
-                                if (data.ok) {
-                                    if (data.mensaje) {
-                                        show_mensajes({title: 'Información', texto: data.mensaje});
-                                    }
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $("#update_error").show().delay(1500).fadeOut();
-                                }
-                            });
-                    } else {
-                        $('#texto0').css('color', '#74bfdd');
-                        $('#texto1').css('color', '#74bfdd');
-                        $('#texto2').css('color', 'black');
-                        $.post("/ajax_reservas_vut/", {action: 'change_tab_registros_policia'},
-                            function (data) {
-                                if (data.ok) {
-                                    $('#div_registros').html(data.html);
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $("#update_error").show().delay(1500).fadeOut();
-                                }
-                            });
-                    }
-                }
-            }
-        });
-
         $(document).foundation({
             accordion: {
                 callback: function (accordion) {
-                    if (accordion.hasClass('accordion-registro')) {
+                    if (accordion.hasClass('accordion-faqsection')) {
                         var id = accordion.data('id');
                         if ($('#circle' + id).hasClass('fa-plus-circle')) {
                             $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
                             window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post("/ajax_reservas_vut/", {action: 'open_accordion_registro', viajero: id},
+                            $.post("/configura_faqs/", {action: 'open_accordion_fsection', fs: id},
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
@@ -252,384 +134,73 @@
             }
         });
 
-        $('#update_calendarios').click(function (e) {
-            e.preventDefault();
-            $.post("/ajax_reservas_vut/", {action: 'update_calendarios', tipo: 'manual'},
-                function (data) {
+        {% if g_e|has_permiso:'crea_faqs_entidad' %}
+            $('#Contenido').on('click', '.add_faq', function (e) {
+                e.preventDefault();
+                var fs = $(this).data('id');
+                $.post("/configura_faqs/", {action: 'add_faq', fs: fs}, function (data) {
                     if (data.ok) {
-                        $('#last_update_calendar_vut').html(data.respuesta.time);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        show_mensajes({
-                            title: 'Se han producido los siguientes incidentes',
-                            texto: data.respuesta.html,
-                            size: 'xlarge'
-                        });
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        {#$('body').on('change', '#vivienda_vut_file', function () {#}
-        {#    if ($('#portal_vut_file').val() != '' && $(this).val() != '') {#}
-        {#        $('#vut_file').prop('disabled', false);#}
-        {#        $('#sube_vut_file').removeClass('disabled');#}
-        {#    } else {#}
-        {#        $('#vut_file').prop('disabled', true);#}
-        {#        $('#sube_vut_file').addClass('disabled');#}
-        {#    }#}
-        {# });#}
-        {#$('body').on('change', '#portal_vut_file', function () {#}
-        {#    if ($(this).val() == 'AIR') {#}
-        {#        $('#vivienda_vut_file').append($('<option>', {value: 100, text: 'Todas las viviendas', selected: true}))#}
-        {#            .prop('disabled', true);#}
-        {#        $('#vut_file').prop('disabled', false);#}
-        {#        $('#sube_vut_file').removeClass('disabled');#}
-        {#    } else if ($(this).val() == 'BOO') {#}
-        {#        $('#vivienda_vut_file').prop('disabled', false);#}
-        {#        $('#vut_file').prop('disabled', true);#}
-        {#        $('#sube_vut_file').addClass('disabled');#}
-        {#    } else {#}
-        {#        $('#vivienda_vut_file').prop('disabled', true);#}
-        {#        $('#vut_file').prop('disabled', true);#}
-        {#        $('#sube_vut_file').addClass('disabled');#}
-        {#    }#}
-        {# });#}
-        $('body').on('click', '#sube_vut_file', function () {
-            var input_files = document.getElementById('vut_file').files;
-            for (var i = 0; i < input_files.length; i++) {
-                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
-            }
-
-            var formData = new FormData();
-            for (var i = 0; i < input_files.length; i++) {
-                formData.append('fichero_xhr' + i, input_files[i]);
-            }
-            formData.append('n_files', input_files.length);
-            formData.append('vivienda', $('#vivienda_vut_file').val());
-            formData.append('portal', $('#portal_vut_file').val());
-            formData.append('action', 'upload_vut_file');
-            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
-            var xhr = new XMLHttpRequest();
-            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
-            xhr.onload = function () {
-                if (xhr.readyState === xhr.DONE) {
-                    if (xhr.status === 200) {
-                        console.log('Terminado');
-                        var data = JSON.parse(xhr.responseText);
-                        if (data.ok) {
-                            $('#informe_reservas').html(data.html);
-                            $('#vut_file').val('');
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-                    }
-                }
-            };
-            xhr.open('POST', "/ajax_reservas_vut/", true);
-            xhr.send(formData);
-
-        });
-
-        $('#Contenido').on('change', '.match_vivienda', function () {
-            var vivienda = $(this).val();
-            var texto = $(this).data('texto');
-            $.post("/ajax_reservas_vut/", {action: 'match_vivienda', vivienda: vivienda, texto: texto},
-                function (data) {
-                    if (data['ok']) {
+                        $('#list_preguntas' + data.fs).append(data.html);
+                        $('#num_preguntas' + data.fs).html(data.num_preguntas);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('#Contenido').on('click', '.viajero_manual', function () {
-            var code = $(this).data('code');
-            var secret = $(this).data('secret');
-            location.href = '/registro_viajero_manual/?s=' + secret + '&c=' + code;
-        });
-
-        $('#Contenido').on('click', '.copy_url_viajero', function () {
-            var code = $(this).data('code');
-            var secret = $(this).data('secret');
-            var c = copiar_al_portapapeles('https://gaumentada.es/viajeros/?s=' + secret + '&c=' + code);
-            {#$('#text_to_be_copied').val('https://gaumentada.es/viajeros/?s=' + secret + '&c=' + code);#}
-            {#var isiOSDevice = navigator.userAgent.match(/ipad|iphone/i);#}
-            {#if (isiOSDevice) {#}
-            {#    var input = document.getElementById('text_to_be_copied');#}
-            {#    var editable = input.contentEditable;#}
-            {#    var readOnly = input.readOnly;#}
-            {#    input.contentEditable = true;#}
-            {#    input.readOnly = false;#}
-            {#    var range = document.createRange();#}
-            {#    range.selectNodeContents(input);#}
-            {#    var selection = window.getSelection();#}
-            {#    selection.removeAllRanges();#}
-            {#    selection.addRange(range);#}
-            {#    input.setSelectionRange(0, 999999);#}
-            {#    input.contentEditable = editable;#}
-            {#    input.readOnly = readOnly;#}
-            {# } else {#}
-            {#    $('#text_to_be_copied').select();#}
-            {# }#}
-            {#document.execCommand("copy");#}
-            {#$("#text_to_be_copied").blur();#}
-            {# Esto es necesario para que no salga el teclado en el móvil #}
-            if (c) {
-                show_mensajes({
-                    title: 'URL copiada',
-                    texto: 'Se ha copiado en el portapapeles la dirección en la que deben registrase los viajeros de esta reserva'
-                });
-            }
-        });
-
-        $('#Contenido').on('click', '.viajeros_list', function () {
-            var reserva = $(this).data('id');
-            $.post("/ajax_reservas_vut/", {action: 'viajeros_list', reserva: reserva},
-                function (data) {
-                    if (data['ok']) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        show_mensajes({size: 'xlarge', title: 'Lista de viajeros registrados', texto: data.html})
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        {#$('#Contenido').on('click', '#update_fichero', function () {#}
-        {#    var reserva = $(this).data('id');#}
-        {#    $.post("/ajax_reservas_vut/", {action: 'update_fichero_registro'},#}
-        {#        function (data) {#}
-        {#            if (data['ok']) {#}
-        {#                $("#update_ok").show().delay(1500).fadeOut();#}
-        {#                $('#div_registros').prepend(data.html);#}
-        {#            } else {#}
-        {#                $("#update_error").show().delay(1500).fadeOut();#}
-        {#            }#}
-        {#        });#}
-        {# });#}
-
-        $('body').on('click', '.descargar_fichero_policia', function (e) {
-            e.preventDefault();
-            $('#action').val('descargar_fichero_policia');
-            $('#fichero_policia').val($(this).data('id'));
-            document.{{formname}}.submit();
-        });
-
-        $('body').on('click', '.activar_registro', function (e) {
-            e.preventDefault();
-            var viajero = $(this).data('id');
-            $.post("/ajax_reservas_vut/", {action: 'activar_registro', viajero: viajero},
-                function (data) {
-                    if (data['ok']) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $('#registro_policia' + viajero).html('<span style="color:green"><i class="fa fa-refresh"></i></span>');
-                        $('#estado_registro' + viajero).html('<span style="color:green"><i class="fa fa-refresh"></i></span>');
-                        $('#observaciones' + viajero).html(data['observaciones']);
-                        setTimeout(show_mensajes({
-                            'title': '<i class="fa fa-info-circle"></i> Acción solicitada',
-                            'texto': 'En un par de minutos Gauss intentará registrar al viajero.'
-                        }), 200);
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                        $('#observaciones' + viajero).html(data['observaciones']);
-                    }
-                });
-        });
-
-        $('body').on('click', '.registrado_manualmente', function (e) {
-            e.preventDefault();
-            var viajero = $(this).data('id');
-            $.post("/ajax_reservas_vut/", {action: 'registrado_manualmente', viajero: viajero},
-                function (data) {
-                    if (data['ok']) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $('#registro_policia' + viajero).html('<span style="color:green"><i class="fa fa-check"></i></span>');
-                        $('#estado_registro' + viajero).html('<span style="color:green"><i class="fa fa-check"></i></span>');
-                        $('#observaciones' + viajero).html(data['observaciones']);
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        {% if request.session.gauser_extra|has_permiso:'borra_reservas' %}
-            $('body').on('click', '.delete_reserva', function (e) {
-                e.preventDefault();
-                reserva = $(this).data('id');
-                show_mensajes({
-                    title: 'Borrar reserva', texto: 'Si aceptas la reserva será eliminada.', buttons: {
-                        "Cancelar": function () {
-                            hide_mensajes();
-                        },
-                        "Aceptar": function () {
-                            hide_mensajes();
-                            $.post("/ajax_reservas_vut/", {action: 'delete_reserva', reserva: reserva},
-                                function (data) {
-                                    if (data['ok']) {
-                                        $("#update_ok").show().delay(1500).fadeOut();
-                                        $('#reserva' + reserva).remove();
-
-                                    } else {
-                                        $("#update_error").show().delay(1500).fadeOut();
-                                    }
-                                });
-                        }
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
                     }
                 });
             });
-
-            $('body').on('click', '.delete_solapada', function (e) {
+            $('#Contenido').on('click', '.del_faq', function (e) {
                 e.preventDefault();
-                reserva = $(this).data('id');
-                show_mensajes({
-                    title: 'Borrar reserva', texto: 'Si aceptas la reserva será eliminada.', buttons: {
-                        "Cancelar": function () {
-                            hide_mensajes();
-                        },
-                        "Aceptar": function () {
-                            hide_mensajes();
-                            $.post("/ajax_reservas_vut/", {action: 'delete_reserva', reserva: reserva},
-                                function (data) {
-                                    if (data['ok']) {
-                                        $("#update_ok").show().delay(1500).fadeOut();
-                                        $('.solapada' + reserva).remove();
-                                    } else {
-                                        $("#update_error").show().delay(1500).fadeOut();
-                                    }
-                                });
-                        }
-                    }
-                });
-            });
-
-            $('body').on('click', '.delete_reserva_update_calendario_vut', function (e) {
-                e.preventDefault();
-                reserva = $(this).data('id');
-                show_mensajes({
-                    title: 'Borrar reserva', texto: 'Si aceptas la reserva será eliminada.', buttons: {
-                        "Cancelar": function () {
-                            hide_mensajes();
-                        },
-                        "Aceptar": function () {
-                            hide_mensajes();
-                            $.post("/ajax_reservas_vut/", {action: 'delete_reserva', reserva: reserva},
-                                function (data) {
-                                    if (data['ok']) {
-                                        $("#update_ok").show().delay(1500).fadeOut();
-                                        $('#tr_reserva_update_calendario_vut' + reserva).remove();
-                                    } else {
-                                        $("#update_error").show().delay(1500).fadeOut();
-                                    }
-                                });
-                        }
+                var id = $(this).data('id');
+                $.post("/configura_faqs/", {action: 'del_faq', id: id}, function (data) {
+                    if (data.ok) {
+                        $('#pregunta' + data.p_id).remove();
+                        $('#num_preguntas' + data.fs).html(data.num_preguntas);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
                     }
                 });
             });
         {% endif %}
 
-        $('body').on('change', '.select_vivienda_reserva', function () {
-            var reserva = $(this).data('reserva');
-            var vivienda = $(this).val();
-            $.post("/ajax_reservas_vut/", {action: 'select_vivienda_reserva', reserva: reserva, vivienda: vivienda},
-                function (data) {
-                    if (data['ok']) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $('#reserva' + reserva).remove();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('change', '.change_select_reservas', function () {
-            var mes = $("#select_mes_reservas").val();
-            var vivienda = $("#select_vivienda_reservas").val();
-            var portal = $("#select_portal_reservas").val();
-            $.post("/ajax_reservas_vut/", {
-                    action: 'change_select_reservas',
-                    mes: mes,
-                    vivienda: vivienda,
-                    portal: portal
-                },
-                function (data) {
-                    if (data['ok']) {
-                        $('#tab1').html(data.html);
-
+        {% if g_e|has_permiso:'edita_faqs_entidad' %}
+            $('#Contenido').on('keyup', '.input_faq', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var texto = $(this).val();
+                $.post("/configura_faqs/", {
+                    action: 'update_input_faq',
+                    id: id,
+                    texto: texto
+                }, function (data) {
+                    if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
-        });
+            });
+        {% endif %}
 
-
-        $('body').on('keyup', '.input_text', function () {
-            var campo = $(this).data('campo');
-            var id_viajero = $(this).data('id');
-            var valor = $(this).val();
-            $.post("/ajax_reservas_vut/", {
-                    action: 'update_viajero',
-                    id_viajero: id_viajero,
-                    campo: campo,
-                    valor: valor
-                },
-                function (data) {
-                    if (data['ok']) {
+        {% if g_e|has_permiso:'publica_faqs_entidad' %}
+            $('#Contenido').on('click', '.pub_faq', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                $.post("/configura_faqs/", {
+                    action: 'change_pub_faq',
+                    id: id
+                }, function (data) {
+                    if (data.ok) {
+                        $('#pub_faq' + data.p).html(data.publicar);
+                        $('#num_preguntas_pub' + data.fs).html(data.num_preguntas_pub);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
-        });
-
-        $('body').on('change', '.input_select', function () {
-            var campo = $(this).data('campo');
-            var id_viajero = $(this).data('id');
-            var valor = $(this).val();
-            $.post("/ajax_reservas_vut/", {
-                    action: 'update_viajero',
-                    id_viajero: id_viajero,
-                    campo: campo,
-                    valor: valor
-                },
-                function (data) {
-                    if (data['ok']) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('change', '.input_fecha', function () {
-            var campo = $(this).data('campo');
-            var id_viajero = $(this).data('id');
-            var valor = $(this).val();
-            $.post("/ajax_reservas_vut/", {
-                    action: 'update_viajero_fecha',
-                    id_viajero: id_viajero,
-                    campo: campo,
-                    valor: valor
-                },
-                function (data) {
-                    if (data['ok']) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.parte_pdf_PN', function (e) {
-            e.preventDefault();
-            var id = $(this).data('id');
-            $('#fichero_policia').val(id);
-            $('#action').val('descarga_parte_pdf_PN');
-            document.getElementById("{{ formname }}").submit();
-        });
-
+            });
+        {% endif %}
     </script>
 {% endblock %}

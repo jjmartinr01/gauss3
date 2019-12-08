@@ -1,0 +1,65 @@
+{% load my_templatetags %}
+<fieldset id="pregunta{{ p.id }}">
+    <legend>Pregunta</legend>
+    <div class="row">
+        <div class="columns large-12">
+            {% if g_e|has_permiso:'edita_faqs_entidad' %}
+                <label>Texto de la pregunta:
+                    <input placeholder="Escribe aquí la pregunta"
+                           type="text" class="input_faq" data-id="{{ p.id }}" value="{{ p.pregunta }}"></label>
+            {% else %}
+                <b>{{ p.pregunta }}</b>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            {% if g_e|has_permiso:'edita_faqs_entidad' %}
+                <label>Texto con la respuesta:</label>
+                <div style="border: 1px solid lightgrey;box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);"
+                     id="peditor{{ p.id }}"
+                     contenteditable="true">{% autoescape off %}{{ p.respuesta }}{% endautoescape %}</div>
+            {% else %}
+                {% autoescape off %}{{ p.respuesta }}{% endautoescape %}
+            {% endif %}
+        </div>
+    </div>
+        <br>
+    <div class="row">
+        {% if g_e|has_permiso:'publica_faqs_entidad' %}
+            <div class="columns large-7">
+                <label>¿Es esta pregunta pública?<br>
+                {% if p.publicada %}
+                    <a class="pub_faq" data-id="{{ p.id }}">&nbsp;&nbsp;
+                        <span id="pub_faq{{ p.id }}" style="font-weight: bold;font-size: 12pt;">Sí</span></a>
+                {% else %}
+                    <a class="pub_faq" data-id="{{ p.id }}">&nbsp;&nbsp;
+                        <span id="pub_faq{{ p.id }}" style="font-weight: bold;font-size: 12pt;">No</span></a>
+                {% endif %}
+                </label>
+            </div>
+        {% endif %}
+        {% if g_e|has_permiso:'crea_faqs_entidad' %}
+            <div class="columns large-5 right">
+                <a class="button del_faq small alert"
+                   data-id="{{ p.id }}"><i class="fa fa-trash"></i> Borrar pregunta</a>
+            </div>
+        {% endif %}
+    </div>
+</fieldset>
+
+<script>
+    var editor{{p.id}} = CKEDITOR.inline('peditor{{ p.id }}');
+    {#editor{{p.id}}.config.extraAllowedContent = 'p div span[id]';#}
+    editor{{p.id}}.on('change', function (e) {
+        var texto = e.editor.getData();
+        $.post("/configura_faqs/", {action: 'update_respuesta', id: {{ p.id }}, texto: texto},
+            function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    });
+</script>

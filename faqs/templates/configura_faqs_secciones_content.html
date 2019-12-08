@@ -1,0 +1,50 @@
+{% load my_templatetags %}
+
+<div class="row">
+    <div class="columns large-12">
+        <ul class="button-group right">
+            {% if g_e|has_permiso:'crea_secciones_faqs' %}
+                {% if s.faqentidad_set.all|length == 0 %}
+                    <li><a class="button borrar_seccion alert" data-id="{{ s.id }}"><i class="fa fa-trash"></i>
+                        Borrar sección</a></li>
+                {% else %}
+                    <span class="label" title="Las secciones solo se pueden borrar si no contienen preguntas."
+                          style="font-weight: bold;">Esta sección no se puede borrar</span>
+                {% endif %}
+            {% endif %}
+        </ul>
+    </div>
+</div>
+<fieldset>
+    <legend>Información de la sección</legend>
+    <div class="row">
+        <div class="columns large-6">
+            <label><b>Nombre de la sección:</b>
+                {% if g_e|has_permiso:'crea_secciones_faqs' %}
+                    <input type="text" class="campo_nombre" data-id="{{ s.id }}" value="{{ s.nombre }}">
+                {% else %}
+                    <br>{{ s.nombre }}
+                {% endif %}
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label title="Número de preguntas totales en esta sección"><b>Nº Preguntas:</b>
+                <br><span id="num_preguntas{{ s.id }}">{{ s.num_preguntas }}</span>
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label title="Número de preguntas publicadas"><b>Nº Publicadas:</b>
+                <br><span id="num_preguntas_pub{{ s.id }}">{{ s.num_preguntas_pub }}</span>
+            </label>
+        </div>
+    </div>
+</fieldset>
+
+<div id="list_preguntas{{ s.id }}">
+    {% for p in s.faqentidad_set.all %}
+        {% include "configura_faqs_secciones_content_pregunta.html" %}
+    {% endfor %}
+</div>
+{% if g_e|has_permiso:'crea_faqs_entidad' %}
+    <a class="button add_faq" data-id="{{ s.id }}"><i class="fa fa-plus"></i> Pregunta</a>
+{% endif %}

@@ -53,5 +53,9 @@ PERMISOS = [
     {'code_nombre': 'edita_faqs_entidad',
      'nombre': 'Tiene permiso para editar las preguntas frecuentes de la entidad',
      'menu': 'acceso_configura_faqs'
+     },
+    {'code_nombre': 'publica_faqs_entidad',
+     'nombre': 'Tiene permiso para publicar las preguntas frecuentes de la entidad',
+     'menu': 'acceso_configura_faqs'
      }
 ]

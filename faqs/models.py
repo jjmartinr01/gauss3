@@ -45,7 +45,7 @@ class FaqEntidad(models.Model):
     publicada = models.BooleanField('Está publicada?', default=False)
 
     class Meta:
-        ordering = ['faqsection']
+        ordering = ['faqsection', 'id']
 
     def __str__(self):
         return '%s -- %s' % (self.faqsection.entidad.name, self.pregunta)

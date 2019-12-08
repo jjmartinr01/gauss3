@@ -16,14 +16,21 @@ def configura_faqs(request):
 
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
-        if action == 'add_seccion' and g_e.has_permiso('crea_faqs_gauss'):
+        if action == 'add_seccion' and g_e.has_permiso('crea_secciones_faqs'):
             try:
                 fs = FaqSection.objects.create(entidad=g_e.ronda.entidad, nombre='Nueva sección')
-                html = render_to_string('configura_faqs_secciones_tr.html', {'s': fs})
+                html = render_to_string('configura_faqs_secciones.html', {'s': fs})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'No se ha podido crear la sección.'})
-        elif action == 'borrar_seccion' and g_e.has_permiso('crea_faqs_gauss'):
+        elif action == 'open_accordion_fsection':
+            try:
+                fs = FaqSection.objects.get(entidad=g_e.ronda.entidad, id=request.POST['fs'])
+                html = render_to_string('configura_faqs_secciones_content.html', {'s': fs, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'No se puede abrir la sección solicitada.'})
+        elif action == 'borrar_seccion' and g_e.has_permiso('crea_secciones_faqs'):
             try:
                 fs = FaqSection.objects.get(id=request.POST['seccion'], entidad=g_e.ronda.entidad)
                 if fs.num_preguntas == 0:
@@ -35,6 +42,57 @@ def configura_faqs(request):
                         {'ok': False, 'mensaje': 'No se puede borrar una sección si contiene preguntas.'})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Se ha procido un error que ha impedido el borrado.'})
+        elif action == 'edit_seccion' and g_e.has_permiso('crea_secciones_faqs'):
+            try:
+                fs = FaqSection.objects.get(entidad=g_e.ronda.entidad, id=request.POST['fs'])
+                fs.nombre = request.POST['nombre']
+                fs.save()
+                return JsonResponse({'ok': True, 'nombre': fs.nombre, 'fs_id': fs.id})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'No se puede abrir la sección solicitada.'})
+        elif action == 'add_faq' and g_e.has_permiso('crea_faqs_entidad'):
+            try:
+                fs = FaqSection.objects.get(entidad=g_e.ronda.entidad, id=request.POST['fs'])
+                p = FaqEntidad.objects.create(faqsection=fs)
+                html = render_to_string('configura_faqs_secciones_content_pregunta.html', {'g_e': g_e, 'p': p})
+                return JsonResponse({'ok': True, 'html': html, 'fs': fs.id, 'num_preguntas': fs.num_preguntas})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'No has hecho la petición correctamente.'})
+        elif action == 'del_faq' and g_e.has_permiso('crea_faqs_entidad'):
+            try:
+                p = FaqEntidad.objects.get(id=request.POST['id'], faqsection__entidad=g_e.ronda.entidad)
+                fs = p.faqsection
+                p_id = p.id
+                p.delete()
+                return JsonResponse({'ok': True, 'p_id': p_id, 'num_preguntas': fs.num_preguntas, 'fs': fs.id})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'No has hecho la petición correctamente.'})
+        elif action == 'update_input_faq' and g_e.has_permiso('edita_faqs_entidad'):
+            try:
+                p = FaqEntidad.objects.get(id=request.POST['id'], faqsection__entidad=g_e.ronda.entidad)
+                p.pregunta = request.POST['texto']
+                p.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_respuesta' and g_e.has_permiso('edita_faqs_entidad'):
+            try:
+                p = FaqEntidad.objects.get(id=request.POST['id'], faqsection__entidad=g_e.ronda.entidad)
+                p.respuesta = request.POST['texto']
+                p.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'change_pub_faq' and g_e.has_permiso('publica_faqs_entidad'):
+            try:
+                p = FaqEntidad.objects.get(id=request.POST['id'], faqsection__entidad=g_e.ronda.entidad)
+                p.publicada = not p.publicada
+                p.save()
+                fs = p.faqsection
+                return JsonResponse({'ok': True, 'publicar': ['No', 'Sí'][p.publicada], 'p': p.id,
+                                     'num_preguntas_pub': fs.num_preguntas_pub, 'fs': fs.id})
+            except:
+                return JsonResponse({'ok': False})
         else:
             return JsonResponse({'ok': False, 'mensaje': 'No se ha podido llevar a cabo la operación solicitada.'})
 
@@ -47,7 +105,7 @@ def configura_faqs(request):
                   })
 
 
-# @permiso_required('acceso_faqs_gauss')
+@permiso_required('acceso_faqs_gauss')
 def faqs_gauss(request):
     g_e = request.session['gauser_extra']
 
@@ -64,17 +122,24 @@ def faqs_gauss(request):
                   })
 
 
-# @permiso_required('acceso_faqs_entidad')
+@permiso_required('acceso_faqs_entidad')
 def faqs_entidad(request):
     g_e = request.session['gauser_extra']
+    faqssections = FaqSection.objects.filter(entidad=g_e.ronda.entidad)
 
-    if request.method == 'POST':
+    if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
-        if action == 'libro_registros':
-            pass
+        if action == 'open_accordion_fsection':
+            try:
+                fs = FaqSection.objects.get(entidad=g_e.ronda.entidad, id=request.POST['fs'])
+                html = render_to_string('faqs_entidad_seccion_content.html', {'s': fs, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'No se puede abrir la sección solicitada.'})
 
     return render(request, "faqs_entidad.html",
                   {
                       'formname': 'faqs_entidad',
+                      'faqssections': faqssections,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
