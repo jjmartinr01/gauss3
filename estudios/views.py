@@ -290,8 +290,9 @@ def evaluar_materias(request):
             matriculas = Matricula.objects.filter(ge__ronda=g_e.ronda, estado='PE',
                                                   evaluador__gauser_extra_programaciones__departamento=g_e.gauser_extra_programaciones.departamento)
         else:
-            matriculas = Matricula.objects.filter(ge__ronda=g_e.ronda, estado='PE',
-                                                  evaluador=g_e)
+            matriculas = Matricula.objects.filter(ge__ronda=g_e.ronda, estado='PE', evaluador=g_e)
+    materias_evalua_id = matriculas.values_list('materia__id')
+    materias_evalua = Materia.objects.filter(id__in=materias_evalua_id)
 
 
 
@@ -337,7 +338,7 @@ def evaluar_materias(request):
             try:
                 fichero = 'carta%s_%s' % (g_e.ronda.entidad.code, g_e.id)
                 fecha = datetime.strptime(request.POST['fecha_examen'], '%Y-%m-%d')
-                ms = Matricula.objects.filter(id__in=request.POST.getlist('materias_seleccionadas'), ge__ronda=g_e.ronda)
+                ms = Matricula.objects.filter(materia__id__in=request.POST.getlist('materias_seleccionadas'), ge__ronda=g_e.ronda)
                 ms_text_array = ['%s (%s)' % (m[0], m[1]) for m in ms.values_list('materia__nombre', 'materia__curso__nombre')]
                 materias = human_readable_list(ms_text_array)
                 alumnos_id = ms.filter(ge__ronda=g_e.ronda).values_list('ge__id')
@@ -357,7 +358,7 @@ def evaluar_materias(request):
     respuesta = {
         'formname': 'evaluar_materias',
         'cursos': Curso.objects.filter(ronda=g_e.ronda),
-        'matriculas': matriculas,
+        'materias_evalua': materias_evalua,
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)}
     return render(request, "evaluar_materias.html", respuesta)
 
