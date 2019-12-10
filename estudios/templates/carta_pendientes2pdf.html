@@ -24,8 +24,20 @@
     <p><b>Fecha de la prueba/examen:</b> {{ fecha|date:"j" }} de {{ fecha|date:"F"|lower }}</p>
     <p><b>Hora de la prueba/examen:</b> {{ hora }} horas</p>
     <p><b>Lugar de la prueba/examen:</b> {{ lugar }}</p>
-    <p><b>Materia{{ ms|pendientes_alumno:alumno|length|pluralize }}:</b>
-        {{ ms|pendientes_alumno:alumno|human_readable_pendientes }}</p>
+    <table>
+        <thead>
+        <th>Materia pendiente</th>
+        <th>Profesor que evalúa</th>
+        </thead>
+        <tbody>
+        {% for matricula in ms|pendientes_alumno:alumno %}
+            <td>{{ matricula.materia.nombre }}</td>
+            <td>{{ matricula.evaluador.gauser.get_full_name }}</td>
+        {% endfor %}
+        </tbody>
+    </table>
+    {#    <p><b>Materia{{ ms|pendientes_alumno:alumno|length|pluralize }}:</b>#}
+    {#        {{ ms|pendientes_alumno:alumno|human_readable_pendientes }}</p>#}
     {% if obs|length > 5 %}
         <p>&nbsp;</p>
         {% autoescape off %}{{ obs }}{% endautoescape %}
@@ -33,6 +45,6 @@
     <p>&nbsp;</p><p>&nbsp;</p>
     <p>Esperando que esta información resulte de su interés, reciban un cordial saludo.</p>
     <p>&nbsp;</p><p>&nbsp;</p>
-    <p>{{ evaluador.gauser.get_full_name }}<br>Responsable de la evaluación de pendientes</p>
+    <p>{{ evaluador.gauser.get_full_name }}<br>Responsable de la información de materias pendientes</p>
     <div class="pagebreak"></div>
 {% endfor %}

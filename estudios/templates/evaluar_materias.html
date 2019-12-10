@@ -9,16 +9,16 @@
             <h4 style="text-align: center;color: #008CBA;"><strong> Evaluar materias pendientes</strong></h4>
         </div>
         <input type="hidden" name="action" value="cartas_examen">
-        {% if materias_evalua|length > 0 %}
+        {% if matriculas|length > 0 %}
             <div class="panel callout">
                 <h5 style="text-align: center; font-weight: bold">Envío de cartas a tutores legales informando sobre
                     exámenes</h5>
                 <p>Tienes a tu cargo la evaluación de las siguientes materias:</p>
 
-                {% for m in materias_evalua %}
+                {% for m in matriculas %}
                     <div class="columns large-6">
                         <input type="checkbox" value="{{ m.id }}" class="materias_seleccionadas"
-                               name="materias_seleccionadas"> {{ m.nombre }} ({{ m.curso.nombre }})
+                               name="materias_seleccionadas"> {{ m.materia.nombre }} ({{ m.materia.curso.nombre }})
                     </div>
                 {% endfor %}
                 <hr>
@@ -39,8 +39,7 @@
                 <div class="row">
                     <div class="columns large-12">
                         <label>Observaciones a reflejar en la carta:</label>
-                        <textarea style="border: 1px solid lightgrey;box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);"
-                                  name="observaciones" rows="4"></textarea>
+                        <textarea name="observaciones" rows="4"></textarea>
                     </div>
                 </div>
                 <div class="row">

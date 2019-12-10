@@ -284,11 +284,28 @@ def configura_materias_pendientes(request):
 def evaluar_materias(request):
     g_e = request.session['gauser_extra']
     if g_e.has_permiso('evalua_cualquier_materia'):
-        ronda = g_e.ronda
-        materias_evalua_id = Matricula.objects.filter(evaluador__ronda=ronda, estado='PE').values_list('materia__id')
+        matriculas = Matricula.objects.filter(ge__ronda=g_e.ronda, estado='PE')
     else:
-        materias_evalua_id = Matricula.objects.filter(evaluador=g_e, estado='PE').values_list('materia__id')
-    materias_evalua = Materia.objects.filter(id__in=materias_evalua_id)
+        if g_e.gauser_extra_programaciones.jefe:
+            matriculas = Matricula.objects.filter(ge__ronda=g_e.ronda, estado='PE',
+                                                  evaluador__gauser_extra_programaciones__departamento=g_e.gauser_extra_programaciones.departamento)
+        else:
+            matriculas = Matricula.objects.filter(ge__ronda=g_e.ronda, estado='PE',
+                                                  evaluador=g_e)
+
+
+
+    # if g_e.has_permiso('evalua_cualquier_materia'):
+    #     ronda = g_e.ronda
+    #     matriculas = Matricula.objects.filter(evaluador__ronda=ronda, estado='PE')
+    # else:
+    #     matriculas = Matricula.objects.filter(evaluador=g_e, estado='PE')
+    # materias_evalua_id = matriculas.values_list('materia__id')
+    # materias_evalua = Materia.objects.filter(id__in=materias_evalua_id)
+
+
+
+
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
         if action == 'open_accordion':
@@ -320,10 +337,10 @@ def evaluar_materias(request):
             try:
                 fichero = 'carta%s_%s' % (g_e.ronda.entidad.code, g_e.id)
                 fecha = datetime.strptime(request.POST['fecha_examen'], '%Y-%m-%d')
-                ms = Materia.objects.filter(id__in=request.POST.getlist('materias_seleccionadas'))
-                ms_text_array = ['%s (%s)' % (m[0], m[1]) for m in ms.values_list('nombre', 'curso__nombre')]
+                ms = Matricula.objects.filter(id__in=request.POST.getlist('materias_seleccionadas'), ge__ronda=g_e.ronda)
+                ms_text_array = ['%s (%s)' % (m[0], m[1]) for m in ms.values_list('materia__nombre', 'materia__curso__nombre')]
                 materias = human_readable_list(ms_text_array)
-                alumnos_id = Matricula.objects.filter(materia__in=ms, evaluador__ronda=g_e.ronda).values_list('ge__id')
+                alumnos_id = ms.filter(ge__ronda=g_e.ronda).values_list('ge__id')
                 alumnos = Gauser_extra.objects.filter(id__in=alumnos_id).distinct()
                 texto_html = render_to_string('carta_pendientes2pdf.html', {'materias': materias, 'alumnos': alumnos,
                                                                             'fecha': fecha, 'evaluador': g_e, 'ms': ms,
@@ -340,7 +357,7 @@ def evaluar_materias(request):
     respuesta = {
         'formname': 'evaluar_materias',
         'cursos': Curso.objects.filter(ronda=g_e.ronda),
-        'materias_evalua': materias_evalua,
+        'matriculas': matriculas,
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)}
     return render(request, "evaluar_materias.html", respuesta)
 

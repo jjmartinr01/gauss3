@@ -24,7 +24,7 @@ def alumnos_grupo(grupo):
 
 @register.filter
 def pendientes_alumno(ms, alumno):
-    return Matricula.objects.filter(ge=alumno, materia__in=ms)
+    return ms.filter(ge=alumno)
 
 @register.filter
 def human_readable_pendientes(matriculas):
