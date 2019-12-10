@@ -26,6 +26,10 @@
     <p><b>Lugar de la prueba/examen:</b> {{ lugar }}</p>
     <p><b>Materia{{ ms|pendientes_alumno:alumno|length|pluralize }}:</b>
         {{ ms|pendientes_alumno:alumno|human_readable_pendientes }}</p>
+    {% if obs|length > 5 %}
+        <p>&nbsp;</p>
+        {% autoescape off %}{{ obs }}{% endautoescape %}
+    {% endif %}
     <p>&nbsp;</p><p>&nbsp;</p>
     <p>Esperando que esta información resulte de su interés, reciban un cordial saludo.</p>
     <p>&nbsp;</p><p>&nbsp;</p>

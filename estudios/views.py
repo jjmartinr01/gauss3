@@ -328,7 +328,8 @@ def evaluar_materias(request):
                 texto_html = render_to_string('carta_pendientes2pdf.html', {'materias': materias, 'alumnos': alumnos,
                                                                             'fecha': fecha, 'evaluador': g_e, 'ms': ms,
                                                                             'hora': request.POST['hora_examen'],
-                                                                            'lugar': request.POST['lugar_examen']})
+                                                                            'lugar': request.POST['lugar_examen'],
+                                                                            'obs': request.POST['observaciones']})
                 ruta = MEDIA_PENDIENTES + '%s/' % g_e.ronda.entidad.code
                 fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Carta tutores legales')
                 response = HttpResponse(fich, content_type='application/pdf')
