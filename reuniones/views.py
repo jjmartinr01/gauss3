@@ -854,6 +854,8 @@ def redactar_actas_reunion_ajax(request):
                                         {'convocatoria': acta.convocatoria, 'p_conv': p_conv, 'redacta': acta.redacta,
                                          'cargo_redacta': cargo_redacta})
                 acta.preambulo = html
+                epilogo_html = '<p>No habiendo más puntos que tratar finaliza la reunión a las ...</p>'
+                acta.epilogo = epilogo_html
                 acta.save()
             # g_es = acta.asistentes.all().values_list('id', 'gauser__last_name', 'gauser__first_name')
             # keys = ('id', 'text')
