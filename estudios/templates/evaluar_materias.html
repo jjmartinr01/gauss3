@@ -9,7 +9,7 @@
             <h4 style="text-align: center;color: #008CBA;"><strong> Evaluar materias pendientes</strong></h4>
         </div>
         <input type="hidden" name="action" value="cartas_examen">
-        {% if materias_evalua|length == 0 %}
+        {% if materias_evalua|length > 0 %}
             <div class="panel callout">
                 <h5 style="text-align: center; font-weight: bold">Envío de cartas a tutores legales informando sobre
                     exámenes</h5>
