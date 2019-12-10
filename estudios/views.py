@@ -338,9 +338,10 @@ def evaluar_materias(request):
             try:
                 fichero = 'carta%s_%s' % (g_e.ronda.entidad.code, g_e.id)
                 fecha = datetime.strptime(request.POST['fecha_examen'], '%Y-%m-%d')
-                ms = Matricula.objects.filter(materia__id__in=request.POST.getlist('materias_seleccionadas'), ge__ronda=g_e.ronda)
-                ms_text_array = ['%s (%s)' % (m[0], m[1]) for m in ms.values_list('materia__nombre', 'materia__curso__nombre')]
-                materias = human_readable_list(ms_text_array)
+                mats = Materia.objects.filter(id=request.POST.getlist('materias_seleccionadas'), curso__ronda=g_e.ronda)
+                ms = Matricula.objects.filter(materia__in=mats, ge__ronda=g_e.ronda)
+                mats_text_array = ['%s (%s)' % (m[0], m[1]) for m in mats.values_list('nombre', 'curso__nombre')]
+                materias = human_readable_list(mats_text_array)
                 alumnos_id = ms.filter(ge__ronda=g_e.ronda).values_list('ge__id')
                 alumnos = Gauser_extra.objects.filter(id__in=alumnos_id).distinct()
                 texto_html = render_to_string('carta_pendientes2pdf.html', {'materias': materias, 'alumnos': alumnos,
