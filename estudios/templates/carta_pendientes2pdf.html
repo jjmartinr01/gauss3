@@ -26,13 +26,17 @@
     <p><b>Lugar de la prueba/examen:</b> {{ lugar }}</p>
     <table>
         <thead>
-        <th>Materia pendiente</th>
-        <th>Profesor que evalúa</th>
+        <tr>
+            <th>Materia pendiente</th>
+            <th>Profesor que evalúa</th>
+        </tr>
         </thead>
         <tbody>
         {% for matricula in ms|pendientes_alumno:alumno %}
-            <td>{{ matricula.materia.nombre }}</td>
-            <td>{{ matricula.evaluador.gauser.get_full_name }}</td>
+            <tr>
+                <td>{{ matricula.materia.nombre }}</td>
+                <td>{{ matricula.evaluador.gauser.get_full_name }}</td>
+            </tr>
         {% endfor %}
         </tbody>
     </table>
