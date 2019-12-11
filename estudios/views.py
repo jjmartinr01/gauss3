@@ -325,7 +325,7 @@ def evaluar_materias(request):
             fichero = 'carta%s_%s' % (g_e.ronda.entidad.code, g_e.id)
             fecha = datetime.strptime(request.POST['fecha_examen'], '%Y-%m-%d')
             mats = Materia.objects.filter(id__in=request.POST.getlist('materias_seleccionadas'), curso__ronda=g_e.ronda)
-            ms = Matricula.objects.filter(materia__in=mats, ge__ronda=g_e.ronda)
+            ms = Matricula.objects.filter(materia__in=mats, ge__ronda=g_e.ronda, estado='PE')
             mats_text_array = ['%s (%s)' % (m[0], m[1]) for m in mats.values_list('nombre', 'curso__nombre')]
             materias = human_readable_list(mats_text_array)
             alumnos_id = ms.filter(ge__ronda=g_e.ronda).values_list('ge__id')
