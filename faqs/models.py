@@ -22,6 +22,8 @@ class FaqGauss(models.Model):
 class FaqSection(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre de la sección', max_length=150, null=True, blank=True, default='')
+    borrada = models.BooleanField('Está borrada?', default=False)
+    modificada = models.DateField('Última fecha de modificación', auto_now=True)
 
     @property
     def num_preguntas(self):
@@ -35,7 +37,7 @@ class FaqSection(models.Model):
         ordering = ['entidad']
 
     def __str__(self):
-        return '%s -- %s' % (self.entidad.name, self.nombre)
+        return '%s -- %s (borrada: %s)' % (self.entidad.name, self.nombre, self.borrada)
 
 
 class FaqEntidad(models.Model):
@@ -43,9 +45,11 @@ class FaqEntidad(models.Model):
     pregunta = models.CharField('Pregunta', max_length=200, null=True, blank=True, default='')
     respuesta = models.TextField('Respuesta', blank=True, null=True, default='')
     publicada = models.BooleanField('Está publicada?', default=False)
+    borrada = models.BooleanField('Está borrada?', default=False)
+    modificada = models.DateField('Última fecha de modificación', auto_now=True)
 
     class Meta:
         ordering = ['faqsection', 'id']
 
     def __str__(self):
-        return '%s -- %s' % (self.faqsection.entidad.name, self.pregunta)
+        return '%s -- %s (borrada: %s)' % (self.faqsection.entidad.name, self.pregunta, self.borrada)
