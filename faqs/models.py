@@ -27,11 +27,15 @@ class FaqSection(models.Model):
 
     @property
     def num_preguntas(self):
-        return FaqEntidad.objects.filter(faqsection=self).count()
+        return FaqEntidad.objects.filter(faqsection=self, borrada=False).count()
 
     @property
     def num_preguntas_pub(self):
-        return FaqEntidad.objects.filter(faqsection=self, publicada=True).count()
+        return FaqEntidad.objects.filter(faqsection=self, publicada=True, borrada=False).count()
+
+    @property
+    def num_preguntas_borradas(self):
+        return FaqEntidad.objects.filter(faqsection=self, borrada=True).count()
 
     class Meta:
         ordering = ['entidad']

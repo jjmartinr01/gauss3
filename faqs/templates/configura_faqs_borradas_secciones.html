@@ -1,0 +1,8 @@
+<dd class="accordion-navigation" id="accordion{{ s.id }}">
+    <a href="#panel{{ s.id }}">
+        <i id="circle{{ s.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <span style="font-weight: 800;" id="span_s_nombre{{ s.id }}">{{ s.nombre }}</span>
+        (Borradas: <span style="font-weight: 800;" id="span_s_borradas{{ s.id }}">{{ s.num_preguntas_borradas }}</span>)
+    </a>
+    <div id="panel{{ s.id }}" class="content accordion-faqsection" data-id="{{ s.id }}"></div>
+</dd>

@@ -32,6 +32,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 3,
      'parent': 'acceso_faqs'
+     },
+    {'code_menu': 'acceso_faqs_borradas',
+     'texto_menu': 'Preguntas borradas',
+     'href': 'faqs_borradas',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 4,
+     'parent': 'acceso_faqs'
      }
 ]
 

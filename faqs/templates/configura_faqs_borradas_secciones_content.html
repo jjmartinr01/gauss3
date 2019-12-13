@@ -1,0 +1,49 @@
+{% load my_templatetags %}
+
+<div class="row">
+    <div class="columns large-12">
+        {% if s.borrada %}
+            <ul class="button-group right">
+                {% if g_e|has_permiso:'crea_secciones_faqs' %}
+                    <li><a class="button unborrar_seccion alert" data-id="{{ s.id }}"><i class="fa fa-trash"></i>
+                        Recuperar sección</a></li>
+                {% endif %}
+            </ul>
+        {% else %}
+            <span class="label right">Esta sección no está borrada</span>
+        {% endif %}
+    </div>
+</div>
+<fieldset>
+    <legend>Información de la sección</legend>
+    <div class="row">
+        <div class="columns large-6">
+            <label><b>Nombre de la sección:</b>
+                <br>{{ s.nombre }}
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label title="Número de preguntas totales en esta sección"><b>Nº Preguntas:</b>
+                <br><span id="num_preguntas{{ s.id }}">{{ s.num_preguntas }}</span>
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label title="Número de preguntas publicadas"><b>Nº Publicadas:</b>
+                <br><span id="num_preguntas_pub{{ s.id }}">{{ s.num_preguntas_pub }}</span>
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label title="Número de preguntas publicadas"><b>Nº Borradas:</b>
+                <br><span id="num_preguntas_borradas{{ s.id }}">{{ s.num_preguntas_borradas }}</span>
+            </label>
+        </div>
+    </div>
+</fieldset>
+
+<div id="list_preguntas{{ s.id }}">
+    {% for p in s.faqentidad_set.all %}
+        {% if p.borrada %}
+            {% include "configura_faqs_borradas_secciones_content_pregunta.html" %}
+        {% endif %}
+    {% endfor %}
+</div>

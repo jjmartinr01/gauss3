@@ -27,7 +27,7 @@
         <br>
     <div class="row">
         {% if g_e|has_permiso:'publica_faqs_entidad' %}
-            <div class="columns large-7">
+            <div class="columns large-7 medium-7 small-7">
                 <label>¿Es esta pregunta pública?<br>
                 {% if p.publicada %}
                     <a class="pub_faq" data-id="{{ p.id }}">&nbsp;&nbsp;
@@ -40,7 +40,7 @@
             </div>
         {% endif %}
         {% if g_e|has_permiso:'crea_faqs_entidad' %}
-            <div class="columns large-5 right">
+            <div class="columns large-5 medium-5 small-5 right">
                 <a class="button del_faq small alert"
                    data-id="{{ p.id }}"><i class="fa fa-trash"></i> Borrar pregunta</a>
             </div>

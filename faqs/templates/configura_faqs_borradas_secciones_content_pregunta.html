@@ -1,0 +1,23 @@
+{% load my_templatetags %}
+<fieldset id="pregunta{{ p.id }}">
+    <legend>Pregunta</legend>
+    <div class="row">
+        <div class="columns large-12">
+                <b>{{ p.pregunta }}</b>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+                {% autoescape off %}{{ p.respuesta }}{% endautoescape %}
+        </div>
+    </div>
+        <br>
+    <div class="row" id="recuperar_pregunta{{ p.id }}">
+        {% if g_e|has_permiso:'acceso_faqs_borradas' %}
+            <div class="columns large-12 medium-12 small-12 right">
+                <a class="button undel_faq small alert"
+                   data-id="{{ p.id }}"><i class="fa fa-trash"></i> Recuperar pregunta</a>
+            </div>
+        {% endif %}
+    </div>
+</fieldset>

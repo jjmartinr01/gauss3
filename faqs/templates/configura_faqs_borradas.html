@@ -1,0 +1,97 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <input type="hidden" name="action" id="action" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Recuperación de preguntas frecuentes</strong></h4>
+        </div>
+
+        <dl class="accordion" data-accordion id="lista_faqsections">
+            {% for s in faqssections %}
+                {% include "configura_faqs_borradas_secciones.html" %}
+            {% endfor %}
+        </dl>
+
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        {% if g_e|has_permiso:'acceso_faqs_borradas' %}
+            $('#Contenido').on('click', '.unborrar_seccion', function (e) {
+                e.preventDefault();
+                var seccion = $(this).data('id');
+                $.post("/faqs_borradas/", {action: 'unborrar_seccion', seccion: seccion}, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
+                    }
+                });
+            });
+            $('#Contenido').on('click', '.undel_faq', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                $.post("/faqs_borradas/", {action: 'undel_faq', id: id}, function (data) {
+                    if (data.ok) {
+                        $('#num_preguntas' + data.fs).html(data.num_preguntas);
+                        $('#num_preguntas_pub' + data.fs).html(data.num_preguntas_pub);
+                        $('#num_preguntas_borradas' + data.fs).html(data.num_preguntas_borradas);
+                        $('#span_s_borradas' + data.fs).html(data.num_preguntas_borradas);
+                        $('#recuperar_pregunta' + data.p).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
+                    }
+                });
+            });
+        {% endif %}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-faqsection')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/faqs_borradas/", {action: 'open_accordion_fsection', fs: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        $(document).foundation('dropdown', 'reflow');
+                                        $("#update_ok").show().delay(1500).fadeOut();
+
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

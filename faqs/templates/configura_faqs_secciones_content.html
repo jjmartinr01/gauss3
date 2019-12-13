@@ -4,7 +4,7 @@
     <div class="columns large-12">
         <ul class="button-group right">
             {% if g_e|has_permiso:'crea_secciones_faqs' %}
-                {% if s.faqentidad_set.all|length == 0 %}
+                {% if s.num_preguntas == 0 %}
                     <li><a class="button borrar_seccion alert" data-id="{{ s.id }}"><i class="fa fa-trash"></i>
                         Borrar sección</a></li>
                 {% else %}
@@ -42,7 +42,9 @@
 
 <div id="list_preguntas{{ s.id }}">
     {% for p in s.faqentidad_set.all %}
-        {% include "configura_faqs_secciones_content_pregunta.html" %}
+        {% if not p.borrada %}
+            {% include "configura_faqs_secciones_content_pregunta.html" %}
+        {% endif %}
     {% endfor %}
 </div>
 {% if g_e|has_permiso:'crea_faqs_entidad' %}
