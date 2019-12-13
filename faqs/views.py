@@ -4,7 +4,7 @@ from django.template.loader import render_to_string
 
 from autenticar.control_acceso import permiso_required
 from mensajes.models import Aviso
-from faqs.models import FaqSection, FaqGauss, FaqEntidad
+from faqs.models import FaqSection, FaqGauss, FaqEntidad, FaqSugerida
 
 
 # Create your views here.
@@ -177,7 +177,7 @@ def faqs_borradas(request):
                 p.save()
                 return JsonResponse({'ok': True, 'p': p.id, 'num_preguntas': fs.num_preguntas,
                                      'num_preguntas_pub': fs.num_preguntas_pub, 'fs': fs.id,
-                                     'num_preguntas_borradas': fs.num_preguntas_borradas,})
+                                     'num_preguntas_borradas': fs.num_preguntas_borradas, })
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'No has hecho la petición correctamente.'})
         else:
@@ -188,5 +188,48 @@ def faqs_borradas(request):
                       'formname': 'configura_faqs',
                       'g_e': g_e,
                       'faqssections': faqssections,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+
+# @permiso_required('acceso_faqs_sugeridas')
+def faqs_sugeridas(request):
+    g_e = request.session['gauser_extra']
+    faqssugeridas = FaqSugerida.objects.filter(entidad=g_e.ronda.entidad, aceptada=False)
+
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'add_sugerencia':
+            try:
+                fsug = FaqSugerida.objects.create(entidad=g_e.ronda.entidad, gauser=g_e.gauser)
+                html = render_to_string('faqs_sugeridas_fsug.html', {'fsug': fsug, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Upps! No se puede añadir una nueva sugerencia.'})
+        elif action == 'update_input_fsug':
+            try:
+                id = request.POST['fsug']
+                fsug = FaqSugerida.objects.get(entidad=g_e.ronda.entidad, gauser=g_e.gauser, id=id)
+                fsug.texto = request.POST['texto']
+                fsug.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Se ha procido un error en la actualización del texto.'})
+        elif action == 'respuesta_fsug':
+            try:
+                parent = FaqSugerida.objects.get(id=request.POST['id'], entidad=g_e.ronda.entidad)
+                fsug = FaqSugerida.objects.create(entidad=g_e.ronda.entidad, gauser=g_e.gauser, parent=parent)
+                html = render_to_string('faqs_sugeridas_fsug.html', {'fsug': fsug, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html, 'fsug': parent.id})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'No has hecho la petición correctamente.'})
+        else:
+            return JsonResponse({'ok': False, 'mensaje': 'No se ha podido llevar a cabo la operación solicitada.'})
+
+    return render(request, "faqs_sugeridas.html",
+                  {
+                      'formname': 'configura_faqs',
+                      'g_e': g_e,
+                      'faqssugeridas': faqssugeridas,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })

@@ -40,6 +40,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 4,
      'parent': 'acceso_faqs'
+     },
+    {'code_menu': 'acceso_faqs_sugeridas',
+     'texto_menu': 'Buzón de sugerencias',
+     'href': 'faqs_sugeridas',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 5,
+     'parent': 'acceso_faqs'
      }
 ]
 
@@ -62,8 +70,8 @@ PERMISOS = [
      'nombre': 'Tiene permiso para editar las preguntas frecuentes de la entidad',
      'menu': 'acceso_configura_faqs'
      },
-    {'code_nombre': 'publica_faqs_entidad',
-     'nombre': 'Tiene permiso para publicar las preguntas frecuentes de la entidad',
-     'menu': 'acceso_configura_faqs'
+    {'code_nombre': 'acepta_faqs_sugeridas',
+     'nombre': 'Tiene permiso para aceptar las preguntas sugeridas a la entidad',
+     'menu': 'acceso_faqs_sugeridas'
      }
 ]

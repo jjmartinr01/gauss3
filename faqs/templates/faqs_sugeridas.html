@@ -1,0 +1,196 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        ol {
+            counter-reset: item
+        }
+
+        li.listado_fsug {
+            display:block;
+        }
+
+        li.listado_fsug:before {
+            content: counters(item, ".") ". ";
+            counter-increment: item
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <input type="hidden" name="action" id="action" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Buzón de sugerencias</strong></h4>
+        </div>
+
+        <div class="panel callout">
+            <h4 style="font-weight: bold;">Algunos consejos para realizar sugerencias</h4>
+            <ol>
+                <li>Revisa primero las sugerencias existentes para no repetir la misma varias veces.</li>
+                <li>Si tu sugerencia no existe, pulsa el botón
+                    <span class="label"><i class="fa fa-plus"></i> Sugerencia</span> y añade la tuya.
+                </li>
+                <li>Otros usuarios podrán hacer observaciones a tu sugerencia.</li>
+                <li>Los encargados del tratamiento de las sugerencias se pondrán en contacto contigo para
+                    informarte de su estado y si es aceptada.
+                </li>
+            </ol>
+        </div>
+        <a class="button right" id="add_sugerencia"><i class="fa fa-plus"></i> Sugerencia </a>
+        <hr>
+        <ol>
+            <div id="lista_faqs_sugeridas">
+
+                {% for fsugerida in faqssugeridas %}
+                    {% include "faqs_sugeridas_fsug.html" with fsug=fsugerida %}
+                {% endfor %}
+            </div>
+        </ol>
+
+
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('#Contenido').on('click', '#add_sugerencia', function (e) {
+            e.preventDefault();
+            $.post("/faqs_sugeridas/", {action: 'add_sugerencia'}, function (data) {
+                if (data.ok) {
+                    $('#lista_faqs_sugeridas').append(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                    show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
+                }
+            });
+        });
+
+        $('#Contenido').on('click', '.borrar_seccion', function (e) {
+            e.preventDefault();
+            var seccion = $(this).data('id');
+            $.post("/faqs_sugeridas/", {action: 'borrar_seccion', seccion: seccion}, function (data) {
+                if (data.ok) {
+                    $('#accordion' + data.fs_id).remove();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                    show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
+                }
+            });
+        });
+        $('#Contenido').on('keyup', '.input_fsug', function (e) {
+            e.preventDefault();
+            var fsug = $(this).data('id');
+            var texto = $(this).val();
+            $.post("/faqs_sugeridas/", {
+                action: 'update_input_fsug',
+                fsug: fsug,
+                texto: texto
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                    show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
+                }
+            });
+        });
+
+        $('#Contenido').on('click', '.respuesta_fsug', function (e) {
+            e.preventDefault();
+            var fsug = $(this).data('id');
+            $.post("/faqs_sugeridas/", {action: 'respuesta_fsug', id: fsug}, function (data) {
+                if (data.ok) {
+                    $('#respuestas_sugerencias' + data.fsug).prepend(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                    show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
+                }
+            });
+        });
+
+
+        {% if g_e|has_permiso:'crea_faqs_entidad' %}
+            $('#Contenido').on('click', '.add_faq', function (e) {
+                e.preventDefault();
+                var fs = $(this).data('id');
+                $.post("/configura_faqs/", {action: 'add_faq', fs: fs}, function (data) {
+                    if (data.ok) {
+                        $('#list_preguntas' + data.fs).append(data.html);
+                        $('#num_preguntas' + data.fs).html(data.num_preguntas);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
+                    }
+                });
+            });
+            $('#Contenido').on('click', '.del_faq', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                $.post("/configura_faqs/", {action: 'del_faq', id: id}, function (data) {
+                    if (data.ok) {
+                        $('#pregunta' + data.p_id).remove();
+                        $('#num_preguntas' + data.fs).html(data.num_preguntas);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
+                    }
+                });
+            });
+        {% endif %}
+
+        {% if g_e|has_permiso:'edita_faqs_entidad' %}
+            $('#Contenido').on('keyup', '.input_faq', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var texto = $(this).val();
+                $.post("/configura_faqs/", {
+                    action: 'update_input_faq',
+                    id: id,
+                    texto: texto
+                }, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+        {% endif %}
+
+        {% if g_e|has_permiso:'publica_faqs_entidad' %}
+            $('#Contenido').on('click', '.pub_faq', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                $.post("/configura_faqs/", {
+                    action: 'change_pub_faq',
+                    id: id
+                }, function (data) {
+                    if (data.ok) {
+                        $('#pub_faq' + data.p).html(data.publicar);
+                        $('#num_preguntas_pub' + data.fs).html(data.num_preguntas_pub);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+        {% endif %}
+    </script>
+{% endblock %}

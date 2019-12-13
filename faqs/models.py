@@ -1,6 +1,6 @@
 from django.db import models
 from entidades.models import Menu, Entidad
-from autenticar.models import Permiso
+from autenticar.models import Permiso, Gauser
 
 
 # Create your models here.
@@ -57,3 +57,33 @@ class FaqEntidad(models.Model):
 
     def __str__(self):
         return '%s -- %s (borrada: %s)' % (self.faqsection.entidad.name, self.pregunta, self.borrada)
+
+
+class FaqSugerida(models.Model):
+    entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
+    gauser = models.ForeignKey(Gauser, on_delete=models.CASCADE)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True)
+    texto = models.TextField('Respuesta', blank=True, null=True, default='')
+    aceptada = models.BooleanField('Está aceptada?', default=False)
+    modificada = models.DateField('Última fecha de modificación', auto_now=True)
+
+    @property
+    def hijos(self):
+        return FaqSugerida.objects.filter(parent=self)
+
+    @property
+    def nivel(self):
+        if not self.parent:
+            return 0
+        else:
+            return 1 + self.parent.nivel
+
+    @property
+    def rpadding(self):
+        return 10*self.nivel
+
+    class Meta:
+        ordering = ['entidad', 'id']
+
+    def __str__(self):
+        return '%s -- %s (aceptada: %s)' % (self.texto[:30], self.entidad.name, self.aceptada)
