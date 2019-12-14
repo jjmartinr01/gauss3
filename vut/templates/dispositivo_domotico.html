@@ -33,11 +33,13 @@
 
     <div class="row">
         <div class="columns large-12"><span class="nombre{{ domotica.id }}">{{ domotica.nombre }}</span> <span
-                 style="font-weight: 800;font-size: xx-large;">(<span id="valor{{ domotica.id }}"></span>&#8451;)</span></div>
+                style="font-weight: 800;font-size: xx-large;">(<span id="valor{{ domotica.id }}"></span>&#8451;)</span>
+        </div>
     </div>
     <div class="row">
         <div class="columns large-12">
-            <div class="range-slider" data-slider data-options="initial: 5; start: 5; end: 30;" data-id="{{ domotica.id }}">
+            <div class="range-slider" data-slider data-options="initial: 5; start: 5; end: 30;"
+                 data-id="{{ domotica.id }}">
                 <span class="range-slider-handle" role="slider" tabindex="0"></span>
                 <span class="range-slider-active-segment"></span>
                 <input type="hidden" id="hidden{{ domotica.id }}">
@@ -54,16 +56,23 @@
             var id = $(this).data('id');
             $('#valor' + id).html($('#hidden' + id).val());
         });
+
+        var boton_pulsado = null;
+
         $('#Contenido').on('click', '.boton_domotico', function (e) {
             e.preventDefault();
             var domotica = $(this).data('id');
-            $.post("/domotica_vut/", {action: 'boton_domotico', domotica: domotica}, function (data) {
-                if (data.ok) {
-                    $("#update_ok").show().delay(1500).fadeOut();
-                } else {
-                    $("#update_error").show().delay(1500).fadeOut();
-                }
-            });
+            if (boton_pulsado != domotica) {
+                boton_pulsado = domotica;
+                $.post("/domotica_vut/", {action: 'boton_domotico', domotica: domotica}, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    boton_pulsado = null;
+                });
+            }
         });
 
 

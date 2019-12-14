@@ -171,11 +171,11 @@
                         </div>
                         <div class="columns large-4">
                             <label><b>Fecha de expedición/Date of issue:</b> <input type="text"
-                                                                                      data-campo="Fecha de expedición/Date of issue"
-                                                                                      value="{{ viajero.fecha_exp|date:'Y-m-d' }}"
-                                                                                      name="fecha_exp" id="fecha_exp"
-                                                                                      class="obl_int fecha" readonly
-                                                                                      placeholder="Obligatorio/Required"></label>
+                                                                                    data-campo="Fecha de expedición/Date of issue"
+                                                                                    value="{{ viajero.fecha_exp|date:'Y-m-d' }}"
+                                                                                    name="fecha_exp" id="fecha_exp"
+                                                                                    class="obl_int fecha" readonly
+                                                                                    placeholder="Obligatorio/Required"></label>
                         </div>
                     </div>
                     <div id="sketchpadapp">
@@ -262,19 +262,30 @@
 
     <script type="application/javascript">
 
+        var boton_pulsado = null;
+
         $('#Contenido').on('click', '.boton_domotico', function (e) {
             e.preventDefault();
             $('#action').val('domotica');
             var secret = $('#secret').val();
             var code = $('#code').val();
             var domotica = $(this).data('id');
-            $.post("/viajeros/", {action: 'domotica', domotica: domotica, secret: secret, code: code}, function (data) {
-                if (data.ok) {
-                    $("#update_ok").show().delay(1500).fadeOut();
-                } else {
-                    $("#update_error").show().delay(1500).fadeOut();
-                }
-            });
+            if (boton_pulsado != domotica) {
+                boton_pulsado = domotica;
+                $.post("/viajeros/", {
+                    action: 'domotica',
+                    domotica: domotica,
+                    secret: secret,
+                    code: code
+                }, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    boton_pulsado = null;
+                });
+            }
         });
 
         $('#pais').select2();
