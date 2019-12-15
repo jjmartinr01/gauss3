@@ -1,35 +1,40 @@
 {% load my_templatetags %}
-<label><span style="color:gray">{{ fsug.gauser.get_full_name }} ({{ fsug.modificada }})</span> </label>
-<li class="listado_fsug">
-    {% if fsug.gauser == g_e.gauser %}
-        <textarea data-id="{{ fsug.id }}" placeholder="Escribe aquí tu sugerencia/observación"
-                  class="input_fsug">{{ fsug.texto }}</textarea>
-    {% else %}
-        {{ fsug.texto }}
-    {% endif %}
-    {% if fsug.gauser != g_e.gauser %}
-        <div class="row">
-            <div class="columns large-6">
-                <a class="button respuesta_fsug small radius info" data-id="{{ fsug.id }}">Responder</a>
+<div id="faq_sugerida{{ fsug.id }}">
+    <label><span style="color:gray">{{ fsug.gauser.get_full_name }} ({{ fsug.modificada }})</span> </label>
+    <li class="listado_fsug">
+        {% if fsug.gauser == g_e.gauser %}
+            <textarea data-id="{{ fsug.id }}" placeholder="Escribe aquí tu sugerencia/observación"
+                      class="input_fsug">{{ fsug.texto }}</textarea>
+        {% else %}
+            {{ fsug.texto }}
+        {% endif %}
+        {% if fsug.gauser != g_e.gauser %}
+            <div class="row">
+                <div class="columns large-6">
+                    <a class="button respuesta_fsug small radius info" data-id="{{ fsug.id }}">Responder</a>
+                </div>
+                {% if g_e|has_permiso:'acepta_faqs_sugeridas' %}
+                    {% if not fsug.parent %}
+                        <div class="columns large-6">
+                            <a class="button acepta_fsug small radius secondary" data-id="{{ fsug.id }}">Aceptarla</a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="columns large-6">
+                        &nbsp; {# Aquí hay un nbsp; para que se llenen las 6 columnas #}
+                    </div>
+                {% endif %}
             </div>
-            {% if g_e|has_permiso:'acepta_faqs_sugeridas' %}
-                <div class="columns large-6">
-                    <a class="button acepta_fsug small radius secondary" data-id="{{ fsug.id }}">Aceptarla</a>
-                </div>
-            {% else %}
-                <div class="columns large-6">
-                    &nbsp;
-                </div>
-            {% endif %}
-        </div>
-    {% else %}
-
-    {% endif %}
-    <ol>
-        <div id="respuestas_sugerencias{{ fsug.id }}">
-            {% for fsughijo in fsug.hijos %}
-                {% include "faqs_sugeridas_fsug.html" with fsug=fsughijo %}
-            {% endfor %}
-        </div>
-    </ol>
-</li>
+        {% endif %}
+        <ol>
+            <div id="respuestas_sugerencias{{ fsug.id }}">
+                {% for fsughijo in fsug.hijos %}
+                    {% include "faqs_sugeridas_fsug.html" with fsug=fsughijo %}
+                {% endfor %}
+            </div>
+        </ol>
+    </li>
+{% if not fsug.parent %}
+    <hr>
+{% endif %}
+</div>

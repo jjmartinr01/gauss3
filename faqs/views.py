@@ -195,7 +195,7 @@ def faqs_borradas(request):
 # @permiso_required('acceso_faqs_sugeridas')
 def faqs_sugeridas(request):
     g_e = request.session['gauser_extra']
-    faqssugeridas = FaqSugerida.objects.filter(entidad=g_e.ronda.entidad, aceptada=False)
+    faqssugeridas = FaqSugerida.objects.filter(entidad=g_e.ronda.entidad, aceptada=False, parent__isnull=True)
 
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
@@ -223,8 +223,17 @@ def faqs_sugeridas(request):
                 return JsonResponse({'ok': True, 'html': html, 'fsug': parent.id})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'No has hecho la petición correctamente.'})
+        elif action == 'acepta_fsug':
+            try:
+                fsug = FaqSugerida.objects.get(entidad=g_e.ronda.entidad, id=request.POST['fsug'])
+                fsug.aceptada = True
+                fsug.save()
+                return JsonResponse({'ok': True, 'fsug': fsug.id})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'No has hecho la petición correctamente.'})
         else:
             return JsonResponse({'ok': False, 'mensaje': 'No se ha podido llevar a cabo la operación solicitada.'})
+
 
     return render(request, "faqs_sugeridas.html",
                   {

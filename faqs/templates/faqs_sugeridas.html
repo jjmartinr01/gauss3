@@ -78,19 +78,6 @@
             });
         });
 
-        $('#Contenido').on('click', '.borrar_seccion', function (e) {
-            e.preventDefault();
-            var seccion = $(this).data('id');
-            $.post("/faqs_sugeridas/", {action: 'borrar_seccion', seccion: seccion}, function (data) {
-                if (data.ok) {
-                    $('#accordion' + data.fs_id).remove();
-                    $("#update_ok").show().delay(1500).fadeOut();
-                } else {
-                    $("#update_error").show().delay(1500).fadeOut();
-                    show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
-                }
-            });
-        });
         $('#Contenido').on('keyup', '.input_fsug', function (e) {
             e.preventDefault();
             var fsug = $(this).data('id');
@@ -123,74 +110,22 @@
             });
         });
 
-
-        {% if g_e|has_permiso:'crea_faqs_entidad' %}
-            $('#Contenido').on('click', '.add_faq', function (e) {
-                e.preventDefault();
-                var fs = $(this).data('id');
-                $.post("/configura_faqs/", {action: 'add_faq', fs: fs}, function (data) {
-                    if (data.ok) {
-                        $('#list_preguntas' + data.fs).append(data.html);
-                        $('#num_preguntas' + data.fs).html(data.num_preguntas);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
-                    }
-                });
+        {% if g_e|has_permiso:'acepta_faqs_sugeridas' %}
+            $('#Contenido').on('click', '.acepta_fsug', function (e) {
+            e.preventDefault();
+            var fsug = $(this).data('id');
+            $.post("/faqs_sugeridas/", {action: 'acepta_fsug', fsug: fsug}, function (data) {
+                if (data.ok) {
+                    $('#faq_sugerida' + data.fsug).remove();
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                    show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
+                }
             });
-            $('#Contenido').on('click', '.del_faq', function (e) {
-                e.preventDefault();
-                var id = $(this).data('id');
-                $.post("/configura_faqs/", {action: 'del_faq', id: id}, function (data) {
-                    if (data.ok) {
-                        $('#pregunta' + data.p_id).remove();
-                        $('#num_preguntas' + data.fs).html(data.num_preguntas);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.mensaje});
-                    }
-                });
-            });
+        });
         {% endif %}
 
-        {% if g_e|has_permiso:'edita_faqs_entidad' %}
-            $('#Contenido').on('keyup', '.input_faq', function (e) {
-                e.preventDefault();
-                var id = $(this).data('id');
-                var texto = $(this).val();
-                $.post("/configura_faqs/", {
-                    action: 'update_input_faq',
-                    id: id,
-                    texto: texto
-                }, function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-            });
-        {% endif %}
 
-        {% if g_e|has_permiso:'publica_faqs_entidad' %}
-            $('#Contenido').on('click', '.pub_faq', function (e) {
-                e.preventDefault();
-                var id = $(this).data('id');
-                $.post("/configura_faqs/", {
-                    action: 'change_pub_faq',
-                    id: id
-                }, function (data) {
-                    if (data.ok) {
-                        $('#pub_faq' + data.p).html(data.publicar);
-                        $('#num_preguntas_pub' + data.fs).html(data.num_preguntas_pub);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-            });
-        {% endif %}
     </script>
 {% endblock %}
