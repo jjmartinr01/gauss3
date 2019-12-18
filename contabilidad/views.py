@@ -630,7 +630,9 @@ def ajax_politica_cuotas(request):
                             deudores_str = '%s ' % (usuario.gauser.get_full_name())
                             # concepto = 'Cuota %s' % usuario.ronda.entidad.name
                         elif politica.tipo == 'vut':
-                            viviendas = Vivienda.objects.filter(propietarios__in=[usuario.gauser],
+                            # viviendas = Vivienda.objects.filter(propietarios__in=[usuario.gauser],
+                            #                                     entidad=usuario.ronda.entidad)
+                            viviendas = Vivienda.objects.filter(gpropietario=usuario.gauser,
                                                                 entidad=usuario.ronda.entidad)
                             deudores = [usuario] * viviendas.count()
                             usuarios_id += [usuario.id]
