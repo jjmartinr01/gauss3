@@ -2327,3 +2327,5 @@ def crealinkge(request):
             mensaje.receptores.add(u.gauser)
             mensaje.etiquetas.add(etiqueta)
             crea_mensaje_cola(mensaje)
+
+    return HttpResponse('hola')
