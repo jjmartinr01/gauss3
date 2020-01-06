@@ -2,6 +2,7 @@
 import re
 import os
 from django.db import models
+from django.utils.text import slugify
 
 from autenticar.models import Gauser
 from entidades.models import Entidad, Subentidad, Ronda, Cargo, Gauser_extra
@@ -171,3 +172,99 @@ class Remesa(models.Model):
 
     def __str__(self):
         return u'%s - %s - %s' % (self.emitida.politica.entidad.name, self.rmtinf, self.dbtrnm)
+
+# ------------------------------------------------------------ #
+# ------------------------------------------------------------ #
+# ------------------------------------------------------------ #
+
+
+def at_02(nif):  # Diseñado a partir del documento "adeudos_sepa.pdf"
+    tabla = {'A': '10', 'G': '16', 'M': '22', 'S': '28', 'Y': '34', 'B': '11', 'H': '17', 'N': '23', 'T': '29',
+             'Z': '35', 'C': '12', 'I': '18', 'O': '24', 'U': '30', 'D': '13', 'J': '19', 'P': '25', 'V': '31',
+             'E': '14', 'K': '20', 'Q': '26', 'W': '32', 'F': '15', 'L': '21', 'R': '27', 'X': '33', '0': '0', '1': '1',
+             '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9'}
+    a = 'ES'  # Primera parte de la identificación devuelta y correspondiente a España
+    d = nif
+    cad = re.sub('[^0-9a-zA-Z]+', '', d) + a + '00'
+    for k, v in tabla.items():
+        cad = cad.replace(k, v)
+    cad = str(98 - int(cad) % 97)
+    b = cad if len(cad) == 2 else '0' + cad
+    c = '001'
+    return a + b + c + d
+
+def update_firma(instance, filename):
+    politica = instance.politica
+    ruta = os.path.join("contabilidad/%s/firmas_adeudos/" % (politica.entidad.id),
+                        str(politica.id) + '_' + str(instance.gauser.dni) + '.png')
+    return ruta
+
+
+class OrdenAdeudo(models.Model):
+    PAGO = (('RCUR', 'Pago recurrente'), ('OOFF', 'Pago único'))
+    gauser = models.ForeignKey(Gauser, on_delete=models.CASCADE)
+    politica = models.ForeignKey(Politica_cuotas, on_delete=models.CASCADE)
+    seqtp = models.TextField('Tipo de pago/secuencia', default='RCUR', choices=PAGO)
+    firma = models.ImageField('Imagen de la firma del deudor', upload_to=update_firma, blank=True, null=True)
+    creado = models.DateTimeField("Fecha y hora en la que se realizó la firma", auto_now_add=True)
+
+    @property
+    def mandate_reference(self):
+        a = str(self.politica.entidad.code) + '000' + str(self.pk) + slugify(self.politica.entidad.name)
+        b = a + 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'
+        return b[:35]
+
+    @property
+    def creditor_identifier(self):
+        return at_02(self.politica.entidad.banco.nif)
+
+    @property
+    def creditor_address(self):
+        return self.politica.entidad.address
+
+    @property
+    def creditor_postalcode_city_town(self):
+        pc = self.politica.entidad.postalcode
+        localidad = self.politica.entidad.localidad
+        provincia = self.politica.entidad.get_provincia_display()
+        return pc + ' - ' + localidad + ' - ' + provincia
+
+    @property
+    def creditor_country(self):
+        return 'ESPAÑA'
+
+    @property
+    def debtor_name(self):
+        return self.gauser.get_full_name()
+
+    @property
+    def debtor_address(self):
+        return self.gauser.address
+
+    @property
+    def debtor_postalcode_city_town(self):
+        pc = self.gauser.postalcode
+        localidad = self.gauser.localidad
+        provincia = self.gauser.get_provincia_display()
+        return pc + ' - ' + localidad + ' - ' + provincia
+
+    @property
+    def debtor_country(self):
+        return 'ESPAÑA'
+
+    @property
+    def debtor_bic(self):
+        ge = Gauser_extra.objects.get(gauser=self.gauser, ronda=self.politica.entidad.ronda)
+        return ge.banco.bic
+
+    @property
+    def debtor_account(self):
+        ge = Gauser_extra.objects.get(gauser=self.gauser, ronda=self.politica.entidad.ronda)
+        return ge.num_cuenta_bancaria
+
+    class Meta:
+        ordering = ['pk']
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.politica.id, self.politica.entidad, self.gauser.get_full_name())
+

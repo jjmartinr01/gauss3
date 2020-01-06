@@ -9,17 +9,18 @@ import xlwt
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login, logout
+from django.utils import timezone, translation
 from django.template import RequestContext
 from django.db.models import Q
 from django.forms import ModelForm, ModelChoiceField, URLField, Form
-from django.utils.timezone import datetime, timedelta
 from django.core.paginator import Paginator
 import sys
 from django.core import serializers
 
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required
 from autenticar.views import crear_nombre_usuario
-from mensajes.views import encolar_mensaje
+from mensajes.views import encolar_mensaje, crea_mensaje_cola
 
 # from autenticar.models import Gauser_extra, Gauser, Permiso
 # from models import Entidad, Ronda, Subentidad, Alta_Baja, Cargo, Reserva_plaza, Organization, Dependencia
@@ -27,7 +28,7 @@ from autenticar.models import Gauser, Permiso
 from estudios.models import Gauser_extra_estudios, Grupo
 from entidades.models import *
 # from entidades.configuration import FILTROS
-from mensajes.models import Aviso
+from mensajes.models import Aviso, Mensaje, Etiqueta
 from mensajes.views import crear_aviso
 from bancos.views import asocia_banco_entidad, asocia_banco_ge, num_cuenta2iban
 from gauss.rutas import *
@@ -41,6 +42,8 @@ from entidades.forms import GauserForm, Gauser_extraForm, EntidadForm, Gauser_mi
 from gauss.constantes import PROVINCIAS
 from captcha.fields import CaptchaField
 
+user_language = 'es'
+translation.activate(user_language)
 logger = logging.getLogger('django')
 
 
@@ -2286,3 +2289,41 @@ def modulos_entidad(request):
 #         logger.info("Added al grupo de no docentes %s\n" % (ge))
 #
 #     return HttpResponse('<h1>Trabajo terminado</h1>')
+
+@LogGauss
+def linkge(request, code):
+    try:
+        enlace = EnlaceGE.objects.get(code=code, deadline__gte=timezone.datetime.today().date())
+        user = enlace.usuario.gauser
+        if user.is_active and enlace.usuario.activo:
+            login(request, user)
+            request.session["hoy"] = timezone.datetime.today().date()
+            request.session[translation.LANGUAGE_SESSION_KEY] = user_language
+            request.session["gauser_extra"] = enlace.usuario
+            request.session["ronda"] = request.session["gauser_extra"].ronda
+            request.session['num_items_page'] = 15
+            logger.info('%s se loguea en GAUSS a través de un enlace.' % (request.session["gauser_extra"]))
+            return redirect(enlace.enlace)
+        else:
+            return redirect('/')
+    except:
+        return redirect('/')
+
+@permiso_required('acceso_getion_bajas')
+def crealinkge(request):
+    g_e = request.session['gauser_extra']
+    if request.method == 'POST':
+        texto = request.POST['mensaje']
+        asunto = 'Notificación de GAUSS'
+        etiqueta = Etiqueta.objects.create(propietario=g_e, nombre='___' + pass_generator(size=15))
+        ahora = timezone.datetime.now()
+        deadline = ahora + timezone.timedelta(7)
+        # for u in usuarios_ronda(g_e.ronda):
+        for u in [g_e]:
+            enlace = EnlaceGE.objects.create(usuario=u, enlace='/mis_datos/', deadline=deadline)
+            link = '%s://%s:%s/linkge/%s' % (request.scheme, request.META.SERVER_NAME, request.META.SERVER_PORT, enlace.code)
+            texto = texto + '<p><a href="%s">%s</a></p>' %(link, link)
+            mensaje = Mensaje(emisor=g_e, fecha=ahora, tipo='mail', asunto=asunto, mensaje=texto, borrador=False)
+            mensaje.receptores.add(u.gauser)
+            mensaje.etiquetas.add(etiqueta)
+            crea_mensaje_cola(mensaje)

@@ -410,6 +410,8 @@ def update_foto(instance, filename):
     nombre = filename.partition('.')
     return os.path.join("fotos/", str(instance.ronda.entidad.code) + '_' + str(instance.id) + '.' + nombre[2])
 
+def pass_generator50():
+    return pass_generator(size=50, chars='abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ123456789')
 
 class Gauser_extra(models.Model):
     gauser = models.ForeignKey('autenticar.Gauser', null=True, blank=True, related_name='entidades',
@@ -867,3 +869,14 @@ class CargaMasiva(models.Model):
 # cosa
 # 'valor de la cosa'
 # exec("%s = '%s'" %(n,m))
+
+
+
+class EnlaceGE(models.Model):
+    usuario = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
+    code = models.CharField("Código", max_length=50, default=pass_generator50)
+    enlace = models.CharField("Enlace", max_length=100)
+    deadline = models.DateField('Fecha límite de validez')
+
+    def __str__(self):
+        return u'%s -- %s (%s)' % (self.enlace, self.usuario, self.deadline)

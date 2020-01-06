@@ -1,0 +1,4 @@
+body.home div#banner, body.home #pagetitle {display: none;}
+.sin-margen-top{margin-top:0px;}
+#footer a{color:#00AEEF !important;}
+.wpcf7-form-control-wrap{  display:inline !important;}

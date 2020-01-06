@@ -25,4 +25,5 @@ urlpatterns = [
     # url(r'^crear_politica_cuota/$', views.crear_politica_cuota,  name='crear_politica_cuota'),
     url(r'^ajax_politica_cuotas/$', views.ajax_politica_cuotas, name='ajax_politica_cuotas'),
     # url(r'^crea_asientos/$', views.crea_asientos,  name='crea_asientos'),
+    url(r'^orden_adeudo_directo_sepa/$', views.orden_adeudo_directo_sepa, name='orden_adeudo_directo_sepa'),
 ]

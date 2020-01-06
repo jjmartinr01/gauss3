@@ -817,3 +817,14 @@ def lista_socios(request):
         #     creado = datetime.strptime(fila[0], '%d/%m/%Y')
         #     Asiento.objects.create(partida=partida, nombre=nombre, cantidad=cantidad, creado=creado, concepto=concepto, modificado=creado)
         #   csv_file.close()
+
+def orden_adeudo_directo_sepa(request):
+    g_e = request.session['gauser_extra']
+    return render(request, "orden_domiciliacion_adeudo_directo_sepa.html",
+                  {
+                      'formname': 'orden_adeudo_directo_sepa',
+                      # 'remesas_emitidas': remesas_emitidas,
+                      'g_e': g_e,
+                      'logo': g_e.ronda.entidad.anagrama.path,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
