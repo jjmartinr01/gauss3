@@ -59,6 +59,8 @@
         <input type="hidden" name="action" id="action" value="solicita_pass">
     {% else %}
         <input type="hidden" name="action" id="action" value="acceso">
+        <input type="hidden" name="link" id="link" value="">
+        <input type="hidden" name="r" id="r" value="">
     {% endif %}
 
     <div class="row">&nbsp;</div>
@@ -216,6 +218,14 @@
 <script>
     var csrftoken = $.cookie('csrftoken');
 
+    function getUrlVars() {
+        var vars = {};
+        var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+            vars[key] = value;
+        });
+        return vars;
+    }
+
     function csrfSafeMethod(method) {
         // these HTTP methods do not require CSRF protection
         return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
@@ -246,6 +256,9 @@
 
     $('#login_button').click(function (e) {
         e.preventDefault();
+        var parameters = getUrlVars();
+        $('#link').val(parameters['link']);
+        $('#r').val(parameters['r']);
         document.getElementById("autenticar_form").submit();
     });
 

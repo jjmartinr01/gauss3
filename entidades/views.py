@@ -2305,9 +2305,16 @@ def linkge(request, code):
             logger.info('%s se loguea en GAUSS a través de un enlace.' % (request.session["gauser_extra"]))
             return redirect(enlace.enlace)
         else:
+            # Si el usuario no está activo lo conduce a la página de inicio
             return redirect('/')
     except:
-        return redirect('/')
+        try:
+            enlace = EnlaceGE.objects.get(code=code)
+            # Si llega aquí es porque el enlace está caducado. Se carga en la página de inicio para acceder
+            # directamente al mismo tras hacer login en el sistema
+            return redirect('/?link=%s&r=%s' % (enlace.enlace, enlace.usuario.ronda.id))
+        except:
+            return redirect('/')
 
 # @permiso_required('acceso_getion_bajas')
 def crealinkge(request):
@@ -2331,20 +2338,6 @@ def crealinkge(request):
 
 
     if request.method == 'POST':
-        texto = request.POST['mensaje']
-        asunto = 'Notificación de GAUSS'
-        etiqueta = Etiqueta.objects.create(propietario=g_e, nombre='___' + pass_generator(size=15))
-        ahora = timezone.datetime.now()
-        deadline = ahora + timezone.timedelta(7)
-        # for u in usuarios_ronda(g_e.ronda):
-        for u in [g_e]:
-            enlace = EnlaceGE.objects.create(usuario=u, enlace='/mis_datos/', deadline=deadline)
-            link = '%s://%s:%s/linkge/%s' % (
-                request.scheme, request.META['SERVER_NAME'], request.META['SERVER_PORT'], enlace.code)
-            texto = texto + '<p><a href="%s">%s</a></p>' %(link, link)
-            mensaje = Mensaje.objects.create(emisor=g_e, fecha=ahora, tipo='mail', asunto=asunto, mensaje=texto, borrador=False)
-            mensaje.receptores.add(u.gauser)
-            mensaje.etiquetas.add(etiqueta)
-            crea_mensaje_cola(mensaje)
+        pass
 
     return HttpResponse('hola')

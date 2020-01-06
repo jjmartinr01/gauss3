@@ -379,6 +379,7 @@ def enlazar(request):
 
 @LogGauss
 def index(request):
+    url_destino = '/calendario/' #Esta será la url a la que el sistema vaya por defecto
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[-1].strip()
@@ -433,7 +434,7 @@ def index(request):
                         usernombre = request.session['gauser_extra'].gauser.username
                         # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
                         #     return render(request, "enlace_gauss_larioja_org.html")
-                        return redirect('/calendario/')
+                        return redirect(url_destino)
                     else:
                         logger.info(u'Gauser activo, pero no tiene asociada ninguna entidad.')
                         return render(request, "no_cuenta.html", {'usuario': user, })
@@ -472,7 +473,11 @@ def index(request):
                     request.session["hoy"] = datetime.today()
                     request.session[translation.LANGUAGE_SESSION_KEY] = user_language
                     # Identificación de la entidad en el que está el usuario:
-                    gauser_extras = Gauser_extra.objects.filter(Q(gauser=user) & Q(activo=True))
+                    try:
+                        gauser_extras = [Gauser_extra.objects.get(gauser=user, activo=True, ronda_id=request.POST['r'])]
+                        url_destino = request.POST['link']
+                    except:
+                        gauser_extras = Gauser_extra.objects.filter(Q(gauser=user) & Q(activo=True))
                     g_cs = gauser_extras
                     entidades_disponibles = 0
                     for gauser_extra in g_cs:
@@ -494,7 +499,7 @@ def index(request):
                         usernombre = request.session['gauser_extra'].gauser.username
                         # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
                         #     return render(request, "enlace_gauss_larioja_org.html")
-                        return redirect('/calendario/')
+                        return redirect(url_destino)
                     else:
                         logger.info(u'Gauser activo, pero no tiene asociada ninguna entidad.')
                         return render(request, "no_cuenta.html", {'usuario': user, })
@@ -549,7 +554,7 @@ def index(request):
             usernombre = request.session['gauser_extra'].gauser.username
             # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
             #     return render(request, "enlace_gauss_larioja_org.html")
-            return redirect('/calendario/')
+            return redirect(url_destino)
 
             # elif len(entidad) > 0:
             # tw = Template_web.objects.filter(entidad=entidad, home=True)[0]
