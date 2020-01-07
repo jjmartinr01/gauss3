@@ -2319,7 +2319,6 @@ def linkge(request, code):
 # @permiso_required('acceso_getion_bajas')
 def crealinkge(request):
     g_e = request.session['gauser_extra']
-
     asunto = 'Notificación de GAUSS'
     texto = '<p>Este es el correo para tener un enlace:</p>'
     etiqueta = Etiqueta.objects.create(propietario=g_e, nombre='___' + pass_generator(size=15))

@@ -7,11 +7,11 @@
         <NbOfTxs>{{remesa_emitida.nboftxs}}</NbOfTxs>
         <CtrlSum>{{remesa_emitida.ctrlsum|float2string}}</CtrlSum>
         <InitgPty>
-            <Nm>{{request.session.gauser_extra.ronda.entidad.banco.nombre|truncatechars:69}}</Nm>
+            <Nm>{{request.session.gauser_extra.ronda.entidad.name|upper|truncatechars:69}}</Nm>
             <Id>
                 <OrgId>
                     <Othr>
-                        <Id>{{request.session.gauser_extra.ronda.entidad.banco.nif|at_02}}</Id>
+                        <Id>{{request.session.gauser_extra.ronda.entidad.nif|at_02}}</Id>
                     </Othr>
                 </OrgId>
             </Id>
@@ -33,7 +33,7 @@
         </PmtTpInf>
         <ReqdColltnDt>{{remesa_emitida.reqdcolltndt|date:"Y-m-d"}}</ReqdColltnDt>
         <Cdtr>
-            <Nm>{{request.session.gauser_extra.ronda.entidad.name|upper}}</Nm>
+            <Nm>{{request.session.gauser_extra.ronda.entidad.name|upper|truncatechars:69}}</Nm>
         </Cdtr>
         <CdtrAcct>
             <Id>
