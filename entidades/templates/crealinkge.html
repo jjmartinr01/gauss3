@@ -1,0 +1,209 @@
+{% extends "base_select2-4.html" %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Creación y envío de un link de acceso directo
+            </strong></h4>
+        </div>
+        <div class="row callout panel" style="display: none;" id="ayuda">
+            <span style="color: #008CBA; font-size: large;font-weight: bold;"><i class="fa fa-info-circle"></i> Ayuda<br></span>
+            <p>Esta aplicación es para crear un mensaje que se enviará por correo electrónico o por Telegram
+                para dar acceso al receptor a una página de GAUSS directamente sin tener introducir el usuario y su
+                contraseña.</p>
+            <p>Para ello, al usuario se le envía un enlace que está operativo durante <b>siete</b> días. Pasado este
+            tiempo el enlace no funcionará y para acceder al mismo será necesario que el receptor indique su
+            usuario y contraseña.</p>
+            <p>El mensaje está compuesto por tres partes: un preámbulo, el propio enlace y la despedida. El
+            "preámbulo" y la "despedida" son textos libres que debes escribir. El enlace se corresponde a uno
+            de los posibles menús a los que tienes acceso.</p>
+            <p>Una vez configurado el mensaje debes elegir si deseas enviarlo a través de un email o a través
+            de Telegram (puedes seleccionar ambas posibilidades).</p>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label>Escribe el preámbulo del mensaje:</label>
+                <div id="preambulo" style="border: lightgrey solid 1px; padding:10px;" contenteditable="true"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label>Selecciona el menú al que le conducirá el enlace:
+                    <select name="menu_link" id="menu_link">
+                    <option value="">---------</option>
+                        <option value="mis_datos">Mis datos</option>
+                        {% for m in menus %}
+                            <option value="{{ m.menu_default.code_menu }}">{{ m.texto_menu }}</option>
+                        {% endfor %}
+                    </select></label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label>Escribe la despedida del mensaje:</label>
+                <div id="despedida" style="border: lightgrey solid 1px; padding:10px;" contenteditable="true"></div>
+            </div>
+        </div>
+
+    <div class="row">
+    <div class="columns large-12">
+        <label>Receptores del mensaje:
+            <select name="usuarios_receptores" id="usuarios_receptores" multiple="multiple">
+            </select>
+        </label>
+    </div>
+</div>
+
+    </form>
+{% endblock %}
+
+
+{% block final %}
+    <script>
+
+        var editor_preambulo = CKEDITOR.inline('preambulo');
+        var editor_despedida = CKEDITOR.inline('despedida');
+        $('#menu_link').select2();
+
+        habilita(['s_info-circle']);
+        $("body").on('click', '#info-circle_sign', function (e) {
+            e.preventDefault();
+            $('#ayuda').toggle();
+        });
+
+        $("#usuarios_receptores").select2({
+            placeholder: "Escribe parte del nombre",
+            minimumInputLength: 3,
+            multiple: true,
+            ajax: {
+                url: "/buscar_usuarios/",
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        action: 'select2',
+                        q: params.term, // search term
+                        page: params.page
+                    };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.last_name + ', ' + item.first_name,
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            },
+            templateResult: function (a) {
+                return "<span>" + a.text + "</span>"
+            }
+        });
+
+
+        $('body').on('change', '#usuarios_receptores', function (e) {
+            var acta = {{ acta.id }};
+            var asistentes = $(this).val();
+            $.post("/crealinkge/", {
+                    action: 'update_asistentes_reunion',
+                    acta: acta,
+                    asistentes: asistentes
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+
+
+
+
+        $('body').on('click', '.delete_ronda', function (e) {
+            e.preventDefault();
+            var ronda = $(this).data('ronda');
+            $.post("/configura_rondas/", {action: 'delete_ronda', ronda: ronda}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#accordion' + ronda).hide();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('keyup change', '.campo_texto', function (e) {
+            var campo = $(this).data('campo');
+            var value = $(this).val();
+            var ronda = $(this).data('ronda');
+            $.post("/configura_rondas/", {action: 'change_campo_texto', ronda: ronda, value: value, campo: campo},
+                function (data) {
+                    if (data.ok) {
+                        if (campo == 'nombre') {
+                            $('#span_nombre' + ronda).html(data.texto);
+                        } else if (campo == 'inicio') {
+                            $('#span_inicio' + ronda).html(data.texto);
+                        } else if (campo == 'fin') {
+                            $('#span_fin' + ronda).html(data.texto);
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.upgrade_usuarios', function (e) {
+            var cargo = $(this).data('cargo');
+            var ronda = $(this).data('ronda');
+            $.post("/configura_rondas/", {action: 'upgrade_usuarios', ronda: ronda, cargo: cargo},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#cargos' + data.ronda).html(data.html);
+                    }
+                });
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('ronda_contenido')) {
+                        var id = accordion.data('ronda');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/configura_rondas/", {action: 'open_accordion', id: id}, function (data) {
+                                if (data.ok) {
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                    $('#panel' + id).html(data.html);
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).empty();
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

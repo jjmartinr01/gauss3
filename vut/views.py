@@ -2130,7 +2130,8 @@ def ajax_domotica_vut(request):
                 vivienda = Vivienda.objects.get(id=request.POST['vivienda'])
                 if vivienda in viviendas_autorizado(g_e):
                     d = DomoticaVUT.objects.create(vivienda=vivienda, url='Aquí la url del dispositivo',
-                                                   nombre='Nombre del dispositivo', texto='Descripción')
+                                                   nombre='Nombre del dispositivo', texto='Descripción',
+                                                   propietario=g_e.gauser)
                     html = render_to_string('domotica_vut_accordion_content_dispositivo.html',
                                             {'g_e': g_e, 'domotica': d})
                     return JsonResponse({'ok': True, 'html': html})

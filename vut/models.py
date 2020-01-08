@@ -9,6 +9,7 @@ from django.utils.timezone import now, timedelta
 from django.core.files.storage import FileSystemStorage
 
 from autenticar.models import Permiso, Gauser
+from domotica.models import Dispositivo
 from entidades.models import Entidad, Gauser_extra
 from gauss.funciones import pass_generator
 
@@ -566,10 +567,12 @@ class DomoticaVUT(models.Model):
     TIPO_DOMOTICA = (
     ('SELFLOCKING', 'Auto-bloqueo'), ('ONOFF', 'Interruptor'), ('TERMOSTATO', 'Control de temperatura'))
     vivienda = models.ForeignKey(Vivienda, blank=True, null=True, on_delete=models.CASCADE)
+    propietario = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
     url = models.CharField('URL para la activación del dispositivo', blank=True, null=True, max_length=250)
     nombre = models.CharField('Nombre dado al dispositivo', blank=True, null=True, max_length=250)
     texto = models.TextField('Texto a enviar', blank=True, null=True)
     tipo = models.CharField('Tipo de dispositivo', max_length=15, default='SELFLOCKING', choices=TIPO_DOMOTICA)
+    dispositivo = models.ForeignKey(Dispositivo, blank=True, null=True, on_delete=models.CASCADE)
     creado = models.DateField('Fecha de creación', auto_now_add=True)
     modificado = models.DateField('Fecha de modificación', auto_now=True)
 

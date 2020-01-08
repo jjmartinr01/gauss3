@@ -2,6 +2,7 @@
 <fieldset id="fieldset{{ domotica.id }}">
     <legend id="dispositivo{{ domotica.id }}" class="nombre{{ domotica.id }}">{{ domotica.nombre }}</legend>
     <div class="row">
+        {% if domotica.propietario == g_e.gauser %}
         <div class="columns large-4">
             <label>Nombre: <input type="text" class="campo_char" data-id="{{ domotica.id }}" data-campo="nombre"
                                   value="{{ domotica.nombre }}"></label>
@@ -10,6 +11,12 @@
             <label>URL: <input type="text" class="campo_char" data-id="{{ domotica.id }}" data-campo="url"
                                value="{{ domotica.url }}"></label>
         </div>
+        {% else %}
+                <div class="columns large-5 end">
+            <label>Nombre: <input type="text" class="campo_char" data-id="{{ domotica.id }}" data-campo="nombre"
+                                  value="{{ domotica.nombre }}"></label>
+        </div>
+            {% endif %}
     </div>
     <div class="row">
         <div class="columns large-12">
@@ -21,6 +28,7 @@
     </div>
 <div class="row">
     <div class="columns large-4">
+    {% if domotica.propietario == g_e.gauser %}
         <label>Tipo:
                 <select class="tipo_dispositivo" data-id="{{ domotica.id }}">
                     {% for t in domotica.TIPO_DOMOTICA %}
@@ -28,6 +36,9 @@
                     {% endfor %}
                 </select>
             </label>
+    {% else %}
+        <label>Tipo:</label><b>{{ domotica.get_tipo_display }}</b>
+    {% endif %}
     </div>
     <div class="columns large-8">
         <ul class="button-group right">

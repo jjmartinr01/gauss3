@@ -691,7 +691,7 @@ def ajax_filtro(request):
 def buscar_usuarios(request):
     texto = request.GET['q']
     g_e = request.session['gauser_extra']
-    usuarios = usuarios_de_gauss(g_e.ronda.entidad)
+    usuarios = usuarios_ronda(g_e.ronda)
     usuarios_contain_texto = usuarios.filter(
         Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)).values_list('id',
                                                                                                     'gauser__last_name',
@@ -703,6 +703,34 @@ def buscar_usuarios(request):
     return HttpResponse(json.dumps([dict(zip(keys, row)) for row in usuarios_contain_texto]))
 
 
+@LogGauss
+@login_required()
+def buscar_usuarios_cargos_subentidades(request):
+    texto = request.GET['q']
+    g_e = request.session['gauser_extra']
+    usuarios = usuarios_ronda(g_e.ronda)
+    usuarios_contain_texto = usuarios.filter(
+        Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)).values_list('id',
+                                                                                                    'gauser__last_name',
+                                                                                                    'gauser__first_name',
+                                                                                                    'subentidades__nombre')
+    # [{"id": 28817, "last_name": "Mart\u00edn Romero", "first_name": "Juan Jos\u00e9",
+    #   "perfiles": "Secci\u00f3n de Logro\u00f1o"},
+    #  {"id": 28816, "last_name": "Nieto Garc\u00eda", "first_name": "Juan", "perfiles": "Secci\u00f3n de Logro\u00f1o"}]
+
+    a = {}
+    a = dict([('usuario__id', x) ])
+    keys = ('usuario__id', 'last_name', 'first_name', 'perfiles')
+    cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad)
+    cargos_contain_texto = cargos.filter(cargo__icontains=texto).values_list('id', 'cargo')
+
+    subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad)
+    subentidades_contain_texto = subentidades.filter(nombre__icontains=texto).values_list('id', 'nombre')
+
+
+    # from django.core import serializers
+    # data = serializers.serialize('json', socios2, fields=('gauser__first_name', 'id'))
+    return HttpResponse(json.dumps([dict(zip(keys, row)) for row in usuarios_contain_texto]))
 # ###################################################################################f
 # ###################################################################################f
 # ###################################################################################f
@@ -2197,6 +2225,7 @@ def modulos_entidad(request):
         crear_aviso(request, False, 'No tienes permiso para gestionar los módulos de la entidad')
         return redirect('/calendario/')
 
+
 # ##############################################################################
 # ##############################################################################
 # Funciones a borrar tras la migración a gauss_asocia
@@ -2316,27 +2345,39 @@ def linkge(request, code):
         except:
             return redirect('/')
 
+
 # @permiso_required('acceso_getion_bajas')
 def crealinkge(request):
     g_e = request.session['gauser_extra']
-    asunto = 'Notificación de GAUSS'
-    texto = '<p>Este es el correo para tener un enlace:</p>'
-    etiqueta = Etiqueta.objects.create(propietario=g_e, nombre='___' + pass_generator(size=15))
-    ahora = timezone.datetime.now()
-    deadline = ahora + timezone.timedelta(7)
-    # for u in usuarios_ronda(g_e.ronda):
-    for u in [g_e]:
-        enlace = EnlaceGE.objects.create(usuario=u, enlace='/mis_datos/', deadline=deadline)
-        link = '%s://%s:%s/linkge/%s' % (
-        request.scheme, request.META['SERVER_NAME'], request.META['SERVER_PORT'], enlace.code)
-        texto = texto + '<p><a href="%s">%s</a></p>' % (link, link)
-        mensaje = Mensaje.objects.create(emisor=g_e, fecha=ahora, tipo='mail', asunto=asunto, mensaje=texto, borrador=False)
-        mensaje.receptores.add(u.gauser)
-        mensaje.etiquetas.add(etiqueta)
-        crea_mensaje_cola(mensaje)
-
-
     if request.method == 'POST':
-        pass
+        asunto = 'Notificación de GAUSS'
+        texto = '<p>Este es el correo para tener un enlace:</p>'
+        etiqueta = Etiqueta.objects.create(propietario=g_e, nombre='___' + pass_generator(size=15))
+        ahora = timezone.datetime.now()
+        deadline = ahora + timezone.timedelta(7)
+        # for u in usuarios_ronda(g_e.ronda):
+        for u in [g_e]:
+            enlace = EnlaceGE.objects.create(usuario=u, enlace='/mis_datos/', deadline=deadline)
+            link = '%s://%s:%s/linkge/%s' % (
+                request.scheme, request.META['SERVER_NAME'], request.META['SERVER_PORT'], enlace.code)
+            texto = texto + '<p><a href="%s">%s</a></p>' % (link, link)
+            mensaje = Mensaje.objects.create(emisor=g_e, fecha=ahora, tipo='mail', asunto=asunto, mensaje=texto,
+                                             borrador=False)
+            mensaje.receptores.add(u.gauser)
+            mensaje.etiquetas.add(etiqueta)
+            crea_mensaje_cola(mensaje)
 
-    return HttpResponse('hola')
+    codes_menu = []
+    for p in g_e.permisos_list:
+        codes_menu.append(p.code_nombre)
+    menus = Menu.objects.filter(entidad=g_e.ronda.entidad, menu_default__code_menu__in=codes_menu,
+                                menu_default__href__regex=r'[a-z]')
+    return render(request, "crealinkge.html",
+                  {
+                      'formname': 'crealinkge',
+                      'menus': menus,
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Ayuda',
+                            'title': 'Ayuda sobre está página', 'permiso': 'libre'},),
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })

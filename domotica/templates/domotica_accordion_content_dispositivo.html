@@ -169,9 +169,26 @@
             </div>
         </div>
     </div>
+
+    {% if g_e|has_permiso:'acceso_vut' %}
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Este dispositivo puede ser copiado en una vivienda de uso turístico. Selecciona
+                    la vivienda en la cual quieres copiarlo:</b>
+                    <select class="vivienda_copia_dispositivo" data-id="{{ gdispositivo.dispositivo.id }}">
+                        <option value="">---------</option>
+                        {% for vp in viviendas_posibles %}
+                            <option value="{{ vp.id }}">{{ vp.nombre }} ({{ vp.gpropietario.get_full_name }})</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        </div>
+    {% endif %}
 </fieldset>
 
 <script type="application/javascript">
+    $('.vivienda_copia_dispositivo').select2();
     $(document).foundation();
     $('[data-slider]').on('change.fndtn.slider', function () {
         var id = $(this).data('id');

@@ -374,5 +374,24 @@
                 }
             }
         });
+
+        $("body").on('change', '.vivienda_copia_dispositivo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var vivienda = $(this).val();
+            $.post("/ajax_configura_domotica/", {action: 'copiar_dispositivo', id: id, vivienda: vivienda},
+                function (data) {
+                    if (data.ok) {
+                        show_mensajes({title: 'Copiado!!', texto: 'El dispositivo se ha copiado perfectamente.'});
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        var error = '<i class="fa fa-warning"></i> Error';
+                        show_mensajes({title: error, texto: 'El dispositivo no se ha podido copiar.'});
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+
+        });
+
     </script>
 {% endblock %}

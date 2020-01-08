@@ -26,6 +26,8 @@ from domotica.mqtt import client
 
 
 # Create your views here.
+from vut.models import Vivienda, DomoticaVUT
+from vut.views import viviendas_autorizado
 
 
 @permiso_required('acceso_grupos_domotica')
@@ -151,9 +153,9 @@ def configura_domotica(request):
                       #     ({'tipo': 'button', 'nombre': 'plus', 'permiso': 'crea_dispositivos_domotica',
                       #       'texto': 'Nuevo dispositivo', 'title': 'Crear un nuevo dispositivo domótico'},
                       #      ),
-                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                       'grupos': Grupo.objects.filter(id__in=grupos_id),
-                      'configuraciones_enlace': EnlaceDomotica.objects.filter(propietario=g_e.gauser)
+                      'configuraciones_enlace': EnlaceDomotica.objects.filter(propietario=g_e.gauser),
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)
                   })
 
 
@@ -191,9 +193,13 @@ def ajax_configura_domotica(request):
                 grupos = Grupo.objects.filter(id__in=grupos_id)
                 grupo = grupos.get(id=request.POST['grupo'])
                 gdispositivos = GauserPermitidoDispositivo.objects.filter(dispositivo__grupo=grupo, gauser=g_e.gauser)
+                if g_e.gauser.username == 'gauss':
+                    viviendas_posibles = Vivienda.objects.all()
+                else:
+                    viviendas_posibles = viviendas_autorizado(g_e)
                 html = render_to_string('domotica_accordion_content.html',
                                         {'gdispositivos': gdispositivos, 'grupo': grupo, 'g_e': g_e,
-                                         'grupos': grupos})
+                                         'grupos': grupos, 'viviendas_posibles': viviendas_posibles})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
@@ -294,6 +300,21 @@ def ajax_configura_domotica(request):
                 return JsonResponse({'ok': True})
             else:
                 return JsonResponse({'ok': False, 'mensaje': 'No detecta plataforma'})
+        elif request.POST['action'] == 'copiar_dispositivo':
+            try:
+                viviendas = viviendas_autorizado(g_e)
+                vivienda = viviendas.get(id=request.POST['vivienda'])
+                dispositivo = Dispositivo.objects.get(id=request.POST['id'])
+                dv, c = DomoticaVUT.objects.get_or_create(vivienda=vivienda, dispositivo=dispositivo)
+                dv.propietario = g_e.gauser
+                dv.url = dispositivo.ifttt
+                dv.nombre = dispositivo.nombre
+                dv.texto = dispositivo.texto
+                dv.tipo =  dispositivo.tipo
+                dv.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
         elif request.POST['action'] == 'add_enlace_domotica':
             enlace = EnlaceDomotica.objects.create(propietario=g_e.gauser, nombre='', valido_desde=timezone.now(),
                                                    valido_hasta=timezone.now())
