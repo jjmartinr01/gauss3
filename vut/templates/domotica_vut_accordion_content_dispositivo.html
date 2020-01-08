@@ -1,6 +1,8 @@
 {% load my_templatetags %}
 <fieldset id="fieldset{{ domotica.id }}">
     <legend id="dispositivo{{ domotica.id }}" class="nombre{{ domotica.id }}">{{ domotica.nombre }}</legend>
+{{ g_e.gauser.id }} -- {{ domotica.propietario.id }}<br>
+{{ g_e.gauser }} -- {{ domotica.propietario }}
     <div class="row">
         {% if domotica.propietario == g_e.gauser %}
         <div class="columns large-4">
