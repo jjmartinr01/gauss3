@@ -194,7 +194,7 @@ def ajax_configura_domotica(request):
                 grupo = grupos.get(id=request.POST['grupo'])
                 gdispositivos = GauserPermitidoDispositivo.objects.filter(dispositivo__grupo=grupo, gauser=g_e.gauser)
                 if g_e.gauser.username == 'gauss':
-                    viviendas_posibles = Vivienda.objects.all()
+                    viviendas = Vivienda.objects.filter(entidad=g_e.ronda.entidad, borrada=False)
                 else:
                     viviendas_posibles = viviendas_autorizado(g_e)
                 html = render_to_string('domotica_accordion_content.html',
@@ -301,19 +301,11 @@ def ajax_configura_domotica(request):
             else:
                 return JsonResponse({'ok': False, 'mensaje': 'No detecta plataforma'})
         elif request.POST['action'] == 'copiar_dispositivo':
-            viviendas = viviendas_autorizado(g_e)
-            vivienda = viviendas.get(id=request.POST['vivienda'])
-            dispositivo = Dispositivo.objects.get(id=request.POST['id'])
-            dv, c = DomoticaVUT.objects.get_or_create(vivienda=vivienda, dispositivo=dispositivo)
-            dv.propietario = g_e.gauser
-            dv.url = dispositivo.ifttt
-            dv.nombre = dispositivo.nombre
-            dv.texto = dispositivo.texto
-            dv.tipo = dispositivo.tipo
-            dv.save()
-            return JsonResponse({'ok': True})
             try:
-                viviendas = viviendas_autorizado(g_e)
+                if g_e.gauser.username == 'gauss':
+                    viviendas = Vivienda.objects.filter(entidad=g_e.ronda.entidad, borrada=False)
+                else:
+                    viviendas = viviendas_autorizado(g_e)
                 vivienda = viviendas.get(id=request.POST['vivienda'])
                 dispositivo = Dispositivo.objects.get(id=request.POST['id'])
                 dv, c = DomoticaVUT.objects.get_or_create(vivienda=vivienda, dispositivo=dispositivo)
@@ -321,7 +313,7 @@ def ajax_configura_domotica(request):
                 dv.url = dispositivo.ifttt
                 dv.nombre = dispositivo.nombre
                 dv.texto = dispositivo.texto
-                dv.tipo =  dispositivo.tipo
+                dv.tipo = dispositivo.tipo
                 dv.save()
                 return JsonResponse({'ok': True})
             except:
