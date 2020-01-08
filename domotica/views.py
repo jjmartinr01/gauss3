@@ -194,7 +194,7 @@ def ajax_configura_domotica(request):
                 grupo = grupos.get(id=request.POST['grupo'])
                 gdispositivos = GauserPermitidoDispositivo.objects.filter(dispositivo__grupo=grupo, gauser=g_e.gauser)
                 if g_e.gauser.username == 'gauss':
-                    viviendas = Vivienda.objects.filter(entidad=g_e.ronda.entidad, borrada=False)
+                    viviendas_posibles = Vivienda.objects.filter(entidad=g_e.ronda.entidad, borrada=False)
                 else:
                     viviendas_posibles = viviendas_autorizado(g_e)
                 html = render_to_string('domotica_accordion_content.html',
