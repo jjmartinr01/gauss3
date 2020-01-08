@@ -301,6 +301,17 @@ def ajax_configura_domotica(request):
             else:
                 return JsonResponse({'ok': False, 'mensaje': 'No detecta plataforma'})
         elif request.POST['action'] == 'copiar_dispositivo':
+            viviendas = viviendas_autorizado(g_e)
+            vivienda = viviendas.get(id=request.POST['vivienda'])
+            dispositivo = Dispositivo.objects.get(id=request.POST['id'])
+            dv, c = DomoticaVUT.objects.get_or_create(vivienda=vivienda, dispositivo=dispositivo)
+            dv.propietario = g_e.gauser
+            dv.url = dispositivo.ifttt
+            dv.nombre = dispositivo.nombre
+            dv.texto = dispositivo.texto
+            dv.tipo = dispositivo.tipo
+            dv.save()
+            return JsonResponse({'ok': True})
             try:
                 viviendas = viviendas_autorizado(g_e)
                 vivienda = viviendas.get(id=request.POST['vivienda'])
