@@ -17,6 +17,7 @@
                 {% include "formulario_horario.html" %}
             {% endfor %}
         </dl>
+        <hr>
         <div class="row">
             <div class="columns large-12">
                 <a class="button" id="add_horario"><i class="fa fa-plus"></i> Añadir horario</a>
@@ -60,14 +61,18 @@
             e.preventDefault();
             var id = $(this).data('id');
             $.post("/define_horario/", {action: 'delete_horario', id: id}, function (data) {
-                $('#accordion' + id).hide();
-                if (parseInt(data) > 0) {
+                if (data.ok) {
+                    $('#accordion' + id).hide();
                     $('.ok_predeterminado').hide();
                     $('.ok_checkbox').show();
-                    $('#ok_predeterminado' + data).show();
-                    $('#ok_checkbox' + data).hide();
+                    $('#ok_predeterminado' + data.horario).show();
+                    $('#ok_checkbox' + data.horario).hide();
+                    $('.span_predeterminado').html('');
+                    $('#span_predeterminado' + data.horario).html('<i class="fa fa-check"></i>');
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
                 }
-                $("#update_ok").show().delay(1500).fadeOut();
             });
         });
 
@@ -86,11 +91,17 @@
             e.preventDefault();
             var id = $(this).data('id');
             $.post("/define_horario/", {action: 'predeterminado', id: id}, function (data) {
-                $('.ok_predeterminado').hide();
-                $('.ok_checkbox').show();
-                $('#ok_predeterminado' + id).show();
-                $('#ok_checkbox' + id).hide();
-                $("#update_ok").show().delay(1500).fadeOut();
+                if (data.ok) {
+                    $('.ok_predeterminado').hide();
+                    $('.ok_checkbox').show();
+                    $('#ok_predeterminado' + data.horario).show();
+                    $('#ok_checkbox' + data.horario).hide();
+                    $('.span_predeterminado').html('');
+                    $('#span_predeterminado' + data.horario).html('<i class="fa fa-check"></i>');
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
             });
         });
 
@@ -118,22 +129,22 @@
             var tramo = $(this).data('id');
             var nombre = $(this).val();
             $.post("/define_horario/", {action: 'nombre_tramo', horario: horario, tramo: tramo, nombre: nombre},
-                    function (data) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    });
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
         });
 
         {# Proporcionar un valor inicial a tramo nulo, para no ejecutar las dos funciones siguientes #}
         var tramo = null;
 
-        function update_tramo(t, ini_fin){
+        function update_tramo(t, ini_fin) {
             var horario = t.data('horario');
             var tramo = t.data('id');
             var valor = t.val();
             $.post("/define_horario/", {action: ini_fin, horario: horario, tramo: tramo, valor: valor},
-                    function (data) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    });
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
         }
 
         $('#hour_slider').on('change.fndtn.slider', function () {
@@ -150,7 +161,7 @@
                     var t = $('#fin' + tramo.data('t'));
                     t.val(v.toString() + ':' + minutos);
                     update_tramo(t, 'fin');
-                }else{
+                } else {
                     update_tramo(tramo, 'fin');
                 }
             }
@@ -170,7 +181,7 @@
                     var hora = parseInt(hora) + 1;
                     t.val(hora.toString() + ':' + v);
                     update_tramo(t, 'fin');
-                }else{
+                } else {
                     update_tramo(tramo, 'fin');
                 }
             }
@@ -197,7 +208,7 @@
         $(document).mouseup(function (e) {
             var container = $('.timepicker_tramo');
             if (!container.is(e.target) // if the target of the click isn't the container...
-                    && container.has(e.target).length === 0) // ... nor a descendant of the container
+                && container.has(e.target).length === 0) // ... nor a descendant of the container
             {
                 $('#timepicker').hide();
             }
@@ -209,6 +220,15 @@
             var tramo = $(this).data('id');
             $.post("/define_horario/", {action: 'delete_tramo', horario: horario, tramo: tramo}, function (data) {
                 $('#row_tramo' + tramo).hide();
+                $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+
+        $('#Contenido').on('click', '.sesiones_error', function (e) {
+            e.preventDefault();
+            var horario = $(this).data('horario');
+            $.post("/define_horario/", {action: 'comprobar_sesiones_error', horario: horario}, function (data) {
+                $('#sesiones_error' + data.horario).html(data.sesiones_error);
                 $("#update_ok").show().delay(1500).fadeOut();
             });
         });

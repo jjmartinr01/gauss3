@@ -134,30 +134,29 @@ def define_horario(request):
                     predeterminado = Horario.objects.filter(entidad=g_e.ronda.entidad)[0]
                     predeterminado.predeterminado = True
                     predeterminado.save()
-                    return HttpResponse(predeterminado.id)
+                    return JsonResponse({'horario': predeterminado.id, 'ok': True})
                 except:
-                    return HttpResponse(0)
+                    return JsonResponse({'ok': False})
             else:
                 horario.delete()
-                return HttpResponse(predeterminado.id)
-        elif action == 'delete_horario':
-            horario = Horario.objects.get(id=request.POST['id'], entidad=g_e.ronda.entidad)
-            horario.delete()
-            return HttpResponse(True)
+                return JsonResponse({'horario': predeterminado.id, 'ok': True})
         elif action == 'descripcion':
             horario = Horario.objects.get(id=request.POST['id'], entidad=g_e.ronda.entidad)
             horario.descripcion = request.POST['descripcion']
             horario.save()
             return HttpResponse(horario.descripcion[:90])
         elif action == 'predeterminado':
-            horario = Horario.objects.get(id=request.POST['id'], entidad=g_e.ronda.entidad)
-            horarios = Horario.objects.filter(entidad=g_e.ronda.entidad)
-            for h in horarios:
-                h.predeterminado = False
-                h.save()
-            horario.predeterminado = True
-            horario.save()
-            return HttpResponse(horario.id)
+            try:
+                horario = Horario.objects.get(id=request.POST['id'], entidad=g_e.ronda.entidad)
+                horarios = Horario.objects.filter(entidad=g_e.ronda.entidad)
+                for h in horarios:
+                    h.predeterminado = False
+                    h.save()
+                horario.predeterminado = True
+                horario.save()
+                return JsonResponse({'horario': horario.id, 'ok': True})
+            except:
+                return JsonResponse({'ok': False})
         elif action == 'dia':
             horario = Horario.objects.get(id=request.POST['id'], entidad=g_e.ronda.entidad)
             check = True if request.POST['check'] == 'true' else False
@@ -199,6 +198,13 @@ def define_horario(request):
             tramo = Tramo_horario.objects.get(id=request.POST['tramo'], horario=horario)
             tramo.delete()
             return HttpResponse(True)
+        elif action == 'comprobar_sesiones_error':
+            horario = Horario.objects.get(id=request.POST['horario'], entidad=g_e.ronda.entidad)
+            tramos = Tramo_horario.objects.filter(horario=horario)
+            inicios = tramos.values_list('inicio', flat=True)
+            finales = tramos.values_list('fin', flat=True)
+            sesiones_error = Sesion.objects.filter(Q(horario=horario), ~Q(inicio__in=inicios) | ~Q(fin__in=finales)).values_list('id', 'inicio', 'fin', 'g_e__gauser__first_name', 'g_e__gauser__last_name')
+            return JsonResponse({'sesiones_error': sesiones_error, 'horario': horario.id, 'ok': True})
     return render(request, "define_horario.html", {
         'horarios': horarios.order_by('-id'),
         'formname': 'define_horario',

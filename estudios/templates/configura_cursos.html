@@ -10,7 +10,8 @@
         </div>
 
         <div data-alert class="alert-box success radius">
-            <span style="font-weight: 800;">En estos momentos hay {{ cursos|length }} cursos creados</span>
+            <span style="font-weight: 800;">En estos momentos hay {{ cursos|length }} curso{{ cursos|pluralize }}
+                creado{{ cursos|pluralize }}</span>
             <a href="#" class="close">&times;</a>
         </div>
 

@@ -125,100 +125,77 @@ MENU_DEFAULT = [
 ]
 # Se añaden otros permisos para el usuario
 
-PERMISOS = [{'code_nombre': 'crea_cursos',
-             'nombre': 'Tiene permiso para crear cursos en la entidad',
-             'menu': 'acceso_define_cursos'
-             },
-            {'code_nombre': 'borra_cursos',
-             'nombre': 'Tiene permiso para borrar cursos de la entidad',
-             'menu': 'acceso_define_cursos'
-             },
-            {'code_nombre': 'crea_grupos',
-             'nombre': 'Tiene permiso para crear grupos en la entidad',
-             'menu': 'acceso_define_grupos'
-             },
-            {'code_nombre': 'borra_grupos',
-             'nombre': 'Tiene permiso para borrar grupos de la entidad',
-             'menu': 'acceso_define_grupos'
-             },
-            {'code_nombre': 'crea_materias',
-             'nombre': 'Tiene permiso para crear materias en la entidad',
-             'menu': 'acceso_define_materias'
-             },
-            {'code_nombre': 'borra_materias',
-             'nombre': 'Tiene permiso para borrar materias de la entidad',
-             'menu': 'acceso_define_materias'
-             },
-            {'code_nombre': 'crea_horarios',
-             'nombre': 'Tiene permiso para crear horarios en la entidad',
-             'menu': 'acceso_define_horarios'
-             },
-            {'code_nombre': 'borra_horarios',
-             'nombre': 'Tiene permiso para borrar horarios de la entidad',
-             'menu': 'acceso_define_horarios'
-             },
-            {'code_nombre': 've_horarios_usuarios',
-             'nombre': 'Tiene permiso para ver horarios de los usuarios',
-             'menu': 'acceso_horario_usuarios'
-             },
-            {'code_nombre': 've_horarios_entidad',
-             'nombre': 'Tiene permiso para ver horarios de las subentidades',
-             'menu': 'acceso_horarios_subentidades'
-             },
-            {'code_nombre': 'crea_horarios_usuarios',
-             'nombre': 'Tiene permiso para crear horarios para los usuarios',
-             'menu': 'acceso_horario_usuarios'
-             },
-            {'code_nombre': 'crea_sesiones_horario',
-             'nombre': 'Tiene permiso para crear sesiones en los horarios de los usuarios',
-             'menu': 'acceso_horario_usuarios'
-             },
-            {'code_nombre': 'borra_sesiones_horario',
-             'nombre': 'Tiene permiso para borrar sesiones en los horarios de los usuarios',
-             'menu': 'acceso_horario_usuarios'
-             },
-            {'code_nombre': 'modifica_sesiones_horario',
-             'nombre': 'Tiene permiso para modificar sesiones en los horarios de los usuarios',
-             'menu': 'acceso_horario_usuarios'
-             },
-            {'code_nombre': 'alumnos_sesiones_horario',
-             'nombre': 'Tiene permiso para asignar alumnos a las sesiones en los horarios de los usuarios',
-             'menu': 'acceso_horario_usuarios'
-             },
-            {'code_nombre': 'crea_actividades_horario',
-             'nombre': 'Tiene permiso para crear actividades para los horarios',
-             'menu': 'acceso_actividades_horarios'
-             },
-            {'code_nombre': 'borra_actividades_horario',
-             'nombre': 'Tiene permiso para borrar para los horarios',
-             'menu': 'acceso_actividades_horarios'
-             },
-            {'code_nombre': 'edita_actividades_horario',
-             'nombre': 'Tiene permiso para editar las actividades para los horarios',
-             'menu': 'acceso_actividades_horarios'
-             },
-            {'code_nombre': 'crea_guardias_horario',
-             'nombre': 'Tiene permiso para crear guardias de cualquier usuario en el horario',
-             'menu': 'acceso_guardias_horarios'
-             },
-            {'code_nombre': 'borra_guardias_horario',
-             'nombre': 'Tiene permiso para borrar guardias de cualquier usuario en el horario',
-             'menu': 'acceso_guardias_horarios'
-             },
-            {'code_nombre': 'edita_guardias_horario',
-             'nombre': 'Tiene permiso para editar guardias de cualquier usuario en el horario',
-             'menu': 'acceso_guardias_horarios'
-             },
-            {'code_nombre': 'genera_actillas',
-             'nombre': 'Tiene permiso para generar actillas de cualquier grupo de la entidad',
-             'menu': 'acceso_actillas'
-             },
-            {'code_nombre': 'asigna_grupo_alumnos',
-             'nombre': 'Tiene permiso para asignar grupo a los alumnos',
-             'menu': 'acceso_horarios_alumnos'
-             },
-            {'code_nombre': 'asigna_tutor_alumnos',
-             'nombre': 'Tiene permiso para asignar tutor a los alumnos',
-             'menu': 'acceso_horarios_alumnos'
-             }
-            ]
+PERMISOS = [
+    {'code_nombre': 'crea_horarios',
+     'nombre': 'Tiene permiso para crear horarios en la entidad',
+     'menu': 'acceso_define_horarios'
+     },
+    {'code_nombre': 'borra_horarios',
+     'nombre': 'Tiene permiso para borrar horarios de la entidad',
+     'menu': 'acceso_define_horarios'
+     },
+    {'code_nombre': 've_horarios_usuarios',
+     'nombre': 'Tiene permiso para ver horarios de los usuarios',
+     'menu': 'acceso_horario_usuarios'
+     },
+    {'code_nombre': 've_horarios_entidad',
+     'nombre': 'Tiene permiso para ver horarios de las subentidades',
+     'menu': 'acceso_horarios_subentidades'
+     },
+    {'code_nombre': 'crea_horarios_usuarios',
+     'nombre': 'Tiene permiso para crear horarios para los usuarios',
+     'menu': 'acceso_horario_usuarios'
+     },
+    {'code_nombre': 'crea_sesiones_horario',
+     'nombre': 'Tiene permiso para crear sesiones en los horarios de los usuarios',
+     'menu': 'acceso_horario_usuarios'
+     },
+    {'code_nombre': 'borra_sesiones_horario',
+     'nombre': 'Tiene permiso para borrar sesiones en los horarios de los usuarios',
+     'menu': 'acceso_horario_usuarios'
+     },
+    {'code_nombre': 'modifica_sesiones_horario',
+     'nombre': 'Tiene permiso para modificar sesiones en los horarios de los usuarios',
+     'menu': 'acceso_horario_usuarios'
+     },
+    {'code_nombre': 'alumnos_sesiones_horario',
+     'nombre': 'Tiene permiso para asignar alumnos a las sesiones en los horarios de los usuarios',
+     'menu': 'acceso_horario_usuarios'
+     },
+    {'code_nombre': 'crea_actividades_horario',
+     'nombre': 'Tiene permiso para crear actividades para los horarios',
+     'menu': 'acceso_actividades_horarios'
+     },
+    {'code_nombre': 'borra_actividades_horario',
+     'nombre': 'Tiene permiso para borrar para los horarios',
+     'menu': 'acceso_actividades_horarios'
+     },
+    {'code_nombre': 'edita_actividades_horario',
+     'nombre': 'Tiene permiso para editar las actividades para los horarios',
+     'menu': 'acceso_actividades_horarios'
+     },
+    {'code_nombre': 'crea_guardias_horario',
+     'nombre': 'Tiene permiso para crear guardias de cualquier usuario en el horario',
+     'menu': 'acceso_guardias_horarios'
+     },
+    {'code_nombre': 'borra_guardias_horario',
+     'nombre': 'Tiene permiso para borrar guardias de cualquier usuario en el horario',
+     'menu': 'acceso_guardias_horarios'
+     },
+    {'code_nombre': 'edita_guardias_horario',
+     'nombre': 'Tiene permiso para editar guardias de cualquier usuario en el horario',
+     'menu': 'acceso_guardias_horarios'
+     },
+    {'code_nombre': 'genera_actillas',
+     'nombre': 'Tiene permiso para generar actillas de cualquier grupo de la entidad',
+     'menu': 'acceso_actillas'
+     },
+    {'code_nombre': 'asigna_grupo_alumnos',
+     'nombre': 'Tiene permiso para asignar grupo a los alumnos',
+     'menu': 'acceso_horarios_alumnos'
+     },
+    {'code_nombre': 'asigna_tutor_alumnos',
+     'nombre': 'Tiene permiso para asignar tutor a los alumnos',
+     'menu': 'acceso_horarios_alumnos'
+     }
+]

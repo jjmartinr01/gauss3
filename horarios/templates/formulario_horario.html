@@ -2,7 +2,10 @@
 
 <dd class="accordion-navigation" id="accordion{{ horario.id }}">
     <a href="#horario{{ horario.id }}">
-        <span id="span_descripcion{{ horario.id }}">{{ horario.descripcion|truncatechars:90 }}</span>
+        <span id="span_descripcion{{ horario.id }}"><b>{{ horario.descripcion|truncatechars:90 }}</b></span>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <span id="span_predeterminado{{ horario.id }}" style="color:green;" class="span_predeterminado">
+            {% if horario.predeterminado %}<i class="fa fa-check"></i>{% endif %}</span>
     </a>
 
     <div id="horario{{ horario.id }}" class="content horario_contenido"
@@ -70,9 +73,9 @@
             <div class="row">
                 <div class="columns large-12" id="tramos_list{{ horario.id }}">
                     <label><strong>Define los tramos horarios que tiene este horario cada día:</strong></label>
-                        {% for t in horario.tramo_horario_set.all %}
-                            {% include "formulario_tramo.html" %}
-                        {% endfor %}
+                    {% for t in horario.tramo_horario_set.all %}
+                        {% include "formulario_tramo.html" %}
+                    {% endfor %}
                 </div>
             </div>
             <div class="row">
@@ -80,6 +83,19 @@
                     <a class="button add_tramo" data-id="{{ horario.id }}"><i class="fa fa-plus"></i> Añadir tramo</a>
                 </div>
             </div>
+
+{#            {% if sesiones_error %}#}
+                <div class="row">
+                <div class="columns large-12">
+                    <p><b>Sesiones fuera de los tramos horarios definidos anteriormente:</b></p>
+                    <p><a class="button sesiones_error" data-horario="{{ horario.id }}">comprobar</a> </p>
+                </div>
+            </div>
+<div class="row">
+                <div class="columns large-12" id="sesiones_error{{ horario.id }}">
+                </div>
+            </div>
+{#        {% endif %}#}
         </div>
     </div>
 </dd>

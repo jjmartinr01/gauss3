@@ -47,6 +47,30 @@ MENU_DEFAULT = [
 # Se añaden otros permisos para el usuario
 
 PERMISOS = [
+    {'code_nombre': 'crea_cursos',
+     'nombre': 'Tiene permiso para crear cursos en la entidad',
+     'menu': 'acceso_configura_cursos'
+     },
+    {'code_nombre': 'borra_cursos',
+     'nombre': 'Tiene permiso para borrar cursos de la entidad',
+     'menu': 'acceso_configura_cursos'
+     },
+    {'code_nombre': 'crea_grupos',
+     'nombre': 'Tiene permiso para crear grupos en la entidad',
+     'menu': 'acceso_configura_grupos'
+     },
+    {'code_nombre': 'borra_grupos',
+     'nombre': 'Tiene permiso para borrar grupos de la entidad',
+     'menu': 'acceso_configura_grupos'
+     },
+    # {'code_nombre': 'crea_materias',
+    #  'nombre': 'Tiene permiso para crear materias en la entidad',
+    #  'menu': 'acceso_define_materiasSSSSSSSSSSSSSSSSSSSSSSSSSS'
+    #  },
+    # {'code_nombre': 'borra_materias',
+    #  'nombre': 'Tiene permiso para borrar materias de la entidad',
+    #  'menu': 'acceso_define_materiasSSSSSSSSSSSSSSSSSSSSSSSSSS'
+    #  },
     {'code_nombre': 'evalua_materias_asignadas',
      'nombre': 'Tiene permiso para evaluar las materias asignadas como evaluador',
      'menu': 'acceso_evaluar_materias'

@@ -21,7 +21,7 @@ from mensajes.models import Aviso
 # Create your views here.
 
 
-# @permiso_required('acceso_configura_cursos')
+@permiso_required('acceso_configura_cursos')
 def configura_cursos(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST' and request.is_ajax():
@@ -134,36 +134,7 @@ def departamentos_didacticos(request):
     return render(request, "configura_cursos.html", respuesta)
 
 
-# @permiso_required('acceso_define_cursos')
-# def define_curso(request):
-#     g_e = request.session['gauser_extra']
-#     if request.method == 'POST' and request.is_ajax():
-#         action = request.POST['action']
-#         if action == 'add_curso':
-#             curso = Curso.objects.create(nombre='Curso nuevo', entidad=g_e.ronda.entidad, etapa='', tipo='',
-#                                          nombre_especifico='', familia='')
-#             accordion = render_to_string('configura_cursos_formulario.html', {'curso': curso})
-#             return HttpResponse(accordion)
-#         elif action == 'delete_curso':
-#             curso = Curso.objects.get(id=request.POST['curso'], entidad=g_e.ronda.entidad)
-#             curso.delete()
-#             return HttpResponse('Curso borrado')
-#         elif action == 'change_campo':
-#             curso = Curso.objects.get(id=request.POST['curso'], entidad=g_e.ronda.entidad)
-#             setattr(curso, request.POST['campo'], request.POST['value'])
-#             curso.save()
-#             return HttpResponse(request.POST['value'])
-#
-#     respuesta = {
-#         'formname': 'define_curso',
-#         'subentidades': Subentidad.objects.filter(entidad=g_e.ronda.entidad, fecha_expira__gt=datetime.today()),
-#         'cursos': Curso.objects.filter(entidad=g_e.ronda.entidad),
-#         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-#     }
-#     return render(request, "configura_cursos.html", respuesta)
-
-
-# @permiso_required('acceso_configura_grupos')
+@permiso_required('acceso_configura_grupos')
 def configura_grupos(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST' and request.is_ajax():
