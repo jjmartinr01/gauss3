@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import os
 
 from django.db import models
+from django.db.models import Q
 from datetime import date
 from entidades.models import Entidad, Subentidad, Ronda, Dependencia, Gauser_extra
 from estudios.models import Curso as ECurso
@@ -195,7 +196,8 @@ class Horario(models.Model):
 
     @property
     def horas(self):
-        return self.sesion_set.all().values_list('inicio', 'fin').distinct().order_by('inicio')
+        return Tramo_horario.objects.filter(horario=self).values_list('inicio', 'fin').order_by('inicio')
+        # return self.sesion_set.all().values_list('inicio', 'fin').distinct().order_by('inicio')
 
     @property
     def hora_inicio(self):
@@ -241,6 +243,13 @@ class Horario(models.Model):
             ss = Sesion.objects.filter(horario=self, inicio=hora[0], fin=hora[1], actividad__guardia=True, dia=dia)
             gs.append({'hora': hora, 'sesiones': ss})
         return gs
+
+    @property
+    def sesiones_error(self):
+        tramos = Tramo_horario.objects.filter(horario=self)
+        inicios = tramos.values_list('inicio', flat=True)
+        finales = tramos.values_list('fin', flat=True)
+        return Sesion.objects.filter(Q(horario=self), ~Q(inicio__in=inicios) | ~Q(fin__in=finales))
 
     def __str__(self):
         p = ' - Predeterminado' if self.predeterminado else ''

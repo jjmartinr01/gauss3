@@ -84,18 +84,38 @@
                 </div>
             </div>
 
-{#            {% if sesiones_error %}#}
+            {% if horario.sesiones_error %}
                 <div class="row">
-                <div class="columns large-12">
-                    <p><b>Sesiones fuera de los tramos horarios definidos anteriormente:</b></p>
-                    <p><a class="button sesiones_error" data-horario="{{ horario.id }}">comprobar</a> </p>
+                    <div class="columns large-12">
+                        <p><b>Hay sesiones fuera de los tramos horarios definidos anteriormente. Esto se entiende
+                        como un error y debería ser solucionado. Las sesiones son:</b></p>
+                    </div>
                 </div>
-            </div>
-<div class="row">
-                <div class="columns large-12" id="sesiones_error{{ horario.id }}">
+                <div class="row">
+                    <table id="sesiones_error{{ horario.id }}">
+                        <tr>
+                            <th>Afectado</th>
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Grupo</th>
+                            <th>Materia</th>
+                            <th>Actividad</th>
+                        </tr>
+                        <tbody id="tbody_sesiones_error{{ horario.id }}">
+                        {% for s in horario.sesiones_error %}
+                            <tr title="{{ s.id }}">
+                                <td>{{ s.g_e.gauser.get_full_name }}</td>
+                                <td>{{ s.inicio }}</td>
+                                <td>{{ s.fin }}</td>
+                                <td>{{ s.grupo.nombre }}</td>
+                                <td>{{ s.materia.nombre }}</td>
+                                <td>{{ s.actividad.nombre }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-{#        {% endif %}#}
+            {% endif %}
         </div>
     </div>
 </dd>

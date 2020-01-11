@@ -223,15 +223,5 @@
                 $("#update_ok").show().delay(1500).fadeOut();
             });
         });
-
-        $('#Contenido').on('click', '.sesiones_error', function (e) {
-            e.preventDefault();
-            var horario = $(this).data('horario');
-            $.post("/define_horario/", {action: 'comprobar_sesiones_error', horario: horario}, function (data) {
-                $('#sesiones_error' + data.horario).html(data.sesiones_error);
-                $("#update_ok").show().delay(1500).fadeOut();
-            });
-        });
-
     </script>
 {% endblock %}

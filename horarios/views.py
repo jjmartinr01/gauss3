@@ -198,13 +198,6 @@ def define_horario(request):
             tramo = Tramo_horario.objects.get(id=request.POST['tramo'], horario=horario)
             tramo.delete()
             return HttpResponse(True)
-        elif action == 'comprobar_sesiones_error':
-            horario = Horario.objects.get(id=request.POST['horario'], entidad=g_e.ronda.entidad)
-            tramos = Tramo_horario.objects.filter(horario=horario)
-            inicios = tramos.values_list('inicio', flat=True)
-            finales = tramos.values_list('fin', flat=True)
-            sesiones_error = Sesion.objects.filter(Q(horario=horario), ~Q(inicio__in=inicios) | ~Q(fin__in=finales)).values_list('id', 'inicio', 'fin', 'g_e__gauser__first_name', 'g_e__gauser__last_name')
-            return JsonResponse({'sesiones_error': sesiones_error, 'horario': horario.id, 'ok': True})
     return render(request, "define_horario.html", {
         'horarios': horarios.order_by('-id'),
         'formname': 'define_horario',
@@ -599,7 +592,8 @@ def horarios_ajax(request):
                                                         'sesion': sesion, 'ge_faltas': ge_faltas})
             return HttpResponse(texto)
         elif action == 'change_fecha_alta':
-            sesion = Sesion.objects.get(id=int(request.POST['sesion']), tramo_horario__horario__entidad=g_e.ronda.entidad)
+            sesion = Sesion.objects.get(id=int(request.POST['sesion']),
+                                        tramo_horario__horario__entidad=g_e.ronda.entidad)
             fecha_falta = datetime.strptime(request.POST['fecha_falta'], '%d/%m/%Y')
             ge_faltas = list(
                 Falta_asistencia.objects.filter(sesion=sesion, fecha_falta=fecha_falta).values_list('g_e__id',
@@ -607,13 +601,15 @@ def horarios_ajax(request):
             return JsonResponse(ge_faltas, safe=False)
         elif action == 'add_falta':
             fecha_falta = datetime.strptime(request.POST['fecha_falta'], '%d/%m/%Y')
-            sesion = Sesion.objects.get(id=int(request.POST['sesion']), tramo_horario__horario__entidad=g_e.ronda.entidad)
+            sesion = Sesion.objects.get(id=int(request.POST['sesion']),
+                                        tramo_horario__horario__entidad=g_e.ronda.entidad)
             ge = Gauser_extra.objects.get(id=int(request.POST['ge']), ronda=g_e.ronda)
             Falta_asistencia.objects.get_or_create(fecha_falta=fecha_falta, sesion=sesion, g_e=ge)
             return HttpResponse(True)
         elif action == 'del_falta':
             fecha_falta = datetime.strptime(request.POST['fecha_falta'], '%d/%m/%Y')
-            sesion = Sesion.objects.get(id=int(request.POST['sesion']), tramo_horario__horario__entidad=g_e.ronda.entidad)
+            sesion = Sesion.objects.get(id=int(request.POST['sesion']),
+                                        tramo_horario__horario__entidad=g_e.ronda.entidad)
             ge = Gauser_extra.objects.get(id=int(request.POST['ge']), ronda=g_e.ronda)
             Falta_asistencia.objects.get(fecha_falta=fecha_falta, sesion=sesion, g_e=ge).delete()
             return HttpResponse(True)
@@ -624,12 +620,14 @@ def horarios_ajax(request):
             texto = render_to_string('lista_asistentes.html', {'ges': ges, 'sesion': sesion})
             return HttpResponse(texto)
         elif action == 'add_asistente':
-            sesion = Sesion.objects.get(id=int(request.POST['sesion']), tramo_horario__horario__entidad=g_e.ronda.entidad)
+            sesion = Sesion.objects.get(id=int(request.POST['sesion']),
+                                        tramo_horario__horario__entidad=g_e.ronda.entidad)
             ge = Gauser_extra.objects.get(id=int(request.POST['ge']), ronda=g_e.ronda)
             sesion.asistentes.add(ge)
             return HttpResponse(True)
         elif action == 'del_asistente':
-            sesion = Sesion.objects.get(id=int(request.POST['sesion']), tramo_horario__horario__entidad=g_e.ronda.entidad)
+            sesion = Sesion.objects.get(id=int(request.POST['sesion']),
+                                        tramo_horario__horario__entidad=g_e.ronda.entidad)
             ge = Gauser_extra.objects.get(id=int(request.POST['ge']), ronda=g_e.ronda)
             sesion.asistentes.remove(ge)
             return HttpResponse(True)
@@ -823,7 +821,6 @@ def carga_masiva_horarios(request):
             except:
                 return JsonResponse({'ok': False})
 
-
     return render(request, "carga_masiva_horarios.html",
                   {
                       'iconos': ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
@@ -962,7 +959,6 @@ def xml_racima(xml_file, request):
         #                     u'La materia %s, asignada al curso %s no ha podido ser creada ya que dicho curso no existe.' % (
         #                         nombre, curso_codigo))
 
-
     # for elemento in xml_file.xpath(".//grupo_datos[@seq='ACTIVIDADES']/grupo_datos"):
     for elemento in xml_file.findall(".//grupo_datos[@seq='ACTIVIDADES']/grupo_datos"):
         nombre = elemento.find('dato[@nombre_dato="D_ACTIVIDAD"]').text
@@ -1005,7 +1001,6 @@ def xml_racima(xml_file, request):
             dependencia.observaciones += u'<br>Actualizada el %s' % datetime.now()
             dependencia.save()
             logger.info(u'Se actualiza la dependencia: %s' % nombre)
-
 
         # try:
         #     dependencia = Dependencia.objects.get(entidad=g_e.ronda.entidad, clave_ex=dependencia_codigo)
@@ -1120,7 +1115,8 @@ def xml_racima(xml_file, request):
         crea_departamentos(g_e.ronda)
         especialidades = Especialidad_entidad.objects.filter(especialidad__nombre__icontains=espec, ronda=g_e.ronda)
         if especialidades.count() == 0:
-            esp_funcionario = Especialidad_funcionario.objects.filter(Q(nombre__icontains=espec), ~Q(cuerpo__nombre__icontains="catedr"))
+            esp_funcionario = Especialidad_funcionario.objects.filter(Q(nombre__icontains=espec),
+                                                                      ~Q(cuerpo__nombre__icontains="catedr"))
             if esp_funcionario.count() == 0:
                 especialidad = None
                 crear_aviso(request, False, u'No se ha encontrado la especialidad asociada a: %s' % (espec))
@@ -1252,7 +1248,8 @@ def xml_penalara(xml_file, request):
                 dependencia = Dependencia.objects.get(entidad=g_e.ronda.entidad, clave_ex=dependencia)
             except:
                 crear_aviso(request, False, u'Se crea el aula: ' + dependencia)
-                dependencia = Dependencia.objects.create(entidad=g_e.ronda.entidad, nombre=dependencia, clave_ex=dependencia)
+                dependencia = Dependencia.objects.create(entidad=g_e.ronda.entidad, nombre=dependencia,
+                                                         clave_ex=dependencia)
 
         actividad = sesion.find('TAREA').text
         materia_sostenido = sesion.find('MATERIA').text
@@ -1267,10 +1264,12 @@ def xml_penalara(xml_file, request):
                         actividad = Actividad.objects.get(clave_ex=materia_sostenido, entidad=g_e.ronda.entidad)
                     else:
                         crear_aviso(request, False, u'Se crea la actividad: ' + actividad)
-                        actividad = Actividad.objects.create(nombre=actividad, clave_ex=actividad, entidad=g_e.ronda.entidad)
+                        actividad = Actividad.objects.create(nombre=actividad, clave_ex=actividad,
+                                                             entidad=g_e.ronda.entidad)
                 except:
                     crear_aviso(request, False, u'Se crea la actividad: ' + actividad)
-                    actividad = Actividad.objects.create(nombre=actividad, clave_ex=actividad, entidad=g_e.ronda.entidad)
+                    actividad = Actividad.objects.create(nombre=actividad, clave_ex=actividad,
+                                                         entidad=g_e.ronda.entidad)
 
         if docente:
             Sesion.objects.create(nombre=tramo_horario.nombre, inicio=tramo_horario.inicio, fin=tramo_horario.fin,
@@ -1278,7 +1277,7 @@ def xml_penalara(xml_file, request):
                                   actividad=actividad, horario=horario)
 
 
-# @permiso_required('acceso_guardias_horarios')
+@permiso_required('acceso_guardias_horarios')
 def guardias_horario(request):
     g_e = request.session['gauser_extra']
     ronda = request.session['ronda']
