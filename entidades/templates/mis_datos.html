@@ -35,25 +35,39 @@
             <div class="large-3 columns">
                 <label>Nombre de usuario
                     <input type="text" value="{{ miembro_unidad.gauser.username }}" data-id="{{ miembro_unidad.id }}"
-                           data-campo="username" class="campo_gauser">
+                           data-campo="username" class="campo_gauser" maxlength="50">
                 </label>
             </div>
-            <div class="large-3 columns">
+
+
+            <div class="large-4 columns">
                 <label>Escribe contraseña
                     <input type="password" id="dialog_password1" name="password1"
-                           placeholder="Sólo si deseas cambiarla"/>
+                           placeholder="Sólo si deseas cambiarla" class="change_password"/>
                 </label>
             </div>
-            <div class="large-3 columns">
-                <label>Repite contraseña
-                    <input type="password" id="dialog_password2" name="password2"
+            <div class="large-4 columns">
+                <label style="font-weight: 800;">Repite contraseña <span id="pass_warning"
+                                                                         style="color:red;display: none;"><i
+                        class="fa fa-warning"></i></span>
+                    <span id="pass_ok" style="color:green;display: none;"><i class="fa fa-check"></i></span>
+                    <input type="password" id="dialog_password2" class="change_password" name="password2"
                            placeholder="Igual que anterior si deseas cambiarla"/>
+                    <ul style="color:red">
+                        <li id="no_coinciden" class="warnings" style="display: none;">Las contraseñas no coinciden</li>
+                        <li id="no_length" class="warnings" style="display: none;">Deben tener más de 6 caracteres</li>
+                        <li id="no_upper" class="warnings" style="display: none;">Deben tener alguna maýuscula</li>
+                        <li id="no_lower" class="warnings" style="display: none;">Deben tener alguna minúscula</li>
+                        <li id="no_digit" class="warnings" style="display: none;">Deben tener algún número</li>
+                    </ul>
                 </label>
             </div>
-            <div class="large-3 columns">
+            <div class="large-1 columns">
                 <label>&nbsp;
-                </label><a data-id="{{ miembro_unidad.id }}" class="button tiny change_password"><b>Cambia
-                contraseña</b></a>
+                    <a class="button tiny radius disabled secondary" id="boton_password"
+                       data-id="{{ miembro_unidad.id }}"
+                       title="Cambiar la contraseña">Cambiar</a>
+                </label>
             </div>
         </div>
 
@@ -473,25 +487,113 @@
         $('#id_num_cuenta_bancaria').prop('title', '{{miembro_unidad.banco.nombre}}');
 
 
-        $(".change_password").on('click', function (e) {
+        {#$("#boton_password3").on('click', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var ge_id = $(this).data('id');#}
+        {#    $.post("/mis_datos_ajax/", {#}
+        {#        action: 'change_password',#}
+        {#        ge_id: ge_id,#}
+        {#        password1: $('#dialog_password1').val(),#}
+        {#        password2: $('#dialog_password2').val()#}
+        {#    }, function (data) {#}
+        {#        if (data.ok) {#}
+        {#            $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            show_mensajes({title: 'Cambio de contraseña', texto: data.mensaje})#}
+        {#        } else {#}
+        {#            $("#update_error").show().delay(1500).fadeOut();#}
+        {#            show_mensajes({title: 'Error', texto: data.mensaje})#}
+        {#        }#}
+        {#        $('#dialog_password1').val('');#}
+        {#        $('#dialog_password2').val('');#}
+        {#    }, 'json');#}
+        {# });#}
+
+        $('#Contenido').on('click', '#boton_password', function (e) {
             e.preventDefault();
             var ge_id = $(this).data('id');
-            $.post("/mis_datos_ajax/", {
-                action: 'change_password',
-                ge_id: ge_id,
-                password1: $('#dialog_password1').val(),
-                password2: $('#dialog_password2').val()
-            }, function (data) {
-                if (data.ok) {
-                    $("#update_ok").show().delay(1500).fadeOut();
-                    show_mensajes({title: 'Cambio de contraseña', texto: data.mensaje})
-                } else {
-                    $("#update_error").show().delay(1500).fadeOut();
-                    show_mensajes({title: 'Error', texto: data.mensaje})
-                }
-                $('#dialog_password1').val('');
-                $('#dialog_password2').val('');
-            }, 'json');
+            var pass1 = $('#dialog_password1').val();
+            var pass2 = $('#dialog_password2').val();
+            if ((pass1 == pass2) && pass1.length > 4 && !$(this).hasClass('disabled')) {
+                $.post("/mis_datos_ajax/", {
+                    action: 'change_password',
+                    ge_id: ge_id,
+                    password1: $('#dialog_password1').val(),
+                    password2: $('#dialog_password2').val()
+                }, function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        show_mensajes({title: 'Cambio de contraseña', texto: data.mensaje})
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                        show_mensajes({title: 'Error', texto: data.mensaje})
+                    }
+                    $('#dialog_password1').val('');
+                    $('#dialog_password2').val('');
+                }, 'json');
+            }
+        });
+
+        $('#Contenido').on('keyup change', '.change_password', function (e) {
+            var pass1 = $('#dialog_password1').val();
+            var pass2 = $('#dialog_password2').val();
+            var no_coinciden = false;
+            var no_length = false;
+            var no_upper = false;
+            var no_lower = false;
+            var no_digit = false;
+            var warning = false;
+            var lower = /[a-z]/;
+            var upper = /[A-Z]/;
+            var digit = /[0-9]/;
+            if (pass1.length < 6 && pass1.length > 0) {
+                $('#no_length').show();
+                no_length = true;
+            } else {
+                $('#no_length').hide();
+                no_length = false;
+            }
+            if (pass1 != pass2) {
+                $('#no_coinciden').show();
+                no_coinciden = true;
+            } else {
+                $('#no_coinciden').hide();
+                no_coinciden = false;
+            }
+            if (!lower.test(pass1)) {
+                $('#no_lower').show();
+                no_lower = true;
+            } else {
+                $('#no_lower').hide();
+                no_lower = false;
+            }
+            if (!upper.test(pass1)) {
+                $('#no_upper').show();
+                no_upper = true;
+            } else {
+                $('#no_upper').hide();
+                no_upper = false;
+            }
+            if (!digit.test(pass1)) {
+                $('#no_digit').show();
+                no_digit = true;
+            } else {
+                $('#no_digit').hide();
+                no_digit = false;
+            }
+            warning = no_coinciden || no_length || no_upper || no_lower || no_digit;
+            console.log(no_coinciden, no_length, no_upper, no_lower, no_digit);
+            if (warning) {
+                $('#pass_warning').show();
+                $('#boton_password').addClass('disabled').addClass('secondary');
+            } else {
+                $('#pass_warning').hide();
+                $('#boton_password').removeClass('disabled').removeClass('secondary');
+            }
+            if (pass1.length == 0 && pass2.length == 0) {
+                $('#pass_warning').hide();
+                $('#boton_password').addClass('disabled').addClass('secondary');
+                $('.warnings').hide();
+            }
         });
 
 

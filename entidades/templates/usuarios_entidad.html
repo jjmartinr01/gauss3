@@ -182,30 +182,30 @@
                 if (!lower.test(pass1)) {
                     $('#no_lower').show();
                     no_lower = true;
-                }else{
+                } else {
                     $('#no_lower').hide();
                     no_lower = false;
                 }
                 if (!upper.test(pass1)) {
                     $('#no_upper').show();
                     no_upper = true;
-                }else{
+                } else {
                     $('#no_upper').hide();
                     no_upper = false;
                 }
                 if (!digit.test(pass1)) {
                     $('#no_digit').show();
                     no_digit = true;
-                }else{
+                } else {
                     $('#no_digit').hide();
                     no_digit = false;
                 }
                 warning = no_coinciden || no_length || no_upper || no_lower || no_digit;
                 console.log(no_coinciden, no_length, no_upper, no_lower, no_digit);
-                if (warning){
+                if (warning) {
                     $('#pass_warning').show();
                     $('#boton_password').addClass('disabled').addClass('secondary');
-                }else{
+                } else {
                     $('#pass_warning').hide();
                     $('#boton_password').removeClass('disabled').removeClass('secondary');
                 }
@@ -219,10 +219,12 @@
             $('#Contenido').on('click', '#boton_password', function (e) {
                 var pass1 = $('#password1').val();
                 var pass2 = $('#password2').val();
-                if ((pass1 == pass2) && pass1.length > 4) {
+                if ((pass1 == pass2) && pass1.length > 4 && !$(this).hasClass('disabled')) {
                     var ge = $('#gauser_extra_selected').val();
                     post_change('mod_password', pass1, ge, pass2);
                 }
+                $('#password1').val('');
+                $('#password2').val('');
             });
 
             $('#Contenido').on('change', '.select_tutor', function (e) {
@@ -233,7 +235,7 @@
             });
 
             $('#Contenido').on('click', '#fake_file_input', function () {
-               $('#id_foto').click();
+                $('#id_foto').click();
                 setTimeout(function () {
                     $('#id_foto').val($('#id_foto').val());
                 }, 1);
@@ -351,7 +353,7 @@
 
         load_user({{ gauser_extra_selected.id }});
 
-    {#    Código necesario para el control de las cuentas bancarias #}
+        {#    Código necesario para el control de las cuentas bancarias #}
 
         $('#Contenido').on('keyup change', '#num_cuenta_bancaria', function () {
             var ok = false;
@@ -429,7 +431,7 @@
             }
         });
 
-            // Obtenido de:  https://www.gabilos.com/textocalculadoradccuenta.htm
+        // Obtenido de:  https://www.gabilos.com/textocalculadoradccuenta.htm
         // Calculate the checksum and assemble the IBAN.
         function CalcularIBAN(account) {
             //var checksum = ChecksumIBAN("ES" + "00" + account);

@@ -119,7 +119,7 @@ def mis_datos_ajax(request):
                 if request.POST['password1'] == request.POST['password2'] and request.POST['password1'] != '':
                     ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['ge_id'])
                     ge.gauser.set_password(request.POST['password1'])
-                    ge.save()
+                    ge.gauser.save()
                     if ge == g_e:
                         request.session['gauser_extra'] = Gauser_extra.objects.get(id=ge.id)
                     return JsonResponse({'ok': True, 'mensaje': 'Cambio de contraseña realizado correctamente.'})
@@ -314,50 +314,6 @@ def usuarios_entidad(request):
         except:
             g_e_selected = False
             crear_aviso(request, False, 'No hay ningún usuario.<br>En primer lugar debes crear al menos un socio.')
-
-    # if request.method == 'GET':
-    #     if 'id' in request.GET:
-    #         reserva = Reserva_plaza.objects.get(id=request.GET['id'])
-    #         nombre_usuario = crear_nombre_usuario(reserva.first_name, reserva.last_name)
-    #         g_nuevo = Gauser.objects.create_user(nombre_usuario, reserva.email, pass_generator())
-    #         g_nuevo.sexo = reserva.sexo
-    #         g_nuevo.address = reserva.address
-    #         g_nuevo.nacimiento = reserva.nacimiento
-    #         g_nuevo.telfij = reserva.telfij
-    #         g_nuevo.telmov = reserva.telmov
-    #         g_nuevo.save()
-    #         g_e_nuevo = Gauser_extra.objects.create(gauser=g_nuevo, entidad=g_e.ronda.entidad, ronda=g_e.ronda,
-    #                                                 id_organizacion=pass_generator(), activo=True)
-    #         crear_aviso(request, False,
-    #                     u'Añadido el nuevo socio. Es necesario rellenar el IBAN, el número de identificación en la entidad, ...')
-    #
-    #         if reserva.first_name_tutor1 or reserva.last_name_tutor1:
-    #             nombre_usuario = crear_nombre_usuario(reserva.first_name_tutor1, reserva.last_name_tutor1)
-    #             g_t1_nuevo = Gauser.objects.create_user(nombre_usuario, reserva.email_tutor1, pass_generator())
-    #             g_t1_nuevo.address = reserva.address
-    #             g_t1_nuevo.telfij = reserva.telfij_tutor1
-    #             g_t1_nuevo.telmov = reserva.telmov_tutor1
-    #             g_t1_nuevo.save()
-    #             g_e_t1_nuevo = Gauser_extra.objects.create(gauser=g_t1_nuevo, entidad=g_e.ronda.entidad,
-    #                                                        ronda=g_e.ronda,
-    #                                                        id_organizacion='', activo=True)
-    #             g_e_nuevo.tutor1 = g_e_t1_nuevo
-    #             crear_aviso(request, False,
-    #                         u'Añadido el primer tutor del nuevo socio. Algunos de los datos será necesario rellenarlos a mano.')
-    #
-    #         if reserva.first_name_tutor2 or reserva.last_name_tutor2:
-    #             nombre_usuario = crear_nombre_usuario(reserva.first_name_tutor2, reserva.last_name_tutor2)
-    #             g_t2_nuevo = Gauser.objects.create_user(nombre_usuario, reserva.email_tutor2, pass_generator())
-    #             g_t2_nuevo.address = reserva.address
-    #             g_t2_nuevo.telfij = reserva.telfij_tutor2
-    #             g_t2_nuevo.telmov = reserva.telmov_tutor2
-    #             g_t2_nuevo.save()
-    #             g_e_t2_nuevo = Gauser_extra.objects.create(gauser=g_t2_nuevo, entidad=g_e.ronda.entidad,
-    #                                                        ronda=g_e.ronda,
-    #                                                        id_organizacion='', activo=True)
-    #             g_e_nuevo.tutor2 = g_e_t2_nuevo
-    #             crear_aviso(request, False,
-    #                         u'Añadido el segundo tutor del nuevo socio. Algunos de los datos será necesario rellenarlos a mano.')
 
     respuesta = {
         'iconos':
