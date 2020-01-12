@@ -30,6 +30,14 @@ MESES = (
 register = Library()
 
 @register.filter
+def genero(g_e, terminaciones):
+    m, f = terminaciones.replace(' ', '').split(',')
+    if g_e.gauser.sexo == 'H':
+        return m
+    else:
+        return f
+
+@register.filter
 def auto_id(g_e):
     num = Gauser_extra.objects.filter(ronda=g_e.ronda, id_entidad=g_e.id_entidad).count()
     if num > 1 or not ge_id_patron_match(g_e):

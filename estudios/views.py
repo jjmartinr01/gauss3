@@ -9,7 +9,7 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 
 from autenticar.control_acceso import permiso_required
-from entidades.models import Subentidad, Gauser_extra, Ronda, CargaMasiva
+from entidades.models import Subentidad, Gauser_extra, Ronda, CargaMasiva, Dependencia
 from entidades.tasks import carga_masiva_from_excel
 from estudios.models import Curso, Materia, ETAPAS, Grupo, Matricula
 from gauss.funciones import usuarios_de_gauss, usuarios_ronda, human_readable_list, html_to_pdf
@@ -174,6 +174,8 @@ def configura_grupos(request):
                 grupo.ronda = Ronda.objects.get(id=request.POST['value'], entidad=g_e.ronda.entidad)
             elif request.POST['campo'] == 'curso':
                 grupo.curso = Curso.objects.get(id=request.POST['value'], entidad=g_e.ronda.entidad)
+            elif request.POST['campo'] == 'aula':
+                grupo.aula = Dependencia.objects.get(id=request.POST['value'], entidad=g_e.ronda.entidad)
             grupo.save()
             return HttpResponse(request.POST['value'])
         elif action == 'open_accordion':
@@ -182,14 +184,16 @@ def configura_grupos(request):
             cursos = Curso.objects.filter(ronda=g_e.ronda)
             sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
             docentes = usuarios_ronda(g_e.ronda, subentidades=[sub_docentes])
+            ds = Dependencia.objects.filter(entidad=g_e.ronda.entidad, es_aula=True)
             html = render_to_string('configura_grupos_formulario_content.html',
-                                    {'grupo': grupo, 'rondas': rondas, 'cursos': cursos, 'docentes': docentes})
+                                    {'grupo': grupo, 'dependencias': ds, 'cursos': cursos, 'docentes': docentes})
             return JsonResponse({'html': html, 'ok': True})
 
     respuesta = {
         'formname': 'configura_grupos',
         'subentidades': Subentidad.objects.filter(entidad=g_e.ronda.entidad, fecha_expira__gt=datetime.today()),
         'grupos': Grupo.objects.filter(ronda=g_e.ronda),
+        'g_e': g_e,
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
     }
     return render(request, "configura_grupos.html", respuesta)

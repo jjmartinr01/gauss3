@@ -13,42 +13,82 @@
             <h4 style="text-align: center;color: #008CBA;"><strong>Tutores y asignación de alumnos</strong></h4>
         </div>
 
-        <div class="row">
-            <div class="columns large-7">
-                <label>Selecciona el docente que será tutor:
-                    <select id="selecciona_docente">
-                        <option value="">--------</option>
-                        {% for docente in docentes %}
-                            <option value="{{ docente.id }}">{{ docente.gauser.last_name }}, {{ docente.gauser.first_name }}</option>
-                        {% endfor %}
-                    </select>
-                </label>
-            </div>
-            <div class="columns large-5">
-                <label>Actuando como:
-                    <select id="selecciona_tipo">
-                        <option value="tutor" selected>Tutor</option>
-                        <option value="cotutor">Co-Tutor</option>
-                    </select>
-                </label>
-            </div>
+        <ul class="tabs" data-tab role="tablist">
+            <li class="tab-title active" role="presentation" data-id="0">
+                <a href="#tab1" role="tab" tabindex="0" aria-selected="true" aria-controls="tab1">
+                    <b id="texto0">Configuración</b></a>
+            </li>
+            <li class="tab-title" role="presentation" data-id="1">
+                <a href="#tab2" role="tab" tabindex="0" aria-selected="false" aria-controls="tab2">
+                    <b id="texto1" style="color:#74bfdd;">Listado</b></a>
+            </li>
+        </ul>
+        <div class="tabs-content">
+            <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
+                <div class="row">
+                    <div class="columns large-7">
+                        <label>Selecciona el docente que será tutor:
+                            <select id="selecciona_docente">
+                                <option value="">--------</option>
+                                {% for docente in docentes %}
+                                    <option value="{{ docente.id }}">{{ docente.gauser.last_name }}, {{ docente.gauser.first_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                    </div>
+                    <div class="columns large-5">
+                        <label>Actuando como:
+                            <select id="selecciona_tipo">
+                                <option value="tutor" selected>Tutor</option>
+                                <option value="cotutor">Co-Tutor</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="columns large-12">
+                        <label>Indica los grupos en los que tiene alumnos <span id="span_tutorados">tutorados</span>:
+                            <select id="selecciona_grupos" multiple>
+                                <option value="">--------</option>
+                                {% for grupo in grupos %}
+                                    <option value="{{ grupo.id }}">{{ grupo.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="alumnos"></div>
+            </section>
+            <section role="tabpanel" aria-hidden="false" class="content" id="tab2">
+                <table style="width:100%">
+                    <thead>
+                    <tr>
+                        <th>Grupo</th>
+                        <th>Aula</th>
+                        <th>Profesor/a</th>
+                        <th>Nº Alumnos</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for grupo in grupos %}
+                        <tr>
+                            <td>{{ grupo.nombre }}</td>
+                            <td>{{ grupo.aula.nombre }}</td>
+                            <td>
+                                {% for t in grupo.tutores %}{{ t.gauser.get_full_name }}
+                                    (<b>Tuto{{ t|genero:'r,ra' }}</b>)<br>{% endfor %}
+                                {% for c in grupo.cotutores %}{{ c.gauser.get_full_name }}
+                                    (<b>Co-Tuto{{ c|genero:'r,ra' }}</b>)<br>{% endfor %}
+                            </td>
+                            <td>{{ grupo.gausers_extra_horarios|length }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </section>
         </div>
-
-        <div class="row">
-            <div class="columns large-12">
-                <label>Indica los grupos en los que tiene alumnos <span id="span_tutorados">tutorados</span>:
-                    <select id="selecciona_grupos" multiple>
-                        <option value="">--------</option>
-                        {% for grupo in grupos %}
-                            <option value="{{ grupo.id }}">{{ grupo.nombre }}</option>
-                        {% endfor %}
-                    </select>
-                </label>
-            </div>
-        </div>
-
-        <div id="alumnos"></div>
-
     </form>
 {% endblock %}
 

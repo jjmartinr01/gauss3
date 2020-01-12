@@ -28,22 +28,22 @@
     </div>
 
     <div class="columns large-2">
-        <label>Curso escolar:
-            {#            <select name="ronda" data-campo="ronda" class="campo" data-grupo="{{ grupo.id }}">#}
-            {#                <option value="">-------------</option>#}
-            {#                {% for r in rondas %}#}
-            {#                    <option value="{{ r.id }}" {% if grupo.ronda == r %}selected{% endif %}>{{ r.nombre }}</option>#}
-            {#                {% endfor %}#}
-            {#            </select>#}
+        <label>Aula:
+            <select name="aula" data-campo="aula" class="campo" data-grupo="{{ grupo.id }}">
+                <option value="">-------------</option>
+                {% for d in dependencias %}
+                    <option value="{{ d.id }}" {% if grupo.aula == d %}selected{% endif %}>{{ d.nombre }}</option>
+                {% endfor %}
+            </select>
         </label>
-        {{ grupo.ronda.nombre }}
     </div>
 
     {% if grupo.cotutores|length > 0 %}
         <div class="columns large-3">
             <label>Tutor:
             </label>
-            {% for tutor in grupo.tutores %}{% if not forloop.first %} / {% endif %}{{ tutor.gauser.get_full_name }} {% endfor %}
+            {% for tutor in grupo.tutores %}{% if not forloop.first %}
+                / {% endif %}{{ tutor.gauser.get_full_name }} {% endfor %}
         </div>
 
         <div class="columns large-3">
@@ -56,13 +56,15 @@
                 {#                {% endfor %}#}
                 {#            </select>#}
             </label>
-            {% for cotutor in grupo.cotutores %}{% if not forloop.first %} / {% endif %}{{ cotutor.gauser.get_full_name }} {% endfor %}
+            {% for cotutor in grupo.cotutores %}{% if not forloop.first %}
+                / {% endif %}{{ cotutor.gauser.get_full_name }} {% endfor %}
         </div>
     {% else %}
         <div class="columns large-6">
             <label>Tutor:
             </label>
-            {% for tutor in grupo.tutores %}{% if not forloop.first %} / {% endif %}{{ tutor.gauser.get_full_name }} {% endfor %}
+            {% for tutor in grupo.tutores %}{% if not forloop.first %}
+                / {% endif %}{{ tutor.gauser.get_full_name }} {% endfor %}
         </div>
     {% endif %}
     <div class="columns large-2">

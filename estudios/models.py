@@ -2,7 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import models
-from entidades.models import Entidad, Ronda, Subentidad, Gauser_extra
+from entidades.models import Entidad, Ronda, Subentidad, Gauser_extra, Dependencia
+
 # Create your models here.
 
 ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', 'FP Básica'), ('fa', 'Bachillerato'),
@@ -36,6 +37,7 @@ class Curso(models.Model):
 class Grupo(models.Model):
     ronda = models.ForeignKey(Ronda, blank=True, null=True, related_name='estudios_grupo', on_delete=models.CASCADE)
     cursos = models.ManyToManyField(Curso, blank=True)
+    aula = models.ForeignKey(Dependencia, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField("Nombre", max_length=100)
     observaciones = models.TextField("Observaciones", null=True, blank=True)
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)

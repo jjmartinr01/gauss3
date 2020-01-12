@@ -1273,12 +1273,12 @@ def add_usuario(request):
                   })
 
 
-@permiso_required('acceso_tutores_entidad')
+# @permiso_required('acceso_tutores_entidad')
 def tutores_entidad(request):
     g_e = request.session['gauser_extra']
     sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
     docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
-    grupos = Grupo.objects.filter(ronda=g_e.ronda)
+    grupos = Grupo.objects.filter(ronda=g_e.ronda).order_by('cursos__etapa', 'nombre')
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
         if action == 'selecciona_docente':
