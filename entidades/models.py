@@ -536,7 +536,7 @@ class Gauser_extra(models.Model):
 
     @property
     def permisos_id(self):
-        p_ids = self.permisos.all().values_list('pk', flat=True)
+        p_ids = self.permisos_list.values_list('pk', flat=True)
         return p_ids
 
     class Meta:
