@@ -10,7 +10,7 @@ from entidades.models import Entidad, Subentidad, Ronda, Dependencia, Gauser_ext
 from estudios.models import Curso as ECurso
 from estudios.models import Grupo as EGrupo
 from estudios.models import Materia as EMateria
-from gauss.funciones import pass_generator
+from gauss.funciones import pass_generator, usuarios_ronda
 
 DIAS_SEMANA = (
     ('lunes', 'lunes'),
@@ -238,9 +238,11 @@ class Horario(models.Model):
         return d
 
     def horario_guardias(self, dia):
+        g_es = usuarios_ronda(self.entidad.ronda)
         gs = []
         for hora in self.horas:
-            ss = Sesion.objects.filter(horario=self, inicio=hora[0], fin=hora[1], actividad__guardia=True, dia=dia)
+            ss = Sesion.objects.filter(horario=self, inicio=hora[0], fin=hora[1], actividad__guardia=True, dia=dia,
+                                       g_e__in=g_es).distinct()
             gs.append({'hora': hora, 'sesiones': ss})
         return gs
 
@@ -315,7 +317,7 @@ class Sesion(models.Model):
         offset = self.horario.pixels_offset
         pixels_minuto = self.horario.pixels_minuto
         return (
-                   self.inicio.hour * 60 + self.inicio.minute - hora_inicio.hour * 60 - hora_inicio.minute) * pixels_minuto + offset
+                       self.inicio.hour * 60 + self.inicio.minute - hora_inicio.hour * 60 - hora_inicio.minute) * pixels_minuto + offset
 
     @property
     def height(self):
@@ -423,7 +425,6 @@ class Sesion(models.Model):
 #             print 'Sesion creada'
 
 
-
 TIPO_FALTA = (('f', 'Falta'), ('r', 'Retraso'))
 
 
@@ -442,6 +443,7 @@ def update_tarea(instance, filename):
     nombre = filename.partition('.')
     return os.path.join("guardias/", str(instance.ge.ronda.entidad.code) + '_' + str(instance.id) + '.' + nombre[2])
 
+
 class Guardia(models.Model):
     ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
     sesion = models.ForeignKey(Sesion, on_delete=models.CASCADE)
@@ -458,7 +460,8 @@ class Gauser_extra_horarios(models.Model):
     ge = models.OneToOneField(Gauser_extra, on_delete=models.CASCADE)
     grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE)
     tutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='tutor_ge', on_delete=models.CASCADE)
-    cotutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='cotutor_ge', on_delete=models.CASCADE)
+    cotutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='cotutor_ge',
+                                on_delete=models.CASCADE)
 
     def __str__(self):
         return u'%s - %s' % (self.ge, self.grupo)
@@ -471,7 +474,7 @@ def update_fichero_carga_masiva(instance, filename):
 
 
 class CargaMasiva(models.Model):
-    TIPOS = (('PLUMIER', 'Horarios Peñalara Plumier'), ('', ''), ('', ''), ('', ''), ('', ''), )
+    TIPOS = (('PLUMIER', 'Horarios Peñalara Plumier'), ('', ''), ('', ''), ('', ''), ('', ''),)
     ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE, related_name='horarios')
     fichero = models.FileField("Fichero con datos", upload_to=update_fichero_carga_masiva, blank=True)
     tipo = models.CharField("Tipo de archivo", max_length=15, choices=TIPOS)
@@ -486,13 +489,11 @@ class CargaMasiva(models.Model):
         return u'%s -- Cargado: %s' % (self.ronda, self.cargado)
 
 
-
-
 def sesion2sesion():
     from horarios.models import Sesion
     from estudios.models import Materia as EMateria
     from estudios.models import Grupo as EGrupo
-    sesiones=Sesion.objects.filter(materia__isnull=False, emateria__isnull=True)
+    sesiones = Sesion.objects.filter(materia__isnull=False, emateria__isnull=True)
     for s in sesiones:
         # print s.materia.clave_ex
         emateria = EMateria.objects.get(clave_ex=s.materia.clave_ex, curso__ronda=s.materia.curso.ronda)
