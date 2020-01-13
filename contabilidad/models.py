@@ -244,9 +244,9 @@ class OrdenAdeudo(models.Model):
     PAGO = (('RCUR', 'Pago recurrente'), ('OOFF', 'Pago único'))
     gauser = models.ForeignKey(Gauser, on_delete=models.CASCADE)
     politica = models.ForeignKey(Politica_cuotas, on_delete=models.CASCADE)
-    # seqtp = models.TextField('Tipo de pago/secuencia', default='RCUR', choices=PAGO)
     firma = models.ImageField('Imagen de la firma del deudor', upload_to=update_firma, blank=True, null=True)
-    creado = models.DateTimeField("Fecha y hora en la que se realizó la firma", auto_now_add=True)
+    creado = models.DateTimeField("Fecha y hora en la que se realizó la firma", blank=True, null=True)
+    fecha_firma = models.DateField("Fecha y hora en la que se realizó la firma", blank=True, null=True)
 
     @property
     def debtor_name(self):
