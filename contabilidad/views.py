@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 import os
 import simplejson as json
 import re
@@ -9,6 +9,7 @@ import xlwt
 from xlwt import Formula
 
 from django.shortcuts import render
+from django.utils.timezone import datetime
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.db.models import Q, Sum
@@ -25,7 +26,7 @@ from bancos.views import asocia_banco_ge, num_cuenta2iban
 from gauss.rutas import *
 from gauss.funciones import usuarios_de_gauss, pass_generator
 from contabilidad.models import Presupuesto, Partida, Asiento, Politica_cuotas, Remesa, File_contabilidad, \
-    Remesa_emitida
+    Remesa_emitida, OrdenAdeudo
 from autenticar.control_acceso import permiso_required
 from gauss.funciones import html_to_pdf
 from mensajes.views import crear_aviso
@@ -665,9 +666,14 @@ def ajax_politica_cuotas(request):
                                                                                           date.today().strftime('%B'),
                                                                                           deudores_str)
                                     dbtrnm = '%s %s' % (deudores[0].gauser.last_name, politica.concepto)
+                                    try:
+                                        orden_adeudo = OrdenAdeudo.objects.get(politica=politica, gauser=usuario.gauser)
+                                        dtofsgntr = orden_adeudo.creado
+                                    except:
+                                        dtofsgntr = date(2013, 10, 10)
                                     r = Remesa.objects.create(emitida=remesa_emitida,
-                                                              banco=usuario.banco, dtofsgntr=date(2013, 10, 10),
-                                                              dbtrnm=dbtrnm[:69],
+                                                              banco=usuario.banco, dtofsgntr=dtofsgntr,
+                                                              ge=usuario, dbtrnm=dbtrnm[:69],
                                                               dbtriban=usuario.num_cuenta_bancaria,
                                                               rmtinf=rmtinf[:139], instdamt=importe, counter=n)
                                     fila_excel_remesas += 1
@@ -818,13 +824,16 @@ def lista_socios(request):
         #     Asiento.objects.create(partida=partida, nombre=nombre, cantidad=cantidad, creado=creado, concepto=concepto, modificado=creado)
         #   csv_file.close()
 
-def orden_adeudo_directo_sepa(request):
+def orden_adeudo_directo_sepa(request, id):
     g_e = request.session['gauser_extra']
+    politica = Politica_cuotas.objects.get(id=id)
     return render(request, "orden_domiciliacion_adeudo_directo_sepa.html",
                   {
                       'formname': 'orden_adeudo_directo_sepa',
                       # 'remesas_emitidas': remesas_emitidas,
                       'g_e': g_e,
+                      'hoy': datetime.today(),
+                      'politica': politica,
                       'logo': g_e.ronda.entidad.anagrama.path,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })

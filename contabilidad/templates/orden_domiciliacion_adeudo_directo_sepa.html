@@ -61,42 +61,47 @@
                 <img src="{{ logo }}">
             </div>
             <div class="columns large-10">
-            <h4 style="text-align: center;color: #008CBA;"><strong>Orden de domiciliación de adeudo directo
-                SEPA</strong></h4>
-            <h5 style="text-align: center;color: #008CBA;font-style: italic;"><strong>SEPA Direct Debit Mandate</strong></h5>
+                <h4 style="text-align: center;color: #008CBA;"><strong>Orden de domiciliación de adeudo directo
+                    SEPA</strong></h4>
+                <h5 style="text-align: center;color: #008CBA;font-style: italic;"><strong>SEPA Direct Debit
+                    Mandate</strong></h5>
             </div>
         </div>
         <div class="callout panel row">
             <div class="row">
                 <div class="columns large-12">
                     <label><b>Referencia de la orden de domiciliación</b> / <i>Mandate reference</i>:
-                        <input type="text" value="" name="mandate_reference"></label>
+                        <input type="text" value="{{ politica.mndtid }}" name="mandate_reference" readonly>
+                    </label>
                 </div>
             </div>
             <div class="row">
                 <div class="columns large-12">
                     <label><b>Identificador del acreedor</b> / <i>Creditor´s identifier</i>:
-                        <input type="text" value="" name="creditor_identifier"></label>
+                        <input type="text" value="{{ g_e.ronda.entidad.nif|at_02 }} - {{ g_e.ronda.entidad.name }}"
+                               name="creditor_identifier" readonly></label>
                 </div>
             </div>
             <div class="row">
                 <div class="columns large-12">
                     <label><b>Dirección</b> / <i>Address</i>:
-                        <input type="text" value="" name="creditor_address"></label>
+                        <input type="text" value="{{ g_e.ronda.entidad.address }}" name="creditor_address" readonly></label>
                 </div>
             </div>
 
             <div class="row">
                 <div class="columns large-12">
                     <label><b>Código Postal – Población – Provincia</b> / <i>Postal Code – City – Town</i>:
-                        <input type="text" value="" name="creditor_postalcode_city_town"></label>
+                        <input type="text"
+                               value="{{ g_e.ronda.entidad.postalcode }} – {{ g_e.ronda.entidad.localidad }} – {{ g_e.ronda.entidad.get_provincia_display }}"
+                               name="creditor_postalcode_city_town" readonly></label>
                 </div>
             </div>
 
             <div class="row">
                 <div class="columns large-12">
                     <label><b>País</b> / <i>Country</i>:
-                        <input type="text" value="" name="creditor_country"></label>
+                        <input type="text" value="España" name="creditor_country" readonly></label>
                 </div>
             </div>
         </div>
@@ -120,26 +125,28 @@
             <div class="row">
                 <div class="columns large-12">
                     <label><b>Nombre del deudor</b> / <i>Debtor´s name</i>:
-                        <input type="text" value="" name="debtor_name"></label>
+                        <input type="text" value="{{ g_e.gauser.get_full_name }}" readonly name="debtor_name"></label>
                 </div>
             </div>
             <div class="row">
                 <div class="columns large-12">
                     <label><b>Dirección del deudor</b> / <i>Address of the debtor</i>:
-                        <input type="text" value="" name="debtor_address"></label>
+                        <input type="text" readonly value="{{ g_e.gauser.address }}" name="debtor_address"></label>
                 </div>
             </div>
             <div class="row">
                 <div class="columns large-12">
                     <label><b>Código Postal – Población – Provincia</b> / <i>Postal Code – City – Town</i>:
-                        <input type="text" value="" name="debtor_postalcode_city_town"></label>
+                        <input type="text" readonly
+                               value="{{ g_e.gauser.postalcode }} – {{ g_e.gauser.localidad }} – {{ g_e.gauser.get_provincia_display }}"
+                               name="debtor_postalcode_city_town"></label>
                 </div>
             </div>
 
             <div class="row">
                 <div class="columns large-12">
                     <label><b>País del deudor</b> / <i>Country of the debtor</i>:
-                        <input type="text" value="" name="debtor_country"></label>
+                        <input type="text" value="España" readonly name="debtor_country"></label>
                 </div>
             </div>
 
@@ -147,27 +154,33 @@
                 <div class="columns large-12">
                     <label><b>Switf BIC (puede contener 8 u 11 posiciones)</b> / <i>Switf BIC (up to 8 or 11
                         characters)</i>:
-                        <input type="text" value="" name="debtor_bic"></label>
+                        <input type="text" readonly value="{{ g_e.banco.bic }}" name="debtor_bic"></label>
                 </div>
             </div>
             <div class="row">
                 <div class="columns large-12">
                     <label><b>Número de cuenta – IBAN</b> / <i>Account number – IBAN</i>:
-                        <input type="text" value="" name="debtor_account"></label>
+                        <input type="text" value="{{ g_e.num_cuenta_bancaria }}" readonly name="debtor_account"></label>
                 </div>
             </div>
             <div class="row">
                 <div class="columns large-12">
-                    <label><b>Tipo de pago: ☐ Pago recurrente / Recurrent payment ☐Pago único / One-off payment </b> /
-                        <i>Account number – IBAN</i>:
-                        <input type="text" value="" name="debtor_typseq"></label>
+                    <label><b>Tipo de pago: ☐ Pago recurrente / Recurrent payment ☐Pago único / One-off payment </b>:
+                        <select name="debtor_typseq">
+                            <option value="RCUR">Pago recurrente</option>
+                            <option value="OOFF">Pago único</option>
+                        </select>
+                        <input type="text" value="{{ politica.seqtp }}" readonly name="debtor_typseq">
+                    </label>
                 </div>
             </div>
 
             <div class="row">
                 <div class="columns large-12">
                     <label><b> Fecha – Localidad </b> / <i>Date – location in wich you are signing</i>:
-                        <input type="text" value="" name="debtor_date_sign"></label>
+                        <input readonly type="text"
+                               value="{{ hoy|date:"j \d\e F \d\e Y"|lower }} – {{ g_e.gauser.localidad }}"
+                               name="debtor_date_sign"></label>
                 </div>
             </div>
             <div class="row">
@@ -176,8 +189,7 @@
                 <p style="font-style: italic;">ALL GAPS ARE MANDATORY. ONCE THIS MANDATE HAS BEEN SIGNED, MUST BE SENT
                     TO CREDITOR FOR STOGARE.</p>
             </div>
-
-
+        </div>
         <div>
             <div id="sketchpadapp">
                 <div class="row">
@@ -207,16 +219,16 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="columns large-12 medium-12">
-                        <p style="font-weight: 800;">Pulsa el siguiente botón para enviar datos. Se volverá a
-                            cargar la
-                            patalla para permitir el registro de un nuevo viajero.</p>
-                        <p style="font-weight: 800;">Click on the following button to submit your data. Web page
-                            will be
-                            reloaded and you will be allowed to register another traveller.</p>
-                    </div>
-                </div>
+{#                <div class="row">#}
+{#                    <div class="columns large-12 medium-12">#}
+{#                        <p style="font-weight: 800;">Pulsa el siguiente botón para enviar datos. Se volverá a#}
+{#                            cargar la#}
+{#                            patalla para permitir el registro de un nuevo viajero.</p>#}
+{#                        <p style="font-weight: 800;">Click on the following button to submit your data. Web page#}
+{#                            will be#}
+{#                            reloaded and you will be allowed to register another traveller.</p>#}
+{#                    </div>#}
+{#                </div>#}
             </div>
             <div class="row">
                 <div class="columns large-12 medium-12">
@@ -224,7 +236,6 @@
                 </div>
             </div>
         </div>
-            </div>
     </form>
 {% endblock %}
 {% block final %}

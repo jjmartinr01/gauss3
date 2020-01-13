@@ -67,7 +67,7 @@
             <ChrgBr>SLEV</ChrgBr>
             <DrctDbtTx>
                 <MndtRltdInf>
-                    <MndtId>{{remesa.id}}</MndtId>
+                    <MndtId>{{remesa.politica.mndtid}}</MndtId>
                     <DtOfSgntr>{{remesa.dtofsgntr|date:"Y-m-d"}}</DtOfSgntr>
                 </MndtRltdInf>
             </DrctDbtTx>

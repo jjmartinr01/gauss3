@@ -103,10 +103,12 @@ class Politica_cuotas(models.Model):
                    ('domotica', 'Cuota asociada al número de controles domóticos'))
     MESES = ((1, 'Enero'), (2, 'Febrero'), (3, 'Marzo'), (4, 'Abril'), (5, 'Mayo'), (6, 'Junio'), (7, 'Julio'),
              (8, 'Agosto'), (9, 'Septiembre'), (10, 'Octubre'), (11, 'Noviembre'), (12, 'Diciembre'))
+    TIPOS_PAGO = (('RCUR', 'Pago recurrente'), ('OOFF', 'Pago único'))
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     tipo = models.CharField('Tipo de cuota', max_length=10, choices=TIPOS_CUOTA, default='fija')
     cargo = models.ForeignKey(Cargo, null=True, blank=True, on_delete=models.CASCADE)
     tipo_cobro = models.CharField('Tipo de cobro', max_length=6, choices=(('MEN', 'Mensual'), ('ANU', 'Anual')))
+    seqtp = models.CharField('Tipo de pago', max_length=6, choices=TIPOS_PAGO, default='RCUR')
     cuota = models.CharField('Cuotas separadas por comas', blank=True, null=True, max_length=200)
     cantidad = models.FloatField('Cantidad monetaria (euros)', blank=True, null=True)
     concepto = models.CharField('Concepto', max_length=100)
@@ -134,6 +136,39 @@ class Politica_cuotas(models.Model):
         importes = list(map(float, re.findall(r"[-+]?\d*\.\d+|\d+", self.cuota)))
         return importes + [importes[-1]] * 1000
 
+    @property
+    def mndtid(self):
+        return '%s - %s' % (self.id, self.concepto)
+
+    @property
+    def mandate_reference(self):
+        a = str(self.entidad.code) + '000' + str(self.pk) + slugify(self.entidad.name)
+        b = a + 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'
+        return b[:35]
+
+    @property
+    def creditor_identifier(self):
+        return at_02(self.entidad.banco.nif)
+
+    @property
+    def creditor_identifier_verbose(self):
+        return "%s - %s" % (at_02(self.entidad.banco.nif), self.entidad.name)
+
+    @property
+    def creditor_address(self):
+        return self.entidad.address
+
+    @property
+    def creditor_postalcode_city_town(self):
+        postalcode = self.entidad.postalcode
+        localidad = self.entidad.localidad
+        provincia = self.entidad.get_provincia_display()
+        return "%s - %s - %s" % (postalcode, localidad, provincia)
+
+    @property
+    def creditor_country(self):
+        return 'ESPAÑA'
+
     def __str__(self):
         return u'%s - %s (%s)' % (self.entidad.name, self.cargo, self.cantidad)
 
@@ -157,6 +192,7 @@ class Remesa_emitida(models.Model):
 
 class Remesa(models.Model):
     emitida = models.ForeignKey(Remesa_emitida, on_delete=models.CASCADE)
+    ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
     dtofsgntr = models.DateField('Fecha deudor firma mandato')
     dbtrnm = models.CharField('Nombre del deudor', max_length=70)
@@ -166,6 +202,10 @@ class Remesa(models.Model):
         'Cantidad de dinero')  # string formating: '%.2f' % 1.234 -> limitar el número de decimales
     counter = models.IntegerField('Identificación única de remesa')
     creado = models.DateTimeField('Fecha de creación', auto_now_add=True)
+
+    # @property
+    # def dbtrnm(self):
+    #     return '%s %s'[:69] % (self.ge.gauser.last_name, self.emitida.politica.concepto)
 
     class Meta:
         verbose_name_plural = "Remesas individuales"
@@ -204,34 +244,9 @@ class OrdenAdeudo(models.Model):
     PAGO = (('RCUR', 'Pago recurrente'), ('OOFF', 'Pago único'))
     gauser = models.ForeignKey(Gauser, on_delete=models.CASCADE)
     politica = models.ForeignKey(Politica_cuotas, on_delete=models.CASCADE)
-    seqtp = models.TextField('Tipo de pago/secuencia', default='RCUR', choices=PAGO)
+    # seqtp = models.TextField('Tipo de pago/secuencia', default='RCUR', choices=PAGO)
     firma = models.ImageField('Imagen de la firma del deudor', upload_to=update_firma, blank=True, null=True)
     creado = models.DateTimeField("Fecha y hora en la que se realizó la firma", auto_now_add=True)
-
-    @property
-    def mandate_reference(self):
-        a = str(self.politica.entidad.code) + '000' + str(self.pk) + slugify(self.politica.entidad.name)
-        b = a + 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'
-        return b[:35]
-
-    @property
-    def creditor_identifier(self):
-        return at_02(self.politica.entidad.banco.nif)
-
-    @property
-    def creditor_address(self):
-        return self.politica.entidad.address
-
-    @property
-    def creditor_postalcode_city_town(self):
-        pc = self.politica.entidad.postalcode
-        localidad = self.politica.entidad.localidad
-        provincia = self.politica.entidad.get_provincia_display()
-        return pc + ' - ' + localidad + ' - ' + provincia
-
-    @property
-    def creditor_country(self):
-        return 'ESPAÑA'
 
     @property
     def debtor_name(self):
