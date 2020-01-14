@@ -633,7 +633,7 @@ def ajax_politica_cuotas(request):
                         elif politica.tipo == 'vut':
                             # viviendas = Vivienda.objects.filter(propietarios__in=[usuario.gauser],
                             #                                     entidad=usuario.ronda.entidad)
-                            viviendas = Vivienda.objects.filter(gpropietario=usuario.gauser,
+                            viviendas = Vivienda.objects.filter(gpropietario=usuario.gauser, borrada=False,
                                                                 entidad=usuario.ronda.entidad)
                             deudores = [usuario] * viviendas.count()
                             usuarios_id += [usuario.id]
@@ -665,7 +665,6 @@ def ajax_politica_cuotas(request):
                                                                                           politica.get_tipo_cobro_display(),
                                                                                           date.today().strftime('%B'),
                                                                                           deudores_str)
-                                    dbtrnm = '%s %s' % (deudores[0].gauser.last_name, politica.concepto)
                                     try:
                                         orden_adeudo = OrdenAdeudo.objects.get(politica=politica, gauser=usuario.gauser)
                                         dtofsgntr = orden_adeudo.creado
@@ -673,7 +672,7 @@ def ajax_politica_cuotas(request):
                                         dtofsgntr = date(2013, 10, 10)
                                     r = Remesa.objects.create(emitida=remesa_emitida,
                                                               banco=usuario.banco, dtofsgntr=dtofsgntr,
-                                                              ge=usuario, dbtrnm=dbtrnm[:69],
+                                                              ge=usuario,
                                                               dbtriban=usuario.num_cuenta_bancaria,
                                                               rmtinf=rmtinf[:139], instdamt=importe, counter=n)
                                     fila_excel_remesas += 1

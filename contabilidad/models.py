@@ -138,13 +138,11 @@ class Politica_cuotas(models.Model):
 
     @property
     def mndtid(self):
-        return '%s - %s' % (self.id, self.concepto)
+        return "%s-%s-%s"[:34] % (self.entidad.code, self.pk, self.creado.strftime('%s'))
 
     @property
     def mandate_reference(self):
-        a = str(self.entidad.code) + '000' + str(self.pk) + slugify(self.entidad.name)
-        b = a + 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'
-        return b[:35]
+        return "%s-%s-%s"[:34] % (self.entidad.code, self.pk, self.creado.strftime('%s'))
 
     @property
     def creditor_identifier(self):
@@ -195,17 +193,15 @@ class Remesa(models.Model):
     ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
     dtofsgntr = models.DateField('Fecha deudor firma mandato')
-    dbtrnm = models.CharField('Nombre del deudor', max_length=70)
     dbtriban = models.CharField('IBAN del deudor', max_length=30)
     rmtinf = models.CharField('Información del acreedor al deudor (concepto)', max_length=140)
-    instdamt = models.FloatField(
-        'Cantidad de dinero')  # string formating: '%.2f' % 1.234 -> limitar el número de decimales
+    instdamt = models.FloatField('Cantidad de dinero')  # decimales separados por "." y con un máximo de 2 decimales
     counter = models.IntegerField('Identificación única de remesa')
     creado = models.DateTimeField('Fecha de creación', auto_now_add=True)
 
-    # @property
-    # def dbtrnm(self):
-    #     return '%s %s'[:69] % (self.ge.gauser.last_name, self.emitida.politica.concepto)
+    @property
+    def dbtrnm(self):
+        return self.ge.gauser.get_full_name()[:69]
 
     class Meta:
         verbose_name_plural = "Remesas individuales"
@@ -245,7 +241,6 @@ class OrdenAdeudo(models.Model):
     gauser = models.ForeignKey(Gauser, on_delete=models.CASCADE)
     politica = models.ForeignKey(Politica_cuotas, on_delete=models.CASCADE)
     firma = models.ImageField('Imagen de la firma del deudor', upload_to=update_firma, blank=True, null=True)
-    creado = models.DateTimeField("Fecha y hora en la que se realizó la firma", blank=True, null=True)
     fecha_firma = models.DateField("Fecha y hora en la que se realizó la firma", blank=True, null=True)
 
     @property

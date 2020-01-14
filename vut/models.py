@@ -130,7 +130,8 @@ class Vivienda(models.Model):
         return Gauser_extra.objects.get(ronda=self.entidad.ronda, gauser=self.gpropietario)
 
     def __str__(self):
-        return u'%s (%s)' % (self.nombre, self.municipio)
+        borrada = ['', ' -- Vivienda borrada'][self.borrada]
+        return u'%s - %s (%s)%s' % (self.nombre, self.gpropietario.get_full_name(), self.municipio, borrada)
 
 
 PORTALES = (('BOO', 'Booking'), ('AIR', 'Airbnb'), ('HOM', 'Homeaway'), ('REN', 'Rentalia'), ('NIU', 'Niumba'),
