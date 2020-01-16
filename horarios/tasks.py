@@ -137,7 +137,7 @@ def carga_masiva_from_file():
             xml_file = ElementTree.XML(carga.fichero.read())
             # incidencias = {'especialidades': False}
             horario = Horario.objects.create(entidad=carga.ronda.entidad, ronda=carga.ronda,
-                                             descripcion=u'Creado a través del xml obtenido de racima %s' % datetime.now())
+                                             nombre='Creado a través del xml obtenido de racima %s' % datetime.now())
             horarios = Horario.objects.filter(entidad=carga.ronda.entidad)
             for h in horarios:
                 h.predeterminado = False

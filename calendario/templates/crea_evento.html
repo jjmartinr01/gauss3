@@ -39,18 +39,25 @@
                     {{ form.location }}
                 </label>
             </div>
-            <div class="columns large-4" style="position: relative;">
+            <div class="columns large-3" style="position: relative;">
                 <label>
                     Inicio
                     <input type="datetime" name="dtstart" id="id_inicio"
                            value="{{ fecha|date:'d\/m\/Y H\:i' }}" placeholder="Este campo es obligatorio">
                 </label>
             </div>
-            <div class="columns large-4" style="position: relative;">
+            <div class="columns large-3" style="position: relative;">
                 <label>
                     Fin
                     <input type="datetime" name="dtend" id="id_fin" value="">
                 </label>
+            </div>
+            <div class="columns large-2" style="position: relative;">
+                <label>
+                    Es festivo?
+                </label>
+                <a id="a_festivo">No</a>
+                <input name="festivo" type="hidden" value="0" id="is_festivo">
             </div>
         </div>
         <div class="row">
@@ -59,6 +66,17 @@
                     <select multiple name="subentidades" id="id_subentidades">
                         {% for subentidad in subentidades %}
                             <option value="{{ subentidad.id }}">{{ subentidad.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label> Cargos/Perfiles invitados al evento
+                    <select multiple name="cargos" id="id_cargos">
+                        {% for cargo in cargos %}
+                            <option value="{{ cargo.id }}">{{ cargo.cargo }}</option>
                         {% endfor %}
                     </select>
                 </label>
@@ -124,7 +142,8 @@
             window.location.href = "/calendario/?fecha=" + '{{ fecha }}' + '&v=' + '{{ vista_actual }}';
         });
 
-        $('#id_subentidades').select2({placeholder: "Escribe parte de nombre para buscar coincidencias"});
+        $('#id_subentidades').select2({placeholder: "Escribe parte del nombre para buscar coincidencias"});
+        $('#id_cargos').select2({placeholder: "Escribe parte del nombre para buscar coincidencias"});
 
         $('#id_invitados,#id_propietarios').select2({
             placeholder: "Para buscar un registro, escribe parte del texto contenido en él",
@@ -183,6 +202,18 @@
                 $(this).html('No');
             } else {
                 $('#send_telegram').val(true);
+                $(this).html('Sí');
+            }
+        });
+
+        $('#a_festivo').click(function(e){
+            e.preventDefault();
+            var valor = $('#is_festivo').val();
+            if (valor == '1'){
+                $('#is_festivo').val('0');
+                $(this).html('No');
+            } else {
+                $('#is_festivo').val('1');
                 $(this).html('Sí');
             }
         });

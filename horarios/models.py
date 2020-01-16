@@ -115,7 +115,8 @@ class Grupo(models.Model):
 class Horario(models.Model):
     entidad = models.ForeignKey(Entidad, blank=True, null=True, on_delete=models.CASCADE)
     ronda = models.ForeignKey(Ronda, blank=True, null=True, on_delete=models.CASCADE)
-    descripcion = models.TextField("Breve descripción", blank=True, null=True)
+    nombre = models.CharField('Nombre dado al horario', blank=True, null=True, max_length=200)
+    descripcion = models.TextField("Breve descripción", blank=True, null=True, default='')
     lunes = models.BooleanField('Lunes?', default=True)
     martes = models.BooleanField('Martes?', default=True)
     miercoles = models.BooleanField('Miércoles?', default=True)

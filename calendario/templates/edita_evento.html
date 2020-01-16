@@ -28,55 +28,59 @@
         <input type="hidden" name="minutos_elegidos" id="minutos_elegidos">
 
         <div class="">
-            <h4 style="text-align: center;color: #008CBA;"><strong> Edición de evento</strong></h4>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Edición de evento</strong></h4>
         </div>
-
         <div class="row">
             <div class="columns large-8">
                 <label> Nombre del evento
-                    {{ form.summary }}
+                    <input type="text" name="summary" maxlength="200" placeholder="Este campo es obligatorio"
+                    value="{{ vevent.summary }}">
+
                 </label>
             </div>
             <div class="columns large-2" style="position: relative;">
                 <label>
                     Enviar Telegram</label>
-                <a id="a_telegram">No</a>
-                <input name="send_telegram" type="hidden" value="no" id="send_telegram">
+                <input type="checkbox" name="send_telegram">
             </div>
             <div class="columns large-2" style="position: relative;">
                 <label>
                     Enviar e-mail</label>
-                <a id="a_correo">No</a>
-                <input name="send_correo" type="hidden" value="false" id="send_correo">
+                <input type="checkbox" name="send_correo">
             </div>
         </div>
         <div class="row">
             <div class="columns large-4">
                 <label> Lugar
-                    {{ form.location }}
+                    <input type="text" name="location" maxlength="100" id="id_location" value="{{ vevent.location }}">
                 </label>
             </div>
-            <div class="columns large-4" style="position: relative;">
+            <div class="columns large-3" style="position: relative;">
                 <label>
                     Inicio
                     <input type="datetime" name="dtstart" id="id_inicio"
-                           value="{{ form.dtstart.value|date:"d\/m\/Y H\:i" }}">
+                           value="{{vevent.dtstart}}" placeholder="Este campo es obligatorio">
                 </label>
             </div>
-            <div class="columns large-4" style="position: relative;">
+            <div class="columns large-3" style="position: relative;">
                 <label>
                     Fin
-                    <input type="datetime" name="dtend" id="id_fin" value="{{ form.dtend.value|date:"d\/m\/Y H\:i" }}">
+                    <input type="datetime" name="dtend" id="id_fin" value="{{vevent.dtend}}">
                 </label>
+            </div>
+            <div class="columns large-2" style="position: relative;">
+                <label>
+                    Es festivo?
+                </label>
+                <input type="checkbox" name="is_festivo" {% if vevent.is_festivo %}checked{% endif %}>
             </div>
         </div>
         <div class="row">
             <div class="columns large-12">
-                <label title="Las personas que pertenezcan a las secciones elegidas y sus tutores legales, si son menores, verán en sus calendarios este evento"> Secciones/Departamentos invitadas al evento
+                <label> Secciones/Departamentos invitadas al evento
                     <select multiple name="subentidades" id="id_subentidades">
                         {% for subentidad in subentidades %}
-                            <option value="{{ subentidad.id }}"
-                                    {% if subentidad in vevent.subentidades.all %}selected{% endif %}>{{ subentidad.nombre }}</option>
+                            <option value="{{ subentidad.id }}" {% if subentidad in vevent.subentidades.all %}selected{% endif %}>{{ subentidad.nombre }}</option>
                         {% endfor %}
                     </select>
                 </label>
@@ -84,8 +88,24 @@
         </div>
         <div class="row">
             <div class="columns large-12">
+                <label> Cargos/Perfiles invitados al evento
+                    <select multiple name="cargos" id="id_cargos">
+
+                        <option value="86">Presidente</option>
+
+                        <option value="53">Secretario</option>
+
+                        <option value="54">Socio</option>
+
+                    </select>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
                 <label> Introduce una descripción (opcional)
-                    {{ form.description }}
+                    <textarea name="description" cols="40" rows="10" id="id_description">
+</textarea>
                 </label>
             </div>
         </div>
@@ -94,9 +114,6 @@
                 <label title="Estas personas verán el evento en sus calendarios">
                     Personas que estan invitadas a este evento
                     <select multiple name="invitados" id="id_invitados">
-                        {% for invitado in vevent.invitados.all %}
-                            <option value="{{ invitado.id }}" selected>{{ invitado.last_name }}, {{ invitado.first_name }}</option>
-                        {% endfor %}
                     </select>
                 </label>
             </div>
@@ -106,13 +123,96 @@
                 <label title="Estas personas veran el evento en su calendario y lo podrán editar o borrar">
                     Personas propietarias de este evento
                     <select multiple name="propietarios" id="id_propietarios">
-                        {% for propietario in vevent.propietarios.all %}
-                            <option value="{{ propietario.id }}" selected>{{ propietario.last_name }}, {{ propietario.first_name }}</option>
-                        {% endfor %}
+                        <option value="72" selected>
+                            Martín Romero, Juan José
+                        </option>
                     </select>
+
                 </label>
             </div>
         </div>
+        {#        <div class="row">#}
+        {#            <div class="columns large-8">#}
+        {#                <label> Nombre del evento#}
+        {#                    {{ form.summary }}#}
+        {#                </label>#}
+        {#            </div>#}
+        {#            <div class="columns large-2" style="position: relative;">#}
+        {#                <label>#}
+        {#                    Enviar Telegram</label>#}
+        {#                <a id="a_telegram">No</a>#}
+        {#                <input name="send_telegram" type="hidden" value="no" id="send_telegram">#}
+        {#            </div>#}
+        {#            <div class="columns large-2" style="position: relative;">#}
+        {#                <label>#}
+        {#                    Enviar e-mail</label>#}
+        {#                <a id="a_correo">No</a>#}
+        {#                <input name="send_correo" type="hidden" value="false" id="send_correo">#}
+        {#            </div>#}
+        {#        </div>#}
+        {#        <div class="row">#}
+        {#            <div class="columns large-4">#}
+        {#                <label> Lugar#}
+        {#                    {{ form.location }}#}
+        {#                </label>#}
+        {#            </div>#}
+        {#            <div class="columns large-4" style="position: relative;">#}
+        {#                <label>#}
+        {#                    Inicio#}
+        {#                    <input type="datetime" name="dtstart" id="id_inicio"#}
+        {#                           value="{{ form.dtstart.value|date:"d\/m\/Y H\:i" }}">#}
+        {#                </label>#}
+        {#            </div>#}
+        {#            <div class="columns large-4" style="position: relative;">#}
+        {#                <label>#}
+        {#                    Fin#}
+        {#                    <input type="datetime" name="dtend" id="id_fin" value="{{ form.dtend.value|date:"d\/m\/Y H\:i" }}">#}
+        {#                </label>#}
+        {#            </div>#}
+        {#        </div>#}
+        {#        <div class="row">#}
+        {#            <div class="columns large-12">#}
+        {#                <label title="Las personas que pertenezcan a las secciones elegidas y sus tutores legales, si son menores, verán en sus calendarios este evento"> Secciones/Departamentos invitadas al evento#}
+        {#                    <select multiple name="subentidades" id="id_subentidades">#}
+        {#                        {% for subentidad in subentidades %}#}
+        {#                            <option value="{{ subentidad.id }}"#}
+        {#                                    {% if subentidad in vevent.subentidades.all %}selected{% endif %}>{{ subentidad.nombre }}</option>#}
+        {#                        {% endfor %}#}
+        {#                    </select>#}
+        {#                </label>#}
+        {#            </div>#}
+        {#        </div>#}
+        {#        <div class="row">#}
+        {#            <div class="columns large-12">#}
+        {#                <label> Introduce una descripción (opcional)#}
+        {#                    {{ form.description }}#}
+        {#                </label>#}
+        {#            </div>#}
+        {#        </div>#}
+        {#        <div class="row">#}
+        {#            <div class="columns large-12">#}
+        {#                <label title="Estas personas verán el evento en sus calendarios">#}
+        {#                    Personas que estan invitadas a este evento#}
+        {#                    <select multiple name="invitados" id="id_invitados">#}
+        {#                        {% for invitado in vevent.invitados.all %}#}
+        {#                            <option value="{{ invitado.id }}" selected>{{ invitado.last_name }}, {{ invitado.first_name }}</option>#}
+        {#                        {% endfor %}#}
+        {#                    </select>#}
+        {#                </label>#}
+        {#            </div>#}
+        {#        </div>#}
+        {#        <div class="row">#}
+        {#            <div class="columns large-12">#}
+        {#                <label title="Estas personas veran el evento en su calendario y lo podrán editar o borrar">#}
+        {#                    Personas propietarias de este evento#}
+        {#                    <select multiple name="propietarios" id="id_propietarios">#}
+        {#                        {% for propietario in vevent.propietarios.all %}#}
+        {#                            <option value="{{ propietario.id }}" selected>{{ propietario.last_name }}, {{ propietario.first_name }}</option>#}
+        {#                        {% endfor %}#}
+        {#                    </select>#}
+        {#                </label>#}
+        {#            </div>#}
+        {#        </div>#}
     </form>
 
 {% endblock %}
@@ -124,7 +224,7 @@
         habilita(['s_check', 'h_file-pdf-o', 's_arrow-left']);
 
         $('#id_subentidades').select2({placeholder: "Escribe parte de nombre para buscar coincidencias"});
-{#        $('#id_invitados').select2({placeholder: "Escribe parte de nombre para buscar coincidencias"});#}
+        {#        $('#id_invitados').select2({placeholder: "Escribe parte de nombre para buscar coincidencias"});#}
 
         {#    var d = new Date({{ fecha|date:'Y' }}, {{ fecha|date:'n' }}, {{ fecha|date:'j' }}, 0, 0);#}
 
@@ -149,7 +249,7 @@
         });
         $('#arrow-left_sign').click(function (e) {
             e.preventDefault();
-            var fecha = $('#id_inicio').val().replace(/\//g,'').replace(/\s.*/g,'');
+            var fecha = $('#id_inicio').val().replace(/\//g, '').replace(/\s.*/g, '');
             window.location.href = "/calendario/?fecha=" + fecha + '&v=' + '{{ vista_actual }}';
         });
 
@@ -190,13 +290,13 @@
             }
         });
 
-{#        $("#id_invitados").select2('data', {{ invitados|safe }});#}
-{#        $("#id_propietarios").select2({data: {{ propietarios|safe }} });#}
+        {#        $("#id_invitados").select2('data', {{ invitados|safe }});#}
+        {#        $("#id_propietarios").select2({data: {{ propietarios|safe }} });#}
 
-        $('#a_correo').click(function(e){
+        $('#a_correo').click(function (e) {
             e.preventDefault();
             var valor = $('#send_correo').val();
-            if (valor == 'true'){
+            if (valor == 'true') {
                 $('#send_correo').val(false);
                 $(this).html('No');
             } else {
@@ -205,10 +305,10 @@
             }
         });
 
-        $('#a_telegram').click(function(e){
+        $('#a_telegram').click(function (e) {
             e.preventDefault();
             var valor = $('#send_telegram').val();
-            if (valor == 'true'){
+            if (valor == 'true') {
                 $('#send_telegram').val(false);
                 $(this).html('No');
             } else {

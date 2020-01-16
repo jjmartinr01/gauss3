@@ -77,7 +77,7 @@ def actividades_json(request):
     return JsonResponse(data, safe=False)
 
 
-# @login_required()
+@login_required()
 def gestionar_actividades(request):
     g_e = request.session['gauser_extra']
 

@@ -7,23 +7,107 @@ from django.db import models
 
 from estudios.models import Materia, Curso
 from entidades.models import Gauser_extra, Ronda, Entidad
+from horarios.models import Horario
+from actividades.models import Actividad
 
+
+def update_aaee(instance, filename):
+    ext = filename.rpartition('.')[2]
+    ronda_slugify = slugify(instance.ronda.nombre)
+    ruta = 'programaciones/%s/%s/Aspectos_Generales_PGA/Programa_actividades_extraescolares' % (
+        instance.materia.curso.ronda.entidad.code, ronda_slugify)
+    return '%s.%s' %(ruta, ext)
+
+def update_libros(instance, filename):
+    ext = filename.rpartition('.')[2]
+    ronda_slugify = slugify(instance.ronda.nombre)
+    ruta = 'programaciones/%s/%s/Aspectos_Generales_PGA/Libros_de_texto_y_materiales' % (
+        instance.materia.curso.ronda.entidad.code, ronda_slugify)
+    return '%s.%s' %(ruta, ext)
+
+class PGA(models.Model):
+    ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE)
+    creado = models.DateField("Fecha de creación", auto_now_add=True)
+    aaee_file = models.FileField("Archivo con la programación de las actividades extraescolares", upload_to=update_aaee,
+                                 null=True, blank=True)
+    fprofesorado = models.TextField("Plan formación profesorado", blank=True, null=True, default='')
+    convenios = models.TextField("Previsión de acuerdos y/o convenios", blank=True, null=True, default='')
+    libros_file = models.FileField("Archivo con el listado de libros de texto", upload_to=update_libros,
+                                 null=True, blank=True)
+    estadistica_file = models.FileField("Archivo con la estadística de comienzo de curso", upload_to=update_libros,
+                                   null=True, blank=True)
+    obras = models.TextField("siutación instalaciones y previsión de obras", blank=True, null=True, default='')
+
+    @property
+    def horario(self):
+        return Horario.objects.get(ronda=self.ronda, predeterminado=True)
+
+    @property
+    def aaee(self): #Actividades extraescolares
+        return Actividad.objects.filter(organizador__ronda=self.ronda)
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.ronda.entidad.name, self.ronda.nombre, self.creado)
+
+class ReunionesPrevistas(models.Model):
+    TIPOS=(('CLA', 'Reunión del claustro de profesores'),
+           ('CON', 'Reunión del Consejo Escolar'),
+           ('CCP', 'Reunión de la Comisión de Coordinación Pedagógica'),
+           ('TUT', 'Reunión de evaluación'))
+    pga = models.ForeignKey(PGA, on_delete=models.CASCADE)
+    tipo = models.CharField("Tipo de reunión", max_length=5, choices=TIPOS, default='CLA')
+    nombre = models.CharField("Nombre de la reunión", blank=True, null=True, max_length=200)
+    description = models.TextField("Descripción de la reunión", blank=True, null=True, default='')
+    fecha = models.DateTimeField("Fecha y hora de la reunión", blank=True, null=True)
+
+    def __str__(self):
+        return '%s - Reunión %s (%s)' % (self.pga.ronda.nombre, self.get_tipo_display(), self.fecha)
+
+
+def update_documentos_pec(instance, filename):
+    ext = filename.rpartition('.')[2]
+    ronda_slugify = slugify(instance.pec.entidad.ronda.nombre)
+    documento = slugify(instance.doc_nombre)
+    ruta = 'programaciones/%s/%s/PEC/%s' % (instance.materia.curso.ronda.entidad.code, ronda_slugify, documento)
+    return '%s.%s' %(ruta, ext)
+
+class PEC(models.Model):
+    entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
+    signos = models.TextField("Signos de identidad del centro", blank=True, null=True, default='')
+    organizacion = models.TextField("Organización general del centro", blank=True, null=True, default='')
+    lineapedagogica = models.TextField("Línea pedagógica", blank=True, null=True, default='')
+    participacion = models.TextField("Modelo de participación en la vida escolar", blank=True, null=True, default='')
+    proyectos = models.TextField("Proyectos que desarrolla el centro", blank=True, null=True, default='')
+    # pat = models.FileField("Plan de Acción Tutorial", upload_to=update_pat, null=True, blank=True)
+    # poap = models.FileField("Plan de Orientación Académica y Profesional", upload_to=update_poap, null=True, blank=True)
+    # pad = models.FileField("Plan de Orientación Académica y Profesional", upload_to=update_poap, null=True, blank=True)
+    # pc = models.FileField("Plan de Orientación Académica y Profesional", upload_to=update_poap, null=True, blank=True)
+    # rof = models.FileField("Plan de Orientación Académica y Profesional", upload_to=update_poap, null=True, blank=True)
+    # poap = models.FileField("Plan de Orientación Académica y Profesional", upload_to=update_poap, null=True, blank=True)
+
+    def __str__(self):
+        return 'Proyecto Educativo de Centro: %s' % (self.entidad.name)
+
+class PECdocumento(models.Model):
+    pec = models.ForeignKey(PEC, on_delete=models.CASCADE)
+    doc_nombre = models.CharField('Nombre del documento', max_length=200)
+    doc_file = models.FileField("Archivo del documento asociado al PEC", upload_to=update_documentos_pec)
+
+    def __str__(self):
+        return 'Documento PEC: %s' % (self.doc_nombre)
 
 # Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
 def update_programacion(instance, filename):
     ext = filename.rpartition('.')[2]
     file_nombre = '%s' % (instance.materia.nombre)
-    curso = instance.materia.curso.ronda.nombre.replace('/', '-')
-    ruta = 'programaciones/%s/%s/%s/%s/%s/%s' % (
+    ruta = 'programaciones/%s/%s/Programaciones_didacticas/%s/%s/%s/%s' % (
         instance.materia.curso.ronda.entidad.code,
-        curso,
-        instance.sube.gauser_extra_programaciones.departamento.nombre,
-        instance.materia.curso.get_etapa_display(),
-        instance.materia.curso.nombre,
-        file_nombre)
-    ruta = ruta.replace(' ', '_').replace(',', '').replace(';', '').replace('.', '')
-    filename_normalizado = slugify(ruta)
-    return '%s.%s' %(filename_normalizado, ext)
+        slugify(instance.pec.entidad.ronda.nombre),
+        slugify(instance.sube.gauser_extra_programaciones.departamento.nombre),
+        slugify(instance.materia.curso.get_etapa_display()),
+        slugify(instance.materia.curso.nombre),
+        slugify(file_nombre))
+    return '%s.%s' %(ruta, ext)
 
 
 class ProgramacionSubida(models.Model):
@@ -39,20 +123,20 @@ class ProgramacionSubida(models.Model):
         return os.path.basename(self.archivo.name)
 
     def __str__(self):
-        return u'%s - %s (%s)' % (self.materia.curso.ronda.entidad.code, self.materia.nombre, self.materia.curso)
+        return '%s - %s (%s)' % (self.materia.curso.ronda.entidad.code, self.materia.nombre, self.materia.curso)
 
 def crea_departamentos(ronda):
-    ds = [(u'Actividades Complementarias y Extraescolares', u'AEX', False, 3), (u'Artes Plásticas', u'AP', True, 3),
-          (u'Cultura Clásica', u'CC', True, 3), (u'Ciencias Naturales', u'CN', True, 3),
-          (u'Economía', u'ECO', True, 3), (u'Educación Física', u'EF', True, 3),
-          (u'Filosofía', u'FIL', True, 3), (u'Física y Química', u'FQ', True, 3),
-          (u'Formación y Orientación Laboral', u'FOL', True, 3), (u'Francés', u'FRA', True, 3),
-          (u'Geografía e Historia', u'GH', True, 3), (u'Griego', u'GRI', True, 3), (u'Inglés', u'ING', True, 3),
-          (u'Latín', u'LAT', True, 3), (u'Lengua Castellana y Literatura', u'LCL', True, 3),
-          (u'Matemáticas', u'MAT', True, 3), (u'Música', u'MUS', True, 3), (u'Orientación', u'ORI', True, 3),
-          (u'Tecnología', u'TEC', True, 3), (u'Administración y gestión', u'ADG', True, 3),
-          (u'Electricidad y electrónica', u'ELE', True, 3), (u'Ningún departamento', u'N_D', True, 0),
-          (u'Alemán', u'ALE', True, 3), (u'Fabricación Mecánica', u'FME', True, 3)]
+    ds = [('Actividades Complementarias y Extraescolares', 'AEX', False, 3), ('Artes Plásticas', 'AP', True, 3),
+          ('Cultura Clásica', 'CC', True, 3), ('Ciencias Naturales', 'CN', True, 3),
+          ('Economía', 'ECO', True, 3), ('Educación Física', 'EF', True, 3),
+          ('Filosofía', 'FIL', True, 3), ('Física y Química', 'FQ', True, 3),
+          ('Formación y Orientación Laboral', 'FOL', True, 3), ('Francés', 'FRA', True, 3),
+          ('Geografía e Historia', 'GH', True, 3), ('Griego', 'GRI', True, 3), ('Inglés', 'ING', True, 3),
+          ('Latín', 'LAT', True, 3), ('Lengua Castellana y Literatura', 'LCL', True, 3),
+          ('Matemáticas', 'MAT', True, 3), ('Música', 'MUS', True, 3), ('Orientación', 'ORI', True, 3),
+          ('Tecnología', 'TEC', True, 3), ('Administración y gestión', 'ADG', True, 3),
+          ('Electricidad y electrónica', 'ELE', True, 3), ('Ningún departamento', 'N_D', True, 0),
+          ('Alemán', 'ALE', True, 3), ('Fabricación Mecánica', 'FME', True, 3)]
     for d in ds:
         try:
             Departamento.objects.get(ronda=ronda, abreviatura=d[1])
@@ -70,7 +154,7 @@ class Departamento(models.Model):
                                             blank=True)
 
     def __str__(self):
-        return u'%s (%s)' % (self.nombre, self.ronda)
+        return '%s (%s)' % (self.nombre, self.ronda)
 
 
 materias = ['168963', '168961', '168864', '67985', '67987', '63500', '67995', '168953', '67996', '168871', '67994',
@@ -96,7 +180,7 @@ class Materia_programaciones(models.Model):
         ordering = ['materia__nombre', 'materia__curso']
 
     def __str__(self):
-        return u'%s (%s horas)' % (self.materia.nombre, self.materia.horas)
+        return '%s (%s horas)' % (self.materia.nombre, self.materia.horas)
 
 
 class Resultado_aprendizaje(models.Model):
@@ -105,7 +189,7 @@ class Resultado_aprendizaje(models.Model):
     educa_pk = models.CharField("pk en gauss_educa", max_length=12, blank=True, null=True)
 
     def __str__(self):
-        return u'%s - %s' % (self.resultado[:80], self.materia)
+        return '%s - %s' % (self.resultado[:80], self.materia)
 
 
 class Objetivo(models.Model):
@@ -116,7 +200,7 @@ class Objetivo(models.Model):
     educa_pk = models.CharField("pk en gauss_educa", max_length=12, blank=True, null=True)
 
     def __str__(self):
-        return u'%s - %s' % (self.texto[:80], self.resultado_aprendizaje)
+        return '%s - %s' % (self.texto[:80], self.resultado_aprendizaje)
 
 
 # TITULOS_DICT = [{'titulo': 'Técnico Superior en Administración y Finanzas',
@@ -194,7 +278,7 @@ class Cuerpo_funcionario(models.Model):
     nombre = models.CharField('Nombre del cuerpo', max_length=100)
 
     def __str__(self):
-        return u'%s - %s' % (self.code, self.nombre)
+        return '%s - %s' % (self.code, self.nombre)
 
 
 class Especialidad_funcionario(models.Model):
@@ -203,7 +287,7 @@ class Especialidad_funcionario(models.Model):
     nombre = models.CharField('Nombre del cuerpo', max_length=100)
 
     def __str__(self):
-        return u'%s - %s (%s)' % (self.code, self.nombre, self.cuerpo)
+        return '%s - %s (%s)' % (self.code, self.nombre, self.cuerpo)
 
 
 # class Cuerpo_entidad(models.Model):
@@ -211,7 +295,7 @@ class Especialidad_funcionario(models.Model):
 #     cuerpo = models.ForeignKey(Cuerpo_funcionario, blank=True, null=True, on_delete=models.CASCADE)
 #
 #     def __str__(self):
-#         return u'%s - %s' % (self.entidad, self.cuerpo)
+#         return '%s - %s' % (self.entidad, self.cuerpo)
 
 
 class Especialidad_entidad(models.Model):
@@ -223,7 +307,7 @@ class Especialidad_entidad(models.Model):
         verbose_name_plural = "Especialidades de funcionarios en la entidad"
 
     def __str__(self):
-        return u'%s - %s' % (self.ronda, self.especialidad)
+        return '%s - %s' % (self.ronda, self.especialidad)
 
 
 class Gauser_extra_programaciones(models.Model):
@@ -238,7 +322,7 @@ class Gauser_extra_programaciones(models.Model):
         verbose_name_plural = "Gausers extra en programaciones"
 
     def __str__(self):
-        return u'%s - %s' % (self.ge, self.departamento)
+        return '%s - %s' % (self.ge, self.departamento)
 
 
 class Titulo_FP(models.Model):
@@ -285,7 +369,7 @@ class Titulo_FP(models.Model):
             return 'Título Profesional Básico en %s' % (self.nombre)
 
     def __str__(self):
-        return u'Título: %s' % (self.nombre)
+        return 'Título: %s' % (self.nombre)
 
 
 class Obj_general(models.Model):
@@ -294,7 +378,7 @@ class Obj_general(models.Model):
     educa_pk = models.CharField("pk en gauss_educa", max_length=12, blank=True, null=True)
 
     def __str__(self):
-        return u'Título: %s - %s' % (self.titulo.nombre, self.objetivo)
+        return 'Título: %s - %s' % (self.titulo.nombre, self.objetivo)
 
 
 class Programacion_modulo(models.Model):
@@ -327,7 +411,7 @@ class Programacion_modulo(models.Model):
         return list(set(objs))
 
     def __str__(self):
-        return u'%s' % (self.modulo)
+        return '%s' % (self.modulo)
 
 
 class UD_modulo(models.Model):  # Unidad didáctica del módulo
@@ -354,7 +438,7 @@ class UD_modulo(models.Model):  # Unidad didáctica del módulo
         verbose_name_plural = "Unidades didácticas de módulos"
 
     def __str__(self):
-        return u'%s - %s' % (self.nombre, self.duracion)
+        return '%s - %s' % (self.nombre, self.duracion)
 
 
 class Cont_unidad_modulo(models.Model):
@@ -372,7 +456,7 @@ class Cont_unidad_modulo(models.Model):
         verbose_name_plural = "Contenidos de la unidad didáctica"
 
     def __str__(self):
-        return u'%s - %s (%s horas)' % (self.unidad.nombre, self.contenido[:200], self.duracion)
+        return '%s - %s (%s horas)' % (self.unidad.nombre, self.contenido[:200], self.duracion)
 
 
 def crea_cuerpos_especialidades():

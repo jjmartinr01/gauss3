@@ -6,7 +6,7 @@ from actas.models import Convocatoria
 # from entidades.models import Subentidad, Entidad, Ronda
 
 from autenticar.models import Gauser
-from entidades.models import Subentidad, Entidad, Ronda, Gauser_extra
+from entidades.models import Subentidad, Entidad, Ronda, Gauser_extra, Cargo
 
 # from entidades.models import Gauser_extra as GE
 
@@ -52,6 +52,7 @@ class Vevent(models.Model):
     entidad = models.ForeignKey(Entidad, blank=True, null=True, on_delete=models.CASCADE)
     invitados = models.ManyToManyField(Gauser, blank=True, related_name='invitados')
     subentidades = models.ManyToManyField(Subentidad, blank=True)
+    cargos = models.ManyToManyField(Cargo, blank=True)
     propietarios = models.ManyToManyField(Gauser, blank=True, related_name='propietarios')
     dtstart = models.DateTimeField('DTSTART')
     dtend = models.DateTimeField('DTEND', blank=True, null=True)
@@ -76,6 +77,7 @@ class Vevent(models.Model):
     description_alarm = models.TextField('DESCRIPTION (alarm)', blank=True, null=True)
     trigger1_alarm = models.DateTimeField('TRIGGER (alarm)', blank=True, null=True)
     trigger2_alarm = models.DurationField('Cuanto tiempo antes del evento se debe avisar', blank=True, null=True)
+    festivo = models.BooleanField('¿Es festivo?', default=False)
 
     def __str__(self):
         return u'%s (%s)' % (self.summary, self.dtstart)

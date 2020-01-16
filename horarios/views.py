@@ -119,7 +119,7 @@ def define_horario(request):
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
         if action == 'add_horario':
-            horario = Horario.objects.create(entidad=g_e.ronda.entidad, ronda=g_e.ronda, descripcion='Horario nuevo')
+            horario = Horario.objects.create(entidad=g_e.ronda.entidad, ronda=g_e.ronda, nombre='Horario nuevo')
             inicio = time(9, 0)
             fin = time(10, 0)
             Tramo_horario.objects.create(horario=horario, nombre='Nuevo tramo', inicio=inicio, fin=fin)
@@ -145,6 +145,11 @@ def define_horario(request):
             horario.descripcion = request.POST['descripcion']
             horario.save()
             return HttpResponse(horario.descripcion[:90])
+        elif action == 'nombre_horario':
+            horario = Horario.objects.get(id=request.POST['id'], entidad=g_e.ronda.entidad)
+            horario.nombre = request.POST['nombre']
+            horario.save()
+            return JsonResponse({'nombre': horario.nombre[:90], 'ok': True})
         elif action == 'predeterminado':
             try:
                 horario = Horario.objects.get(id=request.POST['id'], entidad=g_e.ronda.entidad)
@@ -862,7 +867,7 @@ def xml_racima(xml_file, request):
     incidencias = {'especialidades': False}
     g_e = request.session['gauser_extra']
     horario = Horario.objects.create(entidad=g_e.ronda.entidad, ronda=g_e.ronda,
-                                     descripcion=u'Creado a través del xml obtenido de racima %s' % datetime.now())
+                                     nombre='Creado a través del xml obtenido de racima %s' % datetime.now())
     horarios = Horario.objects.filter(entidad=g_e.ronda.entidad)
     for h in horarios:
         h.predeterminado = False

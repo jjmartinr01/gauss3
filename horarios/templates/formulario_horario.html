@@ -2,7 +2,7 @@
 
 <dd class="accordion-navigation" id="accordion{{ horario.id }}">
     <a href="#horario{{ horario.id }}">
-        <span id="span_descripcion{{ horario.id }}"><b>{{ horario.descripcion|truncatechars:90 }}</b></span>
+        <span id="span_nombre_horario{{ horario.id }}"><b>{{ horario.nombre|truncatechars:90 }}</b></span>
         &nbsp;&nbsp;&nbsp;&nbsp;
         <span id="span_predeterminado{{ horario.id }}" style="color:green;" class="span_predeterminado">
             {% if horario.predeterminado %}<i class="fa fa-check"></i>{% endif %}</span>
@@ -20,8 +20,8 @@
         </ul>
         <div class="row">
             <div class="columns large-9">
-                <label>Breve descripción del nuevo horario:
-                    <textarea class="descripcion" data-id="{{ horario.id }}">{{ horario.descripcion }}</textarea>
+                <label>Nombre dado al horario:
+                    <input class="nombre_horario" maxlength="200" data-id="{{ horario.id }}" value="{{ horario.nombre }}"/>
                 </label>
             </div>
             <div class="columns large-3 text-center"
@@ -35,6 +35,12 @@
                     <input type="checkbox" data-id="{{ horario.id }}" class="predeterminado"></span>
             </div>
         </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label>Descripción del nuevo horario:
+                    <textarea class="descripcion" data-id="{{ horario.id }}">{{ horario.descripcion }}</textarea>
+                </label>
+            </div>
 
         <div class="row">
             <div class="columns large-12">

@@ -12,7 +12,7 @@ from django.template.loader import render_to_string
 # from autenticar.models import Gauser_extra, Gauser
 # from entidades.models import Subentidad
 from autenticar.models import Gauser
-from entidades.models import Subentidad, Gauser_extra
+from entidades.models import Subentidad, Gauser_extra, Cargo
 
 from gauss.rutas import *
 from calendario.models import Vevent, Calendar
@@ -26,6 +26,7 @@ from django.db.models.fields.related import ManyToManyField
 import simplejson as json
 
 logger = logging.getLogger('django')
+
 
 def to_dict(instance):
     opts = instance._meta
@@ -43,13 +44,16 @@ def to_dict(instance):
 
 def vevents_month(g_e, fecha):
     return Vevent.objects.filter(
-        Q(subentidades__in=g_e.subentidades_hijos()) | Q(invitados__in=[g_e.gauser]) | Q(propietarios__in=[g_e.gauser]),
+        Q(cargos__in=g_e.cargos.all()) | Q(subentidades__in=g_e.subentidades_hijos()) | Q(
+            invitados__in=[g_e.gauser]) | Q(propietarios__in=[g_e.gauser]),
         Q(dtstart__month=fecha.month) | Q(dtend__month=fecha.month)).distinct()
+
 
 def vevents_agenda(g_e, fecha, meses):
     fecha = datetime.combine(fecha, datetime.min.time())
-    return Vevent.objects.filter(Q(subentidades__in=g_e.subentidades_hijos()) | Q(invitados__in=[g_e.gauser]) | Q(
-                    propietarios__in=[g_e.gauser]), dtend__gte=fecha, dtstart__lte=meses[-1][-1]).distinct()
+    return Vevent.objects.filter(Q(cargos__in=g_e.cargos.all()) | Q(subentidades__in=g_e.subentidades_hijos()) | Q(
+        invitados__in=[g_e.gauser]) | Q(
+        propietarios__in=[g_e.gauser]), dtend__gte=fecha, dtstart__lte=meses[-1][-1]).distinct()
 
 
 @login_required()
@@ -124,21 +128,21 @@ def calendario(request):
             renderizado = render_to_string('calendario_month.html', {'mes': mes, 'vevents': vevents})
 
     return render(request, "base_calendario.html",
-                              {
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar', 'permiso': 'm30',
-                                        'title': 'Grabar el nuevo evento/acontecimiento'},
-                                       {'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Cancelar',
-                                        'title': 'Cancelar y volver a ver el calendario', 'permiso': 'm30'},
-                                       {'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF', 'permiso': 'm30',
-                                        'title': 'Genera documento PDF con tus eventos marcados en el calendario'},
-                                       ),
-                                  'formname': 'Calendario',
-                                  'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                                  'renderizado': renderizado,
-                                  'vista_actual': vista_actual,
-                                  'fecha': fecha
-                              })
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar', 'permiso': 'm30',
+                            'title': 'Grabar el nuevo evento/acontecimiento'},
+                           {'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Cancelar',
+                            'title': 'Cancelar y volver a ver el calendario', 'permiso': 'm30'},
+                           {'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF', 'permiso': 'm30',
+                            'title': 'Genera documento PDF con tus eventos marcados en el calendario'},
+                           ),
+                      'formname': 'Calendario',
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                      'renderizado': renderizado,
+                      'vista_actual': vista_actual,
+                      'fecha': fecha
+                  })
 
 
 class VeventForm(forms.ModelForm):
@@ -185,8 +189,9 @@ def edita_evento(request):
                 crea_mensaje_cola(mensaje)
             if request.POST['send_correo'] == 'true':
                 texto_telegram = render_to_string('evento_informar_telegram.html',
-                                              {'vevent': vevent, 'actualizador': g_e, 'tipo': 'Actualizado'})
-                envia_telegram(g_e, texto_telegram, gausers=vevent.invitados.all(), subentidades=vevent.subentidades.all())
+                                                  {'vevent': vevent, 'actualizador': g_e, 'tipo': 'Actualizado'})
+                envia_telegram(g_e, texto_telegram, gausers=vevent.invitados.all(),
+                               subentidades=vevent.subentidades.all())
             # envia_telegram(g_e, texto_telegram, gausers=vevent.propietarios.all())
             # En este punto se han encolado los correos electrónicos. Se enviarán según kronos
             return redirect('/calendario/?fecha=%s&v=%s' % (vevent.dtstart.strftime('%d%m%Y'), vista_actual))
@@ -202,27 +207,30 @@ def edita_evento(request):
             crear_aviso(request, False, data)
 
     keys = ('id', 'text')
-    invitados = [dict(zip(keys, [gauser.id, '%s, %s' % (gauser.last_name, gauser.first_name)])) for gauser in vevent.invitados.all()]
-    propietarios = [dict(zip(keys, [gauser.id, '%s, %s' % (gauser.last_name, gauser.first_name)])) for gauser in vevent.propietarios.all()]
+    invitados = [dict(zip(keys, [gauser.id, '%s, %s' % (gauser.last_name, gauser.first_name)])) for gauser in
+                 vevent.invitados.all()]
+    propietarios = [dict(zip(keys, [gauser.id, '%s, %s' % (gauser.last_name, gauser.first_name)])) for gauser in
+                    vevent.propietarios.all()]
     return render(request, "edita_evento.html",
-                              {
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar', 'permiso': 'm30',
-                                        'title': 'Grabar el nuevo evento/acontecimiento'},
-                                       {'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Cancelar',
-                                        'title': 'Cancelar y volver a ver el calendario', 'permiso': 'm30'},
-                                       {'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF', 'permiso': 'm30',
-                                        'title': 'Genera documento PDF con tus eventos marcados en el calendario'},
-                                       ),
-                                  'formname': 'Calendario',
-                                  'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                                  'form': VeventForm(initial=to_dict(vevent)),
-                                  'vevent': vevent,
-                                  'vista_actual': vista_actual,
-                                  'subentidades': Subentidad.objects.filter(entidad=g_e.ronda.entidad, fecha_expira__gt=datetime.today()),
-                                  'invitados': json.dumps(invitados),
-                                  'propietarios': json.dumps(propietarios)
-                              })
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar', 'permiso': 'm30',
+                            'title': 'Grabar el nuevo evento/acontecimiento'},
+                           {'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Cancelar',
+                            'title': 'Cancelar y volver a ver el calendario', 'permiso': 'm30'},
+                           {'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF', 'permiso': 'm30',
+                            'title': 'Genera documento PDF con tus eventos marcados en el calendario'},
+                           ),
+                      'formname': 'Calendario',
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                      'form': VeventForm(initial=to_dict(vevent)),
+                      'vevent': vevent,
+                      'vista_actual': vista_actual,
+                      'subentidades': Subentidad.objects.filter(entidad=g_e.ronda.entidad,
+                                                                fecha_expira__gt=datetime.today()),
+                      'invitados': json.dumps(invitados),
+                      'propietarios': json.dumps(propietarios)
+                  })
 
 
 @login_required()
@@ -262,8 +270,9 @@ def crea_evento(request):
                 crea_mensaje_cola(mensaje)
             if request.POST['send_correo'] == 'true':
                 texto_telegram = render_to_string('evento_informar_telegram.html',
-                                              {'vevent': vevent, 'actualizador': g_e, 'tipo': 'Nuevo'})
-                envia_telegram(g_e, texto_telegram, gausers=vevent.invitados.all(), subentidades=vevent.subentidades.all())
+                                                  {'vevent': vevent, 'actualizador': g_e, 'tipo': 'Nuevo'})
+                envia_telegram(g_e, texto_telegram, gausers=vevent.invitados.all(),
+                               subentidades=vevent.subentidades.all())
 
             # En este punto se han encolado los correos electrónicos y telegrams. Se enviarán según kronos
             return redirect('/calendario/?fecha=%s&v=%s' % (vevent.dtstart.strftime('%d%m%Y'), vista_actual))
@@ -279,22 +288,24 @@ def crea_evento(request):
             crear_aviso(request, False, data)
 
     return render(request, "crea_evento.html",
-                              {
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar', 'permiso': 'crea_eventos',
-                                        'title': 'Grabar el nuevo evento/acontecimiento'},
-                                       {'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Cancelar',
-                                        'title': 'Cancelar y volver a ver el calendario', 'permiso': 'crea_eventos'},
-                                       {'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF', 'permiso': 'crea_eventos',
-                                        'title': 'Genera documento PDF con tus eventos marcados en el calendario'},
-                                       ),
-                                  'formname': 'Crea_evento',
-                                  'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                                  'form': VeventForm(),
-                                  'vista_actual': vista_actual,
-                                  'subentidades': Subentidad.objects.filter(entidad=g_e.ronda.entidad, fecha_expira__gt=datetime.today()),
-                                  'fecha': datetime.strptime(request.GET['f'], '%d%m%Y')
-                              })
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar', 'permiso': 'crea_eventos',
+                            'title': 'Grabar el nuevo evento/acontecimiento'},
+                           {'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Cancelar',
+                            'title': 'Cancelar y volver a ver el calendario', 'permiso': 'crea_eventos'},
+                           {'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF', 'permiso': 'crea_eventos',
+                            'title': 'Genera documento PDF con tus eventos marcados en el calendario'},
+                           ),
+                      'formname': 'Crea_evento',
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                      'form': VeventForm(),
+                      'vista_actual': vista_actual,
+                      'subentidades': Subentidad.objects.filter(entidad=g_e.ronda.entidad,
+                                                                fecha_expira__gt=datetime.today()),
+                      'cargos': Cargo.objects.filter(entidad=g_e.ronda.entidad),
+                      'fecha': datetime.strptime(request.GET['f'], '%d%m%Y')
+                  })
 
 
 @login_required()
