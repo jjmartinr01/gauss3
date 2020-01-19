@@ -1,0 +1,116 @@
+{% load my_templatetags %}
+<h1 style="text-align: center;">Aspectos generales de la programación general anual</h1>
+<h2 style="text-align: center;">{{ pga.ronda.entidad.name }}</h2>
+
+<h3>Calendario del curso académico</h3>
+<ul>
+    <li>Comienzo de curso: {{ pga.ronda.inicio }}</li>
+    <li>Fin de curso: {{ pga.ronda.fin }}</li>
+    <li>Días festivos:
+        {% for v in pga.festivos %}{% if not forloop.last %}{{ v.dtstart|date:"d-m-Y" }}, {% else %}
+            {{ v.dtstart|date:"d-m-Y" }}{% endif %}{% endfor %}</li>
+</ul>
+<h3>Horario general del centro</h3>
+<h4>Tramos horarios</h4>
+<p>Las clases se imparten de lunes a viernes dentro de los siguientes tramos:</p>
+<table style="width: 100%">
+    <tr>
+        <th>Nombre</th>
+        <th>Inicio</th>
+        <th>Fin</th>
+    </tr>
+    {% for t in pga.horario.tramo_horario_set.all %}
+        <tr>
+            <td>{{ t.nombre }}</td>
+            <td>{{ t.inicio|time:"H:i" }}</td>
+            <td>{{ t.fin|time:"H:i" }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<h4>Descripción del horario y criterios de elaboración</h4>
+{% autoescape off %}{{ pga.horario.descripcion }}{% endautoescape %}
+
+<h3>Programa anual de las actividades complementarias y extraescolares del centro</h3>
+<p>Este apartado configura un documento aparte que se adjunta con esta Programación General Anual.</p>
+<p>Las actividades complementarias y extraescolares pueden surgir a lo largo del curso escolar. Es
+    por ello que a medida que estas se modifican o aumentan son trasladadas semanalmente a la Comisión
+    Permanente del Consejo Escolar para su correspondiente aprobación.</p>
+
+<h3>Programación anual de las actividades de formación del profesorado</h3>
+{% autoescape off %}{{ pga.fprofesorado }}{% endautoescape %}
+
+<h3>Plan de reuniones de los órganos de gobierno y de coordinación docente</h3>
+<h4>Reuniones del Equipo Directivo</h4>
+<ol>
+    {% for r in pga.reuniones_equipo_directivo %}
+        <li> Los {{ r.0|dia }}
+            entre las {{ r.1|date:"H:i" }} y las {{ r.2|date:"H:i" }}</li>{% endfor %}
+</ol>
+
+<h4>Reuniones previstas del Claustro de Profesores</h4>
+<ol>
+    {% for r in pga.reuniones_claustro %}
+        <li>El {{ r.fecha|date:"l, j \d\e F \d\e Y \a \l\a\s H:i"|lower }} horas. {{ r.nombre }}.
+            {% autoescape off %}{{ r.description }}{% endautoescape %}.
+        </li>
+    {% endfor %}
+</ol>
+
+<h4>Reuniones previstas del Consejo Escolar</h4>
+<ol>
+    {% for r in pga.reuniones_consejo %}
+        <li>El {{ r.fecha|date:"l, j \d\e F \d\e Y \a \l\a\s H:i"|lower }} horas. {{ r.nombre }}.
+            {% autoescape off %}{{ r.description }}{% endautoescape %}.
+        </li>
+    {% endfor %}
+</ol>
+
+<h4>Reuniones de los departamentos didácticos</h4>
+<ol>
+    {% for r in pga.reuniones_departamentos %}
+        {% if r.3 %}
+            <li> Departamento de {{ r.3 }}: Los {{ r.0|dia }}
+                entre las {{ r.1|date:"H:i" }} y las {{ r.2|date:"H:i" }}</li>
+        {% endif %}
+    {% endfor %}
+</ol>
+
+<h4>Reuniones de equipos de profesores</h4>
+<ol>
+    {% for r in pga.reuniones_equipos_docentes %}
+        {% if r.3 %}
+            <li> {{ r.3 }}: Los {{ r.0|dia }}
+                entre las {{ r.1|date:"H:i" }} y las {{ r.2|date:"H:i" }}</li>
+        {% endif %}
+    {% endfor %}
+</ol>
+<h4>Reuniones de la Comisión de Coordinación Pedagógica</h4>
+<ol>
+    {% for r in pga.reuniones_ccp %}
+        {% if r.3 %}
+            <li>Los {{ r.0|dia }} entre las {{ r.1|date:"H:i" }} y las {{ r.2|date:"H:i" }}</li>
+        {% endif %}
+    {% endfor %}
+</ol>
+
+<h4>Sesiones de evaluación</h4>
+<ol>
+    {% for r in pga.reuniones_evaluacion %}
+        <li>El {{ r.fecha|date:"l, j \d\e F \d\e Y \a \l\a\s H:i"|lower }} horas. {{ r.nombre }}.
+            {% autoescape off %}{{ r.description }}{% endautoescape %}.
+        </li>
+    {% endfor %}
+</ol>
+
+<h3>Previsión de convenios y acuerdos de colaboración con otras instituciones</h3>
+{% autoescape off %}{{ pga.convenios }}{% endautoescape %}
+
+<h3>Relación de libros de texto y materiales curriculares</h3>
+<p>La información que corresponde a este apartado se encuentra en un archivo adjunto a este documento.</p>
+
+<h3>Estadística de principio de curso</h3>
+<p>La información que corresponde a este apartado se encuentra en un archivo adjunto a este documento.</p>
+
+<h3>Situación de las instalaciones y del equipamiento</h3>
+{% autoescape off %}{{ pga.obras }}{% endautoescape %}

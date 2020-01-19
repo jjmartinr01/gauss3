@@ -1,0 +1,4 @@
+<li id="lireunion{{ r.id }}">El {{ r.fecha|date:"l, j \d\e F \d\e Y \a \l\a\s H:i"|lower }} horas. {{ r.nombre }}.
+    {% autoescape off %}{{ r.description }}{% endautoescape %}. <a class="delete_li" data-pga={{ r.pga.id }}
+            data-id="{{ r.id }}"><i class="fa fa-trash-o"></i> </a>
+</li>

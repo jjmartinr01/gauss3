@@ -7,6 +7,14 @@ register = Library()
 
 
 @register.filter
+def docpec(pec, tipo):
+    try:
+        return PECdocumento.objects.get(pec=pec, tipo=tipo)
+    except:
+        p = False
+    return p
+
+@register.filter
 def programacion(materia):
     try:
         p = ProgramacionSubida.objects.get(materia=materia)

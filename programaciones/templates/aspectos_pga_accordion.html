@@ -1,0 +1,424 @@
+{% load my_templatetags %}
+
+<dd class="accordion-navigation" id="accordion{{ pga.id }}">
+    <a href="#pga{{ pga.id }}">
+        <span id="span_nombre_pga{{ pga.id }}"><b>Programación {{ pga.ronda.nombre }}</b></span>
+        {% if pga.ronda == pga.ronda.entidad.ronda %}        &nbsp;&nbsp;&nbsp;&nbsp;
+            <span id="span_predeterminado{{ pga.id }}" style="color:green;" class="span_predeterminado">
+            <i class="fa fa-check"></i> Actual</span>
+        {% endif %}
+    </a>
+
+    <div id="pga{{ pga.id }}" class="content pga_contenido" data-pga="{{ pga.id }}">
+        <div class="row">
+            <div class="columns small-12 medium-12 hide-for-large-up">
+                <a style="font-weight: bold;font-size: large;" class="button radius tiny downloadpga" data-pga="{{ pga.id }}"><i
+                        class="fa fa-download"></i> Descargar PGA</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-9">
+                <label><b>Calendario del curso académico:</b>
+                    <a class="ayuda_gauss" data-help="#calacademico{{ pga.id }}"><i class="fa fa-info-circle"></i></a>
+                </label>
+                <div data-alert class="alert-box info radius" id="calacademico{{ pga.id }}" style="display: none;">
+                    <p>La información de este apartado se obtiene de dos lugares:</p>
+                    <ul>
+                        <li>De las fechas de inicio y fin indicadas en el curso escolar.</li>
+                        <li>De los días festivos marcados en el calendario.</li>
+                    </ul>
+                </div>
+                <ul>
+                    <li>Comienzo de curso: {{ pga.ronda.inicio }}</li>
+                    <li>Fin de curso: {{ pga.ronda.fin }}</li>
+                    <li>Días festivos:
+                        {% for v in pga.festivos %}{% if not forloop.last %}{{ v.dtstart|date:"d-m-Y" }}, {% else %}
+                            {{ v.dtstart|date:"d-m-Y" }}{% endif %}{% endfor %}</li>
+                </ul>
+            </div>
+            <div class="columns large-3 show-for-large-up">
+                <a style="font-weight: bold;font-size: large;" class="button radius tiny downloadpga" data-pga="{{ pga.id }}"><i
+                        class="fa fa-download"></i> Descargar PGA</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Horario general del centro:</b>
+                    <a class="ayuda_gauss" data-help="#horgeneral{{ pga.id }}"><i class="fa fa-info-circle"></i></a>
+                </label>
+                <div data-alert class="alert-box info radius" id="horgeneral{{ pga.id }}" style="display: none;">
+                    <p>La información de este apartado se obtiene del texto escrito en el apartado "Descripción"
+                        del horario predeterminado del centro.</p>
+                    <p style="font-weight: bold;">Gauss -> Horarios -> Editar horarios -> Desplegar y rellenar el
+                        apartado "Descripción del horario"</p>
+                </div>
+                {{ pga.horario.descripcion }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Programa anual de actividades complementarias y extraescolares:</b>
+                    <a class="ayuda_gauss" data-help="#actcomplext{{ pga.id }}"><i class="fa fa-info-circle"></i></a>
+                </label>
+                <div data-alert class="alert-box info radius" id="actcomplext{{ pga.id }}" style="display: none;">
+                    <p>Las actividades complementarias y extraescolares se pueden cargar utilizando el archivo
+                        que puede ser exportado desde Racima:</p>
+                    <p style="font-weight: bold;">Racima -> Módulo de Gestión -> Centro -> Actividades
+                        extraescolares -> Exportar datos/Imprimir</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-5 div_aaee_file{{ pga.id }}">
+                <label>Archivo existente:</label>
+                <a class="download_file" data-id="{{ aaee_file.id }}" data-pga="{{ pga.id }}">
+                    {{ aaee_file.doc_nombre }}</a>
+            </div>
+            <div class="columns large-5 div_aaee_file{{ pga.id }}">
+                <label>Selecciona el archivo:
+                    <input type="file" id="programa_actividades_extraescolares{{ pga.id }}">
+                </label>
+            </div>
+            <div class="columns large-2 div_aaee_file{{ pga.id }}">
+                <label>&nbsp;</label>
+                <a class="sube_file_pga button tiny" data-pga="{{ pga.id }}"
+                   data-name="programa_actividades_extraescolares">
+                    <i class="fa fa-upload"></i> Subir</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Programación anual de las actividades de formación del profesorado:</b>
+                    <div style="border: lightgrey solid 1px; padding:10px;" data-pga="{{ pga.id }}"
+                         contenteditable="true" id="fprofesorado{{ pga.id }}">
+                        {% autoescape off %}{{ pga.fprofesorado }}{% endautoescape %}</div>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Plan de reuniones del Equipo Directivo:</b>
+                    <a class="ayuda_gauss" data-help="#reuequipodirectivo{{ pga.id }}"><i class="fa fa-info-circle"></i></a>
+                </label>
+                <div data-alert class="alert-box info radius" id="reuequipodirectivo{{ pga.id }}"
+                     style="display: none;">
+                    <p>Las reuniones del Equipo Directivo se cargan automáticamente de los horarios.</p>
+                    <p>En los horarios de los miembros del Equipo deberían existir sesiones que tuvieran
+                        asignada la actividad: "Despacho y reuniones del Equipo Directivo".</p>
+                </div>
+                {% if pga.reuniones_equipo_directivo|length > 0 %}
+                    <ol>
+                        {% for r in pga.reuniones_equipo_directivo %}
+                            <li> Los {{ r.0|dia }}
+                                entre las {{ r.1|date:"H:i" }} y las {{ r.2|date:"H:i" }}</li>{% endfor %}
+                    </ol>
+                {% else %}
+                    <p>No se han definido reuniones del Equipo Directivo en los horarios. Para hacerlo hay que
+                        crear horas de trabajo en el horario (sesiones) con la actividad "Despacho y reuniones del
+                        Equipo Directivo".</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Plan de reuniones de los departamentos didácticos:</b>
+                    <a class="ayuda_gauss" data-help="#reudepartamentos{{ pga.id }}"><i
+                            class="fa fa-info-circle"></i></a>
+                </label>
+                <div data-alert class="alert-box info radius" id="reudepartamentos{{ pga.id }}" style="display: none;">
+                    <p>Las reuniones de los departamentos didácticos se cargan automáticamente de los horarios.</p>
+                    <p>En los horarios de los profesores deberían existir sesiones que tuvieran
+                        asignada la actividad: "Reunión de departamento".</p>
+                </div>
+                {% if pga.reuniones_departamentos|length > 0 %}
+                    <ol>
+                        {% for r in pga.reuniones_departamentos %}
+                            {% if r.3 %}
+                                <li> Departamento de {{ r.3 }}: Los {{ r.0|dia }}
+                                    entre las {{ r.1|date:"H:i" }} y las {{ r.2|date:"H:i" }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ol>
+                {% else %}
+                    <p>No se han definido reuniones de departamentos en los horarios.Para hacerlo hay que
+                        crear horas de trabajo en el horario (sesiones) con la actividad "Reunión de departamento".</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Plan de reuniones de equipos docentes:</b>
+                    <a class="ayuda_gauss" data-help="#reuequiposdocentes{{ pga.id }}"><i class="fa fa-info-circle"></i></a>
+                </label>
+                <div data-alert class="alert-box info radius" id="reuequiposdocentes{{ pga.id }}"
+                     style="display: none;">
+                    <p>Las reuniones de los equipos docentes se cargan automáticamente de los horarios.</p>
+                    <p>En los horarios de los profesores deberían existir sesiones que tuvieran asignada la actividad
+                        "Reunión de tutores del mismo nivel con Orientación" o la actividad "Reunión equipos docentes
+                        de proyectos institucionales".</p>
+                </div>
+                {% if pga.reuniones_equipos_docentes|length > 0 %}
+                    <ol>
+                        {% for r in pga.reuniones_equipos_docentes %}
+                            {% if r.3 %}
+                                <li> {{ r.3 }}: Los {{ r.0|dia }}
+                                    entre las {{ r.1|date:"H:i" }} y las {{ r.2|date:"H:i" }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ol>
+                {% else %}
+                    <p>No se han definido reuniones de equipos docentes en los horarios.Para hacerlo hay que
+                        crear horas de trabajo en el horario (sesiones) con la actividad "Reunión de tutores del
+                        mismo nivel con Orientación" o la actividad "Reunión equipos docentes de proyectos
+                        institucionales".</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Plan de reuniones de la Comisión de Coordinación Pedagógica:</b>
+                    <a class="ayuda_gauss" data-help="#reuccp{{ pga.id }}"><i class="fa fa-info-circle"></i></a>
+                </label>
+                <div data-alert class="alert-box info radius" id="reuccp{{ pga.id }}"
+                     style="display: none;">
+                    <p>Las reuniones de la Comisión de Coordinación Pedagógica se cargan automáticamente de los
+                        horarios.</p>
+                    <p>En los horarios de los profesores deberían existir sesiones que tuvieran asignada la actividad
+                        "Reuniones de la Comisión de Coordinación Pedagógica".</p>
+                </div>
+                {% if pga.reuniones_ccp|length > 0 %}
+                    <ol>
+                        {% for r in pga.reuniones_ccp %}
+                            {% if r.3 %}
+                                <li>Los {{ r.0|dia }} entre las {{ r.1|date:"H:i" }} y las {{ r.2|date:"H:i" }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ol>
+                {% else %}
+                    <p>No se han definido reuniones de la Comisión de Coordinación Pedagógica en los horarios.Para
+                        hacerlo hay que crear horas de trabajo en el horario (sesiones) con la actividad "Reuniones de
+                        la Comisión de Coordinación Pedagógica".</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Plan de reuniones del Claustro de Profesores:</b>
+                    <a class="ayuda_gauss" data-help="#reuclaustro{{ pga.id }}"><i class="fa fa-info-circle"></i></a>
+                </label>
+                <div data-alert class="alert-box info radius" id="reuclaustro{{ pga.id }}"
+                     style="display: none;">
+                    <p>Las reuniones del claustro, del Consejo Escolar o las sesiones de evaluación se deben definir
+                        a través del formulario situado un poco más abajo.</p>
+                    <p>Selecciona el tipo de reunión, la hora y proporciona un nombre y una descripción para la
+                        misma.</p>
+                </div>
+                <ol id="CLA{{ pga.id }}">
+                    {% for r in claustros %}
+                        {% include "aspectos_pga_accordion_content_li.html" %}
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Plan de reuniones del Consejo Escolar:</b>
+                    <a class="ayuda_gauss" data-help="#reuconsejo{{ pga.id }}"><i class="fa fa-info-circle"></i></a>
+                </label>
+                <div data-alert class="alert-box info radius" id="reuconsejo{{ pga.id }}"
+                     style="display: none;">
+                    <p>Las reuniones del claustro, del Consejo Escolar o las sesiones de evaluación se deben definir
+                        a través del formulario situado un poco más abajo.</p>
+                    <p>Selecciona el tipo de reunión, la hora y proporciona un nombre y una descripción para la
+                        misma.</p>
+                </div>
+                <ol id="CON{{ pga.id }}">
+                    {% for r in consejos %}
+                        {% include "aspectos_pga_accordion_content_li.html" %}
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Plan de reuniones de evaluación:</b>
+                    <a class="ayuda_gauss" data-help="#reuevaluacion{{ pga.id }}"><i class="fa fa-info-circle"></i></a>
+                </label>
+                <div data-alert class="alert-box info radius" id="reuevaluacion{{ pga.id }}"
+                     style="display: none;">
+                    <p>Las reuniones del claustro, del Consejo Escolar o las sesiones de evaluación se deben definir
+                        a través del formulario situado un poco más abajo.</p>
+                    <p>Selecciona el tipo de reunión, la hora y proporciona un nombre y una descripción para la
+                        misma.</p>
+                </div>
+                <ol id="EVA{{ pga.id }}">
+                    {% for r in evaluaciones %}
+                        {% include "aspectos_pga_accordion_content_li.html" %}
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+
+        <fieldset>
+            <legend>Define reuniones del Claustro, Consejo Escolar, evaluaciones, ...</legend>
+            <div class="row">
+                <div class="columns large-4">
+                    <label><b>Tipo de reunión:</b>
+                        <select id="tipo_reunion{{ pga.id }}">
+                            <option value="">------------</option>
+                            <option value="CLA">Claustro de Profesores</option>
+                            <option value="CON">Consejo Escolar</option>
+                            <option value="EVA">Sesión de Evaluación</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="columns large-2">
+                    <label><b>Fecha y hora:</b>
+                        <input id="fecha_reunion{{ pga.id }}" type="text" readonly class="fecha_reunion">
+                    </label>
+                </div>
+                <div class="columns large-5">
+                    <label><b>Nombre de la reunión:</b>
+                        <input type="text" id="nombre_reunion{{ pga.id }}" maxlength="190">
+                    </label>
+                </div>
+                <div class="columns large-1">
+                    <label>&nbsp;</label>
+                    <a class="button aceptar_reunion tiny" data-pga="{{ pga.id }}">Grabar</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-12">
+                    <label><b>Descripción de la reunión:</b>
+                        <div style="border: lightgrey solid 1px; padding:10px;"
+                             contenteditable="true" id="description_reunion{{ pga.id }}"></div>
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Previsión de convenios y acuerdos de colaboración con otras instituciones:</b>
+                    <div style="border: lightgrey solid 1px; padding:10px;" data-pga="{{ pga.id }}"
+                         contenteditable="true" id="convenios{{ pga.id }}">
+                        {% autoescape off %}{{ pga.convenios }}{% endautoescape %}</div>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Relación de libros de texto y materiales curriculares:</b>
+                    <a class="ayuda_gauss" data-help="#librostexto{{ pga.id }}"><i class="fa fa-info-circle"></i></a>
+                </label>
+                <div data-alert class="alert-box info radius" id="librostexto{{ pga.id }}" style="display: none;">
+                    <p>El listado de los libros de texto puede ser exportado desde Racima de la siguiente
+                        forma:</p>
+                    <p style="font-weight: bold;">Racima -> Módulo de Gestión -> Centro -> Libros de texto -> Libros
+                        del centro -> Exportar datos/Imprimir</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-5">
+                <label>Archivo existente:</label>
+                <a class="download_file" data-id="{{ libros_file.id }}" data-pga="{{ pga.id }}">
+                    {{ libros_file.doc_nombre }}</a>
+            </div>
+            <div class="columns large-5">
+                <label>Selecciona el archivo:
+                    <input type="file" id="libros_de_texto_y_materiales{{ pga.id }}">
+                </label>
+            </div>
+            <div class="columns large-2">
+                <label>&nbsp;</label>
+                <a class="sube_file_pga button tiny" data-pga="{{ pga.id }}"
+                   data-name="libros_de_texto_y_materiales">
+                    <i class="fa fa-upload"></i> Subir</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Estadística de principio de curso:</b>
+                    <a class="ayuda_gauss" data-help="#estadisprinci{{ pga.id }}"><i class="fa fa-info-circle"></i></a>
+                </label>
+                <div data-alert class="alert-box info radius" id="estadisprinci{{ pga.id }}" style="display: none;">
+                    <p>La estadística de principio de curso puede ser exportada desde Racima de la siguiente
+                        forma:</p>
+                    <p style="font-weight: bold;">Racima -> Módulo de Gestión -> Listados -> Centro -> Estadillo
+                        resumen</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-5">
+                <label>Archivo existente:</label>
+                <a class="download_file" data-id="{{ estadistica_file.id }}" data-pga="{{ pga.id }}">
+                    {{ estadistica_file.doc_nombre }}</a>
+            </div>
+            <div class="columns large-5">
+                <label>Selecciona el archivo:
+                    <input type="file" id="estadistica_comienzo_curso{{ pga.id }}">
+                </label>
+            </div>
+            <div class="columns large-2">
+                <label>&nbsp;</label>
+                <a class="sube_file_pga button tiny" data-pga="{{ pga.id }}"
+                   data-name="estadistica_comienzo_curso">
+                    <i class="fa fa-upload"></i> Subir</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Situación de las instalaciones y del equipamiento:</b>
+                    <div style="border: lightgrey solid 1px; padding:10px;" data-pga="{{ pga.id }}"
+                         contenteditable="true" id="obras{{ pga.id }}">
+                        {% autoescape off %}{{ pga.obras }}{% endautoescape %}</div>
+                </label>
+            </div>
+        </div>
+    </div>
+</dd>
+
+<script>
+    setTimeout(function () {
+        var obras{{ pga.id }} = CKEDITOR.inline('obras{{ pga.id }}');
+        var description_reunion{{ pga.id }} = CKEDITOR.inline('description_reunion{{ pga.id }}');
+        var convenios{{ pga.id }} = CKEDITOR.inline('convenios{{ pga.id }}');
+        var fprofesorado{{ pga.id }} = CKEDITOR.inline('fprofesorado{{ pga.id }}');
+
+        obras{{ pga.id }}.on('change', function (e) {
+            var texto = e.editor.getData();
+            texto_editor = texto;
+            var pga = {{ pga.id }};
+            setTimeout(function () {
+                comprueba_cambio_texto(texto, pga, 'obras');
+            }, 1000);
+            re_adjust_check_time();
+        });
+        convenios{{ pga.id }}.on('change', function (e) {
+            var texto = e.editor.getData();
+            texto_editor = texto;
+            var pga = {{ pga.id }};
+            setTimeout(function () {
+                comprueba_cambio_texto(texto, pga, 'convenios');
+            }, 1000);
+            re_adjust_check_time();
+        });
+        fprofesorado{{ pga.id }}.on('change', function (e) {
+            var texto = e.editor.getData();
+            texto_editor = texto;
+            var pga = {{ pga.id }};
+            setTimeout(function () {
+                comprueba_cambio_texto(texto, pga, 'fprofesorado');
+            }, 1000);
+            re_adjust_check_time();
+        });
+        description_reunion{{ pga.id }}.on('change', function (e) {
+            var texto = e.editor.getData();
+            $('#container_description_reunion').html(texto);
+        });
+    }, 300);
+
+
+</script>

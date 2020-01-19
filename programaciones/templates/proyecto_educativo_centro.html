@@ -1,0 +1,171 @@
+{% extends "base_select2-4.html" %}
+{% load programaciones_extras %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="archivo" name="archivo" value="">
+        <input type="hidden" id="pec" name="pec" value="{{ pec.id }}">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Proyecto Educativo del Centro</strong>
+            </h4>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Signos de identidad del {{ pec.entidad.name }}:</b>
+                    <div style="border: lightgrey solid 1px; padding:10px;" data-entidad="{{ pec.entidad.id }}"
+                         contenteditable="true" id="signos">
+                        {% autoescape off %}{{ pec.signos }}{% endautoescape %}</div>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Organización general del {{ pec.entidad.name }}:</b>
+                    <div style="border: lightgrey solid 1px; padding:10px;" data-entidad="{{ pec.entidad.id }}"
+                         contenteditable="true" id="organizacion">
+                        {% autoescape off %}{{ pec.organizacion }}{% endautoescape %}</div>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Signos de identidad del {{ pec.entidad.name }}:</b>
+                    <div style="border: lightgrey solid 1px; padding:10px;" data-entidad="{{ pec.entidad.id }}"
+                         contenteditable="true" id="lineapedagogica">
+                        {% autoescape off %}{{ pec.lineapedagogica }}{% endautoescape %}</div>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Modelo de participación en la vida escolar:</b>
+                    <div style="border: lightgrey solid 1px; padding:10px;" data-entidad="{{ pec.entidad.id }}"
+                         contenteditable="true" id="participacion">
+                        {% autoescape off %}{{ pec.participacion }}{% endautoescape %}</div>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Proyectos que desarrolla el {{ pec.entidad.name }}:</b>
+                    <div style="border: lightgrey solid 1px; padding:10px;" data-entidad="{{ pec.entidad.id }}"
+                         contenteditable="true" id="proyectos">
+                        {% autoescape off %}{{ pec.proyectos }}{% endautoescape %}</div>
+                </label>
+            </div>
+        </div>
+        {% for tipo in TIPOS %}
+            {% with doc=pec|docpec:tipo.0 %}
+                <div class="row">
+                    <div class="columns large-12">
+                        <label><b>{{ tipo.1 }}:</b></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns large-5">
+                        <label>Archivo existente:</label>
+                        <a class="download_file" data-id="{{ doc.id }}" data-pec="{{ pec.id }}">
+                            {% if doc %} <i class="fa fa-download"></i> Descargar{% endif %}</a>
+                    </div>
+                    <div class="columns large-5">
+                        <label>Selecciona el archivo:
+                            <input type="file" id="{{ tipo.0 }}">
+                        </label>
+                    </div>
+                    <div class="columns large-2">
+                        <label>&nbsp;</label>
+                        <a class="sube_file_pec button tiny" data-pec="{{ pec.id }}"
+                           data-name="{{ tipo.0 }}">
+                            <i class="fa fa-upload"></i> Subir</a>
+                    </div>
+                </div>
+            {% endwith %}
+        {% endfor %}
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        var texto_editor;
+
+        function comprueba_cambio_texto(texto, pec, campo) {
+            if (texto == texto_editor) {
+                $.post("/proyecto_educativo_centro/", {
+                        action: 'update_texto_pec',
+                        pec: pec,
+                        texto: texto_editor,
+                        campo: campo
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        }
+
+        setTimeout(function () {
+            {% for aspecto in aspectos %}
+                var {{aspecto}} = CKEDITOR.inline('{{ aspecto }}');
+                {{ aspecto }}.on('change', function (e) {
+                var texto = e.editor.getData();
+                texto_editor = texto;
+                var pec = {{ pec.id }};
+                setTimeout(function () {
+                    comprueba_cambio_texto(texto, pec, '{{ aspecto }}');
+                }, 1000);
+                re_adjust_check_time();
+            });
+            {% endfor %}
+        }, 300);
+
+        $('body').on('click', '.sube_file_pec', function () {
+            var pec = $(this).data('pec');
+            var name = $(this).data('name');
+            console.log(name)
+            var input_files = document.getElementById(name).files;
+
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('fichero_xhr' + i, input_files[i]);
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'sube_file_pec');
+            formData.append('pec', pec);
+            formData.append('name', name);
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log('Terminado');
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.mensaje) {
+                            show_mensajes({title: 'Error', texto: data.mensaje})
+                        }
+                    }
+                }
+            };
+            xhr.open('POST', "/proyecto_educativo_centro/", true);
+            xhr.send(formData);
+        });
+
+        $('body').on('click', '.download_file', function (e) {
+            e.preventDefault();
+            $('#action').val('download_file');
+            $('#archivo').val($(this).data('id'));
+            document.{{ formname }}.submit();
+        });
+    </script>
+{% endblock %}

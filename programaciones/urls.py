@@ -22,4 +22,6 @@ urlpatterns = [
     url(r'^cargar_programaciones/$', views.cargar_programaciones, name='cargar_programaciones'),
     url(r'^cargar_programaciones_ajax/$', views.cargar_programaciones_ajax, name='cargar_programaciones_ajax'),
     url(r'^profesores_centro_educativo/$', views.profesores_centro_educativo, name='profesores_centro_educativo'),
+    url(r'^aspectos_pga/$', views.aspectos_pga, name='aspectos_pga'),
+    url(r'^proyecto_educativo_centro/$', views.proyecto_educativo_centro, name='proyecto_educativo_centro'),
 ]

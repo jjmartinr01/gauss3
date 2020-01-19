@@ -1,0 +1,26 @@
+{% load my_templatetags %}
+<h1 style="text-align: center;">Aspectos generales del Proyecto Educativo del Centro</h1>
+<h2 style="text-align: center;">{{ pec.entidad.name }}</h2>
+
+<h3>Signos de identidad del centro</h3>
+{% autoescape off %}{{ pec.signos }}{% endautoescape %}
+<h3>Organización general del centro</h3>
+{% autoescape off %}{{ pec.organizacion }}{% endautoescape %}
+<h3>Enseñanzas que se imparten en el centro y materias optativas</h3>
+<ul>
+    {% for c in pec.cursos %}
+        <li><b><i>{{ c.nombre }}</i></b>
+            <ol>
+                {% for m in c.materia_set.all %}
+                    <li>{{ m.nombre }}</li>
+                {% endfor %}
+            </ol>
+        </li>
+    {% endfor %}
+</ul>
+<h3>Línea pedagógica</h3>
+{% autoescape off %}{{ pec.lineapedagogica }}{% endautoescape %}
+<h3>Modelo de participación en la vida escolar</h3>
+{% autoescape off %}{{ pec.participacion }}{% endautoescape %}
+<h3>Proyectos que desarrolla el centro</h3>
+{% autoescape off %}{{ pec.proyectos }}{% endautoescape %}

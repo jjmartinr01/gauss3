@@ -5,55 +5,169 @@ import os
 
 from django.db import models
 
+from gauss.rutas import MEDIA_PROGRAMACIONES
+from calendario.models import Vevent
 from estudios.models import Materia, Curso
 from entidades.models import Gauser_extra, Ronda, Entidad
-from horarios.models import Horario
+from horarios.models import Horario, Sesion
 from actividades.models import Actividad
-
 
 def update_aaee(instance, filename):
     ext = filename.rpartition('.')[2]
     ronda_slugify = slugify(instance.ronda.nombre)
     ruta = 'programaciones/%s/%s/Aspectos_Generales_PGA/Programa_actividades_extraescolares' % (
         instance.materia.curso.ronda.entidad.code, ronda_slugify)
-    return '%s.%s' %(ruta, ext)
+    return '%s.%s' % (ruta, ext)
+
 
 def update_libros(instance, filename):
     ext = filename.rpartition('.')[2]
     ronda_slugify = slugify(instance.ronda.nombre)
     ruta = 'programaciones/%s/%s/Aspectos_Generales_PGA/Libros_de_texto_y_materiales' % (
         instance.materia.curso.ronda.entidad.code, ronda_slugify)
-    return '%s.%s' %(ruta, ext)
+    return '%s.%s' % (ruta, ext)
+
+def ruta_programaciones(ronda, filename='', tipo='pga', ruta='absoluta'):
+    """
+    :param ronda:
+    :param filename:
+    :param tipo: str
+                    pga -> ruta a aspectos generales pga
+                    pec -> ruta a aspectos generales pec
+                    centro -> ruta a programaciones centro
+                    ronda -> ruta a programaciones ronda
+    :param ruta: str que puede ser 'relativa' o 'absoluta'
+    :return: str que contiene la ruta 'relativa' o 'absoluta' según se haya elegido
+    """
+    centro_code = ronda.entidad.code
+    ronda_slugify = slugify(ronda.nombre)
+    ruta_centro_relativa = 'programaciones/%s/' % centro_code
+    ruta_centro_absoluta = '%s%s/' % (MEDIA_PROGRAMACIONES, centro_code)
+    ruta_ronda_relativa = '%s%s/' % (ruta_centro_relativa, ronda_slugify)
+    ruta_ronda_absoluta = '%s%s/' % (ruta_centro_absoluta, ronda_slugify)
+    if tipo == 'pga':
+        relativa = '%sAspectos_Generales_PGA/%s' % (ruta_ronda_relativa, filename)
+        absoluta = '%sAspectos_Generales_PGA/%s' % (ruta_ronda_absoluta, filename)
+    elif tipo == 'pec':
+        relativa = '%sPEC/%s' % (ruta_ronda_relativa, filename)
+        absoluta = '%sPEC/%s' % (ruta_ronda_absoluta, filename)
+    elif tipo == 'centro':
+        relativa = '%s%s' % (ruta_centro_relativa, filename)
+        absoluta = '%s%s' % (ruta_centro_absoluta, filename)
+    else:
+        relativa = '%s%s' % (ruta_ronda_relativa, filename)
+        absoluta = '%s%s' % (ruta_ronda_absoluta, filename)
+    d = {'relativa': relativa, 'absoluta': absoluta}
+    return d[ruta]
+
+
+def rutas_aspectos_pga(pga, filename=''):
+    centro_code = pga.ronda.entidad.code
+    ronda_slugify = slugify(pga.ronda.nombre)
+    relativa = 'programaciones/%s/%s/Aspectos_Generales_PGA/%s' % (centro_code, ronda_slugify, filename)
+    absoluta = '%s%s/%s/Aspectos_Generales_PGA/%s' % (MEDIA_PROGRAMACIONES, centro_code, ronda_slugify, filename)
+    return {'relativa': relativa, 'absoluta': absoluta, 'centro': 'programaciones/%s/' % centro_code}
+
+def rutas_pec(pec, filename=''):
+    centro_code = pec.entidad.code
+    ronda_slugify = slugify(pec.entidad.ronda.nombre)
+    relativa = 'programaciones/%s/%s/PEC/%s' % (centro_code, ronda_slugify, filename)
+    absoluta = '%s%s/%s/PEC/%s' % (MEDIA_PROGRAMACIONES, centro_code, ronda_slugify, filename)
+    return {'relativa': relativa, 'absoluta': absoluta}
 
 class PGA(models.Model):
     ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE)
-    creado = models.DateField("Fecha de creación", auto_now_add=True)
-    aaee_file = models.FileField("Archivo con la programación de las actividades extraescolares", upload_to=update_aaee,
-                                 null=True, blank=True)
     fprofesorado = models.TextField("Plan formación profesorado", blank=True, null=True, default='')
     convenios = models.TextField("Previsión de acuerdos y/o convenios", blank=True, null=True, default='')
-    libros_file = models.FileField("Archivo con el listado de libros de texto", upload_to=update_libros,
-                                 null=True, blank=True)
-    estadistica_file = models.FileField("Archivo con la estadística de comienzo de curso", upload_to=update_libros,
-                                   null=True, blank=True)
     obras = models.TextField("siutación instalaciones y previsión de obras", blank=True, null=True, default='')
+    creado = models.DateField("Fecha de creación", auto_now_add=True)
 
     @property
     def horario(self):
         return Horario.objects.get(ronda=self.ronda, predeterminado=True)
 
     @property
-    def aaee(self): #Actividades extraescolares
+    def reuniones_equipo_directivo(self):
+        h = Horario.objects.get(ronda=self.ronda, predeterminado=True)
+        sesiones = Sesion.objects.filter(actividad__nombre__icontains='reuniones del equipo directivo', horario=h)
+        return set(sesiones.values_list('dia', 'inicio', 'fin'))
+
+    @property
+    def reuniones_departamentos(self):
+        h = Horario.objects.get(ronda=self.ronda, predeterminado=True)
+        sesiones = Sesion.objects.filter(actividad__nombre__icontains='de departamento', horario=h)
+        return set(
+            sesiones.values_list('dia', 'inicio', 'fin', 'g_e__gauser_extra_programaciones__departamento__nombre'))
+
+    @property
+    def reuniones_equipos_docentes(self):
+        h = Horario.objects.get(ronda=self.ronda, predeterminado=True)
+        q = models.Q(actividad__nombre__icontains='tutores del mismo nivel') | models.Q(
+            actividad__nombre__icontains='equipos docentes')
+        sesiones = Sesion.objects.filter(models.Q(horario=h), q)
+        return set([(s.dia, s.inicio, s.fin, s.actividad.nombre) for s in sesiones])
+        # return set([(s.dia, s.inicio, s.fin, s.g_e.gauser_extra_horarios.cursos.all().values_list('nombre', flat=True)) for s in sesiones])
+
+    @property
+    def reuniones_ccp(self):
+        h = Horario.objects.get(ronda=self.ronda, predeterminado=True)
+        sesiones = Sesion.objects.filter(horario=h, actividad__nombre__icontains='comis')
+        return set([(s.dia, s.inicio, s.fin, s.actividad.nombre) for s in sesiones])
+        # return set([(s.dia, s.inicio, s.fin, s.g_e.gauser_extra_horarios.cursos.all().values_list('nombre', flat=True)) for s in sesiones])
+
+    @property
+    def reuniones_claustro(self):
+        return ReunionesPrevistas.objects.filter(pga=self, tipo='CLA')
+
+    @property
+    def reuniones_consejo(self):
+        return ReunionesPrevistas.objects.filter(pga=self, tipo='CON')
+
+    @property
+    def reuniones_evaluacion(self):
+        return ReunionesPrevistas.objects.filter(pga=self, tipo='EVA')
+
+    @property
+    def festivos(self):
+        return Vevent.objects.filter(entidad=self.ronda.entidad, dtstart__gte=self.ronda.inicio,
+                                     dtend__lte=self.ronda.fin, festivo=True)
+
+    @property
+    def aaee(self):  # Actividades extraescolares
         return Actividad.objects.filter(organizador__ronda=self.ronda)
 
     def __str__(self):
         return '%s - %s (%s)' % (self.ronda.entidad.name, self.ronda.nombre, self.creado)
 
+
+def update_documentos_pga(instance, filename):
+    ext = filename.rpartition('.')[2]
+    ruta = rutas_aspectos_pga(instance.pga, instance.doc_nombre)['relativa']
+    return '%s.%s' % (ruta, ext)
+
+
+class PGAdocumento(models.Model):
+    TIPOS = (('programa_actividades_extraescolares', 'Programa actividades extraescolares'),
+             ('libros_de_texto_y_materiales', 'Libros de texto y materiales'),
+             ('estadistica_comienzo_curso', 'Estadística de comienzo de curso'))
+    pga = models.ForeignKey(PGA, on_delete=models.CASCADE)
+    doc_nombre = models.CharField('Nombre del documento', max_length=200, choices=TIPOS)
+    doc_file = models.FileField("Archivo del documento asociado a la PGA", upload_to=update_documentos_pga)
+    content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
+
+    @property
+    def filename(self):
+        return os.path.basename(self.doc_file.name)
+
+    def __str__(self):
+        return 'Documento PGA: %s' % (self.doc_nombre)
+
+
 class ReunionesPrevistas(models.Model):
-    TIPOS=(('CLA', 'Reunión del claustro de profesores'),
-           ('CON', 'Reunión del Consejo Escolar'),
-           ('CCP', 'Reunión de la Comisión de Coordinación Pedagógica'),
-           ('TUT', 'Reunión de evaluación'))
+    TIPOS = (('CLA', 'Reunión del claustro de profesores'),
+             ('CON', 'Reunión del Consejo Escolar'),
+             ('CCP', 'Reunión de la Comisión de Coordinación Pedagógica'),
+             ('EVA', 'Reunión de evaluación'))
     pga = models.ForeignKey(PGA, on_delete=models.CASCADE)
     tipo = models.CharField("Tipo de reunión", max_length=5, choices=TIPOS, default='CLA')
     nombre = models.CharField("Nombre de la reunión", blank=True, null=True, max_length=200)
@@ -64,13 +178,6 @@ class ReunionesPrevistas(models.Model):
         return '%s - Reunión %s (%s)' % (self.pga.ronda.nombre, self.get_tipo_display(), self.fecha)
 
 
-def update_documentos_pec(instance, filename):
-    ext = filename.rpartition('.')[2]
-    ronda_slugify = slugify(instance.pec.entidad.ronda.nombre)
-    documento = slugify(instance.doc_nombre)
-    ruta = 'programaciones/%s/%s/PEC/%s' % (instance.materia.curso.ronda.entidad.code, ronda_slugify, documento)
-    return '%s.%s' %(ruta, ext)
-
 class PEC(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     signos = models.TextField("Signos de identidad del centro", blank=True, null=True, default='')
@@ -78,23 +185,42 @@ class PEC(models.Model):
     lineapedagogica = models.TextField("Línea pedagógica", blank=True, null=True, default='')
     participacion = models.TextField("Modelo de participación en la vida escolar", blank=True, null=True, default='')
     proyectos = models.TextField("Proyectos que desarrolla el centro", blank=True, null=True, default='')
-    # pat = models.FileField("Plan de Acción Tutorial", upload_to=update_pat, null=True, blank=True)
-    # poap = models.FileField("Plan de Orientación Académica y Profesional", upload_to=update_poap, null=True, blank=True)
-    # pad = models.FileField("Plan de Orientación Académica y Profesional", upload_to=update_poap, null=True, blank=True)
-    # pc = models.FileField("Plan de Orientación Académica y Profesional", upload_to=update_poap, null=True, blank=True)
-    # rof = models.FileField("Plan de Orientación Académica y Profesional", upload_to=update_poap, null=True, blank=True)
-    # poap = models.FileField("Plan de Orientación Académica y Profesional", upload_to=update_poap, null=True, blank=True)
+
+    @property
+    def cursos(self):
+        return Curso.objects.filter(ronda=self.entidad.ronda)
 
     def __str__(self):
         return 'Proyecto Educativo de Centro: %s' % (self.entidad.name)
 
+
+def update_documentos_pec(instance, filename):
+    ext = filename.rpartition('.')[2]
+    nombre = slugify(instance.get_tipo_display())
+    ruta = rutas_pec(instance.pec, nombre)['relativa']
+    return '%s.%s' % (ruta, ext)
+
+
 class PECdocumento(models.Model):
+    TIPOS =(('pat', 'Plan de Acción Tutorial'),
+            ('poap', 'Plan de Orientación Académica y Profesional'),
+            ('pad', 'Plan de Atención a la Diversidad'),
+            ('pc', 'Plan de Convivencia'),
+            ('rof', 'Reglamento de Organización y Funcionamiento'),
+            ('otros', 'Otros documentos'))
     pec = models.ForeignKey(PEC, on_delete=models.CASCADE)
+    tipo = models.CharField('Tipo de documento', choices=TIPOS, max_length=10, default='otros')
     doc_nombre = models.CharField('Nombre del documento', max_length=200)
     doc_file = models.FileField("Archivo del documento asociado al PEC", upload_to=update_documentos_pec)
+    content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
+
+    @property
+    def filename(self):
+        return os.path.basename(self.doc_file.name)
 
     def __str__(self):
         return 'Documento PEC: %s' % (self.doc_nombre)
+
 
 # Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
 def update_programacion(instance, filename):
@@ -102,12 +228,12 @@ def update_programacion(instance, filename):
     file_nombre = '%s' % (instance.materia.nombre)
     ruta = 'programaciones/%s/%s/Programaciones_didacticas/%s/%s/%s/%s' % (
         instance.materia.curso.ronda.entidad.code,
-        slugify(instance.pec.entidad.ronda.nombre),
+        slugify(instance.sube.ronda.nombre),
         slugify(instance.sube.gauser_extra_programaciones.departamento.nombre),
         slugify(instance.materia.curso.get_etapa_display()),
         slugify(instance.materia.curso.nombre),
         slugify(file_nombre))
-    return '%s.%s' %(ruta, ext)
+    return '%s.%s' % (ruta, ext)
 
 
 class ProgramacionSubida(models.Model):
@@ -124,6 +250,7 @@ class ProgramacionSubida(models.Model):
 
     def __str__(self):
         return '%s - %s (%s)' % (self.materia.curso.ronda.entidad.code, self.materia.nombre, self.materia.curso)
+
 
 def crea_departamentos(ronda):
     ds = [('Actividades Complementarias y Extraescolares', 'AEX', False, 3), ('Artes Plásticas', 'AP', True, 3),
@@ -193,7 +320,8 @@ class Resultado_aprendizaje(models.Model):
 
 
 class Objetivo(models.Model):
-    materia = models.ForeignKey(Materia_programaciones, on_delete=models.CASCADE)  # Este campo es utilizado en programacion_append.html
+    materia = models.ForeignKey(Materia_programaciones,
+                                on_delete=models.CASCADE)  # Este campo es utilizado en programacion_append.html
     resultado_aprendizaje = models.ForeignKey(Resultado_aprendizaje, blank=True, null=True, on_delete=models.CASCADE)
     texto = models.TextField("Objetivo")
     crit_eval = models.TextField("Criterio de evaluación", blank=True, null=True)
@@ -270,7 +398,6 @@ class Objetivo(models.Model):
 #            ('T_IT', 'Técnico en Instalaciones de Telecomunicaciones'),
 #            ('T_GA', 'Técnico en Gestión Administrativa'),
 #            ('TS_AF', 'Técnico Superior en Administración y Finanzas'))
-
 
 
 class Cuerpo_funcionario(models.Model):

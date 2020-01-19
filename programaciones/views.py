@@ -89,6 +89,7 @@ def cargar_programaciones(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
+
 def cargar_programaciones_ajax(request):
     g_e = request.session['gauser_extra']
     if request.is_ajax():
@@ -131,7 +132,8 @@ def cargar_programaciones_ajax(request):
                         p.content_type = fichero.content_type
                         p.save()
                     except:
-                        ProgramacionSubida.objects.create(materia=materia, sube=g_e, archivo=fichero, content_type=fichero.content_type)
+                        ProgramacionSubida.objects.create(materia=materia, sube=g_e, archivo=fichero,
+                                                          content_type=fichero.content_type)
             else:
                 mensaje = 'No tienes permiso para cargar programaciones.'
             html = render_to_string('cargar_programaciones_formulario_content.html', {'curso': curso})
@@ -140,7 +142,7 @@ def cargar_programaciones_ajax(request):
 
 @permiso_required('acceso_departamentos_centro_educativo')
 def departamentos_centro_educativo(request):
-    #Esta función esta inoperativa. Sólo se ha copiado de subentidades y cambiado nombres
+    # Esta función esta inoperativa. Sólo se ha copiado de subentidades y cambiado nombres
     g_e = request.session['gauser_extra']
     ronda = request.session['ronda']
     if request.method == 'POST':
@@ -188,16 +190,18 @@ def departamentos_centro_educativo(request):
                 error = form.errors
             data = render_to_string("list_departamentos.html",
                                     {'departamentos': Departamento.objects.filter(entidad=g_e.ronda.entidad,
-                                                                               fecha_expira__gt=ronda.fin),
+                                                                                  fecha_expira__gt=ronda.fin),
                                      'error': error, 'request': request})
             return HttpResponse(data)
         elif action == 'mostrar_usuarios' and request.is_ajax():
             departamento = Departamento.objects.get(id=request.POST['id'])
-            data = render_to_string("list_usuarios_departamento.html", {'departamento': departamento, 'tipo': 'mostrar'})
+            data = render_to_string("list_usuarios_departamento.html",
+                                    {'departamento': departamento, 'tipo': 'mostrar'})
             return HttpResponse(data)
         elif action == 'ocultar_usuarios' and request.is_ajax():
             departamento = Departamento.objects.get(id=request.POST['id'])
-            data = render_to_string("list_usuarios_departamento.html", {'departamento': departamento, 'tipo': 'ocultar'})
+            data = render_to_string("list_usuarios_departamento.html",
+                                    {'departamento': departamento, 'tipo': 'ocultar'})
             return HttpResponse(data)
 
     departamentos = Departamento.objects.filter(entidad=g_e.ronda.entidad, fecha_expira__gt=date.today())
@@ -229,13 +233,15 @@ def departamentos_centro_educativo_ajax(request):
     if request.is_ajax():
         action = request.POST['action']
         if action == 'add_departamento' and g_e.has_permiso('crea_departamentos'):
-            departamento = Departamento.objects.create(entidad=g_e.ronda.entidad, nombre='Nueva sección/departamento', edad_min=1,
-                                                   edad_max=90, observaciones='')
+            departamento = Departamento.objects.create(entidad=g_e.ronda.entidad, nombre='Nueva sección/departamento',
+                                                       edad_min=1,
+                                                       edad_max=90, observaciones='')
             data = render_to_string("accordion_departamento.html", {'departamento': departamento})
             return HttpResponse(data)
         elif action == 'open_accordion':
             departamento = Departamento.objects.get(id=request.POST['id'], entidad=g_e.ronda.entidad)
-            departamentos = Departamento.objects.filter(entidad=g_e.ronda.entidad, fecha_expira__gte=date.today()).exclude(
+            departamentos = Departamento.objects.filter(entidad=g_e.ronda.entidad,
+                                                        fecha_expira__gte=date.today()).exclude(
                 id=departamento.id)
             # g_es = usuarios_de_gauss(entidad=g_e.ronda.entidad, departamentos=[departamento]).values_list('id',
             #                                                                                      'gauser__last_name',
@@ -419,6 +425,7 @@ def profesores_centro_educativo(request):
     }
     return render(request, "profesores_centro_educativo.html", respuesta)
 
+
 @permiso_required('acceso_resultados_aprendizaje')
 def resultados_aprendizaje(request):
     g_e = request.session['gauser_extra']
@@ -517,8 +524,6 @@ def resultados_aprendizaje(request):
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
     }
     return render(request, "resultados_aprendizaje.html", respuesta)
-
-
 
 
 @permiso_required('acceso_programaciones_ccff')
@@ -630,7 +635,8 @@ def objetivos_criterios(request):
     return render(request, "objetivos_criterios_evaluacion_foundation.html",
                   {
                       'formname': 'objetivos_criterios',
-                      'estudios': Curso.objects.filter(entidad=g_e.ronda.entidad, etapa__icontains='profesional').order_by(
+                      'estudios': Curso.objects.filter(entidad=g_e.ronda.entidad,
+                                                       etapa__icontains='profesional').order_by(
                           'tipo', 'nombre_especifico'),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
@@ -751,8 +757,8 @@ def ajax_programaciones(request):
                 return JsonResponse({'ok': False})  # No copiar porque ya existe una programación
             except:
                 try:
-                    #Al copiar la programación se quedará con el curso en el que fue creada, al igual que la materia
-                    #Esto no debería plantear ningún problema ya que el propietario se corresponde con la ronda actual.
+                    # Al copiar la programación se quedará con el curso en el que fue creada, al igual que la materia
+                    # Esto no debería plantear ningún problema ya que el propietario se corresponde con la ronda actual.
                     programacion = Programacion_modulo.objects.get(id=request.POST['id'])
                     programacion.g_e = g_e
                     programacion.gep = g_e.gauser_extra_programaciones
@@ -802,7 +808,7 @@ def ajax_programaciones(request):
                 'modulo__id', flat=True)
             ex_modulos = [ex for ex in ex_modulos if ex]
             mods = Materia_programaciones.objects.filter(Q(nombre__icontains=texto), Q(estudio__in=estudios),
-                                          ~Q(id__in=ex_modulos)).values_list('id', 'nombre', 'horas')
+                                                         ~Q(id__in=ex_modulos)).values_list('id', 'nombre', 'horas')
             keys = ('id', 'nombre', 'horas')
             listados = [dict(zip(keys, (row[0], row[1], str(row[2])))) for row in mods]
             # listados.append(list(ex_modulos))
@@ -817,7 +823,7 @@ def ajax_programaciones(request):
             datos = [modulo.codigo, modulo.ects, modulo.duracion, modulo.id, obj_generales]
             # return HttpResponse(json.dumps(datos))
             return JsonResponse(datos, safe=False)
-        elif action == 'guardar_datos_modulo_codigo': #comprobado
+        elif action == 'guardar_datos_modulo_codigo':  # comprobado
             try:
                 modulo = Materia_programaciones.objects.get(id=request.POST['id'])
                 modulo.codigo = request.POST['val']
@@ -825,7 +831,7 @@ def ajax_programaciones(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False, 'error': "No se puede encontrar la materia"})
-        elif action == 'guardar_datos_modulo_horas': #comprobado
+        elif action == 'guardar_datos_modulo_horas':  # comprobado
             try:
                 modulo = Materia_programaciones.objects.get(id=request.POST['id'])
                 modulo.materia.duracion = int(request.POST['val'])
@@ -833,7 +839,7 @@ def ajax_programaciones(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False, 'error': "Las horas deben ser números enteros"})
-        elif action == 'guardar_datos_modulo_ects': #comprobado
+        elif action == 'guardar_datos_modulo_ects':  # comprobado
             try:
                 modulo = Materia_programaciones.objects.get(id=request.POST['id'])
                 modulo.ects = int(request.POST['val'])
@@ -841,12 +847,12 @@ def ajax_programaciones(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False, 'error': "Las horas deben ser números enteros"})
-        elif action == 'save_obj_general': #comprobado
+        elif action == 'save_obj_general':  # comprobado
             programacion = Programacion_modulo.objects.get(id=request.POST['prog'])
             obj_general = Obj_general.objects.get(id=request.POST['obj'])
             programacion.obj_gen.add(obj_general)
             return HttpResponse(True)
-        elif action == 'del_obj_general': #comprobado
+        elif action == 'del_obj_general':  # comprobado
             programacion = Programacion_modulo.objects.get(id=request.POST['prog'])
             obj_general = Obj_general.objects.get(id=request.POST['obj'])
             programacion.obj_gen.remove(obj_general)
@@ -1075,7 +1081,6 @@ def ajax_programaciones(request):
             prog.save()
             return HttpResponse(True)
 
-
             # Este código únicamente es para relacionar los resultados de aprendizaje con sus criterios de evaluación
             # Se puede borrar una vez esté corregido el problema de asignación
             # elif action == 'ra_modulo':
@@ -1137,7 +1142,7 @@ def editar_programacion(request):
                 p.save()
             except:
                 p = ProgramacionSubida.objects.create(materia=materia, sube=g_e, archivo=File(fich),
-                                                  content_type='application/pdf')
+                                                      content_type='application/pdf')
             programacion.file_path = p.archivo.url
             programacion.save()
             # -----------------------------------
@@ -1174,7 +1179,8 @@ def editar_programacion(request):
         if 'prog' in request.GET:
             try:
                 if g_e.has_permiso('edita_programaciones_ccff'):
-                    programacion = Programacion_modulo.objects.get(pk=request.GET['prog'], g_e__ronda__entidad=g_e.ronda.entidad)
+                    programacion = Programacion_modulo.objects.get(pk=request.GET['prog'],
+                                                                   g_e__ronda__entidad=g_e.ronda.entidad)
                 else:
                     programacion = Programacion_modulo.objects.get(pk=request.GET['prog'], g_e=g_e)
                 crear_aviso(request, True, u'Entra en editar el programacion %s.' % (programacion.id))
@@ -1203,6 +1209,7 @@ def editar_programacion(request):
                       'unidades': UD_modulo.objects.filter(programacion=programacion),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
+
 
 class Titulo_FPForm(ModelForm):
     class Meta:
@@ -1365,8 +1372,10 @@ def ajax_titulos(request):
                 data = receptor.split('___')
                 if data[1] == 'ge':
                     ge = Gauser_extra.objects.get(id=data[0])
-                    contacto = Contacto.objects.create(creador=g_e.gauser, empresa=ge.ronda.entidad.name, cargo=ge.cargo,
-                                                       direccion=ge.ronda.entidad.address, cp=ge.ronda.entidad.localidad,
+                    contacto = Contacto.objects.create(creador=g_e.gauser, empresa=ge.ronda.entidad.name,
+                                                       cargo=ge.cargo,
+                                                       direccion=ge.ronda.entidad.address,
+                                                       cp=ge.ronda.entidad.localidad,
                                                        localidad=ge.ronda.entidad.get_localidad_display(),
                                                        provincia='La Rioja',
                                                        email=ge.gauser.email, telefono=ge.gauser.telmov,
@@ -1596,3 +1605,206 @@ def generar_datos(request):
             fallos += 1
     total = n - fallos
     return HttpResponse('Se han generado datos aleatorios de %s usuarios, finalizado con %s fallos' % (total, fallos))
+
+
+# @permiso_required('acceso_aspectos_pga')
+def aspectos_pga(request):
+    g_e = request.session['gauser_extra']
+    pga, c = PGA.objects.get_or_create(ronda=g_e.ronda)
+    claustros = ReunionesPrevistas.objects.filter(pga=pga, tipo='CLA')
+    consejos = ReunionesPrevistas.objects.filter(pga=pga, tipo='CON')
+    evaluaciones = ReunionesPrevistas.objects.filter(pga=pga, tipo='EVA')
+    pgadocs = PGAdocumento.objects.filter(pga=pga)
+    try:
+        aaee_file = pgadocs.get(doc_nombre='programa_actividades_extraescolares')
+    except:
+        aaee_file = False
+    try:
+        libros_file = pgadocs.get(doc_nombre='libros_de_texto_y_materiales')
+    except:
+        libros_file = False
+    try:
+        estadistica_file = pgadocs.get(doc_nombre='estadistica_comienzo_curso')
+    except:
+        estadistica_file = False
+
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'check_especialidad':
+            c_id = request.POST['cuerpo']
+            e_id = request.POST['especialidad']
+            try:
+                e = Especialidad_funcionario.objects.get(cuerpo__id=c_id, id=e_id)
+                ee, c = Especialidad_entidad.objects.get_or_create(ronda=g_e.ronda, especialidad=e)
+                if c:
+                    return JsonResponse({'ok': True, 'checked': True})
+                else:
+                    ee.delete()
+                    return JsonResponse({'ok': True, 'checked': False})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_texto_pga':
+            try:
+                pga = PGA.objects.get(ronda=g_e.ronda, id=request.POST['pga'])
+                setattr(pga, request.POST['campo'], request.POST['texto'])
+                pga.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'aceptar_reunion':
+            fecha = datetime.strptime(request.POST['fecha'], '%d/%m/%Y %H:%M')
+            pga = PGA.objects.get(ronda=g_e.ronda, id=request.POST['pga'])
+            r = ReunionesPrevistas.objects.create(pga=pga, description=request.POST['description'],
+                                                  nombre=request.POST['nombre'], tipo=request.POST['tipo'], fecha=fecha)
+            li = render_to_string('aspectos_pga_accordion_content_li.html', {'r': r})
+            return JsonResponse({'ok': True, 'li': li, 'id': '#%s%s' % (r.tipo, pga.id)})
+        elif request.POST['action'] == 'delete_li':
+            r = ReunionesPrevistas.objects.get(pga__id=request.POST['pga'], pga__ronda=g_e.ronda, id=request.POST['id'])
+            r.delete()
+            return JsonResponse({'ok': True})
+    elif request.method == 'POST':
+        if request.POST['action'] == 'sube_file_pga':
+            pga = PGA.objects.get(id=request.POST['pga'])
+            n_files = int(request.POST['n_files'])
+            mensaje = False
+            p = {'doc_nombre': False}
+            if g_e.has_permiso('carga_programaciones'):
+                for i in range(n_files):
+                    fichero = request.FILES['fichero_xhr' + str(i)]
+                    try:
+                        p = PGAdocumento.objects.get(pga=pga, doc_nombre=request.POST['name'])
+                        if p.doc_file:
+                            os.remove(p.doc_file.path)
+                        p.doc_file = fichero
+                        p.content_type = fichero.content_type
+                        p.save()
+                    except:
+                        p = PGAdocumento.objects.create(pga=pga, doc_nombre=request.POST['name'], doc_file=fichero,
+                                                        content_type=fichero.content_type)
+            else:
+                mensaje = 'No tienes permiso para cargar programaciones.'
+            return JsonResponse({'ok': True, 'mensaje': mensaje, 'file': p.doc_nombre})
+        elif request.POST['action'] == 'download_file':
+            try:
+                pgadoc = PGAdocumento.objects.get(id=request.POST['archivo'], pga__id=request.POST['pga'])
+                response = HttpResponse(pgadoc.doc_file, content_type=pgadoc.content_type)
+                response['Content-Disposition'] = 'attachment; filename=%s' % pgadoc.filename
+                return response
+            except:
+                pass
+        elif request.POST['action'] == 'downloadpga':
+            pga = PGA.objects.get(id=request.POST['pga'], ronda__entidad=g_e.ronda.entidad)
+            # try:
+            # Procesado del archivo de aspectos de la PGA
+            c = render_to_string('aspectos_generales_pga2pdf.html', {'pga': pga})
+            ruta = rutas_aspectos_pga(pga)['absoluta']
+            nombre_fichero = 'aspectos_generales_pga'
+            if os.path.exists('%s%s.pdf' % (ruta, nombre_fichero)):
+                os.remove('%s%s.pdf' % (ruta, nombre_fichero))
+            html_to_pdf(request, c, fichero=nombre_fichero, media=ruta, title='Aspectos Generales de la PGA')
+            if os.path.exists('%s%s.html' % (ruta, nombre_fichero)):
+                os.remove('%s%s.html' % (ruta, nombre_fichero))
+            # Procesado del archivo de aspectos del PEC
+            pec = PEC.objects.get(entidad=g_e.ronda.entidad)
+            c = render_to_string('aspectos_generales_pec2pdf.html', {'pec': pec})
+            ruta = rutas_pec(pec)['absoluta']
+            nombre_fichero = 'aspectos_generales_pec'
+            if os.path.exists('%s%s.pdf' % (ruta, nombre_fichero)):
+                os.remove('%s%s.pdf' % (ruta, nombre_fichero))
+            html_to_pdf(request, c, fichero=nombre_fichero, media=ruta, title='Aspectos Generales del PEC')
+            if os.path.exists('%s%s.html' % (ruta, nombre_fichero)):
+                os.remove('%s%s.html' % (ruta, nombre_fichero))
+            # Generación del ZIP que contiene toda la PGA
+            ruta_centro = ruta_programaciones(g_e.ronda, tipo='centro')
+            ruta_curso_escolar = ruta_programaciones(g_e.ronda, tipo='ronda')
+            fichero = "PGA_{0}_{1}".format(g_e.entidad.code, slugify(g_e.ronda.nombre))
+            ruta_zip = ruta_programaciones(g_e.ronda, tipo='centro')
+            try:
+                # Create target Directory. Si existiera se produciría la excepción
+                os.mkdir(ruta_curso_escolar)
+                os.chdir(ruta_curso_escolar)  # Determino el directorio de trabajo
+            except FileExistsError:
+                os.chdir(ruta_curso_escolar)  # Determino el directorio de trabajo
+            shutil.make_archive(ruta_zip + fichero, 'zip', ruta_curso_escolar)
+            fich = open(ruta_zip + fichero + '.zip', 'rb')
+            crear_aviso(request, True, "%s genera y descarga %s" % (g_e.gauser.get_full_name(), fichero))
+            response = HttpResponse(fich, content_type='application/zip')
+            response['Content-Disposition'] = 'attachment; filename=%s' % (fichero + '.zip')
+            return response
+            # except:
+            #     pass
+
+    return render(request, "aspectos_pga.html",
+                  {
+                      'formname': 'aspectos_pga',
+                      'pgas': PGA.objects.filter(ronda__entidad=g_e.ronda.entidad),
+                      'evaluaciones': evaluaciones,
+                      'consejos': consejos,
+                      'claustros': claustros,
+                      'aaee_file': aaee_file,
+                      'libros_file': libros_file,
+                      'estadistica_file': estadistica_file,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+
+# @permiso_required('acceso_pec')
+def proyecto_educativo_centro(request):
+    g_e = request.session['gauser_extra']
+    pec, c = PEC.objects.get_or_create(entidad=g_e.ronda.entidad)
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'update_texto_pec':
+            try:
+                pec = PEC.objects.get(entidad=g_e.ronda.entidad, id=request.POST['pec'])
+                setattr(pec, request.POST['campo'], request.POST['texto'])
+                pec.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+    elif request.method == 'POST':
+        if request.POST['action'] == 'sube_file_pec':
+            pec = PEC.objects.get(id=request.POST['pec'])
+            n_files = int(request.POST['n_files'])
+            mensaje = False
+            p = {'doc_nombre': False}
+            if g_e.has_permiso('carga_programaciones'):
+                for i in range(n_files):
+                    fichero = request.FILES['fichero_xhr' + str(i)]
+                    try:
+                        p = PECdocumento.objects.get(pec=pec, tipo=request.POST['name'])
+                        if p.doc_file:
+                            os.remove(p.doc_file.path)
+                        p.doc_file = fichero
+                        p.doc_nombre = slugify(p.get_tipo_display())
+                        p.content_type = fichero.content_type
+                        p.save()
+                    except:
+                        p = PECdocumento.objects.create(pec=pec, doc_nombre=request.POST['name'], doc_file=fichero,
+                                                        content_type=fichero.content_type, tipo=request.POST['name'])
+                        p.doc_nombre = slugify(p.get_tipo_display())
+                        p.save()
+            else:
+                mensaje = 'No tienes permiso para cargar programaciones.'
+            return JsonResponse({'ok': True, 'mensaje': mensaje})
+        elif request.POST['action'] == 'download_file':
+            try:
+                pecdoc = PECdocumento.objects.get(id=request.POST['archivo'], pec__id=request.POST['pec'],
+                                                  pec__entidad=g_e.ronda.entidad)
+                response = HttpResponse(pecdoc.doc_file, content_type=pecdoc.content_type)
+                response['Content-Disposition'] = 'attachment; filename=%s' % pecdoc.filename
+                return response
+            except:
+                pass
+    return render(request, "proyecto_educativo_centro.html",
+                  {
+                      'formname': 'pec',
+                      'pec': pec,
+                      'TIPOS': (('pat', 'Plan de Acción Tutorial'),
+                                ('poap', 'Plan de Orientación Académica y Profesional'),
+                                ('pad', 'Plan de Atención a la Diversidad'),
+                                ('pc', 'Plan de Convivencia'),
+                                ('rof', 'Reglamento de Organización y Funcionamiento')),
+                      'aspectos': ['signos', 'organizacion', 'lineapedagogica', 'participacion', 'proyectos'],
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })

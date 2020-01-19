@@ -27,7 +27,24 @@ from programaciones.models import Gauser_extra_programaciones
 MESES = (
     '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre',
     'diciembre',)
+
+DIAS = {
+    1: 'lunes',
+    2: 'martes',
+    3: 'miércoles',
+    4: 'jueves',
+    5: 'viernes',
+    6: 'sábado',
+    7: 'domingo',
+}
+
 register = Library()
+
+
+@register.filter
+def dia(n):
+    return DIAS[n]
+
 
 @register.filter
 def genero(g_e, terminaciones):
@@ -36,6 +53,7 @@ def genero(g_e, terminaciones):
         return m
     else:
         return f
+
 
 @register.filter
 def auto_id(g_e):
@@ -54,9 +72,11 @@ def number_range(n):
 def cargos_entidad(entidad):
     return Cargo.objects.filter(entidad=entidad).order_by('nivel')
 
+
 @register.filter
 def subentidades_entidad(entidad):
     return Subentidad.objects.filter(entidad=entidad, fecha_expira__gt=datetime.now().date()).order_by('edad_min')
+
 
 @register.filter
 def is_campo_checked(filtrado, campo):
@@ -74,18 +94,22 @@ def value_dict(dict, key):
 def interinos(cupo):
     return Profesor_cupo.objects.filter(profesorado__cupo=cupo, tipo='INT').order_by('profesorado__especialidad')
 
+
 @register.filter
 def profesores_especialidad(especialidad):
     return Profesor_cupo.objects.filter(profesorado__especialidad=especialidad)
+
 
 @register.filter
 def profesores_especialidad2(especialidad, ronda):
     return Gauser_extra_programaciones.objects.filter(ge__ronda=ronda, puesto=especialidad.nombre)
 
+
 @register.filter
 def materias_filtro(filtro):
     materias_cupo = Materia_cupo.objects.filter(cupo=filtro.cupo, nombre__icontains=filtro.filtro)
     return materias_cupo
+
 
 ###########
 
@@ -548,15 +572,18 @@ def num_usuarios_ronda(ronda):
     g_es = Gauser_extra.objects.filter(ronda=ronda)
     return g_es.count()
 
+
 @register.filter
 def list_usuarios_ronda(ronda):
     g_es = Gauser_extra.objects.filter(ronda=ronda)
     return g_es
 
+
 @register.filter
 def num_usuarios_entidad(entidad):
     g_es = Gauser_extra.objects.filter(ronda__entidad=entidad)
     return g_es.count()
+
 
 @register.filter
 def has_usuarios_ronda(subentidad, ronda):  # Comprueba si la subentidad tiene ususarios de esta ronda
@@ -625,8 +652,6 @@ def primera_cuota(descuentos):
     if d == '&#8364;':
         d = 'Sin descuentos'
     return d
-
-
 
 
 @register.filter

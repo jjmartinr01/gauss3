@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 # El code_menu debe ser único y se configurará como un permiso del sistema
 MENU_DEFAULT = [
     {'code_menu': 'acceso_programaciones_didacticas',
-     'texto_menu': 'Programaciones didácticas',
+     'texto_menu': 'Programación General Anual',
      'href': '',
      'nivel': 1,
      'tipo': 'Accesible',
@@ -56,6 +56,22 @@ MENU_DEFAULT = [
      'nivel': 2,
      'tipo': 'Accesible',
      'pos': 6,
+     'parent': 'acceso_programaciones_didacticas'
+     },
+    {'code_menu': 'acceso_aspectos_pga',
+     'texto_menu': 'Aspectos generales de la PGA',
+     'href': 'aspectos_pga',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 7,
+     'parent': 'acceso_programaciones_didacticas'
+     },
+    {'code_menu': 'acceso_pec',
+     'texto_menu': 'Proyecto Educativo del Centro',
+     'href': 'proyecto_educativo_centro',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 8,
      'parent': 'acceso_programaciones_didacticas'
      }
 ]

@@ -1,0 +1,152 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="action" name="action" value="">
+        <input type="hidden" id="pga" name="pga" value="">
+        <input type="hidden" id="archivo" name="archivo" value="">
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Lista de Programaciones Generales Anuales</strong>
+            </h4>
+        </div>
+
+        <dl class="accordion" data-accordion id="list_pgas" title="Lista de Programaciones Generales Anuales">
+            {% for pga in pgas %}
+                {% include "aspectos_pga_accordion.html" %}
+            {% endfor %}
+        </dl>
+        <div id="container_description_reunion" style="display: none"></div>
+    </form>
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('body').on('click', '.ayuda_gauss', function (e) {
+            e.preventDefault();
+            var id = $(this).data('help');
+            $(id).toggle();
+        });
+
+        $(".fecha_reunion").fdatetimepicker({
+            format: 'dd/mm/yyyy hh:ii',
+            weekStart: 1
+        });
+
+        var texto_editor;
+
+        function comprueba_cambio_texto(texto, pga, campo) {
+            if (texto == texto_editor) {
+                $.post("/aspectos_pga/", {
+                        action: 'update_texto_pga',
+                        pga: pga,
+                        texto: texto_editor,
+                        campo: campo
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        }
+
+        $('body').on('click', '.sube_file_pga', function () {
+            var pga = $(this).data('pga');
+            var name = $(this).data('name');
+            var input_files = document.getElementById(name + pga).files;
+
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('fichero_xhr' + i, input_files[i]);
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'sube_file_pga');
+            formData.append('pga', pga);
+            formData.append('name', name);
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log('Terminado');
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.mensaje) {
+                            show_mensajes({title: 'Error', texto: data.mensaje})
+                        }
+                    }
+                }
+            };
+            xhr.open('POST', "/aspectos_pga/", true);
+            xhr.send(formData);
+        });
+
+        $('body').on('click', '.download_file', function (e) {
+            e.preventDefault();
+            $('#action').val('download_file');
+            $('#pga').val($(this).data('pga'));
+            $('#archivo').val($(this).data('id'));
+            document.{{ formname }}.submit();
+        });
+
+        $('body').on('click', '.aceptar_reunion', function (e) {
+            e.preventDefault();
+            var pga = $(this).data('pga');
+            var tipo_reunion = $('#tipo_reunion' + pga).val();
+            var fecha_reunion = $('#fecha_reunion' + pga).val();
+            var nombre_reunion = $('#nombre_reunion' + pga).val();
+            var description_reunion = $('#container_description_reunion').html();
+            console.log(pga, tipo_reunion, fecha_reunion, nombre_reunion, description_reunion);
+            $.post("/aspectos_pga/", {
+                action: 'aceptar_reunion',
+                pga: pga,
+                tipo: tipo_reunion,
+                fecha: fecha_reunion,
+                nombre: nombre_reunion,
+                description: description_reunion
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $(data.id).append(data.li);
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('click', '.delete_li', function (e) {
+            e.preventDefault();
+            var pga = $(this).data('pga');
+            var reunion = $(this).data('id');
+            $.post("/aspectos_pga/", {
+                action: 'delete_li',
+                id: reunion,
+                pga: pga
+            }, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#lireunion' + reunion).remove();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+        });
+
+        $('body').on('click', '.downloadpga', function (e) {
+            e.preventDefault();
+            $('#action').val('downloadpga');
+            $('#pga').val($(this).data('pga'));
+            document.{{ formname }}.submit();
+        });
+    </script>
+{% endblock %}
