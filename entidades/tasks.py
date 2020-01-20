@@ -13,6 +13,7 @@ from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva, Entid
 from autenticar.models import Gauser
 from gauss.constantes import PROVINCIAS
 from bancos.views import asocia_banco_ge
+from gauss.settings import CODE_CONTENEDOR
 
 
 logger = logging.getLogger('django')
@@ -111,7 +112,7 @@ def create_usuario(datos, carga, tipo):
                 try:
                     ge_borrar.delete()
                 except:
-                    entidad = Entidad.objects.get(code='101010')
+                    entidad, c = Entidad.objects.get_or_create(code=CODE_CONTENEDOR)
                     ge_borrar.ronda = entidad.ronda
                     ge_borrar.save()
                     logger.warning('Gauser_extra asociados al Gauser %s, desplazado al contenedor.' % (gauser))

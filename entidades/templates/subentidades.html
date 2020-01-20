@@ -86,8 +86,12 @@
                 e.preventDefault();
                 var subentidad = $(this).data('subentidad');
                 $.post("/subentidades_ajax/", {action: 'del_subentidad', id: subentidad}, function (data) {
-                    $('#accordion' + subentidad).remove();
-                    $("#update_ok").show().delay(1500).fadeOut();
+                    if (data.ok) {
+                        $('#accordion' + subentidad).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
                 });
             });
         {% endif %}

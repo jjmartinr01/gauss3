@@ -18,6 +18,7 @@ from django.core.paginator import Paginator
 import sys
 from django.core import serializers
 
+from gauss.settings import CODE_CONTENEDOR
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required
 from autenticar.views import crear_nombre_usuario
 from mensajes.views import encolar_mensaje, crea_mensaje_cola
@@ -1712,10 +1713,21 @@ def subentidades_ajax(request):
                                      })
             return HttpResponse(data)
         elif action == 'del_subentidad' and g_e.has_permiso('borra_subentidades'):
-            subentidad = Subentidad.objects.get(pk=request.POST['id'], entidad=g_e.ronda.entidad)
-            nombre = subentidad.nombre
-            subentidad.delete()
-            return HttpResponse(u'Se ha borrado el departamento/sección: <strong>%s</strong>' % nombre)
+            try:
+                subentidad = Subentidad.objects.get(pk=request.POST['id'], entidad=g_e.ronda.entidad)
+                nombre = subentidad.nombre
+                try:
+                    subentidad.delete()
+                    mensaje = 'Se ha borrado el departamento/sección: <strong>%s</strong>' % nombre
+                    return JsonResponse({'ok': True, 'mensaje': mensaje})
+                except:
+                    contenedor, c = Entidad.objects.get_or_create(code=CODE_CONTENEDOR)
+                    subentidad.entidad = contenedor
+                    subentidad.save()
+                    mensaje = 'Se ha asignado el departamento/sección: <strong>%s</strong> al Contenedor.' % nombre
+                    return JsonResponse({'ok': True, 'mensaje': mensaje})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Posiblemente no se ha podido cargar la subentidad.'})
         elif action == 'nombre_subentidad' and g_e.has_permiso('edita_subentidades'):
             try:
                 subentidad = Subentidad.objects.get(pk=request.POST['id'], entidad=g_e.ronda.entidad)

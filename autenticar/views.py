@@ -29,7 +29,7 @@ from django.utils.encoding import smart_text
 from gauss.rutas import *
 from gauss.constantes import PROVINCIAS
 from gauss.funciones import usuarios_de_gauss, pass_generator
-from gauss.settings import RUTA_BASE_SETTINGS
+from gauss.settings import RUTA_BASE_SETTINGS, GAUSER_COMODIN
 from estudios.models import Grupo, Gauser_extra_estudios
 from autenticar.models import Enlace, Permiso, Gauser, Menu_default  # , Candidato
 from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, CargaMasiva, ConfigurationUpdate, Ronda, Reserva_plaza
@@ -81,10 +81,10 @@ def borrar_entidades(request):
                     return JsonResponse({'ok': False})
             elif action == 'borrar_usuarios' and request.is_ajax():
                 try:
-                    gauser_comodin = Gauser.objects.get(username='qazwsxedcrfvtgbyhnujmikolp')
+                    gauser_comodin = Gauser.objects.get(username=GAUSER_COMODIN)
                 except:
                     ahora = datetime.now()
-                    gauser_comodin = Gauser.objects.create(username='qazwsxedcrfvtgbyhnujmikolp', last_login=ahora)
+                    gauser_comodin = Gauser.objects.create(username=GAUSER_COMODIN, last_login=ahora)
                 ronda = Ronda.objects.get(id=request.POST['ronda'])
                 usuarios_ronda = Gauser_extra.objects.filter(Q(ronda=ronda), ~Q(gauser=gauser_comodin))
                 num_ge_borrados = 0
