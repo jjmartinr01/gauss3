@@ -27,9 +27,9 @@ from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.utils.encoding import smart_text
 from gauss.rutas import *
-from gauss.constantes import PROVINCIAS
+from gauss.constantes import PROVINCIAS, GAUSER_COMODIN
 from gauss.funciones import usuarios_de_gauss, pass_generator
-from gauss.settings import RUTA_BASE_SETTINGS, GAUSER_COMODIN
+from gauss.settings import RUTA_BASE_SETTINGS
 from estudios.models import Grupo, Gauser_extra_estudios
 from autenticar.models import Enlace, Permiso, Gauser, Menu_default  # , Candidato
 from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, CargaMasiva, ConfigurationUpdate, Ronda, Reserva_plaza

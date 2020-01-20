@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+#Código de centro asociado a un contenedor desechable. Para los casos en los que no se pueda borrar la entidad:
+CODE_CONTENEDOR = '1010101010'
+#gauser asociado al centro contenedor al que se podrán asignar Gauser_extras en caso de no poder borrarse:
+GAUSER_COMODIN = 'qazwsxedcrfvtgbyhnujmikolp'
+
+
 RONDAS = (
     ('0', '2010/2011'),
     ('1', '2011/2012'),

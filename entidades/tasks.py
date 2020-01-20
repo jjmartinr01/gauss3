@@ -11,9 +11,8 @@ from django.utils.encoding import smart_text
 from estudios.models import Grupo, Gauser_extra_estudios, Materia, Matricula
 from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva, Entidad
 from autenticar.models import Gauser
-from gauss.constantes import PROVINCIAS
+from gauss.constantes import PROVINCIAS, CODE_CONTENEDOR
 from bancos.views import asocia_banco_ge
-from gauss.settings import CODE_CONTENEDOR
 
 
 logger = logging.getLogger('django')

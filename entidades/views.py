@@ -18,7 +18,7 @@ from django.core.paginator import Paginator
 import sys
 from django.core import serializers
 
-from gauss.settings import CODE_CONTENEDOR
+from gauss.constantes import CODE_CONTENEDOR
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required
 from autenticar.views import crear_nombre_usuario
 from mensajes.views import encolar_mensaje, crea_mensaje_cola
