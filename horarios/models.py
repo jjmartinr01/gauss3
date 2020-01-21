@@ -212,10 +212,13 @@ class Horario(models.Model):
 
     @property
     def horario_height(self):
-        horas = self.sesion_set.all().values_list('inicio', 'fin').distinct().order_by('inicio')
-        l = horas.last()[1]
-        i = horas[0][0]
-        return (l.hour * 60 + l.minute - i.hour * 60 - i.minute + 5) * self.pixels_minuto + self.pixels_offset
+        try:
+            horas = self.sesion_set.all().values_list('inicio', 'fin').distinct().order_by('inicio')
+            l = horas.last()[1]
+            i = horas[0][0]
+            return (l.hour * 60 + l.minute - i.hour * 60 - i.minute + 5) * self.pixels_minuto + self.pixels_offset
+        except:
+            return 400
 
     @property
     def subentidades(self):
