@@ -153,147 +153,147 @@
         {#            </div>#}
         {#        </div>#}
 
-        {% if gauser_extra %}
-            <div class="horario" id="div_horario_usuario">
-                {% include "horario_ge_content.html" %}
-            </div>
+
+        {#        {% if gauser_extra %}#}
+        <div class="horario" id="div_horario_usuario">
+            {% include "horario_ge_content.html" %}
+        </div>
 
 
-
-            <div id="copy_cal" class="reveal-modal text-center medium" data-reveal aria-hidden="true" role="dialog">
-                <div class="row">
-                    <h5 style="font-weight: 800;"><i class="fa fa-copy"></i> Copiar horario</h5>
-                    <div class="columns large-12">
-                        <label>Copiar el horario (las sesiones) de <span
-                                id="nombre_usuario_seleccionado">{{ gauser_extra.gauser.get_full_name }}</span> y
-                            asignárselo
-                            a:
-                            <select id="select_user_copy"></select>
-                        </label>
-                    </div>
-                </div>
-                <hr>
-                <div class="row" style="display: none;" id="mensaje_copia_usuario">
-                    <div class="columns large-12 medium-12 small-12 text-center">
-                        <p><i class="fa fa-warning"></i> Si aceptas se copiará el horario, y se asignará a
-                            <span id="usuario_copia_horario"></span> eliminando el horario que ya tuviera
-                            asociado hasta este momento.</p>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="columns large-12 medium-12 small-12 text-right">
-                        <ul class="button-group">
-                            <li><a class="button small" id="ok_select_user_copy">Aceptar</a></li>
-                            <li><a class="button small" id="cancel_select_user_copy">Cancelar</a></li>
-                        </ul>
-                    </div>
+        <div id="copy_cal" class="reveal-modal text-center medium" data-reveal aria-hidden="true" role="dialog">
+            <div class="row">
+                <h5 style="font-weight: 800;"><i class="fa fa-copy"></i> Copiar horario</h5>
+                <div class="columns large-12">
+                    <label>Copiar el horario (las sesiones) de <span
+                            id="nombre_usuario_seleccionado">{{ gauser_extra.gauser.get_full_name }}</span> y
+                        asignárselo
+                        a:
+                        <select id="select_user_copy"></select>
+                    </label>
                 </div>
             </div>
-            <div id="nuevo_cal" class="reveal-modal text-center medium" data-reveal aria-hidden="true" role="dialog">
-                <div class="row">
-                    <h5 style="font-weight: 800;"><i class="fa fa-file-o"></i> Nuevo horario</h5>
-                    <div class="columns large-12">
-                        <label>Crear un nuevo horario y asignarlo a:
-                            <select id="select_user_nuevo"></select>
-                        </label>
-                    </div>
-                </div>
-                <hr>
-                <div class="row">
-
-                    <div class="columns large-12 medium-12 small-12 text-right">
-                        <ul class="button-group">
-                            <li><a class="button small" id="ok_select_user_nuevo">Aceptar</a></li>
-                            <li><a class="button small" id="cancel_select_user_nuevo">Cancelar</a></li>
-                        </ul>
-                    </div>
+            <hr>
+            <div class="row" style="display: none;" id="mensaje_copia_usuario">
+                <div class="columns large-12 medium-12 small-12 text-center">
+                    <p><i class="fa fa-warning"></i> Si aceptas se copiará el horario, y se asignará a
+                        <span id="usuario_copia_horario"></span> eliminando el horario que ya tuviera
+                        asociado hasta este momento.</p>
                 </div>
             </div>
-            <div id="sesion_input" class="reveal-modal text-center medium" data-reveal aria-hidden="true" role="dialog">
-                <h2>Datos de la sesión</h2>
-                <div class="row">
-                    <div class="columns large-4 medium-4 small-6 text-left">
-                        <label> Día:<select id="dia">
-                            <option value="1">Lunes</option>
-                            <option value="2">Martes</option>
-                            <option value="3">Miércoles</option>
-                            <option value="4">Jueves</option>
-                            <option value="5">Viernes</option>
-                            <option value="6">Sábado</option>
-                            <option value="7">Domingo</option>
-                        </select></label>
-                    </div>
-                    <div class="columns large-4 medium-4 small-6 text-left">
-                        <label>Hora inicio:
-                            <input type="time" id="inicio" value=""></label>
-                    </div>
-                    <div class="columns large-4 medium-4 small-6 text-left">
-                        <label>Hora fin: <input type="time" id="fin" value=""> </label>
-                    </div>
-
-                </div>
-                <div class="row">
-                    <div class="columns large-6 medium-6 small-6 text-right">
-                        Elige el grupo:
-                    </div>
-                    <div class="columns large-6 medium-6 small-6">
-                        <select name="grupo" id="grupo" style="width: 300px;"
-                                title="Selecciona un departamento/grupo">
-                            <option value="">No se asigna grupo</option>
-                            {% for g in grupos %}
-                                <option value="{{ g.id }}">{{ g.nombre }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="columns large-6 medium-6 small-6 text-right">
-                        Elige el lugar:
-                    </div>
-                    <div class="columns large-6 medium-6 small-6">
-                        <select name="dependencia" id="dependencia" style="width: 300px;"
-                                title="Selecciona una dependencia">
-                            <option value="">No se asigna dependencia</option>
-                            {% for d in dependencias %}
-                                <option value="{{ d.id }}">{{ d.nombre }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="columns large-6 medium-6 small-6 text-right">
-                        Elige la materia:
-                    </div>
-                    <div class="columns large-6 medium-6 small-6">
-                        <select name="materia" id="materia" style="width: 300px;" title="Selecciona una materia">
-                            <option value="">No se asigna materia</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="columns large-6 medium-6 small-6 text-right">
-                        Elige el tipo de actividad:
-                    </div>
-                    <div class="columns large-6 medium-6 small-6">
-                        <select name="actividad" id="actividad" style="width: 300px;" title="Actividades disponibles">
-                            <option value="">No se asigna actividad</option>
-                            {% for a in actividades %}
-                                <option value="{{ a.id }}">{{ a.nombre }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <hr>
-                <div class="row">
-                    <div class="columns large-12 medium-12 small-12 text-right">
-                        <ul class="button-group">
-                            <li><a class="button small" id="ok_sesion">Guardar</a></li>
-                            <li><a class="button small" id="cancel_sesion">Cancelar</a></li>
-                        </ul>
-                    </div>
+            <div class="row">
+                <div class="columns large-12 medium-12 small-12 text-right">
+                    <ul class="button-group">
+                        <li><a class="button small" id="ok_select_user_copy">Aceptar</a></li>
+                        <li><a class="button small" id="cancel_select_user_copy">Cancelar</a></li>
+                    </ul>
                 </div>
             </div>
-        {% endif %}
+        </div>
+        <div id="nuevo_cal" class="reveal-modal text-center medium" data-reveal aria-hidden="true" role="dialog">
+            <div class="row">
+                <h5 style="font-weight: 800;"><i class="fa fa-file-o"></i> Nuevo horario</h5>
+                <div class="columns large-12">
+                    <label>Crear un nuevo horario y asignarlo a:
+                        <select id="select_user_nuevo"></select>
+                    </label>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+
+                <div class="columns large-12 medium-12 small-12 text-right">
+                    <ul class="button-group">
+                        <li><a class="button small" id="ok_select_user_nuevo">Aceptar</a></li>
+                        <li><a class="button small" id="cancel_select_user_nuevo">Cancelar</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div id="sesion_input" class="reveal-modal text-center medium" data-reveal aria-hidden="true" role="dialog">
+            <h2>Datos de la sesión</h2>
+            <div class="row">
+                <div class="columns large-4 medium-4 small-6 text-left">
+                    <label> Día:<select id="dia">
+                        <option value="1">Lunes</option>
+                        <option value="2">Martes</option>
+                        <option value="3">Miércoles</option>
+                        <option value="4">Jueves</option>
+                        <option value="5">Viernes</option>
+                        <option value="6">Sábado</option>
+                        <option value="7">Domingo</option>
+                    </select></label>
+                </div>
+                <div class="columns large-4 medium-4 small-6 text-left">
+                    <label>Hora inicio:
+                        <input type="time" id="inicio" value=""></label>
+                </div>
+                <div class="columns large-4 medium-4 small-6 text-left">
+                    <label>Hora fin: <input type="time" id="fin" value=""> </label>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="columns large-6 medium-6 small-6 text-right">
+                    Elige el grupo:
+                </div>
+                <div class="columns large-6 medium-6 small-6">
+                    <select name="grupo" id="grupo" style="width: 300px;"
+                            title="Selecciona un departamento/grupo">
+                        <option value="">No se asigna grupo</option>
+                        {% for g in grupos %}
+                            <option value="{{ g.id }}">{{ g.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-6 medium-6 small-6 text-right">
+                    Elige el lugar:
+                </div>
+                <div class="columns large-6 medium-6 small-6">
+                    <select name="dependencia" id="dependencia" style="width: 300px;"
+                            title="Selecciona una dependencia">
+                        <option value="">No se asigna dependencia</option>
+                        {% for d in dependencias %}
+                            <option value="{{ d.id }}">{{ d.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-6 medium-6 small-6 text-right">
+                    Elige la materia:
+                </div>
+                <div class="columns large-6 medium-6 small-6">
+                    <select name="materia" id="materia" style="width: 300px;" title="Selecciona una materia">
+                        <option value="">No se asigna materia</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-6 medium-6 small-6 text-right">
+                    Elige el tipo de actividad:
+                </div>
+                <div class="columns large-6 medium-6 small-6">
+                    <select name="actividad" id="actividad" style="width: 300px;" title="Actividades disponibles">
+                        <option value="">No se asigna actividad</option>
+                        {% for a in actividades %}
+                            <option value="{{ a.id }}">{{ a.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="columns large-12 medium-12 small-12 text-right">
+                    <ul class="button-group">
+                        <li><a class="button small" id="ok_sesion">Guardar</a></li>
+                        <li><a class="button small" id="cancel_sesion">Cancelar</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {#        {% endif %}#}
     </form>
 
 {% endblock %}

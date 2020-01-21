@@ -241,6 +241,18 @@ class Horario(models.Model):
         if self.domingo: d['domingo'] = 'Domingo'
         return d
 
+    @property
+    def dias_number(self):
+        d = []
+        if self.lunes: d.append(1)
+        if self.martes: d.append(2)
+        if self.miercoles: d.append(3)
+        if self.jueves: d.append(4)
+        if self.viernes: d.append(5)
+        if self.sabado: d.append(6)
+        if self.domingo: d.append(7)
+        return d
+
     def horario_guardias(self, dia):
         g_es = usuarios_ronda(self.entidad.ronda)
         gs = []

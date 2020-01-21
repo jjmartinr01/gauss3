@@ -571,10 +571,12 @@ def horarios_ajax(request):
             sesiones = nuevo_ge.sesion_set.filter(horario=horario)
             if sesiones.count() == 0:
                 actividad, c = Actividad.objects.get_or_create(entidad=g_e.ronda.entidad, nombre='Actividad horario')
-                hora = horario.horas.first()
-                for d in horario.dias_con_sesion:
-                    Sesion.objects.create(actividad=actividad, inicio=hora[0], g_e=nuevo_ge,
-                                          fin=hora[1], dia=d, horario=horario)
+                horas = horario.horas
+                for d in horario.dias_number:
+                    for hora in horas:
+                        Sesion.objects.create(actividad=actividad, inicio=hora[0], g_e=nuevo_ge,
+                                              fin=hora[1], dia=d, horario=horario)
+
             return JsonResponse({'ok': True})
         elif action == 'del_horario_usuario':
             horario = Horario.objects.get(entidad=g_e.ronda.entidad, id=request.POST['horario'])
