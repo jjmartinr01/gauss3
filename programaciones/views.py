@@ -34,6 +34,22 @@ locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')
 logger = logging.getLogger('django')
 
 
+def pecjson(request, code):
+    entidad = Entidad.objects.get(code=code)
+    pec = PEC.objects.get(entidad=entidad)
+    archivos = pec.pecdocumento_set.all()
+    docs = [{'title': a.doc_nombre, 'url': a.doc_file.url} for a in archivos]
+    data = {
+        'signos': {'title': 'Signos de identidad del centro', 'text': pec.signos},
+        'organizacion': {'title': 'Organización general del centro', 'text': pec.organizacion},
+        'lineapedagogica': {'title': 'Línea pedagógica', 'text': pec.lineapedagogica},
+        'participacion': {'title': 'Modelo de participación en la vida escolar', 'text': pec.participacion},
+        'proyectos': {'title': 'Proyectos que desarrolla el centro', 'text': pec.proyectos},
+        'documentos': docs
+    }
+    return JsonResponse(data)
+
+
 def cargar_programaciones(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST' and not request.is_ajax():
