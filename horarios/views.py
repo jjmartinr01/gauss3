@@ -781,7 +781,7 @@ def horarios_ajax(request):
                                  'na': aulas.count(), 'libres': len(libres)})
 
 
-@permiso_required('acceso_carga_masiva_horarios')
+# @permiso_required('acceso_carga_masiva_horarios')
 def carga_masiva_horarios(request):
     g_e = request.session["gauser_extra"]
     incidencias = {}
@@ -1143,6 +1143,7 @@ def xml_racima(xml_file, request):
                 logger.info(u'Se actualiza el docente %s con la clave_ex %s' % (
                     gauser_extra.gauser.get_full_name(), profesor_codigo))
             else:
+                gauser_extra = None
                 logger.warning(u'Docente %s %s no encontrado' % (profesor_nombre, nombre_docente))
                 crear_aviso(request, False, u'No se encuentra un gauser_extra de (%s %s) que cumpla condiciones' % (
                     profesor_nombre, nombre_docente))

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base_select2-4.html" %}
 {% load my_templatetags %}
 
 {% block head %}
@@ -72,7 +72,12 @@
                             $('#id_cargo_selected').val(id);
                             window.scrollTo(0, $('#accordion' + id).offset().top - 50);
                             $.post("/organigrama/", {action: 'open_accordion', id: id}, function (data) {
-                                $('#panel' + id).html(data);
+                                if (data.ok){
+                                    $('#panel' + id).html(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                }else{
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
                             });
                         } else {
                             $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');

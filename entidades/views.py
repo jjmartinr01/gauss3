@@ -208,7 +208,7 @@ def usuarios_entidad_ajax(request):
                 else:
                     return JsonResponse({'ok': False, 'error': 'No tienes el permiso necesario'})
             elif action == 'mod_cargos':
-                if g_e.has_permiso('modifica_datos_usuarios'):
+                if g_e.has_permiso('asigna_perfiles'):
                     try:
                         ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
                         cargo = Cargo.objects.get(id=request.POST['campo'], entidad=g_e.ronda.entidad)
@@ -676,7 +676,7 @@ def buscar_usuarios_cargos_subentidades(request):
     #  {"id": 28816, "last_name": "Nieto Garc\u00eda", "first_name": "Juan", "perfiles": "Secci\u00f3n de Logro\u00f1o"}]
 
     a = {}
-    a = dict([('usuario__id', x) ])
+    a = dict([('usuario__id', x)])
     keys = ('usuario__id', 'last_name', 'first_name', 'perfiles')
     cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad)
     cargos_contain_texto = cargos.filter(cargo__icontains=texto).values_list('id', 'cargo')
@@ -684,10 +684,11 @@ def buscar_usuarios_cargos_subentidades(request):
     subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad)
     subentidades_contain_texto = subentidades.filter(nombre__icontains=texto).values_list('id', 'nombre')
 
-
     # from django.core import serializers
     # data = serializers.serialize('json', socios2, fields=('gauser__first_name', 'id'))
     return HttpResponse(json.dumps([dict(zip(keys, row)) for row in usuarios_contain_texto]))
+
+
 # ###################################################################################f
 # ###################################################################################f
 # ###################################################################################f
@@ -1504,7 +1505,7 @@ def bajas_usuarios(request):
                   })
 
 
-@permiso_required('acceso_gestionar_perfiles')
+# @permiso_required('acceso_gestionar_perfiles')
 def organigrama(request):
     g_e = request.session['gauser_extra']
     crear_aviso(request, True, request.META['PATH_INFO'])
@@ -1514,17 +1515,20 @@ def organigrama(request):
         crear_aviso(request, True, request.META['PATH_INFO'] + ' POST')
         if action == 'open_accordion':
             cargo = Cargo.objects.get(id=request.POST['id'], entidad=g_e.ronda.entidad)
-            g_es = usuarios_de_gauss(entidad=g_e.ronda.entidad, cargos=[cargo]).values_list('id',
-                                                                                            'gauser__last_name',
-                                                                                            'gauser__first_name')
-            keys = ('id', 'text')
-            usuarios = json.dumps([dict(zip(keys, (row[0], '%s, %s' % (row[1], row[2])))) for row in g_es])
-            permisos_cargo = cargo.permisos.all().values_list('code_nombre')
-            data = render_to_string("formulario_cargo.html",
-                                    {'permisos_cargo': permisos_cargo, 'entidad': g_e.ronda.entidad,
-                                     'usuarios': usuarios, 'cargo': cargo, 'gauser_extra': g_e, 'request': request
-                                     })
-            return HttpResponse(data)
+            usuarios = usuarios_ronda(g_e.ronda, cargos=[cargo])
+            html = render_to_string("formulario_cargo.html", {'usuarios': usuarios, 'cargo': cargo, 'g_e': g_e})
+            return JsonResponse({'ok': True, 'html': html})
+            # g_es = usuarios_de_gauss(entidad=g_e.ronda.entidad, cargos=[cargo]).values_list('id',
+            #                                                                                 'gauser__last_name',
+            #                                                                                 'gauser__first_name')
+            # keys = ('id', 'text')
+            # usuarios = json.dumps([dict(zip(keys, (row[0], '%s, %s' % (row[1], row[2])))) for row in g_es])
+            # permisos_cargo = cargo.permisos.all().values_list('code_nombre')
+            # data = render_to_string("formulario_cargo.html",
+            #                         {'permisos_cargo': permisos_cargo, 'entidad': g_e.ronda.entidad,
+            #                          'usuarios': usuarios, 'cargo': cargo, 'gauser_extra': g_e, 'request': request
+            #                          })
+            # return HttpResponse(data)
         elif action == 'add_permiso' and g_e.has_permiso('asigna_permisos'):
             permiso = Permiso.objects.get(id=request.POST['permiso'])
             cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
@@ -1548,21 +1552,48 @@ def organigrama(request):
                        3: 'Cargo/Perfil de tercer nivel', 4: 'Cargo/Perfil de cuarto nivel',
                        5: 'Cargo/Perfil de quinto nivel', 6: 'Cargo/Perfil de sexto nivel'}
             return HttpResponse(niveles[int(cargo.nivel)])
-        elif action == 'update_usuarios_cargo' and g_e.has_permiso('asigna_perfiles'):
+        elif action == 'update_usuarios_cargo':
+            try:
+                cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
+                if g_e.has_permiso('asigna_perfiles'):
+                    usuarios_cargo = usuarios_ronda(g_e.ronda, cargos=[cargo])
+                    for u in usuarios_cargo:
+                        u.cargos.remove(cargo)
+                    usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=request.POST.getlist('usuarios[]'))
+                    for u in usuarios:
+                        u.cargos.add(cargo)
+                    return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+
+
             cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
-            if 'added[]' in request.POST:
-                # ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['added[]'])
+            for ga in Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=list(request.POST.getlist('added[]'))):
+                ga.cargos.add(cargo)
+            for gr in Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=list(request.POST.getlist('removed[]'))):
+                gr.cargos.remove(cargo)
+            return JsonResponse({'ok': False})
+            try:
+                cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
+                for ga in Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=request.POST.getlist('added[]')):
+                    ga.cargos.add(cargo)
+                for gr in Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=request.POST.getlist('removed[]')):
+                    gr.cargos.remove(cargo)
+                # ges_removed = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=request.POST.getlist('removed[]'))
                 # ge.cargos.add(cargo)
-                for id in request.POST.getlist('added[]'):
-                    ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=id)
-                    ge.cargos.add(cargo)
-            if 'removed[]' in request.POST:
-                # ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['removed[]'])
-                # ge.cargos.remove(cargo)
-                for id in request.POST.getlist('removed[]'):
-                    ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=id)
-                    ge.cargos.remove(cargo)
-            return JsonResponse({'ok': True})
+                # try:
+                #     for id in request.POST.getlist('added[]'):
+                #         ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=id)
+                #         ge.cargos.add(cargo)
+                # if 'removed[]' in request.POST:
+                #     # ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['removed[]'])
+                #     # ge.cargos.remove(cargo)
+                #     for id in request.POST.getlist('removed[]'):
+                #         ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=id)
+                #         ge.cargos.remove(cargo)
+                return JsonResponse({'ok': True, 'cargo': cargo.id})
+            except:
+                return JsonResponse({'ok': False})
         elif action == 'del_cargo' and g_e.has_permiso('borra_perfiles'):
             cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
             id = cargo.id

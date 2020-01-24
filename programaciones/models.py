@@ -12,6 +12,7 @@ from entidades.models import Gauser_extra, Ronda, Entidad
 from horarios.models import Horario, Sesion
 from actividades.models import Actividad
 
+
 def update_aaee(instance, filename):
     ext = filename.rpartition('.')[2]
     ronda_slugify = slugify(instance.ronda.nombre)
@@ -26,6 +27,7 @@ def update_libros(instance, filename):
     ruta = 'programaciones/%s/%s/Aspectos_Generales_PGA/Libros_de_texto_y_materiales' % (
         instance.materia.curso.ronda.entidad.code, ronda_slugify)
     return '%s.%s' % (ruta, ext)
+
 
 def ruta_programaciones(ronda, filename='', tipo='pga', ruta='absoluta'):
     """
@@ -68,12 +70,14 @@ def rutas_aspectos_pga(pga, filename=''):
     absoluta = '%s%s/%s/Aspectos_Generales_PGA/%s' % (MEDIA_PROGRAMACIONES, centro_code, ronda_slugify, filename)
     return {'relativa': relativa, 'absoluta': absoluta, 'centro': 'programaciones/%s/' % centro_code}
 
+
 def rutas_pec(pec, filename=''):
     centro_code = pec.entidad.code
     ronda_slugify = slugify(pec.entidad.ronda.nombre)
     relativa = 'programaciones/%s/%s/PEC/%s' % (centro_code, ronda_slugify, filename)
     absoluta = '%s%s/%s/PEC/%s' % (MEDIA_PROGRAMACIONES, centro_code, ronda_slugify, filename)
     return {'relativa': relativa, 'absoluta': absoluta}
+
 
 class PGA(models.Model):
     ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE)
@@ -202,12 +206,12 @@ def update_documentos_pec(instance, filename):
 
 
 class PECdocumento(models.Model):
-    TIPOS =(('pat', 'Plan de Acción Tutorial'),
-            ('poap', 'Plan de Orientación Académica y Profesional'),
-            ('pad', 'Plan de Atención a la Diversidad'),
-            ('pc', 'Plan de Convivencia'),
-            ('rof', 'Reglamento de Organización y Funcionamiento'),
-            ('otros', 'Otros documentos'))
+    TIPOS = (('pat', 'Plan de Acción Tutorial'),
+             ('poap', 'Plan de Orientación Académica y Profesional'),
+             ('pad', 'Plan de Atención a la Diversidad'),
+             ('pc', 'Plan de Convivencia'),
+             ('rof', 'Reglamento de Organización y Funcionamiento'),
+             ('otros', 'Otros documentos'))
     pec = models.ForeignKey(PEC, on_delete=models.CASCADE)
     tipo = models.CharField('Tipo de documento', choices=TIPOS, max_length=10, default='otros')
     doc_nombre = models.CharField('Nombre del documento', max_length=200)
@@ -253,23 +257,47 @@ class ProgramacionSubida(models.Model):
 
 
 def crea_departamentos(ronda):
-    ds = [('Actividades Complementarias y Extraescolares', 'AEX', False, 3), ('Artes Plásticas', 'AP', True, 3),
-          ('Cultura Clásica', 'CC', True, 3), ('Ciencias Naturales', 'CN', True, 3),
-          ('Economía', 'ECO', True, 3), ('Educación Física', 'EF', True, 3),
-          ('Filosofía', 'FIL', True, 3), ('Física y Química', 'FQ', True, 3),
-          ('Formación y Orientación Laboral', 'FOL', True, 3), ('Francés', 'FRA', True, 3),
-          ('Geografía e Historia', 'GH', True, 3), ('Griego', 'GRI', True, 3), ('Inglés', 'ING', True, 3),
-          ('Latín', 'LAT', True, 3), ('Lengua Castellana y Literatura', 'LCL', True, 3),
-          ('Matemáticas', 'MAT', True, 3), ('Música', 'MUS', True, 3), ('Orientación', 'ORI', True, 3),
-          ('Tecnología', 'TEC', True, 3), ('Administración y gestión', 'ADG', True, 3),
-          ('Electricidad y electrónica', 'ELE', True, 3), ('Ningún departamento', 'N_D', True, 0),
-          ('Alemán', 'ALE', True, 3), ('Fabricación Mecánica', 'FME', True, 3)]
+    ds = [('Actividades Complementarias y Extraescolares', 'AEX', False, False, 3), ('Artes Plásticas', 'AP', True, False, 3),
+          ('Cultura Clásica', 'CC', True, False, 3), ('Ciencias Naturales', 'CN', True, False, 3),
+          ('Economía', 'ECO', True, False, 3), ('Educación Física', 'EF', True, False, 3),
+          ('Filosofía', 'FIL', True, False, 3), ('Física y Química', 'FQ', True, False, 3),
+          ('Formación y Orientación Laboral', 'FOL', True, False, 3), ('Francés', 'FRA', True, False, 3),
+          ('Geografía e Historia', 'GH', True, False, 3), ('Griego', 'GRI', True, False, 3), ('Inglés', 'ING', True, False, 3),
+          ('Latín', 'LAT', True, False, 3), ('Lengua Castellana y Literatura', 'LCL', True, False, 3),
+          ('Matemáticas', 'MAT', True, False, 3), ('Música', 'MUS', True, False, 3), ('Orientación', 'ORI', True, False, 3),
+          ('Tecnología', 'TEC', True, False, 3), ('Ningún departamento', 'N_D', True, 0),
+          ('Alemán', 'ALE', True, False, 3), ('Actividades físicas y deportivas', 'AFD', True, False, 3),
+          ('Administración y gestión', 'ADG', True, True, 3),
+          ('Agraria', 'A', True, True, 3),
+          ('Artes gráficas', 'ARG', True, True, 3),
+          ('Artes y Artesanías', 'AYA', True, True, 3),
+          ('Comercio y marketing', 'CM', True, True, 3),
+          ('Edificación y obra civil', 'EOC', True, True, 3),
+          ('Energía y Agua', 'EYA', True, True, 3),
+          ('Electricidad y electrónica', 'EE', True, True, 3),
+          ('Fabricación mecánica', 'FME', True, True, 3),
+          ('Hostelería y turismo', 'HT', True, True, 3),
+          ('Imagen personal', 'IP', True, True, 3),
+          ('Imagen y Sonido', 'IS', True, True, 3),
+          ('Industrias alimentarias', 'IA', True, True, 3),
+          ('Industrias Extractivas', 'IEX', True, True, 3),
+          ('Informática y comunicaciones', 'IC', True, True, 3),
+          ('Instalación y mantenimiento', 'IM', True, True, 3),
+          ('Madera, mueble y corcho', 'MMC', True, True, 3),
+          ('Marítimo-Pesquera', 'MP', True, True, 3),
+          ('Química', 'Q', True, True, 3),
+          ('Sanidad', 'S', True, True, 3),
+          ('Servicios socioculturaes y a la comunidad', 'SSC', True, True, 3),
+          ('Textil, confección y piel', 'TCP', True, True, 3),
+          ('Transporte y mantenimiento de vehículos', 'TMV', True, True, 3),
+          ('Vídrio y Cerámica', 'VC', True, True, 3)]
+
     for d in ds:
         try:
             Departamento.objects.get(ronda=ronda, abreviatura=d[1])
         except:
             Departamento.objects.create(ronda=ronda, nombre=d[0], abreviatura=d[1], didactico=d[2],
-                                        horas_coordinador=d[3])
+                                        fp=d[3], horas_coordinador=d[4])
 
 
 class Departamento(models.Model):
@@ -277,8 +305,13 @@ class Departamento(models.Model):
     nombre = models.CharField('Denominación', max_length=310)
     abreviatura = models.CharField("Abreviatura", max_length=10)
     didactico = models.BooleanField("Es un departamento didáctico", default=True)
+    fp = models.BooleanField("Es una familia profesional", default=False)
     horas_coordinador = models.IntegerField("Número de horas de coordinación para el jefe de departamento", null=True,
                                             blank=True)
+
+    @property
+    def entidad(self):
+        return self.materia.curso.ronda.entidad
 
     def __str__(self):
         return '%s (%s)' % (self.nombre, self.ronda)

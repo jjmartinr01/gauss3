@@ -21,7 +21,7 @@
         text-align: right;
     }
 </style>
-{% if request.session.gauser_extra|has_permiso:'borra_perfiles' %}
+{% if g_e|has_permiso:'borra_perfiles' %}
     <div class="row">
         <div class="large-9 medium-6 small-3 columns">
             &nbsp;
@@ -33,7 +33,7 @@
 {% endif %}
 <div class="row">
     <div class="large-7 columns">
-        {% if request.session.gauser_extra|has_permiso:'edita_perfiles' %}
+        {% if g_e|has_permiso:'edita_perfiles' %}
             <label>Define el cargo
                 <input id="id_cargo" maxlength="200" name="cargo" value="{{ cargo.cargo }}" type="text"
                        data-cargo="{{ cargo.id }}">
@@ -45,16 +45,28 @@
         {% endif %}
     </div>
     <div class="large-4 columns">
-        {% if request.session.gauser_extra|has_permiso:'edita_perfiles' %}
+        {% if g_e|has_permiso:'edita_perfiles' %}
             <label title="El primer nivel es entendido como el cargo más alto">Nivel en el organigrama
                 <select id="id_nivel" name="nivel" data-cargo="{{ cargo.id }}">
                     <option value="">---------</option>
-                    <option value="1" {% if cargo.nivel == 1 %}selected="selected"{% endif %}>Cargo/Perfil de primer nivel</option>
-                    <option value="2" {% if cargo.nivel == 2 %}selected="selected"{% endif %}>Cargo/Perfil de segundo nivel</option>
-                    <option value="3" {% if cargo.nivel == 3 %}selected="selected"{% endif %}>Cargo/Perfil de tercer nivel</option>
-                    <option value="4" {% if cargo.nivel == 4 %}selected="selected"{% endif %}>Cargo/Perfil de cuarto nivel</option>
-                    <option value="5" {% if cargo.nivel == 5 %}selected="selected"{% endif %}>Cargo/Perfil de quinto nivel</option>
-                    <option value="6" {% if cargo.nivel == 6 %}selected="selected"{% endif %}>Cargo/Perfil de sexto nivel</option>
+                    <option value="1" {% if cargo.nivel == 1 %}selected="selected"{% endif %}>Cargo/Perfil de primer
+                        nivel
+                    </option>
+                    <option value="2" {% if cargo.nivel == 2 %}selected="selected"{% endif %}>Cargo/Perfil de segundo
+                        nivel
+                    </option>
+                    <option value="3" {% if cargo.nivel == 3 %}selected="selected"{% endif %}>Cargo/Perfil de tercer
+                        nivel
+                    </option>
+                    <option value="4" {% if cargo.nivel == 4 %}selected="selected"{% endif %}>Cargo/Perfil de cuarto
+                        nivel
+                    </option>
+                    <option value="5" {% if cargo.nivel == 5 %}selected="selected"{% endif %}>Cargo/Perfil de quinto
+                        nivel
+                    </option>
+                    <option value="6" {% if cargo.nivel == 6 %}selected="selected"{% endif %}>Cargo/Perfil de sexto
+                        nivel
+                    </option>
                 </select>
             </label>
         {% else %}
@@ -70,8 +82,13 @@
 <div class="row">
     <div class="large-12 columns">
         <label>Personas con este Cargo/Perfil asignado
-            {% if request.session.gauser_extra|has_permiso:'asigna_perfiles' %}
-                <input type="hidden" name="usuarios_cargo" id="usuarios_cargo" data-cargo="{{ cargo.id }}" value="">
+            {% if g_e|has_permiso:'asigna_perfiles' %}
+                <select id="usuarios_cargo{{ cargo.id }}" multiple="multiple" data-cargo="{{ cargo.id }}">
+                    {% for usuario in usuarios %}
+                        <option value="{{ usuario.id }}" selected="selected">{{ usuario.gauser.last_name }},
+                            {{ usuario.gauser.first_name }}</option>
+                    {% endfor %}
+                </select>
             {% else %}
                 <span id="usuarios_perfil" style="font-weight: 800;"></span>
             {% endif %}
@@ -79,13 +96,12 @@
     </div>
 </div>
 
-
 <div>
     <h5><i class="fa fa-hand-o-up" id="select_permisos"></i> <strong>Selecciona los permisos de este cargo</strong></h5>
 </div>
 
 {% with permisos=cargo.permisos.all %}
-    {% for menu in entidad|menus %}
+    {% for menu in g_e.ronda.entidad|menus %}
         <div class="row">
             <div class="columns large-1">&nbsp;</div>
             <div class="columns large-8 end nombre heading">{{ menu.pos }} {{ menu.texto_menu }}</div>
@@ -123,8 +139,8 @@
 {% endwith %}
 
 <script>
-    {% if gauser_extra|has_permiso:'borra_perfiles' %}
-        $('#Contenido').on('click', '.del_cargo', function(e){
+    {% if g_e|has_permiso:'borra_perfiles' %}
+        $('#Contenido').on('click', '.del_cargo', function (e) {
             e.preventDefault();
             var cargo = $(this).data('cargo');
             $.post("/organigrama/", {action: 'del_cargo', cargo: cargo}, function (data) {
@@ -134,7 +150,7 @@
         });
     {% endif %}
 
-    {% if gauser_extra|has_permiso:'edita_perfiles' %}
+    {% if g_e|has_permiso:'edita_perfiles' %}
         $('#Contenido').on('keyup', '#id_cargo', function () {
             var texto = $(this).val();
             var cargo = $(this).data('cargo');
@@ -154,7 +170,7 @@
         });
     {% endif %}
 
-    {% if gauser_extra|has_permiso:'asigna_permisos' %}
+    {% if g_e|has_permiso:'asigna_permisos' %}
         $('#Contenido').on('change', '.permiso_cargo', function () {
             var permiso = $(this).val();
             var cargo = $(this).data('cargo');
@@ -171,84 +187,57 @@
         $('.permiso_cargo').prop('disabled', true);
     {% endif %}
 
-    {% if gauser_extra|has_permiso:'asigna_perfiles' %}
-        $("#usuarios_cargo").select2({
+    {% if g_e|has_permiso:'asigna_perfiles' %}
+        $("#usuarios_cargo{{ cargo.id }}").select2({
             placeholder: "Escribe parte del nombre",
             minimumInputLength: 3,
             multiple: true,
             ajax: {
                 url: "/buscar_usuarios/",
                 dataType: 'json',
-                quietMillis: 100,
-                data: function (term, page) { // page is the one-based page number tracked by Select2
+                delay: 250,
+                data: function (params) {
                     return {
                         action: 'select2',
-                        q: term, //search term
-                        page_limit: 10, // page size
-                        page: page // page number
+                        q: params.term, // search term
+                        page: params.page
                     };
                 },
-                results: function (data) {
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
                     return {
                         results: $.map(data, function (item) {
                             return {
-                                text: item.last_name + ', ' + item.first_name + ' (' + item.perfiles + ')',
+                                text: item.last_name + ', ' + item.first_name,
                                 id: item.id
                             }
                         })
                     };
-                }
+                },
+                cache: true
             },
-            formatResult: function (resultado) {
-                return '<div class="select2-user-result">' + resultado.text + '</div>';
+            escapeMarkup: function (markup) {
+                return markup;
             },
-            formatSelection: function (resultado) {
-                return resultado.text;
-            },
-            dropdownCssClass: "bigdrop", // apply css that makes the dropdown taller
-            escapeMarkup: function (m) {
-                return m;
-            } // we do not want to escape markup since we are displaying html in results
-        });
-        var usuarios_cargo_iniciales = {% autoescape off %}{{usuarios}}{% endautoescape %};
-        {% if usuarios %}
-            $("#usuarios_cargo").select2("data", usuarios_cargo_iniciales);
-        {% endif %}
-
-        var usuarios_cargo_actuales = [];
-        $.each(usuarios_cargo_iniciales, function (index, o) {
-            usuarios_cargo_actuales.push('' + o.id); {# Esta suma se hace para convertir en string o.id #}
+            templateResult: function (a) {
+                return "<span>" + a.text + "</span>"
+            }
         });
 
-        function diff(A, B) {
-            return A.filter(function (a) {
-                return B.indexOf(a) == -1;
-            });
-        }
-        $("#usuarios_cargo").change(function () {
-            var usuarios_cargo = $(this).val().split(',');
-            var cargo = $(this).data('cargo');
-            var removed = diff(usuarios_cargo_actuales, usuarios_cargo);
-            var added = diff(usuarios_cargo, usuarios_cargo_actuales);
-            usuarios_cargo_actuales = usuarios_cargo;
-            $.post("/organigrama/", {action: 'update_usuarios_cargo', cargo: cargo, removed: removed, 'added': added},
-                    function (data) {
-                        if(data.ok){
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        }else{
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-
-                    }, 'json');
+        $('body').on('change', '#usuarios_cargo{{ cargo.id }}', function (e) {
+            var cargo = {{ cargo.id }};
+            var usuarios = $(this).val();
+            $.post("/organigrama/", {
+                    action: 'update_usuarios_cargo',
+                    cargo: cargo,
+                    usuarios: usuarios
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    }
+                });
         });
-
-    {% else %}
-        var usuarios = {% autoescape off %}{{usuarios}} {% endautoescape %};
-        $('#usuarios_perfil').append('<br>&nbsp;&nbsp;');
-        $.each(usuarios, function (index, o) {
-            $('#usuarios_perfil').append(o.text + '; ');
-        });
-
     {% endif %}
 
 

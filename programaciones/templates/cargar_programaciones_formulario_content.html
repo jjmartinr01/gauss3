@@ -25,17 +25,29 @@
                             <td>{{ materia.nombre }}</td>
                             <td>{% if programacion %}
                                 <a class="descargar_fichero_programacion" id="dfp{{ programacion.id }}"
-                                   data-id="{{ programacion.id }}" title="{{ programacion.archivo }}--{{ programacion.archivo.url }}"><b>{{ programacion.filename }}</b></a>
+                                   data-id="{{ programacion.id }}"
+                                   title="{{ programacion.archivo }}--{{ programacion.archivo.url }}"><b>{{ programacion.filename }}</b></a>
                             {% else %}
                                 <input type="file" name="fm{{ materia.id }}" id="fm{{ materia.id }}">
                             {% endif %}
                             </td>
                             <td>{% if programacion %}
-                                <a class="delete_programacion button tiny" id="dp{{ programacion.id }}"
-                                   data-id="{{ programacion.id }}"><b><i class="fa fa-trash"></i> Borrar</b></a>
+                                {% if request.session.gauser_extra|has_permiso:'borra_programaciones_cargadas' %}
+                                    <a class="delete_programacion button tiny" id="dp{{ programacion.id }}"
+                                       data-id="{{ programacion.id }}"><b><i class="fa fa-trash"></i> Borrar</b></a>
+                                {% elif programacion.sube == request.session.gauser_extra %}
+                                    <a class="delete_programacion button tiny" id="dp{{ programacion.id }}"
+                                       data-id="{{ programacion.id }}"><b><i class="fa fa-trash"></i> Borrar</b></a>
+                                {% else %}
+                                    &nbsp;
+                                {% endif %}
                             {% else %}
-                                <a class="update_programacion button tiny" id="up{{ materia.id }}"
-                                   data-id="{{ materia.id }}"><b><i class="fa fa-upload"></i> Cargar</b></a>
+                                {% if request.session.gauser_extra|has_permiso:'carga_programaciones' %}
+                                    <a class="update_programacion button tiny" id="up{{ materia.id }}"
+                                       data-id="{{ materia.id }}"><b><i class="fa fa-upload"></i> Cargar</b></a>
+                                {% else %}
+                                    &nbsp;
+                                {% endif %}
                             {% endif %}
                             </td>
                         </tr>

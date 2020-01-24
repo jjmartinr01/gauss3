@@ -184,7 +184,7 @@ def carga_masiva_from_file():
                                                   curso__ronda=carga.ronda)
                 if materias.count() == 0:
                     try:
-                        observaciones = u'Creada el %s' % datetime.now()
+                        observaciones = 'Creada el %s' % datetime.now()
                         Materia.objects.create(curso=curso, nombre=nombre, clave_ex=materia_codigo,
                                                observaciones=observaciones,
                                                horas=horas, duracion=duracion)
@@ -414,6 +414,7 @@ def carga_masiva_from_file():
                             gauser_extra.gauser.get_full_name(), profesor_codigo))
                     else:
                         logger.warning('Docente %s %s no encontrado' % (profesor_nombre, nombre_docente))
+                        gauser_extra = None
                 if gauser_extra:
                     gep = Gauser_extra_programaciones.objects.get_or_create(ge=gauser_extra)
                     gep[0].especialidad = especialidad
