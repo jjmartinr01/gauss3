@@ -30,7 +30,7 @@ from mensajes.views import crear_aviso, encolar_mensaje, crea_mensaje_cola
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
 
-@permiso_required('acceso_conv_template')
+# @permiso_required('acceso_conv_template')
 def conv_template(request):
     g_e = request.session['gauser_extra']
     if g_e.has_permiso('w_conv_reunion'):
