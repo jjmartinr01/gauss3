@@ -265,7 +265,7 @@ def crea_departamentos(ronda):
           ('Geografía e Historia', 'GH', True, False, 3), ('Griego', 'GRI', True, False, 3), ('Inglés', 'ING', True, False, 3),
           ('Latín', 'LAT', True, False, 3), ('Lengua Castellana y Literatura', 'LCL', True, False, 3),
           ('Matemáticas', 'MAT', True, False, 3), ('Música', 'MUS', True, False, 3), ('Orientación', 'ORI', True, False, 3),
-          ('Tecnología', 'TEC', True, False, 3), ('Ningún departamento', 'N_D', True, 0),
+          ('Tecnología', 'TEC', True, False, 3), ('Ningún departamento', 'N_D', True, False, 0),
           ('Alemán', 'ALE', True, False, 3), ('Actividades físicas y deportivas', 'AFD', True, False, 3),
           ('Administración y gestión', 'ADG', True, True, 3),
           ('Agraria', 'A', True, True, 3),
