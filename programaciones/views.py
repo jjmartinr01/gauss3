@@ -1800,9 +1800,10 @@ def proyecto_educativo_centro(request):
                                                         content_type=fichero.content_type, tipo=request.POST['name'])
                         p.doc_nombre = slugify(p.get_tipo_display())
                         p.save()
+                return JsonResponse({'ok': True, 'mensaje': mensaje})
             else:
-                mensaje = 'No tienes permiso para cargar programaciones.'
-            return JsonResponse({'ok': True, 'mensaje': mensaje})
+                mensaje = 'No tienes permiso para cargar archivos del PEC.'
+                return JsonResponse({'ok': False, 'mensaje': mensaje})
         elif request.POST['action'] == 'download_file':
             try:
                 pecdoc = PECdocumento.objects.get(id=request.POST['archivo'], pec__id=request.POST['pec'],

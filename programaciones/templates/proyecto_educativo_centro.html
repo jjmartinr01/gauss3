@@ -153,6 +153,10 @@
                         var data = JSON.parse(xhr.responseText);
                         if (data.mensaje) {
                             show_mensajes({title: 'Error', texto: data.mensaje})
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                        if (data.ok){
+                            $("#update_ok").show().delay(1500).fadeOut();
                         }
                     }
                 }
