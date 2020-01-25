@@ -1111,9 +1111,9 @@ def xml_racima(xml_file, request):
     docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, subentidades__in=sub_docentes)
     nombres_docentes = [(d.id, d.gauser.get_full_name()) for d in docentes]
     for elemento in xml_file.findall(".//grupo_datos[@seq='EMPLEADOS']/grupo_datos"):
-        profesor_nombre = elemento.find('dato[@nombre_dato="NOMBRE"]').text
-        profesor_apellido1 = elemento.find('dato[@nombre_dato="APELLIDO1"]').text
-        profesor_apellido2 = elemento.find('dato[@nombre_dato="APELLIDO2"]').text
+        profesor_nombre = elemento.find('dato[@nombre_dato="NOMBRE"]').text or ''
+        profesor_apellido1 = elemento.find('dato[@nombre_dato="APELLIDO1"]').text or ''
+        profesor_apellido2 = elemento.find('dato[@nombre_dato="APELLIDO2"]').text or ''
         nombre_docente = profesor_nombre + ' ' + profesor_apellido1 + ' ' + profesor_apellido2
         espec = elemento.find('dato[@nombre_dato="D_PUESTO"]').text
         if espec == u"Pedagogía Terapeutica":
