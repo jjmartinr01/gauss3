@@ -113,7 +113,7 @@ def cargar_programaciones_ajax(request):
         if action == 'open_accordion':
             curso = Curso.objects.get(id=request.POST['id'])
             materias = curso.materia_set.all()
-            html = render_to_string('cargar_programaciones_formulario_content.html', {'curso': curso})
+            html = render_to_string('cargar_programaciones_formulario_content.html', {'g_e': g_e, 'curso': curso})
             return JsonResponse({'ok': True, 'html': html})
         elif action == 'delete_programacion':
             try:
