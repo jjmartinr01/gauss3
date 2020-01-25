@@ -1697,9 +1697,10 @@ def aspectos_pga(request):
                     except:
                         p = PGAdocumento.objects.create(pga=pga, doc_nombre=request.POST['name'], doc_file=fichero,
                                                         content_type=fichero.content_type)
+                return JsonResponse({'ok': True, 'mensaje': mensaje, 'file': p.doc_nombre})
             else:
-                mensaje = 'No tienes permiso para cargar programaciones.'
-            return JsonResponse({'ok': True, 'mensaje': mensaje, 'file': p.doc_nombre})
+                mensaje = 'No tienes permiso para cargar archivos de la PGA.'
+                return JsonResponse({'ok': False, 'mensaje': mensaje, 'file': False})
         elif request.POST['action'] == 'download_file':
             try:
                 pgadoc = PGAdocumento.objects.get(id=request.POST['archivo'], pga__id=request.POST['pga'])
