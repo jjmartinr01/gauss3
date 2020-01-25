@@ -255,7 +255,7 @@ def configura_materias_pendientes(request):
     return render(request, "configura_materias_pendientes.html", respuesta)
 
 
-@permiso_required('acceso_evaluar_materias')
+# @permiso_required('acceso_evaluar_materias')
 def evaluar_materias(request):
     g_e = request.session['gauser_extra']
     if g_e.has_permiso('evalua_cualquier_materia'):
