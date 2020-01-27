@@ -655,8 +655,7 @@ def objetivos_criterios(request):
     return render(request, "objetivos_criterios_evaluacion_foundation.html",
                   {
                       'formname': 'objetivos_criterios',
-                      'estudios': Curso.objects.filter(entidad=g_e.ronda.entidad,
-                                                       etapa__icontains='profesional').order_by(
+                      'estudios': Curso.objects.filter(ronda=g_e.ronda, etapa__in=['ea', 'ga', 'ha']).order_by(
                           'tipo', 'nombre_especifico'),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
@@ -722,8 +721,9 @@ def ajax_objetivos_criterios(request):
             Resultado_aprendizaje.objects.get(id=id).delete()
             return JsonResponse({'ok': True, 'id': id})
         elif action == 'change_titulo':
-            estudio = g_e.ronda.entidad.estudios.get(id=request.POST['id'])
-            mods = {m.id: m.nombre for m in g_e.ronda.entidad.materias.filter(estudio=estudio)}
+            curso = Curso.objects.get(id=request.POST['id'])
+            # mods = {m.id: m.nombre for m in g_e.ronda.entidad.materias.filter(estudio=estudio)}
+            mods = {m.id: m.nombre for m in curso.materia_set.all()}
             return JsonResponse({'ok': True, 'modulos': mods})
 
 

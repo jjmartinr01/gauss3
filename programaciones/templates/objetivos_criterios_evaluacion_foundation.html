@@ -25,7 +25,7 @@
                         <select name="titulo" id="id_titulo">
                             <option id="option_titulo_empty" value="">Click aquí para hacer selección</option>
                             {% for estudio in estudios %}
-                                <option value="{{ estudio.id }}">{{ estudio.curso }}</option>
+                                <option value="{{ estudio.id }}">{{ estudio.nombre }}</option>
                             {% endfor %}
                         </select>
                     </label>

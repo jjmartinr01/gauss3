@@ -73,18 +73,18 @@ def ajax_cupo(request):
     if request.is_ajax():
         g_e = request.session['gauser_extra']
         action = request.POST['action']
-
         if action == 'add_cupo' and g_e.has_permiso('crea_cupos'):
             try:
-                cupo = Cupo.objects.create(ronda__entidad=g_e.ronda.entidad, nombre='Cupo creado el %s' % (datetime.datetime.now()))
+                cupo = Cupo.objects.create(ronda=g_e.ronda, nombre='Cupo creado el %s' % (datetime.datetime.now()))
                 geps = Gauser_extra_programaciones.objects.filter(ge__ronda=g_e.ronda).order_by('puesto')
                 for pd in geps.values_list('puesto', 'departamento__id').distinct():
-                    ec, c = EspecialidadCupo.objects.get_or_create(cupo=cupo, nombre=pd[0])
-                    if c and pd[1]:
-                        departamento = Departamento.objects.get(ronda=g_e.ronda, id=pd[1])
-                        ec.departamento = departamento
-                        ec.save()
-                materias = Materia.objects.filter(curso__ronda=g_e.ronda.entidad.ronda)
+                    if pd[0]:
+                        ec, c = EspecialidadCupo.objects.get_or_create(cupo=cupo, nombre=pd[0])
+                        if c and pd[1]:
+                            departamento = Departamento.objects.get(ronda=g_e.ronda, id=pd[1])
+                            ec.departamento = departamento
+                            ec.save()
+                materias = Materia.objects.filter(curso__ronda=g_e.ronda)
                 for m in materias:
                     try:
                         c = Curso.objects.get(ronda=g_e.ronda, nombre=m.curso.nombre)
