@@ -47,7 +47,11 @@ def pecjson(request, code):
         'proyectos': {'title': 'Proyectos que desarrolla el centro', 'text': pec.proyectos},
         'documentos': docs
     }
-    return JsonResponse(data)
+    a = 'proyecto('
+    b = json.dumps(data)
+    c = ')'
+    # return JsonResponse(data)
+    return HttpResponse(a + b + c)
 
 
 def cargar_programaciones(request):
