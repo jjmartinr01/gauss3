@@ -84,9 +84,9 @@ def cargar_programaciones(request):
                 crear_aviso(request, False, 'No tienes permiso para descargar programaciones cargadas por otros')
         elif action == 'generar_zip_pga' and g_e.has_permiso('descarga_pga'):
             curso_escolar = g_e.ronda.nombre.replace('/', '-')
-            ruta_centro = MEDIA_PROGRAMACIONES + "{0}/".format(g_e.entidad.code)
+            ruta_centro = MEDIA_PROGRAMACIONES + "{0}/".format(g_e.ronda.entidad.code)
             ruta_curso_escolar = "{0}{1}/".format(ruta_centro, curso_escolar)
-            fichero = "programaciones_{0}_{1}.zip".format(g_e.entidad.code, curso_escolar)
+            fichero = "programaciones_{0}_{1}.zip".format(g_e.ronda.entidad.code, curso_escolar)
             ruta_fichero = "{0}{1}".format(ruta_centro, fichero)
             # Comprobamos si existe un fichero zip en el directorio de las programaciones. Esto solo
             # ocurre hasta el curso 2019-2020. A partir de ese curso las programaciones se guardan
@@ -105,7 +105,7 @@ def cargar_programaciones(request):
             #     for file in files:
             #         zip_file.write(os.path.join(root, file))
             # zip_file.close()
-            output_filename = "programaciones_{0}_{1}".format(g_e.entidad.code, curso_escolar)
+            output_filename = "programaciones_{0}_{1}".format(g_e.ronda.entidad.code, curso_escolar)
             shutil.make_archive(output_filename, 'zip', ruta_curso_escolar)
             fich = open(ruta_fichero, 'rb')
             crear_aviso(request, True,
@@ -1754,7 +1754,7 @@ def aspectos_pga(request):
             # Generación del ZIP que contiene toda la PGA
             ruta_centro = ruta_programaciones(g_e.ronda, tipo='centro')
             ruta_curso_escolar = ruta_programaciones(g_e.ronda, tipo='ronda')
-            fichero = "PGA_{0}_{1}".format(g_e.entidad.code, slugify(g_e.ronda.nombre))
+            fichero = "PGA_{0}_{1}".format(g_e.ronda.entidad.code, slugify(g_e.ronda.nombre))
             ruta_zip = ruta_programaciones(g_e.ronda, tipo='centro')
             try:
                 # Create target Directory. Si existiera se produciría la excepción
