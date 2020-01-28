@@ -53,6 +53,22 @@ def pecjson(request, code):
     # return JsonResponse(data)
     return HttpResponse(a + b + c)
 
+def pgajson(request, code):
+    entidad = Entidad.objects.get(code=code)
+    ronda = entidad.ronda
+    pga = PGA.objects.get(ronda=ronda)
+    archivos = pga.pgadocumento_set.all()
+    docs = [{'title': a.doc_nombre, 'url': a.doc_file.url} for a in archivos]
+    data = {
+        'centro': entidad.name,
+        'curso_escolar': ronda.nombre,
+        'documentos': docs
+    }
+    a = 'pga('
+    b = json.dumps(data)
+    c = ')'
+    # return JsonResponse(data)
+    return HttpResponse(a + b + c)
 
 def cargar_programaciones(request):
     g_e = request.session['gauser_extra']

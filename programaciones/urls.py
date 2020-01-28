@@ -22,4 +22,5 @@ urlpatterns = [
     path('aspectos_pga/', views.aspectos_pga),
     path('proyecto_educativo_centro/', views.proyecto_educativo_centro),
     path('pecjson/<int:code>/', views.pecjson),
+    path('pgajson/<int:code>/', views.pgajson),
 ]
