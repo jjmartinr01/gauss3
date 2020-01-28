@@ -243,6 +243,11 @@ def crea_evento(request):
             vevent = form.save()
             dtstart = datetime.strptime(request.POST['dtstart'], "%d/%m/%Y %H:%M")
             vevent.entidad = g_e.ronda.entidad
+            if 'festivo' in request.POST:
+                if request.POST['festivo'] == '0':
+                    vevent.festivo = False
+                elif request.POST['festivo'] == '1':
+                    vevent.festivo = True
             if not vevent.dtend:
                 vevent.dtend = datetime.combine(dtstart, datetime.max.time())
             else:
