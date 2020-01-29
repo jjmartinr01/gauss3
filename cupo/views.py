@@ -75,6 +75,7 @@ def ajax_cupo(request):
         action = request.POST['action']
         if action == 'add_cupo' and g_e.has_permiso('crea_cupos'):
             try:
+                crea_departamentos(g_e.ronda)
                 cupo = Cupo.objects.create(ronda=g_e.ronda, nombre='Cupo creado el %s' % (datetime.datetime.now()))
                 geps = Gauser_extra_programaciones.objects.filter(ge__ronda=g_e.ronda).order_by('puesto')
                 for pd in geps.values_list('puesto', 'departamento__id').distinct():
