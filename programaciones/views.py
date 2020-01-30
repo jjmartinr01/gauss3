@@ -83,36 +83,79 @@ def cargar_programaciones(request):
             else:
                 crear_aviso(request, False, 'No tienes permiso para descargar programaciones cargadas por otros')
         elif action == 'generar_zip_pga' and g_e.has_permiso('descarga_pga'):
-            curso_escolar = g_e.ronda.nombre.replace('/', '-')
-            ruta_centro = MEDIA_PROGRAMACIONES + "{0}/".format(g_e.ronda.entidad.code)
-            ruta_curso_escolar = "{0}{1}/".format(ruta_centro, curso_escolar)
-            fichero = "programaciones_{0}_{1}.zip".format(g_e.ronda.entidad.code, curso_escolar)
-            ruta_fichero = "{0}{1}".format(ruta_centro, fichero)
-            # Comprobamos si existe un fichero zip en el directorio de las programaciones. Esto solo
-            # ocurre hasta el curso 2019-2020. A partir de ese curso las programaciones se guardan
-            # en el directorio asociado al centro y no al del curso:
-            if os.path.exists("{0}{1}".format(ruta_curso_escolar, fichero)):
-                os.remove("{0}{1}".format(ruta_curso_escolar, fichero))
+            pga = PGA.objects.get(ronda=g_e.ronda)
+            # try:
+            # Procesado del archivo de aspectos de la PGA
+            c = render_to_string('aspectos_generales_pga2pdf.html', {'pga': pga})
+            ruta = rutas_aspectos_pga(pga)['absoluta']
+            nombre_fichero = 'aspectos_generales_pga'
+            if os.path.exists('%s%s.pdf' % (ruta, nombre_fichero)):
+                os.remove('%s%s.pdf' % (ruta, nombre_fichero))
+            html_to_pdf(request, c, fichero=nombre_fichero, media=ruta, title='Aspectos Generales de la PGA')
+            if os.path.exists('%s%s.html' % (ruta, nombre_fichero)):
+                os.remove('%s%s.html' % (ruta, nombre_fichero))
+            # Procesado del archivo de aspectos del PEC
+            pec = PEC.objects.get(entidad=g_e.ronda.entidad)
+            c = render_to_string('aspectos_generales_pec2pdf.html', {'pec': pec})
+            ruta = rutas_pec(pec)['absoluta']
+            nombre_fichero = 'aspectos_generales_pec'
+            if os.path.exists('%s%s.pdf' % (ruta, nombre_fichero)):
+                os.remove('%s%s.pdf' % (ruta, nombre_fichero))
+            html_to_pdf(request, c, fichero=nombre_fichero, media=ruta, title='Aspectos Generales del PEC')
+            if os.path.exists('%s%s.html' % (ruta, nombre_fichero)):
+                os.remove('%s%s.html' % (ruta, nombre_fichero))
+            # Generación del ZIP que contiene toda la PGA
+            ruta_centro = ruta_programaciones(g_e.ronda, tipo='centro')
+            ruta_curso_escolar = ruta_programaciones(g_e.ronda, tipo='ronda')
+            fichero = "PGA_{0}_{1}".format(g_e.ronda.entidad.code, slugify(g_e.ronda.nombre))
+            ruta_zip = ruta_programaciones(g_e.ronda, tipo='centro')
             try:
-                # Create target Directory
-                os.mkdir(ruta_centro)
-                os.chdir(ruta_centro)  # Determino el directorio de trabajo
+                # Create target Directory. Si existiera se produciría la excepción
+                os.mkdir(ruta_curso_escolar)
+                os.chdir(ruta_curso_escolar)  # Determino el directorio de trabajo
             except FileExistsError:
-                os.chdir(ruta_centro)  # Determino el directorio de trabajo
-
-            # zip_file = zipfile.ZipFile(ruta_fichero, 'w')
-            # for root, dirs, files in os.walk('./'):  # Se comprime el directorio actual determinado por "ruta"
-            #     for file in files:
-            #         zip_file.write(os.path.join(root, file))
-            # zip_file.close()
-            output_filename = "programaciones_{0}_{1}".format(g_e.ronda.entidad.code, curso_escolar)
-            shutil.make_archive(output_filename, 'zip', ruta_curso_escolar)
-            fich = open(ruta_fichero, 'rb')
-            crear_aviso(request, True,
-                        "Genera y descarga .zip con programaciones: %s" % (g_e.gauser.get_full_name()))
+                os.chdir(ruta_curso_escolar)  # Determino el directorio de trabajo
+            shutil.make_archive(ruta_zip + fichero, 'zip', ruta_curso_escolar)
+            fich = open(ruta_zip + fichero + '.zip', 'rb')
+            crear_aviso(request, True, "%s genera y descarga %s" % (g_e.gauser.get_full_name(), fichero))
             response = HttpResponse(fich, content_type='application/zip')
-            response['Content-Disposition'] = 'attachment; filename=%s' % fichero
+            response['Content-Disposition'] = 'attachment; filename=%s' % (fichero + '.zip')
             return response
+            # except:
+            #     pass
+
+
+
+            # curso_escolar = g_e.ronda.nombre.replace('/', '-')
+            # ruta_centro = MEDIA_PROGRAMACIONES + "{0}/".format(g_e.ronda.entidad.code)
+            # ruta_curso_escolar = "{0}{1}/".format(ruta_centro, curso_escolar)
+            # fichero = "programaciones_{0}_{1}.zip".format(g_e.ronda.entidad.code, curso_escolar)
+            # ruta_fichero = "{0}{1}".format(ruta_centro, fichero)
+            # # Comprobamos si existe un fichero zip en el directorio de las programaciones. Esto solo
+            # # ocurre hasta el curso 2019-2020. A partir de ese curso las programaciones se guardan
+            # # en el directorio asociado al centro y no al del curso:
+            # if os.path.exists("{0}{1}".format(ruta_curso_escolar, fichero)):
+            #     os.remove("{0}{1}".format(ruta_curso_escolar, fichero))
+            # try:
+            #     # Create target Directory
+            #     os.mkdir(ruta_centro)
+            #     os.chdir(ruta_centro)  # Determino el directorio de trabajo
+            # except FileExistsError:
+            #     os.chdir(ruta_centro)  # Determino el directorio de trabajo
+            #
+            # # zip_file = zipfile.ZipFile(ruta_fichero, 'w')
+            # # for root, dirs, files in os.walk('./'):  # Se comprime el directorio actual determinado por "ruta"
+            # #     for file in files:
+            # #         zip_file.write(os.path.join(root, file))
+            # # zip_file.close()
+            # output_filename = "programaciones_{0}_{1}".format(g_e.ronda.entidad.code, curso_escolar)
+            # shutil.make_archive(output_filename, 'zip', ruta_curso_escolar)
+            # fich = open(ruta_fichero, 'rb')
+            # crear_aviso(request, True,
+            #             "Genera y descarga .zip con programaciones: %s" % (g_e.gauser.get_full_name()))
+            # response = HttpResponse(fich, content_type='application/zip')
+            # response['Content-Disposition'] = 'attachment; filename=%s' % fichero
+            # return response
 
     return render(request, "cargar_programaciones.html",
                   {
@@ -146,7 +189,7 @@ def cargar_programaciones_ajax(request):
                     os.remove(ruta)
                     # Fin de las instrucciones para borrar el posible archivo
                     p.delete()
-                    html = render_to_string('cargar_programaciones_formulario_content.html', {'curso': curso})
+                    html = render_to_string('cargar_programaciones_formulario_content.html', {'curso': curso, 'g_e': g_e})
                     return JsonResponse({'ok': True, 'html': html, 'curso': curso.id, 'mensaje': False})
                 else:
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para borrar esta programación'})
@@ -172,7 +215,7 @@ def cargar_programaciones_ajax(request):
                                                           content_type=fichero.content_type)
             else:
                 mensaje = 'No tienes permiso para cargar programaciones.'
-            html = render_to_string('cargar_programaciones_formulario_content.html', {'curso': curso})
+            html = render_to_string('cargar_programaciones_formulario_content.html', {'curso': curso, 'g_e': g_e})
             return JsonResponse({'ok': True, 'html': html, 'curso': curso.id, 'mensaje': mensaje})
 
 
@@ -1730,7 +1773,7 @@ def aspectos_pga(request):
             except:
                 pass
         elif request.POST['action'] == 'downloadpga':
-            pga = PGA.objects.get(id=request.POST['pga'], ronda__entidad=g_e.ronda.entidad)
+            pga = PGA.objects.get(id=request.POST['pga'], ronda=g_e.ronda)
             # try:
             # Procesado del archivo de aspectos de la PGA
             c = render_to_string('aspectos_generales_pga2pdf.html', {'pga': pga})

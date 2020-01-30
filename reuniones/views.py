@@ -760,7 +760,7 @@ def conv_reunion_ajax(request):
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
 
-# @permiso_required('acceso_redactar_actas_reunion')
+@permiso_required('acceso_redactar_actas_reunion')
 def redactar_actas_reunion(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
@@ -803,15 +803,15 @@ def redactar_actas_reunion(request):
                 crear_aviso(request, False, 'No es posible generar el pdf del acta solicitada')
 
     subentidades = g_e.subentidades.all()
-    if g_e.has_permiso('redacta_cualquier_acta'):
+    if g_e.has_permiso('w_cualquier_acta_reunion'):
         actas_publicadas = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad).distinct()
         # actas_sin_publicar = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad,
         #                                                 publicada=False).distinct()
-    elif g_e.has_permiso('redacta_actas_subentidades'):
+    elif g_e.has_permiso('w_actas_subentidades_reunion'):
         actas_publicadas = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades).distinct()
         # actas_sin_publicar = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades,
         #                                                 publicada=False).distinct()
-    elif g_e.has_permiso('redacta_sus_actas'):
+    elif g_e.has_permiso('w_sus_actas_reunion'):
         actas_publicadas = ActaReunion.objects.filter(convocatoria__convoca=g_e.gauser,
                                                       convocatoria__entidad=g_e.ronda.entidad).distinct()
         # actas_sin_publicar = ActaReunion.objects.filter(convocatoria__convoca=g_e.gauser,
