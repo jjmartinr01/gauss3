@@ -508,13 +508,13 @@ def ajax_filtro(request):
             data = render_to_string('filtro_accordion.html', {'filtrado': f})
             return HttpResponse(data)
         elif request.POST['action'] == 'open_accordion':
-            filtrado = Filtrado.objects.get(propietario__entidad=g_e.ronda.entidad, id=request.POST['filtrado'])
+            filtrado = Filtrado.objects.get(propietario__ronda__entidad=g_e.ronda.entidad, id=request.POST['filtrado'])
             data = render_to_string('filtro_accordion_content.html',
                                     {'filtrado': filtrado, 'campos': CAMPOS, 'g_e': g_e})
             return HttpResponse(data)
         elif request.POST['action'] == 'update_nombre_filtrado':
             try:
-                filtrado = Filtrado.objects.get(propietario__entidad=g_e.ronda.entidad, id=request.POST['filtrado'])
+                filtrado = Filtrado.objects.get(propietario__ronda__entidad=g_e.ronda.entidad, id=request.POST['filtrado'])
                 filtrado.nombre = request.POST['nombre']
                 filtrado.save()
                 return JsonResponse({'ok': True, 'nombre': filtrado.nombre})
@@ -522,7 +522,7 @@ def ajax_filtro(request):
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'add_filtro':
             try:
-                f = Filtrado.objects.get(propietario__entidad=g_e.ronda.entidad, id=request.POST['filtrado'])
+                f = Filtrado.objects.get(propietario__ronda__entidad=g_e.ronda.entidad, id=request.POST['filtrado'])
                 n = f.filtroq_set.all().count() + 1
                 q = FiltroQ.objects.create(filtrado=f, n_filtro=n, filtro='gauser__first_name__icontains', value='')
                 f.operacion = f.operacion + ' & F' + str(n)
@@ -562,7 +562,7 @@ def ajax_filtro(request):
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'update_tipo_filtro':
             try:
-                q = FiltroQ.objects.get(id=request.POST['filtro'], filtrado__propietario__entidad=g_e.ronda.entidad)
+                q = FiltroQ.objects.get(id=request.POST['filtro'], filtrado__propietario__ronda__entidad=g_e.ronda.entidad)
                 q.filtro = request.POST['tipo']
                 q.save()
                 return JsonResponse({'ok': True})
@@ -570,7 +570,7 @@ def ajax_filtro(request):
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'update_value_filtro':
             try:
-                q = FiltroQ.objects.get(id=request.POST['filtro'], filtrado__propietario__entidad=g_e.ronda.entidad)
+                q = FiltroQ.objects.get(id=request.POST['filtro'], filtrado__propietario__ronda__entidad=g_e.ronda.entidad)
                 q.value = request.POST['value']
                 q.save()
                 query = crea_query(q.filtrado)
@@ -589,7 +589,7 @@ def ajax_filtro(request):
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'update_operacion':
             try:
-                f = Filtrado.objects.get(propietario__entidad=g_e.ronda.entidad, id=request.POST['filtrado'])
+                f = Filtrado.objects.get(propietario__ronda__entidad=g_e.ronda.entidad, id=request.POST['filtrado'])
                 f.operacion = request.POST['operacion']
                 f.save()
 
@@ -614,7 +614,7 @@ def ajax_filtro(request):
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'update_campo':
             try:
-                f = Filtrado.objects.get(propietario__entidad=g_e.ronda.entidad, id=request.POST['filtrado'])
+                f = Filtrado.objects.get(propietario__ronda__entidad=g_e.ronda.entidad, id=request.POST['filtrado'])
                 if request.POST['operation'] == 'added':
                     CampoF.objects.create(filtrado=f, campo=request.POST['campo'])
                 else:

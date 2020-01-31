@@ -70,6 +70,7 @@ def pgajson(request, code):
     # return JsonResponse(data)
     return HttpResponse(a + b + c)
 
+@permiso_required('acceso_cargar_programaciones')
 def cargar_programaciones(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST' and not request.is_ajax():
@@ -168,7 +169,7 @@ def cargar_programaciones(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
-
+@login_required()
 def cargar_programaciones_ajax(request):
     g_e = request.session['gauser_extra']
     if request.is_ajax():
@@ -306,7 +307,7 @@ def departamentos_centro_educativo(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
-
+@login_required()
 def departamentos_centro_educativo_ajax(request):
     g_e = request.session['gauser_extra']
     if request.is_ajax():
@@ -429,7 +430,7 @@ def departamentos_centro_educativo_ajax(request):
             return JsonResponse({'ok': False})
 
 
-# @permiso_required('acceso_profesores_centro_educativo')
+@permiso_required('acceso_profesores_centro_educativo')
 def profesores_centro_educativo(request):
     g_e = request.session['gauser_extra']
     profesores = usuarios_ronda(g_e.ronda, subentidades=False).filter(subentidades__clave_ex='docente')
@@ -1196,7 +1197,7 @@ def replace_normalize(string):
     return slugify(string)
 
 
-# @permiso_required('acceso_programaciones_ccff')
+@permiso_required('acceso_programaciones_ccff')
 def editar_programacion(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
@@ -1686,7 +1687,7 @@ def generar_datos(request):
     return HttpResponse('Se han generado datos aleatorios de %s usuarios, finalizado con %s fallos' % (total, fallos))
 
 
-# @permiso_required('acceso_aspectos_pga')
+@permiso_required('acceso_aspectos_pga')
 def aspectos_pga(request):
     g_e = request.session['gauser_extra']
     pga, c = PGA.objects.get_or_create(ronda=g_e.ronda)
@@ -1828,7 +1829,7 @@ def aspectos_pga(request):
                   })
 
 
-# @permiso_required('acceso_pec')
+@permiso_required('acceso_pec')
 def proyecto_educativo_centro(request):
     g_e = request.session['gauser_extra']
     pec, c = PEC.objects.get_or_create(entidad=g_e.ronda.entidad)
