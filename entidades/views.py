@@ -2166,7 +2166,12 @@ def crea_entidad(request):
                 ge = Gauser_extra.objects.create(gauser=g_e.gauser, ronda=ronda, activo=True)
                 permisos = Permiso.objects.all()
                 ge.permisos.add(*permisos)
-
+                # Código para crear usuario con todos los permisos disponibles a través de los cargos:
+                ahora = datetime.now()
+                gauser_entidad = Gauser.objects.create(username=entidad.code, last_login=ahora)
+                email = 'inventado@%s.com' % entidad.code
+                Gauser.objects.create_user(entidad.code, email, entidad.code, last_login=datetime.today())
+                g_e_entidad = Gauser_extra.objects.create(gauser=gauser_entidad, ronda=ronda, activo=True)
                 try:
                     e_copiar = Entidad.objects.get(id=request.POST['entidad_copiar'])
                     subentidades = Subentidad.objects.filter(entidad=e_copiar)
@@ -2182,6 +2187,8 @@ def crea_entidad(request):
                         c.entidad = entidad
                         c.save()
                         c.permisos.add(*permisos)
+                        # Los permisos asociados  los cargos son asociados al g_e_entidad
+                        g_e_entidad.permisos.add(*permisos)
                     for m in menus:
                         m.pk = None
                         m.entidad = entidad

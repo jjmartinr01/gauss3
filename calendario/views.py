@@ -60,6 +60,15 @@ def vevents_agenda(g_e, fecha, meses):
 def calendario(request):
     g_e = request.session["gauser_extra"]
     # vista = {'mes': 'calendario_month.html', 'agenda': 'calendario_agenda.html', 'semana': 'calendario_semana.html'}
+    # Las siguientes líneas son para eliminar el superusuario entidad.code si ya se han creado otros usuarios:
+    if Gauser_extra.objects.filter(ronda=g_e.ronda).count() > 3:
+        try:
+            g_eborrar = Gauser_extra.objects.get(ronda=g_e.ronda, gauser__username=g_e.ronda.entidad.code)
+            gborrar = g_eborrar.gauser
+            g_eborrar.delete()
+            gborrar.delete()
+        except:
+            pass
     if request.method == 'POST':
         vista_actual = request.POST['vista_actual']
         fecha = datetime.strptime(request.POST['fecha_actual'], '%d/%m/%Y')
