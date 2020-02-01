@@ -77,18 +77,18 @@ def ajax_cupo(request):
             try:
                 crea_departamentos(g_e.ronda)
                 cupo = Cupo.objects.create(ronda=g_e.ronda, nombre='Cupo creado el %s' % (datetime.datetime.now()))
-                geps = Gauser_extra_programaciones.objects.filter(ge__ronda=g_e.ronda).order_by('puesto')
+                geps = Gauser_extra_programaciones.objects.filter(ge__ronda=cupo.ronda).order_by('puesto')
                 for pd in geps.values_list('puesto', 'departamento__id').distinct():
                     if pd[0]:
                         ec, c = EspecialidadCupo.objects.get_or_create(cupo=cupo, nombre=pd[0])
                         if c and pd[1]:
-                            departamento = Departamento.objects.get(ronda=g_e.ronda, id=pd[1])
+                            departamento = Departamento.objects.get(ronda=cupo.ronda, id=pd[1])
                             ec.departamento = departamento
                             ec.save()
-                materias = Materia.objects.filter(curso__ronda=g_e.ronda)
+                materias = Materia.objects.filter(curso__ronda=cupo.ronda)
                 for m in materias:
                     try:
-                        c = Curso.objects.get(ronda=g_e.ronda, nombre=m.curso.nombre)
+                        c = Curso.objects.get(ronda=cupo.ronda, nombre=m.curso.nombre)
                     except:
                         c = None
                     try:
@@ -97,7 +97,7 @@ def ajax_cupo(request):
                         horas = 0
                     Materia_cupo.objects.create(cupo=cupo, curso=c, nombre=m.nombre, periodos=horas)
                 logger.info(u'%s, add_cupo id=%s' % (g_e, cupo.id))
-                ds = Departamento.objects.filter(ronda=g_e.ronda)
+                ds = Departamento.objects.filter(ronda=cupo.ronda)
                 html = render_to_string('formulario_cupo.html', {'cupo': cupo, 'request': request, 'departamentos': ds})
                 return JsonResponse({'ok': True, 'html': html})
             except:
@@ -129,7 +129,7 @@ def ajax_cupo(request):
                 except:
                     m.especialidad = None
                 try:
-                    curso = Curso.objects.get(ronda=g_e.ronda, clave_ex=m.curso.clave_ex)
+                    curso = Curso.objects.get(ronda=cupo.ronda, clave_ex=m.curso.clave_ex)
                     m.curso = curso
                 except:
                     if m.curso:
@@ -223,7 +223,7 @@ def ajax_cupo(request):
                 if not cupo.bloqueado:
                     logger.info(u'%s, update_departamento %s' % (g_e, cupo.id))
                     especialidad = EspecialidadCupo.objects.get(cupo=cupo, id=request.POST['especialidad'])
-                    departamento = Departamento.objects.get(ronda=g_e.ronda, id=request.POST['departamento'])
+                    departamento = Departamento.objects.get(ronda=cupo.ronda, id=request.POST['departamento'])
                     especialidad.departamento = departamento
                     especialidad.save()
                     return JsonResponse({'ok': True, 'nombre': cupo.nombre})
@@ -316,7 +316,7 @@ def ajax_cupo(request):
                         s_c = False
                         logger.info(u'%s, filtro_materia any_course' % g_e)
                     else:
-                        curso = Curso.objects.get(id=request.POST['curso'], ronda__entidad=g_e.ronda.entidad)
+                        curso = Curso.objects.get(id=request.POST['curso'], ronda=cupo.ronda)
                         materias_cupo = Materia_cupo.objects.filter(cupo=cupo, curso=curso, nombre__icontains=q)
                         logger.info(u'%s, filtro_materia %s' % (g_e, curso.nombre))
                 else:
