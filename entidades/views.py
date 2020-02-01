@@ -2168,7 +2168,6 @@ def crea_entidad(request):
                 ge.permisos.add(*permisos)
                 # Código para crear usuario con todos los permisos disponibles a través de los cargos:
                 ahora = datetime.now()
-                # gauser_entidad = Gauser.objects.create(username=entidad.code, last_login=ahora)
                 email = 'inventado@%s.com' % entidad.code
                 gauser_entidad = Gauser.objects.create_user(entidad.code, email, entidad.code, last_login=ahora)
                 g_e_entidad = Gauser_extra.objects.create(gauser=gauser_entidad, ronda=ronda, activo=True)
