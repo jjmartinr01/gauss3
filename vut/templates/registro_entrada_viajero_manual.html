@@ -386,6 +386,8 @@
             e.preventDefault();
             $('#action').val('enviar_datos');
             var firma = document.getElementById('sketchpad').toDataURL();
+            var fechaexp = new Date($('#fecha_exp').val());
+            var hoy = new Date();
             var valido = false;
             var data = are_required_fields_filled();
             if (data.response) {
@@ -418,6 +420,13 @@
                     title: '<i class="fa fa-warning"></i> Datos sin rellenar/Required data',
                     texto: data.mensaje
                 });
+            }
+            if (firma.length < 1000 && valido) {
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Debes firmar/Signature required',
+                    texto: '<li>Para validar los datos debes firmar dentro del marco.</li>'
+                });
+                valido = false;
             }
             if (firma.length < 1000 && valido) {
                 show_mensajes({

@@ -198,6 +198,17 @@ def telegram_webhook(request):
             requests.get(url)
             return HttpResponse(status=200)
 
+        elif re.search(r'^[0-9]{4}$', message['text']):
+            try:
+                hace_5_minutos = timezone.now() - timedelta(seconds=300)
+                genera = Genera_code.objects.get(creado__gte=hace_5_minutos, code=m.message)
+                user.gauser = genera.gauser
+                user.save()
+                texto = 'Tus usuarios de GAUSS y Telegram se han conectado.'
+            except:
+                texto = 'No se ha podido conectar con ningún usuario. Comprueba que el código lo has ' + \
+                        'generado hace menos de 5 minutos.%0APor favor vuelve a intentarlo.'
+
         elif user.answering_gform:
             if m.message == 'Cancelar' or m.message == 'cancelar':
                 texto = 'Se ha cancelado el rellenado del formulario.'
@@ -260,16 +271,7 @@ def telegram_webhook(request):
                 user.selecting_gform = True
             user.save()
 
-        elif re.search(r'^[0-9]{4}$', message['text']):
-            try:
-                hace_5_minutos = timezone.now() - timedelta(seconds=300)
-                genera = Genera_code.objects.get(creado__gte=hace_5_minutos, code=m.message)
-                user.gauser = genera.gauser
-                user.save()
-                texto = 'Tus usuarios de GAUSS y Telegram se han conectado.'
-            except:
-                texto = 'No se ha podido conectar con ningún usuario. Comprueba que el código lo has ' + \
-                        'generado hace menos de 5 minutos.%0APor favor vuelve a intentarlo.'
+
 
     if teclado['keyboard']:
         url = url_myBot + 'sendMessage?chat_id=%s&text=%s&reply_markup=%s' % (
