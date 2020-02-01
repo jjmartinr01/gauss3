@@ -397,6 +397,9 @@
             e.preventDefault();
             $('#action').val('enviar_datos');
             var firma = document.getElementById('sketchpad').toDataURL();
+            var fechaexp = new Date($('#fecha_exp').val());
+            var hoy = new Date();
+            var antesdeayer = new Date(hoy.getTime() - 2 * 24 * 60 * 60 * 1000);
             var valido = false;
             var data = are_required_fields_filled();
             if (data.response) {
@@ -436,6 +439,17 @@
                     texto: '<li>Para validar los datos debes firmar dentro del marco.</li>'
                 });
                 valido = false;
+            }
+            if (fechaexp > antesdeayer  && valido) {
+                let combo = document.getElementById("tipo_ndi");
+                let selected = combo.options[combo.selectedIndex].text;
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Error en la fecha de expedición',
+                    texto: '<li>En "Fecha de expedición/Date of issue" debe indicarse la fecha en la que te hicieron el documento de identificación: "' + selected + '"</li>'
+                });
+                valido = false;
+            } else {
+                console.log(fechaexp, antesdeayer);
             }
             if (valido) {
                 var nombre = $('#nombre').val().normalize('NFD').replace(/[\u0300-\u036f]/g, "").trim();
