@@ -316,7 +316,7 @@ def ajax_cupo(request):
                         s_c = False
                         logger.info(u'%s, filtro_materia any_course' % g_e)
                     else:
-                        curso = Curso.objects.get(id=request.POST['curso'], entidad=g_e.ronda.entidad)
+                        curso = Curso.objects.get(id=request.POST['curso'], ronda__entidad=g_e.ronda.entidad)
                         materias_cupo = Materia_cupo.objects.filter(cupo=cupo, curso=curso, nombre__icontains=q)
                         logger.info(u'%s, filtro_materia %s' % (g_e, curso.nombre))
                 else:
