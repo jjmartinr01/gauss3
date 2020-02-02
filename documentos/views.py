@@ -2,15 +2,16 @@
 # Create your views here.
 import os
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.utils.timezone import datetime
 from django.template import RequestContext
 from django.template.loader import render_to_string
 import simplejson as json
 from django.db.models import Q
 from autenticar.control_acceso import permiso_required
 from autenticar.models import Gauser
-from entidades.models import Subentidad, Gauser_extra
+from entidades.models import Subentidad, Gauser_extra, Cargo
 from documentos.forms import Ges_documentalForm, Contrato_gaussForm
 from documentos.models import Ges_documental, Contrato_gauss, Permiso_Ges_documental, Etiqueta_documental
 from gauss.funciones import html_to_pdf
@@ -20,7 +21,7 @@ from mensajes.views import crear_aviso
 
 
 @permiso_required('acceso_documentos')
-def documentos(request):
+def documentos_antiguo(request):
     g_e = request.session['gauser_extra']
     form = Ges_documentalForm(g_e=g_e)
     if request.method == 'POST':
@@ -79,28 +80,205 @@ def documentos(request):
             return response
 
     return render(request, "documentos.html",
-                              {
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
-                                        'permiso': 'sube_archivos', 'title': 'Grabar el documento introducido'},
-                                       {'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
-                                        'permiso': 'sube_archivos', 'title': 'Anadir un nuevo documento'},
-                                       {'tipo': 'button', 'nombre': 'trash-o', 'texto': 'Borrar',
-                                        'permiso': 'borra_cualquier_archivo',
-                                        'title': 'Eliminar el documento seleccionado'},
-                                       {'tipo': 'button', 'nombre': 'list-alt', 'texto': 'Lista', 'permiso': 'acceso_documentos',
-                                        'title': 'Volver a mostrar la lista de documentos'},
-                                       {'tipo': 'button', 'nombre': 'pencil', 'texto': 'Editar', 'permiso': 'edita_todos_archivos',
-                                        'title': 'Editar el documento'},
-                                       {'tipo': 'button', 'nombre': 'folder', 'texto': 'Nueva', 'permiso': 'crea_carpetas',
-                                        'title': 'Crear una nueva carpeta/etiqueta'},
-                                      ),
-                                  'form': form,
-                                  'carpetas': Etiqueta_documental.objects.filter(entidad=g_e.ronda.entidad),
-                                  'formname': 'documentos',
-                                  'carpeta_id': 'todas',  # Este identificador implica leer todas las carpetas
-                                  'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                              })
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
+                            'permiso': 'sube_archivos', 'title': 'Grabar el documento introducido'},
+                           {'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
+                            'permiso': 'sube_archivos', 'title': 'Anadir un nuevo documento'},
+                           {'tipo': 'button', 'nombre': 'trash-o', 'texto': 'Borrar',
+                            'permiso': 'borra_cualquier_archivo',
+                            'title': 'Eliminar el documento seleccionado'},
+                           {'tipo': 'button', 'nombre': 'list-alt', 'texto': 'Lista', 'permiso': 'acceso_documentos',
+                            'title': 'Volver a mostrar la lista de documentos'},
+                           {'tipo': 'button', 'nombre': 'pencil', 'texto': 'Editar', 'permiso': 'edita_todos_archivos',
+                            'title': 'Editar el documento'},
+                           {'tipo': 'button', 'nombre': 'folder', 'texto': 'Nueva', 'permiso': 'crea_carpetas',
+                            'title': 'Crear una nueva carpeta/etiqueta'},
+                           ),
+                      'form': form,
+                      'carpetas': Etiqueta_documental.objects.filter(entidad=g_e.ronda.entidad),
+                      'formname': 'documentos',
+                      'carpeta_id': 'todas',  # Este identificador implica leer todas las carpetas
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+
+# @permiso_required('acceso_documentos')
+def documentos(request):
+    g_e = request.session['gauser_extra']
+    form = Ges_documentalForm(g_e=g_e)
+    pgds = Permiso_Ges_documental.objects.filter(gauser=g_e.gauser,
+                                                 documento__propietario__ronda__entidad=g_e.ronda.entidad)
+    etiquetas = Etiqueta_documental.objects.filter(entidad=g_e.ronda.entidad)
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'ver_formulario_subir' and g_e.has_permiso('sube_archivos'):
+            try:
+                html = render_to_string("documentos_fieldset_subir.html", {'etiquetas': etiquetas})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'ver_formulario_crear_etiqueta' and g_e.has_permiso('crea_carpetas'):
+            try:
+                html = render_to_string("documentos_fieldset_etiqueta.html", {'etiquetas': etiquetas})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'ver_formulario_buscar':
+            try:
+                html = render_to_string("documentos_fieldset_buscar.html", {'etiquetas': etiquetas, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'crea_etiqueta' and g_e.has_permiso('crea_carpetas'):
+            try:
+                nombre = request.POST['nombre']
+                if request.POST['padre']:
+                    padre = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['padre'])
+                    Etiqueta_documental.objects.create(entidad=g_e.ronda.entidad, padre=padre, nombre=nombre)
+                else:
+                    Etiqueta_documental.objects.create(entidad=g_e.ronda.entidad, nombre=nombre)
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'busca_docs_manual':
+            try:
+                try:
+                    inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
+                except:
+                    inicio = datetime.strptime('1900-1-1', '%Y-%m-%d').date()
+                try:
+                    fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d').date()
+                except:
+                    fin = datetime.now().date()
+                texto = request.POST['texto']
+                try:
+                    etiqueta = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['etiqueta'])
+                except:
+                    etiqueta = None
+                if etiqueta:
+                    q = Q(documento__propietario__ronda__entidad=g_e.ronda.entidad) & Q(
+                        documento__creado__gte=inicio) & Q(documento__creado__lte=fin) & Q(
+                        documento__nombre__icontains=texto) & Q(documento__etiqueta=etiqueta)
+                else:
+                    q = Q(documento__propietario__ronda__entidad=g_e.ronda.entidad) & Q(
+                        documento__creado__gte=inicio) & Q(documento__creado__lte=fin) & Q(
+                        documento__nombre__icontains=texto)
+
+                pgds = Permiso_Ges_documental.objects.filter(Q(gauser=g_e.gauser), q)
+                html = render_to_string('documentos_table_tr.html', {'pgds': pgds, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'ver_formulario_editar':
+            try:
+                pgd = pgds.get(id=request.POST['doc'])
+                if g_e.has_permiso('edita_todos_archivos') or pgd.permiso == 'w' or pgd.permiso == 'x':
+                    hoy = datetime.now().date()
+                    subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad, fecha_expira__gte=hoy)
+                    cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad)
+                    d = {'g_e': g_e, 'cargos': cargos, 'subentidades': subentidades, 'etiquetas': etiquetas, 'p': pgd}
+                    html = render_to_string("documentos_table_tr_archivo_edit.html", d)
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_archivo':
+            try:
+                pgd = pgds.get(id=request.POST['pgd'])
+                documento = pgd.documento
+                if g_e.has_permiso('edita_todos_archivos') or pgd.permiso == 'w' or pgd.permiso == 'x':
+                    documento.nombre = request.POST['nombre']
+                    documento.etiqueta = Etiqueta_documental.objects.get(id=request.POST['etiqueta'])
+                    documento.cargos.clear()
+                    documento.acceden.clear()
+                    cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('cargos[]'))
+                    subs = Subentidad.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('subs[]'))
+                    documento.cargos.add(*cargos)
+                    documento.acceden.add(*subs)
+                    documento.save()
+                    html = render_to_string('documentos_table_tr_archivo.html', {'p': pgd, 'g_e': g_e})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borrar_documento':
+            d = pgds.get(id=request.POST['pgd'])
+            documento = d.documento
+            if d.permiso == 'x' or documento.propietario == g_e or g_e.has_permiso('borra_cualquier_archivo'):
+                d.delete()
+                otros = Permiso_Ges_documental.objects.filter(documento=documento).count()
+                if otros == 0:
+                    documento.delete()
+                return JsonResponse(
+                    {'ok': True, 'mensaje': 'Documento borrado. Ahora pueden verlo %s personas' % otros})
+            else:
+                return JsonResponse({'ok': False, 'mensaje': 'No ha sido posible borrar el documento.'})
+        elif request.POST['action'] == 'borrar_doc_completamente':
+            d = pgds.get(id=request.POST['pgd'])
+            documento = d.documento
+            if g_e.has_permiso('borra_cualquier_archivo'):
+                todos = Permiso_Ges_documental.objects.filter(documento=documento)
+                todos.delete()
+                documento.delete()
+                return JsonResponse({'ok': True, 'mensaje': 'Documento borrado por completo.'})
+            else:
+                return JsonResponse({'ok': False, 'mensaje': 'No ha sido posible borrar el documento.'})
+        else:
+            return JsonResponse({'ok': False, 'mensaje': 'No tiene los permisos necesarios.'})
+
+    elif request.method == 'POST':
+        if request.POST['action'] == 'sube_archivo':
+            n_files = int(request.POST['n_files'])
+            if g_e.has_permiso('sube_archivos'):
+                try:
+                    for i in range(n_files):
+                        fichero = request.FILES['fichero_xhr' + str(i)]
+                        etiqueta = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad,
+                                                                   id=request.POST['etiqueta'])
+                        doc = Ges_documental.objects.create(propietario=g_e, content_type=fichero.content_type,
+                                                            etiqueta=etiqueta, nombre=fichero.name, fichero=fichero)
+                        p = Permiso_Ges_documental.objects.create(gauser=g_e.gauser, documento=doc, permiso='x')
+                        html = render_to_string('documentos_table_tr.html', {'pgds': [p], 'g_e': g_e})
+                        return JsonResponse({'ok': True, 'html': html, 'mensaje': False})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
+            else:
+                mensaje = 'No tienes permiso para cargar programaciones.'
+                return JsonResponse({'ok': False, 'mensaje': mensaje})
+
+        elif request.POST['action'] == 'descargar_doc':
+            try:
+                d = pgds.get(id=request.POST['documento'])
+                fichero = d.documento.fichero.read()
+                response = HttpResponse(fichero, content_type=d.documento.content_type)
+                response['Content-Disposition'] = 'attachment; filename=' + d.documento.nombre
+                return response
+            except:
+                crear_aviso(request, False, 'Error. No se ha podido descargar el archivo.')
+
+    return render(request, "documentos.html",
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
+                            'permiso': 'sube_archivos', 'title': 'Anadir un nuevo documento'},
+                           {'tipo': 'button', 'nombre': 'folder', 'texto': 'Nueva', 'permiso': 'crea_carpetas',
+                            'title': 'Crear una nueva carpeta/etiqueta'},
+                           {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar/Filtrar',
+                            'permiso': 'libre',
+                            'title': 'Busca/Filtra resultados entre los diferentes archivos'},
+                           ),
+                      'form': form,
+                      'g_e': g_e,
+                      'etiquetas': etiquetas,
+                      'pgds': pgds,
+                      'carpetas': Etiqueta_documental.objects.filter(entidad=g_e.ronda.entidad),
+                      'formname': 'documentos',
+                      'carpeta_id': 'todas',  # Este identificador implica leer todas las carpetas
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
 
 
 @login_required()
@@ -139,7 +317,7 @@ def documentos_ajax(request):
                 except:
                     data = None
             if request.POST['action'] == 'documentos_carpeta':
-                data = render_to_string('list_documentos.html', {'carpeta_id': request.POST['carpeta_id']},
+                data = render_to_string('documentos_table.html', {'carpeta_id': request.POST['carpeta_id']},
                                         request=request)
             if request.POST['action'] == 'crear_carpeta':
                 etiqueta = Etiqueta_documental.objects.create(entidad=g_e.ronda.entidad, nombre=request.POST['nombre'])
@@ -219,7 +397,8 @@ def contrato_gauss(request):
             form = Contrato_gaussForm(request.POST, instance=contrato)
             if form.is_valid():
                 contrato = form.save()
-                crear_aviso(request, True, u'Modificación del contrato de la entidad %s guardada.' % (g_e.ronda.entidad.name))
+                crear_aviso(request, True,
+                            u'Modificación del contrato de la entidad %s guardada.' % (g_e.ronda.entidad.name))
             else:
                 crear_aviso(request, False, form.errors)
 
@@ -230,7 +409,8 @@ def contrato_gauss(request):
             form = Contrato_gaussForm(request.POST, request.FILES, instance=contrato)
             if form.is_valid():
                 contrato = form.save()
-                crear_aviso(request, True, u'Se ha subido el contrato escaneado de la entidad %s.' % (g_e.ronda.entidad.name))
+                crear_aviso(request, True,
+                            u'Se ha subido el contrato escaneado de la entidad %s.' % (g_e.ronda.entidad.name))
             else:
                 crear_aviso(request, False, form.errors)
 
@@ -258,24 +438,24 @@ def contrato_gauss(request):
 
     form = Contrato_gaussForm(instance=contrato)
     return render(request, "contrato_gauss.html",
-                              {
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF',
-                                        'permiso': 'descarga_contrato_pdf', 'title': 'Obtener PDF del contrato'},
-                                       {'tipo': 'button', 'nombre': 'upload', 'texto': 'Subir',
-                                        'permiso': 'puede_subir_contrato',
-                                        'title': 'Subir el contrato escaneado con firmas'},
-                                       {'tipo': 'button', 'nombre': 'download', 'texto': 'Descargar',
-                                        'permiso': 'puede_descargar_contrato',
-                                        'title': 'Descargar el contrato escaneado con firmas'},
-                                       {'tipo': 'button', 'nombre': 'check', 'texto': 'Guardar',
-                                        'permiso': 'guarda_modificaciones_contrato',
-                                        'title': 'Guardar modificaciones del contrato'},
-                                      ),
-                                  'form': form,
-                                  'formname': 'contrato_gauss',
-                                  'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                              })
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'PDF',
+                            'permiso': 'descarga_contrato_pdf', 'title': 'Obtener PDF del contrato'},
+                           {'tipo': 'button', 'nombre': 'upload', 'texto': 'Subir',
+                            'permiso': 'puede_subir_contrato',
+                            'title': 'Subir el contrato escaneado con firmas'},
+                           {'tipo': 'button', 'nombre': 'download', 'texto': 'Descargar',
+                            'permiso': 'puede_descargar_contrato',
+                            'title': 'Descargar el contrato escaneado con firmas'},
+                           {'tipo': 'button', 'nombre': 'check', 'texto': 'Guardar',
+                            'permiso': 'guarda_modificaciones_contrato',
+                            'title': 'Guardar modificaciones del contrato'},
+                           ),
+                      'form': form,
+                      'formname': 'contrato_gauss',
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
 
 
 def presentaciones(request):
@@ -286,4 +466,3 @@ def presentaciones(request):
             return render(request, "no_enlace.html")
     else:
         return render(request, "no_enlace.html")
-

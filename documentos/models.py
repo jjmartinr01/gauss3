@@ -22,6 +22,19 @@ class Etiqueta_documental(models.Model):
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 
+    @property
+    def etiquetas(self):
+        lista = [self.nombre]
+        try:
+            lista = lista + self.padre.etiquetas
+            return lista
+        except:
+            return lista
+
+    @property
+    def etiquetas_text(self):
+        return '/'.join(reversed(self.etiquetas))
+
     class Meta:
         verbose_name_plural = "Etiquetas/Carpetas para los Documentos"
 
@@ -65,9 +78,13 @@ class Ges_documental(models.Model):
 
 @receiver(pre_delete, sender=Ges_documental)
 def fichero_del_pre_delete(sender, **kwargs):
-    archivo = RUTA_BASE + kwargs['instance'].fichero.url
-    if os.path.isfile(archivo):
-        os.remove(archivo)
+    try:
+        archivo = RUTA_BASE + kwargs['instance'].fichero.url
+        # archivo = kwargs['instance'].fichero.path
+        if os.path.isfile(archivo):
+            os.remove(archivo)
+    except:
+        pass
 
 
 PERMISOS = (('r', 'Lectura'),

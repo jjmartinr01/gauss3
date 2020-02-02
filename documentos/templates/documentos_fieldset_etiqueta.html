@@ -1,0 +1,22 @@
+<fieldset id="formulario_crear_etiqueta">
+    <legend>Crear carpeta/etiqueta</legend>
+    <div class="row">
+        <div class="columns large-4">
+            <label>Nombre</label>
+            <input id="id_etiqueta_nueva" name="id_etiqueta_nueva" type="text" value="">
+        </div>
+        <div class="columns large-6">
+            <label>Anidar dentro de</label>
+            <select id="select_etiqueta_padre" name="select_etiqueta_padre">
+                <option value="">---------</option>
+                {% for e in etiquetas %}
+                    <option value="{{ e.id }}">{{ e.etiquetas_text }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="columns large-2">
+            <label>&nbsp;</label>
+            <a class="button tiny" id="crea_etiqueta"><i class="fa fa-check"></i> <b>Crear</b></a>
+        </div>
+    </div>
+</fieldset>
