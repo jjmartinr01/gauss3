@@ -58,7 +58,6 @@
                 </label>
             </div>
         </div>
-
         <div class="row">
             <div class="large-3 columns">
                 <label>Correo electrónico
@@ -75,11 +74,28 @@
                     {{ form1.telmov }}
                 </label>
             </div>
-            <div data-tooltip aria-haspopup="true" class="large-3 columns has-tip" title="Los últimos códigos de identificación usados, han sido:<br><ul>{% for id in ids %}<li>{{ id }}</li>{% endfor %}</ul>">
-                <label>Nº ident. en la entidad <a href="/identificadores_entidad/"><i class="fa fa-info-circle"></i></a>
+            <div data-tooltip aria-haspopup="true" class="large-3 columns has-tip"
+                 title="Los últimos códigos de identificación usados, han sido:<br><ul>{% for id in ids %}<li>{{ id }}</li>{% endfor %}</ul>">
+                <label>Ident. en la entidad <a class="ayuda" data-ayuda="#ayuda1"><i class="fa fa-info-circle"></i></a>
+                    {% if g_e|has_permiso:'configura_auto_id' %}
+                        <a href="/configura_auto_id/"><i class="fa fa-id-card-o"></i></a>{% endif %}
                     {{ form2.id_organizacion }}
                 </label>
             </div>
+        </div>
+    <div class="row panel" style="display: none;" id="ayuda1">
+            <span style="color: #008CBA; font-size: large;font-weight: bold;"><i
+                    class="fa fa-info-circle"></i> Ayuda<br></span>
+            <p>El código identificador de un usuario es una cadena alfanumérica (por ejemplo AR-5678-F) que permite
+                identificar a cada persona en tu organización.</p>
+            <p>Este código identificador debería ser único para cada uno de los miembros, y su forma y estructura
+                depende exclusivamente de tu {{g_e.ronda.entidad.name}}.</p>
+            <p>GAUSS puede generar automáticamente estos códigos por tí,
+                {% if g_e|has_permiso:'configura_auto_id' %}únicamente debes hacer click en el icono
+                    <i class="fa fa-id-card-o"></i> para iniciar la configuración.{% else %} sin embargo tu no tienes
+                    permisos para realizar esta configuración automática. Pregunta al administrador del sistema por este
+                    servicio.{% endif %}
+            </p>
         </div>
 
         <div class="row panel callout">
@@ -172,6 +188,12 @@
         {#            title: '<i class="fa fa-exclamation-triangle"></i> Aviso'#}
         {#        })#}
         habilita(['s_check']);
+
+        $("body").on('click', '.ayuda', function (e) {
+            e.preventDefault();
+            var ayuda = $(this).data('ayuda');
+            $(ayuda).toggle();
+        });
 
         editor1 = wysihtmleditor('id_observaciones', {height: 200});
         $('#cargos').select2();

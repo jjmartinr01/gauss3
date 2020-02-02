@@ -347,7 +347,7 @@
         {% if request.session.gauser_extra|has_permiso:"acceso_listados_usuarios" %}
             $("#list_sign").click(function (e) {
                 e.preventDefault();
-                window.location.href = '/listados_usuarios_entidad/';
+                window.location.href = '/listados_usuarios_entidad/?tab=1';
             });
         {% endif %}
 

@@ -1270,6 +1270,7 @@ def add_usuario(request):
                       'form1': Socio_GauserForm(),
                       'form2': Socio_Gauser_extraForm(),
                       'ids': sorted_val_list,
+                      'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=request.session["gauser_extra"],
                                                      aceptado=False),
                   })
