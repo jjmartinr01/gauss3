@@ -16,19 +16,32 @@
                     <td>Para: {{ mensaje.receptores.all.0.get_full_name }}</td>
                 {% endif %}
                 <td title="Haz click sobre el texto para ver el mensaje completo"
-                    id="mensaje___{{ mensaje.id }}" class="mensaje_texto"
+                    id="mensaje___{{ mensaje.id }}"
                     data-numero="{{ forloop.counter }}"
-                    style="white-space:normal;cursor:pointer;">{{ mensaje.asunto }}:
-                    <span style="color:gray;">{{ mensaje.men_ini }}</span>
-                </td>
-                <td>
+                    style="white-space:normal;cursor:pointer;">
+                    <span data-id="{{ mensaje.id }}" data-numero="{{ forloop.counter }}"
+                          class="mensaje_texto {% if not mensaje.id in leidos %}no_leido nl_{{ mensaje.id }}{% endif %}">{{ mensaje.asunto }}: <span
+                            style="color:gray;">{{ mensaje.men_ini }}</span>
+                    </span>
                     {% if mensaje.adjuntos.all|length > 0 %}
-                        <i class="fa fa-paperclip show_hide" id="clip_{{ mensaje.id }}"
-                           data-tooltip aria-haspopup="true" data-options="disable_for_touch:true"
-                           class="has-tip"
-                           style="cursor:pointer;font-size:25px;"
-                           title="{% for adjunto in mensaje.adjuntos.all %} {{ adjunto.filename }} {% if not forloop.last %}, {% endif %} {% endfor %}"></i> {% endif %}
+                        <br>
+                        {% for adjunto in mensaje.adjuntos.all %}
+                            <a class="mensaje_ficheros_adjuntos"
+                               id="fichadjunto_mensaje__{{ mensaje.id }}___{{ adjunto.id }}">
+                                <span class="label round" title="{{ adjunto|get_adjunto_name }}"><i
+                                        class="fa fa-paperclip"></i> {{ adjunto|get_adjunto_name|truncatechars:14 }}</span>
+                            </a>
+                        {% endfor %}
+                    {% endif %}
                 </td>
+{#                <td>#}
+{#                    {% if mensaje.adjuntos.all|length > 0 %}#}
+{#                        <i class="fa fa-paperclip show_hide" id="clip_{{ mensaje.id }}"#}
+{#                           data-tooltip aria-haspopup="true" data-options="disable_for_touch:true"#}
+{#                           class="has-tip"#}
+{#                           style="cursor:pointer;font-size:25px;"#}
+{#                           title="{% for adjunto in mensaje.adjuntos.all %} {{ adjunto.filename }} {% if not forloop.last %}, {% endif %} {% endfor %}"></i> {% endif %}#}
+{#                </td>#}
                 <td>
                     {{ mensaje.fecha|date }}<br>{{ mensaje.fecha|date:"H:i" }}
                 </td>

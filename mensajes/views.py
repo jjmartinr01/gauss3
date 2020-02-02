@@ -19,6 +19,7 @@ from autenticar.control_acceso import permiso_required
 from mensajes.models import Mensaje, Aviso, Adjunto, Borrado, Importante, Leido, Etiqueta, Mensaje_cola
 from mensajes.tasks import mail_mensajes_cola
 from gauss.rutas import *
+from gauss.funciones import usuarios_ronda
 
 # from entidades.models import Subentidad
 # from autenticar.models import Gauser_extra, Gauser
@@ -607,7 +608,7 @@ def ajax_mensajes(request):
     if request.method == 'GET':
         if request.GET['action'] == 'receptores':
             texto = request.GET['q']
-            socios = Gauser_extra.objects.filter(ronda=g_e.ronda)
+            socios = usuarios_ronda(g_e.ronda)
             socios_contain_texto = socios.filter(
                 Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)).values_list(
                 'gauser__id',

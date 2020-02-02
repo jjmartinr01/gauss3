@@ -42,9 +42,18 @@
     <script>
         habilita(['h_trash-o']);
 
+        $('body').on('click', '.mensaje_ficheros_adjuntos', function (e) {
+        e.preventDefault();
+        var id_adjunto = $(this).attr('id').split('___')[1];
+        $('#action').val('bajar_adjunto');
+        $('#id_adjunto').val(id_adjunto);
+        document.{{formname}}.submit();
+    });
+
         //Con esta función detectar el click y por medio de ajax imprimir el texto del correo
         $("body").on('click','.mensaje_texto', function () {
-            var id = $(this).attr('id').split('___')[1]
+            {#var id = $(this).attr('id').split('___')[1];#}
+            var id = $(this).data('id');
             $.post("/ajax_mensajes/", {
                         id: id,
                         action: 'ver_mensaje',

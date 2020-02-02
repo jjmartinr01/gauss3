@@ -10,11 +10,11 @@
     <span id="listado_receptores_completo" {% if mensaje.receptores.all|length > 3 %}style="display: none;"{% endif %}>
         <strong>Receptores: </strong>
         {% for receptor in mensaje.receptores.all %}
-        {{ receptor.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %} <a id="receptores_ocultar">
+            {{ receptor.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %} <a id="receptores_ocultar">
         (ocultar)
         </a> </span>
     {% if mensaje.receptores.all|length > 3 %}
-    <span id="listado_receptores_truncado">
+        <span id="listado_receptores_truncado">
         <strong>Receptores: </strong>
         {{ mensaje.receptores.all.0.get_full_name }}, {{ mensaje.receptores.all.1.get_full_name }},
         <a id="mostrar_listado_receptores_completo"> ... (mostrar todos)</a>
@@ -22,10 +22,16 @@
     {% endif %}
 <p>{% autoescape off %}{{ mensaje.mensaje }}{% endautoescape %}</p>
 <p>
+{#    {% for adjunto in mensaje.adjuntos.all %}#}
+{#        <a class="mensaje_ficheros_adjuntos" id="fichadjunto_mensaje__{{ mensaje.id }}___{{ adjunto.id }}">#}
+{#            {{ adjunto|get_adjunto_name }}#}
+{#        </a> {% if not forloop.last %}, {% endif %}#}
+{#    {% endfor %}#}
+{#    <br>#}
     {% for adjunto in mensaje.adjuntos.all %}
-        <a class="mensaje_ficheros_adjuntos" id="fichadjunto_mensaje__{{ mensaje.id }}___{{ adjunto.id }}">
-            {{ adjunto|get_adjunto_name }}
-        </a> {% if not forloop.last %}, {% endif %}
+        <a class="button tiny round mensaje_ficheros_adjuntos" style="font-size: 10pt;" id="fichadjunto_mensaje__{{ mensaje.id }}___{{ adjunto.id }}">
+            <i class="fa fa-paperclip"></i> {{ adjunto|get_adjunto_name }}
+        </a>
     {% endfor %}
 </p>
 <a id="reveal_contenido_correo_cerrar" style="position: absolute; top: 7px;right: 7px; font-size: 1.6em;"><strong><i
@@ -73,19 +79,12 @@
 <a id="reveal_contenido_correo_pdf" class="secondary button">
     PDF
 </a>
-{% if mensaje.adjuntos.all|length > 1 %}
-    <a id="reveal_contenido_correo_zip" class="secondary button">
-        Adjuntos (zip) <i class="fa fa-arrow-down"></i>
-    </a>
-{% endif %}
+{#{% if mensaje.adjuntos.all|length > 1 %}#}
+{#    <a id="reveal_contenido_correo_zip" class="secondary button">#}
+{#        Adjuntos (zip) <i class="fa fa-arrow-down"></i>#}
+{#    </a>#}
+{#{% endif %}#}
 <script>
-    $('.mensaje_ficheros_adjuntos').on('click', function (e) {
-        e.preventDefault();
-        var id_adjunto = $(this).attr('id').split('___')[1];
-        $('#action').val('bajar_adjunto');
-        $('#id_adjunto').val(id_adjunto);
-        document.{{formname}}.submit();
-    });
 
     $("#reveal_contenido_correo_reenviar").on('click', function (e) {
         e.preventDefault();
@@ -105,7 +104,7 @@
     $("#reveal_contenido_correo_borrar").on('click', function (e) {
         e.preventDefault();
         $('#fila_mesaje___' + '{{ mensaje.id }}').hide()
-        $.post("/ajax_mensajes/", { ids: {{ mensaje.id }}, action: 'borrar_mensajes'}, function () {
+        $.post("/ajax_mensajes/", {ids: {{ mensaje.id }}, action: 'borrar_mensajes'}, function () {
             return false;
         });
         $('#reveal_contenido_correo').removeClass('visible_mensaje').addClass('hidden_mensaje');
@@ -144,7 +143,7 @@
         e.preventDefault();
         $("#listado_receptores_completo").hide();
         $("#listado_receptores_truncado").show();
-        $(document).scrollTop( $('#h3_asunto').offset().top - 150 );
+        $(document).scrollTop($('#h3_asunto').offset().top - 150);
     });
 
 </script>
