@@ -46,7 +46,7 @@ def update_fichero_documental(instance, filename):
     nombre = filename.partition('.')
     instance.fich_name = filename.rpartition('/')[2].replace(' ', '_')
     nombre = pass_generator(size=20) + '.' + nombre[2]
-    return '/'.join(['documentos', str(instance.propietario.entidad.code), nombre])
+    return '/'.join(['documentos', str(instance.propietario.ronda.entidad.code), nombre])
 
 
 def update_fichero_contrato(instance, filename):
