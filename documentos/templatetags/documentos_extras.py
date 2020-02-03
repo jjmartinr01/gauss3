@@ -15,8 +15,17 @@ def documentos_accesibles(g_e):
 
 
 @register.filter
-def borra_grupo_domoticavvvvvvvvvv(g_e, grupo):
-    if grupo.propietario == g_e.gauser or g_e.has_permiso('borra_grupos_domotica'):
+def permiso_w(doc, g_e):
+    try:
+        Permiso_Ges_documental.objects.get(documento=doc, permiso='w', gauser=g_e.gauser)
         return True
-    else:
+    except:
+        return False
+
+@register.filter
+def permiso_x(doc, g_e):
+    try:
+        Permiso_Ges_documental.objects.get(documento=doc, permiso='x', gauser=g_e.gauser)
+        return True
+    except:
         return False

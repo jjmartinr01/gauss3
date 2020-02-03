@@ -240,11 +240,11 @@
                     },
                     "Aceptar": function () {
                         hide_mensajes();
-                        var pgd = $('#documento').val();
-                        $.post("/documentos/", {action: 'borrar_documento', pgd: pgd},
+                        var doc = $('#documento').val();
+                        $.post("/documentos/", {action: 'borrar_documento', doc: doc},
                             function (data) {
                                 if (data.ok) {
-                                    $('#fila' + pgd).remove();
+                                    $('#fila' + doc).remove();
                                     $("#update_ok").show().delay(1500).fadeOut();
                                 } else {
                                     $("#update_error").show().delay(1500).fadeOut();
@@ -268,11 +268,11 @@
                         },
                         "Aceptar": function () {
                             hide_mensajes();
-                            var pgd = $('#documento').val();
-                            $.post("/documentos/", {action: 'borrar_doc_completamente', pgd: pgd},
+                            var doc = $('#documento').val();
+                            $.post("/documentos/", {action: 'borrar_doc_completamente', doc: doc},
                                 function (data) {
                                     if (data.ok) {
-                                        $('#fila' + pgd).remove();
+                                        $('#fila' + doc).remove();
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();
@@ -305,18 +305,18 @@
         $('body').on('click', '#update_archivo', function (e) {
             e.preventDefault();
             var action = 'update_archivo';
-            var pgd = $(this).data('pgd');
+            var doc = $(this).data('doc');
             var nombre = $('#edit_nombre_archivo').val();
             var etiqueta = $('#edit_select_etiqueta').val();
             var cargos = $('#edit_select_cargos').val();
             var subs = $('#edit_select_subentidades').val();
             $.post("/documentos/", {
-                    action: action, pgd: pgd, nombre: nombre, etiqueta: etiqueta, cargos: cargos, subs: subs
+                    action: action, doc: doc, nombre: nombre, etiqueta: etiqueta, cargos: cargos, subs: subs
                 },
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
-                        $('#fila' + pgd).html(data.html);
+                        $('#fila' + doc).html(data.html);
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }

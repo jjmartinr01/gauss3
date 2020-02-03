@@ -69,6 +69,20 @@ class Ges_documental(models.Model):
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 
+    def permiso_w(self, gauser):
+        try:
+            Permiso_Ges_documental.objects.get(gauser=gauser, documento=self, permiso='w')
+            return True
+        except:
+            return False
+
+    def permiso_x(self, gauser):
+        try:
+            Permiso_Ges_documental.objects.get(gauser=gauser, documento=self, permiso='x')
+            return True
+        except:
+            return False
+
     class Meta:
         verbose_name_plural = "Documentos (Gestión Documental)"
 

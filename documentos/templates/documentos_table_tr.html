@@ -1,5 +1,5 @@
-{% for p in pgds %}
-    <tr id="fila{{ p.id }}">
+{% for d in docs %}
+    <tr id="fila{{ d.id }}">
         {% include "documentos_table_tr_archivo.html" %}
     </tr>
 {% endfor %}

@@ -4,7 +4,7 @@
     <div class="row">
         <div class="columns large-4">
             <label>Nombre</label>
-            <input id="edit_nombre_archivo" name="edit_nombre_archivo" type="text" value="{{ p.documento.nombre }}">
+            <input id="edit_nombre_archivo" name="edit_nombre_archivo" type="text" value="{{ d.nombre }}">
         </div>
         <div class="columns large-6">
             <label>Carpeta/Etiqueta</label>
@@ -12,13 +12,13 @@
                 <option value="">---------</option>
                 {% for e in etiquetas %}
                     <option value="{{ e.id }}"
-                            {% if p.documento.etiqueta == e %}selected{% endif %}>{{ e.etiquetas_text }}</option>
+                            {% if d.etiqueta == e %}selected{% endif %}>{{ e.etiquetas_text }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="columns large-2">
             <label>&nbsp;</label>
-            <a class="button tiny" id="update_archivo" data-pgd="{{ p.id }}"><i class="fa fa-save"></i>
+            <a class="button tiny" id="update_archivo" data-doc="{{ d.id }}"><i class="fa fa-save"></i>
                 <b>Guardar</b></a>
         </div>
     </div>
@@ -28,7 +28,7 @@
                 <select id="edit_select_cargos" multiple="multiple">
                     {% for cargo in cargos %}
                         <option value="{{ cargo.id }}"
-                                {% if cargo in p.documento.cargos.all %}selected{% endif %}>{{ cargo.cargo }}</option>
+                                {% if cargo in d.cargos.all %}selected{% endif %}>{{ cargo.cargo }}</option>
                     {% endfor %}
                 </select>
             </label>
@@ -38,7 +38,7 @@
                 <select id="edit_select_subentidades" multiple="multiple">
                     {% for sub in subentidades %}
                         <option value="{{ sub.id }}"
-                                {% if sub in p.documento.acceden.all %}selected{% endif %}>{{ sub.nombre }}</option>
+                                {% if sub in d.acceden.all %}selected{% endif %}>{{ sub.nombre }}</option>
                     {% endfor %}
                 </select>
             </label>
