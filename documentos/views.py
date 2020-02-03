@@ -232,6 +232,15 @@ def documentos(request):
         if request.POST['action'] == 'sube_archivo':
             n_files = int(request.POST['n_files'])
             if g_e.has_permiso('sube_archivos'):
+                for i in range(n_files):
+                    fichero = request.FILES['fichero_xhr' + str(i)]
+                    etiqueta = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad,
+                                                               id=request.POST['etiqueta'])
+                    doc = Ges_documental.objects.create(propietario=g_e, content_type=fichero.content_type,
+                                                        etiqueta=etiqueta, nombre=fichero.name, fichero=fichero)
+                    p = Permiso_Ges_documental.objects.create(gauser=g_e.gauser, documento=doc, permiso='x')
+                    html = render_to_string('documentos_table_tr.html', {'docs': [doc], 'g_e': g_e})
+                    return JsonResponse({'ok': True, 'html': html, 'mensaje': False})
                 try:
                     for i in range(n_files):
                         fichero = request.FILES['fichero_xhr' + str(i)]
