@@ -104,7 +104,7 @@ def documentos_antiguo(request):
                   })
 
 
-@permiso_required('acceso_documentos')
+# @permiso_required('acceso_documentos')
 def documentos(request):
     g_e = request.session['gauser_extra']
     form = Ges_documentalForm(g_e=g_e)
