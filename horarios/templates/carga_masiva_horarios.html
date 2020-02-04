@@ -9,7 +9,7 @@
             <h4 style="text-align: center;color: #008CBA;"><strong> Carga masiva de datos de horarios</strong></h4>
         </div>
 
-        <input type="hidden" name="action" value="carga_masiva_racima_xml">
+        <input type="hidden" name="action" id="action" value="carga_masiva_racima_xml">
         <div class="panel callout">
             <div class="row">
                 <div class="large-4 columns">
@@ -39,6 +39,23 @@
                 </div>
             </div>
         </div>
+
+        <div class="panel callout">
+            <div class="row">
+                <div class="large-4 columns">
+                    <b>Archivo xls (Racima):</b>
+                </div>
+                <div class="large-8 columns">
+                    <input type="file" name="file_masivo_xls" id="file_masivo_xls"/>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="large-12 columns">
+                    <a class="button" id="archivo_xls">Cargar el archivo xls</a>
+                </div>
+            </div>
+        </div>
         {% if 'especialidades' in incidencias %}
             {{ incidencias.especialidades }}
         {% endif %}
@@ -54,10 +71,24 @@
         $('#check_sign').click(function (e) {
             e.preventDefault();
             if ($('#file_masivo').val()) {
+                $('#action').val('carga_masiva_racima_xml');
                 document.{{formname}}.submit();
             } else {
                 show_mensajes({
                     title: '<i class="fa fa-warning"></i> No has cargado un archivo', texto: 'Para ' +
+                    'subir un archivo primero debes cargarlo pulsando en "Examinar..."'
+                })
+            }
+        });
+
+        $('#archivo_xls').click(function (e) {
+            e.preventDefault();
+            if ($('#file_masivo_xls').val()) {
+                $('#action').val('carga_masiva_racima_xls');
+                document.{{formname}}.submit();
+            } else {
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> No has cargado un archivo!!!!', texto: 'Para ' +
                     'subir un archivo primero debes cargarlo pulsando en "Examinar..."'
                 })
             }

@@ -23,6 +23,16 @@ class Etiqueta_documental(models.Model):
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 
     @property
+    def hijos(self):
+        lista = [self]
+        try:
+            for e in Etiqueta_documental.objects.filter(padre=self):
+                lista = lista + e.hijos
+            return lista
+        except:
+            return lista
+
+    @property
     def etiquetas(self):
         lista = [self.nombre]
         try:

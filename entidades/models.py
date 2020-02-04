@@ -844,7 +844,8 @@ def update_fichero_carga_masiva(instance, filename):
 
 class CargaMasiva(models.Model):
     TIPOS = (('EXCEL', 'Usuarios cargados desde Racima'),
-             ('PENDIENTES', 'Alumnos con materias pendientes cargados desde Racima'), ('', ''), ('', ''), ('', ''),)
+             ('PENDIENTES', 'Alumnos con materias pendientes cargados desde Racima'),
+             ('HORARIOXLS', 'Sesiones cargadas desde el archivo excel de Racima'), ('', ''), ('', ''),)
     ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE)
     fichero = models.FileField("Fichero con datos", upload_to=update_fichero_carga_masiva, blank=True)
     tipo = models.CharField("Tipo de archivo", max_length=15, choices=TIPOS)

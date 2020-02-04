@@ -126,6 +126,12 @@ def documentos(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'ver_formulario_borrar_etiqueta' and g_e.has_permiso('borra_cualquier_carpeta'):
+            try:
+                html = render_to_string("documentos_fieldset_etiqueta_borrar.html", {'etiquetas': etiquetas})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
         elif request.POST['action'] == 'ver_formulario_buscar':
             try:
                 html = render_to_string("documentos_fieldset_buscar.html", {'etiquetas': etiquetas, 'g_e': g_e})
@@ -141,6 +147,13 @@ def documentos(request):
                 else:
                     Etiqueta_documental.objects.create(entidad=g_e.ronda.entidad, nombre=nombre)
                 return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borra_etiqueta' and g_e.has_permiso('borra_cualquier_carpeta'):
+            try:
+                Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['etiqueta']).delete()
+                html = render_to_string('documentos_table_tr.html', {'docs': docs, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'busca_docs_manual':
@@ -161,7 +174,7 @@ def documentos(request):
                 if etiqueta:
                     q = Q(propietario__ronda__entidad=g_e.ronda.entidad) & Q(
                         creado__gte=inicio) & Q(creado__lte=fin) & Q(
-                        nombre__icontains=texto) & Q(etiqueta=etiqueta)
+                        nombre__icontains=texto) & Q(etiqueta__in=etiqueta.hijos)
                 else:
                     q = Q(propietario__ronda__entidad=g_e.ronda.entidad) & Q(
                         creado__gte=inicio) & Q(creado__lte=fin) & Q(
@@ -268,6 +281,9 @@ def documentos(request):
                            {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar/Filtrar',
                             'permiso': 'libre',
                             'title': 'Busca/Filtra resultados entre los diferentes archivos'},
+                           {'tipo': 'button', 'nombre': 'folder-o', 'texto': 'Borrar',
+                            'permiso': 'borra_cualquier_carpeta',
+                            'title': 'Borrar carpeta/etiqueta'},
                            ),
                       'form': form,
                       'g_e': g_e,

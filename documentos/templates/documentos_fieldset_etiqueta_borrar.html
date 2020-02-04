@@ -1,0 +1,18 @@
+<fieldset id="formulario_crear_etiqueta">
+    <legend>Borrar carpeta/etiqueta</legend>
+    <div class="row">
+        <div class="columns large-10">
+            <label>Selecciona la carpeta/etiqueta a borrar</label>
+            <select id="select_etiqueta_borrar" name="select_etiqueta_borrar">
+                <option value="">---------</option>
+                {% for e in etiquetas %}
+                    <option value="{{ e.id }}">{{ e.etiquetas_text }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="columns large-2">
+            <label>&nbsp;</label>
+            <a class="button tiny" id="borra_etiqueta"><i class="fa fa-trash-o"></i> <b>Borrar</b></a>
+        </div>
+    </div>
+</fieldset>

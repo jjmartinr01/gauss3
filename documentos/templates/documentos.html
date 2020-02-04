@@ -225,6 +225,40 @@
                         }
                     });
             });
+            {% endif %}
+
+        {% if g_e|has_permiso:'borra_cualquier_carpeta' %}
+            habilita(['s_folder-o',]);
+            $('#folder-o_sign').click(function (e) {
+                e.preventDefault();
+                if (!($(this).hasClass('disabled'))) {
+                    $.post("/documentos/", {action: 'ver_formulario_borrar_etiqueta'},
+                        function (data) {
+                            if (data.ok) {
+                                $('#div_fieldsets').html(data.html);
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            });
+            $('body').on('click', '#borra_etiqueta', function (e) {
+                e.preventDefault();
+                $.post("/documentos/", {
+                        action: 'borra_etiqueta',
+                        etiqueta: $('#select_etiqueta_borrar').val()
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#div_fieldsets').html('');
+                            $("#tabla_archivos tbody").html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
         {% endif %}
 
 
