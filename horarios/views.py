@@ -817,6 +817,7 @@ def carga_masiva_horarios(request):
             Sesion.objects.filter(horario=horario).delete()
             c = CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo_xls'], tipo='HORARIOXLS')
             carga_masiva_from_file.delay()
+            crear_aviso(request, False, u'El archivo cargado puede tardar unos minutos en ser procesado.')
             # f = c.fichero.read()
             # book = xlrd.open_workbook(file_contents=f)
             # sheet = book.sheet_by_index(0)
