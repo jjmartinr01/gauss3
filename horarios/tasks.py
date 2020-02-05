@@ -453,6 +453,7 @@ def carga_masiva_from_file():
             carga.cargado = True
             carga.save()
         elif carga.tipo == 'HORARIOXLS':
+            horario = Horario.objects.get(entidad=carga.ronda.entidad, predeterminado=True)
             f = carga.fichero.read()
             book = xlrd.open_workbook(file_contents=f)
             sheet = book.sheet_by_index(0)
