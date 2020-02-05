@@ -816,48 +816,48 @@ def carga_masiva_horarios(request):
             horario = Horario.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
             Sesion.objects.filter(horario=horario).delete()
             c = CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo_xls'], tipo='HORARIOXLS')
-            carga_masiva_from_file.delay()
-            # f = c.fichero.read()
-            # book = xlrd.open_workbook(file_contents=f)
-            # sheet = book.sheet_by_index(0)
-            # # Get the keys from line 1 of excel file:
-            # keys = {"Profeso": "", "CENTRO": "", "DOCENTE": "", "X_DOCENTE": "", "DEPARTAMENTO": "",
-            #         "X_DEPARTAMENTO": "", "FECHA INICIO": "", "FECHA FIN": "", "DÍA": "", "HORA INICIO": "",
-            #         "HORA FIN": "", "HORA INICIO CADENA": "", "HORA FIN CADENA": "", "X_ACTIVIDAD": "",
-            #         "ACTIVIDAD": "", "L_REQUNIDAD": "", "DOCENCIA": "", "MINUTOS": "", "X_DEPENDENCIA": "",
-            #         "C_CODDEP": "", "X_DEPENDENCIA2": "", "C_CODDEP2": "", "X_UNIDAD": "", "UNIDAD": "",
-            #         "MATERIA": "", "X_MATERIOAOMG": "", "CURSO": "", "OMC": ""}
-            # keys_index = {col_index: str(sheet.cell(0, col_index).value) for col_index in range(sheet.ncols)}
-            # for row_index in range(1, sheet.nrows):
-            #     for col_index in range(sheet.ncols):
-            #         keys[keys_index[col_index]] = sheet.cell(row_index, col_index).value
-            #     inicio = int(keys['HORA INICIO'])
-            #     h_inicio = '%d:%d' % (int(inicio / 60), int(inicio % 60))
-            #     fin = int(keys['HORA FIN'])
-            #     h_fin = '%d:%d' % (int(fin / 60), int(fin % 60))
-            #     try:
-            #         docente = Gauser_extra.objects.get(clave_ex=str(int(keys['X_DOCENTE'])), ronda=c.ronda)
-            #     except:
-            #         docente = None
-            #     try:
-            #         grupo = Grupo.objects.get(clave_ex=str(int(keys['X_UNIDAD'])), ronda=c.ronda)
-            #     except:
-            #         grupo = None
-            #     try:
-            #         dependencia = Dependencia.objects.get(clave_ex=str(int(keys['X_DEPENDENCIA'])), entidad=c.ronda.entidad)
-            #     except:
-            #         dependencia = None
-            #     try:
-            #         materia = Materia.objects.get(clave_ex=str(int(keys['X_MATERIOAOMG'])), curso__ronda=c.ronda)
-            #     except:
-            #         materia = None
-            #     actividad = Actividad.objects.get(clave_ex=str(int(keys['X_ACTIVIDAD'])), entidad=c.ronda.entidad)
-            #     actividad.requiere_unidad = {'S': True, 'N': False}[keys['L_REQUNIDAD']]
-            #     actividad.requiere_materia = True if materia else False
-            #     actividad.save()
-            #     Sesion.objects.create(horario=horario, dia=int(keys['DÍA']), inicio=h_inicio, fin=h_fin, grupo=grupo,
-            #                           nombre='%s-%s' % (keys['HORA INICIO CADENA'], keys['HORA FIN CADENA']),
-            #                           g_e=docente, materia=materia, dependencia=dependencia, actividad=actividad)
+            # carga_masiva_from_file.delay()
+            f = c.fichero.read()
+            book = xlrd.open_workbook(file_contents=f)
+            sheet = book.sheet_by_index(0)
+            # Get the keys from line 1 of excel file:
+            keys = {"Profeso": "", "CENTRO": "", "DOCENTE": "", "X_DOCENTE": "", "DEPARTAMENTO": "",
+                    "X_DEPARTAMENTO": "", "FECHA INICIO": "", "FECHA FIN": "", "DÍA": "", "HORA INICIO": "",
+                    "HORA FIN": "", "HORA INICIO CADENA": "", "HORA FIN CADENA": "", "X_ACTIVIDAD": "",
+                    "ACTIVIDAD": "", "L_REQUNIDAD": "", "DOCENCIA": "", "MINUTOS": "", "X_DEPENDENCIA": "",
+                    "C_CODDEP": "", "X_DEPENDENCIA2": "", "C_CODDEP2": "", "X_UNIDAD": "", "UNIDAD": "",
+                    "MATERIA": "", "X_MATERIOAOMG": "", "CURSO": "", "OMC": ""}
+            keys_index = {col_index: str(sheet.cell(0, col_index).value) for col_index in range(sheet.ncols)}
+            for row_index in range(1, sheet.nrows):
+                for col_index in range(sheet.ncols):
+                    keys[keys_index[col_index]] = sheet.cell(row_index, col_index).value
+                inicio = int(keys['HORA INICIO'])
+                h_inicio = '%d:%d' % (int(inicio / 60), int(inicio % 60))
+                fin = int(keys['HORA FIN'])
+                h_fin = '%d:%d' % (int(fin / 60), int(fin % 60))
+                try:
+                    docente = Gauser_extra.objects.get(clave_ex=str(int(keys['X_DOCENTE'])), ronda=c.ronda)
+                except:
+                    docente = None
+                try:
+                    grupo = Grupo.objects.get(clave_ex=str(int(keys['X_UNIDAD'])), ronda=c.ronda)
+                except:
+                    grupo = None
+                try:
+                    dependencia = Dependencia.objects.get(clave_ex=str(int(keys['X_DEPENDENCIA'])), entidad=c.ronda.entidad)
+                except:
+                    dependencia = None
+                try:
+                    materia = Materia.objects.get(clave_ex=str(int(keys['X_MATERIOAOMG'])), curso__ronda=c.ronda)
+                except:
+                    materia = None
+                actividad = Actividad.objects.get(clave_ex=str(int(keys['X_ACTIVIDAD'])), entidad=c.ronda.entidad)
+                actividad.requiere_unidad = {'S': True, 'N': False}[keys['L_REQUNIDAD']]
+                actividad.requiere_materia = True if materia else False
+                actividad.save()
+                Sesion.objects.create(horario=horario, dia=int(keys['DÍA']), inicio=h_inicio, fin=h_fin, grupo=grupo,
+                                      nombre='%s-%s' % (keys['HORA INICIO CADENA'], keys['HORA FIN CADENA']),
+                                      g_e=docente, materia=materia, dependencia=dependencia, actividad=actividad)
 
         elif action == 'update_especialidad' and request.is_ajax():
             try:
