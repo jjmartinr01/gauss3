@@ -713,7 +713,7 @@ def conv_reunion_ajax(request):
             try:
                 convocatoria = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['convocatoria'],
                                                        plantilla=False)
-                if g_e.has_permiso('mail_convocatorias') or convocatoria.creador == g_e.gauser:
+                if g_e.has_permiso('m_conv_reunion') or convocatoria.creador == g_e.gauser:
                     n = convocatoria.nombre
                     t = convocatoria.texto_convocatoria
                     html = '<h2>%s</h2>%s' % (n, t)

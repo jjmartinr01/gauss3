@@ -13,7 +13,7 @@
         <li title="Borrar fecha de aprobación">
                 <a data-id="{{ acta.id }}" class="button del_fecha_aprobacion"><i
                         class="fa fa-calendar-times-o"></i> Borrar</a></li>
-            {% if g_e|has_permiso:"mail_actas" %}
+            {% if g_e|has_permiso:"mail_actas_reunion" %}
                 <li title="Mandar el acta por e-mail a todos los convocados">
                     <a data-id="{{ acta.id }}" class="button send_email"><i
                             class="fa fa-envelope-o"></i> eMail</a></li>

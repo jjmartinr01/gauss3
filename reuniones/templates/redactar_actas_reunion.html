@@ -339,7 +339,7 @@
             document.getElementById("{{ formname }}").submit();
         });
 
-        {% if request.session.gauser_extra|has_permiso:"mail_actas" %}
+        {% if request.session.gauser_extra|has_permiso:"mail_actas_reunion" %}
             $('body').on('click', '.send_email', function (e) {
                 e.preventDefault();
                 var acta = $(this).data('id');
