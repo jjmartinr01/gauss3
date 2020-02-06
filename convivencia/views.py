@@ -34,7 +34,7 @@ def gestionar_conductas(request):
     conductas=Conducta.objects.filter(entidad=g_e.ronda.entidad).order_by('id')
     sanciones=Sancion.objects.filter(entidad=g_e.ronda.entidad).order_by('id')
     if conductas.count() < 3:
-        conductas_haro = Conducta.objects.create(entidad__code=26008475)
+        conductas_haro = Conducta.objects.filter(entidad__code=26008475)
         sanciones_haro = Sancion.objects.filter(entidad__code=26008475)
         for c in conductas_haro:
             c.pk = None
