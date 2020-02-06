@@ -31,10 +31,23 @@ def gestionar_conductas(request):
         configuracion = ConfiguraConvivencia.objects.get(entidad=g_e.ronda.entidad)
     except:
         configuracion = ConfiguraConvivencia.objects.create(entidad=g_e.ronda.entidad)
+    conductas=Conducta.objects.filter(entidad=g_e.ronda.entidad).order_by('id')
+    sanciones=Sancion.objects.filter(entidad=g_e.ronda.entidad).order_by('id')
+    if conductas.count() < 3:
+        conductas_haro = Conducta.objects.create(entidad__code=26008475)
+        sanciones_haro = Sancion.objects.filter(entidad__code=26008475)
+        for c in conductas_haro:
+            c.pk = None
+            c.entidad = g_e.ronda.entidad
+            c.save()
+        for s in sanciones_haro:
+            s.pk = None
+            s.entidad = g_e.ronda.entidad
+            s.save()
     respuesta = {
         'formname': 'gestionar_conductas',
-        'conductas': Conducta.objects.filter(entidad=g_e.ronda.entidad).order_by('id'),
-        'sanciones': Sancion.objects.filter(entidad=g_e.ronda.entidad).order_by('id'),
+        'conductas': conductas,
+        'sanciones': sanciones,
         'con': configuracion,
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
     }
@@ -204,6 +217,7 @@ def gestionar_conductas_ajax(request):
 # @permiso_required('acceso_guardias_horarios')
 def sancionar_conductas(request):
     g_e = request.session['gauser_extra']
+
     inf_actual = None
     if request.method == 'POST' and not request.is_ajax():
         if request.POST['action'] == 'genera_pdf':
