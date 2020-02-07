@@ -1359,7 +1359,9 @@ def guardias_horario(request):
     # dia = dias[fecha.weekday()]
     guardias = Guardia.objects.filter(fecha=fecha, sesion__horario=horario)
     id_usuarios = Sesion.objects.filter(horario=horario).values_list('g_e__id')
-    usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=id_usuarios).distinct()
+    usuarios_posibles = usuarios_ronda(g_e.ronda)
+    usuarios = usuarios_posibles.filter(id__in=id_usuarios).distinct()
+    # usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=id_usuarios).distinct()
     tramos = Sesion.objects.filter(horario=horario).values_list('horario', 'inicio', 'fin').distinct().order_by(
         'inicio')
 
