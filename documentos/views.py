@@ -104,10 +104,10 @@ def documentos_antiguo(request):
                   })
 
 
-@permiso_required('acceso_documentos')
+# @permiso_required('acceso_documentos')
 def documentos(request):
     g_e = request.session['gauser_extra']
-    form = Ges_documentalForm(g_e=g_e)
+    Etiqueta_documental.objects.get_or_create(entidad=g_e.ronda.entidad, nombre='General')
     pgds = Permiso_Ges_documental.objects.filter(documento__propietario__ronda__entidad=g_e.ronda.entidad,
                                                  gauser=g_e.gauser).values_list('documento__id', flat=True)
     q = Q(acceden__in=g_e.subentidades.all()) | Q(cargos__in=g_e.cargos.all()) | Q(id__in=pgds) | Q(propietario=g_e)
@@ -126,10 +126,30 @@ def documentos(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'ver_formulario_borrar_etiqueta' and g_e.has_permiso('borra_cualquier_carpeta'):
+        elif request.POST['action'] == 'ver_formulario_editar_carpeta' and g_e.has_permiso('borra_cualquier_carpeta'):
             try:
-                html = render_to_string("documentos_fieldset_etiqueta_borrar.html", {'etiquetas': etiquetas})
+                e = Etiqueta_documental.objects.get(id=request.POST['etiqueta'])
+                html = render_to_string("documentos_fieldset_etiqueta_editar.html",
+                                        {'etiquetas': etiquetas, 'etiqueta': e})
                 return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'modifica_etiqueta' and g_e.has_permiso('crea_carpetas'):
+            try:
+                nombre = request.POST['nombre']
+                try:
+                    Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, nombre__iexact=nombre)
+                    return JsonResponse({'ok': False, 'mensaje': 'Ya existe una etiqueta/carpeta con ese nombre.'})
+                except:
+                    e = Etiqueta_documental.objects.get(id=request.POST['etiqueta'])
+                    e.nombre = nombre
+                    try:
+                        e.padre = Etiqueta_documental.objects.get(id=request.POST['padre'])
+                    except:
+                        e.padre = None
+                    e.save()
+                    html = render_to_string('documentos_table_tr.html', {'docs': docs, 'g_e': g_e})
+                    return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'ver_formulario_buscar':
@@ -141,12 +161,16 @@ def documentos(request):
         elif request.POST['action'] == 'crea_etiqueta' and g_e.has_permiso('crea_carpetas'):
             try:
                 nombre = request.POST['nombre']
-                if request.POST['padre']:
-                    padre = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['padre'])
-                    Etiqueta_documental.objects.create(entidad=g_e.ronda.entidad, padre=padre, nombre=nombre)
-                else:
-                    Etiqueta_documental.objects.create(entidad=g_e.ronda.entidad, nombre=nombre)
-                return JsonResponse({'ok': True})
+                try:
+                    Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, nombre__iexact=nombre)
+                    return JsonResponse({'ok': False, 'mensaje': 'Ya existe una etiqueta/carpeta con ese nombre.'})
+                except:
+                    if request.POST['padre']:
+                        padre = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['padre'])
+                        Etiqueta_documental.objects.create(entidad=g_e.ronda.entidad, padre=padre, nombre=nombre)
+                    else:
+                        Etiqueta_documental.objects.create(entidad=g_e.ronda.entidad, nombre=nombre)
+                    return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'borra_etiqueta' and g_e.has_permiso('borra_cualquier_carpeta'):
@@ -248,11 +272,15 @@ def documentos(request):
                 try:
                     for i in range(n_files):
                         fichero = request.FILES['fichero_xhr' + str(i)]
-                        etiqueta = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad,
-                                                                   id=request.POST['etiqueta'])
+                        try:
+                            etiqueta = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad,
+                                                                       id=request.POST['etiqueta'])
+                        except:
+                            etiqueta, c = Etiqueta_documental.objects.get_or_create(entidad=g_e.ronda.entidad,
+                                                                                    nombre='General')
                         doc = Ges_documental.objects.create(propietario=g_e, content_type=fichero.content_type,
                                                             etiqueta=etiqueta, nombre=fichero.name, fichero=fichero)
-                        p = Permiso_Ges_documental.objects.create(gauser=g_e.gauser, documento=doc, permiso='x')
+                        Permiso_Ges_documental.objects.create(gauser=g_e.gauser, documento=doc, permiso='x')
                         html = render_to_string('documentos_table_tr.html', {'docs': [doc], 'g_e': g_e})
                         return JsonResponse({'ok': True, 'html': html, 'mensaje': False})
                 except:
@@ -281,11 +309,7 @@ def documentos(request):
                            {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar/Filtrar',
                             'permiso': 'libre',
                             'title': 'Busca/Filtra resultados entre los diferentes archivos'},
-                           {'tipo': 'button', 'nombre': 'folder-o', 'texto': 'Borrar',
-                            'permiso': 'borra_cualquier_carpeta',
-                            'title': 'Borrar carpeta/etiqueta'},
                            ),
-                      'form': form,
                       'g_e': g_e,
                       'etiquetas': etiquetas,
                       'docs': docs,

@@ -9,6 +9,7 @@
         <div class="columns large-6">
             <label>Carpeta/Etiqueta</label>
             <select id="edit_select_etiqueta" name="edit_select_etiqueta">
+                <option value="">---------</option>
                 {% for e in etiquetas %}
                     <option value="{{ e.id }}"
                             {% if d.etiqueta == e %}selected{% endif %}>{{ e.etiquetas_text }}</option>

@@ -7,14 +7,13 @@
             <input id="id_archivo" name="id_archivo" type="file" value="">
         </div>
         <div class="columns large-6">
-            <label title="Si no eliges carpeta el archivo se cargará en la carpeta llamada 'General'">Carpeta/Etiqueta
-                <select id="select_etiqueta" name="select_etiqueta">
-                    <option value="">Debes seleccionar una carpeta</option>
-                    {% for e in etiquetas %}
-                        <option value="{{ e.id }}">{{ e.etiquetas_text }}</option>
-                    {% endfor %}
-                </select>
-            </label>
+            <label>Carpeta/Etiqueta</label>
+            <select id="select_etiqueta" name="select_etiqueta">
+                <option value="">---------</option>
+                {% for e in etiquetas %}
+                    <option value="{{ e.id }}">{{ e.etiquetas_text }}</option>
+                {% endfor %}
+            </select>
         </div>
         <div class="columns large-2">
             <label>&nbsp;</label>

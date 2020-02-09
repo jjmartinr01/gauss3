@@ -1,0 +1,44 @@
+{% load my_templatetags %}
+<fieldset id="formulario_search">
+    <legend>Búsqueda de archivos</legend>
+    <div class="row">
+        <div class="columns large-4">
+            <label>Buscar entre esta fecha ...</label>
+            <input id="id_fecha_inicio" name="fecha_inicio" type="date"
+                   value="{{ g_e.ronda.inicio|date:"Y\-m\-d" }}">
+        </div>
+        <div class="columns large-4">
+            <label>... y esta otra</label>
+            <input id="id_fecha_fin" name="fecha_fin" type="date" value="{% now "Y\-m\-d" %}">
+        </div>
+        <div class="columns large-4">
+            <label>Buscar en la carpeta ...</label>
+            <select id="etiqueta_busqueda" name="etiqueta_busqueda">
+                <option value="">---------</option>
+                {% for e in etiquetas %}
+                    <option value="{{ e.id }}">{{ e.etiquetas_text }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-10">
+            <input type="text" name="busca_texto_doc" id="busca_texto_doc"
+                   placeholder="Escribe parte del nombre del archivo">
+        </div>
+        <div class="columns large-2">
+            <a id="busca_docs_manual" class="button tiny"><i class="fa fa-search"></i> <b>Buscar</b></a>
+        </div>
+    </div>
+</fieldset>
+
+{#<script>#}
+{#$("#id_fecha_inicio").fdatepicker({#}
+{#            format: 'dd-mm-yyyy',#}
+{#            weekStart: 1#}
+{#        });#}
+{#$("#id_fecha_fin").fdatepicker({#}
+{#            format: 'dd-mm-yyyy',#}
+{#            weekStart: 1#}
+{#        });#}
+{#</script>#}
