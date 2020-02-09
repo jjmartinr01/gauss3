@@ -298,7 +298,7 @@
                 });
         });
 
-        {% if g_e|has_permiso:'crea_carpetas' %}
+        {% if g_e|has_permiso:'edita_carpetas' %}
             $('body').on('click', '.editar_carpeta', function (e) {
                 e.preventDefault();
                 var etiqueta = $(this).data('etiqueta');

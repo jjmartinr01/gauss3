@@ -126,7 +126,7 @@ def documentos(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'ver_formulario_editar_carpeta' and g_e.has_permiso('borra_cualquier_carpeta'):
+        elif request.POST['action'] == 'ver_formulario_editar_carpeta' and g_e.has_permiso('edita_carpetas'):
             try:
                 e = Etiqueta_documental.objects.get(id=request.POST['etiqueta'])
                 html = render_to_string("documentos_fieldset_etiqueta_editar.html",
@@ -134,7 +134,7 @@ def documentos(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'modifica_etiqueta' and g_e.has_permiso('crea_carpetas'):
+        elif request.POST['action'] == 'modifica_etiqueta' and g_e.has_permiso('edita_carpetas'):
             try:
                 nombre = request.POST['nombre']
                 try:

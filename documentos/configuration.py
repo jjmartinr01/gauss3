@@ -33,6 +33,10 @@ PERMISOS = [{'code_nombre': 'crea_carpetas',
              'nombre': 'Tiene permiso para crear carpetas',
              'menu': 'acceso_documentos'
              },
+            {'code_nombre': 'edita_carpetas',
+             'nombre': 'Tiene permiso para editar cualquier carpeta',
+             'menu': 'acceso_documentos'
+             },
             {'code_nombre': 'sube_archivos',
              'nombre': 'Tiene permiso para subir archivos',
              'menu': 'acceso_documentos'
