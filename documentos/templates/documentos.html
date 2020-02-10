@@ -337,5 +337,9 @@
                     });
             });
         {% endif %}
+        $('body').on('click', '.fieldset_close', function (e) {
+            e.preventDefault();
+            $('.fieldset_box').hide();
+        })
     </script>
 {% endblock %}
