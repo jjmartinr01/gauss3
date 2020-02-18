@@ -1,6 +1,11 @@
 {% load my_templatetags %}
-<fieldset id="formulario_search">
-    <legend>Búsqueda de archivos</legend>
+<fieldset id="formulario_search" class="fieldset_box">
+    <legend>Búsqueda de dispositivos</legend>
+    <div style="position:relative;">
+    <span style="position: absolute; top:-1.25rem; right: -0.25rem;font-size: large;font-weight: bold;">
+        <a class="fieldset_close"><i class="fa fa-times"></i></a>
+    </span>
+    </div>
     <div class="row">
         <div class="columns large-4">
             <label>Buscar entre esta fecha ...</label>
@@ -12,7 +17,7 @@
             <input id="id_fecha_fin" name="fecha_fin" type="date" value="{% now "Y\-m\-d" %}">
         </div>
         <div class="columns large-4">
-            <label>Buscar en la carpeta ...</label>
+            <label>Buscar con la etiqueta ...</label>
             <select id="etiqueta_busqueda" name="etiqueta_busqueda">
                 <option value="">---------</option>
                 {% for e in etiquetas %}
@@ -23,11 +28,11 @@
     </div>
     <div class="row">
         <div class="columns large-10">
-            <input type="text" name="busca_texto_doc" id="busca_texto_doc"
-                   placeholder="Escribe parte del nombre del archivo">
+            <input type="text" name="busca_texto_disp" id="busca_texto_disp"
+                   placeholder="Escribe parte del nombre del dispositivo">
         </div>
         <div class="columns large-2">
-            <a id="busca_docs_manual" class="button tiny"><i class="fa fa-search"></i> <b>Buscar</b></a>
+            <a id="busca_disps_manual" class="button tiny"><i class="fa fa-search"></i> <b>Buscar</b></a>
         </div>
     </div>
 </fieldset>

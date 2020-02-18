@@ -1,56 +1,56 @@
 {% load my_templatetags %}
-{% load documentos_extras %}
+{% load domotica_extras %}
 <td id="nombre{{ d.id }}">
     <a data-dropdown="drop{{ d.id }}" aria-controls="drop{{ d.id }}" id="a_dropdown{{ d.id }}"
-       aria-expanded="false" class="p_documento">{{ d.nombre }}
+       aria-expanded="false" class="p_dispositivo">{{ d.nombre }}
     </a>&nbsp;
     <ul id="drop{{ d.id }}" class="f-dropdown text-left" data-dropdown-content
         aria-hidden="true" tabindex="-1">
-        <li><a class="descargar_doc" data-doc="{{ d.id }}"><i class="fa fa-download fa-fw"></i>
+        <li><a class="descargar_disp" data-disp="{{ d.id }}"><i class="fa fa-download fa-fw"></i>
             Descargar</a>
         </li>
         {% if g_e|has_permiso:'borra_cualquier_archivo' %}
-            <li><a class="editar_doc" data-doc="{{ d.id }}"><i
+            <li><a class="editar_disp" data-disp="{{ d.id }}"><i
                     class="fa fa-pencil fa-fw"></i> Editar</a>
             </li>
-            <li><a class="borrar_doc" data-doc="{{ d.id }}"><i
+            <li><a class="borrar_disp" data-disp="{{ d.id }}"><i
                     class="fa fa-trash-o fa-fw"></i> Borrar</a>
             </li>
-            <li><a class="borrar_doc_completamente" data-doc="{{ d.id }}"><i
+            <li><a class="borrar_disp_completamente" data-disp="{{ d.id }}"><i
                     class="fa fa-trash fa-fw"></i> Borrar para todos los usuarios</a>
             </li>
         {% elif d|permiso_w:g_e %}
-            <li><a class="editar_doc" data-doc="{{ d.id }}"><i
+            <li><a class="editar_disp" data-disp="{{ d.id }}"><i
                     class="fa fa-pencil fa-fw"></i> Editar</a>
             </li>
         {% elif d|permiso_x:g_e %}
-            <li><a class="editar_doc" data-doc="{{ d.id }}"><i
+            <li><a class="editar_disp" data-disp="{{ d.id }}"><i
                     class="fa fa-pencil fa-fw"></i> Editar</a>
             </li>
-            <li><a class="borrar_doc" data-doc="{{ d.id }}"><i
+            <li><a class="borrar_disp" data-disp="{{ d.id }}"><i
                     class="fa fa-trash-o fa-fw"></i> Borrar</a>
             </li>
         {% endif %}
     </ul>
 </td>
-<td style="text-align:center;"><a class="descargar_doc" data-doc="{{ d.id }}"><i
+<td style="text-align:center;"><a class="descargar_disp" data-disp="{{ d.id }}"><i
         class="fa fa-download fa-fw"></i></a></td>
 <td style="text-align:center;" id="etiquetas{{ d.id }}">
     <a data-dropdown="drope{{ d.id }}" aria-controls="drope{{ d.id }}" id="a_dropdowne{{ d.id }}"
-       aria-expanded="false" class="p_documento"><span class="label"><b>{{ d.etiqueta.etiquetas_text }}</b></span>
+       aria-expanded="false" class="p_dispositivo"><span class="label"><b>{{ d.etiqueta.etiquetas_text }}</b></span>
     </a>
     <ul id="drope{{ d.id }}" class="f-dropdown text-left" data-dropdown-content
         aria-hidden="true" tabindex="-1">
         {% if d.etiqueta.nombre == "General" %}
-            <li>Esta carpeta no se puede editar ni borrar</li>
+            <li>Esta etiqueta no se puede editar ni borrar</li>
         {% else %}
-            {% if g_e|has_permiso:'crea_carpetas' %}
-                <li><a class="editar_carpeta" data-etiqueta="{{ d.etiqueta.id }}" data-doc="{{ d.id }}"><i
+            {% if g_e|has_permiso:'crea_etiquetas' %}
+                <li><a class="editar_etiqueta" data-etiqueta="{{ d.etiqueta.id }}" data-disp="{{ d.id }}"><i
                         class="fa fa-pencil fa-fw"></i> Editar</a>
                 </li>
             {% endif %}
-            {% if g_e|has_permiso:'borra_cualquier_carpeta' %}
-                <li><a class="borrar_etiqueta" data-etiqueta="{{ d.etiqueta.id }}" data-doc="{{ d.id }}"><i
+            {% if g_e|has_permiso:'borra_cualquier_etiqueta' %}
+                <li><a class="borrar_etiqueta" data-etiqueta="{{ d.etiqueta.id }}" data-disp="{{ d.id }}"><i
                         class="fa fa-trash-o fa-fw"></i> Borrar</a>
                 </li>
             {% endif %}
@@ -58,6 +58,6 @@
     </ul>
 </td>
 <td style="text-align:center;"
-    title="El documento fue añadido el {{ d.creado }}">
+    title="El dispositivo fue añadido el {{ d.creado }}">
     {{ d.creado|date:"d/m/Y" }}
 </td>

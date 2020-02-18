@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import url
+from django.urls import path
 from . import views
 
 urlpatterns = [
-    url(r'^grupos_domotica/$', views.grupos_domotica, name='grupos_domotica'),
-    url(r'^ajax_grupos_domotica/$', views.ajax_grupos_domotica, name='ajax_grupos_domotica'),
-    url(r'^configura_domotica/$', views.configura_domotica, name='configura_domotica'),
-    url(r'^ajax_configura_domotica/$', views.ajax_configura_domotica, name='ajax_configura_domotica'),
-    url(r'^lnk/$', views.lnk, name='lnk'),
+    path('grupos_domotica/', views.grupos_domotica),
+    path('ajax_grupos_domotica/', views.ajax_grupos_domotica),
+    path('configura_domotica/', views.configura_domotica),
+    path('ajax_configura_domotica/', views.ajax_configura_domotica),
+    path('lnk/', views.lnk),
+    path('dispositivos/', views.dispositivos),
 ]

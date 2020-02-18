@@ -20,14 +20,236 @@ from autenticar.control_acceso import permiso_required
 from mensajes.models import Aviso
 from autenticar.models import Permiso, Gauser
 from mensajes.views import encolar_mensaje, crear_aviso
-from domotica.models import Grupo, Dispositivo, Secuencia, DispositivoSecuencia, GauserPermitidoGrupo, \
-    GauserPermitidoDispositivo, EnlaceDomotica
+from domotica.models import *
 from domotica.mqtt import client
-
-
-# Create your views here.
 from vut.models import Vivienda, DomoticaVUT
 from vut.views import viviendas_autorizado
+
+
+# @permiso_required('acceso_dispositivos')
+def dispositivos(request):
+    g_e = request.session['gauser_extra']
+    Etiqueta_domotica.objects.get_or_create(entidad=g_e.ronda.entidad, nombre='General')
+    gpds = GauserPermitidoDispositivo.objects.filter(dispositivo__entidad=g_e.ronda.entidad,
+                                                 gauser=g_e.gauser).values_list('dispositivo__id', flat=True)
+    q = Q(id__in=gpds) | Q(propietario=g_e.gauser)
+    disps = Dispositivo.objects.filter(Q(entidad=g_e.ronda.entidad), q).distinct()
+    etiquetas = Etiqueta_domotica.objects.filter(entidad=g_e.ronda.entidad)
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'ver_formulario_crear' and g_e.has_permiso('crea_dispositivos_domotica'):
+            try:
+                d = Dispositivo(propietario=g_e.gauser, nombre='Nombre del dispositivo', texto='Texto descripción')
+                html = render_to_string('dispositivos_fieldset_crear.html', {'g_e': g_e, 'etiquetas': etiquetas,
+                                                                             'dispositivo': d})
+
+
+
+
+                return JsonResponse({'ok': True, 'html': html})
+
+
+                html = render_to_string("dispositivos_fieldset_crear.html", {'etiquetas': etiquetas})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'ver_formulario_crear_etiqueta' and g_e.has_permiso('crea_carpetas'):
+            try:
+                html = render_to_string("dispositivos_fieldset_etiqueta.html", {'etiquetas': etiquetas})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'ver_formulario_editar_carpeta' and g_e.has_permiso('edita_carpetas'):
+            try:
+                e = Etiqueta_domotica.objects.get(id=request.POST['etiqueta'])
+                html = render_to_string("dispositivos_fieldset_etiqueta_editar.html",
+                                        {'etiquetas': etiquetas, 'etiqueta': e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'modifica_etiqueta' and g_e.has_permiso('edita_carpetas'):
+            try:
+                nombre = request.POST['nombre']
+                try:
+                    Etiqueta_domotica.objects.get(entidad=g_e.ronda.entidad, nombre__iexact=nombre)
+                    return JsonResponse({'ok': False, 'mensaje': 'Ya existe una etiqueta/carpeta con ese nombre.'})
+                except:
+                    e = Etiqueta_domotica.objects.get(id=request.POST['etiqueta'])
+                    e.nombre = nombre
+                    try:
+                        e.padre = Etiqueta_domotica.objects.get(id=request.POST['padre'])
+                    except:
+                        e.padre = None
+                    e.save()
+                    html = render_to_string('dispositivos_table_tr.html', {'disps': disps, 'g_e': g_e})
+                    return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'ver_formulario_buscar':
+            try:
+                html = render_to_string("dispositivos_fieldset_buscar.html", {'etiquetas': etiquetas, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'crea_etiqueta' and g_e.has_permiso('crea_carpetas'):
+            try:
+                nombre = request.POST['nombre']
+                try:
+                    Etiqueta_domotica.objects.get(entidad=g_e.ronda.entidad, nombre__iexact=nombre)
+                    return JsonResponse({'ok': False, 'mensaje': 'Ya existe una etiqueta/carpeta con ese nombre.'})
+                except:
+                    if request.POST['padre']:
+                        padre = Etiqueta_domotica.objects.get(entidad=g_e.ronda.entidad, id=request.POST['padre'])
+                        Etiqueta_domotica.objects.create(entidad=g_e.ronda.entidad, padre=padre, nombre=nombre)
+                    else:
+                        Etiqueta_domotica.objects.create(entidad=g_e.ronda.entidad, nombre=nombre)
+                    return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borra_etiqueta' and g_e.has_permiso('borra_cualquier_carpeta'):
+            try:
+                Etiqueta_domotica.objects.get(entidad=g_e.ronda.entidad, id=request.POST['etiqueta']).delete()
+                html = render_to_string('dispositivos_table_tr.html', {'disps': disps, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'busca_disps_manual':
+            try:
+                try:
+                    inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
+                except:
+                    inicio = datetime.strptime('1900-1-1', '%Y-%m-%d').date()
+                try:
+                    fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d').date()
+                except:
+                    fin = datetime.now().date()
+                texto = request.POST['texto']
+                try:
+                    etiqueta = Etiqueta_domotica.objects.get(entidad=g_e.ronda.entidad, id=request.POST['etiqueta'])
+                except:
+                    etiqueta = None
+                if etiqueta:
+                    q = Q(propietario__ronda__entidad=g_e.ronda.entidad) & Q(
+                        creado__gte=inicio) & Q(creado__lte=fin) & Q(
+                        nombre__icontains=texto) & Q(etiqueta__in=etiqueta.hijos)
+                else:
+                    q = Q(propietario__ronda__entidad=g_e.ronda.entidad) & Q(
+                        creado__gte=inicio) & Q(creado__lte=fin) & Q(
+                        nombre__icontains=texto)
+
+                disps_search = disps.filter(q)
+                html = render_to_string('dispositivos_table_tr.html', {'disps': disps_search, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'ver_formulario_editar':
+            try:
+                disp = disps.get(id=request.POST['disp'])
+                if g_e.has_permiso('edita_todos_archivos') or disp.permiso_w(g_e.gauser) or disp.permiso_x(g_e.gauser):
+                    hoy = datetime.now().date()
+                    subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad, fecha_expira__gte=hoy)
+                    cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad)
+                    d = {'g_e': g_e, 'cargos': cargos, 'subentidades': subentidades, 'etiquetas': etiquetas, 'd': disp}
+                    html = render_to_string("dispositivos_table_tr_archivo_edit.html", d)
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_archivo':
+            try:
+                disp = disps.get(id=request.POST['disp'])
+                if g_e.has_permiso('edita_todos_archivos') or disp.permiso_w(g_e.gauser) or disp.permiso_x(g_e.gauser):
+                    disp.nombre = request.POST['nombre']
+                    disp.etiqueta = Etiqueta_domotica.objects.get(id=request.POST['etiqueta'])
+                    disp.cargos.clear()
+                    disp.acceden.clear()
+                    cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('cargos[]'))
+                    subs = Subentidad.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('subs[]'))
+                    disp.cargos.add(*cargos)
+                    disp.acceden.add(*subs)
+                    disp.save()
+                    html = render_to_string('dispositivos_table_tr_archivo.html', {'d': disp, 'g_e': g_e})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borrar_dispositivo':
+            disp = disps.get(id=request.POST['disp'])
+            if disp.permiso_x(g_e.gauser) or disp.propietario == g_e or g_e.has_permiso('borra_cualquier_archivo'):
+                GauserPermitidoDispositivo.objects.filter(dispositivo=disp, gauser=g_e.gauser).delete()
+                otros = GauserPermitidoDispositivo.objects.filter(dispositivo=disp).count()
+                if otros == 0:
+                    disp.delete()
+                return JsonResponse(
+                    {'ok': True, 'mensaje': 'Dispositivo borrado. Ahora pueden verlo %s personas' % otros})
+            else:
+                return JsonResponse({'ok': False, 'mensaje': 'No ha sido posible borrar el dispositivo.'})
+        elif request.POST['action'] == 'borrar_disp_completamente':
+            disp = disps.get(id=request.POST['disp'])
+            if g_e.has_permiso('borra_cualquier_archivo'):
+                todos = GauserPermitidoDispositivo.objects.filter(dispositivo=disp)
+                todos.delete()
+                disp.delete()
+                return JsonResponse({'ok': True, 'mensaje': 'Dispositivo borrado por completo.'})
+            else:
+                return JsonResponse({'ok': False, 'mensaje': 'No ha sido posible borrar el dispositivo.'})
+        else:
+            return JsonResponse({'ok': False, 'mensaje': 'No tiene los permisos necesarios.'})
+
+    elif request.method == 'POST':
+        if request.POST['action'] == 'crea_dispositivo':
+            n_files = int(request.POST['n_files'])
+            if g_e.has_permiso('crea_dispositivos_domotica'):
+                try:
+                    for i in range(n_files):
+                        fichero = request.FILES['fichero_xhr' + str(i)]
+                        try:
+                            etiqueta = Etiqueta_domotica.objects.get(entidad=g_e.ronda.entidad,
+                                                                       id=request.POST['etiqueta'])
+                        except:
+                            etiqueta, c = Etiqueta_domotica.objects.get_or_create(entidad=g_e.ronda.entidad,
+                                                                                    nombre='General')
+                        disp = Dispositivo.objects.create(propietario=g_e, content_type=fichero.content_type,
+                                                            etiqueta=etiqueta, nombre=fichero.name, fichero=fichero)
+                        GauserPermitidoDispositivo.objects.create(gauser=g_e.gauser, dispositivo=disp, permiso='x')
+                        html = render_to_string('dispositivos_table_tr.html', {'disps': [disp], 'g_e': g_e})
+                        return JsonResponse({'ok': True, 'html': html, 'mensaje': False})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
+            else:
+                mensaje = 'No tienes permiso para cargar programaciones.'
+                return JsonResponse({'ok': False, 'mensaje': mensaje})
+
+        elif request.POST['action'] == 'descargar_disp':
+            try:
+                d = disps.get(id=request.POST['dispositivo'])
+                fichero = d.fichero.read()
+                response = HttpResponse(fichero, content_type=d.content_type)
+                response['Content-Disposition'] = 'attachment; filename=' + d.fich_name
+                return response
+            except:
+                crear_aviso(request, False, 'Error. No se ha podido descargar el archivo.')
+
+    return render(request, "dispositivos.html",
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
+                            'permiso': 'crea_dispositivos_domotica', 'title': 'Anadir un nuevo dispositivo'},
+                           {'tipo': 'button', 'nombre': 'folder', 'texto': 'Nueva', 'permiso': 'crea_carpetas',
+                            'title': 'Crear una nueva carpeta/etiqueta'},
+                           {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar/Filtrar',
+                            'permiso': 'libre',
+                            'title': 'Busca/Filtra resultados entre los diferentes archivos'},
+                           ),
+                      'g_e': g_e,
+                      'etiquetas': etiquetas,
+                      'disps': disps,
+                      'carpetas': Etiqueta_domotica.objects.filter(entidad=g_e.ronda.entidad),
+                      'formname': 'dispositivos',
+                      'carpeta_id': 'todas',  # Este identificador implica leer todas las carpetas
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
 
 
 @permiso_required('acceso_grupos_domotica')

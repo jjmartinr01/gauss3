@@ -3,7 +3,7 @@
 
 {% block head %}
     <style>
-        #div_documento {
+        #div_dispositivo {
             position: relative;
             display: none;
             background-color: #ffffff;
@@ -12,7 +12,7 @@
             margin-top: 10px;
         }
 
-        input[name="documentos"] {
+        input[name="dispositivos"] {
             display: none;
         }
     </style>
@@ -22,15 +22,15 @@
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
         <input type="hidden" id="action" name="action" value="">
-        <input type="hidden" id="documento" name="documento" value="">
+        <input type="hidden" id="dispositivo" name="dispositivo" value="">
         <input type="hidden" id="etiqueta_id" name="etiqueta_id" value="">
 
         <h4 style="text-align: center;color: #008CBA;">
-            <strong> Documentos almacenados en la entidad</strong>
+            <strong> Dispositivos controlados por la entidad</strong>
         </h4>
         <div id="div_fieldsets"></div>
-        <div id="div_documentos">
-            {% include 'documentos_table.html' %}
+        <div id="div_dispositivos">
+            {% include 'dispositivos_table.html' %}
         </div>
     </form>
 {% endblock %}
@@ -41,7 +41,7 @@
         $('#search_sign').click(function (e) {
             e.preventDefault();
             if (!($(this).hasClass('disabled'))) {
-                $.post("/documentos/", {action: 'ver_formulario_buscar'},
+                $.post("/dispositivos/", {action: 'ver_formulario_buscar'},
                     function (data) {
                         if (data.ok) {
                             $('#div_fieldsets').html(data.html);
@@ -53,13 +53,13 @@
             }
         });
 
-        $('body').on('click', '#busca_docs_manual', function (e) {
+        $('body').on('click', '#busca_disps_manual', function (e) {
             e.preventDefault();
-            $.post("/documentos/", {
-                    action: 'busca_docs_manual',
+            $.post("/dispositivos/", {
+                    action: 'busca_disps_manual',
                     inicio: $('#id_fecha_inicio').val(),
                     fin: $('#id_fecha_fin').val(),
-                    texto: $('#busca_texto_doc').val(),
+                    texto: $('#busca_texto_disp').val(),
                     etiqueta: $('#etiqueta_busqueda').val()
                 },
                 function (data) {
@@ -72,31 +72,53 @@
                 });
         });
 
-        $('body').on('click', '.descargar_doc', function (e) {
+        $('body').on('click', '.descargar_disp', function (e) {
             e.preventDefault();
-            $('#documento').val($(this).data('doc'));
-            $('#action').val('descargar_doc');
+            $('#dispositivo').val($(this).data('disp'));
+            $('#action').val('descargar_disp');
             document.{{formname}}.submit();
         });
 
-        {% if g_e|has_permiso:'sube_archivos' %}
+        {% if g_e|has_permiso:'crea_dispositivos_domotica' %}
             habilita(['s_plus',]);
             $('#plus_sign').click(function (e) {
                 e.preventDefault();
-                if (!($(this).hasClass('disabled'))) {
-                    $.post("/documentos/", {action: 'ver_formulario_subir'},
-                        function (data) {
-                            if (data.ok) {
-                                $('#div_fieldsets').html(data.html);
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $("#update_error").show().delay(1500).fadeOut();
-                            }
-                        });
+                $.post("/dispositivos/", {action: 'ver_formulario_crear'},
+                    function (data) {
+                        if (data.ok) {
+                            $('#div_fieldsets').html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('change', '#select_plataforma', function () {
+                if ($(this).val() == 'IFTTT') {
+                    $('#ESPURNA').hide();
+                    $('#IFTTT').show();
+                } else {
+                    $('#IFTTT').hide();
+                    $('#ESPURNA').show();
                 }
             });
 
-            $('body').on('click', '#sube_archivo', function () {
+            $('body').on('change', '#tipo_dispositivo', function () {
+                var tipo = $(this).val();
+                $('.tipos_dispositivo').hide();
+                $('.' + tipo).show();
+            });
+
+            $('body').on('keyup', '#nombre_dispositivo', function () {
+                $('.nombre').html($(this).val());
+            });
+
+            $('body').on('keyup', '#texto_enlace', function () {
+                $('#texto_visto').html($(this).val());
+            });
+
+            $('body').on('click', '#crea_dispositivo', function () {
                 var input_files = document.getElementById('id_archivo').files;
 
                 for (var i = 0; i < input_files.length; i++) {
@@ -108,7 +130,7 @@
                     formData.append('fichero_xhr' + i, input_files[i]);
                 }
                 formData.append('n_files', input_files.length);
-                formData.append('action', 'sube_archivo');
+                formData.append('action', 'crea_dispositivo');
                 formData.append('etiqueta', $('#select_etiqueta').val());
                 formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
                 var xhr = new XMLHttpRequest();
@@ -125,7 +147,7 @@
                         }
                     }
                 };
-                xhr.open('POST', "/documentos/", true);
+                xhr.open('POST', "/dispositivos/", true);
                 xhr.send(formData);
             });
         {% endif %}
@@ -135,7 +157,7 @@
             $('#folder_sign').click(function (e) {
                 e.preventDefault();
                 if (!($(this).hasClass('disabled'))) {
-                    $.post("/documentos/", {action: 'ver_formulario_crear_etiqueta'},
+                    $.post("/dispositivos/", {action: 'ver_formulario_crear_etiqueta'},
                         function (data) {
                             if (data.ok) {
                                 $('#div_fieldsets').html(data.html);
@@ -149,7 +171,7 @@
 
             $('body').on('click', '#crea_etiqueta', function (e) {
                 e.preventDefault();
-                $.post("/documentos/", {
+                $.post("/dispositivos/", {
                         action: 'crea_etiqueta',
                         nombre: $('#id_etiqueta_nueva').val(),
                         padre: $('#select_etiqueta_padre').val()
@@ -173,7 +195,7 @@
                 e.preventDefault();
                 $('#etiqueta_id').val($(this).data('etiqueta'));
                 var texto = 'Si aceptas, la etiqueta/carpeta seleccionada, así como todas las carpetas/etiquetas que ' +
-                    'dependan de ella serán borradas. Los documentos dentro de esas etiquetas/carpetas también serán ' +
+                    'dependan de ella serán borradas. Los dispositivos dentro de esas etiquetas/carpetas también serán ' +
                     'eliminados por completo de la base de datos. Nadie tendrá acceso a ellos.';
                 show_mensajes({
                     title: 'Eliminar completamente la carpeta/etiqueta', texto: texto, buttons: {
@@ -182,8 +204,8 @@
                         },
                         "Aceptar": function () {
                             hide_mensajes();
-                            var doc = $('#documento').val();
-                            $.post("/documentos/", {
+                            var disp = $('#dispositivo').val();
+                            $.post("/dispositivos/", {
                                     action: 'borra_etiqueta',
                                     etiqueta: $('#etiqueta_id').val()
                                 },
@@ -203,23 +225,23 @@
         {% endif %}
 
 
-        $('body').on('click', '.borrar_doc', function (e) {
+        $('body').on('click', '.borrar_disp', function (e) {
             e.preventDefault();
-            $('#documento').val($(this).data('doc'));
-            var texto = 'Si aceptas no tendrás acceso al documento. Si eres el propietario' +
-                ' o tienes permisos suficientes podrías borrar completamente el documento de la base de datos.';
+            $('#dispositivo').val($(this).data('disp'));
+            var texto = 'Si aceptas no tendrás acceso al dispositivo. Si eres el propietario' +
+                ' o tienes permisos suficientes podrías borrar completamente el dispositivo de la base de datos.';
             show_mensajes({
-                title: 'Eliminar el documento selecccionado', texto: texto, buttons: {
+                title: 'Eliminar el dispositivo selecccionado', texto: texto, buttons: {
                     "Cancelar": function () {
                         hide_mensajes();
                     },
                     "Aceptar": function () {
                         hide_mensajes();
-                        var doc = $('#documento').val();
-                        $.post("/documentos/", {action: 'borrar_documento', doc: doc},
+                        var disp = $('#dispositivo').val();
+                        $.post("/dispositivos/", {action: 'borrar_dispositivo', disp: disp},
                             function (data) {
                                 if (data.ok) {
-                                    $('#fila' + doc).remove();
+                                    $('#fila' + disp).remove();
                                     $("#update_ok").show().delay(1500).fadeOut();
                                 } else {
                                     $("#update_error").show().delay(1500).fadeOut();
@@ -231,23 +253,23 @@
         });
 
         {% if g_e|has_permiso:'borra_cualquier_archivo' %}
-            $('body').on('click', '.borrar_doc_completamente', function (e) {
+            $('body').on('click', '.borrar_disp_completamente', function (e) {
                 e.preventDefault();
-                $('#documento').val($(this).data('doc'));
-                var texto = 'Si aceptas no tendrás acceso al documento. El documento se borrará completamente' +
+                $('#dispositivo').val($(this).data('disp'));
+                var texto = 'Si aceptas no tendrás acceso al dispositivo. El dispositivo se borrará completamente' +
                     ' de la base de datos. Nadie tendrá acceso a él.';
                 show_mensajes({
-                    title: 'Eliminar completamente el documento selecccionado', texto: texto, buttons: {
+                    title: 'Eliminar completamente el dispositivo selecccionado', texto: texto, buttons: {
                         "Cancelar": function () {
                             hide_mensajes();
                         },
                         "Aceptar": function () {
                             hide_mensajes();
-                            var doc = $('#documento').val();
-                            $.post("/documentos/", {action: 'borrar_doc_completamente', doc: doc},
+                            var disp = $('#dispositivo').val();
+                            $.post("/dispositivos/", {action: 'borrar_disp_completamente', disp: disp},
                                 function (data) {
                                     if (data.ok) {
-                                        $('#fila' + doc).remove();
+                                        $('#fila' + disp).remove();
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();
@@ -259,17 +281,17 @@
             });
         {% endif %}
 
-        $('body').on('click', '.editar_doc', function (e) {
+        $('body').on('click', '.editar_disp', function (e) {
             e.preventDefault();
-            var doc = $(this).data('doc');
-            $.post("/documentos/", {
+            var disp = $(this).data('disp');
+            $.post("/dispositivos/", {
                     action: 'ver_formulario_editar',
-                    doc: doc
+                    disp: disp
                 },
                 function (data) {
                     if (data.ok) {
-                        $('#fila' + doc).html(data.html);
-                        $('#action').val(doc);
+                        $('#fila' + disp).html(data.html);
+                        $('#action').val(disp);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
@@ -280,18 +302,18 @@
         $('body').on('click', '#update_archivo', function (e) {
             e.preventDefault();
             var action = 'update_archivo';
-            var doc = $(this).data('doc');
+            var disp = $(this).data('disp');
             var nombre = $('#edit_nombre_archivo').val();
             var etiqueta = $('#edit_select_etiqueta').val();
             var cargos = $('#edit_select_cargos').val();
             var subs = $('#edit_select_subentidades').val();
-            $.post("/documentos/", {
-                    action: action, doc: doc, nombre: nombre, etiqueta: etiqueta, cargos: cargos, subs: subs
+            $.post("/dispositivos/", {
+                    action: action, disp: disp, nombre: nombre, etiqueta: etiqueta, cargos: cargos, subs: subs
                 },
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
-                        $('#fila' + doc).html(data.html);
+                        $('#fila' + disp).html(data.html);
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
@@ -302,7 +324,7 @@
             $('body').on('click', '.editar_carpeta', function (e) {
                 e.preventDefault();
                 var etiqueta = $(this).data('etiqueta');
-                $.post("/documentos/", {
+                $.post("/dispositivos/", {
                         action: 'ver_formulario_editar_carpeta',
                         etiqueta: etiqueta
                     },
@@ -317,7 +339,7 @@
             });
             $('body').on('click', '#modifica_etiqueta', function (e) {
                 e.preventDefault();
-                $.post("/documentos/", {
+                $.post("/dispositivos/", {
                         action: 'modifica_etiqueta',
                         nombre: $('#nombre_etiqueta_editada').val(),
                         etiqueta: $(this).data('etiqueta'),
@@ -337,5 +359,9 @@
                     });
             });
         {% endif %}
+        $('body').on('click', '.fieldset_close', function (e) {
+            e.preventDefault();
+            $('.fieldset_box').hide();
+        })
     </script>
 {% endblock %}

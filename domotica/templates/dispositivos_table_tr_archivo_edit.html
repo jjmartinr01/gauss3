@@ -1,13 +1,13 @@
 {% load my_templatetags %}
-{% load documentos_extras %}
+{% load domotica_extras %}
 <td colspan="4">
     <div class="row">
         <div class="columns large-4">
             <label>Nombre</label>
-            <input id="edit_nombre_archivo" name="edit_nombre_archivo" type="text" value="{{ d.nombre }}">
+            <input id="edit_nombre_dispositivo" name="edit_nombre_dispositivo" type="text" value="{{ d.nombre }}">
         </div>
         <div class="columns large-6">
-            <label>Carpeta/Etiqueta</label>
+            <label>Grupo/Etiqueta</label>
             <select id="edit_select_etiqueta" name="edit_select_etiqueta">
                 <option value="">---------</option>
                 {% for e in etiquetas %}
@@ -18,7 +18,7 @@
         </div>
         <div class="columns large-2">
             <label>&nbsp;</label>
-            <a class="button tiny" id="update_archivo" data-doc="{{ d.id }}"><i class="fa fa-save"></i>
+            <a class="button tiny" id="update_dispositivo" data-disp="{{ d.id }}"><i class="fa fa-save"></i>
                 <b>Guardar</b></a>
         </div>
     </div>

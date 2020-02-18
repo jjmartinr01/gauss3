@@ -1,0 +1,217 @@
+{% load my_templatetags %}
+{% load domotica_extras %}
+<fieldset id="fieldset_crear_dispositivo">
+    <legend>Crear nuevo dispositivo</legend>
+    <div class="row">
+        <div class="columns large-6">
+            <label>Nombre: <input type="text" id="nombre_dispositivo" value="{{ dispositivo.nombre }}"></label>
+        </div>
+        <div class="columns large-6">
+            <label>Grupo/Etiqueta</label>
+            <select id="select_etiqueta" name="select_etiqueta">
+                <option value="">---------</option>
+                {% for e in etiquetas %}
+                    <option value="{{ e.id }}">{{ e.etiquetas_text }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label>Texto que contiene el enlace:
+                <textarea id="texto_enlace">{{ dispositivo.texto }}</textarea>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-5">
+            <label>Plataforma: <select id="select_plataforma">
+                <option {% if dispositivo.plataforma == 'ESPURNA' %}selected{% endif %}
+                        value="ESPURNA">Espurna
+                </option>
+                <option {% if dispositivo.plataforma == 'IFTTT' %}selected{% endif %}
+                        value="IFTTT">IFTTT
+                </option>
+            </select> </label>
+        </div>
+        <div class="columns large-5">
+            <label>Tipo:
+                <select id="tipo_dispositivo">
+                    {% for t in dispositivo.TIPO_DOMOTICA %}
+                        <option value="{{ t.0 }}"
+                                {% if t.0 == dispositivo.tipo %}selected{% endif %}>{{ t.1 }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label>&nbsp;</label>
+            <a class="button tiny right" id="crea_dispositivo"><i class="fa fa-upload"></i> <b>Crear</b></a>
+        </div>
+    </div>
+
+    <div id="IFTTT" class="plataformas hide">
+        <div class="row">
+            <div class="columns large-12">
+                <label>URL del webhook IFTT:
+                    <input type="text" class="campo_char" data-campo="ifttt" value=""></label>
+            </div>
+        </div>
+    </div>
+
+    <div id="ESPURNA" class="plataformas">
+        <div class="row">
+            <div class="columns large-3">
+                <label>Broker: <input type="text" readonly value="{{ dispositivo.mqtt_broker }}"></label>
+            </div>
+            <div class="columns large-3">
+                <label>Puerto: <input type="text" readonly value="{{ dispositivo.mqtt_port }}"></label>
+            </div>
+            <div class="columns large-3">
+                <label>Usuario: <input type="text" readonly value="{{ dispositivo.mqtt_user }}"></label>
+            </div>
+            <div class="columns large-3">
+                <label>Password: <input type="text" readonly value="**********"></label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-3">
+                <label>ID: <input type="text" readonly value="{{ dispositivo.mqtt_id }}"></label>
+            </div>
+            <div class="columns large-3">
+                <label>QoS: <input type="text" readonly value="{{ dispositivo.mqtt_qos }}"></label>
+            </div>
+            <div class="columns large-3">
+                <label>Keepalive: <input type="text" readonly
+                                         value="{{ dispositivo.mqtt_keepalive }}"></label>
+            </div>
+            <div class="columns large-3">
+                <label>Topic: <input type="text" readonly value="{{ dispositivo.mqtt_topic }}"></label>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="columns large-12">
+            <label>Esta es la forma en la que será visto:
+                <div class="panel" title="Esta es la forma en la que un usuario vería este dispositivo">
+                    <div class="row">
+                        <div class="columns large-12">
+                            <p style="font-weight: 800;" id="texto_visto">{{ dispositivo.texto }}</p>
+                        </div>
+                    </div>
+                    <div class="tipos_dispositivo hide SELFLOCKING">
+                        <div class="row">
+                            <div class="columns large-12">
+                                <a class="button pulsador_domotico nombre">{{ dispositivo.nombre }}</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tipos_dispositivo hide ONOFF">
+                        <div class="switch radius large">
+                            <div class="columns large-12 nombre">{{ dispositivo.nombre }}</div>
+                            <div class="columns large-12">
+                                <input id="CheckboxSwitch" type="checkbox">
+                                <label for="CheckboxSwitch"></label>
+                            </div>
+                        </div>
+                        &nbsp;
+                    </div>
+
+                    <div class="tipos_dispositivo hide TERMOSTATO">
+                        <div class="row">
+                            <div class="columns large-12"><span
+                                    class="nombre">{{ dispositivo.nombre }}</span>
+                                <span
+                                        style="font-weight: 800;font-size: xx-large;">(<span
+                                        id="valor"></span>&#8451;)</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-12">
+                                <div class="range-slider" data-slider data-options="initial: 5; start: 5; end: 30;">
+                                    <span class="range-slider-handle" role="slider" tabindex="0"></span>
+                                    <span class="range-slider-active-segment"></span>
+                                    <input type="hidden" id="hidden{{ gdispositivo.dispositivo.id }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </label>
+        </div>
+    </div>
+
+    {% if g_e|has_permiso:'acceso_vut' %}
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Este dispositivo puede ser copiado en una vivienda de uso turístico. Selecciona
+                    la vivienda en la cual quieres copiarlo:</b>
+                    <select class="vivienda_copia_dispositivo" data-id="{{ gdispositivo.dispositivo.id }}">
+                        <option value="">---------</option>
+                        {% for vp in viviendas_posibles %}
+                            <option value="{{ vp.id }}">{{ vp.nombre }} ({{ vp.gpropietario.get_full_name }})</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        </div>
+    {% endif %}
+</fieldset>
+
+<script type="application/javascript">
+
+    $('.{{ dispositivo.tipo }}').show();
+
+    $('.vivienda_copia_dispositivo').select2();
+    $(document).foundation();
+    $('[data-slider]').on('change.fndtn.slider', function () {
+        var id = $(this).data('id');
+        $('#valor' + id).html($('#hidden' + id).val());
+    });
+
+    $('#Contenido').on('click', '.boton_domotico', function (e) {
+        e.preventDefault();
+        $('#action').val('dispositivo');
+        var secret = $('#secret').val();
+        var code = $('#code').val();
+        var dispositivo = $(this).data('id');
+        $.post("/viajeros/", {
+            action: 'dispositivo',
+            dispositivo: dispositivo,
+            secret: secret,
+            code: code
+        }, function (data) {
+            if (data.ok) {
+                $("#update_ok").show().delay(1500).fadeOut();
+            } else {
+                $("#update_error").show().delay(1500).fadeOut();
+            }
+        });
+    });
+</script>
+
+{#<fieldset id="formulario_subir_dispositivo">#}
+{#    <legend>Crear dispositivo</legend>#}
+{#    <div class="row">#}
+{#        <div class="columns large-4">#}
+{#            <label>Selecciona el dispositivo</label>#}
+{#            <input id="id_dispositivo" name="id_dispositivo" type="file" value="">#}
+{#        </div>#}
+{#        <div class="columns large-6">#}
+{#            <label>Grupo/Etiqueta</label>#}
+{#            <select id="select_etiqueta" name="select_etiqueta">#}
+{#                <option value="">---------</option>#}
+{#                {% for e in etiquetas %}#}
+{#                    <option value="{{ e.id }}">{{ e.etiquetas_text }}</option>#}
+{#                {% endfor %}#}
+{#            </select>#}
+{#        </div>#}
+{#        <div class="columns large-2">#}
+{#            <label>&nbsp;</label>#}
+{#            <a class="button tiny" id="crea_dispositivo"><i class="fa fa-upload"></i> <b>Crear</b></a>#}
+{#        </div>#}
+{#    </div>#}
+{#</fieldset>#}

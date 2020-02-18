@@ -1,0 +1,33 @@
+<fieldset id="formulario_editar_etiqueta" class="fieldset_box">
+    <legend>Editar grupo/etiqueta</legend>
+    <div style="position:relative;">
+    <span style="position: absolute; top:-1.25rem; right: -0.25rem;font-size: large;font-weight: bold;">
+        <a class="fieldset_close"><i class="fa fa-times"></i></a>
+    </span>
+    </div>
+    <div class="row">
+        <div class="columns large-4">
+            <label>Nombre</label>
+            <input id="nombre_etiqueta_editada" name="nombre_etiqueta_editada" type="text"
+                   value="{{ etiqueta.nombre }}">
+        </div>
+        <div class="columns large-6">
+            <label>Anidar dentro de
+                <select id="select_etiqueta_padre_editada" name="select_etiqueta_padre_editada">
+                    <option value="">---------</option>
+                    {% for e in etiquetas %}
+                        {% if not e in etiqueta.hijos %}
+                            <option value="{{ e.id }}"
+                                    {% if e == etiqueta.padre %}selected{% endif %}>{{ e.etiquetas_text }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label>&nbsp;</label>
+            <a class="button tiny" id="modifica_etiqueta" data-etiqueta="{{ etiqueta.id }}"><i class="fa fa-check"></i>
+                <b>Modificar</b></a>
+        </div>
+    </div>
+</fieldset>

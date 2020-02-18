@@ -3,12 +3,48 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
-
+from entidades.models import Entidad
 from autenticar.models import Gauser
 from gauss.funciones import pass_generator
 
 
 # Create your models here.
+
+class Etiqueta_domotica(models.Model):
+    entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
+    nombre = models.CharField("Carpeta/Etiqueta", max_length=300, null=True, blank=True)
+    padre = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+    creado = models.DateField("Fecha de creación", auto_now_add=True)
+    modificado = models.DateField("Fecha de modificación", auto_now=True)
+
+    @property
+    def hijos(self):
+        lista = [self]
+        try:
+            for e in Etiqueta_domotica.objects.filter(padre=self):
+                lista = lista + e.hijos
+            return lista
+        except:
+            return lista
+
+    @property
+    def etiquetas(self):
+        lista = [self.nombre]
+        try:
+            lista = lista + self.padre.etiquetas
+            return lista
+        except:
+            return lista
+
+    @property
+    def etiquetas_text(self):
+        return '/'.join(reversed(self.etiquetas))
+
+    class Meta:
+        verbose_name_plural = "Etiquetas/Carpetas para los Documentos"
+
+    def __str__(self):
+        return u'%s (%s)' % (self.nombre, self.entidad.name)
 
 
 class Grupo(models.Model):
@@ -68,6 +104,7 @@ class Dispositivo(models.Model):
         ('TH', 'Control de temperatura y humedad'))
     QOS = ((0, 'At most once'), (1, 'At least once'), (2, 'Exactly once'))
     APP = (('ESPURNA', 'Espurna'), ('IFTTT', 'IFTTT'))
+    entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE, blank=True, null=True)
     propietario = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
     plataforma = models.CharField('Plataforma utilizada', default='ESPURNA', choices=APP, max_length=15)
     mqtt_broker = models.CharField('MQTT broker', default='localhost', max_length=100)
