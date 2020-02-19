@@ -1,4 +1,5 @@
-{% extends "base.html" %}
+{% extends "base_select2-4.html" %}
+{#{% extends "base.html" %}#}
 {% load contabilidad_extras %}
 
 {% block contenido %}
@@ -8,6 +9,7 @@
         <input type="hidden" id="action" name="action" value="">
         <input type="hidden" id="id_politica_cuotas" name="id_politica_cuotas" value="">
         <input type="hidden" id="id_remesa_emitida" name="id_remesa_emitida" value="">
+        <input type="hidden" id="seqtp" name="seqtp" value="RCUR">
 
 
         <div id="div_politicas">
@@ -47,7 +49,8 @@
                                 <div class="columns large-6"
                                      title="Cuotas para el 2º, 3º y siguientes perfiles del mismo tipo en la familia">
                                     <b>Descuentos:</b> {% autoescape off %}
-                                    {{ politica.descuentos|desglosar_descuentos }} {% endautoescape %}
+                                    {{ politica.descuentos }} {% endautoescape %}
+                                    {#                                {{ politica.descuentos|desglosar_descuentos }}#}
                                 </div>
                                 <div class="columns large-6">
                                     <b>Fecha de emisión:</b> {% if politica.dia %} Día
@@ -97,9 +100,47 @@
                     {#                        </a></li>#}
                     {#                    </ul>#}
                 {% endfor %}
+                <hr>
+                <dd class="accordion-navigation" id="accordion{{ pext.id }}"
+                    style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+                    <a href="#panel___{{ pext.id }}" style="font-weight: bold;">
+                        <i id="circle{{ pext.id }}" class="fa fa-plus-circle circle_icon"></i>
+                        {{ pext.concepto }}
+                    </a>
+
+                    <div id="panel___{{ pext.id }}" class="content accordion-pext" data-id="{{ pext.id }}">
+                        <div class="row">
+                            <div class="columns large-7">
+                                <label>Concepto:
+                                    <input type="text" value="{{ pext.concepto }}" id="concepto_remesa_ext">
+                                </label>
+                            </div>
+                            <div class="columns large-3">
+                                <label>Cantidad (€):
+                                    <input type="number" value="{{ pext.cuota }}" id="cantidad_remesa_ext">
+                                </label>
+                            </div>
+                            <div class="columns large-2">
+                                <label>&nbsp;</label>
+                                <a class="button tiny radius" id="generar_extraordinaria" style="font-weight: bold;">Generar</a>
+
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="columns large-12">
+                                <label>Personas sujetas a este pago:
+                                </label>
+                                <select id="usuarios_remesa_ext" multiple></select>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row" class="remesas_emitidas" id="r_e{{ pext.id }}">
+                            {% include "remesas_emitidas.html" with politica=pext %}
+                        </div>
+                    </div>
+                </dd>
             </dl>
-
-
         </div>
 
         <div id="introducir_politica_cuotas" style="display: none;"></div>
@@ -136,9 +177,71 @@
                             $('#id_politica_cuotas').val('');
                             habilita(['s_plus', 'h_pencil', 'h_trash-o', 's_file-text-o', 'h_money', 'h_check']);
                         }
+                    } else {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            $('#id_politica_cuotas').val(id);
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $('#usuarios_remesa_ext').select2({
+                                placeholder: "Para buscar una persona, escribe parte de su nombre",
+                                allowClear: true,
+                                ajax: {
+                                    url: "/buscar_usuarios/",
+                                    type: 'GET',
+                                    dataType: 'json',
+                                    delay: 250,
+                                    data: function (params) { // page is the one-based page number tracked by Select2
+                                        return {
+                                            action: 'select2',
+                                            q: params.term, //search term
+                                            page: params.page // page number
+                                        };
+                                    },
+                                    processResults: function (data, page) {
+                                        return {
+                                            results: $.map(data, function (item) {
+                                                return {
+                                                    text: item.last_name + ', ' + item.first_name + ' (' + item.perfiles + ')',
+                                                    id: item.id
+                                                }
+                                            })
+                                        };
+                                    },
+                                    cache: true
+                                },
+                                escapeMarkup: function (markup) {
+                                    return markup;
+                                }, // let our custom formatter work
+                                minimumInputLength: 3,
+                                language: {
+                                    inputTooShort: function () {
+                                        return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                                    }
+                                }
+                            });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#id_politica_cuotas').val('');
+                        }
                     }
                 }
             }
+        });
+
+        $('#generar_extraordinaria').click(function (e) {
+            e.preventDefault();
+            var id = $('#id_politica_cuotas').val();
+            $.post("/ajax_politica_cuotas/", {
+                action: 'generar_remesas',
+                id: id,
+                cuota: $('#cantidad_remesa_ext').val(),
+                concepto: $('#concepto_remesa_ext').val(),
+                usuarios: $('#usuarios_remesa_ext').val(),
+            }, function (data) {
+                $('#r_e' + id).html(data);
+            });
         });
 
         {#  Dentro del accordion de la política se hacen tres acciones:  #}
@@ -218,9 +321,14 @@
             $('#action').val('mod_politica');
             habilita(['h_money', 'h_file-text-o', 'h_plus', 's_check', 's_list-alt'])
             $.post("/ajax_politica_cuotas/", {id: id, action: 'mod_politica'}, function (data) {
-                $('#introducir_politica_cuotas').show();
-                $('#div_politicas').hide();
-                $('#introducir_politica_cuotas').html(data);
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#introducir_politica_cuotas').show();
+                    $('#div_politicas').hide();
+                    $('#introducir_politica_cuotas').html(data.html);
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
             });
         });
 

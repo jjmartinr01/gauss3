@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.db.models import Q, Sum
 from django import forms
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 
 # from autenticar.models import Gauser, Gauser_extra
@@ -24,7 +24,7 @@ from entidades.models import Subentidad, Cargo, Gauser_extra
 
 from bancos.views import asocia_banco_ge, num_cuenta2iban
 from gauss.rutas import *
-from gauss.funciones import usuarios_de_gauss, pass_generator
+from gauss.funciones import usuarios_de_gauss, pass_generator, usuarios_ronda
 from contabilidad.models import Presupuesto, Partida, Asiento, Politica_cuotas, Remesa, File_contabilidad, \
     Remesa_emitida, OrdenAdeudo
 from autenticar.control_acceso import permiso_required
@@ -436,7 +436,7 @@ class Politica_cuotasForm(forms.ModelForm):
         exclude = ('entidad', 'exentos')
 
 
-@permiso_required('acceso_politica_cuotas')
+# @permiso_required('acceso_politica_cuotas')
 def politica_cuotas(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
@@ -463,12 +463,15 @@ def politica_cuotas(request):
                 politica = form.save()
                 politica.exentos.clear()
                 try:
-                    exentos = Gauser.objects.filter(id__in=request.POST['exentos'].split(','))
+                    exentos_id = Gauser_extra.objects.filter(id__in=request.POST.getlist('exentos'),
+                                                             ronda=g_e.ronda).values_list('gauser__id', flat=True)
+                    exentos = Gauser.objects.filter(id__in=exentos_id)
                     politica.exentos.add(*exentos)
                 except:
                     pass
             else:
                 crear_aviso(request, False, form.errors)
+            # return JsonResponse({'ge': request.POST.getlist('exentos'), 'g':list(exentos_id)})
 
         if request.POST['action'] == 'crea_politica_cuota':
             politica_cuota = Politica_cuotas(entidad=g_e.ronda.entidad)
@@ -505,7 +508,12 @@ def politica_cuotas(request):
                 remesa_emitida.creado.year, remesa_emitida.creado.month, remesa_emitida.creado.day)
             return response
 
-    politicas = Politica_cuotas.objects.filter(entidad=g_e.ronda.entidad)
+    try:
+        pext = Politica_cuotas.objects.get(entidad=g_e.ronda.entidad, tipo='extraord', seqtp='OOFF')
+    except:
+        pext = Politica_cuotas.objects.create(entidad=g_e.ronda.entidad, tipo='extraord', tipo_cobro='MEN',
+                                              concepto='Remesa extraordinaria', seqtp='OOFF')
+    politicas = Politica_cuotas.objects.filter(entidad=g_e.ronda.entidad).exclude(id=pext.id)
     return render(request, "politica_cuotas.html",
                   {
                       'formname': 'Politica_cuotas',
@@ -527,6 +535,7 @@ def politica_cuotas(request):
                             'permiso': 'pdf_gastos_ingresos',
                             'title': 'Genera documento PDF con las políticas de cuotas'}),
                       'politicas': politicas,
+                      'pext': pext,
                       # 'remesas_emitidas': remesas_emitidas,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
@@ -543,13 +552,14 @@ def ajax_politica_cuotas(request):
                 return HttpResponse(data)
             if request.POST['action'] == 'mod_politica':
                 politica = Politica_cuotas.objects.get(id=request.POST['id'])
-                keys = ('id', 'text')
-                exentos = json.dumps([dict(zip(keys, (row.id, "%s, %s" % (row.last_name, row.first_name)))) for row in
-                                      politica.exentos.all()])
+                p_id = politica.id
+                # keys = ('id', 'text')
+                # exentos = json.dumps([dict(zip(keys, (row.id, "%s, %s" % (row.last_name, row.first_name)))) for row in
+                #                       politica.exentos.all()])
+                exentos = Gauser_extra.objects.filter(ronda=g_e.ronda, gauser__in=politica.exentos.all())
                 form = Politica_cuotasForm(instance=politica, entidad=g_e.ronda.entidad)
-                data = render_to_string("form_politica_cuoutas.html", {'form': form, 'exentos': exentos},
-                                        request=request)
-                return HttpResponse(data)
+                html = render_to_string("form_politica_cuoutas.html", {'form': form, 'exentos': exentos, 'p_id': p_id})
+                return JsonResponse({'html': html, 'ok': True})
             if request.POST['action'] == 'crear_politica_cuota':
                 form = Politica_cuotasForm(entidad=g_e.ronda.entidad)
                 data = render_to_string("form_politica_cuoutas.html", {'form': form, },
@@ -578,6 +588,15 @@ def ajax_politica_cuotas(request):
                 # Para validar el xml generado
                 # http://www.mobilefish.com/services/sepa_xml_validation/sepa_xml_validation.php
                 politica = Politica_cuotas.objects.get(id=request.POST['id'])
+                if politica.tipo == 'extraord':
+                    usuarios = usuarios_ronda(g_e.ronda).filter(id__in=request.POST.getlist('usuarios[]'))
+                    politica.concepto = request.POST['concepto']
+                    politica.cuota = request.POST['cuota']
+                    politica.save()
+                else:
+                    exentos_id = politica.exentos.all().values_list('id', flat=True)
+                    usuarios = usuarios_de_gauss(g_e.ronda.entidad, cargos=[politica.cargo]).exclude(
+                        gauser__id__in=exentos_id)
                 grupo = pass_generator(size=15, chars=string.ascii_letters + string.digits)
                 remesa_emitida = Remesa_emitida.objects.create(grupo=grupo, politica=politica)
                 # array_coutas identifica los enteros y floats almacenados en cuota
@@ -587,9 +606,7 @@ def ajax_politica_cuotas(request):
                 # asegurar que el número elementos sobre los que se aplica la cuota es superado.
                 # Por ejemplo si importes es [30,20,15], después de ser procesado con array_cutoas
                 # sería [30,20,15,15,15,15,15,15,15,15,15,15,15,15,...,15,15,15,15,15] con el 15 prolongado mil veces
-                exentos_id = politica.exentos.all().values_list('id', flat=True)
-                usuarios = usuarios_de_gauss(g_e.ronda.entidad, cargos=[politica.cargo]).exclude(
-                    gauser__id__in=exentos_id)
+
                 usuarios_id = []
                 n = 0
 
@@ -641,6 +658,11 @@ def ajax_politica_cuotas(request):
                             deudores_str = '%s viviendas gestionadas por %s' % (viviendas.count(),
                                                                                 usuario.gauser.get_full_name())
                             # concepto = 'Cuota %s' % usuario.ronda.entidad.name
+                        elif politica.tipo == 'extraord':
+                            deudores = [usuario]
+                            usuarios_id += [usuario.id]
+                            n_cs = [usuario.num_cuenta_bancaria]
+                            deudores_str = '%s ' % (usuario.gauser.get_full_name())
                         else:
                             deudores = []
                             usuarios_id += [usuario.id]
@@ -822,6 +844,7 @@ def lista_socios(request):
         #     creado = datetime.strptime(fila[0], '%d/%m/%Y')
         #     Asiento.objects.create(partida=partida, nombre=nombre, cantidad=cantidad, creado=creado, concepto=concepto, modificado=creado)
         #   csv_file.close()
+
 
 def orden_adeudo_directo_sepa(request, id):
     g_e = request.session['gauser_extra']

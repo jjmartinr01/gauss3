@@ -185,7 +185,8 @@ class Remesa_emitida(models.Model):
         verbose_name_plural = "Remesas emitidas"
 
     def __str__(self):
-        return u'%s - %s (%s)' % (self.politica.entidad.name, self.politica.cargo.cargo, self.grupo)
+        c = self.politica.cargo.cargo if self.politica.cargo else 'No asignada a cargo'
+        return u'%s - %s (%s)' % (self.politica.entidad.name, c, self.grupo)
 
 
 class Remesa(models.Model):
@@ -201,13 +202,13 @@ class Remesa(models.Model):
 
     @property
     def dbtrnm(self):
-        return self.ge.gauser.get_full_name()[:69]
+        return self.ge.gauser.get_full_name()[:69] if self.ge else 'No asignada a un gauser_extra'
 
     class Meta:
         verbose_name_plural = "Remesas individuales"
 
     def __str__(self):
-        return u'%s - %s - %s' % (self.emitida.politica.entidad.name, self.rmtinf, self.dbtrnm)
+        return '%s - %s - %s' % (self.emitida.politica.entidad.name, self.rmtinf, self.dbtrnm)
 
 # ------------------------------------------------------------ #
 # ------------------------------------------------------------ #
