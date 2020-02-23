@@ -688,7 +688,7 @@ def ajax_politica_cuotas(request):
                                                                                           date.today().strftime('%B'),
                                                                                           deudores_str)
                                     else:
-                                        rmtinf = '%s - Realizado en %s (%s)' % (politica.concepto,
+                                        rmtinf = '%s - Pago solicitado en %s (%s)' % (politica.concepto,
                                                                                 date.today().strftime('%B'),
                                                                                 deudores_str)
                                     try:
