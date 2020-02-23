@@ -4,10 +4,10 @@
     <legend>Crear nuevo dispositivo</legend>
     <div class="row">
         <div class="columns large-6">
-            <label>Nombre: <input type="text" id="nombre_dispositivo" value="{{ dispositivo.nombre }}"></label>
+            <label>Nombre: <input name="nombre" type="text" id="nombre_dispositivo" value="{{ dispositivo.nombre }}"></label>
         </div>
         <div class="columns large-6">
-            <label>Grupo/Etiqueta</label>
+            <label>Grupo/Etiqueta:</label>
             <select id="select_etiqueta" name="select_etiqueta">
                 <option value="">---------</option>
                 {% for e in etiquetas %}
@@ -19,13 +19,13 @@
     <div class="row">
         <div class="columns large-12">
             <label>Texto que contiene el enlace:
-                <textarea id="texto_enlace">{{ dispositivo.texto }}</textarea>
+                <textarea name="texto" id="texto_enlace">{{ dispositivo.texto }}</textarea>
             </label>
         </div>
     </div>
     <div class="row">
         <div class="columns large-5">
-            <label>Plataforma: <select id="select_plataforma">
+            <label>Plataforma: <select id="select_plataforma" name="plataforma">
                 <option {% if dispositivo.plataforma == 'ESPURNA' %}selected{% endif %}
                         value="ESPURNA">Espurna
                 </option>
@@ -36,7 +36,7 @@
         </div>
         <div class="columns large-5">
             <label>Tipo:
-                <select id="tipo_dispositivo">
+                <select id="tipo_dispositivo" name="tipo">
                     {% for t in dispositivo.TIPO_DOMOTICA %}
                         <option value="{{ t.0 }}"
                                 {% if t.0 == dispositivo.tipo %}selected{% endif %}>{{ t.1 }}</option>
@@ -54,7 +54,7 @@
         <div class="row">
             <div class="columns large-12">
                 <label>URL del webhook IFTT:
-                    <input type="text" class="campo_char" data-campo="ifttt" value=""></label>
+                    <input type="text" name="ifttt" value=""></label>
             </div>
         </div>
     </div>
@@ -62,31 +62,31 @@
     <div id="ESPURNA" class="plataformas">
         <div class="row">
             <div class="columns large-3">
-                <label>Broker: <input type="text" readonly value="{{ dispositivo.mqtt_broker }}"></label>
+                <label>Broker: <input name="mqtt_broker" type="text" value="{{ dispositivo.mqtt_broker }}"></label>
             </div>
             <div class="columns large-3">
-                <label>Puerto: <input type="text" readonly value="{{ dispositivo.mqtt_port }}"></label>
+                <label>Puerto: <input name="mqtt_port" type="text" value="{{ dispositivo.mqtt_port }}"></label>
             </div>
+{#            <div class="columns large-3">#}
+{#                <label>Usuario: <input name="mqtt_user" type="text" readonly value="{{ dispositivo.mqtt_user }}"></label>#}
+{#            </div>#}
+{#            <div class="columns large-3">#}
+{#                <label>Password: <input name="mqtt_pass" type="text" readonly value="**********"></label>#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="row">#}
             <div class="columns large-3">
-                <label>Usuario: <input type="text" readonly value="{{ dispositivo.mqtt_user }}"></label>
+                <label>ID: <input name="mqtt_id" type="text" readonly value="{{ dispositivo.mqtt_id }}"></label>
             </div>
+{#            <div class="columns large-3">#}
+{#                <label>QoS: <input name="mqtt_qos" type="text" readonly value="{{ dispositivo.mqtt_qos }}"></label>#}
+{#            </div>#}
+{#            <div class="columns large-3">#}
+{#                <label>Keepalive: <input type="text" readonly#}
+{#                                         value="{{ dispositivo.mqtt_keepalive }}"></label>#}
+{#            </div>#}
             <div class="columns large-3">
-                <label>Password: <input type="text" readonly value="**********"></label>
-            </div>
-        </div>
-        <div class="row">
-            <div class="columns large-3">
-                <label>ID: <input type="text" readonly value="{{ dispositivo.mqtt_id }}"></label>
-            </div>
-            <div class="columns large-3">
-                <label>QoS: <input type="text" readonly value="{{ dispositivo.mqtt_qos }}"></label>
-            </div>
-            <div class="columns large-3">
-                <label>Keepalive: <input type="text" readonly
-                                         value="{{ dispositivo.mqtt_keepalive }}"></label>
-            </div>
-            <div class="columns large-3">
-                <label>Topic: <input type="text" readonly value="{{ dispositivo.mqtt_topic }}"></label>
+                <label>Topic: <input name="mqtt_topic" type="text" readonly value="{{ dispositivo.mqtt_topic }}"></label>
             </div>
         </div>
     </div>

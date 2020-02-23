@@ -1,13 +1,14 @@
-<table align="center" width="100%" cellspacing="3" cellpadding="3" id="tabla_archivos">
+<table align="center" cellpadding="3" cellspacing="3" width="100%">
     <thead>
     <tr>
-        <th>Nombre del documento</th>
-        <th style="text-align:center;">Descargar</th>
-        <th style="text-align:center;">Carpetas/Etiquetas</th>
+        <th>Nombre del dispositivo</th>
+        <th style="text-align:center;">Etiquetas</th>
+        <th style="text-align:center;">Plataforma</th>
+        <th style="text-align:center;">ID / Topic / URL</th>
         <th style="text-align:center;" title="Fecha de creación del documento">Creado</th>
     </tr>
     </thead>
-    <tbody>
-    {% include "documentos_table_tr.html" %}
+    <tbody id="tabla_dispositivos">
+    {% include "dispositivos_table_tr.html" %}
     </tbody>
 </table>

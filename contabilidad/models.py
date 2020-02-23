@@ -104,10 +104,11 @@ class Politica_cuotas(models.Model):
     MESES = ((1, 'Enero'), (2, 'Febrero'), (3, 'Marzo'), (4, 'Abril'), (5, 'Mayo'), (6, 'Junio'), (7, 'Julio'),
              (8, 'Agosto'), (9, 'Septiembre'), (10, 'Octubre'), (11, 'Noviembre'), (12, 'Diciembre'))
     TIPOS_PAGO = (('RCUR', 'Pago recurrente'), ('OOFF', 'Pago único'))
+    TIPOS_COBRO = (('MEN', 'Mensual'), ('ANU', 'Anual'), ('UNI', 'Único'))
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     tipo = models.CharField('Tipo de cuota', max_length=10, choices=TIPOS_CUOTA, default='fija')
     cargo = models.ForeignKey(Cargo, null=True, blank=True, on_delete=models.CASCADE)
-    tipo_cobro = models.CharField('Tipo de cobro', max_length=6, choices=(('MEN', 'Mensual'), ('ANU', 'Anual')))
+    tipo_cobro = models.CharField('Tipo de cobro', max_length=6, choices=TIPOS_COBRO)
     seqtp = models.CharField('Tipo de pago', max_length=6, choices=TIPOS_PAGO, default='RCUR')
     cuota = models.CharField('Cuotas separadas por comas', blank=True, null=True, max_length=200)
     cantidad = models.FloatField('Cantidad monetaria (euros)', blank=True, null=True)

@@ -90,12 +90,12 @@ class GauserPermitidoGrupo(models.Model):
 
 def mqtt_id_generator():
     generado = pass_generator(size=10, chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
-    return 'ID_%s' % generado
+    return 'ID%s' % generado
 
 
 def mqtt_topic_generator():
     generado = pass_generator(size=10, chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
-    return '/DOMOTICA/%s' % generado
+    return 'DOMOTICA/%s' % generado
 
 
 class Dispositivo(models.Model):
@@ -113,9 +113,10 @@ class Dispositivo(models.Model):
     mqtt_pass = models.CharField('MQTT password', default='gaumentada', max_length=50)
     mqtt_id = models.CharField('MQTT client ID', default=mqtt_id_generator, max_length=50)
     mqtt_qos = models.IntegerField('MQTT QoS', default=2, choices=QOS)
-    mqtt_keepalive = models.IntegerField('MQTT keep alive', default=30)
+    mqtt_keepalive = models.IntegerField('MQTT keep alive', default=600)
     mqtt_topic = models.CharField('MQTT root topic', default=mqtt_topic_generator, max_length=50)
     grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.SET_NULL)
+    etiqueta =models.ForeignKey(Etiqueta_domotica, blank=True, null=True, on_delete=models.SET_NULL)
     ifttt = models.CharField('IFTTT webhook al dispositivo', blank=True, null=True, max_length=250, default='')
     nombre = models.CharField('Nombre dado al dispositivo', blank=True, null=True, max_length=250)
     texto = models.TextField('Texto a enviar', blank=True, null=True, default='')

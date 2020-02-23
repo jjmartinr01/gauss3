@@ -6,35 +6,27 @@
     </a>&nbsp;
     <ul id="drop{{ d.id }}" class="f-dropdown text-left" data-dropdown-content
         aria-hidden="true" tabindex="-1">
-        <li><a class="descargar_disp" data-disp="{{ d.id }}"><i class="fa fa-download fa-fw"></i>
-            Descargar</a>
-        </li>
-        {% if g_e|has_permiso:'borra_cualquier_archivo' %}
+        {% if g_e|has_permiso:'borra_dispositivos_domotica' %}
             <li><a class="editar_disp" data-disp="{{ d.id }}"><i
                     class="fa fa-pencil fa-fw"></i> Editar</a>
             </li>
             <li><a class="borrar_disp" data-disp="{{ d.id }}"><i
                     class="fa fa-trash-o fa-fw"></i> Borrar</a>
             </li>
-            <li><a class="borrar_disp_completamente" data-disp="{{ d.id }}"><i
-                    class="fa fa-trash fa-fw"></i> Borrar para todos los usuarios</a>
-            </li>
-        {% elif d|permiso_w:g_e %}
-            <li><a class="editar_disp" data-disp="{{ d.id }}"><i
-                    class="fa fa-pencil fa-fw"></i> Editar</a>
-            </li>
-        {% elif d|permiso_x:g_e %}
+        {% elif d.propietario == g_e.gauser %}
             <li><a class="editar_disp" data-disp="{{ d.id }}"><i
                     class="fa fa-pencil fa-fw"></i> Editar</a>
             </li>
             <li><a class="borrar_disp" data-disp="{{ d.id }}"><i
                     class="fa fa-trash-o fa-fw"></i> Borrar</a>
+            </li>
+        {% elif g_e|has_permiso:'edita_dispositivos_domotica' %}
+            <li><a class="editar_disp" data-disp="{{ d.id }}"><i
+                    class="fa fa-pencil fa-fw"></i> Editar</a>
             </li>
         {% endif %}
     </ul>
 </td>
-<td style="text-align:center;"><a class="descargar_disp" data-disp="{{ d.id }}"><i
-        class="fa fa-download fa-fw"></i></a></td>
 <td style="text-align:center;" id="etiquetas{{ d.id }}">
     <a data-dropdown="drope{{ d.id }}" aria-controls="drope{{ d.id }}" id="a_dropdowne{{ d.id }}"
        aria-expanded="false" class="p_dispositivo"><span class="label"><b>{{ d.etiqueta.etiquetas_text }}</b></span>
@@ -44,18 +36,27 @@
         {% if d.etiqueta.nombre == "General" %}
             <li>Esta etiqueta no se puede editar ni borrar</li>
         {% else %}
-            {% if g_e|has_permiso:'crea_etiquetas' %}
+            {% if g_e|has_permiso:'edita_grupos_domotica' %}
                 <li><a class="editar_etiqueta" data-etiqueta="{{ d.etiqueta.id }}" data-disp="{{ d.id }}"><i
                         class="fa fa-pencil fa-fw"></i> Editar</a>
                 </li>
             {% endif %}
-            {% if g_e|has_permiso:'borra_cualquier_etiqueta' %}
+            {% if g_e|has_permiso:'borra_grupos_domotica' %}
                 <li><a class="borrar_etiqueta" data-etiqueta="{{ d.etiqueta.id }}" data-disp="{{ d.id }}"><i
                         class="fa fa-trash-o fa-fw"></i> Borrar</a>
                 </li>
             {% endif %}
         {% endif %}
     </ul>
+</td>
+<td style="text-align:center;">{{ d.get_plataforma_display }}</td>
+<td style="text-align:center;">
+    {% if d.plataforma == 'ESPURNA' %}
+        <span class="label secondary" title="ID Cliente">{{ d.mqtt_id }}</span>
+        <span class="label secondary" title="Topic asociado">{{ d.mqtt_topic }}</span>
+    {% else %}
+        <span class="label secondary" title="{{ d.ifttt }}">{{ d.ifttt|truncatechars:45 }}</span>
+    {% endif %}
 </td>
 <td style="text-align:center;"
     title="El dispositivo fue añadido el {{ d.creado }}">

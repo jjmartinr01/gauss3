@@ -31,7 +31,7 @@ def dispositivos(request):
     g_e = request.session['gauser_extra']
     Etiqueta_domotica.objects.get_or_create(entidad=g_e.ronda.entidad, nombre='General')
     gpds = GauserPermitidoDispositivo.objects.filter(dispositivo__entidad=g_e.ronda.entidad,
-                                                 gauser=g_e.gauser).values_list('dispositivo__id', flat=True)
+                                                     gauser=g_e.gauser).values_list('dispositivo__id', flat=True)
     q = Q(id__in=gpds) | Q(propietario=g_e.gauser)
     disps = Dispositivo.objects.filter(Q(entidad=g_e.ronda.entidad), q).distinct()
     etiquetas = Etiqueta_domotica.objects.filter(entidad=g_e.ronda.entidad)
@@ -41,14 +41,23 @@ def dispositivos(request):
                 d = Dispositivo(propietario=g_e.gauser, nombre='Nombre del dispositivo', texto='Texto descripción')
                 html = render_to_string('dispositivos_fieldset_crear.html', {'g_e': g_e, 'etiquetas': etiquetas,
                                                                              'dispositivo': d})
-
-
-
-
                 return JsonResponse({'ok': True, 'html': html})
-
-
-                html = render_to_string("dispositivos_fieldset_crear.html", {'etiquetas': etiquetas})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'crea_dispositivo' and g_e.has_permiso('crea_dispositivos_domotica'):
+            try:
+                try:
+                    etiqueta = Etiqueta_domotica.objects.get(entidad=g_e.ronda.entidad,
+                                                             id=request.POST['select_etiqueta'])
+                except:
+                    etiqueta = Etiqueta_domotica.objects.get(entidad=g_e.ronda.entidad, nombre='General')
+                d = Dispositivo.objects.create(entidad=g_e.ronda.entidad, propietario=g_e.gauser, etiqueta=etiqueta,
+                                               plataforma=request.POST['plataforma'], texto=request.POST['texto'],
+                                               mqtt_port=request.POST['mqtt_port'], nombre=request.POST['nombre'],
+                                               mqtt_id=request.POST['mqtt_id'], mqtt_topic=request.POST['mqtt_topic'],
+                                               ifttt=request.POST['ifttt'], mqtt_broker=request.POST['mqtt_broker'],
+                                               tipo=request.POST['tipo'])
+                html = render_to_string('dispositivos_table_tr.html', {'disps': [d], 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
@@ -149,7 +158,7 @@ def dispositivos(request):
                     subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad, fecha_expira__gte=hoy)
                     cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad)
                     d = {'g_e': g_e, 'cargos': cargos, 'subentidades': subentidades, 'etiquetas': etiquetas, 'd': disp}
-                    html = render_to_string("dispositivos_table_tr_archivo_edit.html", d)
+                    html = render_to_string("dispositivos_table_tr_device_edit.html", d)
                     return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
@@ -168,7 +177,7 @@ def dispositivos(request):
                     disp.cargos.add(*cargos)
                     disp.acceden.add(*subs)
                     disp.save()
-                    html = render_to_string('dispositivos_table_tr_archivo.html', {'d': disp, 'g_e': g_e})
+                    html = render_to_string('dispositivos_table_tr_device.html', {'d': disp, 'g_e': g_e})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
@@ -198,7 +207,7 @@ def dispositivos(request):
             return JsonResponse({'ok': False, 'mensaje': 'No tiene los permisos necesarios.'})
 
     elif request.method == 'POST':
-        if request.POST['action'] == 'crea_dispositivo':
+        if request.POST['action'] == 'crea_dispositivo43254432':
             n_files = int(request.POST['n_files'])
             if g_e.has_permiso('crea_dispositivos_domotica'):
                 try:
@@ -206,12 +215,12 @@ def dispositivos(request):
                         fichero = request.FILES['fichero_xhr' + str(i)]
                         try:
                             etiqueta = Etiqueta_domotica.objects.get(entidad=g_e.ronda.entidad,
-                                                                       id=request.POST['etiqueta'])
+                                                                     id=request.POST['etiqueta'])
                         except:
                             etiqueta, c = Etiqueta_domotica.objects.get_or_create(entidad=g_e.ronda.entidad,
-                                                                                    nombre='General')
+                                                                                  nombre='General')
                         disp = Dispositivo.objects.create(propietario=g_e, content_type=fichero.content_type,
-                                                            etiqueta=etiqueta, nombre=fichero.name, fichero=fichero)
+                                                          etiqueta=etiqueta, nombre=fichero.name, fichero=fichero)
                         GauserPermitidoDispositivo.objects.create(gauser=g_e.gauser, dispositivo=disp, permiso='x')
                         html = render_to_string('dispositivos_table_tr.html', {'disps': [disp], 'g_e': g_e})
                         return JsonResponse({'ok': True, 'html': html, 'mensaje': False})
@@ -548,9 +557,10 @@ def ajax_configura_domotica(request):
         elif request.POST['action'] == 'open_accordion_enlace':
             try:
                 enlace = EnlaceDomotica.objects.get(id=request.POST['enlace'], propietario=g_e.gauser)
-                gdispositivos = GauserPermitidoDispositivo.objects.filter(gauser=g_e.gauser).order_by('dispositivo__grupo')
+                gdispositivos = GauserPermitidoDispositivo.objects.filter(gauser=g_e.gauser).order_by(
+                    'dispositivo__grupo')
                 html = render_to_string('enlace_accordion_content.html',
-                                        {'enlace': enlace, 'gdispositivos': gdispositivos })
+                                        {'enlace': enlace, 'gdispositivos': gdispositivos})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})

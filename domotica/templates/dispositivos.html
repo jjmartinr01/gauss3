@@ -119,36 +119,16 @@
             });
 
             $('body').on('click', '#crea_dispositivo', function () {
-                var input_files = document.getElementById('id_archivo').files;
-
-                for (var i = 0; i < input_files.length; i++) {
-                    console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
-                }
-
-                var formData = new FormData();
-                for (var i = 0; i < input_files.length; i++) {
-                    formData.append('fichero_xhr' + i, input_files[i]);
-                }
-                formData.append('n_files', input_files.length);
-                formData.append('action', 'crea_dispositivo');
-                formData.append('etiqueta', $('#select_etiqueta').val());
-                formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
-                var xhr = new XMLHttpRequest();
-                {#xhr.upload.addEventListener("progress", updateProgress, false);#}
-                xhr.onload = function () {
-                    if (xhr.readyState === xhr.DONE) {
-                        if (xhr.status === 200) {
-                            console.log('Terminado');
-                            var data = JSON.parse(xhr.responseText);
-                            $("#tabla_archivos tbody").prepend(data.html);
-                            if (data.mensaje) {
-                                show_mensajes({title: 'Error', texto: data.mensaje})
-                            }
-                        }
+                $('#action').val('crea_dispositivo');
+                $.post("/dispositivos/", $('#' + '{{ formname }}').serialize(), function (data) {
+                    if (data.ok) {
+                        $('#div_fieldsets').html('');
+                        $('#tabla_dispositivos').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    }else{
+                        $("#update_error").show().delay(1500).fadeOut();
                     }
-                };
-                xhr.open('POST', "/dispositivos/", true);
-                xhr.send(formData);
+                });
             });
         {% endif %}
 

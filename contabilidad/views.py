@@ -511,7 +511,7 @@ def politica_cuotas(request):
     try:
         pext = Politica_cuotas.objects.get(entidad=g_e.ronda.entidad, tipo='extraord', seqtp='OOFF')
     except:
-        pext = Politica_cuotas.objects.create(entidad=g_e.ronda.entidad, tipo='extraord', tipo_cobro='MEN',
+        pext = Politica_cuotas.objects.create(entidad=g_e.ronda.entidad, tipo='extraord', tipo_cobro='ANU',
                                               concepto='Remesa extraordinaria', seqtp='OOFF')
     politicas = Politica_cuotas.objects.filter(entidad=g_e.ronda.entidad).exclude(id=pext.id)
     return render(request, "politica_cuotas.html",
@@ -682,11 +682,15 @@ def ajax_politica_cuotas(request):
                                                                                     politica.get_tipo_cobro_display(),
                                                                                     date.today().strftime('%B'),
                                                                                     deudores_str)
-                                    else:
+                                    elif politica.tipo_cobro == 'ANU':
                                         rmtinf = '%s - Cobro %s, realizado en %s (%s)' % (politica.concepto,
                                                                                           politica.get_tipo_cobro_display(),
                                                                                           date.today().strftime('%B'),
                                                                                           deudores_str)
+                                    else:
+                                        rmtinf = '%s - Realizado en %s (%s)' % (politica.concepto,
+                                                                                date.today().strftime('%B'),
+                                                                                deudores_str)
                                     try:
                                         orden_adeudo = OrdenAdeudo.objects.get(politica=politica, gauser=usuario.gauser)
                                         dtofsgntr = orden_adeudo.creado
