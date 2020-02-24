@@ -2,23 +2,23 @@
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <CstmrDrctDbtInitn>
     <GrpHdr>
-        <MsgId>{{request.session.gauser_extra.ronda.entidad.nif}}-{% now "Ymd-H-i" %}</MsgId>
+        <MsgId>{{remesa_emitida.politica.entidad.nif}}-{% now "Ymd-H-i" %}</MsgId>
         <CreDtTm>{% now "Y-m-d\TH:i:s" %}</CreDtTm>
         <NbOfTxs>{{remesa_emitida.nboftxs}}</NbOfTxs>
         <CtrlSum>{{remesa_emitida.ctrlsum|float2string}}</CtrlSum>
         <InitgPty>
-            <Nm>{{request.session.gauser_extra.ronda.entidad.name|upper|truncatechars:69}}</Nm>
+            <Nm>{{remesa_emitida.politica.entidad.name|upper|truncatechars:69}}</Nm>
             <Id>
                 <OrgId>
                     <Othr>
-                        <Id>{{request.session.gauser_extra.ronda.entidad.nif|at_02}}</Id>
+                        <Id>{{remesa_emitida.politica.entidad.nif|at_02}}</Id>
                     </Othr>
                 </OrgId>
             </Id>
         </InitgPty>
     </GrpHdr>
     <PmtInf>
-        <PmtInfId>{{request.session.gauser_extra.ronda.entidad.nif}}-{% now "YmdHi" %}-{% now "F" %}</PmtInfId>
+        <PmtInfId>{{remesa_emitida.politica.entidad.nif}}-{% now "YmdHi" %}-{% now "F" %}</PmtInfId>
         <PmtMtd>DD</PmtMtd>
         <NbOfTxs>{{remesa_emitida.nboftxs}}</NbOfTxs>
         <CtrlSum>{{remesa_emitida.ctrlsum|float2string}}</CtrlSum>
@@ -33,16 +33,16 @@
         </PmtTpInf>
         <ReqdColltnDt>{{remesa_emitida.reqdcolltndt|date:"Y-m-d"}}</ReqdColltnDt>
         <Cdtr>
-            <Nm>{{request.session.gauser_extra.ronda.entidad.name|upper|truncatechars:69}}</Nm>
+            <Nm>{{remesa_emitida.politica.entidad.name|upper|truncatechars:69}}</Nm>
         </Cdtr>
         <CdtrAcct>
             <Id>
-                <IBAN>{{request.session.gauser_extra.ronda.entidad.iban}}</IBAN>
+                <IBAN>{{remesa_emitida.politica.entidad.iban}}</IBAN>
             </Id>
         </CdtrAcct>
         <CdtrAgt>
             <FinInstnId>
-                <BIC>{{request.session.gauser_extra.ronda.entidad.banco.bic}}</BIC>
+                <BIC>{{remesa_emitida.politica.entidad.banco.bic}}</BIC>
             </FinInstnId>
         </CdtrAgt>
         <ChrgBr>SLEV</ChrgBr>
@@ -50,7 +50,7 @@
             <Id>
                 <PrvtId>
                     <Othr>
-                        <Id>{{request.session.gauser_extra.ronda.entidad.nif|at_02}}</Id>
+                        <Id>{{remesa_emitida.politica.entidad.nif|at_02}}</Id>
                         <SchmeNm>
                             <Prtry>SEPA</Prtry>
                         </SchmeNm>
