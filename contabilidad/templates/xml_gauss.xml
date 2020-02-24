@@ -58,7 +58,7 @@
                 </PrvtId>
               </Id>
         </CdtrSchmeId>
-        {% for remesa in remesas %}
+        {% for remesa in remesa_emitida.remesa_set.all %}
         <DrctDbtTxInf>
             <PmtId>
                 <EndToEndId>{{remesa.emitida.grupo}}-{{ remesa.creado|date:"Ymd-H-i" }}-R{{remesa.counter}}</EndToEndId>

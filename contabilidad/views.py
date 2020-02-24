@@ -733,8 +733,7 @@ def ajax_politica_cuotas(request):
                 remesa_emitida.nboftxs = remesas.count()
                 remesa_emitida.reqdcolltndt = hoy + timedelta(days=4)
                 remesa_emitida.save()
-                xml = render_to_string("xml_gauss.xml", {'remesas': remesas, 'remesa_emitida': remesa_emitida},
-                                       request=request)
+                xml = render_to_string("xml_gauss.xml", {'remesa_emitida': remesa_emitida}, request=request)
                 # xml = xml.replace('ñ','n').replace('Ñ','N')
                 fichero = '%s.xml' % (grupo)
                 xmlfile = open(ruta + '/' + fichero, "w+")
