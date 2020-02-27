@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 # import urlparse
 import urllib  # .parse import parse_qs # Sirve para leer los forms serializados y pasados por ajax
 import base64
+import locale
 from datetime import datetime
 
 import simplejson as json
@@ -23,6 +24,7 @@ from gauss.rutas import MEDIA_ANAGRAMAS, MEDIA_REUNIONES, RUTA_BASE
 from mensajes.models import Aviso, Mensaje, Etiqueta
 from mensajes.views import crear_aviso, encolar_mensaje, crea_mensaje_cola
 
+locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
 
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
