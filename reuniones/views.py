@@ -79,9 +79,9 @@ def conv_template_ajax(request):
             plantillas = [] if conv_template.plantilla else ConvReunion.objects.filter(entidad=g_e.ronda.entidad,
                                                                                        plantilla=True)
             if g_e.has_permiso('w_conv_template') or conv_template.creador == g_e.gauser:
-                if conv_template.convoca:
+                try:
                     cargos = Gauser_extra.objects.get(gauser=conv_template.convoca, ronda=g_e.ronda).cargos.all()
-                else:
+                except:
                     cargos = []
                 ok = True
                 puntos = PuntoConvReunion.objects.filter(convocatoria=conv_template)
@@ -481,9 +481,9 @@ def conv_reunion_ajax(request):
                 conv.convocados.add(*plantilla.convocados.all())
                 conv.convocados_text = plantilla.convocados_text
                 conv.save()
-                if conv.convoca:
+                try:
                     cargos = Gauser_extra.objects.get(gauser=conv.convoca, ronda=g_e.ronda).cargos.all()
-                else:
+                except:
                     cargos = []
                 PuntoConvReunion.objects.filter(convocatoria=conv).delete()
                 for p in PuntoConvReunion.objects.filter(convocatoria=plantilla):
