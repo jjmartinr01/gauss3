@@ -418,9 +418,9 @@ def conv_reunion_ajax(request):
             conv = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['convocatoria'], plantilla=False)
             plantillas = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
             if g_e.has_permiso('w_conv_reunion') or conv.creador == g_e.gauser:
-                if conv.convoca:
+                try:
                     cargos = Gauser_extra.objects.get(gauser=conv.convoca, ronda=g_e.ronda).cargos.all()
-                else:
+                except:
                     cargos = []
                 puntos = PuntoConvReunion.objects.filter(convocatoria=conv)
                 html = render_to_string('conv_accordion_content.html', {'conv': conv, 'g_e': g_e, 'cargos': cargos,
