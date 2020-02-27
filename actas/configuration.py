@@ -9,7 +9,7 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 1
      },
-{'code_menu': 'acceso_configurar_convocatorias',
+    {'code_menu': 'acceso_configurar_convocatorias',
      'texto_menu': 'Configurar convocatorias',
      'href': 'configurar_convocatorias',
      'nivel': 2,
