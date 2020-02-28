@@ -202,6 +202,10 @@ class Remesa(models.Model):
     creado = models.DateTimeField('Fecha de creación', auto_now_add=True)
 
     @property
+    def mndtid(self):
+        return "%s-%s-%s"[:34] % (self.ge.ronda.entidad.code, self.pk, self.creado.strftime('%s'))
+
+    @property
     def dbtrnm(self):
         return self.ge.gauser.get_full_name()[:69] if self.ge else 'No asignada a un gauser_extra'
 
