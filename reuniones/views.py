@@ -738,6 +738,7 @@ def conv_reunion_ajax(request):
                     q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin)
                 convs = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=False)
                 puntos = PuntoConvReunion.objects.filter(convocatoria__in=convs, punto__icontains=request.POST['texto'])
+                return JsonResponse({'ok': True, 'html': '', 'puntos': puntos.values_list('id', flat=True)})
                 convs_search = convs.filter(q1, Q(id__in=puntos.values_list('id', flat=True)))
                 html = render_to_string('conv_accordion.html', {'convs': convs_search})
                 return JsonResponse({'ok': True, 'html': html})
