@@ -717,35 +717,6 @@ def conv_reunion_ajax(request):
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'busca_convs_manual':
-
-            try:
-                inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
-            except:
-                inicio = datetime.strptime('2000-1-1', '%Y-%m-%d').date()
-            try:
-                fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d').date()
-            except:
-                fin = datetime.now().date()
-            try:
-                id = request.POST['plantilla']
-                plantilla = ConvReunion.objects.get(entidad=g_e.ronda.entidad, plantilla=True, id=id)
-            except:
-                plantilla = None
-            if plantilla:
-                q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin) & Q(
-                    basada_en=plantilla) & Q(plantilla=False)
-            else:
-                q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin) & Q(
-                    plantilla=False)
-            convs = ConvReunion.objects.filter(q1)
-            puntos = PuntoConvReunion.objects.filter(convocatoria__in=convs, punto__icontains=request.POST['texto'])
-            convs_search = convs.filter(q1 & Q(id__in=puntos.values_list('convocatoria__id', flat=True))).distinct()
-            html = render_to_string('conv_accordion.html', {'convocatorias': convs_search, 'buscar': True})
-            return JsonResponse({'ok': True, 'html': html})
-
-
-
-
             try:
                 try:
                     inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
@@ -764,12 +735,12 @@ def conv_reunion_ajax(request):
                     q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin) & Q(
                         basada_en=plantilla) & Q(plantilla=False)
                 else:
-                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin) & Q(plantilla=False)
+                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin) & Q(
+                        plantilla=False)
                 convs = ConvReunion.objects.filter(q1)
                 puntos = PuntoConvReunion.objects.filter(convocatoria__in=convs, punto__icontains=request.POST['texto'])
-                return JsonResponse({'ok': True, 'html': dict(puntos.values_list('id', flat=True))})
                 convs_search = convs.filter(q1 & Q(id__in=puntos.values_list('convocatoria__id', flat=True))).distinct()
-                html = render_to_string('conv_accordion.html', {'convocatorias': convs_search})
+                html = render_to_string('conv_accordion.html', {'convocatorias': convs_search, 'buscar': True})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
