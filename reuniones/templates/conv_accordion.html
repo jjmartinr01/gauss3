@@ -1,13 +1,15 @@
-<dd class="accordion-navigation" id="accordion{{ c.id }}"
-    style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
-    <a href="#panel{{ c.id }}">
-        <i id="circle{{ c.id }}" class="fa fa-plus-circle circle_icon"></i>
-        <b id="span_nombre{{ c.id }}">{{ c.nombre }}</b>
-        <span style="color: #a3a3a3">
+{% for c in convocatorias %}
+    <dd class="accordion-navigation" id="accordion{{ c.id }}"
+        style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+        <a href="#panel{{ c.id }}">
+            <i id="circle{{ c.id }}" class="fa fa-plus-circle circle_icon"></i>
+            <b id="span_nombre{{ c.id }}">{{ c.nombre }}</b>
+            <span style="color: #a3a3a3">
         <i class="fa fa-long-arrow-right"></i> {{ c.fecha_hora|date:"d-m-Y" }} a
         las {{ c.fecha_hora|date:"H:i" }}</span>
-    </a>
+        </a>
 
-    <div id="panel{{ c.id }}" class="content accordion-convocatoria_reunion" data-id="{{ c.id }}">
-    </div>
-</dd>
+        <div id="panel{{ c.id }}" class="content accordion-convocatoria_reunion" data-id="{{ c.id }}">
+        </div>
+    </dd>
+{% endfor %}

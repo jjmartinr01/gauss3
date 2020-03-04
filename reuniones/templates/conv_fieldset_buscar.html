@@ -1,0 +1,52 @@
+{% load my_templatetags %}
+<fieldset id="formulario_search" class="fieldset_box">
+    <legend>Búsqueda de convocatorias</legend>
+    <div style="position:relative;">
+    <span style="position: absolute; top:-1.25rem; right: -0.25rem;font-size: large;font-weight: bold;">
+        <a class="fieldset_close"><i class="fa fa-times"></i></a>
+    </span>
+    </div>
+    <div class="row">
+        <div class="columns large-4">
+            <label>Buscar entre esta fecha ...</label>
+            <input id="id_fecha_inicio" name="fecha_inicio" type="date"
+                   value="{{ g_e.ronda.inicio|date:"Y\-m\-d" }}">
+        </div>
+        <div class="columns large-4">
+            <label>... y esta otra</label>
+            <input id="id_fecha_fin" name="fecha_fin" type="date" value="{% now "Y\-m\-d" %}">
+        </div>
+        <div class="columns large-4">
+            <label>Tipo de convocatoria ...</label>
+            <select id="plantilla_busqueda" name="plantilla_busqueda">
+                <option value="">Cualquier tipo</option>
+                {% for plantilla in plantillas_disponibles %}
+                    <option value="{{ plantilla.id }}">{{ plantilla.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-10">
+            <label>Indica el texto que pudiera contener la convocatoria
+                <input type="text" name="busca_texto_conv" id="busca_texto_conv"
+                   placeholder="Escribe texto a buscar">
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label>&nbsp;</label>
+            <a id="busca_convs_manual" class="button tiny"><i class="fa fa-search"></i> <b>Buscar</b></a>
+        </div>
+    </div>
+</fieldset>
+
+{#<script>#}
+{#$("#id_fecha_inicio").fdatepicker({#}
+{#            format: 'dd-mm-yyyy',#}
+{#            weekStart: 1#}
+{#        });#}
+{#$("#id_fecha_fin").fdatepicker({#}
+{#            format: 'dd-mm-yyyy',#}
+{#            weekStart: 1#}
+{#        });#}
+{#</script>#}

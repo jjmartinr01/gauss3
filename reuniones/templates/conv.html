@@ -40,16 +40,50 @@
         <div>
             <h4 id="title_page"><strong>Convocatorias de reunión</strong></h4>
         </div>
+        <div id="div_fieldsets"></div>
         <dl class="accordion" data-accordion id="list_convocatorias">
-            {% for c in convocatorias %}
-                {% include "conv_accordion.html" %}
-            {% endfor %}
+            {% include "conv_accordion.html" %}
         </dl>
     </form>
 {% endblock %}
 
 {% block final %}
     <script>
+        habilita(['s_search']);
+        $('#search_sign').click(function (e) {
+            e.preventDefault();
+            $.post("/conv_reunion_ajax/", {action: 'ver_formulario_buscar'}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#div_fieldsets').html(data.html);
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+
+            });
+        });
+        $('body').on('click', '#busca_convs_manual', function (e) {
+            e.preventDefault();
+            $.post("/conv_reunion_ajax/", {
+                    action: 'busca_convs_manual',
+                    inicio: $('#id_fecha_inicio').val(),
+                    fin: $('#id_fecha_fin').val(),
+                    texto: $('#busca_texto_conv').val(),
+                    plantilla: $('#plantilla_busqueda').val()
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#list_convocatorias").html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        $('body').on('click', '.fieldset_close', function (e) {
+            e.preventDefault();
+            $('.fieldset_box').hide();
+        });
         {% if request.session.gauser_extra|has_permiso:"c_conv_reunion" %}
             habilita(['s_plus']);
             $('#plus_sign').click(function (e) {
@@ -149,14 +183,14 @@
                     $('#span_nombre' + convocatoria).html(data.nombre);
                     setTimeout(function () {
                         $('.place').text(data.lugar);
-                    $('.cargo_convocante').text(data.cargo);
-                    $('.sub_convocadas').text(data.texto_convocados);
-                    $('.day_name').text(data.day_name);
-                    $('.day_num').html(data.day_num);
-                    $('.month_name').html(data.month_name);
-                    $('.year').html(data.year);
-                    $('.datetime_time').html(data.datetime_time);
-                    editor_contenido_convocatoria.fire('change');
+                        $('.cargo_convocante').text(data.cargo);
+                        $('.sub_convocadas').text(data.texto_convocados);
+                        $('.day_name').text(data.day_name);
+                        $('.day_num').html(data.day_num);
+                        $('.month_name').html(data.month_name);
+                        $('.year').html(data.year);
+                        $('.datetime_time').html(data.datetime_time);
+                        editor_contenido_convocatoria.fire('change');
                     }, 500);
                 } else {
                     $("#update_error").show().delay(1500).fadeOut();
@@ -325,19 +359,19 @@
                 elemento.text(cDate.getDate() + ' de ' + M[cDate.getMonth()] + ' de ' + cDate.getFullYear());
                 elemento.fdatepicker('hide');
                 $.post("/conv_reunion_ajax/", {
-                    action: 'update_fecha_firma_conv',
-                    conv_reunion: conv,
-                    fecha: cDate.getDate() + '-' + (cDate.getMonth() + 1) + '-' + cDate.getFullYear()
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
+                        action: 'update_fecha_firma_conv',
+                        conv_reunion: conv,
+                        fecha: cDate.getDate() + '-' + (cDate.getMonth() + 1) + '-' + cDate.getFullYear()
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
             });
-         });
+        });
 
         $('body').on('click', '.del_punto', function (e) {
             var punto = $(this).data('id');

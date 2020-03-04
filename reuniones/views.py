@@ -14,6 +14,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.utils.text import slugify
+from django.db.models import Q
 
 from reuniones.models import *
 from autenticar.control_acceso import permiso_required
@@ -391,6 +392,9 @@ def conv_reunion(request):
                           ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
                             'title': 'Crear una nueva convocatoria',
                             'permiso': 'c_conv_reunion'},
+                           {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar',
+                            'title': 'Buscar convocatorias',
+                            'permiso': 'libre'},
                            ),
                       'formname': 'convocatorias',
                       'convocatorias': convs,
@@ -410,7 +414,7 @@ def conv_reunion_ajax(request):
                 ActaReunion.objects.create(convocatoria=conv, nombre='Acta: %s' % conv.nombre)
                 conv.texto_convocatoria = render_to_string('conv_texto.html', {'c': conv})
                 conv.save()
-                html = render_to_string('conv_accordion.html', {'c': conv})
+                html = render_to_string('conv_accordion.html', {'c': [conv]})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
@@ -705,7 +709,40 @@ def conv_reunion_ajax(request):
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para editar la configuración'})
             except:
                 return JsonResponse({'ok': False})
-
+        elif request.POST['action'] == 'ver_formulario_buscar':
+            plantillas = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
+            try:
+                html = render_to_string("conv_fieldset_buscar.html", {'plantillas_disponibles': plantillas, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'busca_convs_manual':
+            try:
+                try:
+                    inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
+                except:
+                    inicio = datetime.strptime('2000-1-1', '%Y-%m-%d').date()
+                try:
+                    fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d').date()
+                except:
+                    fin = datetime.now().date()
+                try:
+                    id = request.POST['plantilla']
+                    plantilla = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True, id=id)
+                except:
+                    plantilla = None
+                if plantilla:
+                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin) & Q(
+                        basada_en=plantilla)
+                else:
+                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin)
+                convs = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=False)
+                puntos = PuntoConvReunion.objects.filter(convocatoria__in=convs, punto__icontains=request.POST['texto'])
+                convs_search = convs.filter(q1, Q(id__in=puntos.values_list('id', flat=True)))
+                html = render_to_string('conv_accordion.html', {'convs': convs_search})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
 
 
 
@@ -1002,7 +1039,42 @@ def redactar_actas_reunion_ajax(request):
                 return JsonResponse({'ok': True, 'acta': acta.id, 'aprobada': True})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 27})
-
+        elif request.POST['action'] == 'ver_formulario_buscar':
+            plantillas = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
+            try:
+                html = render_to_string("conv_fieldset_buscar.html", {'plantillas_disponibles': plantillas, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'busca_actas_manual':
+            try:
+                try:
+                    inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
+                except:
+                    inicio = datetime.strptime('2000-1-1', '%Y-%m-%d').date()
+                try:
+                    fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d').date()
+                except:
+                    fin = datetime.now().date()
+                try:
+                    id = request.POST['plantilla']
+                    plantilla = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True, id=id)
+                except:
+                    plantilla = None
+                if plantilla:
+                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin) & Q(
+                        basada_en=plantilla)
+                else:
+                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin)
+                convs = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=False)
+                q_p1 = Q(convocatoria__in=convs)
+                q_p2 = Q(punto__icontains=request.POST['texto']) | Q(texto_acta__icontains=request.POST['texto'])
+                puntos = PuntoConvReunion.objects.filter(q_p1, q_p2)
+                convs_search = convs.filter(q1, Q(id__in=puntos.values_list('id', flat=True)))
+                html = render_to_string('conv_accordion.html', {'convs': convs_search})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
 
 
 
