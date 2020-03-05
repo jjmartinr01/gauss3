@@ -1,0 +1,41 @@
+{% load my_templatetags %}
+<fieldset id="formulario_search" class="fieldset_box">
+    <legend>Búsqueda de actas</legend>
+    <div style="position:relative;">
+    <span style="position: absolute; top:-1.25rem; right: -0.25rem;font-size: large;font-weight: bold;">
+        <a class="fieldset_close"><i class="fa fa-times"></i></a>
+    </span>
+    </div>
+    <div class="row">
+        <div class="columns large-4">
+            <label>Buscar entre esta fecha ...</label>
+            <input id="id_fecha_inicio" name="fecha_inicio" type="date"
+                   value="{{ g_e.ronda.inicio|date:"Y\-m\-d" }}">
+        </div>
+        <div class="columns large-4">
+            <label>... y esta otra</label>
+            <input id="id_fecha_fin" name="fecha_fin" type="date" value="{% now "Y\-m\-d" %}">
+        </div>
+        <div class="columns large-4">
+            <label>Tipo de acta ...</label>
+            <select id="plantilla_busqueda" name="plantilla_busqueda">
+                <option value="">Cualquier tipo</option>
+                {% for plantilla in plantillas_disponibles %}
+                    <option value="{{ plantilla.id }}">{{ plantilla.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-10">
+            <label>Indica el texto que pudiera contener el acta
+                <input type="text" name="busca_texto_acta" id="busca_texto_acta"
+                   placeholder="Escribe texto a buscar">
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label>&nbsp;</label>
+            <a id="busca_actas_manual" class="button tiny"><i class="fa fa-search"></i> <b>Buscar</b></a>
+        </div>
+    </div>
+</fieldset>

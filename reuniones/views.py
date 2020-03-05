@@ -828,44 +828,29 @@ def redactar_actas_reunion(request):
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + nombre_fichero
                 return response
-
-                #     fich_name = 'parte_temporal%s.txt' % (vivienda.propietario.id)
-                #     ruta = os.path.join("%svut/" % (RUTA_MEDIA), fich_name)
-                #     f = open(ruta, "w+")
-                #     contenido = render_to_string('fichero_registro_policia.txt', {'v': vivienda, 'vs': registro.viajeros.all()})
-                #     f.write(contenido.encode('utf-8'))
-                #     registro.parte = File(f)
-                #     registro.save()
-                #     f.close()
-
-
             except:
                 crear_aviso(request, False, 'No es posible generar el pdf del acta solicitada')
 
     subentidades = g_e.subentidades.all()
     if g_e.has_permiso('w_cualquier_acta_reunion'):
-        actas_publicadas = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad).distinct()
-        # actas_sin_publicar = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad,
-        #                                                 publicada=False).distinct()
+        actas = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad).distinct()
     elif g_e.has_permiso('w_actas_subentidades_reunion'):
-        actas_publicadas = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades).distinct()
-        # actas_sin_publicar = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades,
-        #                                                 publicada=False).distinct()
+        actas = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades).distinct()
     elif g_e.has_permiso('w_sus_actas_reunion'):
-        actas_publicadas = ActaReunion.objects.filter(convocatoria__convoca=g_e.gauser,
+        actas = ActaReunion.objects.filter(convocatoria__convoca=g_e.gauser,
                                                       convocatoria__entidad=g_e.ronda.entidad).distinct()
-        # actas_sin_publicar = ActaReunion.objects.filter(convocatoria__convoca=g_e.gauser,
-        #                                                 convocatoria__entidad=g_e.ronda.entidad,
-        #                                                 publicada=False).distinct()
     else:
-        actas_publicadas = []
-        actas_sin_publicar = []
+        actas = []
 
     return render(request, "redactar_actas_reunion.html",
                   {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar',
+                            'title': 'Buscar convocatorias',
+                            'permiso': 'libre'},
+                           ),
                       'formname': 'actas',
-                      'actas_publicadas': actas_publicadas,
-                      # 'actas_sin_publicar': actas_sin_publicar,
+                      'actas': actas,
                       'subentidades': subentidades,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
@@ -1043,7 +1028,7 @@ def redactar_actas_reunion_ajax(request):
         elif request.POST['action'] == 'ver_formulario_buscar':
             plantillas = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
             try:
-                html = render_to_string("conv_fieldset_buscar.html", {'plantillas_disponibles': plantillas, 'g_e': g_e})
+                html = render_to_string("redactar_actas_fieldset_buscar.html", {'plantillas_disponibles': plantillas, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
@@ -1059,23 +1044,25 @@ def redactar_actas_reunion_ajax(request):
                     fin = datetime.now().date()
                 try:
                     id = request.POST['plantilla']
-                    plantilla = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True, id=id)
+                    plantilla = ConvReunion.objects.get(entidad=g_e.ronda.entidad, plantilla=True, id=id)
                 except:
                     plantilla = None
                 if plantilla:
-                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin) & Q(
-                        basada_en=plantilla)
+                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(
+                        fecha_hora__lte=fin) & Q(basada_en=plantilla) & Q(plantilla=False)
                 else:
-                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin)
-                convs = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=False)
+                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(
+                        fecha_hora__lte=fin) & Q(plantilla=False)
+                convs = ConvReunion.objects.filter(q1)
                 q_p1 = Q(convocatoria__in=convs)
                 q_p2 = Q(punto__icontains=request.POST['texto']) | Q(texto_acta__icontains=request.POST['texto'])
                 puntos = PuntoConvReunion.objects.filter(q_p1, q_p2)
-                convs_search = convs.filter(q1, Q(id__in=puntos.values_list('id', flat=True)))
-                html = render_to_string('conv_accordion.html', {'convs': convs_search})
+                actas_search = ActaReunion.objects.filter(Q(convocatoria__id__in=puntos.values_list('convocatoria__id', flat=True))).distinct()
+                html = render_to_string('redactar_actas_reunion_accordion.html', {'actas': actas_search, 'buscar': True})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+
 
 
 

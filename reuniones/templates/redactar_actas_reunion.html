@@ -42,51 +42,52 @@
         <div>
             <h4 class="title_page" id="titulo">Redacción de actas</h4>
         </div>
+        <div id="div_fieldsets"></div>
 
-
-        {#        <ul class="tabs" data-tab>#}
-        {#            <li class="tab-title active" data-id="0">#}
-        {#                <a href="#tab1">#}
-        {#                    <b id="texto0">Actas sin redactar/publicar</b>#}
-        {#                </a>#}
-        {#            </li>#}
-        {#            <li class="tab-title" data-id="1">#}
-        {#                <a href="#tab2">#}
-        {#                    <b id="texto1" style="color:white;">Actas publicadas</b>#}
-        {#                </a>#}
-        {#            </li>#}
-        {#        </ul>#}
-        {#        <div class="tabs-content">#}
-        {#            <div class="content active" id="tab1">#}
-        <dl class="accordion" data-accordion id="list_actas_sin_publicar">
-            {#                    {% if actas_publicadas %}#}
-            {% for acta in actas_publicadas %}
-                {% include "redactar_actas_reunion_accordion.html" %}
-            {% endfor %}
-            {#                    {% else %}#}
-            {#                        <h5 style="color: #008CBA;font-weight: 700;" id="h5_lasp">No hay actas sin#}
-            {#                            redactar/publicar</h5>#}
-            {#                    {% endif %}#}
+        <dl class="accordion" data-accordion id="list_actas">
+            {% include "redactar_actas_reunion_accordion.html" %}
         </dl>
-        {#            </div>#}
-        {#            <div class="content" id="tab2">#}
-        {#                <dl class="accordion" data-accordion id="list_actas_publicadas">#}
-        {#                    {% if actas_publicadas %}#}
-        {#                        {% for acta in actas_publicadas %}#}
-        {#                            {% include "redactar_actas_reunion_accordion.html" %}#}
-        {#                        {% endfor %}#}
-        {#                    {% else %}#}
-        {#                        <h5 style="color: #008CBA;font-weight: 700;" id="h5_lap">No hay actas publicadas</h5>#}
-        {#                    {% endif %}#}
-        {#                </dl>#}
-        {#            </div>#}
-        {#        </div>#}
         <br>
     </form>
 {% endblock %}
 
 {% block final %}
     <script>
+    habilita(['s_search']);
+        $('#search_sign').click(function (e) {
+            e.preventDefault();
+            $.post("/redactar_actas_reunion_ajax/", {action: 'ver_formulario_buscar'}, function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                    $('#div_fieldsets').html(data.html);
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+
+            });
+        });
+        $('body').on('click', '#busca_actas_manual', function (e) {
+            e.preventDefault();
+            $.post("/redactar_actas_reunion_ajax/", {
+                    action: 'busca_actas_manual',
+                    inicio: $('#id_fecha_inicio').val(),
+                    fin: $('#id_fecha_fin').val(),
+                    texto: $('#busca_texto_acta').val(),
+                    plantilla: $('#plantilla_busqueda').val()
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#list_actas").html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        $('body').on('click', '.fieldset_close', function (e) {
+            e.preventDefault();
+            $('.fieldset_box').hide();
+        });
         {#$(document).foundation({#}
         {#    tab: {#}
         {#        callback: function (tab) {#}
