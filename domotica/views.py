@@ -534,7 +534,7 @@ def ajax_configura_domotica(request):
         elif request.POST['action'] == 'copiar_dispositivo':
             try:
                 if g_e.gauser.username == 'gauss':
-                    viviendas = Vivienda.objects.filter(entidad=g_e.ronda.entidad, borrada=False)
+                    viviendas = Vivienda.objects.filter(borrada=False)
                 else:
                     viviendas = viviendas_autorizado(g_e)
                 vivienda = viviendas.get(id=request.POST['vivienda'])
