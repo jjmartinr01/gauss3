@@ -50,12 +50,12 @@ def pecjson(request, code):
     a = 'proyecto('
     b = json.dumps(data)
     c = ')'
-    jsonresponse = JsonResponse(data)
-    jsonresponse['Access-Control-Allow-Origin'] = 'https://stackoverflow.com'
-    return jsonresponse
+    # jsonresponse = JsonResponse(data)
+    # jsonresponse['Access-Control-Allow-Origin'] = 'https://stackoverflow.com'
+    # return jsonresponse
     # return JsonResponse(data)
     response = HttpResponse(a + b + c)
-    response['Access-Control-Allow-Origin'] = 'https://stackoverflow.com'
+    # response['Access-Control-Allow-Origin'] = 'https://stackoverflow.com'
     return response
 
 def pgajson(request, code):
