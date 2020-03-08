@@ -51,7 +51,9 @@ def pecjson(request, code):
     b = json.dumps(data)
     c = ')'
     # return JsonResponse(data)
-    return HttpResponse(a + b + c)
+    response = HttpResponse(a + b + c)
+    response['Access-Control-Allow-Origin'] = 'https://stackoverflow.com'
+    return response
 
 def pgajson(request, code):
     entidad = Entidad.objects.get(code=code)
