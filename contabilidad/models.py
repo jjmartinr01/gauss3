@@ -203,7 +203,7 @@ class Remesa(models.Model):
 
     @property
     def mndtid(self):
-        return "%s-%s-%s"[:34] % (self.ge.ronda.entidad.code, self.pk, self.creado.strftime('%s'))
+        return "%s-%s-%s"[:34] % (self.pk, self.ge.ronda.entidad.code, self.creado.strftime('%s'))
 
     @property
     def dbtrnm(self):
