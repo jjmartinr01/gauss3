@@ -41,6 +41,22 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 3,
      'parent': 'acceso_gestion_economica'
+     },
+    {'code_menu': 'acceso_firmar_ordenes_adeudo',
+     'texto_menu': 'Firmar órdenes de adeudo',
+     'href': 'firmar_ordenes_adeudo',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 3,
+     'parent': 'acceso_gestion_economica'
+     },
+    {'code_menu': 'acceso_mis_ordenes_adeudo',
+     'texto_menu': 'Firmar órdenes de adeudo',
+     'href': 'mis_ordenes_adeudo',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 3,
+     'parent': 'acceso_gestion_economica'
      }
 ]
 # Se añaden otros permisos para el usuario
