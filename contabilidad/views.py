@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import date, timedelta
 import os
+import base64
 import simplejson as json
 import re
 import string
@@ -8,8 +9,10 @@ import locale
 import xlwt
 from xlwt import Formula
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.core.files.base import ContentFile
 from django.utils.timezone import datetime
+from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.db.models import Q, Sum
@@ -594,9 +597,10 @@ def ajax_politica_cuotas(request):
                     politica.cuota = request.POST['cuota']
                     politica.save()
                 else:
-                    exentos_id = politica.exentos.all().values_list('id', flat=True)
-                    usuarios = usuarios_de_gauss(g_e.ronda.entidad, cargos=[politica.cargo]).exclude(
-                        gauser__id__in=exentos_id)
+                    # exentos_id = politica.exentos.all().values_list('id', flat=True)
+                    # usuarios = usuarios_de_gauss(g_e.ronda.entidad, cargos=[politica.cargo]).exclude(
+                    #     gauser__id__in=exentos_id)
+                    usuarios = politica.destinatarios
                 grupo = pass_generator(size=15, chars=string.ascii_letters + string.digits)
                 remesa_emitida = Remesa_emitida.objects.create(grupo=grupo, politica=politica)
                 # array_coutas identifica los enteros y floats almacenados en cuota
@@ -848,8 +852,87 @@ def lista_socios(request):
         #     Asiento.objects.create(partida=partida, nombre=nombre, cantidad=cantidad, creado=creado, concepto=concepto, modificado=creado)
         #   csv_file.close()
 
+@permiso_required('acceso_ordenes_adeudo')
+def ordenes_adeudo(request):
+    g_e = request.session['gauser_extra']
+    if request.method == 'POST':
+        orden = OrdenAdeudo.objects.get(id=request.POST['orden_id'], politica__entidad=g_e.ronda.entidad, firma__isnull=False)
+        fichero = 'orden_adeudo_directo_SEPA'
+        c = render_to_string('orden_adeudo2pdf.html', {'orden': orden})
+        fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_CONTABILIDAD, title='Orden de adeudo directo SEPA')
+        response = HttpResponse(fich, content_type='application/pdf')
+        nombre = slugify('%s_%s' % (orden.politica.concepto, orden.gauser.get_full_name()))
+        response['Content-Disposition'] = 'attachment; filename=' + nombre + '.pdf'
+        return response
+    ordenes_firmadas = OrdenAdeudo.objects.filter(fecha_firma__isnull=False, politica__entidad=g_e.ronda.entidad)
+    return render(request, "ordenes_adeudo.html",
+                  {
+                      'formname': 'ordenes_adeudo',
+                      'ordenes_firmadas': ordenes_firmadas
+                  })
 
-def orden_adeudo_directo_sepa(request, id):
+@login_required()
+def firmar_ordenes_adeudo(request):
+    g_e = request.session['gauser_extra']
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'guarda_firma':
+            try:
+                orden_adeudo = OrdenAdeudo.objects.get(id=request.POST['orden_adeudo'], gauser=g_e.gauser)
+                firma_data = request.POST['firma']
+                format, imgstr = firma_data.split(';base64,')
+                ext = format.split('/')[-1]
+                orden_adeudo.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+                orden_adeudo.fecha_firma = date.today()
+                orden_adeudo.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Error para encontrar OrdenAdeudo'})
+    if g_e.num_cuenta_bancaria:
+        familia = g_e.unidad_familiar
+        politicas = Politica_cuotas.objects.filter(entidad=g_e.ronda.entidad)
+        cargos_familia = [c for c in Cargo.objects.filter(id__in=familia.values_list('cargos__id', flat=True))]
+        q1 = Q(tipo='hermanos') & Q(cargo__in=cargos_familia)
+        q2 = Q(cargo__in=g_e.cargos.all())
+        pols = politicas.filter(q1 | q2)
+        for p in pols:
+            OrdenAdeudo.objects.get_or_create(gauser=g_e.gauser, politica=p)
+        q = Q(gauser=g_e.gauser) & Q(politica__entidad=g_e.ronda.entidad) & Q(fecha_firma__isnull=True)
+        try:
+            ordenes_firmar = OrdenAdeudo.objects.filter(q & Q(id=request.GET['id']))
+        except:
+            ordenes_firmar = OrdenAdeudo.objects.filter(q)
+        if ordenes_firmar.count() == 0:
+            aviso = 'No tienes ninguna una orden de adeudo que firmar.'
+            crear_aviso(request, False, aviso)
+            return redirect('/calendario/')
+        else:
+            return render(request, "firmar_ordenes_adeudo.html",
+                          {
+                          'formname': 'firmar_ordenes_adeudo',
+                          'ordenes_firmar': ordenes_firmar
+                      })
+
+@login_required()
+def mis_ordenes_adeudo(request):
+    g_e = request.session['gauser_extra']
+    if request.method == 'POST':
+        orden = OrdenAdeudo.objects.get(id=request.POST['orden_id'], politica__entidad=g_e.ronda.entidad, firma__isnull=False, gauser=g_e.gauser)
+        fichero = 'orden_adeudo_directo_SEPA'
+        c = render_to_string('orden_adeudo2pdf.html', {'orden': orden})
+        fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_CONTABILIDAD, title='Orden de adeudo directo SEPA')
+        response = HttpResponse(fich, content_type='application/pdf')
+        nombre = slugify('%s_%s' % (orden.politica.concepto, orden.gauser.get_full_name()))
+        response['Content-Disposition'] = 'attachment; filename=' + nombre + '.pdf'
+        return response
+    mis_ordenes_firmadas = OrdenAdeudo.objects.filter(gauser=g_e.gauser, fecha_firma__isnull=False, politica__entidad=g_e.ronda.entidad)
+    return render(request, "mis_ordenes_adeudo.html",
+                  {
+                      'formname': 'mis_ordenes_adeudo',
+                      'mis_ordenes_firmadas': mis_ordenes_firmadas
+                  })
+
+
+def orden_adeudo_directo_sepa(request, id=None):
     g_e = request.session['gauser_extra']
     politica = Politica_cuotas.objects.get(id=id)
     return render(request, "orden_domiciliacion_adeudo_directo_sepa.html",

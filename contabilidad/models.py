@@ -3,12 +3,14 @@ import re
 import os
 from django.db import models
 from django.utils.text import slugify
+from django.utils.timezone import datetime
 
 from autenticar.models import Gauser
+from bancos.views import num_cuenta2iban, asocia_banco_ge
 from entidades.models import Entidad, Subentidad, Ronda, Cargo, Gauser_extra
 
 from bancos.models import Banco
-from gauss.funciones import pass_generator
+from gauss.funciones import pass_generator, usuarios_ronda
 
 
 def update_file(instance, filename):
@@ -125,6 +127,38 @@ class Politica_cuotas(models.Model):
         verbose_name_plural = "Políticas de cuotas"
 
     @property
+    def destinatarios(self):
+        usuarios = usuarios_ronda(self.entidad.ronda, cargos=[self.cargo]).exclude(gauser__in=self.exentos.all())
+        familias = []
+        existentes = []
+        for u in usuarios:
+            if u not in existentes:
+                familiares = u.unidad_familiar
+                num_cuentas = familiares.values_list('num_cuenta_bancaria', flat=True)
+                deudores = familiares.filter(id__in=usuarios)
+                importe = sum(self.array_cuotas[:len(deudores)])
+                deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
+                rmtinf = '%s - Pago %s (%s)' % (self.concepto, self.get_tipo_cobro_display(), deudores_str)
+                try:
+                    orden_adeudo = self.ordenadeudo_set.filter(fecha_firma__isnull=False, firma__isnull=False,
+                                                               gauser__id__in=familiares.values_list('gauser__id',
+                                                                                                     flat=True))[0]
+                    dtofsgntr = orden_adeudo.fecha_firma
+                except:
+                    orden_adeudo = False
+                    dtofsgntr = datetime.now().date()
+                try:
+                    cuenta_banca = [n_c.replace(' ', '') for n_c in num_cuentas if len(str(n_c)) > 18][0]
+                    u.num_cuenta_bancaria = num_cuenta2iban(cuenta_banca)
+                    u.save()
+                    asocia_banco_ge(u)
+                    familia = (orden_adeudo,)
+                except:
+                    pass
+                familias.append()
+                existentes.extend([familiar for familiar in familiares])
+
+    @property
     def array_cuotas(self):
         if not self.cuota:
             self.cuota = '0'
@@ -202,6 +236,22 @@ class Remesa(models.Model):
     creado = models.DateTimeField('Fecha de creación', auto_now_add=True)
 
     @property
+    def deudores_str(self):
+        if self.emitida.politica.tipo == 'hermanos':
+            familiares = self.ge.unidad_familiar
+            deudores = familiares.filter(id__in=usuarios)
+            usuarios_id += list(deudores.values_list('id', flat=True))
+            n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
+            deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
+
+    @property
+    def rmtinf(self):
+        return '%s - Cobro %s, mes de %s (%s)' % (self.emitida.politica.concepto,
+                                                  self.emitida.politica.get_tipo_cobro_display(),
+                                                  self.creado.date().strftime('%B'),
+                                                  deudores_str)
+
+    @property
     def mndtid(self):
         return "%s-%s-%s"[:34] % (self.pk, self.ge.ronda.entidad.code, self.creado.strftime('%s'))
 
@@ -214,6 +264,7 @@ class Remesa(models.Model):
 
     def __str__(self):
         return '%s - %s - %s' % (self.emitida.politica.entidad.name, self.rmtinf, self.dbtrnm)
+
 
 # ------------------------------------------------------------ #
 # ------------------------------------------------------------ #
@@ -235,6 +286,7 @@ def at_02(nif):  # Diseñado a partir del documento "adeudos_sepa.pdf"
     c = '001'
     return a + b + c + d
 
+
 def update_firma(instance, filename):
     politica = instance.politica
     ruta = os.path.join("contabilidad/%s/firmas_adeudos/" % (politica.entidad.id),
@@ -248,6 +300,14 @@ class OrdenAdeudo(models.Model):
     politica = models.ForeignKey(Politica_cuotas, on_delete=models.CASCADE)
     firma = models.ImageField('Imagen de la firma del deudor', upload_to=update_firma, blank=True, null=True)
     fecha_firma = models.DateField("Fecha y hora en la que se realizó la firma", blank=True, null=True)
+
+    @property
+    def g_e(self):
+        return Gauser_extra.objects.get(gauser=self.gauser, ronda=self.politica.entidad.ronda)
+
+    @property
+    def mndtid(self):
+        return "%011d-%011d-%011d" % (self.pk, self.politica.entidad.code, self.gauser.pk)
 
     @property
     def debtor_name(self):
@@ -283,4 +343,3 @@ class OrdenAdeudo(models.Model):
 
     def __str__(self):
         return '%s - %s (%s)' % (self.politica.id, self.politica.entidad, self.gauser.get_full_name())
-

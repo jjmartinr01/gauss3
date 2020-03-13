@@ -33,6 +33,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 3,
      'parent': 'acceso_gestion_economica'
+     },
+    {'code_menu': 'acceso_ordenes_adeudo',
+     'texto_menu': 'Órdenes de adeudo',
+     'href': 'ordenes_adeudo',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 3,
+     'parent': 'acceso_gestion_economica'
      }
 ]
 # Se añaden otros permisos para el usuario

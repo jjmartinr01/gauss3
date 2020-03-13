@@ -1,0 +1,11 @@
+{% for politica in politicas %}
+    <dd class="accordion-navigation" id="accordion{{ politica.id }}"
+        style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+        <a href="#panel___{{ politica.id }}" style="font-weight: bold;">
+            <i id="circle{{ politica.id }}" class="fa fa-plus-circle circle_icon"></i>
+            {{ politica.concepto }} ({{ politica.cargo.cargo }}). {{ politica.get_tipo_cobro_display }}
+            de {{ politica.cuota }}€
+        </a>
+        <div id="panel{{ politica.id }}" class="content accordion-politica" data-id="{{ politica.id }}"></div>
+    </dd>
+{% endfor %}

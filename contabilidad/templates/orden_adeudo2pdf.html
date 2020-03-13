@@ -1,0 +1,60 @@
+{% load my_templatetags %}
+<h2 style="text-align: center;"><strong>Orden de domiciliación de adeudo directo SEPA</strong></h2>
+<h3 style="text-align: center;font-style: italic;"><strong>SEPA Direct Debit Mandate</strong></h3>
+
+<span style="font-size: small;">Orden de adeudo para: {{ orden.politica.concepto }}</span>
+
+<p>
+    <b>Referencia de la orden de domiciliación</b> / <i>Mandate reference</i>:<br>
+    <span style="background-color: #CCCCCC">{{ orden.mndtid }}</span>
+</p>
+<p>
+    <b>Identificador del acreedor</b> / <i>Creditor´s identifier</i>:<br><span
+        style="background-color: #CCCCCC">{{ orden.politica.entidad.nif|at_02 }}</span>
+</p>
+<p><b>Dirección</b> / <i>Address</i>:<br><span
+        style="background-color: #CCCCCC">{{ orden.politica.entidad.address }}</span></p>
+
+<p><b>Código Postal – Población – Provincia</b> / <i>Postal Code – City – Town</i>:<br>
+    <span style="background-color: #CCCCCC">{{ orden.politica.entidad.postalcode }} – {{ orden.politica.entidad.localidad }}
+    – {{ orden.politica.entidad.get_provincia_display }}</span>
+</p>
+
+<p><b>País</b> / <i>Country</i>:<br><span style="background-color: #CCCCCC">España</span></p>
+<p style="font-weight: bold;">Mediante la firma de esta orden de domiciliación, el deudor autoriza
+    (A) al
+    acreedor a enviar instrucciones a la entidad del deudor para adeudar en su cuenta y (B) a la
+    entidad para efectuar los adeudos en su cuenta siguiendo las instrucciones del acreedor. Como
+    parte de sus derechos, el deudor está legitimado al reembolso por su entidad en los términos y
+    condiciones del contrato suscrito con la misma. La solicitud de reembolso deberá efectuarse
+    dentro de las ocho semanas que siguen a la fecha de adeudo en su cuenta. Puede obtener
+    información adicional sobre sus derechos en su entidad financiera.</p>
+<p style="font-style: italic;">By signing this mandate form, you authorise (A) the Creditor to send
+    instructions to your bank to debit your account and (B) your bank to debit your account in
+    accordance with the instruction form the Creditor. As part of your rights, you are entitled to
+    a refund from your bank under the terms and conditions of your agreement with your bank. A
+    refund must be claimed within eight weeks starting from the date on which your account was
+    debited. Your rights are explained in a statement that you can obtain from your bank.</p>
+
+<p><b>Nombre del deudor</b> / <i>Debtor´s name</i>:<br><span
+        style="background-color: #CCCCCC">{{ orden.gauser.get_full_name }}</span></p>
+<p><b>Dirección del deudor</b> / <i>Address of the debtor</i>:<br><span
+        style="background-color: #CCCCCC">{{ orden.gauser.address }}</span></p>
+<p><b>Código Postal – Población – Provincia</b> / <i>Postal Code – City – Town</i>:<br>
+    <span style="background-color: #CCCCCC">{{ orden.gauser.postalcode }} – {{ orden.gauser.localidad }} – {{ orden.gauser.get_provincia_display }}</span>
+</p>
+<p><b>País del deudor</b> / <i>Country of the debtor</i>:<br><span style="background-color: #CCCCCC">España</span></p>
+
+<p><b>Switf BIC (puede contener 8 u 11 posiciones)</b> / <i>Switf BIC (up to 8 or 11
+    characters)</i>:<br><span style="background-color: #CCCCCC">{{ orden.g_e.banco.bic }}</span></p>
+<p><b>Número de cuenta – IBAN</b> / <i>Account number – IBAN</i>:<br>
+    <span style="background-color: #CCCCCC">{{ orden.g_e.num_cuenta_bancaria }}</span></p>
+<p><b>Tipo de pago: Pago recurrente</b> / Recurrent payment <b>o Pago único</b> /
+    One-off payment </b>:<br><span style="background-color: #CCCCCC">{{ orden.politica.get_seqtp_display }}</span></p>
+<p><b> Fecha – Localidad </b> / <i>Date – location in wich you are signing</i>:<br>
+    <span style="background-color: #CCCCCC">{% now "j \d\e F \d\e Y" %} – {{ orden.gauser.localidad }}</span></p>
+{#<p style="font-weight: bold;">TODOS LOS CAMPOS HAN DE SER CUMPLIMENTADOS OBLIGATORIAMENTE. UNA VEZ#}
+{#    FIRMADA, ESTA ORDEN DE DOMICILIACIÓN DEBE SER ENVIADA AL ACREEDOR PARA SU CUSTODIA.</p>#}
+{#<p style="font-style: italic;">ALL GAPS ARE MANDATORY. ONCE THIS MANDATE HAS BEEN SIGNED, MUST BE SENT#}
+{#    TO CREDITOR FOR STOGARE.</p>#}
+<p style="text-align: center;"><img src="{{ orden.firma.path }}" width="120px"></p>

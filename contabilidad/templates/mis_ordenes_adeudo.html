@@ -1,0 +1,54 @@
+{% extends "base_select2-4.html" %}
+{#{% extends "base.html" %}#}
+{% load contabilidad_extras %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <input type="hidden" id="action" name="action" value="descarga_orden">
+        <input type="hidden" id="orden_id" name="orden_id" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong> Mis órdenes de adeudo directo firmadas</strong></h4>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                {% if mis_ordenes_firmadas|length == 0 %}
+                    <p>No tienes firmada ninguna orden de adeudo directo SEPA.</p>
+                {% elif mis_ordenes_firmadas|length == 1 %}
+                    <p>Tienes firmada una orden de adeudo directo SEPA. Pincha sobre el enlace que se
+                        muestra a continuación para descargarla.</p>
+                    <p>La orden de adeudo no hace falta que la guardes tú. Debe ser custodiada
+                        por la entidad acreedora: {{ mis_ordenes_firmadas.0.politica.entidad.name }}.</p>
+                {% else %}
+                    <p>Tienes firmadas {{ mis_ordenes_firmadas|length }} órdenes de adeudo directo SEPA.
+                        Pincha sobre los enlaces que se muestran a continuación para descargarlas.</p>
+                    <p>Las órdenes de adeudo no hace falta que las guardes tú. Deben ser custodiadas
+                        por la entidad acreedora: {{ mis_ordenes_firmadas.0.politica.entidad.name }}.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% for orden in mis_ordenes_firmadas %}
+            <div class="row">
+                <div class="columns large-12">
+                    <a class="button descarga_orden" data-id="{{ orden.id }}">
+                        Descarga la orden asociada con: {{ orden.politica.concepto }}
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('body').on('click', '.descarga_orden', function (e) {
+            e.preventDefault();
+            $('#action').val('descarga_orden');
+            var orden_id = $(this).data('id');
+            $('#orden_id').val(orden_id);
+            document.{{formname}}.submit();
+        });
+    </script>
+{% endblock %}

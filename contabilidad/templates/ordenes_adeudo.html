@@ -1,0 +1,47 @@
+{% extends "base_select2-4.html" %}
+{#{% extends "base.html" %}#}
+{% load contabilidad_extras %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <input type="hidden" id="action" name="action" value="descarga_orden">
+        <input type="hidden" id="orden_id" name="orden_id" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong> Órdenes de adeudo directo firmadas</strong></h4>
+        </div>
+        <table style="width: 100%;">
+            <tr>
+                <th>Persona</th>
+                <th>Concepto</th>
+                <th>Fecha firma</th>
+                <th>Descargar</th>
+            </tr>
+            <tbody>
+            {% for orden in ordenes_firmadas %}
+                <tr>
+                    <td>{{ orden.gauser.get_full_name }}</td>
+                    <td>{{ orden.politica.concepto }}</td>
+                    <td>{{ orden.fecha_firma }}</td>
+                    <td><a class="descarga_orden" data-id="{{ orden.id }}"><i class="fa fa-download"></i> Descargar</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('body').on('click', '.descarga_orden', function (e) {
+            e.preventDefault();
+            $('#action').val('descarga_orden');
+            var orden_id = $(this).data('id');
+            $('#orden_id').val(orden_id);
+            document.{{formname}}.submit();
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,46 @@
+<div class="row">
+    <div class="columns large-6">
+        <b>Fecha de creación:</b> {{ politica.creado|date:"d \d\e F \d\e Y" }}
+    </div>
+    <div class="columns large-6">
+        <b>Última modificación:</b> {{ politica.modificado|date:"d \d\e F \d\e Y" }}
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="columns large-6"
+         title="Cuotas para el 2º, 3º y siguientes perfiles del mismo tipo en la familia">
+        <b>Descuentos:</b> {% autoescape off %}
+        {{ politica.descuentos }} {% endautoescape %}
+        {#                                {{ politica.descuentos|desglosar_descuentos }}#}
+    </div>
+    <div class="columns large-6">
+        <b>Fecha de emisión:</b> {% if politica.dia %} Día
+        {{ politica.dia }} {% else %} En el mes {% endif %}
+        {% if politica.tipo_cobro == 'ANU' %} de
+            {{ politica.mes|nombre_mes }} {% else %} de cada mes {% endif %}
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="columns large-12">
+        <dl>
+            <dt>Personas sujetas al pago de esta cuota
+                ({{ politica|number_no_exentos }}) <span data-tooltip aria-haspopup="true"
+                                                         class="has-tip"
+                                                         title="En rojo aparecen los usuarios que no tienen definida cuenta bancaria"><i
+                        class="fa fa-info-circle"></i></span>
+            </dt>
+            <dd id="lista_no_exentos{{ politica.id }}">
+            </dd>
+        </dl>
+    </div>
+</div>
+<hr>
+<div class="row" id="lista_exentos{{ politica.id }}">
+    {% include "exentos.html" %}
+</div>
+<hr>
+<div class="row" class="remesas_emitidas" id="r_e{{ politica.id }}">
+    {% include "remesas_emitidas.html" %}
+</div>
