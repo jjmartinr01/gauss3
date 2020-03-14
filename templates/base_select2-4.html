@@ -271,12 +271,12 @@
                                 {% if g_e|has_permiso:menu.menu_default.code_menu %}
                                     <li class="accordion-navigation">
                                         <a href="#{{ menu.menu_default.code_menu }}"
-                                           class="menu_head">{{ menu.texto_menu }}</a>
+                                           class="menu_head" id="acc{{ menu.id }}">{{ menu.texto_menu }}</a>
 
                                         <div id="{{ menu.menu_default.code_menu }}" class="content">
                                             {% for child in menu.children %}
                                                 {% if g_e|has_permiso:child.menu_default.code_menu %}
-                                                    <a href="/{{ child.menu_default.href }}/" class="">
+                                                    <a href="/{{ child.menu_default.href }}/" id="accsub{{ child.id }}">
                                                         <div class="menu_element">
                                                             {{ child.texto_menu }}
                                                         </div>
@@ -502,32 +502,42 @@
 
 
     function copiar_al_portapapeles(texto) {
-            $('#text_to_be_copied').val(texto);
-            var isiOSDevice = navigator.userAgent.match(/ipad|iphone/i);
-            if (isiOSDevice) {
-                var input = document.getElementById('text_to_be_copied');
-                var editable = input.contentEditable;
-                var readOnly = input.readOnly;
-                input.contentEditable = true;
-                input.readOnly = false;
-                var range = document.createRange();
-                range.selectNodeContents(input);
-                var selection = window.getSelection();
-                selection.removeAllRanges();
-                selection.addRange(range);
-                input.setSelectionRange(0, 999999);
-                input.contentEditable = editable;
-                input.readOnly = readOnly;
-            } else {
-                $('#text_to_be_copied').select();
-            }
-            document.execCommand("copy");
-            $("#text_to_be_copied").blur();
-            {# Esto es necesario para que no salga el teclado en el móvil #}
-            return true;
+        $('#text_to_be_copied').val(texto);
+        var isiOSDevice = navigator.userAgent.match(/ipad|iphone/i);
+        if (isiOSDevice) {
+            var input = document.getElementById('text_to_be_copied');
+            var editable = input.contentEditable;
+            var readOnly = input.readOnly;
+            input.contentEditable = true;
+            input.readOnly = false;
+            var range = document.createRange();
+            range.selectNodeContents(input);
+            var selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            input.setSelectionRange(0, 999999);
+            input.contentEditable = editable;
+            input.readOnly = readOnly;
+        } else {
+            $('#text_to_be_copied').select();
         }
+        document.execCommand("copy");
+        $("#text_to_be_copied").blur();
+        {# Esto es necesario para que no salga el teclado en el móvil #}
+        return true;
+    }
 </script>
 {% block final %}{% endblock %}
+<script>
+    {# Este script abrirá el menú lateral para indicar qué opción ha sido elegida. #}
+    setTimeout(function () {
+        let href_selected = window.location.pathname;
+        let a_tag_selected = $('a[href="' + href_selected + '"]');
+        let div_content = a_tag_selected.closest('.content');
+        div_content.addClass('active');
+        a_tag_selected.children('.menu_element').css('background-color', '#ffcccc');
+    }, 10);
+</script>
 </body>
 </html>
 

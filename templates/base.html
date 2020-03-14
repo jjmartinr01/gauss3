@@ -448,6 +448,16 @@
 
 </script>
 {% block final %}{% endblock %}
+<script>
+    {# Este script abrirá el menú lateral para indicar qué opción ha sido elegida. #}
+    setTimeout(function () {
+        let href_selected = window.location.pathname;
+        let a_tag_selected = $('a[href="' + href_selected + '"]');
+        let div_content = a_tag_selected.closest('.content');
+        div_content.addClass('active');
+        a_tag_selected.children('.menu_element').css('background-color', '#ffcccc');
+    }, 10);
+</script>
 </body>
 </html>
 
