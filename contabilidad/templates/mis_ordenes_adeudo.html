@@ -10,19 +10,51 @@
         <input type="hidden" id="orden_id" name="orden_id" value="">
 
         <div>
-            <h4 style="text-align: center;color: #008CBA;"><strong> Mis órdenes de adeudo directo firmadas</strong></h4>
+            <h4 style="text-align: center;color: #008CBA;"><strong> Mis órdenes de adeudo directo</strong></h4>
         </div>
+        {% if not g_e.num_cuenta_bancaria %}
+            <div class="row">
+                <div class="columns large-12">
+                    <div data-alert class="alert-box alert radius">
+                        <p style="font-weight: bold;">No tienes definido un número de cuenta bancaria y por tanto no es
+                            posible tener una relación de adeudo directo con {{ g_e.ronda.entidad.name }}.</p>
+                        <p style="font-weight: bold;"><a class="button info radius" href="/mis_datos/">Haz click aquí
+                            para definir tu número de cuenta bancaria.</a></p>
+                        <a href="#" class="close">&times;</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        {% if mis_ordenes_pendientes|length > 0 %}
+            <div class="row">
+                <div class="columns large-12">
+                    <div data-alert class="alert-box warning radius">
+                        <p style="font-weight: bold;">Tienes órdenes de adeudo directo con {{ g_e.ronda.entidad.name }}
+                            que están pendientes de firmar.</p>
+                        <p style="font-weight: bold;">Haz click en el siguiente botón
+                            para ver cuáles son y firmarlas si lo deseas.</p>
+                        <p style="font-weight: bold;">
+                            <a class="button info radius" href="/firmar_ordenes_adeudo/">Comprobar mis órdenes
+                            pendientes de firma</a></p>
+                        <a href="#" class="close">&times;</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
         <div class="row">
             <div class="columns large-12">
                 {% if mis_ordenes_firmadas|length == 0 %}
-                    <p>No tienes firmada ninguna orden de adeudo directo SEPA.</p>
+                    <p style="font-weight: bold;">No tienes firmada ninguna orden de adeudo directo SEPA.</p>
                 {% elif mis_ordenes_firmadas|length == 1 %}
-                    <p>Tienes firmada una orden de adeudo directo SEPA. Pincha sobre el enlace que se
+                    <p style="font-weight: bold;">
+                        Tienes firmada una orden de adeudo directo SEPA. Pincha sobre el enlace que se
                         muestra a continuación para descargarla.</p>
                     <p>La orden de adeudo no hace falta que la guardes tú. Debe ser custodiada
                         por la entidad acreedora: {{ mis_ordenes_firmadas.0.politica.entidad.name }}.</p>
                 {% else %}
-                    <p>Tienes firmadas {{ mis_ordenes_firmadas|length }} órdenes de adeudo directo SEPA.
+                    <p style="font-weight: bold;">
+                        Tienes firmadas {{ mis_ordenes_firmadas|length }} órdenes de adeudo directo SEPA.
                         Pincha sobre los enlaces que se muestran a continuación para descargarlas.</p>
                     <p>Las órdenes de adeudo no hace falta que las guardes tú. Deben ser custodiadas
                         por la entidad acreedora: {{ mis_ordenes_firmadas.0.politica.entidad.name }}.</p>

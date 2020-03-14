@@ -42,22 +42,43 @@
         <input type="hidden" name="action" id="action" value="">
 
         <div>
-            <h4 style="text-align: center;color: #008CBA;"><strong> Órdenes de adeudo directo SEPA</strong></h4>
+            <h4 style="text-align: center;color: #008CBA;"><strong> Órdenes de adeudo directo SEPA pendientes de
+                firma</strong></h4>
         </div>
-        <div class="row">
-            <div data-alert class="alert-box info radius">
-                <a href="#" class="close">&times;</a>
-                <p>Aquí puedes firmar las órdenes de adeudo que permitirán a la entidad
-                    {{ request.session.gauser_extra.ronda.entidad.name }} cobrarte las cuotas que se hayan
-                    determinado.</p>
-                <p>Si no estuvieras de acuerdo con esos cobros, basta con que no firmes las órdenes que a
-                    continuación se te presentan.</p>
-                {% if ordenes_firmar|length > 1 %}
-                    <p style="font-weight: bold;">Tienes {{ ordenes_firmar|length }} órdenes de adeudo para firmar.
-                        Para firmarlas selecciona una a una pulsando en los siguientes enlaces.</p>
-                {% endif %}
-            </div>
-        </div>
+        {% if not orden_seleccionada %}
+            {% if ordenes_firmar|length == 1 %}
+                <div class="row">
+                    <div data-alert class="alert-box warning radius">
+                        <p style="font-weight: bold;">Tienes una orden de adeudo directo con
+                            {{ g_e.ronda.entidad.name }} que está pendiente de firmar.</p>
+                        <p style="font-weight: bold;">Se muestra a contiuación. Léela y firma si estás de
+                            acuerdo.</p>
+                        <p style="font-weight: bold;">Debes entender que la firma de las órdenes de adeudo permitirán a
+                            la entidad {{ request.session.gauser_extra.ronda.entidad.name }} cobrarte las cuotas que se
+                            hayan determinado.</p>
+                        <p style="font-weight: bold;">Si no estuvieras de acuerdo con esos cobros, basta con que no
+                            firmes las orden que a continuación se te presenta.</p>
+                        <a href="#" class="close">&times;</a>
+                    </div>
+                </div>
+            {% elif ordenes_firmar|length > 1 %}
+                <div class="row">
+                    <div data-alert class="alert-box warning radius">
+                        <p style="font-weight: bold;">Tienes {{ ordenes_firmar|length }} órdenes de adeudo directo
+                            con {{ g_e.ronda.entidad.name }} que están pendientes de firmar.</p>
+                        <p style="font-weight: bold;">Haciendo click en los siguientes botones puedes verlas
+                            y después firmarlas, si así lo deseas.</p>
+                        <p style="font-weight: bold;">Debes entender que la firma de las órdenes de adeudo permitirán a
+                            la entidad {{ request.session.gauser_extra.ronda.entidad.name }} cobrarte las cuotas que se
+                            hayan determinado.</p>
+                        <p style="font-weight: bold;">Si no estuvieras de acuerdo con esos cobros, basta con que no
+                            firmes las órdenes que a continuación se te presentan.</p>
+                        <a href="#" class="close">&times;</a>
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+
         {% if ordenes_firmar|length > 1 %}
             <div class="row">
                 <div class="columns large-12">
@@ -210,9 +231,11 @@
                         </div>
                     </div>
                     <div class="row">
-                        <p style="font-weight: bold;">TODOS LOS CAMPOS HAN DE SER CUMPLIMENTADOS OBLIGATORIAMENTE. UNA VEZ
+                        <p style="font-weight: bold;">TODOS LOS CAMPOS HAN DE SER CUMPLIMENTADOS OBLIGATORIAMENTE. UNA
+                            VEZ
                             FIRMADA, ESTA ORDEN DE DOMICILIACIÓN DEBE SER ENVIADA AL ACREEDOR PARA SU CUSTODIA.</p>
-                        <p style="font-style: italic;">ALL GAPS ARE MANDATORY. ONCE THIS MANDATE HAS BEEN SIGNED, MUST BE SENT
+                        <p style="font-style: italic;">ALL GAPS ARE MANDATORY. ONCE THIS MANDATE HAS BEEN SIGNED, MUST
+                            BE SENT
                             TO CREDITOR FOR STOGARE.</p>
                     </div>
                 </div>
@@ -487,37 +510,7 @@
             e.preventDefault();
             limpiarCanvasFirma(canvas, ctx);
         });
-
-
-        // Set-up the canvas and add our event handlers after the page has loaded
-        {#function init() {#}
-        {#    // Get the specific canvas element from the HTML document#}
-        {#    canvas = document.getElementById('sketchpad');#}
-        {##}
-        {#    // If the browser supports the canvas tag, get the 2d drawing context for this canvas#}
-        {#    if (canvas.getContext)#}
-        {#        ctx = canvas.getContext('2d');#}
-        {##}
-        {#    // Check that we have a valid context to draw on/with before adding event handlers#}
-        {#    if (ctx) {#}
-        {#        // React to mouse events on the canvas, and mouseup on the entire document#}
-        {#        canvas.addEventListener('mousedown', sketchpad_mouseDown, false);#}
-        {#        canvas.addEventListener('mousemove', sketchpad_mouseMove, false);#}
-        {#        window.addEventListener('mouseup', sketchpad_mouseUp, false);#}
-        {##}
-        {#        // React to touch events on the canvas#}
-        {#        canvas.addEventListener('touchstart', sketchpad_touchStart, false);#}
-        {#        canvas.addEventListener('touchend', sketchpad_touchEnd, false);#}
-        {#        canvas.addEventListener('touchmove', sketchpad_touchMove, false);#}
-        {#    }#}
-        {# }#}
-        {##}
-        {#setTimeout(function () {#}
-        {#    init();#}
-        {# }, 500);#}
     </script>
-
-
 {% endblock %}
 
 
