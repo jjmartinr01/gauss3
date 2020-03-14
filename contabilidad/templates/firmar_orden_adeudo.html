@@ -61,7 +61,7 @@
         <div class="callout panel row">
             <div class="row">
                 <div class="columns large-12">
-                    <label><b>Referencia de la orden de domiciliación</b> / <i>Mandate reference</i>:
+                    <label><b>Referencia de la orden de domiciliación</b> / <i>Mandate reference</i> :
                         <input type="text" value="{{ orden_firma.mndtid }}"
                                name="mandate_reference"
                                readonly>
@@ -70,7 +70,7 @@
             </div>
             <div class="row">
                 <div class="columns large-12">
-                    <label><b>Identificador del acreedor</b> / <i>Creditor´s identifier</i>:
+                    <label><b>Identificador del acreedor</b> / <i>Creditor´s identifier</i> :
                         <input type="text"
                                value="{{ orden_firma.politica.entidad.nif|at_02 }}"
                                name="creditor_identifier" readonly></label>
@@ -78,7 +78,7 @@
             </div>
             <div class="row">
                 <div class="columns large-12">
-                    <label><b>Dirección</b> / <i>Address</i>:
+                    <label><b>Dirección</b> / <i>Address</i> :
                         <input type="text" value="{{ orden_firma.politica.entidad.address }}"
                                name="creditor_address" readonly></label>
                 </div>
@@ -86,7 +86,7 @@
 
             <div class="row">
                 <div class="columns large-12">
-                    <label><b>Código Postal – Población – Provincia</b> / <i>Postal Code – City – Town</i>:
+                    <label><b>Código Postal – Población – Provincia</b> / <i>Postal Code – City – Town</i> :
                         <input type="text"
                                value="{{ orden_firma.politica.entidad.postalcode }} – {{ orden_firma.politica.entidad.localidad }} – {{ orden_firma.politica.entidad.get_provincia_display }}"
                                name="creditor_postalcode_city_town" readonly></label>
@@ -95,7 +95,7 @@
 
             <div class="row">
                 <div class="columns large-12">
-                    <label><b>País</b> / <i>Country</i>:
+                    <label><b>País</b> / <i>Country</i> :
                         <input type="text" value="España" name="creditor_country" readonly></label>
                 </div>
             </div>
@@ -120,21 +120,21 @@
         <div class="callout panel row">
             <div class="row">
                 <div class="columns large-12">
-                    <label><b>Nombre del deudor</b> / <i>Debtor´s name</i>:
+                    <label><b>Nombre del deudor</b> / <i>Debtor´s name</i> :
                         <input type="text" value="{{ orden_firma.gauser.get_full_name }}" readonly
                                name="debtor_name"></label>
                 </div>
             </div>
             <div class="row">
                 <div class="columns large-12">
-                    <label><b>Dirección del deudor</b> / <i>Address of the debtor</i>:
+                    <label><b>Dirección del deudor</b> / <i>Address of the debtor</i> :
                         <input type="text" readonly value="{{ orden_firma.gauser.address }}"
                                name="debtor_address"></label>
                 </div>
             </div>
             <div class="row">
                 <div class="columns large-12">
-                    <label><b>Código Postal – Población – Provincia</b> / <i>Postal Code – City – Town</i>:
+                    <label><b>Código Postal – Población – Provincia</b> / <i>Postal Code – City – Town</i> :
                         <input type="text" readonly
                                value="{{ orden_firma.gauser.postalcode }} – {{ orden_firma.gauser.localidad }} – {{ orden_firma.gauser.get_provincia_display }}"
                                name="debtor_postalcode_city_town"></label>
@@ -143,7 +143,7 @@
 
             <div class="row">
                 <div class="columns large-12">
-                    <label><b>País del deudor</b> / <i>Country of the debtor</i>:
+                    <label><b>País del deudor</b> / <i>Country of the debtor</i> :
                         <input type="text" value="España" readonly name="debtor_country"></label>
                 </div>
             </div>
@@ -151,22 +151,22 @@
             <div class="row">
                 <div class="columns large-12">
                     <label><b>Switf BIC (puede contener 8 u 11 posiciones)</b> / <i>Switf BIC (up to 8 or 11
-                        characters)</i>:
+                        characters)</i> :
                         <input type="text" readonly value="{{ orden_firma.g_e.banco.bic }}"
                                name="debtor_bic"></label>
                 </div>
             </div>
             <div class="row">
                 <div class="columns large-12">
-                    <label><b>Número de cuenta – IBAN</b> / <i>Account number – IBAN</i>:
+                    <label><b>Número de cuenta – IBAN</b> / <i>Account number – IBAN</i> :
                         <input type="text" value="{{ orden_firma.g_e.num_cuenta_bancaria }}" readonly
                                name="debtor_account"></label>
                 </div>
             </div>
             <div class="row">
                 <div class="columns large-12">
-                    <label><b>Tipo de pago: Pago recurrente</b> / Recurrent payment <b>o Pago único</b> /
-                        One-off payment </b>:
+                    <label><b>Tipo de pago: Pago recurrente</b> / <i>Recurrent payment</i> <b>o Pago único</b> /
+                        <i>One-off payment</i> :
                         <input type="text" value="{{ orden_firma.politica.get_seqtp_display }}" readonly
                                name="debtor_typseq">
                     </label>
@@ -176,7 +176,7 @@
             <div class="row">
                 <div class="columns large-12">
                     {% with now as hoy %}
-                        <label><b> Fecha – Localidad </b> / <i>Date – location in wich you are signing</i>:
+                        <label><b> Fecha – Localidad </b> / <i>Date – location in wich you are signing</i> :
                             <input readonly type="text"
                                    value="{% now "j \d\e F \d\e Y" %} – {{ orden_firma.gauser.localidad }}"
                                    name="debtor_date_sign"></label>
