@@ -43,7 +43,7 @@ MENU_DEFAULT = [
      'parent': 'acceso_gestion_economica'
      },
     {'code_menu': 'acceso_mis_ordenes_adeudo',
-     'texto_menu': 'Firmar órdenes de adeudo',
+     'texto_menu': 'Mis órdenes de adeudo',
      'href': 'mis_ordenes_adeudo',
      'nivel': 2,
      'tipo': 'Accesible',
