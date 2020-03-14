@@ -39,7 +39,7 @@
 
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
-        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="action" id="action" value="guarda_firma">
 
         <div>
             <h4 style="text-align: center;color: #008CBA;"><strong> Órdenes de adeudo directo SEPA pendientes de
@@ -272,10 +272,8 @@
             $('#action').val('guarda_firma');
             {#var firma = document.getElementById('sketchpad').toDataURL();#}
 
-
             var cnvs = auto_crop_image(canvas);
             var firma = cnvs.toDataURL();
-
 
             if (firma.length < 1000) {
                 show_mensajes({
@@ -285,14 +283,14 @@
             } else {
                 $('#firma').val(firma);
                 var formulario = $('#' + '{{formname}}').formSerialize();
-                $.post("/ordenes_adeudo/", formulario,
+                $.post("/firmar_orden_adeudo/{{ orden_firma.id }}/", formulario,
                     function (data) {
                         if (data.ok) {
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $("#update_error").show().delay(1500).fadeOut();
                         }
-                        window.location.href = '/ordenes_adeudo/';
+                        window.location.href = '/mis_ordenes_adeudo/';
                     });
             }
         });
