@@ -853,7 +853,7 @@ def lista_socios(request):
         #   csv_file.close()
 
 
-def comprueba_ordenes_adeudo(g_e, id_oa=None):
+def comprueba_ordenes_adeudo(g_e):
     if g_e.num_cuenta_bancaria:
         familia = g_e.unidad_familiar
         politicas = Politica_cuotas.objects.filter(entidad=g_e.ronda.entidad)
@@ -864,12 +864,9 @@ def comprueba_ordenes_adeudo(g_e, id_oa=None):
         for p in pols:
             OrdenAdeudo.objects.get_or_create(gauser=g_e.gauser, politica=p)
         q = Q(gauser=g_e.gauser) & Q(politica__entidad=g_e.ronda.entidad) & Q(fecha_firma__isnull=True)
-        if id_oa:
-            return OrdenAdeudo.objects.filter(q & Q(id=id_oa)), True
-        else:
-            return OrdenAdeudo.objects.filter(q), True
+        return OrdenAdeudo.objects.filter(q)
     else:
-        return OrdenAdeudo.objects.none(), False
+        return OrdenAdeudo.objects.none()
 
 
 @permiso_required('acceso_ordenes_adeudo')
@@ -894,7 +891,7 @@ def ordenes_adeudo(request):
 
 
 @login_required()
-def firmar_ordenes_adeudo(request):
+def firmar_orden_adeudo(request, id_oa):
     g_e = request.session['gauser_extra']
     if request.method == 'POST' and request.is_ajax():
         if request.POST['action'] == 'guarda_firma':
@@ -906,31 +903,22 @@ def firmar_ordenes_adeudo(request):
                 orden_adeudo.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
                 orden_adeudo.fecha_firma = date.today()
                 orden_adeudo.save()
+                crear_aviso(request, False, 'Orden de adeudo firmada correctamente.')
                 return JsonResponse({'ok': True})
             except:
-                return JsonResponse({'ok': False, 'mensaje': 'Error para encontrar OrdenAdeudo'})
+                crear_aviso(request, False, 'Se ha producido un error en tu solicitud.')
+                return JsonResponse({'ok': False})
     try:
-        ordenes_firmar, num_cuenta = comprueba_ordenes_adeudo(g_e, request.GET['id'])
-        orden_seleccionada = True
+        orden_firma = OrdenAdeudo.objects.get(gauser=g_e.gauser, politica__entidad=g_e.ronda.entidad,
+                                              fecha_firma__isnull=True, id=id_oa)
     except:
-        ordenes_firmar, num_cuenta = comprueba_ordenes_adeudo(g_e)
-        orden_seleccionada = False
-    if ordenes_firmar.count() == 0 and num_cuenta:
-        aviso = 'No tienes ninguna una orden de adeudo que firmar.'
-        crear_aviso(request, False, aviso)
+        crear_aviso(request, False, 'Se ha producido un error en tu solicitud.')
         return redirect('/mis_ordenes_adeudo/')
-    elif not num_cuenta:
-        aviso1 = '<p>No tienes definido un número de cuenta y por tanto no puedes tener adeudos directos.</p>'
-        aviso2 = '<p>En este apartado (Mis datos) puedes rellenar el número de cuenta si lo deseas.</p>'
-        crear_aviso(request, False, (aviso1 + aviso2))
-        return redirect('/mis_datos/')
-    else:
-        return render(request, "firmar_ordenes_adeudo.html",
-                      {
-                          'formname': 'firmar_ordenes_adeudo',
-                          'ordenes_firmar': ordenes_firmar,
-                          'orden_seleccionada': orden_seleccionada
-                      })
+    return render(request, "firmar_orden_adeudo.html",
+                  {
+                      'formname': 'firmar_orden_adeudo',
+                      'orden_firma': orden_firma
+                  })
 
 
 @login_required()
@@ -948,26 +936,11 @@ def mis_ordenes_adeudo(request):
         return response
     mis_ordenes_firmadas = OrdenAdeudo.objects.filter(gauser=g_e.gauser, fecha_firma__isnull=False,
                                                       politica__entidad=g_e.ronda.entidad)
-    mis_ordenes_pendientes, num_cuenta = comprueba_ordenes_adeudo(g_e)
+    mis_ordenes_pendientes = comprueba_ordenes_adeudo(g_e)
     return render(request, "mis_ordenes_adeudo.html",
                   {
                       'formname': 'mis_ordenes_adeudo',
                       'mis_ordenes_firmadas': mis_ordenes_firmadas,
                       'mis_ordenes_pendientes': mis_ordenes_pendientes,
                       'g_e': g_e
-                  })
-
-
-def orden_adeudo_directo_sepa(request, id=None):
-    g_e = request.session['gauser_extra']
-    politica = Politica_cuotas.objects.get(id=id)
-    return render(request, "orden_domiciliacion_adeudo_directo_sepa.html",
-                  {
-                      'formname': 'orden_adeudo_directo_sepa',
-                      # 'remesas_emitidas': remesas_emitidas,
-                      'g_e': g_e,
-                      'hoy': datetime.today(),
-                      'politica': politica,
-                      'logo': g_e.ronda.entidad.anagrama.path,
-                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })

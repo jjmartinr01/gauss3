@@ -14,9 +14,8 @@ urlpatterns = [
     path('politica_cuotas/', views.politica_cuotas),
     path('ajax_politica_cuotas/', views.ajax_politica_cuotas),
     path('ordenes_adeudo/', views.ordenes_adeudo),
-    path('firmar_ordenes_adeudo/', views.firmar_ordenes_adeudo),
+    path('firmar_orden_adeudo/<int:id_oa>/', views.firmar_orden_adeudo),
     path('mis_ordenes_adeudo/', views.mis_ordenes_adeudo),
-    path('orden_adeudo_directo_sepa/<int:id>/', views.orden_adeudo_directo_sepa)
 ]
 
 # urlpatterns = [
