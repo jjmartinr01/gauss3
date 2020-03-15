@@ -57,8 +57,7 @@
                     </Othr>
                 </PrvtId>
               </Id>
-        </CdtrSchmeId>
-        {% for d in destinatarios %}
+        </CdtrSchmeId>{% for d in destinatarios %}{% if d.oa %}
         <DrctDbtTxInf>
             <PmtId>
                 <EndToEndId>{{remesa_emitida.grupo}}-{{ remesa_emitida.creado|date:"Ymd-H-i" }}-R{{forloop.counter}}</EndToEndId>
@@ -87,8 +86,7 @@
             <RmtInf>
                 <Ustrd>{{remesa_emitida.rmtinf}} - {{ d.texto }}</Ustrd>
             </RmtInf>
-        </DrctDbtTxInf>
-        {% endfor %}
+        </DrctDbtTxInf>{% endif %}{% endfor %}
     </PmtInf>
 </CstmrDrctDbtInitn>
 </Document>

@@ -1,4 +1,4 @@
-{% load contabilidad_extras %}
+{% load contabilidad_extras %}{% load my_templatetags %}
 <div class="columns large-12">
     {% if  politica|total_remesas_emitidas > 0 %}
         <b>Remesas emitidas:</b>
@@ -6,7 +6,7 @@
         <b>No se ha emitido ninguna remesa</b>
     {% endif %}
 </div>
-{% for remesa in politica|remesas_emitidas %}
+{% for remesa in remitidas %}
     <div class="row">
         <div class="columns large-4">
             {{ remesa.creado }}
@@ -28,10 +28,36 @@
         <hr style="border: 0; height: 1px;text-align: center; background-image: -moz-linear-gradient(left, #fff, #eee, #fff);">
     </div>
 {% endfor %}
-{% if politica|total_remesas_emitidas > 3 %}
-    <div class="row">
-        <div class="columns large-12" style="text-align: center;">
-            <a class="ver_todas_remesas_emitidas">Ver todas las remesas emitidas</a>
-        </div>
+
+<br>
+<div class="row">
+    <div class="columns large-12">
+        <ul class="pagination" role="menubar" aria-label="Pagination">
+            {% if remitidas.has_previous %}
+                <li class="arrow">
+                    <a class="go_page" data-page="{{ remitidas.previous_page_number }}" data-politica="{{ politica.id }}">&laquo; Anterior</a>
+                </li>
+            {% else %}
+                <li class="arrow unavailable" aria-disabled="true">
+                    <a class="go_page">&laquo; Anterior</a>
+                </li>
+            {% endif %}
+            {% for page in remitidas.paginator.num_pages|number_range %}
+                {% if page == remitidas.number %}
+                    <li class="current"><a href="" class="go_page" data-page="{{ page }}" data-politica="{{ politica.id }}">{{ page }}</a></li>
+                {% else %}
+                    <li><a class="go_page" data-page="{{ page }}" data-politica="{{ politica.id }}">{{ page }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if remitidas.has_next %}
+                <li class="arrow">
+                    <a class="go_page" data-page="{{ remitidas.next_page_number }}" data-politica="{{ politica.id }}">Siguiente &raquo;</a>
+                </li>
+                {% else %}
+                <li class="arrow unavailable" aria-disabled="true">
+                    <a class="go_page">Siguiente &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
     </div>
-{% endif %}
+</div>

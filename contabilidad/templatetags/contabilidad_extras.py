@@ -53,6 +53,9 @@ def remesas_emitidas(politica):
 def total_remesas_emitidas(politica):
     return Remesa_emitida.objects.filter(politica=politica, visible=True).count()
 
+@register.filter
+def exentos(politica):
+    return Gauser_extra.objects.filter(ronda=politica.entidad.ronda, gauser__in=politica.exentos.all())
 
 @register.filter
 def number_no_exentos(politica):

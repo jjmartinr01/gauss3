@@ -10,6 +10,7 @@ import xlwt
 from xlwt import Formula
 
 from django.shortcuts import render, redirect
+from django.core.paginator import Paginator
 from django.core.files.base import ContentFile
 from django.utils.timezone import datetime
 from django.utils.text import slugify
@@ -442,7 +443,7 @@ class Politica_cuotasForm(forms.ModelForm):
 def create_remesas_info_xls(remesa_emitida, destinatarios):
     importes = remesa_emitida.politica.array_cuotas
     ctrlsum, no_cobrado, nboftxs = 0, 0, 0  # ctrlsum: Cantidad total, nboftxs: Número total de remesas
-    ruta = MEDIA_CONTABILIDAD + str(destinatarios[0].ronda.entidad.code) + '/'
+    ruta = MEDIA_CONTABILIDAD + str(destinatarios[0]['ge'].ronda.entidad.code) + '/'
     if not os.path.exists(ruta):
         os.makedirs(ruta)
     fichero_xls = '%s.xls' % (remesa_emitida.grupo)
@@ -462,7 +463,6 @@ def create_remesas_info_xls(remesa_emitida, destinatarios):
     for destinatario in destinatarios:
         importe = sum(importes[:destinatario['num']])
         try:
-            fila_excel_remesas += 1
             dbtrnm = destinatario['oa'].gauser.get_full_name()[:69]
             rmtinf = '%s - %s (%s) - %s' % (remesa_emitida.politica.concepto,
                                             remesa_emitida.politica.get_tipo_cobro_display(),
@@ -470,6 +470,7 @@ def create_remesas_info_xls(remesa_emitida, destinatarios):
                                             destinatario['texto'])
             dbtriban = destinatario['oa'].debtor_account
             instdamt = sum(importes[:destinatario['num']])
+            fila_excel_remesas += 1
             wr.write(fila_excel_remesas, 0, dbtrnm)
             wr.write(fila_excel_remesas, 1, rmtinf)
             wr.write(fila_excel_remesas, 2, dbtriban)
@@ -477,10 +478,10 @@ def create_remesas_info_xls(remesa_emitida, destinatarios):
             ctrlsum += importe
             nboftxs += 1
         except Exception as e:
-            fila_excel_avisos += 1
             aviso1 = 'Error al crear la remesa para %s' % (destinatario['ge'].gauser.get_full_name())
             existe_oa = 'Sí' if destinatario['oa'] else 'No'
             aviso2 = '%s tiene una orden de adeudo directa firmada' % (existe_oa)
+            fila_excel_avisos += 1
             wa.write(fila_excel_avisos, 0, aviso1)
             wa.write(fila_excel_avisos, 5, aviso2)
             wa.write(fila_excel_avisos, 10, 'Importe: %s' % (importe))
@@ -567,7 +568,6 @@ def politica_cuotas(request):
             response['Content-Disposition'] = 'attachment; filename=Remesas_%s-%s-%s.xls' % (
                 remesa_emitida.creado.year, remesa_emitida.creado.month, remesa_emitida.creado.day)
             return response
-
     try:
         pext = Politica_cuotas.objects.get(entidad=g_e.ronda.entidad, tipo='extraord', seqtp='OOFF')
     except:
@@ -606,11 +606,63 @@ def ajax_politica_cuotas(request):
     if request.is_ajax():
         g_e = request.session['gauser_extra']
         if request.method == 'POST':
-            if request.POST['action'] == 'contenido_politica_cuotas':
+            if request.POST['action'] == 'open_accordion':
+                politica = Politica_cuotas.objects.get(id=request.POST['id'])
+                remesas_emitidas = Remesa_emitida.objects.filter(politica=politica)
+                paginator= Paginator(remesas_emitidas, 5)
+                html = render_to_string('politica_cuotas_accordion_content.html',
+                                        {'politica': politica, 'g_e': g_e, 'remitidas': paginator.page(1)})
+                return JsonResponse({'ok': True, 'html': html})
+            elif request.POST['action'] == 'update_page':
+                try:
+                    politica = Politica_cuotas.objects.get(id=request.POST['politica'])
+                    total_remesas_emitidas = Remesa_emitida.objects.filter(politica=politica)
+                    paginator = Paginator(total_remesas_emitidas, 5)
+                    remitidas = paginator.page(int(request.POST['page']))
+                    html = render_to_string('remesas_emitidas.html', {'remitidas': remitidas, 'politica': politica})
+                    return JsonResponse({'ok': True, 'html': html, 'politica': politica.id})
+                except:
+                    return JsonResponse({'ok': False})
+            elif request.POST['action'] == 'update_exentos':
+                try:
+                    politica = Politica_cuotas.objects.get(id=request.POST['politica'], entidad=g_e.ronda.entidad)
+                    if g_e.has_permiso('crea_politica_cuotas') or g_e.has_permiso('edita_politica_cuotas'):
+                        exentos = Gauser_extra.objects.filter(ronda=g_e.ronda,
+                                                                 id__in=request.POST.getlist('exentos[]'))
+                        exentos_gauser = Gauser.objects.filter(id__in=exentos.values_list('gauser__id', flat=True))
+                        politica.exentos.clear()
+                        politica.exentos.add(*exentos_gauser)
+                        politica.save()
+                        return JsonResponse({'ok': True, 'exentos': exentos_gauser.count()})
+                except:
+                    return JsonResponse({'ok': False})
+            elif request.POST['action'] == 'update_campo_text':
+                try:
+                    politica = Politica_cuotas.objects.get(id=request.POST['politica'], entidad=g_e.ronda.entidad)
+                    if g_e.has_permiso('crea_politica_cuotas') or g_e.has_permiso('edita_politica_cuotas'):
+                        setattr(politica, request.POST['campo'], request.POST['valor'])
+                        politica.save()
+                        return JsonResponse({'ok': True})
+                except:
+                    return JsonResponse({'ok': False})
+            elif request.POST['action'] == 'update_campo_select':
+                try:
+                    politica = Politica_cuotas.objects.get(id=request.POST['politica'], entidad=g_e.ronda.entidad)
+                    if g_e.has_permiso('crea_politica_cuotas') or g_e.has_permiso('edita_politica_cuotas'):
+                        campo = request.POST['campo']
+                        valor = request.POST['valor']
+                        if campo == 'cargo':
+                            valor = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['valor'])
+                        setattr(politica, campo, valor)
+                        politica.save()
+                        return JsonResponse({'ok': True})
+                except:
+                    return JsonResponse({'ok': False})
+            elif request.POST['action'] == 'contenido_politica_cuotas':
                 politica = Politica_cuotas.objects.get(id=request.POST['id'])
                 data = render_to_string('contenido_politica_cuotas.html', {'politica': politica})
                 return HttpResponse(data)
-            if request.POST['action'] == 'mod_politica':
+            elif request.POST['action'] == 'mod_politica':
                 politica = Politica_cuotas.objects.get(id=request.POST['id'])
                 p_id = politica.id
                 # keys = ('id', 'text')
@@ -620,12 +672,12 @@ def ajax_politica_cuotas(request):
                 form = Politica_cuotasForm(instance=politica, entidad=g_e.ronda.entidad)
                 html = render_to_string("form_politica_cuoutas.html", {'form': form, 'exentos': exentos, 'p_id': p_id})
                 return JsonResponse({'html': html, 'ok': True})
-            if request.POST['action'] == 'crear_politica_cuota':
+            elif request.POST['action'] == 'crear_politica_cuota':
                 form = Politica_cuotasForm(entidad=g_e.ronda.entidad)
                 data = render_to_string("form_politica_cuoutas.html", {'form': form, },
                                         request=request)
                 return HttpResponse(data)
-            if request.POST['action'] == 'borrar_remesa_emitida':
+            elif request.POST['action'] == 'borrar_remesa_emitida':
                 remesa = Remesa_emitida.objects.get(id=request.POST['id'])
                 remesa.visible = False
                 remesa.save()
@@ -634,20 +686,20 @@ def ajax_politica_cuotas(request):
                                         {'remesas_emitidas': remesas_emitidas, 'politica': remesa.politica},
                                         request=request)
                 return HttpResponse(data)
-            if request.POST['action'] == 'cargar_no_exentos':
+            elif request.POST['action'] == 'cargar_no_exentos':
                 politica = Politica_cuotas.objects.get(id=request.POST['id'])
                 num = int(request.POST['num'])
                 data = render_to_string("no_exentos.html", {'numero': num, 'politica': politica})
                 return HttpResponse(data)
-            if request.POST['action'] == 'cargar_exentos':
+            elif request.POST['action'] == 'cargar_exentos':
                 politica = Politica_cuotas.objects.get(id=request.POST['id'])
                 num = int(request.POST['num'])
                 data = render_to_string("exentos.html", {'numero': num, 'politica': politica})
                 return HttpResponse(data)
-            if request.POST['action'] == 'generar_remesas':
+            elif request.POST['action'] == 'generar_remesas':
                 # Para validar el xml generado
                 # http://www.mobilefish.com/services/sepa_xml_validation/sepa_xml_validation.php
-                politica = Politica_cuotas.objects.get(id=request.POST['id'])
+                politica = Politica_cuotas.objects.get(id=request.POST['politica'])
                 if politica.tipo == 'extraord':
                     politica.concepto = request.POST['concepto']
                     politica.cuota = request.POST['cuota']
@@ -682,7 +734,7 @@ def ajax_politica_cuotas(request):
                 xml = render_to_string("xml_gauss.xml",
                                        {'remesa_emitida': remesa_emitida, 'destinatarios': destinatarios})
                 fichero = '%s.xml' % (remesa_emitida.grupo)
-                ruta = MEDIA_CONTABILIDAD + str(destinatarios[0].ronda.entidad.code) + '/'
+                ruta = MEDIA_CONTABILIDAD + str(g_e.ronda.entidad.code) + '/'
                 xmlfile = open(ruta + '/' + fichero, "w+")
                 xmlfile.write(xml)
                 xmlfile.close()

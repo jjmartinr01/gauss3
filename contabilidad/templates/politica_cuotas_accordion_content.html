@@ -1,3 +1,25 @@
+{% load contabilidad_extras %}{% load my_templatetags %}
+<div class="row">
+    <div class="columns large-6">
+        <b>Fecha de creación:</b> {{ politica.creado|date:"d \d\e F \d\e Y" }}<br>
+        <b>Última modificación:</b> {{ politica.modificado|date:"d \d\e F \d\e Y" }}
+    </div>
+    <div class="columns large-6">
+        <ul class="button-group radius">
+            <li title="Genera las remesas asociadas a esta política de cuotas">
+                <a data-politica="{{ politica.id }}" class="button generar_remesas"><i
+                        class="fa fa-money"></i> Remesa</a></li>
+            {% if g_e|has_permiso:'crea_politica_cuotas' or g_e|has_permiso:'edita_politica_cuotas' %}
+                <li title="Haz click aquí para poner los campos en modo edición">
+                    <a data-politica="{{ politica.id }}" class="button editar_politica"><i
+                            class="fa fa-pencil"></i> Editar</a></li>
+            {% endif %}
+            <li title="Borrar esta política de cuotas y todas las remesas asociadas">
+                <a data-politica="{{ politica.id }}" class="button borrar_politica alert"><i
+                        class="fa fa-trash-o"></i> Borrar</a></li>
+        </ul>
+    </div>
+</div>
 <div class="row">
     <div class="columns large-6">
         <b>Fecha de creación:</b> {{ politica.creado|date:"d \d\e F \d\e Y" }}
@@ -6,41 +28,384 @@
         <b>Última modificación:</b> {{ politica.modificado|date:"d \d\e F \d\e Y" }}
     </div>
 </div>
-<hr>
+
 <div class="row">
-    <div class="columns large-6"
-         title="Cuotas para el 2º, 3º y siguientes perfiles del mismo tipo en la familia">
-        <b>Descuentos:</b> {% autoescape off %}
-        {{ politica.descuentos }} {% endautoescape %}
-        {#                                {{ politica.descuentos|desglosar_descuentos }}#}
+    <div class="large-6 columns">
+        <label>Concepto
+            <input type="text" class="campo_text" data-campo="concepto" data-politica="{{ politica.id }}"
+                   value="{{ politica.concepto }}" readonly>
+        </label>
     </div>
-    <div class="columns large-6">
-        <b>Fecha de emisión:</b> {% if politica.dia %} Día
-        {{ politica.dia }} {% else %} En el mes {% endif %}
-        {% if politica.tipo_cobro == 'ANU' %} de
-            {{ politica.mes|nombre_mes }} {% else %} de cada mes {% endif %}
+    <div class="large-6 columns">
+        <label>Tipo de cuota
+            <select class="campo_select" data-campo="tipo" data-politica="{{ politica.id }}" disabled>
+                <option value="">-------</option>
+                <option value="fija" {% if politica.tipo == 'fija' %}selected{% endif %}>
+                    Cuota fija
+                </option>
+                <option value="hermanos" {% if politica.tipo == 'hermanos' %}selected{% endif %}>
+                    Cuota condicionada al número de hermanos
+                </option>
+                <option value="vut" {% if politica.tipo == 'vut' %}selected{% endif %}>
+                    Cuota asociada al número de VUT
+                </option>
+            </select>
+        </label>
     </div>
 </div>
-<hr>
+<div class="row">
+    <div class="large-3 columns">
+        <label>Tipo de cobro
+            <select class="campo_select" data-campo="tipo_cobro" data-politica="{{ politica.id }}" disabled>
+                <option value="MEN" {% if politica.tipo_cobro == 'MEN' %}selected{% endif %}>
+                    Mensual
+                </option>
+                <option value="ANU" {% if politica.tipo_cobro == 'ANU' %}selected{% endif %}>
+                    Anual
+                </option>
+                <option value="UNI" {% if politica.tipo_cobro == 'UNI' %}selected{% endif %}>
+                    Único
+                </option>
+            </select>
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label>Mes de cobro
+            <select class="campo_select" data-campo="tipo_cobro" data-politica="{{ politica.id }}" disabled>
+                {% for mes in politica.MESES %}
+                    <option value="MEN" {% if politica.mes == mes.0 %}selected{% endif %}>
+                        {{ mes.1 }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label>Día de cobro
+            <input type="number" class="campo_text" data-campo="dia" data-politica="{{ politica.id }}"
+                   value="{{ politica.dia }}" max="31" min="1" readonly>
+        </label>
+    </div>
+    <div class="large-3 columns">
+        <label>Perfil al que se aplica el cobro
+            <select class="campo_select" data-campo="cargo" data-politica="{{ politica.id }}" disabled>
+                {% for cargo in politica.entidad.cargo_set.all %}
+                    <option value="{{ cargo.id }}" {% if politica.cargo == cargo %}selected{% endif %}>
+                        {{ cargo.cargo }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+</div>
+<div class="row">
+    <div class="large-12 columns">
+        <label>Exentos de pagar esta cuota
+            <select class="exentos_select" id="id_exentos{{ politica.id }}" multiple="multiple" disabled>
+                {% for exento in politica|exentos %}
+                    <option value="{{ exento.id }}"
+                            selected>{{ exento.gauser.last_name }}, {{ exento.gauser.first_name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+</div>
+
+<div class="row cuotas_vut div_cuotas">
+    <div class="columns large-12">
+        <p style="font-weight: 800;">Introduce, separadas por comas, las cantidades en las que se incrementará
+            la cuota por cada
+            vivienda.</p>
+        <p>Por ejemplo si las cantidades separadas por comas fueran:</p>
+        <p>10, 8, 6, 4, 4, 4, 4, 4, 4</p>
+        <p>Significaría que una persona con tres viviendas tendría una cuota de 24€ (esto es: 10€ +
+            8€ + 6€)</p>
+        <p>De igual forma una persona con siete viviendas tendría una cuota de 40€ (10€ +
+            8€ + 6€ + 4€ + 4€ + 4€ + 4€)</p>
+    </div>
+</div>
+
+<div class="row cuotas_hermanos div_cuotas">
+    <div class="columns large-12">
+        <p style="font-weight: 800;">Introduce, separadas por comas, las cantidades que se cobrarán a cada uno de los
+            hermanos.</p>
+        <p>Por ejemplo si las cantidades separadas por comas fueran:</p>
+        <p>10, 8, 6, 4, 4, 4, 4, 4, 4</p>
+        <p>Significaría que una familia con tres hermanos tendría una cuota de 24€ (esto es: 10€ +
+            8€ + 6€)</p>
+        <p>De igual forma una familia con siete hermanos tendría una cuota de 40€ (10€ +
+            8€ + 6€ + 4€ + 4€ + 4€ + 4€)</p>
+    </div>
+</div>
+
+<div class="row cuotas_domotica div_cuotas">
+    <div class="columns large-12">
+        <p style="font-weight: 800;">Introduce, separadas por comas, las cantidades que se cobrarán por cada dispositivo
+            a medida
+            que aumenta su número.</p>
+        <p>Por ejemplo si las cantidades separadas por comas fueran:</p>
+        <p>10, 8, 6, 4, 4, 4, 4, 4, 4</p>
+        <p>Significaría que una configuración con tres dispositivos tendría una cuota de 24€ (esto es: 10€ +
+            8€ + 6€)</p>
+        <p>De igual forma un usuario con siete dispositivos configurados tendría una cuota de 40€ (10€ +
+            8€ + 6€ + 4€ + 4€ + 4€ + 4€)</p>
+    </div>
+</div>
+
+<div class="row cuotas_fija div_cuotas">
+    <div class="columns large-12">
+        <p style="font-weight: 800;">Introduce la cantidad que se cobrará como cuota fija.</p>
+    </div>
+</div>
+
 <div class="row">
     <div class="columns large-12">
-        <dl>
-            <dt>Personas sujetas al pago de esta cuota
-                ({{ politica|number_no_exentos }}) <span data-tooltip aria-haspopup="true"
-                                                         class="has-tip"
-                                                         title="En rojo aparecen los usuarios que no tienen definida cuenta bancaria"><i
-                        class="fa fa-info-circle"></i></span>
-            </dt>
-            <dd id="lista_no_exentos{{ politica.id }}">
-            </dd>
-        </dl>
+        <input type="text" class="campo_text" data-campo="cuota" data-politica="{{ politica.id }}" id="id_cuota"
+               value="{{ politica.cuota }}" placeholder="Introduce las cantidades, por ejemplo: 15, 10, 3" readonly>
     </div>
 </div>
-<hr>
-<div class="row" id="lista_exentos{{ politica.id }}">
-    {% include "exentos.html" %}
+<div class="row cuotas_vut div_cuotas">
+    <div class="columns large-12">
+        <table width="100%">
+            <tr>
+                <th>Número de viviendas</th>
+                <th title="Primera vivienda">1ª</th>
+                <th title="Segunda vivienda">2ª</th>
+                <th title="Tercera vivienda">3ª</th>
+                <th title="Cuarta vivienda">4ª</th>
+                <th title="Quinta vivienda">5ª</th>
+                <th title="Sexta vivienda">6ª</th>
+                <th title="Séptima vivienda">7ª</th>
+                <th title="Octava vivienda">8ª</th>
+                <th title="Novena vivienda">9ª</th>
+                <th>...</th>
+            </tr>
+            <tr>
+                <td>Cuota parcial</td>
+                <td class="v1"></td>
+                <td class="v2"></td>
+                <td class="v3"></td>
+                <td class="v4"></td>
+                <td class="v5"></td>
+                <td class="v6"></td>
+                <td class="v7"></td>
+                <td class="v8"></td>
+                <td class="v9"></td>
+                <td class="v10"></td>
+            </tr>
+            <tr>
+                <td>Cuota</td>
+                <td class="va1"></td>
+                <td class="va2"></td>
+                <td class="va3"></td>
+                <td class="va4"></td>
+                <td class="va5"></td>
+                <td class="va6"></td>
+                <td class="va7"></td>
+                <td style="color: red;" class="va8"></td>
+                <td class="va9"></td>
+                <td class="va10"></td>
+            </tr>
+        </table>
+    </div>
 </div>
-<hr>
+<div class="row cuotas_vut div_cuotas">
+    <div class="columns large-12" style="color: grey;"><p>Con las cantidades indicadas, y tal como se muestra
+        en la tabla anterior, una persona con 8 viviendas pagaría: <span class="cuota_ejemplo"></span>€</p></div>
+</div>
+
+<div class="row cuotas_hermanos div_cuotas">
+    <div class="columns large-12">
+        <table width="100%">
+            <tr>
+                <th>Número de hermanos</th>
+                <th title="Primer hermano">1º</th>
+                <th title="Segundo hermano">2º</th>
+                <th title="Tercer hermano">3º</th>
+                <th title="Cuarto hermano">4º</th>
+                <th title="Quinto hermano">5º</th>
+                <th title="Sexto hermano">6º</th>
+                <th title="Séptimo hermano">7º</th>
+                <th title="Octavo hermano">8º</th>
+                <th title="Noveno hermano">9º</th>
+                <th>...</th>
+            </tr>
+            <tr>
+                <td>Cuota parcial</td>
+                <td class="v1"></td>
+                <td class="v2"></td>
+                <td class="v3"></td>
+                <td class="v4"></td>
+                <td class="v5"></td>
+                <td class="v6"></td>
+                <td class="v7"></td>
+                <td class="v8"></td>
+                <td class="v9"></td>
+                <td class="v10"></td>
+            </tr>
+            <tr>
+                <td>Cuota</td>
+                <td class="va1"></td>
+                <td class="va2"></td>
+                <td class="va3"></td>
+                <td class="va4"></td>
+                <td class="va5"></td>
+                <td class="va6"></td>
+                <td class="va7"></td>
+                <td style="color: red;" class="va8"></td>
+                <td class="va9"></td>
+                <td class="va10"></td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="row cuotas_hermanos div_cuotas">
+    <div class="columns large-12" style="color: grey;"><p>Con las cantidades indicadas, y tal como se muestra
+        en la tabla anterior, una familia de 8 hermanos pagaría: <span class="cuota_ejemplo"></span>€</p></div>
+</div>
+
+<div class="row cuotas_domotica div_cuotas">
+    <div class="columns large-12">
+        <table width="100%">
+            <tr>
+                <th>Número de dispositivos</th>
+                <th title="Primer dispositivo">1º</th>
+                <th title="Segundo dispositivo">2º</th>
+                <th title="Tercer dispositivo">3º</th>
+                <th title="Cuarto dispositivo">4º</th>
+                <th title="Quinto dispositivo">5º</th>
+                <th title="Sexto dispositivo">6º</th>
+                <th title="Séptimo dispositivo">7º</th>
+                <th title="Octavo dispositivo">8º</th>
+                <th title="Noveno dispositivo">9º</th>
+                <th>...</th>
+            </tr>
+            <tr>
+                <td>Cuota parcial</td>
+                <td class="v1"></td>
+                <td class="v2"></td>
+                <td class="v3"></td>
+                <td class="v4"></td>
+                <td class="v5"></td>
+                <td class="v6"></td>
+                <td class="v7"></td>
+                <td class="v8"></td>
+                <td class="v9"></td>
+                <td class="v10"></td>
+            </tr>
+            <tr>
+                <td>Cuota</td>
+                <td class="va1"></td>
+                <td class="va2"></td>
+                <td class="va3"></td>
+                <td class="va4"></td>
+                <td class="va5"></td>
+                <td class="va6"></td>
+                <td class="va7"></td>
+                <td style="color: red;" class="va8"></td>
+                <td class="va9"></td>
+                <td class="va10"></td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="row cuotas_domotica div_cuotas">
+    <div class="columns large-12" style="color: grey;"><p>Con las cantidades indicadas, y tal como se muestra
+        en la tabla anterior, un usuario con 8 dispositivos pagaría: <span class="cuota_ejemplo"></span>€</p></div>
+</div>
+
 <div class="row" class="remesas_emitidas" id="r_e{{ politica.id }}">
     {% include "remesas_emitidas.html" %}
 </div>
+
+<script>
+    $('.div_cuotas').hide();
+    $('.cuotas_{{ politica.tipo }}').show();
+    parse_cuotas($('#id_cuota'));
+
+    $("#id_exentos{{ politica.id }}").select2({
+        placeholder: "Escribe parte del nombre",
+        minimumInputLength: 3,
+        multiple: true,
+        ajax: {
+            url: "/buscar_usuarios/",
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return {
+                    action: 'select2',
+                    q: params.term, // search term
+                    page: params.page
+                };
+            },
+            processResults: function (data, params) {
+                params.page = params.page || 1;
+                return {
+                    results: $.map(data, function (item) {
+                        return {
+                            text: item.last_name + ', ' + item.first_name,
+                            id: item.id
+                        }
+                    })
+                };
+            },
+            cache: true
+        },
+        escapeMarkup: function (markup) {
+            return markup;
+        },
+        templateResult: function (a) {
+            return "<span>" + a.text + "</span>"
+        }
+    });
+
+
+    $('body').on('change', '#id_exentos{{ politica.id }}', function (e) {
+        var politica = {{ politica.id }};
+        var exentos = $(this).val();
+        $.post("/ajax_politica_cuotas/", {
+                action: 'update_exentos',
+                politica: politica,
+                exentos: exentos
+            },
+            function (data) {
+                if (data.ok) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+            });
+    });
+
+
+    {# Código pra procesar la información proporcionada por el usuario con respecto a las cuotas #}
+    setTimeout(function () {
+        $('#id_tipo').trigger('change');
+    }, 300);
+
+    {##}
+    {##}
+    {##}
+
+    {##}
+
+
+
+
+    {#$('#Contenido').on('keyup change', '#id_cuota', function (e) {#}
+    {#    var valor = $(this).val();#}
+    {#    parse_cuotas(cuotas_csv);#}
+    {#setTimeout(function () {#}
+    {#    if (valor == cuotas_csv.val()) {#}
+    {#        $.post("/cuotas_vut/", {#}
+    {#            action: 'update_cuotas_csv',#}
+    {#            valor: valor#}
+    {#        }, function (data) {#}
+    {#            if (data.ok) {#}
+    {#                $("#update_ok").show().delay(1500).fadeOut();#}
+    {#            } else {#}
+    {#                $("#update_error").show().delay(1500).fadeOut();#}
+    {#            }#}
+    {#        });#}
+    {#    }#}
+    {# }, 750);#}
+    {# });#}
+</script>
