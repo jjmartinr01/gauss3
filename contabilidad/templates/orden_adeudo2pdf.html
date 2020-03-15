@@ -1,4 +1,10 @@
-{% load my_templatetags %}
+{% load my_templatetags %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Orden de domiciliación de adeudo directo SEPA</title>
+</head>
+<body>
 <h2 style="text-align: center;"><strong>Orden de domiciliación de adeudo directo SEPA</strong></h2>
 <h3 style="text-align: center;font-style: italic;"><strong>SEPA Direct Debit Mandate</strong></h3>
 
@@ -58,3 +64,5 @@
 {#<p style="font-style: italic;">ALL GAPS ARE MANDATORY. ONCE THIS MANDATE HAS BEEN SIGNED, MUST BE SENT#}
 {#    TO CREDITOR FOR STOGARE.</p>#}
 <p style="text-align: center;"><img src="{{ orden.firma.path }}" width="120px"></p>
+</body>
+</html>

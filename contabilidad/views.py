@@ -439,6 +439,63 @@ class Politica_cuotasForm(forms.ModelForm):
         exclude = ('entidad', 'exentos')
 
 
+def create_remesas_info_xls(remesa_emitida, destinatarios):
+    importes = remesa_emitida.politica.array_cuotas
+    ctrlsum, no_cobrado, nboftxs = 0, 0, 0  # ctrlsum: Cantidad total, nboftxs: Número total de remesas
+    ruta = MEDIA_CONTABILIDAD + str(destinatarios[0].ronda.entidad.code) + '/'
+    if not os.path.exists(ruta):
+        os.makedirs(ruta)
+    fichero_xls = '%s.xls' % (remesa_emitida.grupo)
+    wb = xlwt.Workbook()
+    wr = wb.add_sheet('Remesas')
+    wa = wb.add_sheet('Avisos')
+    fila_excel_remesas = 0
+    fila_excel_avisos = 0
+    estilo = xlwt.XFStyle()
+    font = xlwt.Font()
+    font.bold = True
+    estilo.font = font
+    wr.write(fila_excel_remesas, 0, 'Destinatario cobro (dbtrnm)', style=estilo)
+    wr.write(fila_excel_remesas, 1, 'Concepto (rmtinf)', style=estilo)
+    wr.write(fila_excel_remesas, 2, 'Cuenta bancaria (dbtriban)', style=estilo)
+    wr.write(fila_excel_remesas, 3, 'Couta (instdamt)', style=estilo)
+    for destinatario in destinatarios:
+        importe = sum(importes[:destinatario['num']])
+        try:
+            fila_excel_remesas += 1
+            dbtrnm = destinatario['oa'].gauser.get_full_name()[:69]
+            rmtinf = '%s - %s (%s) - %s' % (remesa_emitida.politica.concepto,
+                                            remesa_emitida.politica.get_tipo_cobro_display(),
+                                            datetime.today().strftime('%d-%m-%Y'),
+                                            destinatario['texto'])
+            dbtriban = destinatario['oa'].debtor_account
+            instdamt = sum(importes[:destinatario['num']])
+            wr.write(fila_excel_remesas, 0, dbtrnm)
+            wr.write(fila_excel_remesas, 1, rmtinf)
+            wr.write(fila_excel_remesas, 2, dbtriban)
+            wr.write(fila_excel_remesas, 3, instdamt)
+            ctrlsum += importe
+            nboftxs += 1
+        except Exception as e:
+            fila_excel_avisos += 1
+            aviso1 = 'Error al crear la remesa para %s' % (destinatario['ge'].gauser.get_full_name())
+            existe_oa = 'Sí' if destinatario['oa'] else 'No'
+            aviso2 = '%s tiene una orden de adeudo directa firmada' % (existe_oa)
+            wa.write(fila_excel_avisos, 0, aviso1)
+            wa.write(fila_excel_avisos, 5, aviso2)
+            wa.write(fila_excel_avisos, 10, 'Importe: %s' % (importe))
+            wa.write(fila_excel_avisos, 15, str(e))
+            no_cobrado += importe
+    fila_excel_remesas += 1
+    wr.write(fila_excel_remesas, 3, Formula("SUM(D2:D%s)" % (fila_excel_remesas)), style=estilo)
+    wr.col(0).width = 10000
+    wr.col(1).width = 15000
+    wr.col(2).width = 8000
+    wr.col(3).width = 5000
+    wb.save(ruta + fichero_xls)
+    return {'ctrlsum': ctrlsum, 'nboftxs': nboftxs}
+
+
 # @permiso_required('acceso_politica_cuotas')
 def politica_cuotas(request):
     g_e = request.session['gauser_extra']
@@ -592,16 +649,22 @@ def ajax_politica_cuotas(request):
                 # http://www.mobilefish.com/services/sepa_xml_validation/sepa_xml_validation.php
                 politica = Politica_cuotas.objects.get(id=request.POST['id'])
                 if politica.tipo == 'extraord':
-                    usuarios = usuarios_ronda(g_e.ronda).filter(id__in=request.POST.getlist('usuarios[]'))
                     politica.concepto = request.POST['concepto']
                     politica.cuota = request.POST['cuota']
                     politica.save()
+                    usuarios = usuarios_ronda(g_e.ronda).filter(id__in=request.POST.getlist('usuarios[]'))
+                    destinatarios = []
+                    for u in usuarios:
+                        num = 1
+                        texto = '%s' % (u.gauser.get_full_name())
+                        try:
+                            oa = OrdenAdeudo.objects.get(politica=politica, fecha_firma__isnull=False, gauser=u.gauser)
+                        except:
+                            oa = OrdenAdeudo.objects.none()
+                        destinatarios.append({'oa': oa, 'ge': u, 'num': num, 'texto': texto})
                 else:
-                    # exentos_id = politica.exentos.all().values_list('id', flat=True)
-                    # usuarios = usuarios_de_gauss(g_e.ronda.entidad, cargos=[politica.cargo]).exclude(
-                    #     gauser__id__in=exentos_id)
-                    usuarios = politica.destinatarios
-                grupo = pass_generator(size=15, chars=string.ascii_letters + string.digits)
+                    destinatarios = politica.destinatarios
+                grupo = pass_generator(size=15, chars='abcdefghijkmnopqrstuvwxyz1234567890')
                 remesa_emitida = Remesa_emitida.objects.create(grupo=grupo, politica=politica)
                 # array_coutas identifica los enteros y floats almacenados en cuota
                 # que pueden estar separados por espacios, comas, ... o cualquier secuencia de caracteres:
@@ -611,135 +674,15 @@ def ajax_politica_cuotas(request):
                 # Por ejemplo si importes es [30,20,15], después de ser procesado con array_cutoas
                 # sería [30,20,15,15,15,15,15,15,15,15,15,15,15,15,...,15,15,15,15,15] con el 15 prolongado mil veces
 
-                usuarios_id = []
-                n = 0
-
-                ruta = MEDIA_CONTABILIDAD + str(g_e.ronda.entidad.code) + '/'
-                if not os.path.exists(ruta):
-                    os.makedirs(ruta)
-                fichero_xls = '%s.xls' % (grupo)
-                wb = xlwt.Workbook()
-                wr = wb.add_sheet('Remesas')
-                wa = wb.add_sheet('Avisos')
-                fila_excel_remesas = 0
-                fila_excel_avisos = 0
-                estilo = xlwt.XFStyle()
-                font = xlwt.Font()
-                font.bold = True
-                estilo.font = font
-                wr.write(fila_excel_remesas, 0, 'Destinatario cobro (dbtrnm)', style=estilo)
-                wr.write(fila_excel_remesas, 1, 'Concepto (rmtinf)', style=estilo)
-                wr.write(fila_excel_remesas, 2, 'Cuenta bancaria (dbtriban)', style=estilo)
-                wr.write(fila_excel_remesas, 3, 'Couta (instdamt)', style=estilo)
-
-                for usuario in usuarios:
-                    n += 1
-                    if usuario.id not in usuarios_id:
-                        if politica.tipo == 'hermanos':
-                            familiares = usuario.unidad_familiar
-                            deudores = familiares.filter(id__in=usuarios)
-                            # if deudores.count() > 1:
-                            #     concepto = 'Familia %s' % deudores[0].gauser.last_name
-                            # else:
-                            #     concepto = deudores[0].gauser.get_full_name()
-                            usuarios_id += list(deudores.values_list('id', flat=True))
-                            n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
-                            deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
-                        elif politica.tipo == 'fija':
-                            deudores = [usuario]
-                            usuarios_id += [usuario.id]
-                            n_cs = [usuario.num_cuenta_bancaria]
-                            deudores_str = '%s ' % (usuario.gauser.get_full_name())
-                            # concepto = 'Cuota %s' % usuario.ronda.entidad.name
-                        elif politica.tipo == 'vut':
-                            # viviendas = Vivienda.objects.filter(propietarios__in=[usuario.gauser],
-                            #                                     entidad=usuario.ronda.entidad)
-                            viviendas = Vivienda.objects.filter(gpropietario=usuario.gauser, borrada=False,
-                                                                entidad=usuario.ronda.entidad)
-                            deudores = [usuario] * viviendas.count()
-                            usuarios_id += [usuario.id]
-                            n_cs = [usuario.num_cuenta_bancaria]
-                            deudores_str = '%s viviendas gestionadas por %s' % (viviendas.count(),
-                                                                                usuario.gauser.get_full_name())
-                            # concepto = 'Cuota %s' % usuario.ronda.entidad.name
-                        elif politica.tipo == 'extraord':
-                            deudores = [usuario]
-                            usuarios_id += [usuario.id]
-                            n_cs = [usuario.num_cuenta_bancaria]
-                            deudores_str = '%s ' % (usuario.gauser.get_full_name())
-                        else:
-                            deudores = []
-                            usuarios_id += [usuario.id]
-                            n_cs = []
-                            deudores_str = ''
-                            # concepto = ''
-                        importe = sum(importes[:len(deudores)])
-                        if importe > 0:
-                            try:
-                                cuenta_banca = [n_c.replace(' ', '') for n_c in n_cs if len(str(n_c)) > 18][0]
-                                usuario.num_cuenta_bancaria = num_cuenta2iban(cuenta_banca)
-                                usuario.save()
-                                asocia_banco_ge(usuario)
-                                try:
-                                    if politica.tipo_cobro == 'MEN':
-                                        rmtinf = '%s - Cobro %s, mes de %s (%s)' % (politica.concepto,
-                                                                                    politica.get_tipo_cobro_display(),
-                                                                                    date.today().strftime('%B'),
-                                                                                    deudores_str)
-                                    elif politica.tipo_cobro == 'ANU':
-                                        rmtinf = '%s - Cobro %s, realizado en %s (%s)' % (politica.concepto,
-                                                                                          politica.get_tipo_cobro_display(),
-                                                                                          date.today().strftime('%B'),
-                                                                                          deudores_str)
-                                    else:
-                                        rmtinf = '%s - Pago solicitado en %s (%s)' % (politica.concepto,
-                                                                                      date.today().strftime('%B'),
-                                                                                      deudores_str)
-                                    try:
-                                        orden_adeudo = OrdenAdeudo.objects.get(politica=politica, gauser=usuario.gauser)
-                                        dtofsgntr = orden_adeudo.creado
-                                    except:
-                                        dtofsgntr = date(2013, 10, 10)
-                                    r = Remesa.objects.create(emitida=remesa_emitida,
-                                                              banco=usuario.banco, dtofsgntr=dtofsgntr,
-                                                              ge=usuario,
-                                                              dbtriban=usuario.num_cuenta_bancaria,
-                                                              rmtinf=rmtinf[:139], instdamt=importe, counter=n)
-                                    fila_excel_remesas += 1
-                                    wr.write(fila_excel_remesas, 0, r.dbtrnm)
-                                    wr.write(fila_excel_remesas, 1, r.rmtinf)
-                                    wr.write(fila_excel_remesas, 2, r.dbtriban)
-                                    wr.write(fila_excel_remesas, 3, r.instdamt)
-                                except Exception as e:
-                                    fila_excel_avisos += 1
-                                    aviso = 'No se ha podido crear la remesa para %s' % (
-                                        deudores[0].gauser.get_full_name())
-                                    wa.write(fila_excel_avisos, 0, aviso)
-                                    wa.write(fila_excel_avisos, 5, str(e))
-                            except:
-                                if politica.tipo == 'hermanos':
-                                    for deudor in deudores:
-                                        fila_excel_avisos += 1
-                                        aviso = 'Falta número de cuenta bancaria en usuario %s. No se crea remesa.' % (
-                                            deudor.gauser.get_full_name())
-                                        wa.write(fila_excel_avisos, 0, aviso)
-
-                fila_excel_remesas += 1
-                wr.write(fila_excel_remesas, 3, Formula("SUM(D2:D%s)" % (fila_excel_remesas)), style=estilo)
-                wr.col(0).width = 10000
-                wr.col(1).width = 15000
-                wr.col(2).width = 8000
-                wr.col(3).width = 5000
-                wb.save(ruta + fichero_xls)
-                hoy = date.today()
-                remesas = Remesa.objects.filter(emitida=remesa_emitida)
-                remesa_emitida.ctrlsum = remesas.aggregate(total=Sum('instdamt'))['total']
-                remesa_emitida.nboftxs = remesas.count()
-                remesa_emitida.reqdcolltndt = hoy + timedelta(days=4)
+                datos = create_remesas_info_xls(remesa_emitida, destinatarios)
+                remesa_emitida.ctrlsum = datos['ctrlsum']
+                remesa_emitida.nboftxs = datos['nboftxs']
+                remesa_emitida.reqdcolltndt = date.today() + timedelta(days=4)
                 remesa_emitida.save()
-                xml = render_to_string("xml_gauss.xml", {'remesa_emitida': remesa_emitida})
-                # xml = xml.replace('ñ','n').replace('Ñ','N')
-                fichero = '%s.xml' % (grupo)
+                xml = render_to_string("xml_gauss.xml",
+                                       {'remesa_emitida': remesa_emitida, 'destinatarios': destinatarios})
+                fichero = '%s.xml' % (remesa_emitida.grupo)
+                ruta = MEDIA_CONTABILIDAD + str(destinatarios[0].ronda.entidad.code) + '/'
                 xmlfile = open(ruta + '/' + fichero, "w+")
                 xmlfile.write(xml)
                 xmlfile.close()

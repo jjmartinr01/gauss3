@@ -11,6 +11,7 @@ from entidades.models import Entidad, Subentidad, Ronda, Cargo, Gauser_extra
 
 from bancos.models import Banco
 from gauss.funciones import pass_generator, usuarios_ronda
+from vut.models import Vivienda
 
 
 def update_file(instance, filename):
@@ -129,34 +130,44 @@ class Politica_cuotas(models.Model):
     @property
     def destinatarios(self):
         usuarios = usuarios_ronda(self.entidad.ronda, cargos=[self.cargo]).exclude(gauser__in=self.exentos.all())
-        familias = []
-        existentes = []
-        for u in usuarios:
-            if u not in existentes:
-                familiares = u.unidad_familiar
-                num_cuentas = familiares.values_list('num_cuenta_bancaria', flat=True)
-                deudores = familiares.filter(id__in=usuarios)
-                importe = sum(self.array_cuotas[:len(deudores)])
-                deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
-                rmtinf = '%s - Pago %s (%s)' % (self.concepto, self.get_tipo_cobro_display(), deudores_str)
+        dicts_destinatarios = []
+        if self.tipo == 'hermanos':
+            usuarios_analizados = []
+            for u in usuarios:
+                if u not in usuarios_analizados:
+                    familiares = u.unidad_familiar
+                    usuarios_analizados.extend(familiares)
+                    familiares_gauser = familiares.values_list('gauser__id', flat=True)
+                    deudores = familiares.filter(id__in=usuarios)
+                    num = deudores.count()
+                    texto = ', '.join(deudores.values_list('gauser__first_name', flat=True))
+                    try:
+                        oa = OrdenAdeudo.objects.filter(politica=self, fecha_firma__isnull=False,
+                                                        gauser__id__in=familiares_gauser)[0]
+                    except:
+                        oa = OrdenAdeudo.objects.none()
+                    dicts_destinatarios.append({'oa': oa, 'ge': u, 'num': num, 'texto': texto})
+        elif self.tipo == 'vut':
+            for u in usuarios:
+                viviendas = Vivienda.objects.filter(gpropietario=u.gauser, borrada=False, entidad=u.ronda.entidad)
+                num = viviendas.count()
+                texto = '%d viviendas gestionadas por %s' % (num, u.gauser.get_full_name())
+                if num > 0:
+                    try:
+                        oa = OrdenAdeudo.objects.get(politica=self, fecha_firma__isnull=False, gauser=u.gauser)
+                    except:
+                        oa = OrdenAdeudo.objects.none()
+                    dicts_destinatarios.append({'oa': oa, 'ge': u, 'num': num, 'texto': texto})
+        else:  # Esta será la opción relacionada con la cuota tipo "fija"
+            for u in usuarios:
+                num = 1
+                texto = '%s' % (u.gauser.get_full_name())
                 try:
-                    orden_adeudo = self.ordenadeudo_set.filter(fecha_firma__isnull=False, firma__isnull=False,
-                                                               gauser__id__in=familiares.values_list('gauser__id',
-                                                                                                     flat=True))[0]
-                    dtofsgntr = orden_adeudo.fecha_firma
+                    oa = OrdenAdeudo.objects.get(politica=self, fecha_firma__isnull=False, gauser=u.gauser)
                 except:
-                    orden_adeudo = False
-                    dtofsgntr = datetime.now().date()
-                try:
-                    cuenta_banca = [n_c.replace(' ', '') for n_c in num_cuentas if len(str(n_c)) > 18][0]
-                    u.num_cuenta_bancaria = num_cuenta2iban(cuenta_banca)
-                    u.save()
-                    asocia_banco_ge(u)
-                    familia = (orden_adeudo,)
-                except:
-                    pass
-                familias.append()
-                existentes.extend([familiar for familiar in familiares])
+                    oa = OrdenAdeudo.objects.none()
+                dicts_destinatarios.append({'oa': oa, 'ge': u, 'num': num, 'texto': texto})
+        return dicts_destinatarios
 
     @property
     def array_cuotas(self):
@@ -219,6 +230,12 @@ class Remesa_emitida(models.Model):
         ordering = ['-creado']
         verbose_name_plural = "Remesas emitidas"
 
+    @property
+    def rmtinf(self):
+        return '%s - %s (%s)' % (self.politica.concepto,
+                                 self.politica.get_tipo_cobro_display(),
+                                 datetime.today().strftime('%d-%m-%Y'))
+
     def __str__(self):
         c = self.politica.cargo.cargo if self.politica.cargo else 'No asignada a cargo'
         return u'%s - %s (%s)' % (self.politica.entidad.name, c, self.grupo)
@@ -230,10 +247,39 @@ class Remesa(models.Model):
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE)
     dtofsgntr = models.DateField('Fecha deudor firma mandato')
     dbtriban = models.CharField('IBAN del deudor', max_length=30)
-    rmtinf = models.CharField('Información del acreedor al deudor (concepto)', max_length=140)
+    # rmtinf = models.CharField('Información del acreedor al deudor (concepto)', max_length=140)
     instdamt = models.FloatField('Cantidad de dinero')  # decimales separados por "." y con un máximo de 2 decimales
     counter = models.IntegerField('Identificación única de remesa')
     creado = models.DateTimeField('Fecha de creación', auto_now_add=True)
+
+    @property
+    def orden_adeudo(self):
+        try:
+            return OrdenAdeudo.objects.get(gauser=self.ge.gauser, politica=self.emitida.politica,
+                                           fecha_firma__isnull=False)
+        except:
+            return OrdenAdeudo.objects.none()
+
+    @property
+    def deudores(self):
+        if self.emitida.politica.tipo == 'hermanos':
+            familiares = self.ge.unidad_familiar
+            return familiares.filter(id__in=self.emitida.politica.destinatarios)
+        else:
+            return Gauser_extra.objects.filter(id=self.ge)
+
+    @property
+    def instdamt(self):
+        if self.emitida.politica.tipo == 'hermanos':
+            familiares = self.ge.unidad_familiar
+            num_pagos = familiares.filter(id__in=self.emitida.politica.destinatarios).count()
+        if self.emitida.politica.tipo == 'vut':
+            num_pagos = Vivienda.objects.filter(gpropietario=self.ge.gauser, borrada=False,
+                                                entidad=self.ge.ronda.entidad).count()
+        else:
+            num_pagos = 1
+        importes = self.emitida.politica.array_cuotas
+        return sum(importes[:num_pagos])
 
     @property
     def deudores_str(self):
@@ -244,12 +290,14 @@ class Remesa(models.Model):
             n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
             deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
 
+        return True
+
     @property
     def rmtinf(self):
-        return '%s - Cobro %s, mes de %s (%s)' % (self.emitida.politica.concepto,
-                                                  self.emitida.politica.get_tipo_cobro_display(),
-                                                  self.creado.date().strftime('%B'),
-                                                  deudores_str)
+        nombres = ', '.join(deudores.values_list('gauser__first_name', flat=True))
+        return 'Pago de cuota: %s - %s (%s)' % (self.emitida.politica.concepto,
+                                                self.emitida.politica.get_tipo_cobro_display(),
+                                                datetime.today().strftime('%d-%m-%Y'))
 
     @property
     def mndtid(self):
@@ -300,6 +348,7 @@ class OrdenAdeudo(models.Model):
     politica = models.ForeignKey(Politica_cuotas, on_delete=models.CASCADE)
     firma = models.ImageField('Imagen de la firma del deudor', upload_to=update_firma, blank=True, null=True)
     fecha_firma = models.DateField("Fecha y hora en la que se realizó la firma", blank=True, null=True)
+    texto_firmado = models.TextField("Texto firmado", blank=True, null=True)
 
     @property
     def g_e(self):

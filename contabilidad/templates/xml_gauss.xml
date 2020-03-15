@@ -1,4 +1,4 @@
-{% load my_templatetags %}<?xml version="1.0" encoding="UTF-8" ?>
+{% load my_templatetags %}{% load contabilidad_extras %}<?xml version="1.0" encoding="UTF-8" ?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <CstmrDrctDbtInitn>
     <GrpHdr>
@@ -58,34 +58,34 @@
                 </PrvtId>
               </Id>
         </CdtrSchmeId>
-        {% for remesa in remesa_emitida.remesa_set.all %}
+        {% for d in destinatarios %}
         <DrctDbtTxInf>
             <PmtId>
-                <EndToEndId>{{remesa.emitida.grupo}}-{{ remesa.creado|date:"Ymd-H-i" }}-R{{remesa.counter}}</EndToEndId>
+                <EndToEndId>{{remesa_emitida.grupo}}-{{ remesa_emitida.creado|date:"Ymd-H-i" }}-R{{forloop.counter}}</EndToEndId>
             </PmtId>
-            <InstdAmt Ccy="EUR">{{remesa.instdamt|float2string}}</InstdAmt>
+            <InstdAmt Ccy="EUR">{{remesa_emitida|instdamt:d|float2string}}</InstdAmt>
             <ChrgBr>SLEV</ChrgBr>
             <DrctDbtTx>
                 <MndtRltdInf>
-                    <MndtId>{{remesa.mndtid}}</MndtId>
-                    <DtOfSgntr>{{remesa.dtofsgntr|date:"Y-m-d"}}</DtOfSgntr>
+                    <MndtId>{{d.oa.mndtid}}</MndtId>
+                    <DtOfSgntr>{{d.oa.fecha_firma|date:"Y-m-d"}}</DtOfSgntr>
                 </MndtRltdInf>
             </DrctDbtTx>
             <DbtrAgt>
                 <FinInstnId>
-                    <BIC>{{remesa.banco.bic}}</BIC>
+                    <BIC>{{d.oa.debtor_bic}}</BIC>
                 </FinInstnId>
             </DbtrAgt>
             <Dbtr>
-                <Nm>{{remesa.dbtrnm}}</Nm>
+                <Nm>{{d.oa.gauser.get_full_name|truncatechars:69}}</Nm>
             </Dbtr>
             <DbtrAcct>
                 <Id>
-                    <IBAN>{{remesa.dbtriban}}</IBAN>
+                    <IBAN>{{d.oa.debtor_account}}</IBAN>
                 </Id>
             </DbtrAcct>
             <RmtInf>
-                <Ustrd>{{remesa.rmtinf}}</Ustrd>
+                <Ustrd>{{remesa_emitida.rmtinf}} - {{ d.texto }}</Ustrd>
             </RmtInf>
         </DrctDbtTxInf>
         {% endfor %}

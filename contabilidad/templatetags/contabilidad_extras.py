@@ -18,7 +18,7 @@ from compraventa.models import Comprador
 from documentos.models import Permiso_Ges_documental, Ges_documental, Etiqueta_documental
 from formularios.models import Gform
 from gauss.funciones import usuarios_de_gauss, usuarios_ronda
-from contabilidad.models import Remesa_emitida
+from contabilidad.models import Remesa_emitida, OrdenAdeudo
 from web.models import Html_web
 from horarios.models import Falta_asistencia, Sesion
 from cupo.models import Materia_cupo, Profesor_cupo
@@ -32,7 +32,7 @@ MESES = (
     'diciembre',)
 
 @register.filter
-def nombre_mes(entero):  # Devuelve tantas tabulaciones como indicada en number
+def nombre_mes(entero):
     return MESES[entero]
 
 # Módulo de Contabilidad
@@ -122,3 +122,41 @@ def no_exentos(politica, total=1000):
             if n == total:
                 break
     return no_ex
+
+# Campos asociados a cada remesa en función del usuario
+
+@register.filter
+def dtofsgntr(remesa_emitida, g_e): #Date of signature de la orden de adeudo
+    try:
+        orden = OrdenAdeudo.objects.get(gauser=g_e.gauser, politica=remesa_emitida.politica, fecha_firma__isnull=False)
+        return orden.fecha_firma
+    except:
+        return False
+
+@register.filter
+def dbtriban(remesa_emitida, g_e): #Debtor IBAN
+    try:
+        orden = OrdenAdeudo.objects.get(gauser=g_e.gauser, politica=remesa_emitida.politica, fecha_firma__isnull=False)
+        return orden.debtor_account
+    except:
+        return False
+
+def deudores(remesa_emitida, g_e):
+    if remesa_emitida.politica.tipo == 'hermanos':
+        familiares = g_e.unidad_familiar
+        return familiares.filter(id__in=remesa_emitida.politica.destinatarios)
+    else:
+        return Gauser_extra.objects.filter(id=g_e.id)
+
+@register.filter
+def rmtinf(remesa_emitida, g_e):
+    ds = deudores(remesa_emitida, g_e)
+    deudores_str = ', '.join(ds.values_list('gauser__first_name', flat=True))
+    return 'Pago de cuota: %s - %s (%s)' % (remesa_emitida.politica.concepto,
+                                            remesa_emitida.politica.get_tipo_cobro_display(),
+                                            deudores_str)
+@register.filter
+def instdamt(remesa_emitida, destinatario):
+    # destinatario = {'oa': oa, 'ge': u, 'num': num, 'texto': texto}
+    importes = remesa_emitida.politica.array_cuotas
+    return sum(importes[:destinatario['num']])
