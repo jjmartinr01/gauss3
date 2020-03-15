@@ -339,7 +339,7 @@ def at_02(nif):  # Diseñado a partir del documento "adeudos_sepa.pdf"
 
 def update_firma(instance, filename):
     politica = instance.politica
-    ruta = os.path.join("contabilidad/%s/firmas_adeudos/" % (politica.entidad.id),
+    ruta = os.path.join("contabilidad/%s/firmas_adeudos/" % (politica.entidad.code),
                         str(politica.id) + '_' + str(instance.gauser.dni) + '.png')
     return ruta
 
