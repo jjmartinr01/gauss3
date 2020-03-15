@@ -4,6 +4,8 @@ import os
 from django.db import models
 from django.utils.text import slugify
 from django.utils.timezone import datetime
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 from autenticar.models import Gauser
 from bancos.views import num_cuenta2iban, asocia_banco_ge
@@ -248,7 +250,7 @@ class Remesa(models.Model):
     dtofsgntr = models.DateField('Fecha deudor firma mandato')
     dbtriban = models.CharField('IBAN del deudor', max_length=30)
     # rmtinf = models.CharField('Información del acreedor al deudor (concepto)', max_length=140)
-    instdamt = models.FloatField('Cantidad de dinero')  # decimales separados por "." y con un máximo de 2 decimales
+    # instdamt = models.FloatField('Cantidad de dinero')  # decimales separados por "." y con un máximo de 2 decimales
     counter = models.IntegerField('Identificación única de remesa')
     creado = models.DateTimeField('Fecha de creación', auto_now_add=True)
 
@@ -342,8 +344,8 @@ def update_firma(instance, filename):
     return ruta
 
 
+
 class OrdenAdeudo(models.Model):
-    PAGO = (('RCUR', 'Pago recurrente'), ('OOFF', 'Pago único'))
     gauser = models.ForeignKey(Gauser, on_delete=models.CASCADE)
     politica = models.ForeignKey(Politica_cuotas, on_delete=models.CASCADE)
     firma = models.ImageField('Imagen de la firma del deudor', upload_to=update_firma, blank=True, null=True)
@@ -392,3 +394,11 @@ class OrdenAdeudo(models.Model):
 
     def __str__(self):
         return '%s - %s (%s)' % (self.politica.id, self.politica.entidad, self.gauser.get_full_name())
+
+
+@receiver(post_delete, sender=OrdenAdeudo)
+def delete_firma(sender, instance, *args, **kwargs):
+    try:
+        os.remove(instance.firma.path)
+    except:
+        pass

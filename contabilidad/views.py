@@ -819,7 +819,8 @@ def ordenes_adeudo(request):
         orden = OrdenAdeudo.objects.get(id=request.POST['orden_id'], politica__entidad=g_e.ronda.entidad,
                                         firma__isnull=False)
         fichero = 'orden_adeudo_directo_SEPA'
-        c = render_to_string('orden_adeudo2pdf.html', {'orden': orden})
+        # c = render_to_string('orden_adeudo2pdf.html', {'orden': orden})
+        c = orden.texto_firmado
         fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_CONTABILIDAD, title='Orden de adeudo directo SEPA')
         response = HttpResponse(fich, content_type='application/pdf')
         nombre = slugify('%s_%s' % (orden.politica.concepto, orden.gauser.get_full_name()))
@@ -846,6 +847,8 @@ def firmar_orden_adeudo(request, id_oa):
                 orden_adeudo.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
                 orden_adeudo.fecha_firma = date.today()
                 orden_adeudo.save()
+                orden_adeudo.texto_firmado = render_to_string('orden_adeudo2pdf.html', {'orden': orden_adeudo})
+                orden_adeudo.save()
                 crear_aviso(request, False, 'Orden de adeudo firmada correctamente.')
                 return JsonResponse({'ok': True})
             except:
@@ -871,7 +874,7 @@ def mis_ordenes_adeudo(request):
         orden = OrdenAdeudo.objects.get(id=request.POST['orden_id'], politica__entidad=g_e.ronda.entidad,
                                         firma__isnull=False, gauser=g_e.gauser)
         fichero = 'orden_adeudo_directo_SEPA'
-        c = render_to_string('orden_adeudo2pdf.html', {'orden': orden})
+        c = orden.texto_firmado
         fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_CONTABILIDAD, title='Orden de adeudo directo SEPA')
         response = HttpResponse(fich, content_type='application/pdf')
         nombre = slugify('%s_%s' % (orden.politica.concepto, orden.gauser.get_full_name()))
