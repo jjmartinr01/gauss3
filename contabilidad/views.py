@@ -738,8 +738,17 @@ def ajax_politica_cuotas(request):
                 xmlfile = open(ruta + '/' + fichero, "w+")
                 xmlfile.write(xml)
                 xmlfile.close()
-                data = render_to_string("remesas_emitidas.html", {'politica': politica})
-                return HttpResponse(data)
+                total_remesas_emitidas = Remesa_emitida.objects.filter(politica=politica)
+                paginator = Paginator(total_remesas_emitidas, 5)
+                html = render_to_string('remesas_emitidas.html', {'remitidas': paginator.page(1), 'politica': politica})
+                return JsonResponse({'ok': True, 'html': html, 'politica': politica.id})
+
+
+                # remesas_emitidas = Remesa_emitida.objects.filter(politica=politica)
+                # paginator = Paginator(remesas_emitidas, 5)
+                # html = render_to_string('politica_cuotas_accordion_content.html',
+                #                         {'politica': politica, 'g_e': g_e, 'remitidas': paginator.page(1)})
+                # return HttpResponse(data)
 
         if request.method == 'GET':
             if request.GET['action'] == 'exentos':

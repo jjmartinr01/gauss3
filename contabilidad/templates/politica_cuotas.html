@@ -110,7 +110,7 @@
             var valor = $(this).val();
             var campo = $(this).data('campo');
             {# Cuando se cambia el campo "cuota" la ayuda a las cuotas debe modificarse  #}
-            if (campo === 'cuota'){
+            if (campo === 'cuota') {
                 parse_cuotas($('#id_cuota'));
             }
             $.post("/ajax_politica_cuotas/", {
@@ -276,7 +276,12 @@
             e.preventDefault();
             let politica = $(this).data('politica');
             $.post("/ajax_politica_cuotas/", {action: 'generar_remesas', politica: politica}, function (data) {
-                $('#r_e' + politica).html(data);
+                if (data.ok) {
+                    $('#r_e' + politica).html(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
             });
         });
 
