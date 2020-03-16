@@ -75,6 +75,11 @@
         </div>
     </div>
     <div class="row">
+    <div class="columns large-12">
+        <p><b>Rellenado por:</b>{% for t_p in informe.tarea_propuesta_set.all %} {{ t_p.usuario.gauser.get_full_name }} {% if not forloop.last %}-{% endif %} {% endfor %}</p>
+    </div>
+    </div>
+    <div class="row">
         <div class="columns large-12">
             {% if informe.solicitante == g_e %}
                 <a title="Enviar mensaje de aviso a las personas indicadas para que rellenen el informe"

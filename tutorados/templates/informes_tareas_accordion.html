@@ -36,6 +36,7 @@
                 {% endif %}
             {% else %}
                 <b><span id="span_informe_tareas_title{{ informe.id }}">{{ informe.usuario.gauser.get_full_name }}
+                    {{ informe.usuario.gauser_extra_estudios.grupo.nombre }}
                     </span>&nbsp;&nbsp;&nbsp;{{ informe.fecha|date:'d/m/Y' }}</b>&nbsp;
                 (Enviado a <span id="n_usuarios_destino{{ informe.id }}">{{ informe.usuarios_destino.all|length }}
                     </span> personas y rellenado por <span id="n_usuarios_respondido{{ informe.id }}">
