@@ -580,10 +580,13 @@ def get_adjunto_name(adjunto):  # Devuelve el texto reemplazando los espacios en
 
 @register.filter
 def primera_cuota(descuentos):
-    d = re.findall(r"[-+]?\d*\.\d+|\d+", descuentos)[0]
-    if d == '&#8364;':
-        d = 'Sin descuentos'
-    return d
+    try:
+        d = re.findall(r"[-+]?\d*\.\d+|\d+", descuentos)[0]
+        if d == '&#8364;':
+            d = 'Sin descuentos'
+        return d
+    except:
+        return descuentos
 
 
 @register.filter

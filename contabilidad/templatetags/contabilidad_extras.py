@@ -39,10 +39,13 @@ def nombre_mes(entero):
 
 @register.filter
 def desglosar_descuentos(descuentos):
-    d = '&#8364;, '.join(re.findall(r"[-+]?\d*\.\d+|\d+", descuentos)[1:]) + '&#8364;'
-    if d == '&#8364;':
-        d = 'Sin descuentos'
-    return d
+    try:
+        d = '&#8364;, '.join(re.findall(r"[-+]?\d*\.\d+|\d+", descuentos)[1:]) + '&#8364;'
+        if d == '&#8364;':
+            d = 'Sin descuentos'
+        return d
+    except:
+        return descuentos
 
 @register.filter
 def remesas_emitidas(politica):

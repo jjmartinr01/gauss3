@@ -14,9 +14,11 @@
                     <a data-politica="{{ politica.id }}" class="button editar_politica"><i
                             class="fa fa-pencil"></i> Editar</a></li>
             {% endif %}
+        {% if g_e|has_permiso:'borra_politica_cuotas' %}
             <li title="Borrar esta política de cuotas y todas las remesas asociadas">
                 <a data-politica="{{ politica.id }}" class="button borrar_politica alert"><i
                         class="fa fa-trash-o"></i> Borrar</a></li>
+        {% endif %}
         </ul>
     </div>
 </div>

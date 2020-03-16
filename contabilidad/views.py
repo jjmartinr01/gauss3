@@ -497,7 +497,7 @@ def create_remesas_info_xls(remesa_emitida, destinatarios):
     return {'ctrlsum': ctrlsum, 'nboftxs': nboftxs}
 
 
-# @permiso_required('acceso_politica_cuotas')
+@permiso_required('acceso_politica_cuotas')
 def politica_cuotas(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
@@ -506,48 +506,13 @@ def politica_cuotas(request):
             fichero = 'Politica_cuotas_%s_%s' % (g_e.ronda.entidad.id, g_e.ronda.id)
             c = render_to_string('politica_cuotas2pdf.html', {'politicas': politicas, 'MA': MEDIA_ANAGRAMAS},
                                  request=request)
-            fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_CONTABILIDAD, title=u'Políticas de cuotas')
+            fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_CONTABILIDAD, title='Políticas de cuotas')
             response = HttpResponse(fich, content_type='application/pdf')
             response.set_cookie('fileDownload',
                                 value='true')  # Creo cookie para controlar la descarga (fileDownload.js)
             response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
             return response
-
-        if request.POST['action'] == 'borrar_politica_cuotas':
-            ids = request.POST['id_politica_cuotas']
-            Politica_cuotas.objects.get(id=request.POST['id_politica_cuotas']).delete()
-
-        if request.POST['action'] == 'mod_politica':
-            politica = Politica_cuotas.objects.get(id=request.POST['id_politica_cuotas'])
-            form = Politica_cuotasForm(request.POST, instance=politica, entidad=g_e.ronda.entidad)
-            if form.is_valid():
-                politica = form.save()
-                politica.exentos.clear()
-                try:
-                    exentos_id = Gauser_extra.objects.filter(id__in=request.POST.getlist('exentos'),
-                                                             ronda=g_e.ronda).values_list('gauser__id', flat=True)
-                    exentos = Gauser.objects.filter(id__in=exentos_id)
-                    politica.exentos.add(*exentos)
-                except:
-                    pass
-            else:
-                crear_aviso(request, False, form.errors)
-            # return JsonResponse({'ge': request.POST.getlist('exentos'), 'g':list(exentos_id)})
-
-        if request.POST['action'] == 'crea_politica_cuota':
-            politica_cuota = Politica_cuotas(entidad=g_e.ronda.entidad)
-            form = Politica_cuotasForm(request.POST, instance=politica_cuota, entidad=g_e.ronda.entidad)
-            if form.is_valid():
-                politica = form.save()
-                try:
-                    exentos = Gauser.objects.filter(id__in=request.POST['exentos'].split(','))
-                    politica.exentos.add(*exentos)
-                except:
-                    pass
-            else:
-                crear_aviso(request, False, form.errors)
-
-        if request.POST['action'] == 'descarga_remesa':
+        elif request.POST['action'] == 'descarga_remesa':
             remesa_emitida = Remesa_emitida.objects.get(id=request.POST['id_remesa_emitida'])
             ruta = MEDIA_CONTABILIDAD + str(g_e.ronda.entidad.code) + '/'
             grupo = remesa_emitida.grupo
@@ -557,8 +522,7 @@ def politica_cuotas(request):
             response['Content-Disposition'] = 'attachment; filename=Remesas_%s-%s-%s.xml' % (
                 remesa_emitida.creado.year, remesa_emitida.creado.month, remesa_emitida.creado.day)
             return response
-
-        if request.POST['action'] == 'descarga_excel':
+        elif request.POST['action'] == 'descarga_excel':
             remesa_emitida = Remesa_emitida.objects.get(id=request.POST['id_remesa_emitida'])
             ruta = MEDIA_CONTABILIDAD + str(g_e.ronda.entidad.code) + '/'
             grupo = remesa_emitida.grupo
@@ -569,34 +533,23 @@ def politica_cuotas(request):
                 remesa_emitida.creado.year, remesa_emitida.creado.month, remesa_emitida.creado.day)
             return response
     try:
-        pext = Politica_cuotas.objects.get(entidad=g_e.ronda.entidad, tipo='extraord', seqtp='OOFF')
+        Politica_cuotas.objects.get(entidad=g_e.ronda.entidad, tipo='extraord', seqtp='OOFF').delete()
     except:
-        pext = Politica_cuotas.objects.create(entidad=g_e.ronda.entidad, tipo='extraord', tipo_cobro='ANU',
-                                              concepto='Remesa extraordinaria', seqtp='OOFF')
-    politicas = Politica_cuotas.objects.filter(entidad=g_e.ronda.entidad).exclude(id=pext.id)
+        pass
+        # pext = Politica_cuotas.objects.create(entidad=g_e.ronda.entidad, tipo='extraord', tipo_cobro='ANU',
+        #                                       concepto='Remesa extraordinaria', seqtp='OOFF')
+    politicas = Politica_cuotas.objects.filter(entidad=g_e.ronda.entidad)
     return render(request, "politica_cuotas.html",
                   {
                       'formname': 'Politica_cuotas',
                       'iconos':
-                          ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
-                            'title': 'Aceptar los cambios realizados', 'permiso': 'edita_politica_cuotas'},
-                           {'tipo': 'button', 'nombre': 'list-alt', 'texto': 'Cuotas',
-                            'title': 'Ver la lista de cuotas creadas', 'permiso': 'edita_politica_cuotas'},
-                           {'tipo': 'button', 'nombre': 'plus', 'texto': 'Política',
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Política',
                             'title': 'Añadir una nueva política de cuotas', 'permiso': 'crea_politica_cuotas'},
-                           {'tipo': 'button', 'nombre': 'pencil', 'texto': 'Editar',
-                            'title': 'Editar la política de cuotas para su modificación',
-                            'permiso': 'edita_politica_cuotas'},
-                           {'tipo': 'button', 'nombre': 'trash-o', 'texto': 'Borrar',
-                            'title': 'Borrar la política de cuotas seleccionada', 'permiso': 'borra_politica_cuotas'},
-                           {'tipo': 'button', 'nombre': 'money', 'texto': 'Remesas', 'permiso': 'crea_remesas',
-                            'title': 'Genera remesas de la política de cuotas seleccionada'},
                            {'tipo': 'button', 'nombre': 'file-text-o', 'texto': 'PDF',
-                            'permiso': 'pdf_gastos_ingresos',
+                            'permiso': 'libre',
                             'title': 'Genera documento PDF con las políticas de cuotas'}),
                       'politicas': politicas,
-                      'pext': pext,
-                      # 'remesas_emitidas': remesas_emitidas,
+                      'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
@@ -613,6 +566,28 @@ def ajax_politica_cuotas(request):
                 html = render_to_string('politica_cuotas_accordion_content.html',
                                         {'politica': politica, 'g_e': g_e, 'remitidas': paginator.page(1)})
                 return JsonResponse({'ok': True, 'html': html})
+            elif request.POST['action'] == 'crear_politica':
+                try:
+                    if g_e.has_permiso('crea_politica_cuotas'):
+                        politica = Politica_cuotas.objects.create(entidad=g_e.ronda.entidad, tipo_cobro='MEN',
+                                                                  concepto='Cuota mensual', cuota='0')
+                        html = render_to_string("politica_cuotas_accordion.html", {'politicas': [politica]})
+                        return JsonResponse({'ok': True, 'html': html})
+                    else:
+                        return JsonResponse({'ok': False, 'mensaje': 'No tienes permisos para borrar la política'})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': 'Tu petición no ha podido ser atendida.'})
+            elif request.POST['action'] == 'borrar_politica':
+                try:
+                    if g_e.has_permiso('borra_politica_cuotas'):
+                        politica = Politica_cuotas.objects.get(id=request.POST['politica'], entidad=g_e.ronda.entidad)
+                        politica_id = politica.id
+                        politica.delete()
+                        return JsonResponse({'ok': True, 'politica': politica_id})
+                    else:
+                        return JsonResponse({'ok': False, 'mensaje': 'No tienes permisos para borrar la política'})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': 'Tu petición no ha podido ser atendida.'})
             elif request.POST['action'] == 'update_page':
                 try:
                     politica = Politica_cuotas.objects.get(id=request.POST['politica'])
@@ -624,39 +599,24 @@ def ajax_politica_cuotas(request):
                 except:
                     return JsonResponse({'ok': False})
             elif request.POST['action'] == 'borrar_remesa_emitida':
-                remesa = Remesa_emitida.objects.get(id=request.POST['id'])
-                if remesa.creado.date() < (date.today() - timedelta(1000)):
-                    remesa.delete()
-                else:
-                    remesa.visible = False
-                    remesa.save()
-                politica = Politica_cuotas.objects.get(id=request.POST['politica'])
-                total_remesas_emitidas = Remesa_emitida.objects.filter(visible=True, politica=politica)
-                paginator = Paginator(total_remesas_emitidas, 5)
-                remitidas = paginator.page(int(request.POST['page']))
-                html = render_to_string('remesas_emitidas.html', {'remitidas': remitidas, 'politica': politica})
-                return JsonResponse({'ok': True, 'html': html, 'politica': politica.id})
                 try:
-                    remesa = Remesa_emitida.objects.get(id=request.POST['id'])
-                    if remesa.creado.date() < (date.today() - timedelta(1000)):
-                        remesa.delete()
+                    if g_e.has_permiso('borra_politica_cuotas'):
+                        remesa = Remesa_emitida.objects.get(id=request.POST['id'])
+                        if remesa.creado.date() < (date.today() - timedelta(1000)):
+                            remesa.delete()
+                        else:
+                            remesa.visible = False
+                            remesa.save()
+                        politica = Politica_cuotas.objects.get(id=request.POST['politica'])
+                        total_remesas_emitidas = Remesa_emitida.objects.filter(visible=True, politica=politica)
+                        paginator = Paginator(total_remesas_emitidas, 5)
+                        remitidas = paginator.page(int(request.POST['page']))
+                        html = render_to_string('remesas_emitidas.html', {'remitidas': remitidas, 'politica': politica})
+                        return JsonResponse({'ok': True, 'html': html, 'politica': politica.id})
                     else:
-                        remesa.visible = False
-                        remesa.save()
-                    politica = Politica_cuotas.objects.get(id=request.POST['politica'])
-                    total_remesas_emitidas = Remesa_emitida.objects.filter(visible=True, politica=politica)
-                    paginator = Paginator(total_remesas_emitidas, 5)
-                    remitidas = paginator.page(int(request.POST['page']))
-                    html = render_to_string('remesas_emitidas.html', {'remitidas': remitidas, 'politica': politica})
-                    return JsonResponse({'ok': True, 'html': html, 'politica': politica.id})
+                        return JsonResponse({'ok': False, 'mensaje': 'No tienes permisos para borrar la remesa'})
                 except:
                     return JsonResponse({'ok': False})
-
-                # remesas_emitidas = Remesa_emitida.objects.filter(visible=True, politica=remesa.politica)[:3]
-                # data = render_to_string("remesas_emitidas.html",
-                #                         {'remesas_emitidas': remesas_emitidas, 'politica': remesa.politica},
-                #                         request=request)
-                # return HttpResponse(data)
             elif request.POST['action'] == 'update_exentos':
                 try:
                     politica = Politica_cuotas.objects.get(id=request.POST['politica'], entidad=g_e.ronda.entidad)
@@ -692,35 +652,16 @@ def ajax_politica_cuotas(request):
                         return JsonResponse({'ok': True})
                 except:
                     return JsonResponse({'ok': False})
-            elif request.POST['action'] == 'contenido_politica_cuotas':
-                politica = Politica_cuotas.objects.get(id=request.POST['id'])
-                data = render_to_string('contenido_politica_cuotas.html', {'politica': politica})
-                return HttpResponse(data)
-            elif request.POST['action'] == 'mod_politica':
-                politica = Politica_cuotas.objects.get(id=request.POST['id'])
-                p_id = politica.id
-                # keys = ('id', 'text')
-                # exentos = json.dumps([dict(zip(keys, (row.id, "%s, %s" % (row.last_name, row.first_name)))) for row in
-                #                       politica.exentos.all()])
-                exentos = Gauser_extra.objects.filter(ronda=g_e.ronda, gauser__in=politica.exentos.all())
-                form = Politica_cuotasForm(instance=politica, entidad=g_e.ronda.entidad)
-                html = render_to_string("form_politica_cuoutas.html", {'form': form, 'exentos': exentos, 'p_id': p_id})
-                return JsonResponse({'html': html, 'ok': True})
-            elif request.POST['action'] == 'crear_politica_cuota':
-                form = Politica_cuotasForm(entidad=g_e.ronda.entidad)
-                data = render_to_string("form_politica_cuoutas.html", {'form': form, },
-                                        request=request)
-                return HttpResponse(data)
-            elif request.POST['action'] == 'cargar_no_exentos':
-                politica = Politica_cuotas.objects.get(id=request.POST['id'])
-                num = int(request.POST['num'])
-                data = render_to_string("no_exentos.html", {'numero': num, 'politica': politica})
-                return HttpResponse(data)
-            elif request.POST['action'] == 'cargar_exentos':
-                politica = Politica_cuotas.objects.get(id=request.POST['id'])
-                num = int(request.POST['num'])
-                data = render_to_string("exentos.html", {'numero': num, 'politica': politica})
-                return HttpResponse(data)
+            # elif request.POST['action'] == 'cargar_no_exentos':
+            #     politica = Politica_cuotas.objects.get(id=request.POST['id'])
+            #     num = int(request.POST['num'])
+            #     data = render_to_string("no_exentos.html", {'numero': num, 'politica': politica})
+            #     return HttpResponse(data)
+            # elif request.POST['action'] == 'cargar_exentos':
+            #     politica = Politica_cuotas.objects.get(id=request.POST['id'])
+            #     num = int(request.POST['num'])
+            #     data = render_to_string("exentos.html", {'numero': num, 'politica': politica})
+            #     return HttpResponse(data)
             elif request.POST['action'] == 'generar_remesas':
                 # Para validar el xml generado
                 # http://www.mobilefish.com/services/sepa_xml_validation/sepa_xml_validation.php
@@ -767,51 +708,6 @@ def ajax_politica_cuotas(request):
                 paginator = Paginator(total_remesas_emitidas, 5)
                 html = render_to_string('remesas_emitidas.html', {'remitidas': paginator.page(1), 'politica': politica})
                 return JsonResponse({'ok': True, 'html': html, 'politica': politica.id})
-
-
-                # remesas_emitidas = Remesa_emitida.objects.filter(politica=politica)
-                # paginator = Paginator(remesas_emitidas, 5)
-                # html = render_to_string('politica_cuotas_accordion_content.html',
-                #                         {'politica': politica, 'g_e': g_e, 'remitidas': paginator.page(1)})
-                # return HttpResponse(data)
-
-        if request.method == 'GET':
-            if request.GET['action'] == 'exentos':
-                g_e = request.session['gauser_extra']
-                texto = request.GET['q']
-                cargo = request.GET['cargo']
-                if cargo:
-                    usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
-                else:
-                    usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda)
-                usuarios_contain_texto = usuarios.filter(
-                    Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)).values_list(
-                    'gauser__id', 'gauser__last_name', 'gauser__first_name', 'subentidades__nombre')
-                keys = ('id', 'text')
-                return HttpResponse(json.dumps(
-                    [dict(zip(keys, (row[0], '%s, %s (%s)' % (row[1], row[2], row[3])))) for row in
-                     usuarios_contain_texto]))
-
-
-# @login_required()
-# def mod_politica(request):
-# if request.is_ajax():
-# g_e = request.session['gauser_extra']
-# politica = Politica_cuotas.objects.get(id=request.POST['id'])
-# form = Politica_cuotasForm(instance=politica)
-# html = render_to_string("form_politica_cuoutas.html", {'form': form},
-# request=request)
-# return HttpResponse(html)
-
-
-# @login_required()
-# def crear_politica_cuota(request):
-# if request.is_ajax():
-# g_e = request.session['gauser_extra']
-# form = Politica_cuotasForm()
-# html = render_to_string("form_politica_cuoutas.html", {'form': form, },
-#                                 request=request)
-#         return HttpResponse(html)
 
 
 @login_required()
