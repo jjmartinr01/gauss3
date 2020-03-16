@@ -13,6 +13,7 @@ from entidades.models import Entidad, Subentidad, Ronda, Cargo, Gauser_extra
 
 from bancos.models import Banco
 from gauss.funciones import pass_generator, usuarios_ronda
+from gauss.rutas import MEDIA_CONTABILIDAD
 from vut.models import Vivienda
 
 
@@ -241,6 +242,16 @@ class Remesa_emitida(models.Model):
     def __str__(self):
         c = self.politica.cargo.cargo if self.politica.cargo else 'No asignada a cargo'
         return u'%s - %s (%s)' % (self.politica.entidad.name, c, self.grupo)
+
+@receiver(post_delete, sender=Remesa_emitida)
+def delete_archivos(sender, instance, *args, **kwargs):
+    try:
+        fichero_xls = MEDIA_CONTABILIDAD + str(instance.politica.entidad.code) + '/%s.xls' % (instance.grupo)
+        fichero_xml = MEDIA_CONTABILIDAD + str(instance.politica.entidad.code) + '/%s.xml' % (instance.grupo)
+        os.remove(fichero_xls)
+        os.remove(fichero_xml)
+    except:
+        pass
 
 
 class Remesa(models.Model):

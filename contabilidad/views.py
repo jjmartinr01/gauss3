@@ -608,7 +608,7 @@ def ajax_politica_cuotas(request):
         if request.method == 'POST':
             if request.POST['action'] == 'open_accordion':
                 politica = Politica_cuotas.objects.get(id=request.POST['id'])
-                remesas_emitidas = Remesa_emitida.objects.filter(politica=politica)
+                remesas_emitidas = Remesa_emitida.objects.filter(visible=True, politica=politica)
                 paginator= Paginator(remesas_emitidas, 5)
                 html = render_to_string('politica_cuotas_accordion_content.html',
                                         {'politica': politica, 'g_e': g_e, 'remitidas': paginator.page(1)})
@@ -616,13 +616,47 @@ def ajax_politica_cuotas(request):
             elif request.POST['action'] == 'update_page':
                 try:
                     politica = Politica_cuotas.objects.get(id=request.POST['politica'])
-                    total_remesas_emitidas = Remesa_emitida.objects.filter(politica=politica)
+                    total_remesas_emitidas = Remesa_emitida.objects.filter(visible=True, politica=politica)
                     paginator = Paginator(total_remesas_emitidas, 5)
                     remitidas = paginator.page(int(request.POST['page']))
                     html = render_to_string('remesas_emitidas.html', {'remitidas': remitidas, 'politica': politica})
                     return JsonResponse({'ok': True, 'html': html, 'politica': politica.id})
                 except:
                     return JsonResponse({'ok': False})
+            elif request.POST['action'] == 'borrar_remesa_emitida':
+                remesa = Remesa_emitida.objects.get(id=request.POST['id'])
+                if remesa.creado.date() < (date.today() - timedelta(1000)):
+                    remesa.delete()
+                else:
+                    remesa.visible = False
+                    remesa.save()
+                politica = Politica_cuotas.objects.get(id=request.POST['politica'])
+                total_remesas_emitidas = Remesa_emitida.objects.filter(visible=True, politica=politica)
+                paginator = Paginator(total_remesas_emitidas, 5)
+                remitidas = paginator.page(int(request.POST['page']))
+                html = render_to_string('remesas_emitidas.html', {'remitidas': remitidas, 'politica': politica})
+                return JsonResponse({'ok': True, 'html': html, 'politica': politica.id})
+                try:
+                    remesa = Remesa_emitida.objects.get(id=request.POST['id'])
+                    if remesa.creado.date() < (date.today() - timedelta(1000)):
+                        remesa.delete()
+                    else:
+                        remesa.visible = False
+                        remesa.save()
+                    politica = Politica_cuotas.objects.get(id=request.POST['politica'])
+                    total_remesas_emitidas = Remesa_emitida.objects.filter(visible=True, politica=politica)
+                    paginator = Paginator(total_remesas_emitidas, 5)
+                    remitidas = paginator.page(int(request.POST['page']))
+                    html = render_to_string('remesas_emitidas.html', {'remitidas': remitidas, 'politica': politica})
+                    return JsonResponse({'ok': True, 'html': html, 'politica': politica.id})
+                except:
+                    return JsonResponse({'ok': False})
+
+                # remesas_emitidas = Remesa_emitida.objects.filter(visible=True, politica=remesa.politica)[:3]
+                # data = render_to_string("remesas_emitidas.html",
+                #                         {'remesas_emitidas': remesas_emitidas, 'politica': remesa.politica},
+                #                         request=request)
+                # return HttpResponse(data)
             elif request.POST['action'] == 'update_exentos':
                 try:
                     politica = Politica_cuotas.objects.get(id=request.POST['politica'], entidad=g_e.ronda.entidad)
@@ -677,15 +711,6 @@ def ajax_politica_cuotas(request):
                 data = render_to_string("form_politica_cuoutas.html", {'form': form, },
                                         request=request)
                 return HttpResponse(data)
-            elif request.POST['action'] == 'borrar_remesa_emitida':
-                remesa = Remesa_emitida.objects.get(id=request.POST['id'])
-                remesa.visible = False
-                remesa.save()
-                remesas_emitidas = Remesa_emitida.objects.filter(visible=True, politica=remesa.politica)[:3]
-                data = render_to_string("remesas_emitidas.html",
-                                        {'remesas_emitidas': remesas_emitidas, 'politica': remesa.politica},
-                                        request=request)
-                return HttpResponse(data)
             elif request.POST['action'] == 'cargar_no_exentos':
                 politica = Politica_cuotas.objects.get(id=request.POST['id'])
                 num = int(request.POST['num'])
@@ -738,7 +763,7 @@ def ajax_politica_cuotas(request):
                 xmlfile = open(ruta + '/' + fichero, "w+")
                 xmlfile.write(xml)
                 xmlfile.close()
-                total_remesas_emitidas = Remesa_emitida.objects.filter(politica=politica)
+                total_remesas_emitidas = Remesa_emitida.objects.filter(visible=True, politica=politica)
                 paginator = Paginator(total_remesas_emitidas, 5)
                 html = render_to_string('remesas_emitidas.html', {'remitidas': paginator.page(1), 'politica': politica})
                 return JsonResponse({'ok': True, 'html': html, 'politica': politica.id})

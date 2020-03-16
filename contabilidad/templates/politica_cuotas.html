@@ -84,7 +84,7 @@
                             $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
                             $('#id_politica_cuotas').val(id);
-                            habilita(['h_plus', 's_pencil', 's_trash-o', 'h_file-text-o', 's_money', 'h_check']);
+                            habilita(['h_plus', 'h_file-text-o']);
                             window.scrollTo(0, $('#accordion' + id).offset().top - 50);
                             $.post("/ajax_politica_cuotas/", {action: 'open_accordion', id: id},
                                 function (data) {
@@ -98,7 +98,7 @@
                         } else {
                             $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#id_politica_cuotas').val('');
-                            habilita(['s_plus', 'h_pencil', 'h_trash-o', 's_file-text-o', 'h_money', 'h_check']);
+                            habilita(['s_plus', 's_file-text-o']);
                         }
                     }
                 }
@@ -186,29 +186,23 @@
             $('.exentos_select').prop('disabled', false);
         });
 
-        {#$('#generar_extraordinaria').click(function (e) {#}
-        {#    e.preventDefault();#}
-        {#    var id = $('#id_politica_cuotas').val();#}
-        {#    $.post("/ajax_politica_cuotas/", {#}
-        {#        action: 'generar_remesas',#}
-        {#        id: id,#}
-        {#        cuota: $('#cantidad_remesa_ext').val(),#}
-        {#        concepto: $('#concepto_remesa_ext').val(),#}
-        {#        usuarios: $('#usuarios_remesa_ext').val(),#}
-        {#    }, function (data) {#}
-        {#        $('#r_e' + id).html(data);#}
-        {#    });#}
-        {# });#}
-
         {#  Dentro del accordion de la política se hacen tres acciones:  #}
         $('body').on('click', '.borrar_remesa_emitida', function (e) {
             e.preventDefault();
             var id = $(this).data('id');
             var politica = $(this).data('politica');
-            $.post("/ajax_politica_cuotas/", {action: 'borrar_remesa_emitida', id: id}, function (data) {
-                $('#r_e' + politica).html(data);
-            });
+            var page = $(this).data('page');
+            $.post("/ajax_politica_cuotas/", {action: 'borrar_remesa_emitida', id: id, politica: politica, page: page},
+                function (data) {
+                    if (data.ok) {
+                        $('#r_e' + data.politica).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
         });
+
 
         $('body').on('click', '.descarga_remesa', function (e) {
             e.preventDefault();
@@ -223,6 +217,7 @@
             $('#action').val('descarga_excel');
             document.{{formname}}.submit();
         });
+
 
         $('body').on('click', '.mostrar_no_exentos', function (e) {
             e.preventDefault();
@@ -391,5 +386,18 @@
             habilita(['s_plus', 'h_pencil', 'h_trash-o', 's_file-text-o', 'h_money', 'h_check']);
         });
 
+        {#$('#generar_extraordinaria').click(function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var id = $('#id_politica_cuotas').val();#}
+        {#    $.post("/ajax_politica_cuotas/", {#}
+        {#        action: 'generar_remesas',#}
+        {#        id: id,#}
+        {#        cuota: $('#cantidad_remesa_ext').val(),#}
+        {#        concepto: $('#concepto_remesa_ext').val(),#}
+        {#        usuarios: $('#usuarios_remesa_ext').val(),#}
+        {#    }, function (data) {#}
+        {#        $('#r_e' + id).html(data);#}
+        {#    });#}
+        {# });#}
     </script>
 {% endblock %}
