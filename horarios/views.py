@@ -1708,7 +1708,7 @@ def seguimiento_educativo(request):
                   {
                       'formname': 'seguimiento_educativo',
                       'pds': pds.order_by('id'),
-                      'grupos': grupos.order_by('id'),
+                      'grupos': grupos,
                       'g_e': g_e,
                       'alumnos': alumnos.order_by('ge__gauser__last_name'),
                       'PD_class': PlataformaDistancia,
