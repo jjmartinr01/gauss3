@@ -1,0 +1,54 @@
+{% for pd in pds %}
+    {% if pd.profesor == g_e %}
+        <tr>
+            <td>{{ pd.profesor.gauser.get_full_name }}</td>
+            <td title="{{ pd.materia.nombre }}">{{ pd.materia.nombre|truncatechars:25 }}</td>
+            <td>{{ pd.grupo.nombre }}</td>
+            <td>
+                <select class="plataforma_select" data-id="{{ pd.id }}">
+                    {% for p in PD_class.PLATAFORMAS %}
+                        <option value="{{ p.0 }}" {% if p.0 == pd.plataforma %}selected{% endif %}>{{ p.1 }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        <td>
+                <select class="videconferencia_select" data-id="{{ pd.id }}">
+                    {% for p in PD_class.VIDEOCONFER %}
+                        <option value="{{ p.0 }}" {% if p.0 == pd.platvideo %}selected{% endif %}>{{ p.1 }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <div style="border: #EEEEEE solid 1px;" id="observaciones_pd{{ pd.id }}"
+                     contenteditable="true">{% autoescape off %}{{ pd.observaciones }}{% endautoescape %}</div>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td>{{ pd.profesor.gauser.get_full_name }}</td>
+            <td>{{ pd.materia.nombre }}</td>
+            <td>{{ pd.grupo.nombre }}</td>
+            <td>{{ pd.get_plataforma_display }}</td>
+            <td>{% autoescape off %}{{ pd.observaciones }}{% endautoescape %}</td>
+        </tr>
+    {% endif %}
+{% endfor %}
+
+<script>
+    {% for pd in pds %}
+        {% if pd.profesor == g_e %}
+            setTimeout(function () {
+                var editor_observaciones_pd{{ pd.id }} = CKEDITOR.inline('observaciones_pd{{ pd.id }}');
+                editor_observaciones_pd{{ pd.id }}.on('change', function (e) {
+                    var texto = e.editor.getData();
+                    texto_editor = texto;
+                    var pd = {{ pd.id }};
+                    setTimeout(function () {
+                        comprueba_cambio_texto(texto, pd, 'update_observaciones_pd');
+                    }, 1000);
+                    re_adjust_check_time();
+                });
+            }, 1500);
+        {% endif %}
+    {% endfor %}
+</script>

@@ -1,0 +1,62 @@
+{% load horarios_extras %}{% load my_templatetags %}
+<table id="list_alumnos{{ grupo.id }}" style="width: 100%;">
+    <thead>
+    <tr>
+        <th title="Nombre del alumno o alumna">Alumno/a</th>
+        <th title="¿Tiene un teléfono móvil (o tablet) con el que ver contenidos?">Teléfono Móvil</th>
+        <th title="¿Tiene un ordenador?">Ordenador</th>
+        <th title="¿Tiene acceso a internet?">Internet</th>
+        <th title="¿Sigue las clases impartidas a distancia?">Clases</th>
+        <th title="Realiza las observaciones que estimes oportunas en referencia al alumn@">Observaciones</th>
+    </tr>
+    </thead>
+    <tbody id="tbody{{ grupo.id }}">
+    {% for sa in sas %}
+        {% if sa.alumno.tutor == g_e or sa.alumno.cotutor == g_e %}
+            <tr>
+                <td>{{ sa.alumno.ge.gauser.get_full_name }}</td>
+                <td><a class="sino" data-campo="smartphone" id="smartphone{{ sa.id }}"
+                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'smartphone' }}</a></td>
+                <td><a class="sino" data-campo="ordenador" id="ordenador{{ sa.id }}"
+                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'ordenador' }}</a></td>
+                <td><a class="sino" data-campo="internet" id="internet{{ sa.id }}"
+                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'internet' }}</a></td>
+                <td><a class="sino" data-campo="clases" id="clases{{ sa.id }}"
+                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'clases' }}</a></td>
+                <td>
+                    <div style="border: #EEEEEE solid 1px;" id="observaciones_sa{{ sa.id }}"
+                         contenteditable="true">{% autoescape off %}{{ sa.observaciones }}{% endautoescape %}</div>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td>{{ sa.alumno.ge.gauser.get_full_name }}</td>
+                <td>{{ sa|convierte_sino:'smartphone' }}</td>
+                <td>{{ sa|convierte_sino:'ordenador' }}</td>
+                <td>{{ sa|convierte_sino:'internet' }}</td>
+                <td>{{ sa|convierte_sino:'clases' }}</td>
+                <td>{% autoescape off %}{{ sa.observaciones }}{% endautoescape %}</td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    {% for sa in sas %}
+        {% if sa.alumno.tutor == g_e or sa.alumno.cotutor == g_e %}
+            setTimeout(function () {
+                let editor_observaciones_sa{{ sa.id }} = CKEDITOR.inline('observaciones_sa{{ sa.id }}');
+                editor_observaciones_sa{{ sa.id }}.on('change', function (e) {
+                    var texto = e.editor.getData();
+                    texto_editor = texto;
+                    var sa = {{ sa.id }};
+                    setTimeout(function () {
+                        comprueba_cambio_texto(texto, sa, 'update_observaciones_sa');
+                    }, 1000);
+                    re_adjust_check_time();
+                });
+            }, 1500);
+        {% endif %}
+    {% endfor %}
+</script>

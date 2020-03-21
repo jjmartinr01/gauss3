@@ -1,0 +1,186 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+        table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+    </style>
+{% endblock %}
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <input type="hidden" name="action" id="action" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Seguimiento Educativo</strong></h4>
+        </div>
+        <ul class="tabs" data-tab role="tablist">
+            <li class="tab-title active" role="presentation" data-id="0">
+                <a href="#tab1" role="tab" tabindex="0" aria-selected="true" aria-controls="tab1">
+                    <b id="texto0">Seguimiento por materias</b></a>
+            </li>
+            <li class="tab-title" role="presentation" data-id="1">
+                <a href="#tab2" role="tab" tabindex="0" aria-selected="false" aria-controls="tab2">
+                    <b id="texto1" style="color:#74bfdd;">Seguimiento por alumnos</b></a>
+            </li>
+        </ul>
+        <div class="tabs-content">
+            <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
+                <table width="100%" id="list_materias">
+                    <thead>
+                    <tr>
+                        <th title="Nombre del profesor/a">Profesor/a</th>
+                        <th title="Nombre de la materia">Materia</th>
+                        <th title="Nombre del grupo">Grupo</th>
+                        <th title="Plataforma educativa a distancia utilizada por el profesor">Plat. Educativa</th>
+                        <th title="Plataforma de vídeo-conferencia utilizada por el profesor">Plat. Vídeo-Conferencia
+                        </th>
+                        <th title="Realiza las observaciones que estimes oportunas en referencia a esta materia">
+                            Observaciones
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody id="tbody_materias">
+                    {% include "seguimiento_educativo_materias.html" %}
+                    </tbody>
+                </table>
+            </section>
+
+            <section role="tabpanel" aria-hidden="true" class="content" id="tab2">
+                <dl class="accordion" data-accordion id="div_grupos">
+                    {% for grupo in grupos %}
+                        <dd class="accordion-navigation" id="accordion{{ grupo.id }}">
+                            <a href="#panel{{ grupo.id }}">
+                                <i id="circle{{ grupo.id }}" class="fa fa-plus-circle circle_icon"></i>
+                                {{ grupo }}
+                            </a>
+                            <div id="panel{{ grupo.id }}" class="content accordion-grupo"
+                                 data-id="{{ grupo.id }}"></div>
+                        </dd>
+                    {% endfor %}
+                </dl>
+            </section>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        $('#Contenido').on('click', '.sino', function (e) {
+            e.preventDefault();
+            var campo = $(this).data('campo');
+            var id = $(this).data('id');
+            $.post("/seguimiento_educativo/", {action: 'sino', campo: campo, id: id},
+                function (data) {
+                    if (data['ok']) {
+                        $('#' + data.campo + data.id).html(data.sino);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('#Contenido').on('click', '.plataforma_select', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var valor = $(this).val();
+            $.post("/seguimiento_educativo/", {action: 'plataforma_select', valor: valor, id: id},
+                function (data) {
+                    if (data['ok']) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('#Contenido').on('click', '.videconferencia_select', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var valor = $(this).val();
+            $.post("/seguimiento_educativo/", {action: 'videconferencia_select', valor: valor, id: id},
+                function (data) {
+                    if (data['ok']) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $(document).foundation({
+            tab: {
+                callback: function (tab) {
+                    var id = $(tab[0]).data('id');
+                    if (id == 0) {
+                        $('#texto0').css('color', 'black');
+                        $('#texto1').css('color', '#74bfdd');
+                    } else if (id == 1) {
+                        $('#texto0').css('color', '#74bfdd');
+                        $('#texto1').css('color', 'black');
+                        $(document).foundation('accordion', 'reflow');
+                    }
+                }
+            }
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-grupo')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/seguimiento_educativo/", {action: 'open_accordion', grupo: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+
+        {# Código para actualizar los editores. Necesita de la variable global: texto_editor #}
+        var texto_editor;
+
+        function comprueba_cambio_texto(texto, id, tipo) {
+            if (texto == texto_editor) {
+                $.post("/seguimiento_educativo/", {
+                        action: tipo,
+                        id: id,
+                        texto: texto_editor
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+
+                    });
+            }
+        }
+    </script>
+{% endblock %}

@@ -121,6 +121,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 13,
      'parent': 'acceso_horarios'
+     },
+    {'code_menu': 'acceso_seguimiento_educativo',
+     'texto_menu': 'Seguimiento educativo',
+     'href': 'seguimiento_educativo',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 14,
+     'parent': 'acceso_horarios'
      }
 ]
 # Se añaden otros permisos para el usuario
@@ -197,5 +205,13 @@ PERMISOS = [
     {'code_nombre': 'asigna_tutor_alumnos',
      'nombre': 'Tiene permiso para asignar tutor a los alumnos',
      'menu': 'acceso_horarios_alumnos'
+     },
+    {'code_nombre': 'hace_seguimiento_alumnos',
+     'nombre': 'Tiene permiso para ver el seguimiento educativo realizado a todos los alumnos',
+     'menu': 'acceso_seguimiento_educativo'
+     },
+    {'code_nombre': 'hace_seguimiento_materias',
+     'nombre': 'Tiene permiso para ver el seguimiento educativo realizado por los profesores',
+     'menu': 'acceso_seguimiento_educativo'
      }
 ]

@@ -22,7 +22,8 @@ from autenticar.control_acceso import permiso_required
 from gauss.funciones import usuarios_de_gauss, html_to_pdf, usuarios_ronda
 from gauss.rutas import MEDIA_ACTILLAS
 from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios
-from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia
+from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia, SeguimientoAlumno, \
+    PlataformaDistancia
 from horarios.tasks import carga_masiva_from_file
 from entidades.models import *
 from mensajes.models import Aviso
@@ -211,6 +212,31 @@ def define_horario(request):
     })
 
 
+def get_horario(horarios, id_horario=None):
+    if horarios.count() == 0:
+        logger.info('No existen horarios. Redireccionado para crear un horario.')
+        return redirect('/define_horario/')
+    try:
+        horario = horarios.get(id=id_horario)
+        logger.info('Ha solicitado el horario "%s"' % horario.descripcion[:90])
+    except:
+        try:
+            horario = horarios.get(predeterminado=True)
+            logger.info('Se autoselecciona el horario predeterminado')
+        except ObjectDoesNotExist:
+            horario = horarios[0]
+            horario.predeterminado = True
+            horario.save()
+            logger.info('No existe horario predeterminado. Se crea uno.')
+        except MultipleObjectsReturned:
+            horarios.update(predeterminado=False)
+            horario = horarios[0]
+            horario.predeterminado = True
+            horario.save()
+            logger.info('Existen varios horarios predeterminados. Se reconvierten para dejar uno solo.')
+    return horario
+
+
 pixels_hora = 120
 height_min = pixels_hora * 1
 offset = 50
@@ -220,14 +246,19 @@ offset = 50
 @login_required()
 def horario_aulas(request):
     g_e = request.session["gauser_extra"]
-    horarios = Horario.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda)
-    if horarios.count() == 0:
-        crear_aviso(request, False, 'Para ver un horario, antes debes crearlo.')
-        return redirect('/define_horario/')
     try:
-        horario = Horario.objects.get(entidad=g_e.ronda.entidad, id=request.GET['h'], ronda=g_e.ronda)
+        id_horario = request.GET['h']
     except:
-        horario = Horario.objects.get(entidad=g_e.ronda.entidad, predeterminado=True, ronda=g_e.ronda)
+        id_horario = None
+    horarios = Horario.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda)
+    horario = get_horario(horarios, id_horario=id_horario)
+    # if horarios.count() == 0:
+    #     crear_aviso(request, False, 'Para ver un horario, antes debes crearlo.')
+    #     return redirect('/define_horario/')
+    # try:
+    #     horario = Horario.objects.get(entidad=g_e.ronda.entidad, id=id_horario, ronda=g_e.ronda)
+    # except:
+    #     horario = Horario.objects.get(entidad=g_e.ronda.entidad, predeterminado=True, ronda=g_e.ronda)
     aulas = Dependencia.objects.filter(entidad=g_e.ronda.entidad, es_aula=True)
     try:
         aula = aulas.get(id=request.GET['a'])
@@ -277,29 +308,34 @@ def horario_aulas(request):
 def horario_subentidad(request):
     # Las siguientes líneas indican si el usuario podrá hacer modificaciones en el horario:
     g_e = request.session["gauser_extra"]
-    horarios = Horario.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda)
-    if horarios.count() == 0:
-        logger.info(u'No existen horarios. Redireccionado para crear un horario.')
-        crear_aviso(request, False, 'Para ver un horario, antes debes crearlo.')
-        return redirect('/define_horario/')
     try:
-        horario = horarios.get(id=request.GET['h'])
-        logger.info(u'Ha solicitado el horario "%s"' % horario.descripcion[:90])
+        id_horario = request.GET['h']
     except:
-        try:
-            horario = horarios.get(predeterminado=True)
-            logger.info(u'Se autoselecciona el horario predeterminado')
-        except ObjectDoesNotExist:
-            horario = horarios[0]
-            horario.predeterminado = True
-            horario.save()
-            logger.info(u'No existe horario predeterminado. Se crea uno.')
-        except MultipleObjectsReturned:
-            horarios.update(predeterminado=False)
-            horario = horarios[0]
-            horario.predeterminado = True
-            horario.save()
-            logger.info(u'Existen varios horarios predeterminados. Se reconvierten para dejar uno solo.')
+        id_horario = None
+    horarios = Horario.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda)
+    horario = get_horario(horarios, id_horario=id_horario)
+    # if horarios.count() == 0:
+    #     logger.info(u'No existen horarios. Redireccionado para crear un horario.')
+    #     crear_aviso(request, False, 'Para ver un horario, antes debes crearlo.')
+    #     return redirect('/define_horario/')
+    # try:
+    #     horario = horarios.get(id=request.GET['h'])
+    #     logger.info(u'Ha solicitado el horario "%s"' % horario.descripcion[:90])
+    # except:
+    #     try:
+    #         horario = horarios.get(predeterminado=True)
+    #         logger.info(u'Se autoselecciona el horario predeterminado')
+    #     except ObjectDoesNotExist:
+    #         horario = horarios[0]
+    #         horario.predeterminado = True
+    #         horario.save()
+    #         logger.info(u'No existe horario predeterminado. Se crea uno.')
+    #     except MultipleObjectsReturned:
+    #         horarios.update(predeterminado=False)
+    #         horario = horarios[0]
+    #         horario.predeterminado = True
+    #         horario.save()
+    #         logger.info(u'Existen varios horarios predeterminados. Se reconvierten para dejar uno solo.')
     grupos = Grupo.objects.filter(ronda=g_e.ronda)
     grupos_id = horario.sesion_set.all().values_list('grupo__id', flat=True).distinct()
     grupos_horario = grupos.filter(id__in=grupos_id)
@@ -348,28 +384,33 @@ def horario_ge(request):
     # Las siguientes líneas indican si el usuario podrá hacer modificaciones en el horario:
     g_e = request.session["gauser_extra"]
     horarios = Horario.objects.filter(ronda=g_e.ronda)
-    if horarios.count() == 0:
-        logger.info(u'No existen horarios. Redireccionado para crear un horario.')
-        crear_aviso(request, False, 'Para ver un horario, antes debes crearlo.')
-        return redirect('/define_horario/')
     try:
-        horario = horarios.get(id=request.GET['h'])
-        logger.info(u'Ha solicitado el horario "%s"' % horario.descripcion[:90])
+        id_horario = request.GET['h']
     except:
-        try:
-            horario = horarios.get(predeterminado=True)
-            logger.info(u'Se autoselecciona el horario predeterminado')
-        except ObjectDoesNotExist:
-            horario = horarios[0]
-            horario.predeterminado = True
-            horario.save()
-            logger.info(u'No existe horario predeterminado. Se crea uno.')
-        except MultipleObjectsReturned:
-            horarios.update(predeterminado=False)
-            horario = horarios[0]
-            horario.predeterminado = True
-            horario.save()
-            logger.info(u'Existen varios horarios predeterminados. Se reconvierten para dejar uno solo.')
+        id_horario = None
+    horario = get_horario(horarios, id_horario=id_horario)
+    # if horarios.count() == 0:
+    #     logger.info('No existen horarios. Redireccionado para crear un horario.')
+    #     crear_aviso(request, False, 'Para ver un horario, antes debes crearlo.')
+    #     return redirect('/define_horario/')
+    # try:
+    #     horario = horarios.get(id=id_horario)
+    #     logger.info('Ha solicitado el horario "%s"' % horario.descripcion[:90])
+    # except:
+    #     try:
+    #         horario = horarios.get(predeterminado=True)
+    #         logger.info('Se autoselecciona el horario predeterminado')
+    #     except ObjectDoesNotExist:
+    #         horario = horarios[0]
+    #         horario.predeterminado = True
+    #         horario.save()
+    #         logger.info('No existe horario predeterminado. Se crea uno.')
+    #     except MultipleObjectsReturned:
+    #         horarios.update(predeterminado=False)
+    #         horario = horarios[0]
+    #         horario.predeterminado = True
+    #         horario.save()
+    #         logger.info('Existen varios horarios predeterminados. Se reconvierten para dejar uno solo.')
     g_es_id = horario.sesion_set.all().values_list('g_e__id', flat=True).distinct()
     g_es = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=g_es_id)
     try:
@@ -1257,8 +1298,8 @@ def xml_penalara(xml_file, request):
         try:
             tramo_horario = Tramo_horario.objects.get(horario=horario, clave_ex=clave_tramo_horario)
         except:
-            crear_aviso(request, False, u'No se encuentra el tramo horario con clave: %s' % clave_tramo_horario)
-            logger.info(u'No se encuentra el tramo horario con clave: %s' % clave_tramo_horario)
+            crear_aviso(request, False, 'No se encuentra el tramo horario con clave: %s' % clave_tramo_horario)
+            logger.info('No se encuentra el tramo horario con clave: %s' % clave_tramo_horario)
             tramo_horario = None
 
         clave_materia = sesion.find('MATERIA').text
@@ -1505,6 +1546,7 @@ def alumnos_horarios(request):
                   })
 
 
+# @permiso_required('acceso_guardias_horarios')
 def alumnos_horarios_ajax(request):
     if request.is_ajax():
         g_e = request.session['gauser_extra']
@@ -1536,3 +1578,139 @@ def alumnos_horarios_ajax(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
+
+
+# @permiso_required('acceso_seguimiento_educativo')
+def seguimiento_educativo(request):
+    g_e = request.session["gauser_extra"]
+    ronda = request.session['ronda']
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'open_accordion':
+            try:
+                grupo = Grupo.objects.get(id=request.POST['grupo'], ronda=ronda)
+                if g_e in grupo.tutores or g_e in grupo.cotutores:
+                    sas = SeguimientoAlumno.objects.filter(Q(alumno__grupo=grupo),
+                                                           Q(alumno__tutor=g_e) | Q(alumno__cotutor=g_e))
+                    html = render_to_string("seguimiento_educativo_alumnos_table.html",
+                                            {'sas': sas.order_by('alumno__ge__gauser__last_name'),
+                                             'grupo': grupo, 'g_e': g_e})
+                    return JsonResponse({'ok': True, 'html': html})
+                elif g_e.has_permiso('hace_seguimiento_alumnos'):
+                    sas = SeguimientoAlumno.objects.filter(Q(alumno__grupo=grupo))
+                    html = render_to_string("seguimiento_educativo_alumnos_table.html",
+                                            {'sas': sas.order_by('alumno__ge__gauser__last_name'),
+                                             'grupo': grupo, 'g_e': g_e})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso o no eres tutor/cotutor del grupo'})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Error en la petición realizada.'})
+        elif action == 'sino':
+            try:
+                campo = request.POST['campo']
+                id = request.POST['id']
+                sa = SeguimientoAlumno.objects.get(id=id, alumno__ge__ronda=g_e.ronda)
+                if sa.alumno.tutor == g_e or sa.alumno.cotutor == g_e:
+                    valor = not getattr(sa, campo)
+                    setattr(sa, campo, valor)
+                    sa.save()
+                    return JsonResponse({'ok': True, 'sino': ['No', 'Sí'][valor], 'id': id, 'campo': campo})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso o no eres tutor/cotutor del grupo'})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Error en la petición realizada.'})
+        elif action == 'update_observaciones_sa':
+            try:
+                observaciones = request.POST['texto']
+                id = request.POST['id']
+                sa = SeguimientoAlumno.objects.get(id=id, alumno__ge__ronda=g_e.ronda)
+                if sa.alumno.tutor == g_e or sa.alumno.cotutor == g_e:
+                    sa.observaciones = observaciones
+                    sa.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso o no eres tutor/cotutor del grupo'})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Error en la petición realizada.'})
+        elif action == 'update_observaciones_pd':
+            try:
+                observaciones = request.POST['texto']
+                id = request.POST['id']
+                pd = PlataformaDistancia.objects.get(id=id, profesor__ronda=g_e.ronda)
+                if pd.profesor == g_e:
+                    pd.observaciones = observaciones
+                    pd.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso o no eres profesor del alumno'})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Error en la petición realizada.'})
+        elif action == 'plataforma_select':
+            try:
+                valor = request.POST['valor']
+                id = request.POST['id']
+                pd = PlataformaDistancia.objects.get(id=id, profesor__ronda=g_e.ronda)
+                if pd.profesor == g_e:
+                    pd.plataforma = valor
+                    pd.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso o no eres profesor del alumno'})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Error en la petición realizada.'})
+        elif action == 'videconferencia_select':
+            try:
+                valor = request.POST['valor']
+                id = request.POST['id']
+                pd = PlataformaDistancia.objects.get(id=id, profesor__ronda=g_e.ronda)
+                if pd.profesor == g_e:
+                    pd.platvideo = valor
+                    pd.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso o no eres profesor del alumno'})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Error en la petición realizada.'})
+    horarios = Horario.objects.filter(ronda=ronda)
+    try:
+        id_horario = request.GET['h']
+    except:
+        id_horario = None
+    horario = get_horario(horarios, id_horario=id_horario)
+    # Independientemente del permiso que se tenga, para las materias del profesor se han de crear los pds:
+    mg_tuples = horario.sesion_set.filter(g_e=g_e).values_list('materia__id', 'grupo__id').distinct()
+    for mg in mg_tuples:
+        try:
+            materia = Materia.objects.get(id=mg[0])
+            grupo = Grupo.objects.get(id=mg[1])
+            PlataformaDistancia.objects.get_or_create(profesor=g_e, materia=materia, grupo=grupo)
+        except:
+            # No existe materia asignada a esta sesión, por ejemplo una guardia
+            pass
+    if g_e.has_permiso('hace_seguimiento_materias'):
+        pds = PlataformaDistancia.objects.filter(profesor__ronda=ronda)
+    else:
+        pds = PlataformaDistancia.objects.filter(profesor=g_e)
+    # Independientemente del permiso que se tenga, se deben crear los sa del profesor:
+    alumnos = Gauser_extra_estudios.objects.filter(Q(tutor=g_e) | Q(cotutor=g_e)).distinct()
+    for alumno in alumnos:
+        SeguimientoAlumno.objects.get_or_create(alumno=alumno)
+    if g_e.has_permiso('hace_seguimiento_alumnos'):
+        alumnos = Gauser_extra_estudios.objects.filter(ge__ronda=ronda)
+        grupos_id = alumnos.values_list('grupo_id', flat=True).distinct()
+        grupos = Grupo.objects.filter(id__in=grupos_id)
+    else:
+        grupos_id = alumnos.values_list('grupo_id', flat=True)
+        grupos = Grupo.objects.filter(id__in=grupos_id)
+
+    return render(request, "seguimiento_educativo.html",
+                  {
+                      'formname': 'seguimiento_educativo',
+                      'pds': pds.order_by('id'),
+                      'grupos': grupos.order_by('id'),
+                      'g_e': g_e,
+                      'alumnos': alumnos.order_by('ge__gauser__last_name'),
+                      'PD_class': PlataformaDistancia,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)
+                  })

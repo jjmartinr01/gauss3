@@ -17,9 +17,10 @@ register = Library()
 #         cursos_entidad = Curso.objects.filter(entidad=sub.entidad, grupos__in=[sub])
 #     return cursos_entidad
 
-# @register.filter
-# def cursos_from_ge(g_e):
-#     return Curso.objects.filter(entidad=g_e.ronda.entidad, grupos__in=g_e.subentidades.all())
+@register.filter
+def convierte_sino(sa, campo):
+    estado = getattr(sa, campo)
+    return 'Sí' if estado else 'No'
 
 
 @register.filter

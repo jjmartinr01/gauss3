@@ -7,7 +7,7 @@ from django.db import models
 from django.db.models import Q
 from datetime import date
 from entidades.models import Entidad, Subentidad, Ronda, Dependencia, Gauser_extra
-from estudios.models import Curso as ECurso
+from estudios.models import Curso as ECurso, Gauser_extra_estudios
 from estudios.models import Grupo as EGrupo
 from estudios.models import Materia as EMateria
 from gauss.funciones import pass_generator, usuarios_ronda
@@ -503,6 +503,37 @@ class CargaMasiva(models.Model):
 
     def __str__(self):
         return u'%s -- Cargado: %s' % (self.ronda, self.cargado)
+
+
+class PlataformaDistancia(models.Model):
+    PLATAFORMAS = (('moodle', 'Moodle'), ('edmodo', 'Edmodo'), ('gcroom', 'Google Classroom'),
+                   ('msteams', 'Microsoft Teams'), ('otra', 'Otras plataformas'),
+                   ('ninguna', 'No uso plataforma'))
+    VIDEOCONFER = (('meet', 'Google Meet'), ('webex', 'Cisco Webex'), ('teams', 'Microsoft Teams'),
+                   ('otra', 'Otras plataformas'), ('ninguna', 'No uso plataforma'))
+    profesor = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.CASCADE)
+    materia = models.ForeignKey(EMateria, null=True, blank=True, on_delete=models.CASCADE)
+    grupo = models.ForeignKey(EGrupo, null=True, blank=True, on_delete=models.CASCADE)
+    plataforma = models.CharField('Plataforma educativa', default='ninguna', choices=PLATAFORMAS, max_length=10)
+    platvideo = models.CharField('Plataforma video-conferencias', default='ninguna', choices=VIDEOCONFER, max_length=10)
+    observaciones = models.TextField('Observaciones', blank=True, null=True, default='')
+
+    def __str__(self):
+        return '%s - %s: %s' % (self.profesor.gauser.get_full_name(), self.grupo, self.plataforma)
+
+
+class SeguimientoAlumno(models.Model):
+    alumno = models.ForeignKey(Gauser_extra_estudios, blank=True, null=True, on_delete=models.CASCADE)
+    smartphone = models.BooleanField('¿Tiene teléfono móvil o tablet?', default=False)
+    ordenador = models.BooleanField('¿Tiene ordenador?', default=False)
+    internet = models.BooleanField('¿Tiene conexión a internet?', default=False)
+    clases = models.BooleanField('¿Está siguiendo las clases?', default=False)
+    observaciones = models.TextField('Observaciones', blank=True, null=True, default='')
+
+    def __str__(self):
+        return '%s - %s - Tel: %s, PC: %s, Int: %s, Clases: %s' % (
+        self.alumno.ge.gauser.get_full_name(), self.alumno.grupo, self.smartphone, self.ordenador, self.internet,
+        self.clases)
 
 
 def sesion2sesion():
