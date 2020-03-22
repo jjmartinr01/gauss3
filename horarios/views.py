@@ -1679,7 +1679,7 @@ def seguimiento_educativo(request):
                     pds = PlataformaDistancia.objects.filter(profesor__ronda=ronda).order_by('id')
                 else:
                     pds = PlataformaDistancia.objects.filter(profesor=g_e).order_by('id')
-                paginator = Paginator(pds, 25)
+                paginator = Paginator(pds, 15)
                 pds_paginadas = paginator.page(int(request.POST['page']))
                 html = render_to_string('seguimiento_educativo_materias.html',
                                         {'pds': pds_paginadas, 'g_e': g_e, 'PD_class': PlataformaDistancia})
@@ -1718,7 +1718,7 @@ def seguimiento_educativo(request):
         grupos_id = alumnos.values_list('grupo_id', flat=True)
         grupos = Grupo.objects.filter(id__in=grupos_id)
 
-    paginator = Paginator(pds, 25)
+    paginator = Paginator(pds, 15)
     return render(request, "seguimiento_educativo.html",
                   {
                       'formname': 'seguimiento_educativo',

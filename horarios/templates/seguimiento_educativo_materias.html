@@ -43,7 +43,7 @@
         {% else %}
             <tr>
                 <td>{{ pd.profesor.gauser.get_full_name }}</td>
-                <td>{{ pd.materia.nombre }}</td>
+                <td title="{{ pd.materia.nombre }}">{{ pd.materia.nombre|truncatechars:25 }}</td>
                 <td>{{ pd.grupo.nombre }}</td>
                 <td>{{ pd.get_plataforma_display }}</td>
                 <td>{{ pd.get_platvideo_display }}</td>
