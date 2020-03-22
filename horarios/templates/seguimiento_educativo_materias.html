@@ -1,38 +1,91 @@
-{% for pd in pds %}
-    {% if pd.profesor == g_e %}
-        <tr>
-            <td>{{ pd.profesor.gauser.get_full_name }}</td>
-            <td title="{{ pd.materia.nombre }}">{{ pd.materia.nombre|truncatechars:25 }}</td>
-            <td>{{ pd.grupo.nombre }}</td>
-            <td>
-                <select class="plataforma_select" data-id="{{ pd.id }}">
-                    {% for p in PD_class.PLATAFORMAS %}
-                        <option value="{{ p.0 }}" {% if p.0 == pd.plataforma %}selected{% endif %}>{{ p.1 }}</option>
-                    {% endfor %}
-                </select>
-            </td>
-        <td>
-                <select class="videconferencia_select" data-id="{{ pd.id }}">
-                    {% for p in PD_class.VIDEOCONFER %}
-                        <option value="{{ p.0 }}" {% if p.0 == pd.platvideo %}selected{% endif %}>{{ p.1 }}</option>
-                    {% endfor %}
-                </select>
-            </td>
-            <td>
-                <div style="border: #EEEEEE solid 1px;" id="observaciones_pd{{ pd.id }}"
-                     contenteditable="true">{% autoescape off %}{{ pd.observaciones }}{% endautoescape %}</div>
-            </td>
-        </tr>
-    {% else %}
-        <tr>
-            <td>{{ pd.profesor.gauser.get_full_name }}</td>
-            <td>{{ pd.materia.nombre }}</td>
-            <td>{{ pd.grupo.nombre }}</td>
-            <td>{{ pd.get_plataforma_display }}</td>
-            <td>{% autoescape off %}{{ pd.observaciones }}{% endautoescape %}</td>
-        </tr>
-    {% endif %}
-{% endfor %}
+{% load my_templatetags %}
+<table id="list_materias" style="width: 100%;">
+    <thead>
+    <tr>
+        <th title="Nombre del profesor/a">Profesor/a</th>
+        <th title="Nombre de la materia">Materia</th>
+        <th title="Nombre del grupo">Grupo</th>
+        <th title="Plataforma educativa a distancia utilizada por el profesor">Plat. Educativa</th>
+        <th title="Plataforma de vídeo-conferencia utilizada por el profesor">Plat. Vídeo-Conferencia
+        </th>
+        <th title="Realiza las observaciones que estimes oportunas en referencia a esta materia">
+            Observaciones
+        </th>
+    </tr>
+    </thead>
+    <tbody id="tbody_materias">
+    {% for pd in pds %}
+        {% if pd.profesor == g_e %}
+            <tr>
+                <td>{{ pd.profesor.gauser.get_full_name }}</td>
+                <td title="{{ pd.materia.nombre }}">{{ pd.materia.nombre|truncatechars:25 }}</td>
+                <td>{{ pd.grupo.nombre }}</td>
+                <td>
+                    <select class="plataforma_select" data-id="{{ pd.id }}">
+                        {% for p in PD_class.PLATAFORMAS %}
+                            <option value="{{ p.0 }}"
+                                    {% if p.0 == pd.plataforma %}selected{% endif %}>{{ p.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select class="videconferencia_select" data-id="{{ pd.id }}">
+                        {% for p in PD_class.VIDEOCONFER %}
+                            <option value="{{ p.0 }}" {% if p.0 == pd.platvideo %}selected{% endif %}>{{ p.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <div style="border: #EEEEEE solid 1px;" id="observaciones_pd{{ pd.id }}"
+                         contenteditable="true">{% autoescape off %}{{ pd.observaciones }}{% endautoescape %}</div>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td>{{ pd.profesor.gauser.get_full_name }}</td>
+                <td>{{ pd.materia.nombre }}</td>
+                <td>{{ pd.grupo.nombre }}</td>
+                <td>{{ pd.get_plataforma_display }}</td>
+                <td>{{ pd.get_platvideo_display }}</td>
+                <td>{% autoescape off %}{{ pd.observaciones }}{% endautoescape %}</td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
+
+<br>
+<div class="row">
+    <div class="columns large-12">
+        <ul class="pagination" role="menubar" aria-label="Pagination">
+            {% if pds.has_previous %}
+                <li class="arrow">
+                    <a class="go_page" data-page="{{ pds.previous_page_number }}">&laquo; Anterior</a>
+                </li>
+            {% else %}
+                <li class="arrow unavailable" aria-disabled="true">
+                    <a class="go_page">&laquo; Anterior</a>
+                </li>
+            {% endif %}
+            {% for page in pds.paginator.num_pages|number_range %}
+                {% if page == pds.number %}
+                    <li class="current"><a href="" class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                {% else %}
+                    <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if pds.has_next %}
+                <li class="arrow">
+                    <a class="go_page" data-page="{{ pds.next_page_number }}">Siguiente &raquo;</a>
+                </li>
+            {% else %}
+                <li class="arrow unavailable" aria-disabled="true">
+                    <a class="go_page">Siguiente &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
 
 <script>
     {% for pd in pds %}

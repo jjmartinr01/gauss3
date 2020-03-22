@@ -33,24 +33,7 @@
         </ul>
         <div class="tabs-content">
             <section role="tabpanel" aria-hidden="false" class="content active" id="tab1">
-                <table width="100%" id="list_materias">
-                    <thead>
-                    <tr>
-                        <th title="Nombre del profesor/a">Profesor/a</th>
-                        <th title="Nombre de la materia">Materia</th>
-                        <th title="Nombre del grupo">Grupo</th>
-                        <th title="Plataforma educativa a distancia utilizada por el profesor">Plat. Educativa</th>
-                        <th title="Plataforma de vídeo-conferencia utilizada por el profesor">Plat. Vídeo-Conferencia
-                        </th>
-                        <th title="Realiza las observaciones que estimes oportunas en referencia a esta materia">
-                            Observaciones
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody id="tbody_materias">
-                    {% include "seguimiento_educativo_materias.html" %}
-                    </tbody>
-                </table>
+                {% include "seguimiento_educativo_materias.html" %}
             </section>
 
             <section role="tabpanel" aria-hidden="true" class="content" id="tab2">
@@ -186,5 +169,25 @@
                     });
             }
         }
+
+        $('body').on('click', '.go_page', function (e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            if (page) {
+                {#var section = $(this).closest('section').prop('id');#}
+                $.post("/seguimiento_educativo/", {action: 'update_page', 'page': page},
+                    function (data) {
+                        if (data.ok) {
+                            $('#tab1').html(data.html);
+                            window.scrollTo(0, $('#list_materias').offset().top - 50);
+                            {#window.scrollTo(0, $('#tab1').offset().top - 50);#}
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            list_materias
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        });
     </script>
 {% endblock %}

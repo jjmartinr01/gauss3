@@ -15,6 +15,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.files import File
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.utils.text import slugify
 
@@ -1672,6 +1673,19 @@ def seguimiento_educativo(request):
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso o no eres profesor del alumno'})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Error en la petición realizada.'})
+        elif request.POST['action'] == 'update_page':
+            try:
+                if g_e.has_permiso('hace_seguimiento_materias'):
+                    pds = PlataformaDistancia.objects.filter(profesor__ronda=ronda).order_by('id')
+                else:
+                    pds = PlataformaDistancia.objects.filter(profesor=g_e).order_by('id')
+                paginator = Paginator(pds, 25)
+                pds_paginadas = paginator.page(int(request.POST['page']))
+                html = render_to_string('seguimiento_educativo_materias.html',
+                                        {'pds': pds_paginadas, 'g_e': g_e, 'PD_class': PlataformaDistancia})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
     horarios = Horario.objects.filter(ronda=ronda)
     try:
         id_horario = request.GET['h']
@@ -1689,9 +1703,9 @@ def seguimiento_educativo(request):
             # No existe materia asignada a esta sesión, por ejemplo una guardia
             pass
     if g_e.has_permiso('hace_seguimiento_materias'):
-        pds = PlataformaDistancia.objects.filter(profesor__ronda=ronda)
+        pds = PlataformaDistancia.objects.filter(profesor__ronda=ronda).order_by('id')
     else:
-        pds = PlataformaDistancia.objects.filter(profesor=g_e)
+        pds = PlataformaDistancia.objects.filter(profesor=g_e).order_by('id')
     # Independientemente del permiso que se tenga, se deben crear los sa del profesor:
     alumnos = Gauser_extra_estudios.objects.filter(Q(tutor=g_e) | Q(cotutor=g_e)).distinct()
     for alumno in alumnos:
@@ -1704,10 +1718,11 @@ def seguimiento_educativo(request):
         grupos_id = alumnos.values_list('grupo_id', flat=True)
         grupos = Grupo.objects.filter(id__in=grupos_id)
 
+    paginator = Paginator(pds, 25)
     return render(request, "seguimiento_educativo.html",
                   {
                       'formname': 'seguimiento_educativo',
-                      'pds': pds.order_by('id'),
+                      'pds': paginator.page(1),
                       'grupos': grupos,
                       'g_e': g_e,
                       'alumnos': alumnos.order_by('ge__gauser__last_name'),
