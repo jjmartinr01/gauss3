@@ -46,7 +46,7 @@
                         <dd class="accordion-navigation" id="accordion{{ grupo.id }}">
                             <a href="#panel{{ grupo.id }}">
                                 <i id="circle{{ grupo.id }}" class="fa fa-plus-circle circle_icon"></i>
-                                {{ grupo.nombre }}
+                                <b>{{ grupo.nombre }}</b> -- {{ grupo.tutores|human_readable_ges }}
                             </a>
                             <div id="panel{{ grupo.id }}" class="content accordion-grupo"
                                  data-id="{{ grupo.id }}"></div>
@@ -60,7 +60,7 @@
 
 {% block final %}
     <script>
-
+        habilita(['s_file-excel-o']);
         $('#Contenido').on('click', '.sino', function (e) {
             e.preventDefault();
             var campo = $(this).data('campo');
@@ -189,5 +189,10 @@
                     });
             }
         });
+        $('#file-excel-o_sign').click(function (e) {
+            e.preventDefault();
+            $('#action').val('exportar_excel');
+            document.{{formname}}.submit();
+        })
     </script>
 {% endblock %}

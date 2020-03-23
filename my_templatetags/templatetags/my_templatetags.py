@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.utils.safestring import mark_safe
 from django.utils.text import normalize_newlines
 
+from gauss.funciones import human_readable_list
 # from autenticar.models import Gauser_extra, Permiso
 from autenticar.models import Permiso
 from calendario.models import Vevent
@@ -41,10 +42,10 @@ DIAS = {
 register = Library()
 
 
+
 @register.filter
 def dia(n):
     return DIAS[n]
-
 
 @register.filter
 def genero(g_e, terminaciones):
@@ -77,6 +78,10 @@ def cargos_entidad(entidad):
 def subentidades_entidad(entidad):
     return Subentidad.objects.filter(entidad=entidad, fecha_expira__gt=datetime.now().date()).order_by('edad_min')
 
+@register.filter
+def human_readable_ges(ges):
+    lista = [ge.gauser.get_full_name() for ge in ges]
+    return human_readable_list(lista)
 
 @register.filter
 def is_campo_checked(filtrado, campo):
@@ -635,3 +640,4 @@ def remove_newlines(texto):
     normalized_text = normalized_text.replace('"', '\"')
     # Then simply remove the newlines like so.
     return mark_safe(normalized_text.replace('\n', ' '))
+

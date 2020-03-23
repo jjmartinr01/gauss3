@@ -17,7 +17,8 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.files import File
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
-from django.utils.text import slugify
+from django.utils.text import slugify, normalize_newlines
+from django.utils.html import strip_tags
 
 from autenticar.control_acceso import permiso_required
 from gauss.funciones import usuarios_de_gauss, html_to_pdf, usuarios_ronda
@@ -26,6 +27,7 @@ from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios
 from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia, SeguimientoAlumno, \
     PlataformaDistancia
 from horarios.tasks import carga_masiva_from_file
+from my_templatetags.templatetags.my_templatetags import human_readable_ges
 from entidades.models import *
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
@@ -1581,7 +1583,7 @@ def alumnos_horarios_ajax(request):
                 return JsonResponse({'ok': False})
 
 
-# @permiso_required('acceso_seguimiento_educativo')
+@permiso_required('acceso_seguimiento_educativo')
 def seguimiento_educativo(request):
     g_e = request.session["gauser_extra"]
     ronda = request.session['ronda']
@@ -1686,6 +1688,82 @@ def seguimiento_educativo(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+    elif request.method == 'POST' and request.POST['action'] == 'exportar_excel':
+        ruta = MEDIA_INFORMES + str(g_e.ronda.entidad.code) + '/'
+        if not os.path.exists(ruta):
+            os.makedirs(ruta)
+        fichero_xls = 'informe_seguimiento_educativo.xls'
+        wb = xlwt.Workbook()
+        wm = wb.add_sheet('Materias')
+        wa = wb.add_sheet('Alumnos')
+        wi = wb.add_sheet('Incidencias')
+        fila_excel_materias, fila_excel_alumnos, fila_excel_incidencias = 0, 0, 0
+        estilo = xlwt.XFStyle()
+        font = xlwt.Font()
+        font.bold = True
+        estilo.font = font
+        wm.write(fila_excel_materias, 0, 'Profesor/a', style=estilo)
+        wm.write(fila_excel_materias, 1, 'Materia', style=estilo)
+        wm.write(fila_excel_materias, 2, 'Grupo', style=estilo)
+        wm.write(fila_excel_materias, 3, 'Plataforma educativa', style=estilo)
+        wm.write(fila_excel_materias, 4, 'Plataforma vídeo-conferencia', style=estilo)
+        wm.write(fila_excel_materias, 5, 'Observaciones', style=estilo)
+        pds = PlataformaDistancia.objects.filter(profesor__ronda=ronda).order_by('id')
+        for pd in pds:
+            try:
+                fila_excel_materias += 1
+                wm.write(fila_excel_materias, 0, pd.profesor.gauser.get_full_name())
+                wm.write(fila_excel_materias, 1, pd.materia.nombre)
+                wm.write(fila_excel_materias, 2, pd.grupo.nombre)
+                wm.write(fila_excel_materias, 3, pd.get_plataforma_display())
+                wm.write(fila_excel_materias, 4, pd.get_platvideo_display())
+                wm.write(fila_excel_materias, 5, pd.observaciones)
+            except Exception as e:
+                fila_excel_incidencias += 1
+                aviso = 'Error al grabar la materia %s - %s' % (pd.materia.nombre, pd.grupo.nombre)
+                wi.write(fila_excel_incidencias, 0, aviso)
+        wa.write(fila_excel_alumnos, 0, 'Alumno/a', style=estilo)
+        wa.write(fila_excel_alumnos, 1, 'Grupo', style=estilo)
+        wa.write(fila_excel_alumnos, 2, 'Tutor/a', style=estilo)
+        wa.write(fila_excel_alumnos, 3, 'Teléfono móvil', style=estilo)
+        wa.write(fila_excel_alumnos, 4, 'Ordenador', style=estilo)
+        wa.write(fila_excel_alumnos, 5, 'Internet', style=estilo)
+        wa.write(fila_excel_alumnos, 6, 'Sigue las clases', style=estilo)
+        wa.write(fila_excel_alumnos, 7, 'Observaciones', style=estilo)
+        sas = SeguimientoAlumno.objects.filter(alumno__ge__ronda=ronda)
+        for sa in sas:
+            try:
+                fila_excel_alumnos += 1
+                wa.write(fila_excel_alumnos, 0, sa.alumno.ge.gauser.get_full_name())
+                wa.write(fila_excel_alumnos, 1, sa.alumno.grupo.nombre)
+                wa.write(fila_excel_alumnos, 2, human_readable_ges(sa.alumno.grupo.tutores))
+                wa.write(fila_excel_alumnos, 3, ['No', 'Sí'][sa.smartphone])
+                wa.write(fila_excel_alumnos, 4, ['No', 'Sí'][sa.ordenador])
+                wa.write(fila_excel_alumnos, 5, ['No', 'Sí'][sa.internet])
+                wa.write(fila_excel_alumnos, 6, ['No', 'Sí'][sa.clases])
+                wa.write(fila_excel_alumnos, 7, sa.observaciones)
+            except Exception as e:
+                fila_excel_incidencias += 1
+                aviso = 'Error al grabar el alumno %s - %s' % (sa.alumno.ge.get_full_name(), sa.alumno.grupo.nombre)
+                wi.write(fila_excel_incidencias, 0, aviso)
+        wm.col(0).width = 7000
+        wm.col(1).width = 8000
+        wm.col(2).width = 3500
+        wm.col(3).width = 5000
+        wm.col(4).width = 5000
+        wm.col(5).width = 25000
+        wa.col(0).width = 7000
+        wa.col(1).width = 3000
+        wa.col(2).width = 7000
+        wa.col(3).width = 4500
+        wa.col(6).width = 5000
+        wa.col(7).width = 25000
+        wb.save(ruta + fichero_xls)
+        # xmlfile = open(ruta + '/' + fichero, 'rb')
+        xlsfile = open(ruta + fichero_xls, 'rb')
+        response = HttpResponse(xlsfile, content_type='application/vnd.ms-excel')
+        response['Content-Disposition'] = 'attachment; filename=Informe_seguimiento_educativo.xls'
+        return response
     horarios = Horario.objects.filter(ronda=ronda)
     try:
         id_horario = request.GET['h']
@@ -1721,6 +1799,10 @@ def seguimiento_educativo(request):
     paginator = Paginator(pds, 15)
     return render(request, "seguimiento_educativo.html",
                   {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'file-excel-o', 'texto': 'Exportar Excel',
+                            'permiso': 'hace_seguimiento_alumnos', 'title': 'Exportar a una hoja de cálculo Excel'},
+                           ),
                       'formname': 'seguimiento_educativo',
                       'pds': paginator.page(1),
                       'grupos': grupos,
