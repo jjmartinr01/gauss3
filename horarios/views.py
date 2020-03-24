@@ -9,6 +9,7 @@ from difflib import get_close_matches
 import xlwt
 from lxml import etree as ElementTree
 from datetime import datetime, timedelta, time, date
+from bs4 import BeautifulSoup
 
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
@@ -1717,7 +1718,15 @@ def seguimiento_educativo(request):
                 wm.write(fila_excel_materias, 2, pd.grupo.nombre)
                 wm.write(fila_excel_materias, 3, pd.get_plataforma_display())
                 wm.write(fila_excel_materias, 4, pd.get_platvideo_display())
-                wm.write(fila_excel_materias, 5, pd.observaciones)
+                if pd.observaciones:
+                    soup = BeautifulSoup(pd.observaciones, 'html.parser')
+                    observaciones_texto = soup.get_text()
+                    number_of_lines = observaciones_texto.count('\n') + 1
+                    wm.row(fila_excel_materias).height_mismatch = True
+                    wm.row(fila_excel_materias).height = 15 * 20 * number_of_lines
+                else:
+                    observaciones_texto = ''
+                wm.write(fila_excel_materias, 5, observaciones_texto)
             except Exception as e:
                 fila_excel_incidencias += 1
                 aviso = 'Error al grabar la materia %s - %s' % (pd.materia.nombre, pd.grupo.nombre)
@@ -1741,7 +1750,15 @@ def seguimiento_educativo(request):
                 wa.write(fila_excel_alumnos, 4, ['No', 'Sí'][sa.ordenador])
                 wa.write(fila_excel_alumnos, 5, ['No', 'Sí'][sa.internet])
                 wa.write(fila_excel_alumnos, 6, ['No', 'Sí'][sa.clases])
-                wa.write(fila_excel_alumnos, 7, sa.observaciones)
+                if sa.observaciones:
+                    soup = BeautifulSoup(sa.observaciones, 'html.parser')
+                    observaciones_texto = soup.get_text()
+                    number_of_lines = observaciones_texto.count('\n') + 1
+                    wa.row(fila_excel_alumnos).height_mismatch = True
+                    wa.row(fila_excel_alumnos).height = 15 * 20 * number_of_lines
+                else:
+                    observaciones_texto = ''
+                wa.write(fila_excel_alumnos, 7, observaciones_texto)
             except Exception as e:
                 fila_excel_incidencias += 1
                 aviso = 'Error al grabar el alumno %s - %s' % (sa.alumno.ge.get_full_name(), sa.alumno.grupo.nombre)
