@@ -1767,7 +1767,7 @@ def seguimiento_educativo(request):
         horarios = Horario.objects.filter(ronda=ronda)
         horario = get_horario(horarios, id_horario=None)
         profes_horarios = list(set([s.g_e.id for s in horario.sesion_set.all() if s.g_e]))
-        profesores_faltan = Gauser_extra.objects.filter(id__in=profes_horarios).exclude(id__in=profesores_id)
+        profesores_faltan = usuarios_ronda(g_e.ronda).filter(id__in=profes_horarios).exclude(id__in=profesores_id)
         for p in profesores_faltan:
             fila_excel_incidencias += 1
             wi.write(fila_excel_incidencias, 0, p.gauser.get_full_name())
