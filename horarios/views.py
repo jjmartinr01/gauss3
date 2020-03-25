@@ -1763,6 +1763,14 @@ def seguimiento_educativo(request):
                 fila_excel_incidencias += 1
                 aviso = 'Error al grabar el alumno %s - %s' % (sa.alumno.ge.get_full_name(), sa.alumno.grupo.nombre)
                 wi.write(fila_excel_incidencias, 0, aviso)
+        profesores_id = PlataformaDistancia.objects.filter(profesor__ronda=g_e.ronda).values_list('profesor__id', flat=True).distinct()
+        horarios = Horario.objects.filter(ronda=ronda)
+        horario = get_horario(horarios, id_horario=None)
+        profes_horarios = list(set([s.g_e.id for s in horario.sesion_set.all() if s.g_e]))
+        profesores_faltan = Gauser_extra.objects.filter(id__in=profes_horarios).exclude(id__in=profesores_id)
+        for p in profesores_faltan:
+            fila_excel_incidencias += 1
+            wi.write(fila_excel_incidencias, 0, p.gauser.get_full_name())
         wm.col(0).width = 7000
         wm.col(1).width = 8000
         wm.col(2).width = 3500
