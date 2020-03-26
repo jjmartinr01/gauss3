@@ -1,0 +1,62 @@
+{% load my_templatetags %}{% load horarios_extras %}
+<fieldset id="formulario_search" class="fieldset_box">
+    <legend>Filtrar información ...</legend>
+    <div style="position:relative;">
+    <span style="position: absolute; top:-1.25rem; right: -0.25rem;font-size: large;font-weight: bold;">
+        <a class="fieldset_close"><i class="fa fa-times"></i></a>
+    </span>
+    </div>
+    <div class="row">
+        <div class="columns large-4">
+            <label>... por profesor:
+                <select id="profesor_busqueda" name="profesor_busqueda">
+                    <option value="">---------</option>
+                    {% for p in pds|filtrar_pds:'profesor' %}
+                        <option value="{{ p.0 }}">{{ p.1 }}</option>
+                    {% endfor %}
+                </select></label>
+        </div>
+        <div class="columns large-4">
+            <label>... por curso:
+                <select id="curso_busqueda" name="curso_busqueda">
+                    <option value="">---------</option>
+                    {% for p in pds|filtrar_pds:'curso' %}
+                        <option value="{{ p.0 }}">{{ p.1 }}</option>
+                    {% endfor %}
+                </select></label>
+        </div>
+        <div class="columns large-4">
+            <label>... por grupo:
+                <select id="grupo_busqueda" name="grupo_busqueda">
+                    <option value="">---------</option>
+                    {% for p in pds|filtrar_pds:'grupo' %}
+                        <option value="{{ p.0 }}">{{ p.1 }}</option>
+                    {% endfor %}
+                </select></label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-5">
+            <label>... por plataforma educativa:
+                <select id="plataforma_educativa_busqueda" name="plataforma_educativa_busqueda">
+                    <option value="">---------</option>
+                    {% for p in pds|filtrar_pds:'plataforma_educativa' %}
+                        <option value="{{ p.0 }}">{{ p.1 }}</option>
+                    {% endfor %}
+                </select></label>
+        </div>
+        <div class="columns large-5">
+            <label>... por plataforma vídeo-conferencia:
+                <select id="plataforma_video_busqueda" name="plataforma_video_busqueda">
+                    <option value="">---------</option>
+                    {% for p in pds|filtrar_pds:'plataforma_video' %}
+                        <option value="{{ p.0 }}">{{ p.1 }}</option>
+                    {% endfor %}
+                </select></label>
+        </div>
+        <div class="columns large-2">
+            <label>&nbsp;</label>
+            <a data-page="1" class="go_page button tiny"><i class="fa fa-search"></i> <b>Buscar</b></a>
+        </div>
+    </div>
+</fieldset>

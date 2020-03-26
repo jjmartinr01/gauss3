@@ -21,6 +21,7 @@
         <div>
             <h4 style="text-align: center;color: #008CBA;"><strong>Seguimiento Educativo</strong></h4>
         </div>
+        <div id="div_fieldsets"></div>
         <ul class="tabs" data-tab role="tablist">
             <li class="tab-title active" role="presentation" data-id="0">
                 <a href="#tab1" role="tab" tabindex="0" aria-selected="true" aria-controls="tab1">
@@ -60,7 +61,28 @@
 
 {% block final %}
     <script>
-        habilita(['s_file-excel-o']);
+        habilita(['s_file-excel-o', 's_search']);
+
+        $('#search_sign').click(function (e) {
+            e.preventDefault();
+            if (!($(this).hasClass('disabled'))) {
+                $.post("/seguimiento_educativo/", {action: 'ver_formulario_filtrar'},
+                    function (data) {
+                        if (data.ok) {
+                            $('#div_fieldsets').html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        });
+
+        $('body').on('click', '.fieldset_close', function (e) {
+            e.preventDefault();
+            $('.fieldset_box').hide();
+        });
+
         $('#Contenido').on('click', '.sino', function (e) {
             e.preventDefault();
             var campo = $(this).data('campo');
@@ -175,14 +197,21 @@
             var page = $(this).data('page');
             if (page) {
                 {#var section = $(this).closest('section').prop('id');#}
-                $.post("/seguimiento_educativo/", {action: 'update_page', 'page': page},
+                $.post("/seguimiento_educativo/", {
+                        action: 'update_page',
+                        page: page,
+                        plataforma_video_busqueda: $('#plataforma_video_busqueda').val(),
+                        plataforma_educativa_busqueda: $('#plataforma_educativa_busqueda').val(),
+                        grupo_busqueda: $('#grupo_busqueda').val(),
+                        curso_busqueda: $('#curso_busqueda').val(),
+                        profesor_busqueda: $('#profesor_busqueda').val()
+                    },
                     function (data) {
                         if (data.ok) {
                             $('#tab1').html(data.html);
                             window.scrollTo(0, $('#list_materias').offset().top - 50);
                             {#window.scrollTo(0, $('#tab1').offset().top - 50);#}
                             $("#update_ok").show().delay(1500).fadeOut();
-                            list_materias
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
                         }

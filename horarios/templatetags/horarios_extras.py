@@ -17,6 +17,20 @@ register = Library()
 #         cursos_entidad = Curso.objects.filter(entidad=sub.entidad, grupos__in=[sub])
 #     return cursos_entidad
 
+
+@register.filter
+def filtrar_pds(pds, campo):
+    if campo == 'profesor':
+        return set([(pd.profesor.id, pd.profesor.gauser.get_full_name()) for pd in pds])
+    elif campo == 'curso':
+        return set(list(pds.values_list('grupo__cursos', 'grupo__cursos__nombre')))
+    elif campo == 'grupo':
+        return set(list(pds.values_list('grupo', 'grupo__nombre')))
+    elif campo == 'plataforma_educativa':
+        return set([(pd.plataforma, pd.get_plataforma_display()) for pd in pds])
+    elif campo == 'plataforma_video':
+        return set([(pd.platvideo, pd.get_platvideo_display()) for pd in pds])
+
 @register.filter
 def convierte_sino(sa, campo):
     estado = getattr(sa, campo)

@@ -1678,15 +1678,40 @@ def seguimiento_educativo(request):
                 return JsonResponse({'ok': False, 'mensaje': 'Error en la petición realizada.'})
         elif request.POST['action'] == 'update_page':
             try:
+                platvideo=request.POST['plataforma_video_busqueda']
+                q1 = Q(platvideo=platvideo) if platvideo else Q(platvideo__isnull=False)
+                plataforma = request.POST['plataforma_educativa_busqueda']
+                q2 = Q(plataforma=plataforma) if plataforma else Q(plataforma__isnull=False)
+                grupo = request.POST['grupo_busqueda']
+                q3 = Q(grupo=grupo) if grupo else Q(grupo__isnull=False)
+                curso = request.POST['curso_busqueda']
+                q4 = Q(grupo__cursos__in=[curso]) if curso else Q(grupo__isnull=False)
+                profesor = request.POST['profesor_busqueda']
+                q5 = Q(profesor=profesor) if profesor else Q(profesor__isnull=False)
+                q = q1 & q2 & q3 & q4 & q5
+            except:
+                q = Q(platvideo__isnull=False)
+            try:
                 if g_e.has_permiso('hace_seguimiento_materias'):
-                    pds = PlataformaDistancia.objects.filter(profesor__ronda=ronda).order_by('id')
+                    q_total = q & Q(profesor__ronda=ronda)
                 else:
-                    pds = PlataformaDistancia.objects.filter(profesor=g_e).order_by('id')
+                    q_total = q & Q(profesor=g_e)
+                pds = PlataformaDistancia.objects.filter(q_total).order_by('id')
                 paginator = Paginator(pds, 15)
                 pds_paginadas = paginator.page(int(request.POST['page']))
                 html = render_to_string('seguimiento_educativo_materias.html',
                                         {'pds': pds_paginadas, 'g_e': g_e, 'PD_class': PlataformaDistancia})
                 return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'ver_formulario_filtrar':
+            try:
+                if g_e.has_permiso('hace_seguimiento_materias'):
+                    pds = PlataformaDistancia.objects.filter(profesor__ronda=ronda).order_by('id')
+                    html = render_to_string("seguimiento_educativo_fieldset_buscar.html", {'pds': pds})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tiene permiso'})
             except:
                 return JsonResponse({'ok': False})
     elif request.method == 'POST' and request.POST['action'] == 'exportar_excel':
@@ -1827,6 +1852,8 @@ def seguimiento_educativo(request):
                       'iconos':
                           ({'tipo': 'button', 'nombre': 'file-excel-o', 'texto': 'Exportar Excel',
                             'permiso': 'hace_seguimiento_alumnos', 'title': 'Exportar a una hoja de cálculo Excel'},
+                           {'tipo': 'button', 'nombre': 'search', 'texto': 'Filtrar',
+                            'permiso': 'hace_seguimiento_alumnos', 'title': 'Filtrar los datos de seguimiento'},
                            ),
                       'formname': 'seguimiento_educativo',
                       'pds': paginator.page(1),
