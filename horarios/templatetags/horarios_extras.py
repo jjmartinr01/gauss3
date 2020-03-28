@@ -36,6 +36,9 @@ def convierte_sino(sa, campo):
     estado = getattr(sa, campo)
     return 'Sí' if estado else 'No'
 
+@register.filter
+def get_options(sa, tuple_options):
+    return getattr(sa, tuple_options)
 
 @register.filter
 def grupos_curso(curso):

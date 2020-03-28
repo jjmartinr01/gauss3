@@ -2,27 +2,123 @@
 <table id="list_alumnos{{ grupo.id }}" style="width: 100%;">
     <thead>
     <tr>
-        <th title="Nombre del alumno o alumna">Alumno/a</th>
-        <th title="¿Tiene un teléfono móvil (o tablet) con el que ver contenidos?">Teléfono Móvil</th>
-        <th title="¿Tiene un ordenador?">Ordenador</th>
+        <th style="color:#c82f2f" title="Nombre del alumno o alumna">Alumno/a</th>
+        <th title="Posibilidad de localizar a su alumno/a mediante algún medio: teléfono, email, racima...">
+            Localizable
+        </th>
+        <th title="Alumno/a que no acudía regularmente al centro y era considerado absentista en educación presencial.">
+            Absentista
+        </th>
+        <th title="Dependiendo si ha podido hablar telefónicamente con su alumno/a o su familia">Contacto<br>telefónico
+        </th>
+        <th title="Seleccionar la opción principal con la que el alumno/a podrá contactar con el docente">
+            Dispositivo tecnológico<br>preferente
+        </th>
+        <th title="Uso que puede hacer del dispositivo">Disponinibilidad del<br>dispositivo</th>
         <th title="¿Tiene acceso a internet?">Internet</th>
-        <th title="¿Sigue las clases impartidas a distancia?">Clases</th>
+        <th title="Grado de acceso a internet">Observaciones<br>con respecto a<br>la accesibilidad</th>
+        <th style="color:#c82f2f" title="Nombre del alumno o alumna">Alumno/a</th>
+        <th title="Grado de competencia digital del alumno">Competencias<br>digitales</th>
+        <th title="Dispone de ayuda en casa, para el uso y utilización de la informática y de la tecnología de la comunicación para continuar con su aprendizaje">
+            Acompañante<br>educativo
+        </th>
+        <th title="El alumno/a cuenta en su casa con libros de texto, libros, cuadernos, bolígrafos, rotuladores... que permitan el desarrollo de la actividad escolar">
+            Disponibilidad de<br>materiales didácticos
+        </th>
+        <th title="El alumno/a es atendido por PT, AL, Fisio, ...">Atención a<br>la diversidad</th>
+        <th title="Programas en los que participa el alumno">Programas de<br>apoyo educativo</th>
+        <th title="El alumno/a necesita ayuda por alteraciones anímicas ocasionadas por la situación actual en la que nos encontramos">
+            Necesita apoyo<br>emocional
+        </th>
+        <th title="Valoración global del aprendizaje a distancia">Valoración del<br>aprendizaje a distancia</th>
+        <th style="color:#c82f2f" title="Nombre del alumno o alumna">Alumno/a</th>
         <th title="Realiza las observaciones que estimes oportunas en referencia al alumn@">Observaciones</th>
     </tr>
     </thead>
     <tbody id="tbody{{ grupo.id }}">
     {% for sa in sas %}
+        {% if forloop.counter|divisibleby:6 %}
+            <thead>
+            <tr>
+                <th style="color:#c82f2f" title="Nombre del alumno o alumna">Alumno/a</th>
+                <th title="Posibilidad de localizar a su alumno/a mediante algún medio: teléfono, email, racima...">
+                    Localizable
+                </th>
+                <th title="Alumno/a que no acudía regularmente al centro y era considerado absentista en educación presencial.">
+                    Absentista
+                </th>
+                <th title="Dependiendo si ha podido hablar telefónicamente con su alumno/a o su familia">Contacto<br>telefónico
+                </th>
+                <th title="Seleccionar la opción principal con la que el alumno/a podrá contactar con el docente">
+                    Dispositivo tecnológico<br>preferente
+                </th>
+                <th title="Uso que puede hacer del dispositivo">Disponinibilidad del<br>dispositivo</th>
+                <th title="¿Tiene acceso a internet?">Internet</th>
+                <th title="Grado de acceso a internet">Observaciones<br>con respecto a<br>la accesibilidad</th>
+                <th style="color:#c82f2f" title="Nombre del alumno o alumna">Alumno/a</th>
+                <th title="Grado de competencia digital del alumno">Competencias<br>digitales</th>
+                <th title="Dispone de ayuda en casa, para el uso y utilización de la informática y de la tecnología de la comunicación para continuar con su aprendizaje">
+                    Acompañante<br>educativo
+                </th>
+                <th title="El alumno/a cuenta en su casa con libros de texto, libros, cuadernos, bolígrafos, rotuladores... que permitan el desarrollo de la actividad escolar">
+                    Disponibilidad de<br>materiales didácticos
+                </th>
+                <th title="El alumno/a es atendido por PT, AL, Fisio, ...">Atención a<br>la diversidad</th>
+                <th title="Programas en los que participa el alumno">Programas de<br>apoyo educativo</th>
+                <th title="El alumno/a necesita ayuda por alteraciones anímicas ocasionadas por la situación actual en la que nos encontramos">
+                    Necesita apoyo<br>emocional
+                </th>
+                <th title="Valoración global del aprendizaje a distancia">Valoración del<br>aprendizaje a distancia</th>
+                <th style="color:#c82f2f" title="Nombre del alumno o alumna">Alumno/a</th>
+                <th title="Realiza las observaciones que estimes oportunas en referencia al alumn@">Observaciones</th>
+            </tr>
+            </thead>
+        {% endif %}
         {% if sa.alumno.tutor == g_e or sa.alumno.cotutor == g_e %}
             <tr>
-                <td>{{ sa.alumno.ge.gauser.get_full_name }}</td>
-                <td><a class="sino" data-campo="smartphone" id="smartphone{{ sa.id }}"
-                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'smartphone' }}</a></td>
-                <td><a class="sino" data-campo="ordenador" id="ordenador{{ sa.id }}"
-                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'ordenador' }}</a></td>
+                <td style="color:#c82f2f">{{ sa.alumno.ge.gauser.get_full_name }}</td>
+                <td><a class="sino" data-campo="localizable" id="localizable{{ sa.id }}"
+                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'localizable' }}</a></td>
+                <td><a class="sino" data-campo="absentista" id="absentista{{ sa.id }}"
+                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'absentista' }}</a></td>
+                <td><a class="sino" data-campo="contelef" id="contelef{{ sa.id }}"
+                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'contelef' }}</a></td>
+                <td><select class="selectoption" data-campo="ticpreferente" id="ticpreferente{{ sa.id }}"
+                            data-id="{{ sa.id }}">{% for o in sa|get_options:'DISPOSITIVOS' %}
+                    <option value="{{ o.0 }}" {% if sa.ticpreferente == o.0 %}selected{% endif %}>{{ o.1 }}</option>
+                {% endfor %}</select></td>
+                <td><select class="selectoption" data-campo="ticdisponible" id="ticdisponible{{ sa.id }}"
+                            data-id="{{ sa.id }}">{% for o in sa|get_options:'DISPONIBILIDAD' %}
+                    <option value="{{ o.0 }}" {% if sa.ticdisponible == o.0 %}selected{% endif %}>{{ o.1 }}</option>
+                {% endfor %}</select></td>
                 <td><a class="sino" data-campo="internet" id="internet{{ sa.id }}"
                        data-id="{{ sa.id }}">{{ sa|convierte_sino:'internet' }}</a></td>
-                <td><a class="sino" data-campo="clases" id="clases{{ sa.id }}"
-                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'clases' }}</a></td>
+                <td><select class="selectoption" data-campo="obsaccesibilidad" id="obsaccesibilidad{{ sa.id }}"
+                            data-id="{{ sa.id }}">{% for o in sa|get_options:'VALORES' %}
+                    <option value="{{ o.0 }}" {% if sa.obsaccesibilidad == o.0 %}selected{% endif %}>{{ o.1 }}</option>
+                {% endfor %}</select></td>
+                <td style="color:#c82f2f">{{ sa.alumno.ge.gauser.get_full_name }}</td>
+                <td><select class="selectoption" data-campo="obscompdigitales" id="obscompdigitales{{ sa.id }}"
+                            data-id="{{ sa.id }}">{% for o in sa|get_options:'VALORES' %}
+                    <option value="{{ o.0 }}" {% if sa.obscompdigitales == o.0 %}selected{% endif %}>{{ o.1 }}</option>
+                {% endfor %}</select></td>
+                <td><a class="sino" data-campo="acompeducativo" id="acompeducativo{{ sa.id }}"
+                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'acompeducativo' }}</a></td>
+                <td><a class="sino" data-campo="materialesdidacticos" id="materialesdidacticos{{ sa.id }}"
+                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'materialesdidacticos' }}</a></td>
+                <td><a class="sino" data-campo="atdiversidad" id="atdiversidad{{ sa.id }}"
+                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'atdiversidad' }}</a></td>
+                <td><select class="selectoption" data-campo="programa" id="programa{{ sa.id }}"
+                            data-id="{{ sa.id }}">{% for o in sa|get_options:'PROGRAMA' %}
+                    <option value="{{ o.0 }}" {% if sa.programa == o.0 %}selected{% endif %}>{{ o.1 }}</option>
+                {% endfor %}</select></td>
+                <td><a class="sino" data-campo="apoyo" id="apoyo{{ sa.id }}"
+                       data-id="{{ sa.id }}">{{ sa|convierte_sino:'apoyo' }}</a></td>
+                <td><select class="selectoption" data-campo="valoracion" id="valoracion{{ sa.id }}"
+                            data-id="{{ sa.id }}">{% for o in sa|get_options:'APRENDIZAJE' %}
+                    <option value="{{ o.0 }}" {% if sa.valoracion == o.0 %}selected{% endif %}>{{ o.1 }}</option>
+                {% endfor %}</select></td>
+                <td style="color:#c82f2f">{{ sa.alumno.ge.gauser.get_full_name }}</td>
                 <td>
                     <div style="border: #EEEEEE solid 1px;" id="observaciones_sa{{ sa.id }}"
                          contenteditable="true">{% autoescape off %}{{ sa.observaciones }}{% endautoescape %}</div>
@@ -30,11 +126,23 @@
             </tr>
         {% else %}
             <tr>
-                <td>{{ sa.alumno.ge.gauser.get_full_name }}</td>
-                <td>{{ sa|convierte_sino:'smartphone' }}</td>
-                <td>{{ sa|convierte_sino:'ordenador' }}</td>
+                <td style="color:#c82f2f">{{ sa.alumno.ge.gauser.get_full_name }}</td>
+                <td>{{ sa|convierte_sino:'localizable' }}</td>
+                <td>{{ sa|convierte_sino:'absentista' }}</td>
+                <td>{{ sa|convierte_sino:'contelef' }}</td>
+                <td>{{ sa.get_ticpreferente_display }}</td>
+                <td>{{ sa.get_ticdisponible_display }}</td>
                 <td>{{ sa|convierte_sino:'internet' }}</td>
-                <td>{{ sa|convierte_sino:'clases' }}</td>
+                <td>{{ sa.get_obsaccesibilidad_display }}</td>
+                <td style="color:#c82f2f">{{ sa.alumno.ge.gauser.get_full_name }}</td>
+                <td>{{ sa.get_obscompdigitales_display }}</td>
+                <td>{{ sa|convierte_sino:'acompeducativo' }}</td>
+                <td>{{ sa|convierte_sino:'materialesdidacticos' }}</td>
+                <td>{{ sa|convierte_sino:'atdiversidad' }}</td>
+                <td>{{ sa.get_programa_display }}</td>
+                <td>{{ sa|convierte_sino:'apoyo' }}</td>
+                <td>{{ sa.get_valoracion_display }}</td>
+                <td style="color:#c82f2f">{{ sa.alumno.ge.gauser.get_full_name }}</td>
                 <td>{% autoescape off %}{{ sa.observaciones }}{% endautoescape %}</td>
             </tr>
         {% endif %}

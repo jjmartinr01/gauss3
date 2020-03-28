@@ -41,6 +41,8 @@
                 {% if grupos|length == 0 %}
                     <p><b>Este apartado es solo para los tutores.</b></p>
                     <p><b>Como no eres tutor, no debes hacer un seguimiento de ningún alumno.</b></p>
+                {% else %}
+                    {% include "seguimiento_educativo_alumnos_ayuda.html" %}
                 {% endif %}
                 <dl class="accordion" data-accordion id="div_grupos">
                     {% for grupo in grupos %}
@@ -62,6 +64,8 @@
 {% block final %}
     <script>
         habilita(['s_file-excel-o', 's_search']);
+        var grupo = 0;
+        {# Variable global para identificar el accordion abierto (grupo) y poder hacer scroll #}
 
         $('#search_sign').click(function (e) {
             e.preventDefault();
@@ -97,8 +101,22 @@
                     }
                 });
         });
+        $('#Contenido').on('change', '.selectoption', function (e) {
+            e.preventDefault();
+            var campo = $(this).data('campo');
+            var valor = $(this).val();
+            var id = $(this).data('id');
+            $.post("/seguimiento_educativo/", {action: 'selectoption', campo: campo, id: id, valor: valor},
+                function (data) {
+                    if (data['ok']) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
 
-        $('#Contenido').on('click', '.plataforma_select', function (e) {
+        $('#Contenido').on('change', '.plataforma_select', function (e) {
             e.preventDefault();
             var id = $(this).data('id');
             var valor = $(this).val();
@@ -112,7 +130,7 @@
                 });
         });
 
-        $('#Contenido').on('click', '.videconferencia_select', function (e) {
+        $('#Contenido').on('change', '.videconferencia_select', function (e) {
             e.preventDefault();
             var id = $(this).data('id');
             var valor = $(this).val();
@@ -155,6 +173,8 @@
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
+                                        habilita(['s_arrow-left', 's_arrow-right']);
+                                        grupo = id;
                                         $("#update_ok").show().delay(1500).fadeOut();
 
                                     } else {
@@ -164,6 +184,8 @@
                         } else {
                             $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#panel' + id).html('');
+                            habilita(['h_arrow-left', 'h_arrow-right']);
+                            grupo = 0;
                         }
                     }
                 }
@@ -222,6 +244,22 @@
             e.preventDefault();
             $('#action').val('exportar_excel');
             document.{{formname}}.submit();
-        })
+        });
+
+        $('body').on('click', '#arrow-right_sign', function (e) {
+            e.preventDefault();
+            var id_element = '#list_alumnos' + grupo;
+            console.log(id_element);
+            $(id_element).animate({
+                scrollLeft: "+=450px"
+            }, "slow");
+        });
+
+        $('#arrow-left_sign').click(function (e) {
+            e.preventDefault();
+            $('#list_alumnos' + grupo).animate({
+                scrollLeft: "-=450px"
+            }, "slow");
+        });
     </script>
 {% endblock %}

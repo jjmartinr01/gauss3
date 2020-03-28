@@ -1624,6 +1624,20 @@ def seguimiento_educativo(request):
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso o no eres tutor/cotutor del grupo'})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Error en la petición realizada.'})
+        elif action == 'selectoption':
+            try:
+                campo = request.POST['campo']
+                id = request.POST['id']
+                valor = request.POST['valor']
+                sa = SeguimientoAlumno.objects.get(id=id, alumno__ge__ronda=g_e.ronda)
+                if sa.alumno.tutor == g_e or sa.alumno.cotutor == g_e:
+                    setattr(sa, campo, valor)
+                    sa.save()
+                    return JsonResponse({'ok': True, 'id': id, 'campo': campo})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso o no eres tutor/cotutor del grupo'})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Error en la petición realizada.'})
         elif action == 'update_observaciones_sa':
             try:
                 observaciones = request.POST['texto']
@@ -1854,6 +1868,10 @@ def seguimiento_educativo(request):
                             'permiso': 'hace_seguimiento_alumnos', 'title': 'Exportar a una hoja de cálculo Excel'},
                            {'tipo': 'button', 'nombre': 'search', 'texto': 'Filtrar',
                             'permiso': 'hace_seguimiento_alumnos', 'title': 'Filtrar los datos de seguimiento'},
+                           {'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Izquierda',
+                            'permiso': 'libre', 'title': 'Mover la tabla hacia la izquierda'},
+                           {'tipo': 'button', 'nombre': 'arrow-right', 'texto': 'Derecha',
+                            'permiso': 'libre', 'title': 'Mover la tabla hacia la derecha'},
                            ),
                       'formname': 'seguimiento_educativo',
                       'pds': paginator.page(1),

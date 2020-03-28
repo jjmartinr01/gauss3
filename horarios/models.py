@@ -523,17 +523,37 @@ class PlataformaDistancia(models.Model):
 
 
 class SeguimientoAlumno(models.Model):
+    DISPONIBILIDAD = ((1, 'Muy reducida'), (2, 'Mejorable'), (3, 'Buena'), (4, 'Excelente'))
+    DISPOSITIVOS = ((1, 'Teléfono NO Smartphone'), (2, 'Teléfono Smartphone'),
+                    (3, 'Tablet'), (4, 'Ordenador'), (5, 'Televión NO smart TV'),
+                    (6, 'Televisión smart TV'))
+    PROGRAMA = ((1, 'Ninguno'), (2, 'PROA'), (3, 'PAI'))
+    VALORES = ((1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5'))
+    APRENDIZAJE = ((1, 'INSUFICIENTE'), (2, 'MEJORABLE'), (3, 'BUENO'), (4, 'EXCELENTE'))
     alumno = models.ForeignKey(Gauser_extra_estudios, blank=True, null=True, on_delete=models.CASCADE)
     smartphone = models.BooleanField('¿Tiene teléfono móvil o tablet?', default=False)
     ordenador = models.BooleanField('¿Tiene ordenador?', default=False)
     internet = models.BooleanField('¿Tiene conexión a internet?', default=False)
     clases = models.BooleanField('¿Está siguiendo las clases?', default=False)
+    localizable = models.BooleanField('¿El alumno está localizable?', default=False)
+    absentista = models.BooleanField('¿Es un alumno absentista?', default=False)
+    contelef = models.BooleanField('¿Has podido contactar telefónicamente?', default=False)
+    ticpreferente = models.IntegerField('¿Qué dispositivo usa preferentemente?', default=1, choices=DISPOSITIVOS)
+    ticdisponible = models.IntegerField('¿Disponibilidad de usar el dispositivo?', default=1, choices=DISPONIBILIDAD)
+    obsaccesibilidad = models.IntegerField('Valora la accesibilidad del alumno a internet', default=1, choices=VALORES)
+    obscompdigitales = models.IntegerField('Valora las competencias digitales del alumno', default=1, choices=VALORES)
+    acompeducativo = models.BooleanField('¿El alumno tiene ayuda en casa para el uso de las TIC?', default=False)
+    materialesdidacticos = models.BooleanField('¿El alumno tiene en casa los materiales didácticos?', default=False)
+    atdiversidad = models.BooleanField('¿El alumno está en algún grupo de atención a la diversidad?', default=False)
+    programa = models.IntegerField('¿En qué programa de apoyo participa?', default=1, choices=PROGRAMA)
+    apoyo = models.BooleanField('¿Necesita apoyo emocional?', default=False)
+    valoracion = models.IntegerField('¿Valoración de su aprendizaje a distancia?', default=1, choices=APRENDIZAJE)
     observaciones = models.TextField('Observaciones', blank=True, null=True, default='')
 
     def __str__(self):
         return '%s - %s - Tel: %s, PC: %s, Int: %s, Clases: %s' % (
-        self.alumno.ge.gauser.get_full_name(), self.alumno.grupo, self.smartphone, self.ordenador, self.internet,
-        self.clases)
+            self.alumno.ge.gauser.get_full_name(), self.alumno.grupo, self.smartphone, self.ordenador, self.internet,
+            self.clases)
 
 
 def sesion2sesion():
