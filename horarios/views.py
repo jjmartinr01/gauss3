@@ -1584,7 +1584,7 @@ def alumnos_horarios_ajax(request):
                 return JsonResponse({'ok': False})
 
 
-@permiso_required('acceso_seguimiento_educativo')
+# @permiso_required('acceso_seguimiento_educativo')
 def seguimiento_educativo(request):
     g_e = request.session["gauser_extra"]
     ronda = request.session['ronda']
@@ -1692,7 +1692,7 @@ def seguimiento_educativo(request):
                 return JsonResponse({'ok': False, 'mensaje': 'Error en la petición realizada.'})
         elif request.POST['action'] == 'update_page':
             try:
-                platvideo=request.POST['plataforma_video_busqueda']
+                platvideo = request.POST['plataforma_video_busqueda']
                 q1 = Q(platvideo=platvideo) if platvideo else Q(platvideo__isnull=False)
                 plataforma = request.POST['plataforma_educativa_busqueda']
                 q2 = Q(plataforma=plataforma) if plataforma else Q(plataforma__isnull=False)
@@ -1734,75 +1734,91 @@ def seguimiento_educativo(request):
             os.makedirs(ruta)
         fichero_xls = 'informe_seguimiento_educativo.xls'
         wb = xlwt.Workbook()
-        wm = wb.add_sheet('Materias')
         wa = wb.add_sheet('Alumnos')
+        wm = wb.add_sheet('Materias')
         wi = wb.add_sheet('Incidencias')
         fila_excel_materias, fila_excel_alumnos, fila_excel_incidencias = 0, 0, 0
         estilo = xlwt.XFStyle()
         font = xlwt.Font()
         font.bold = True
         estilo.font = font
-        wm.write(fila_excel_materias, 0, 'Profesor/a', style=estilo)
-        wm.write(fila_excel_materias, 1, 'Materia', style=estilo)
-        wm.write(fila_excel_materias, 2, 'Grupo', style=estilo)
-        wm.write(fila_excel_materias, 3, 'Plataforma educativa', style=estilo)
-        wm.write(fila_excel_materias, 4, 'Plataforma vídeo-conferencia', style=estilo)
-        wm.write(fila_excel_materias, 5, 'Observaciones', style=estilo)
+        columnas = (('Profesor/a', estilo, 'pd.profesor.gauser.get_full_name()', 7000),
+                    ('Materia', estilo, 'pd.materia.nombre', 8000),
+                    ('Grupo', estilo, 'pd.grupo.nombre', 3500),
+                    ('Plataforma educativa', estilo, 'pd.get_plataforma_display()', 5000),
+                    ('Plataforma vídeo-conferencia', estilo, 'pd.get_platvideo_display()', 5000),
+                    ('Observaciones', estilo, 'texto_observaciones', 25000))
+        for c_num, c_data in enumerate(columnas):
+            wm.write(fila_excel_alumnos, c_num, c_data[0], style=c_data[1])
+            wm.col(c_num).width = c_data[3]
         pds = PlataformaDistancia.objects.filter(profesor__ronda=ronda).order_by('id')
-        for pd in pds:
+        for pd_num, pd in enumerate(pds):
             try:
                 fila_excel_materias += 1
-                wm.write(fila_excel_materias, 0, pd.profesor.gauser.get_full_name())
-                wm.write(fila_excel_materias, 1, pd.materia.nombre)
-                wm.write(fila_excel_materias, 2, pd.grupo.nombre)
-                wm.write(fila_excel_materias, 3, pd.get_plataforma_display())
-                wm.write(fila_excel_materias, 4, pd.get_platvideo_display())
-                if pd.observaciones:
-                    soup = BeautifulSoup(pd.observaciones, 'html.parser')
-                    observaciones_texto = soup.get_text()
-                    number_of_lines = observaciones_texto.count('\n') + 1
-                    wm.row(fila_excel_materias).height_mismatch = True
-                    wm.row(fila_excel_materias).height = 15 * 20 * number_of_lines
-                else:
-                    observaciones_texto = ''
-                wm.write(fila_excel_materias, 5, observaciones_texto)
+                for c_num, c_data in enumerate(columnas):
+                    if c_data[2] != 'texto_observaciones':
+                        wm.write(fila_excel_materias, c_num, eval(c_data[2]))
+                    else:
+                        if pd.observaciones:
+                            soup = BeautifulSoup(pd.observaciones, 'html.parser')
+                            observaciones_texto = soup.get_text()
+                            number_of_lines = observaciones_texto.count('\n') + 1
+                            wm.row(fila_excel_materias).height_mismatch = True
+                            wm.row(fila_excel_materias).height = 15 * 20 * number_of_lines
+                            wm.write(fila_excel_materias, c_num, observaciones_texto)
+                        else:
+                            wm.write(fila_excel_materias, c_num, '')
             except Exception as e:
                 fila_excel_incidencias += 1
                 aviso = 'Error al grabar la materia %s - %s' % (pd.materia.nombre, pd.grupo.nombre)
                 wi.write(fila_excel_incidencias, 0, aviso)
-        wa.write(fila_excel_alumnos, 0, 'Alumno/a', style=estilo)
-        wa.write(fila_excel_alumnos, 1, 'Grupo', style=estilo)
-        wa.write(fila_excel_alumnos, 2, 'Tutor/a', style=estilo)
-        wa.write(fila_excel_alumnos, 3, 'Teléfono móvil', style=estilo)
-        wa.write(fila_excel_alumnos, 4, 'Ordenador', style=estilo)
-        wa.write(fila_excel_alumnos, 5, 'Internet', style=estilo)
-        wa.write(fila_excel_alumnos, 6, 'Sigue las clases', style=estilo)
-        wa.write(fila_excel_alumnos, 7, 'Observaciones', style=estilo)
+        columnas = (('Nº', estilo, 'str(sa_num + 1)', 1500),
+                    ('NOMBRE DEL\nALUMNO/A', estilo, 'sa.alumno.ge.gauser.first_name', 4500),
+                    ('APELLIDOS', estilo, 'sa.alumno.ge.gauser.last_name', 4500),
+                    ('GRUPO', estilo, 'sa.alumno.grupo.nombre', 2700),
+                    ('TUTOR', estilo, 'human_readable_ges(sa.alumno.grupo.tutores)', 7000),
+                    ('LOCALIZABLE', estilo, '["No", "Sí"][sa.localizable]', 4500),
+                    ('ABSENTISTA', estilo, '["No", "Sí"][sa.absentista]', 4500),
+                    ('CONTACTO\n TELEFÓNICO', estilo, '["No", "Sí"][sa.contelef]', 4500),
+                    ('DISPOSITIVO TECNOLÓGICO\nPREFERENTE', estilo, 'sa.get_ticpreferente_display()', 7000),
+                    ('DISPONIBILIDAD\nDEL DISPOSITIVO', estilo, 'sa.get_ticdisponible_display()', 5500),
+                    ('INTERNET', estilo, '["No", "Sí"][sa.internet]', 3500),
+                    ('OBSERVACIONES RESPECTO\nA LA ACCESIBILIDAD', estilo, 'sa.get_obsaccesibilidad_display()', 7000),
+                    ('OBSERVACIONES RESPECTO\nA LAS COMPETENCIAS\nDIGITALES', estilo, 'sa.get_obscompdigitales_display()', 7000),
+                    ('ACOMPAÑANTE EDUCATIVO\nTELEMÁTICO', estilo, '["No", "Sí"][sa.acompeducativo]', 7000),
+                    ('DISPONIBILIDAD DE\nMATERIALES DIDÁCTICOS', estilo, '["No", "Sí"][sa.materialesdidacticos]', 7000),
+                    ('ATENCIÓN A LA\nDIVERSIDAD', estilo, '["No", "Sí"][sa.atdiversidad]', 5500),
+                    ('PROGRAMAS DE\nAPOYO EDUCATIVO', estilo, 'sa.get_programa_display()', 6000),
+                    ('NECESITA APOYO\nEMOCIONAL', estilo, '["No", "Sí"][sa.apoyo]', 5500),
+                    ('VALORACIÓN GLOBAL\nDEL APRENDIZAJE', estilo, 'sa.get_valoracion_display()', 6000),
+                    ('OBSERVACIONES', estilo, 'texto_observaciones', 25000))
+        for c_num, c_data in enumerate(columnas):
+            wa.write(fila_excel_alumnos, c_num, c_data[0], style=c_data[1])
+            wa.col(c_num).width = c_data[3]
+        wa.row(fila_excel_alumnos).height = 15 * 20 * 3
         sas = SeguimientoAlumno.objects.filter(alumno__ge__ronda=ronda)
-        for sa in sas:
+        for sa_num, sa in enumerate(sas):
             try:
                 fila_excel_alumnos += 1
-                wa.write(fila_excel_alumnos, 0, sa.alumno.ge.gauser.get_full_name())
-                wa.write(fila_excel_alumnos, 1, sa.alumno.grupo.nombre)
-                wa.write(fila_excel_alumnos, 2, human_readable_ges(sa.alumno.grupo.tutores))
-                wa.write(fila_excel_alumnos, 3, ['No', 'Sí'][sa.smartphone])
-                wa.write(fila_excel_alumnos, 4, ['No', 'Sí'][sa.ordenador])
-                wa.write(fila_excel_alumnos, 5, ['No', 'Sí'][sa.internet])
-                wa.write(fila_excel_alumnos, 6, ['No', 'Sí'][sa.clases])
-                if sa.observaciones:
-                    soup = BeautifulSoup(sa.observaciones, 'html.parser')
-                    observaciones_texto = soup.get_text()
-                    number_of_lines = observaciones_texto.count('\n') + 1
-                    wa.row(fila_excel_alumnos).height_mismatch = True
-                    wa.row(fila_excel_alumnos).height = 15 * 20 * number_of_lines
-                else:
-                    observaciones_texto = ''
-                wa.write(fila_excel_alumnos, 7, observaciones_texto)
+                for c_num, c_data in enumerate(columnas):
+                    if c_data[2] != 'texto_observaciones':
+                        wa.write(fila_excel_alumnos, c_num, eval(c_data[2]))
+                    else:
+                        if sa.observaciones:
+                            soup = BeautifulSoup(sa.observaciones, 'html.parser')
+                            observaciones_texto = soup.get_text()
+                            number_of_lines = observaciones_texto.count('\n') + 1
+                            wa.row(fila_excel_alumnos).height_mismatch = True
+                            wa.row(fila_excel_alumnos).height = 15 * 20 * number_of_lines
+                            wa.write(fila_excel_alumnos, c_num, observaciones_texto)
+                        else:
+                            wa.write(fila_excel_alumnos, c_num, '')
             except Exception as e:
                 fila_excel_incidencias += 1
-                aviso = 'Error al grabar el alumno %s - %s' % (sa.alumno.ge.get_full_name(), sa.alumno.grupo.nombre)
+                aviso = 'Error al grabar el alumno %s - %s' % (sa.alumno.ge.gauser.get_full_name(), sa.alumno.grupo.nombre)
                 wi.write(fila_excel_incidencias, 0, aviso)
-        profesores_id = PlataformaDistancia.objects.filter(profesor__ronda=g_e.ronda).values_list('profesor__id', flat=True).distinct()
+        profesores_id = PlataformaDistancia.objects.filter(profesor__ronda=g_e.ronda).values_list('profesor__id',
+                                                                                                  flat=True).distinct()
         horarios = Horario.objects.filter(ronda=ronda)
         horario = get_horario(horarios, id_horario=None)
         profes_horarios = list(set([s.g_e.id for s in horario.sesion_set.all() if s.g_e]))
@@ -1810,20 +1826,7 @@ def seguimiento_educativo(request):
         for p in profesores_faltan:
             fila_excel_incidencias += 1
             wi.write(fila_excel_incidencias, 0, p.gauser.get_full_name())
-        wm.col(0).width = 7000
-        wm.col(1).width = 8000
-        wm.col(2).width = 3500
-        wm.col(3).width = 5000
-        wm.col(4).width = 5000
-        wm.col(5).width = 25000
-        wa.col(0).width = 7000
-        wa.col(1).width = 3000
-        wa.col(2).width = 7000
-        wa.col(3).width = 4500
-        wa.col(6).width = 5000
-        wa.col(7).width = 25000
         wb.save(ruta + fichero_xls)
-        # xmlfile = open(ruta + '/' + fichero, 'rb')
         xlsfile = open(ruta + fichero_xls, 'rb')
         response = HttpResponse(xlsfile, content_type='application/vnd.ms-excel')
         response['Content-Disposition'] = 'attachment; filename=Informe_seguimiento_educativo.xls'
