@@ -748,7 +748,7 @@ def create_usuario(datos, request, tipo):
 def carga_masiva(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':
-        logger.info(u'Carga de archivo de tipo: ' + request.FILES['file_masivo'].content_type)
+        logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo'].content_type)
         ronda = request.session['gauser_extra'].ronda
         action = request.POST['action']
         if action == 'carga_masiva_csv':
@@ -785,9 +785,9 @@ def carga_masiva(request):
             if 'excel' in request.FILES['file_masivo'].content_type:
                 CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo'], tipo='EXCEL')
                 carga_masiva_from_excel.apply_async(expires=300)
-                crear_aviso(request, False, u'El archivo cargado puede tardar unos minutos en ser procesado.')
+                crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
         else:
-            crear_aviso(request, False, u'El archivo cargado no tiene el formato adecuado.')
+            crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.')
 
     return render(request, "carga_masiva.html",
                   {

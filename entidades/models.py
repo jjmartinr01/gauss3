@@ -853,6 +853,7 @@ class CargaMasiva(models.Model):
     tipo = models.CharField("Tipo de archivo", max_length=15, choices=TIPOS)
     incidencias = models.TextField("Incidencias producidas", blank=True, null=True, default='')
     cargado = models.BooleanField("¿Se ha cargado el archivo?", default=False)
+    error = models.BooleanField("¿Se ha producido un error en la carga del archivo archivo?", default=False)
 
     class Meta:
         verbose_name_plural = "Cargas Masivas"
