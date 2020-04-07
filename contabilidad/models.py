@@ -173,6 +173,11 @@ class Politica_cuotas(models.Model):
         return dicts_destinatarios
 
     @property
+    def ordenes_firmadas(self):
+        return OrdenAdeudo.objects.filter(fecha_firma__isnull=False, politica=self)
+        # return sum([[0, 1][d['oa'].firmada if d['oa'] else 0] for d in self.destinatarios])
+
+    @property
     def array_cuotas(self):
         if not self.cuota:
             self.cuota = '0'
@@ -362,6 +367,10 @@ class OrdenAdeudo(models.Model):
     firma = models.ImageField('Imagen de la firma del deudor', upload_to=update_firma, blank=True, null=True)
     fecha_firma = models.DateField("Fecha y hora en la que se realizó la firma", blank=True, null=True)
     texto_firmado = models.TextField("Texto firmado", blank=True, null=True)
+
+    @property
+    def firmada(self):
+        return True if self.fecha_firma else False
 
     @property
     def g_e(self):

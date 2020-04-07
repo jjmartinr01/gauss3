@@ -794,7 +794,7 @@ def comprueba_ordenes_adeudo(g_e):
         return OrdenAdeudo.objects.none()
 
 
-@permiso_required('acceso_ordenes_adeudo')
+# @permiso_required('acceso_ordenes_adeudo')
 def ordenes_adeudo(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
@@ -809,10 +809,13 @@ def ordenes_adeudo(request):
         response['Content-Disposition'] = 'attachment; filename=' + nombre + '.pdf'
         return response
     ordenes_firmadas = OrdenAdeudo.objects.filter(fecha_firma__isnull=False, politica__entidad=g_e.ronda.entidad)
+    politicas = Politica_cuotas.objects.filter(entidad=g_e.entidad)
     return render(request, "ordenes_adeudo.html",
                   {
                       'formname': 'ordenes_adeudo',
-                      'ordenes_firmadas': ordenes_firmadas
+                      'ordenes_firmadas': ordenes_firmadas,
+                      'politicas': politicas,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)
                   })
 
 

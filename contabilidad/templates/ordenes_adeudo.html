@@ -12,24 +12,55 @@
         <div>
             <h4 style="text-align: center;color: #008CBA;"><strong> Órdenes de adeudo directo firmadas</strong></h4>
         </div>
+        {#        <table style="width: 100%;">#}
+        {#        <thead><tr>#}
+        {#                <th>Persona</th>#}
+        {#                <th>Concepto</th>#}
+        {#                <th>Fecha firma</th>#}
+        {#                <th>Descargar</th>#}
+        {#            </tr></thead>#}
+        {##}
+        {#            <tbody>#}
+        {#            {% for orden in ordenes_firmadas %}#}
+        {#                <tr>#}
+        {#                    <td>{{ orden.gauser.get_full_name }}</td>#}
+        {#                    <td>{{ orden.politica.concepto }}</td>#}
+        {#                    <td>{{ orden.fecha_firma }}</td>#}
+        {#                    <td><a class="descarga_orden" data-id="{{ orden.id }}"><i class="fa fa-download"></i> Descargar</a>#}
+        {#                    </td>#}
+        {#                </tr>#}
+        {#            {% endfor %}#}
+        {#            </tbody>#}
+        {#        </table>#}
+        {#    <hr>#}
+
+{% include "ordenes_adeudo_fieldset_etadistica.html" %}
         <table style="width: 100%;">
+            <thead>
             <tr>
                 <th>Persona</th>
                 <th>Concepto</th>
                 <th>Fecha firma</th>
                 <th>Descargar</th>
             </tr>
-            <tbody>
-            {% for orden in ordenes_firmadas %}
-                <tr>
-                    <td>{{ orden.gauser.get_full_name }}</td>
-                    <td>{{ orden.politica.concepto }}</td>
-                    <td>{{ orden.fecha_firma }}</td>
-                    <td><a class="descarga_orden" data-id="{{ orden.id }}"><i class="fa fa-download"></i> Descargar</a>
-                    </td>
-                </tr>
+            </thead>
+            {% for politica in politicas %}
+                <tbody>
+                {% for d in politica.destinatarios %}
+                    <tr>
+                        <td>{{ d.ge.gauser.get_full_name }}</td>
+                        <td>{{ politica.concepto }}</td>
+                        <td>{% if d.oa.fecha_firma %}{{ d.oa.fecha_firma }}
+                        {% else %}<span style="color:red">Sin firmar</span>{% endif %}</td>
+                        <td>{% if d.oa.fecha_firma %}
+                            <a class="descarga_orden" data-id="{{ d.oa.id }}"><i class="fa fa-download"></i>
+                                Descargar</a>
+                        {% else %}<span style="color:red">------------</span>{% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
             {% endfor %}
-            </tbody>
         </table>
     </form>
 {% endblock %}
@@ -42,6 +73,10 @@
             var orden_id = $(this).data('id');
             $('#orden_id').val(orden_id);
             document.{{formname}}.submit();
+        });
+        $('body').on('click', '.fieldset_close', function (e) {
+            e.preventDefault();
+            $('.fieldset_box').hide();
         });
     </script>
 {% endblock %}
