@@ -133,19 +133,20 @@ def edita_convocatoria(g_e, convocatoria):
         return False
 
 
-@register.filter
-def redacta_acta(g_e, acta):
-    if g_e.gauser.username == 'gauss' or g_e.has_permiso('w_cualquier_acta_reunion'):
-        return True
-    elif acta.convocatoria.creador == g_e.gauser and acta.redacta == g_e.gauser:
-        return True
-    elif g_e.has_permiso('w_actas_subentidades_reunion'):
-        subentidades_convocadas = acta.convocatoria.convocados.all()
-        for sub in g_e.subentidades.all():
-            if sub in subentidades_convocadas:
-                return True
-    else:
-        return False
+#Función sustituida en reuniones_extras.py por "is_redactada_por"
+# @register.filter
+# def redacta_acta(g_e, acta):
+#     if g_e.gauser.username == 'gauss' or g_e.has_permiso('w_cualquier_acta_reunion'):
+#         return True
+#     elif acta.convocatoria.creador == g_e.gauser or acta.redacta == g_e.gauser:
+#         return True
+#     elif g_e.has_permiso('w_actas_subentidades_reunion'):
+#         subentidades_convocadas = acta.convocatoria.convocados.all()
+#         for sub in g_e.subentidades.all():
+#             if sub in subentidades_convocadas:
+#                 return True
+#     else:
+#         return False
 
 
 # Módulo de Horarios

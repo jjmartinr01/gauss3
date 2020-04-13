@@ -1,0 +1,73 @@
+{% load my_templatetags %}
+{% load reuniones_extras %}
+
+<style>
+    .noeditable {
+        color: #0f74a8;
+    }
+</style>
+
+<div class="row">
+    <div class="columns large-6">
+        <b>Creada por:</b> {{ conv.creador.get_full_name }}
+    </div>
+    <div class="columns large-6 text-right">
+        <ul class="button-group radius">
+            <li title="Descargar la convocatoria en PDF">
+                <a data-id="{{ conv.id }}" class="button download_pdf"><i
+                        class="fa fa-file-pdf-o"></i> PDF</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-4">
+        <label><b>Fecha y hora de la convocatoria</b></label>
+        {{ conv.fecha_hora|date:'d/m/Y H:i' }}
+    </div>
+    <div class="columns large-4">
+        <label><b>Lugar de la convocatoria</b></label>
+        {{ conv.lugar }}
+    </div>
+    <div class="columns large-4">
+        <label><b>Grupos convocados</b></label>
+        {% for subentidad in conv.convocados.all %}
+            {% if forloop.last %}{{ subentidad.nombre }}{% else %}{{ subentidad.nombre }}, {% endif %}
+        {% endfor %}
+    </div>
+</div>
+<div class="row"><hr></div>
+<div class="row">
+    <div class="columns large-4">
+        <label><b>Persona que convoca</b></label>
+        {{ conv.convoca.get_full_name }}
+    </div>
+
+    <div class="columns large-4">
+        <label><b>Cargo del convocante</b></label>
+        {{ conv.cargo_convocante.cargo }}
+    </div>
+    <div class="columns large-4">
+        <label><b>Persona que redacta el acta</b></label>
+        {{ conv.actareunion_set.all.0.redacta.get_full_name }}
+    </div>
+</div>
+
+<br>
+<div class="row">
+    <div class="columns large-12" style="border: lightgrey solid 1px; padding:10px;">
+        <div style="font-size: xx-large;font-weight: 800; text-align: center;">
+            {{ conv.nombre }}
+        </div>
+        {% autoescape off %}
+            {{ conv.texto_convocatoria }}
+        {% endautoescape %}
+        {% for p in conv.punto.all %}
+            <p>{{ p.orden }}.- {{ p.punto }}</p>
+        {% endfor %}
+        <br>
+        <p>En {{ conv.entidad.localidad }} a {{ conv.fecha|date:"j \d\e F \d\e Y"|lower }},</p>
+        <p>&nbsp;</p>
+        <p>{{ conv.convoca.get_full_name }}<br>{{ conv.cargo_convocante }}</p>
+    </div>
+</div>

@@ -88,6 +88,19 @@ class ActaReunion(models.Model):
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 
+    def is_redactada_por(self, g_e):
+        if g_e.gauser.username == 'gauss' or g_e.has_permiso('w_cualquier_acta_reunion'):
+            return True
+        elif self.convocatoria.creador == g_e.gauser or self.redacta == g_e.gauser:
+            return True
+        elif g_e.has_permiso('w_actas_subentidades_reunion'):
+            subentidades_convocadas = self.convocatoria.convocados.all()
+            for sub in g_e.subentidades.all():
+                if sub in subentidades_convocadas:
+                    return True
+        else:
+            return False
+
     @property
     def firmada(self):
         if self.firmaacta_set.filter(firmada=True).count() == self.firmaacta_set.all().count():
@@ -106,7 +119,7 @@ class ActaReunion(models.Model):
     def acta_anterior(self):
         if self.convocatoria.basada_en:
             convocatorias_anteriores = ConvReunion.objects.filter(fecha_hora__lt=self.convocatoria.fecha_hora,
-                                                                   basada_en=self.convocatoria.basada_en)
+                                                                  basada_en=self.convocatoria.basada_en)
             if convocatorias_anteriores.count() > 0:
                 convocatoria_anterior = convocatorias_anteriores[0]
                 return ActaReunion.objects.get(convocatoria=convocatoria_anterior)
@@ -146,6 +159,7 @@ def update_firma(instance, filename):
     ruta = os.path.join("reuniones/%s/%s/firmas/" % (a.convocatoria.entidad.code, a.id),
                         str(a.id) + '_' + str(instance.ge.id) + '.png')
     return ruta
+
 
 class FirmaActa(models.Model):
     TIPOS = (('FIR', 'Firma'), ('VB', 'Visto bueno'))

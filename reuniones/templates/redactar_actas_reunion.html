@@ -38,7 +38,6 @@
         <input type="hidden" name="page" id="page" value="">
         <input type="hidden" id="id_acta" name="id_acta" value="">
 
-
         <div>
             <h4 class="title_page" id="titulo">Redacción de actas</h4>
         </div>
@@ -53,7 +52,7 @@
 
 {% block final %}
     <script>
-    habilita(['s_search']);
+        habilita(['s_search']);
         $('#search_sign').click(function (e) {
             e.preventDefault();
             $.post("/redactar_actas_reunion_ajax/", {action: 'ver_formulario_buscar'}, function (data) {
@@ -88,22 +87,6 @@
             e.preventDefault();
             $('.fieldset_box').hide();
         });
-        {#$(document).foundation({#}
-        {#    tab: {#}
-        {#        callback: function (tab) {#}
-        {#            var id = $(tab[0]).data('id');#}
-        {#            if (id == 0) {#}
-        {#                $('#texto1').css('color', 'white');#}
-        {#                $('#texto0').css('color', 'black');#}
-        {#                $('#titulo').html('Redacción de actas de reunión (sin publicar)')#}
-        {#            } else {#}
-        {#                $('#texto0').css('color', 'white');#}
-        {#                $('#texto1').css('color', 'black');#}
-        {#                $('#titulo').html('Redacción de actas de reunión (publicadas)')#}
-        {#            }#}
-        {#        }#}
-        {#    }#}
-        {# });#}
 
         $(document).foundation({
             accordion: {
@@ -120,6 +103,16 @@
                             }, function (data) {
                                 if (data.ok) {
                                     $('#panel' + id).html(data.html);
+                                    $(".fecha_aprobacion").fdatepicker({
+                                        format: 'dd/mm/yyyy',
+                                        weekStart: 1
+                                    });
+                                    $(".firmante_reunion").select2(
+                                        conf_select2({'gcs': 'g', 'format_g': '{0}, {1}'})
+                                    );
+                                    $(".usuarios_asistentes").select2(
+                                        conf_select2({'gcs': 'g', 'format_g': '{0}, {1}'})
+                                    );
                                     $("#update_ok").show().delay(1500).fadeOut();
                                 } else {
                                     $("#update_error").show().delay(1500).fadeOut();
@@ -132,6 +125,44 @@
                     }
                 }
             }
+        });
+
+        var asistentes_antiguo;
+        $('body').on('change.select2', '.usuarios_asistentes', function (e) {
+            var acta = $(this).data('id');
+            var asistentes = $(this).val();
+            if (asistentes != asistentes_antiguo) {
+                asistentes_antiguo = asistentes;
+                $.post("/redactar_actas_reunion_ajax/", {
+                        action: 'update_asistentes_reunion',
+                        acta: acta,
+                        asistentes: asistentes
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        });
+
+        $('body').on('keyup', '.control_code', function (e) {
+            var acta = $(this).data('id');
+            var code = $(this).val();
+            $.post("/redactar_actas_reunion_ajax/", {
+                    action: 'update_control_code',
+                    acta: acta,
+                    code: code
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
         });
 
         $('body').on('click', '.publicada', function () {
@@ -199,26 +230,43 @@
 
         $('body').on('click', '.del_fecha_aprobacion', function () {
             var acta = $(this).data('id');
-            $.post("/redactar_actas_reunion_ajax/", {
-                    action: 'update_fecha_aprobacion',
-                    acta: acta,
-                    fecha_aprobacion: 'borrar'
-                },
-                function (data) {
-                    if (data.ok) {
-                        if (data.aprobada) {
-                            $('#spannoaprob' + data.acta).hide();
-                            $('#spanaprob' + data.acta).show();
-                        } else {
-                            $('#spanaprob' + data.acta).hide();
-                            $('#spannoaprob' + data.acta).show();
-                            $('#fecha_aprobacion' + data.acta).val('');
+            $('#id_acta').val(acta);
+            if ($('#fecha_aprobacion' + acta).val()) {
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar la fecha de aprobación?',
+                    texto: 'Si aceptas el acta podrá ser modificada y, si esto ocurre, las firmas se perderán.',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            $.post("/redactar_actas_reunion_ajax/", {
+                                    action: 'update_fecha_aprobacion',
+                                    acta: $('#id_acta').val(),
+                                    fecha_aprobacion: 'borrar'
+                                },
+                                function (data) {
+                                    if (data.ok) {
+                                        if (data.aprobada) {
+                                            $('#spannoaprob' + data.acta).hide();
+                                            $('#spanaprob' + data.acta).show();
+                                        } else {
+                                            $('#spanaprob' + data.acta).hide();
+                                            $('#spannoaprob' + data.acta).show();
+                                            $('#fecha_aprobacion' + data.acta).val('');
+                                        }
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
                         }
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
+            } else {
+                show_mensajes({'title': 'No hay fecha que borrar', 'texto': 'Esta acta no está todavía aprobada'});
+            }
         });
 
         $('body').on('keyup', '.nombre', function (e) {
@@ -245,7 +293,7 @@
 
 
         $('#select_acta').select2({
-            placeholder: "Para buscar un acta, escribe parte del texto contenido en él",
+            placeholder: "Para buscar un acta, escribe parte del texto contenido en ella",
             allowClear: true,
             ajax: {
                 url: "/ajax_actas/",
@@ -281,7 +329,6 @@
             }
         });
 
-
         $('#select_acta').change(function (e) {
             e.preventDefault();
             var id = $(this).val();
@@ -303,17 +350,21 @@
             var tipo = $('#tipo_firmaacta' + acta).val();
             var cargo = $('#cargo_firmante_reunion' + acta).val();
             var firmante = $('#firmante_reunion' + acta).val();
-            $.post("/redactar_actas_reunion_ajax/", {
-                    action: 'add_firmante_reunion', acta: acta, firmante: firmante, cargo: cargo, tipo: tipo
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#firmantes_list' + data.acta).prepend(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
+            if (firmante) {
+                $.post("/redactar_actas_reunion_ajax/", {
+                        action: 'add_firmante_reunion', acta: acta, firmante: firmante, cargo: cargo, tipo: tipo
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#firmante_reunion' + data.acta).val(null).trigger('change');
+                            $('#cargo_firmante_reunion' + data.acta).val('');
+                            $('#firmantes_list' + data.acta).prepend(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            }
         });
 
         $('body').on('click', '.del_firmante_reunion', function (e) {
@@ -331,7 +382,32 @@
                     }
                 });
         });
-
+        $('body').on('change', '.firmante_reunion', function (e) {
+            var acta = $(this).data('id');
+            var firmante = $(this).val();
+            if (firmante) {
+                $.post("/redactar_actas_reunion_ajax/", {
+                        action: 'obtener_cargos_firmante',
+                        firmante: firmante,
+                        acta: acta
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            var selec_cargo = $('#cargo_firmante_reunion' + data.acta);
+                            selec_cargo.find('option').remove();
+                            $.each(data.cargos, function (val, text) {
+                                selec_cargo.append($('<option>', {
+                                    value: val,
+                                    text: text
+                                }));
+                            });
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        });
 
         $('body').on('click', '.download_pdf', function (e) {
             e.preventDefault();

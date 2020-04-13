@@ -5,6 +5,9 @@ from actas.models import Convocatoria
 
 register = Library()
 
+@register.filter
+def is_redactada_por(acta, g_e):
+    return acta.is_redactada_por(g_e)
 
 @register.filter
 def lista_subentidades_convocadas(convocatoria):

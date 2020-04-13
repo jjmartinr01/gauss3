@@ -1,4 +1,4 @@
-{% load my_templatetags %}
+{% load my_templatetags %}{% load reuniones_extras %}
 
 <div class="row">
     <div class="columns large-6">
@@ -111,11 +111,10 @@
 </div>
 
 <script>
-    {% if g_e|redacta_acta:acta %}
+    {% if acta|is_redactada_por:g_e %}
         $(".fecha_aprobacion").fdatepicker({
             format: 'dd/mm/yyyy',
             weekStart: 1
         });
     {% endif %}
-
 </script>

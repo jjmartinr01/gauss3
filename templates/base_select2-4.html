@@ -526,6 +526,74 @@
         {# Esto es necesario para que no salga el teclado en el móvil #}
         return true;
     }
+
+    {# Definición de la función format asociada a una cadena para formatear por argumentos.#}
+    {# Por ejempo podría escribirse:#}
+    {# "{0} is dead, but {1} is alive! {0} {2}".format("ASP", "ASP.NET")#}
+    {# Para obtener como salida:    #}
+    {# ASP is dead, but ASP.NET is alive! ASP {2} #}
+    {# https://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format #}
+    if (!String.prototype.format) {
+        String.prototype.format = function () {
+            var args = arguments;
+            return this.replace(/{(\d+)}/g, function (match, number) {
+                return typeof args[number] != 'undefined'
+                    ? args[number]
+                    : match
+                    ;
+            });
+        };
+    }
+    {# Esta función permite cargar la configuración de select2. Tiene varios argumentos que están #}
+    {# explicados en la propia función #}
+
+    function conf_select2(arguments) {
+        var gcs = arguments.gcs || 'gcs'; {# busca gauser_extra (g), cargos (c) y/o subentidades (s) #}
+        var format_g = arguments.format_g || "{0}, {1} - {2} (Tutor/a: {3})"; {# Cadena presentación gauser_extras #}
+        var cars = arguments.cars || []; {# array con los id de los cargos en los que buscar #}
+        var subs = arguments.subs || []; {# array con los id de las subentidades en las que buscar #}
+        return {
+            placeholder: "Escribe parte del nombre",
+            minimumInputLength: 3,
+            ajax: {
+                url: "/selectgcs/",
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        q: params.term,
+                        tipo: gcs, {# 'g' indica que se buscan gauser_extras #}
+                        cars: cars, {# Array con los ids de los cargos en los que buscar los usuarios o cargos #}
+                        subs: subs {# Array con los ids de las subentidades en las que buscar los usuarios o subs #}
+                    };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return {
+                        results: $.map(data, function (item) {
+                            if (item.tipo === 'g') {
+                                return  {
+                                    text: format_g.format(item.last_name, item.first_name, item.grupo, item.tutor),
+                                    id: item.tipo + item.id
+                                }
+                            } else if (item.tipo === 'c') {
+                                return  {text: item.cargo, id: item.tipo + item.id}
+                            } else if (item.tipo === 's') {
+                                return  {text: item.subentidad, id: item.tipo + item.id}
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            },
+            templateResult: function (a) {
+                return "<span>" + a.text + "</span>"
+            }
+        }
+    }
 </script>
 {% block final %}{% endblock %}
 <script>

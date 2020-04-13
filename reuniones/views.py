@@ -14,18 +14,21 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.utils.text import slugify
+from django.utils import timezone
 from django.db.models import Q
 
 from reuniones.models import *
 from autenticar.control_acceso import permiso_required
 from calendario.models import Vevent
 from entidades.models import Subentidad, Gauser_extra
+from entidades.views import decode_selectgcs
 from gauss.funciones import html_to_pdf, human_readable_list
 from gauss.rutas import MEDIA_ANAGRAMAS, MEDIA_REUNIONES, RUTA_BASE
 from mensajes.models import Aviso, Mensaje, Etiqueta
 from mensajes.views import crear_aviso, encolar_mensaje, crea_mensaje_cola
 
-locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
+# locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
+locale.setlocale(locale.LC_ALL, 'es_ES.utf8')
 
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
@@ -420,18 +423,23 @@ def conv_reunion_ajax(request):
                 return JsonResponse({'ok': False})
         elif action == 'open_accordion':
             conv = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['convocatoria'], plantilla=False)
-            plantillas = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
-            if g_e.has_permiso('w_conv_reunion') or conv.creador == g_e.gauser:
-                try:
-                    cargos = Gauser_extra.objects.get(gauser=conv.convoca, ronda=g_e.ronda).cargos.all()
-                except:
-                    cargos = []
-                puntos = PuntoConvReunion.objects.filter(convocatoria=conv)
-                html = render_to_string('conv_accordion_content.html', {'conv': conv, 'g_e': g_e, 'cargos': cargos,
-                                                                        'plantillas': plantillas, 'puntos': puntos})
-                return JsonResponse({'ok': True, 'html': html})
+            if conv.fecha_hora > timezone.now():
+                plantillas = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
+                if g_e.has_permiso('w_conv_reunion') or conv.creador == g_e.gauser:
+                    try:
+                        cargos = Gauser_extra.objects.get(gauser=conv.convoca, ronda=g_e.ronda).cargos.all()
+                    except:
+                        cargos = []
+                    puntos = PuntoConvReunion.objects.filter(convocatoria=conv)
+                    html = render_to_string('conv_accordion_content.html', {'conv': conv, 'g_e': g_e, 'cargos': cargos,
+                                                                            'plantillas': plantillas, 'puntos': puntos})
+
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False})
             else:
-                return JsonResponse({'ok': False})
+                html = render_to_string('conv_accordion_content_lectura.html', {'conv': conv})
+                return JsonResponse({'ok': True, 'html': html})
         elif action == 'delete_conv_reunion':
             mensaje = ''
             try:
@@ -800,7 +808,7 @@ def conv_reunion_ajax(request):
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
 
-@permiso_required('acceso_redactar_actas_reunion')
+# @permiso_required('acceso_redactar_actas_reunion')
 def redactar_actas_reunion(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
@@ -891,7 +899,7 @@ def redactar_actas_reunion_ajax(request):
         elif action == 'update_preambulo':
             try:
                 acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
-                if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
+                if acta.is_redactada_por(g_e):
                     if acta.onlyread:
                         return JsonResponse({'ok': False, 'mensaje': 'El acta está publicada/aprobada'})
                     texto = request.POST['texto']
@@ -899,12 +907,14 @@ def redactar_actas_reunion_ajax(request):
                     acta.save()
                     borrar_firmas_acta(acta)
                     return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_epilogo':
             try:
                 acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
-                if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
+                if acta.is_redactada_por(g_e):
                     if acta.onlyread:
                         return JsonResponse({'ok': False, 'mensaje': 'El acta está publicada/aprobada'})
                     texto = request.POST['texto']
@@ -912,13 +922,15 @@ def redactar_actas_reunion_ajax(request):
                     acta.save()
                     borrar_firmas_acta(acta)
                     return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_punto_acta':
             try:
                 punto = PuntoConvReunion.objects.get(id=request.POST['punto'])
                 acta = ActaReunion.objects.get(convocatoria=punto.convocatoria, convocatoria__entidad=g_e.ronda.entidad)
-                if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
+                if acta.is_redactada_por(g_e):
                     if acta.onlyread:
                         return JsonResponse({'ok': False, 'mensaje': 'El acta está publicada/aprobada'})
                     texto = request.POST['texto']
@@ -926,28 +938,33 @@ def redactar_actas_reunion_ajax(request):
                     punto.save()
                     borrar_firmas_acta(acta)
                     return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_nombre_acta':
             try:
                 acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
-                if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
+                if acta.is_redactada_por(g_e):
                     if acta.onlyread:
                         return JsonResponse({'ok': False})
                     acta.nombre = request.POST['nombre'].strip()
                     acta.save()
                     borrar_firmas_acta(acta)
                     return JsonResponse({'ok': True, 'nombre': acta.nombre})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_asistentes_reunion':
             try:
                 acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
-                if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
+                if acta.is_redactada_por(g_e):
                     if acta.onlyread:
                         return JsonResponse({'ok': False, 'mensaje': 'El acta está publicada/aprobada'})
-                    asistentes = Gauser_extra.objects.filter(ronda=g_e.ronda,
-                                                             id__in=request.POST.getlist('asistentes[]'))
+                    asistentes, cs, ss = decode_selectgcs(request.POST.getlist('asistentes[]'), g_e.ronda)
+                    # asistentes = Gauser_extra.objects.filter(ronda=g_e.ronda,
+                    #                                          id__in=request.POST.getlist('asistentes[]'))
                     acta.asistentes.clear()
                     acta.asistentes.add(*asistentes)
                     asistentes_text_list = [a.gauser.get_full_name() for a in acta.asistentes.all()]
@@ -955,22 +972,27 @@ def redactar_actas_reunion_ajax(request):
                     acta.save()
                     borrar_firmas_acta(acta)
                     return JsonResponse({'ok': True, 'asist': asistentes.count()})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_control_code':
             try:
                 acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
-                if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
+                if acta.is_redactada_por(g_e):
                     if acta.onlyread:
                         return JsonResponse({'ok': False})
                     acta.control = request.POST['code']
                     acta.save()
                     return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'obtener_cargos_firmante':
             try:
-                ge = Gauser_extra.objects.get(id=request.POST['firmante'], ronda=g_e.ronda)
+                ges, cs, ss = decode_selectgcs([request.POST['firmante']], g_e.ronda)
+                ge = ges[0]
                 cargos = ge.cargos.all()
                 cargos = {c[0]: c[1] for c in cargos.values_list('id', 'cargo')}
                 return JsonResponse({'ok': True, 'cargos': cargos, 'acta': request.POST['acta']})
@@ -979,50 +1001,59 @@ def redactar_actas_reunion_ajax(request):
         elif action == 'add_firmante_reunion':
             try:
                 acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
-                if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
+                if acta.is_redactada_por(g_e):
                     if acta.onlyread:
                         return JsonResponse({'ok': False})
-                    ge = Gauser_extra.objects.get(id=request.POST['firmante'], ronda=g_e.ronda)
+                    ges, cs, ss = decode_selectgcs([request.POST['firmante']], g_e.ronda)
+                    ge = ges[0]
                     cargo = Cargo.objects.get(id=request.POST['cargo'], entidad=g_e.ronda.entidad).cargo
                     f = FirmaActa.objects.create(acta=acta, tipo=request.POST['tipo'], cargo=cargo,
                                                  firmante=ge.gauser.get_full_name(), ge=ge)
                     html = render_to_string('redactar_actas_reunion_accordion_content_firmante.html', {'f': f})
                     return JsonResponse({'ok': True, 'html': html, 'acta': acta.id})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'del_firmante_reunion':
             try:
                 acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
-                if g_e.has_permiso('w_cualquier_acta_reunion') or acta.redacta == g_e.gauser:
+                if acta.is_redactada_por(g_e):
                     if acta.onlyread:
                         return JsonResponse({'ok': False})
                     FirmaActa.objects.get(id=request.POST['firmante'], acta=acta).delete()
                     return JsonResponse({'ok': True, 'firmante': request.POST['firmante']})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_publicada':
             try:
                 acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
-                # if acta.fecha_aprobacion:
-                #     return JsonResponse({'ok': False})
-                acta.publicada = not acta.publicada
-                acta.save()
-                return JsonResponse({'ok': True, 'publicada': acta.publicada, 'acta': acta.id})
+                if acta.is_redactada_por(g_e):
+                    acta.publicada = not acta.publicada
+                    acta.save()
+                    return JsonResponse({'ok': True, 'publicada': acta.publicada, 'acta': acta.id})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_fecha_aprobacion':
             try:
                 acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
-                if request.POST['fecha_aprobacion'] == 'borrar':
-                    acta.fecha_aprobacion = None
+                if acta.is_redactada_por(g_e):
+                    if request.POST['fecha_aprobacion'] == 'borrar':
+                        acta.fecha_aprobacion = None
+                        acta.save()
+                        return JsonResponse({'ok': True, 'acta': acta.id, 'aprobada': False})
+                    if acta.fecha_aprobacion:
+                        return JsonResponse({'ok': False, 'mensaje': 17})
+                    fecha_aprobacion = datetime.strptime(request.POST['fecha_aprobacion'], "%d/%m/%Y")
+                    acta.fecha_aprobacion = fecha_aprobacion
                     acta.save()
-                    return JsonResponse({'ok': True, 'acta': acta.id, 'aprobada': False})
-                if acta.fecha_aprobacion:
-                    return JsonResponse({'ok': False, 'mensaje': 17})
-                fecha_aprobacion = datetime.strptime(request.POST['fecha_aprobacion'], "%d/%m/%Y")
-                acta.fecha_aprobacion = fecha_aprobacion
-                acta.save()
-                return JsonResponse({'ok': True, 'acta': acta.id, 'aprobada': True})
+                    return JsonResponse({'ok': True, 'acta': acta.id, 'aprobada': True})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 27})
         elif request.POST['action'] == 'ver_formulario_buscar':

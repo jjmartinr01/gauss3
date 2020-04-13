@@ -1,4 +1,4 @@
-{% load my_templatetags %}
+{% load my_templatetags %}{% load reuniones_extras %}
 
 <div class="row">
     <div class="columns large-6">
@@ -24,19 +24,19 @@
 <div class="row">
     <div class="columns large-4">
         <label>Fecha y hora de la convocatoria
-            <input type="text" name="fecha_hora" readonly data-id="{{ acta.id }}"
+            <input type="text" name="fecha_hora{{ acta.id }}" readonly data-id="{{ acta.id }}"
                    value="{{ acta.convocatoria.fecha_hora|date:'d/m/Y H:i' }}"></label>
     </div>
     <div class="columns large-3">
         <label>Fecha de aprobación
-            <input type="text" name="fecha_aprobacion" class="fecha_aprobacion" data-id="{{ acta.id }}"
+            <input type="text" name="fecha_aprobacion{{ acta.id }}" class="fecha_aprobacion" data-id="{{ acta.id }}"
                    id="fecha_aprobacion{{ acta.id }}"
                    value="{% if acta.fecha_aprobacion %}{{ acta.fecha_aprobacion|date:'d/m/Y' }}{% endif %}">
         </label>
     </div>
     <div class="columns large-2" title="Marcar para hacer pública este acta">
         <label>Hacer pública</label>
-        <input type="checkbox" name="publicada" class="publicada" {% if acta.publicada %}checked{% endif %}
+        <input type="checkbox" name="publicada{{ acta.id }}" class="publicada" {% if acta.publicada %}checked{% endif %}
                value="{{ acta.id }}" id="publicada{{ acta.id }}">
     </div>
     <div class="columns large-3"
@@ -77,9 +77,9 @@
 <div class="row">
     <div class="columns large-12">
         <label>Asistentes a la reunión:
-            <select name="usuarios_asistentes" id="usuarios_asistentes" multiple="multiple" data-id="{{ acta.id }}">
+            <select name="usuarios_asistentes{{ acta.id }}" class="usuarios_asistentes" multiple="multiple" data-id="{{ acta.id }}">
                 {% for asistente in acta.asistentes.all %}
-                    <option value="{{ asistente.id }}" selected="selected">{{ asistente.gauser.last_name }},
+                    <option value="g{{ asistente.id }}" selected="selected">{{ asistente.gauser.last_name }},
                         {{ asistente.gauser.first_name }}</option>
                 {% endfor %}
             </select>
@@ -145,7 +145,7 @@
 <div class="row">
     <div class="columns large-4 medium-4 small-4">
         <label><b>Persona firmante</b>
-            <select id="firmante_reunion{{ acta.id }}" data-id="{{ acta.id }}"></select>
+            <select id="firmante_reunion{{ acta.id }}" class="firmante_reunion" data-id="{{ acta.id }}"></select>
         </label>
     </div>
 
@@ -182,7 +182,7 @@
 </div>
 
 <script>
-    {% if g_e|redacta_acta:acta %}
+    {% if acta|is_redactada_por:g_e %}
         var editor_preambulo_acta = CKEDITOR.inline('preambulo_acta{{ acta.id }}');
         editor_preambulo_acta.config.extraAllowedContent = 'p div span[id]';
         editor_preambulo_acta.on('change', function (e) {
@@ -240,145 +240,6 @@
                         var texto1 = '<p>El acta está en modo de solo lectura. No se pueden hacer cambios.</p>';
                         var texto2 = '<p style="font-size:small;">Esto es debido a que el acta está publicada y/o aprobada.</p>';
                         show_mensajes({title: title, texto: texto1 + texto2});
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-
-
-        $(".fecha_aprobacion").fdatepicker({
-            format: 'dd/mm/yyyy',
-            weekStart: 1
-        });
-
-        $("#usuarios_asistentes").select2({
-            placeholder: "Escribe parte del nombre",
-            minimumInputLength: 3,
-            multiple: true,
-            ajax: {
-                url: "/buscar_usuarios/",
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        action: 'select2',
-                        q: params.term, // search term
-                        page: params.page
-                    };
-                },
-                processResults: function (data, params) {
-                    params.page = params.page || 1;
-                    return {
-                        results: $.map(data, function (item) {
-                            return {
-                                text: item.last_name + ', ' + item.first_name,
-                                id: item.id
-                            }
-                        })
-                    };
-                },
-                cache: true
-            },
-            escapeMarkup: function (markup) {
-                return markup;
-            },
-            templateResult: function (a) {
-                return "<span>" + a.text + "</span>"
-            }
-        });
-
-
-        $('body').on('change', '#usuarios_asistentes', function (e) {
-            var acta = {{ acta.id }};
-            var asistentes = $(this).val();
-            $.post("/redactar_actas_reunion_ajax/", {
-                    action: 'update_asistentes_reunion',
-                    acta: acta,
-                    asistentes: asistentes
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('keyup', '.control_code', function (e) {
-            var acta = {{ acta.id }};
-            var code = $(this).val();
-            $.post("/redactar_actas_reunion_ajax/", {
-                    action: 'update_control_code',
-                    acta: acta,
-                    code: code
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $("#firmante_reunion{{ acta.id }}").select2({
-            placeholder: "Escribe parte del nombre",
-            minimumInputLength: 3,
-            multiple: false,
-            ajax: {
-                url: "/buscar_usuarios/",
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        action: 'select2',
-                        q: params.term, // search term
-                        page: params.page
-                    };
-                },
-                processResults: function (data, params) {
-                    params.page = params.page || 1;
-                    return {
-                        results: $.map(data, function (item) {
-                            return {
-                                text: item.last_name + ', ' + item.first_name,
-                                id: item.id
-                            }
-                        })
-                    };
-                },
-                cache: true
-            },
-            escapeMarkup: function (markup) {
-                return markup;
-            },
-            templateResult: function (a) {
-                return "<span>" + a.text + "</span>"
-            }
-        });
-
-        $('body').on('change', '#firmante_reunion{{ acta.id }}', function (e) {
-            var acta = {{ acta.id }};
-            var firmante = $(this).val();
-            $.post("/redactar_actas_reunion_ajax/", {
-                    action: 'obtener_cargos_firmante',
-                    firmante: firmante,
-                    acta: acta
-                },
-                function (data) {
-                    if (data.ok) {
-                        var selec_cargo = $('#cargo_firmante_reunion' + data.acta);
-                        selec_cargo.find('option').remove();
-                        $.each(data.cargos, function (val, text) {
-                            selec_cargo.append($('<option>', {
-                                value: val,
-                                text: text
-                            }));
-                        });
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });

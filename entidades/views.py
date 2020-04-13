@@ -2387,3 +2387,71 @@ def crealinkge(request):
                             'title': 'Ayuda sobre está página', 'permiso': 'libre'},),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
+
+def selectgcs(request):
+    g_e = request.session['gauser_extra']
+    if request.is_ajax():
+        if request.method == 'GET':
+            texto = request.GET['q']
+            if 'subs[]' in request.GET:
+                subs = Subentidad.objects.filter(entidad=g_e.ronda.entidad, id__in=request.GET.getlist('subs[]'))
+            else:
+                subs = Subentidad.objects.none()
+            if 'cars[]' in request.GET:
+                cars = Cargo.objects.filter(entidad=g_e.ronda.entidad, id__in=request.GET.getlist('cars[]'))
+            else:
+                cars = Cargo.objects.none()
+            ges, cargos, subentidades = Gauser_extra.objects.none(), Cargo.objects.none(), Subentidad.objects.none()
+            for tipo in request.GET['tipo']: # tipo=c implica buscar cargos, tipo=s subentidades y tipo=g gauser_extras
+                if tipo == 'g':
+                    usronda = usuarios_ronda(g_e.ronda, subentidades=subs, cargos=cars)
+                    ges = usronda.filter(Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto))
+                elif tipo == 'c':
+                    if cars:
+                        cargos = cars
+                    else:
+                        cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad, cargo__icontains=texto)
+                elif tipo == 's':
+                    if subs:
+                        subentidades = subs
+                    else:
+                        subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad, nombre__icontains=texto)
+            # sub_alumnos = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='alumnos')
+            # usuarios = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_alumnos])
+            # filtrados = usuarios.filter(Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto))
+            options = []
+            for ge in ges.distinct():
+                try:
+                    grupo = ge.gauser_extra_estudios.grupo.nombre
+                    tutor = ge.gauser_extra_estudios.tutor.gauser.get_full_name()
+                    cotutor = ge.gauser_extra_estudios.cotutor.gauser.get_full_name()
+                except:
+                    grupo, tutor, cotutor = '', '', ''
+                options.append(
+                    {'id': ge.id, 'first_name': ge.gauser.first_name, 'last_name': ge.gauser.last_name,
+                     'grupo': grupo, 'tutor': tutor, 'cotutor': cotutor, 'tipo': 'g'})
+            for c in cargos.distinct():
+                options.append({'id': c.id, 'cargo': c.cargo, 'tipo': 'c'})
+            for s in subentidades.distinct():
+                options.append({'id': s.id, 'subentidad': s.nombre, 'tipo': 's'})
+            return JsonResponse(options, safe=False)
+        else:
+            return JsonResponse({'ok': False, 'm': 'No es GET'})
+    else:
+        return JsonResponse({'ok': False, 'm': 'No es ajax'})
+
+def decode_selectgcs(coded_ids, ronda):
+    ges_ids = [int(idx[1:]) for idx in coded_ids if idx.startswith('g')]
+    ges = Gauser_extra.objects.filter(id__in=ges_ids, ronda=ronda)
+    cs_ids = [int(idx[1:]) for idx in coded_ids if idx.startswith('c')]
+    cs = Cargo.objects.filter(id__in=cs_ids, entidad=ronda.entidad)
+    ss_ids = [int(idx[1:]) for idx in coded_ids if idx.startswith('s')]
+    ss = Subentidad.objects.filter(id__in=ss_ids, entidad=ronda.entidad)
+    return ges, cs, ss
+
+def decode_select_allges(coded_ids, ronda):
+    ges_ids = [int(idx[1:]) for idx in coded_ids if idx.startswith('g')]
+    cs_ids = [int(idx[1:]) for idx in coded_ids if idx.startswith('c')]
+    ss_ids = [int(idx[1:]) for idx in coded_ids if idx.startswith('s')]
+    ges = usuarios_ronda(ronda)
+    return ges.filter(Q(id__in=ges_ids) | Q(cargos__id__in=cs_ids) | Q(subentidades__id__in=ss_ids)).distinct()
