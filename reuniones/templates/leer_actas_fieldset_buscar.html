@@ -7,40 +7,16 @@
     </span>
     </div>
     <div class="row">
-        <div class="columns large-3">
+        <div class="columns large-4">
             <label>Buscar entre esta fecha ...</label>
             <input id="id_fecha_inicio" name="fecha_inicio" type="date"
                    value="{{ g_e.ronda.inicio|date:"Y\-m\-d" }}">
         </div>
-        <div class="columns large-3">
+        <div class="columns large-4">
             <label>... y esta otra</label>
             <input id="id_fecha_fin" name="fecha_fin" type="date" value="{% now "Y\-m\-d" %}">
         </div>
-    <div class="columns large-3">
-            <label>Publicada ...</label>
-            <select id="busca_publicada" name="busca_publicada">
-                <option value="">Es indiferente</option>
-                <option value="1">Publicada</option>
-                <option value="0">Sin publicar</option>
-            </select>
-        </div>
-    <div class="columns large-3">
-            <label>Aprobada ...</label>
-            <select id="busca_aprobada" name="busca_aprobada">
-                <option value="">Es indiferente</option>
-                <option value="1">Aprobada</option>
-                <option value="0">Sin aprobar</option>
-            </select>
-        </div>
-    </div>
-    <div class="row">
-        <div class="columns large-7">
-            <label>Indica el texto que pudiera contener el acta
-                <input type="text" name="busca_texto_acta" id="busca_texto_acta"
-                   placeholder="Escribe texto a buscar">
-            </label>
-        </div>
-        <div class="columns large-3">
+        <div class="columns large-4">
             <label>Tipo de acta ...</label>
             <select id="plantilla_busqueda" name="plantilla_busqueda">
                 <option value="">Cualquier tipo</option>
@@ -48,6 +24,14 @@
                     <option value="{{ plantilla.id }}">{{ plantilla.nombre }}</option>
                 {% endfor %}
             </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-10">
+            <label>Indica el texto que pudiera contener el acta
+                <input type="text" name="busca_texto_acta" id="busca_texto_acta"
+                   placeholder="Escribe texto a buscar">
+            </label>
         </div>
         <div class="columns large-2">
             <label>&nbsp;</label>

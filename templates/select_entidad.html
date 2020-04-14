@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="es">
 <head>
     <title>GAUSS - Selección de entidad</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -9,43 +9,72 @@
     <link rel="stylesheet" href="/static/css/gauss.css" type="text/css">
     <link href="/static/select2/select2-foundation5.css" rel="stylesheet"/>
 </head>
+<style>
+    .ent_select {
+        max-height: 70px;
+        max-width: inherit;
+    }
+
+    .div_ent_select {
+        border: 1px solid lightgrey;
+        height: 100px;
+    }
+
+    .div_ent_select:hover {
+        background-color: lightcyan;
+        cursor: pointer;
+    }
+
+    .title_page {
+        text-align: center;
+        color: #008CBA;
+        font-weight: 800;
+    }
+
+    #logo_gauss_acceso {
+        height: 76px;
+        width: 273px;
+        margin-top: 20px;
+    }
+</style>
 <form action="" method="post" id="select_entidad" name="select_entidad">
     <input type="hidden" name="action" value="selecciona_entidad">
     {% csrf_token %}
+
     <div id="main_div">
         <div class="row">
-            <p>&nbsp;</p><p>&nbsp;</p>
-        </div>
-        <div class="row">
-            <div class="large-6 small-10 medium-8 columns end text-right">
-                <img src="/static/images/logo_gauss_acceso.png" height="76" width="273">
+            <div class="large-12 small-12 medium-12 columns text-center">
+                <img src="/static/images/logo_gauss_acceso.png" id="logo_gauss_acceso">
             </div>
         </div>
-        <div class="row">
-            <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
-            <div class="large-6 medium-8 small-10 columns text-right">
-                <select name="gauser_extra" id="gauser_extra">
-                    <option value="">Haz click aquí para seleccionar una entidad</option>
-                    {% for gauser_extra in gauser_extras %}
-                        <option value="{{ gauser_extra.id }}">{{ gauser_extra.ronda.entidad.name }} ({{ gauser_extra.clave_ex }} - {{ gauser_extra.id }})</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="large-3 medium-2 small-1 columns">&nbsp;</div>
+        <div>
+            <h4 class="title_page" id="titulo">Selecciona la entidad de trabajo</h4>
         </div>
+        <div class="row">
+            {% for gauser_extra in gauser_extras %}
+                <div class="columns large-3 div_ent_select" data-id="{{ gauser_extra.id }}">
+                    <figure>
+                        {% if gauser_extra.ronda.entidad.anagrama %}
+                            <img src="{{ gauser_extra.ronda.entidad.anagrama.url }}" class="ent_select"
+                                 alt="{{ gauser_extra.ronda.entidad.anagrama.url }}">
+                        {% else %}
+                            <img src="/static/images/logo_gauss.png" class="ent_select"
+                                 alt="{{ gauser_extra.ronda.entidad.name }}">
+                        {% endif %}
+                        <figcaption><b>{{ gauser_extra.ronda.entidad.name }}</b></figcaption>
+                    </figure>
+                </div>
+            {% endfor %}
+        </div>
+        <input type="hidden" name="gauser_extra" id="gauser_extra" value="">
     </div>
 </form>
-
 <script src="/static/js/jquery-1.7.2.min.js"></script>
-<script src="/static/select2/select2.js"></script>
-<script src="/static/select2/select2_locale_es.js"></script>
 <script type="text/javascript">
-
-
-    $('#gauser_extra').change(function () {
+    $('#main_div').on('click', '.div_ent_select', function (e) {
+        e.preventDefault();
+        $('#gauser_extra').val($(this).data('id'));
         document.select_entidad.submit();
     });
-
-{#    $("#gauser_extra").select2({placeholder: "Selecciona una entidad"});#}
 </script>
 </html>

@@ -72,7 +72,9 @@
                     inicio: $('#id_fecha_inicio').val(),
                     fin: $('#id_fecha_fin').val(),
                     texto: $('#busca_texto_acta').val(),
-                    plantilla: $('#plantilla_busqueda').val()
+                    plantilla: $('#plantilla_busqueda').val(),
+                    publicada: $('#busca_publicada').val(),
+                    aprobada: $('#busca_aprobada').val()
                 },
                 function (data) {
                     if (data.ok) {

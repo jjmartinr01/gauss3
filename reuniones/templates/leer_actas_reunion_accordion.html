@@ -1,14 +1,20 @@
-<dd class="accordion-navigation" id="accordion{{ acta.id }}"
-    style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
-    <a href="#panel{{ acta.id }}">
-        <i id="circle{{ acta.id }}" class="fa fa-plus-circle circle_icon"></i>
-        <b id="span_nombre{{ acta.id }}">{{ acta.nombre }}</b> <span
-            id="span_fecha_hora{{ acta.id }}"
-            style="color: #a3a3a3">{% if acta.convocatoria.fecha_hora %}
-        <i class="fa fa-long-arrow-right"></i> {{ acta.convocatoria.fecha_hora|date:"d/m/Y" }} a
-        las {{ acta.convocatoria.fecha_hora|date:"H:i" }}{% else %} <span style="color:red;">Borrador</span>{% endif %}</span>
-    </a>
+{% for acta in actas_publicadas %}
+    <dd class="accordion-navigation" id="accordion{{ acta.id }}"
+        style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
+        <a href="#panel{{ acta.id }}">
+            <i id="circle{{ acta.id }}" class="fa fa-plus-circle circle_icon"></i>
+            <b id="span_nombre{{ acta.id }}">{{ acta.nombre }}</b> <span
+                id="span_fecha_hora{{ acta.id }}"
+                style="color: #a3a3a3">{% if acta.convocatoria.fecha_hora %}
+            <i class="fa fa-long-arrow-right"></i> {{ acta.convocatoria.fecha_hora|date:"d/m/Y" }} a
+            las {{ acta.convocatoria.fecha_hora|date:"H:i" }}{% else %}
+            <span style="color:red;">Borrador</span>{% endif %}</span>
+            {% if buscar %}
+                &nbsp;&nbsp;<span style="color: red;"><i class="fa fa-check"></i></span>
+            {% endif %}
+        </a>
 
-    <div id="panel{{ acta.id }}" class="content accordion-acta" data-id="{{ acta.id }}">
-    </div>
-</dd>
+        <div id="panel{{ acta.id }}" class="content accordion-acta" data-id="{{ acta.id }}">
+        </div>
+    </dd>
+{% endfor %}

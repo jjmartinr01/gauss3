@@ -1,8 +1,9 @@
 <h1>{{ acta.nombre }}</h1>
 
-Asistentes:<br>
-<span style="font-size: 8pt;font-weight: bold;">
 {% with ntotal=acta.asistentes.all|length %}
+    {% if ntotal > 0 %}
+        Asistentes:<br>
+        <span style="font-size: 8pt;font-weight: bold;">
     {% for asistente in acta.asistentes.all %}
         {% if forloop.counter|add:"1" == ntotal %}
             {{ asistente.gauser.get_full_name }}
@@ -14,8 +15,9 @@ Asistentes:<br>
             {{ asistente.gauser.get_full_name }},
         {% endif %}
     {% endfor %}
-{% endwith %}
 </span>
+    {% endif %}
+{% endwith %}
 <hr>
 {% autoescape off %}
     {{ acta.preambulo }}
