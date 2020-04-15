@@ -3,7 +3,7 @@ from django.conf.urls import include, url
 from django.conf import settings
 
 # Línea introducida para usar las urls de Foundation
-from django.views.generic import TemplateView
+# from django.views.generic import TemplateView
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -43,12 +43,12 @@ urlpatterns = [url(r'^', include('autenticar.urls')),
                url(r'^', include('federaciones.urls')),
                url(r'^', include('faqs.urls')),
                url(r'^', include('webpage.urls')),
-               url(regex=r'^index_foundation/$',
-                   view=TemplateView.as_view(template_name="foundation/index.html"),
-                   name="foundation_index"),
-               url(regex=r'^icons/$',
-                   view=TemplateView.as_view(template_name="foundation/icons.html"),
-                   name="foundation_icons"),
+               # url(regex=r'^index_foundation/$',
+               #     view=TemplateView.as_view(template_name="foundation/index.html"),
+               #     name="foundation_index"),
+               # url(regex=r'^icons/$',
+               #     view=TemplateView.as_view(template_name="foundation/icons.html"),
+               #     name="foundation_icons"),
                # Uncomment the admin/doc line below to enable admin documentation:
                # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
                # Uncomment the next line to enable the admin:
