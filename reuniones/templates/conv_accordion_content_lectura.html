@@ -8,11 +8,16 @@
 </style>
 
 <div class="row">
-    <div class="columns large-6">
-        <b>Creada por:</b> {{ conv.creador.get_full_name }}
+    <div class="columns large-6" title="Esta convocatoria solo la puede modificar o editar {{ conv.creador.get_full_name }}">
+        <b>Solo la puede modificar:</b> {{ conv.creador.get_full_name }}
     </div>
     <div class="columns large-6 text-right">
         <ul class="button-group radius">
+            {% if conv.creador == g_e.gauser %}
+            <li title="Modificar el contenido de esta convocatoria">
+                <a data-id="{{ conv.id }}" class="button editar_conv"><i
+                        class="fa fa-pencil"></i> Modificar</a></li>
+            {% endif %}
             <li title="Descargar la convocatoria en PDF">
                 <a data-id="{{ conv.id }}" class="button download_pdf"><i
                         class="fa fa-file-pdf-o"></i> PDF</a></li>

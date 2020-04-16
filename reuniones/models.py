@@ -24,6 +24,8 @@ def update_fichero(instance, filename):
     ruta = os.path.join("actas/", fichero)
     return ruta
 
+def nextday2():
+    return timezone.now() + timezone.timedelta(2)
 
 class ConvReunion(models.Model):
     creador = models.ForeignKey(Gauser, blank=True, null=True, related_name='convcrea', on_delete=models.SET_NULL)
@@ -37,7 +39,7 @@ class ConvReunion(models.Model):
     texto_convocatoria = models.TextField("Texto de la convocatoria", blank=True, null=True)
     convocados = models.ManyToManyField(Subentidad, blank=True)
     convocados_text = models.TextField('Convocados en formato texto', null=True, blank=True)
-    fecha_hora = models.DateTimeField("Fecha y hora de la convocatoria", blank=True, null=True, default=timezone.now)
+    fecha_hora = models.DateTimeField("Fecha y hora de la convocatoria", blank=True, null=True, default=nextday2)
     plantilla = models.BooleanField("Es una plantilla de convocatorias de reunión", default=False)
     basada_en = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='configura')
     fecha = models.DateField("Fecha emisión de la convocatoria", blank=True, null=True, default=timezone.now)

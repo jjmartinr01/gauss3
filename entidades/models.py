@@ -44,7 +44,7 @@ class Organization(models.Model):
         return os.path.basename(self.anagrama.name)
 
     def __str__(self):
-        return u'%s (%s)' % (self.organization, self.iniciales)
+        return '%s (%s)' % (self.organization, self.iniciales)
 
 
 class Ronda(models.Model):
@@ -58,7 +58,7 @@ class Ronda(models.Model):
         ordering = ['-inicio', 'nombre']
 
     def __str__(self):
-        return u'%s (%s)' % (self.nombre, self.entidad.name)
+        return '%s (%s)' % (self.nombre, self.entidad.name)
 
 
 def update_anagrama_entidad(instance, filename):
@@ -146,7 +146,7 @@ class Entidad(models.Model):
         return Gauser_extra.objects.filter(filtro).count()
 
     def __str__(self):
-        return u'%s (%s)' % (self.name, self.code)
+        return '%s (%s)' % (self.name, self.code)
 
 
 @receiver(post_save, sender=Entidad, dispatch_uid="entidad_auto_id_creation")
@@ -167,7 +167,7 @@ class DocConfEntidad(models.Model):
     headerspacing = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='5')
 
     def __str__(self):
-        return u'%s (top: %s, bottom: %s, left: %s, right: %s)' % (
+        return '%s (top: %s, bottom: %s, left: %s, right: %s)' % (
             self.entidad, self.margintop, self.marginbottom, self.marginleft, self.marginright)
 
 
@@ -193,7 +193,7 @@ class Subentidad(models.Model):
         ordering = ['parent__nombre', 'nombre']
 
     def __str__(self):
-        return u'Subentidad: %s (%s)' % (self.nombre, self.entidad.name)
+        return 'Subentidad: %s (%s)' % (self.nombre, self.entidad.name)
 
 
 class Subsubentidad(models.Model):
@@ -205,7 +205,7 @@ class Subsubentidad(models.Model):
         verbose_name_plural = "Subsubentidades"
 
     def __str__(self):
-        return u'Subentidad: %s (%s)' % (self.nombre, self.entidad.name)
+        return 'Subentidad: %s (%s)' % (self.nombre, self.entidad.name)
 
 
 class Alta_Baja(models.Model):
@@ -284,7 +284,7 @@ class Alta_Baja(models.Model):
         verbose_name_plural = "Altas y bajas"
 
     def __str__(self):
-        return u'%s (%s) - Alta: %s, Baja: %s' % (
+        return '%s (%s) - Alta: %s, Baja: %s' % (
             self.gauser.get_full_name(), self.entidad.name, self.fecha_alta, self.fecha_baja)
 
 
@@ -304,7 +304,7 @@ class Cargo(models.Model):
         ordering = ['nivel', 'cargo']
 
     def __str__(self):
-        return u'%s' % (self.cargo)
+        return '%s' % (self.cargo)
 
 
 CAMPOS_RESERVA = (('first_name', 'Nombre'), ('last_name', 'Apellidos'), ('address', 'Dirección'), ('sexo', 'Sexo'),
@@ -336,7 +336,7 @@ class ConfiguraReservaPlaza(models.Model):
         ordering = ['entidad', 'orden']
 
     def __str__(self):
-        return u'%s %s (%s) - columns: %s' % (self.entidad.name, self.campo, self.required, self.columns)
+        return '%s %s (%s) - columns: %s' % (self.entidad.name, self.campo, self.required, self.columns)
 
 
 class Reserva_plaza(models.Model):
@@ -382,7 +382,7 @@ class Reserva_plaza(models.Model):
         verbose_name_plural = "Reservas de plaza"
 
     def __str__(self):
-        return u'%s %s (%s)' % (self.first_name, self.last_name, self.nacimiento)
+        return '%s %s (%s)' % (self.first_name, self.last_name, self.nacimiento)
 
 
 class Dependencia(models.Model):
@@ -403,7 +403,7 @@ class Dependencia(models.Model):
         ordering = ['edificio', 'planta', 'nombre']
 
     def __str__(self):
-        return u'%s (%s)' % (self.nombre, self.entidad.name)
+        return '%s (%s)' % (self.nombre, self.entidad.name)
 
 
 # Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
@@ -546,7 +546,7 @@ class Gauser_extra(models.Model):
         ordering = ['gauser__last_name']
 
     def __str__(self):
-        return u'%s -- %s' % (self.gauser, self.ronda)
+        return '%s -- %s' % (self.gauser, self.ronda)
 
 
 class GE_extra_field(models.Model):
@@ -556,7 +556,7 @@ class GE_extra_field(models.Model):
     value = models.TextField('Valor', blank=True, null=True)
 
     def __str__(self):
-        return u'%s -- %s - %s' % (self.ge, self.code, self.name)
+        return '%s -- %s - %s' % (self.ge, self.code, self.name)
 
 
 def user_auto_id(ge):
@@ -636,7 +636,7 @@ class Entidad_auto_id(models.Model):
     sufijo = models.CharField('Sufijo', max_length=15, blank=True, null=True, default='')
 
     def __str__(self):
-        return u'%s -- %s -- %s-%s-%s' % (self.entidad, self.auto, self.prefijo, self.lexema, self.sufijo)
+        return '%s -- %s -- %s-%s-%s' % (self.entidad, self.auto, self.prefijo, self.lexema, self.sufijo)
 
 
 # TIPOS = (('gchar', 'Texto con un máximo de 150 caracteres'), ('gselect', 'Seleccionar uno o varios valores'),
@@ -674,7 +674,7 @@ class Entidad_auto_id(models.Model):
 #
 #     def __str__(self):
 #         comentario = 'Original' if not self.ginput else self.rellenador.gauser.get_full_name()
-#         return u'%s, %s (Tipo: %s) - %s' % (self.gform.nombre, self.label, self.tipo, comentario)
+#         return '%s, %s (Tipo: %s) - %s' % (self.gform.nombre, self.label, self.tipo, comentario)
 #
 #
 # class GE_extra_field_option(models.Model):
@@ -684,7 +684,7 @@ class Entidad_auto_id(models.Model):
 #     selected = models.BooleanField('Selected', default=False)
 #
 #     def __str__(self):
-#         return u'%s (%s) - Seleccionada: %s' % (self.text, self.value, self.selected)
+#         return '%s (%s) - Seleccionada: %s' % (self.text, self.value, self.selected)
 
 
 class Menu(models.Model):
@@ -718,7 +718,7 @@ class Menu(models.Model):
             parent = ' - Padre: ' + self.parent.menu_default.code_menu
         except:
             parent = ''
-        return u'N%s - %s.%s --> %s --> %s (%s)%s' % (
+        return 'N%s - %s.%s --> %s --> %s (%s)%s' % (
             self.menu_default.nivel, self.pos, self.menu_default.code_menu,
             self.menu_default.texto_menu, self.texto_menu, self.entidad.code, parent)
 
@@ -754,7 +754,7 @@ class Filtrado(models.Model):
     operacion = models.CharField("Operaciones de filtrado", max_length=40, null=True, blank=True)
 
     def __str__(self):
-        return u'%s (%s)' % (self.nombre, self.propietario.entidad.name)
+        return '%s (%s)' % (self.nombre, self.propietario.entidad.name)
 
 
 FILTROS = (('gauser__first_name__icontains', 'El nombre contiene el texto ...'),
@@ -787,7 +787,7 @@ class FiltroQ(models.Model):
         ordering = ['n_filtro']
 
     def __str__(self):
-        return u'%s (%s)' % (self.filtrado, self.filtro)
+        return '%s (%s)' % (self.filtrado, self.filtro)
 
 
 CAMPOS = (('gauser__first_name', 'Nombre'),
@@ -820,7 +820,7 @@ class CampoF(models.Model):
     campo = models.CharField("Campo a mostrar en el resultado", max_length=70, null=True, blank=True, choices=CAMPOS)
 
     def __str__(self):
-        return u'%s (%s)' % (self.filtrado, self.campo)
+        return '%s (%s)' % (self.filtrado, self.campo)
 
 ########################### FIN CONFIGURACIÓN FILTROS ###########################
 
@@ -835,7 +835,7 @@ class ConfigurationUpdate(models.Model):
         ordering = ['id']
 
     def __str__(self):
-        return u'%s -- %s (%s)' % (self.entidad, self.app, self.updated)
+        return '%s -- %s (%s)' % (self.entidad, self.app, self.updated)
 
 
 def update_fichero_carga_masiva(instance, filename):
@@ -860,7 +860,7 @@ class CargaMasiva(models.Model):
         ordering = ['-ronda']
 
     def __str__(self):
-        return u'%s -- Cargado: %s' % (self.ronda, self.cargado)
+        return '%s -- Cargado: %s' % (self.ronda, self.cargado)
 
 
 
@@ -883,4 +883,4 @@ class EnlaceGE(models.Model):
     deadline = models.DateField('Fecha límite de validez')
 
     def __str__(self):
-        return u'%s -- %s (%s)' % (self.enlace, self.usuario, self.deadline)
+        return '%s -- %s (%s)' % (self.enlace, self.usuario, self.deadline)

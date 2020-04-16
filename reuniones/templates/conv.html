@@ -396,5 +396,23 @@
             document.{{ formname }}.submit();
         });
 
+        $('body').on('click', '.editar_conv', function (e) {
+            e.preventDefault();
+            var conv = $(this).data('id');
+            $.post("/conv_reunion_ajax/", {
+                    action: 'editar_conv',
+                    convocatoria: conv
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#panel' + conv).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
     </script>
 {% endblock %}

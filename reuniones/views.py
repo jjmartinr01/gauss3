@@ -439,8 +439,23 @@ def conv_reunion_ajax(request):
                 else:
                     return JsonResponse({'ok': False})
             else:
-                html = render_to_string('conv_accordion_content_lectura.html', {'conv': conv})
+                html = render_to_string('conv_accordion_content_lectura.html', {'conv': conv, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
+        elif action == 'editar_conv':
+            conv = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['convocatoria'], plantilla=False)
+            plantillas = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
+            if g_e.has_permiso('w_conv_reunion') or conv.creador == g_e.gauser:
+                try:
+                    cargos = Gauser_extra.objects.get(gauser=conv.convoca, ronda=g_e.ronda).cargos.all()
+                except:
+                    cargos = []
+                puntos = PuntoConvReunion.objects.filter(convocatoria=conv)
+                html = render_to_string('conv_accordion_content.html', {'conv': conv, 'g_e': g_e, 'cargos': cargos,
+                                                                        'plantillas': plantillas, 'puntos': puntos})
+
+                return JsonResponse({'ok': True, 'html': html})
+            else:
+                return JsonResponse({'ok': False})
         elif action == 'delete_conv_reunion':
             mensaje = ''
             try:
