@@ -10,6 +10,7 @@ from datetime import datetime
 import simplejson as json
 from django.contrib.auth.decorators import login_required
 from django.core.files.base import File, ContentFile
+from django.core.paginator import Paginator
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -366,6 +367,32 @@ def conv_template_ajax(request):
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
 
+def busca_convocatorias(request):
+    g_e = request.session['gauser_extra']
+    try:
+        inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
+    except:
+        inicio = datetime.strptime('2000-1-1', '%Y-%m-%d').date()
+    qin = Q(fecha_hora__gte=inicio)
+    try:
+        fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d').date()
+    except:
+        fin = timezone.now().date() + timezone.timedelta(50)
+    qfi = Q(fecha_hora__lte=fin)
+    try:
+        id = request.POST['plantilla']
+        plantilla = ConvReunion.objects.get(entidad=g_e.ronda.entidad, plantilla=True, id=id)
+        q1 = Q(entidad=g_e.ronda.entidad) & Q(plantilla=False) & Q(basada_en=plantilla) & qin & qfi
+    except:
+        q1 = Q(entidad=g_e.ronda.entidad) & Q(plantilla=False) & qin & qfi
+    convs = ConvReunion.objects.filter(q1)
+    try:
+        texto = request.POST['texto']
+    except:
+        texto = ''
+    puntos = PuntoConvReunion.objects.filter(convocatoria__in=convs, punto__icontains=texto)
+    return convs.filter(id__in=puntos.values_list('convocatoria__id', flat=True)).distinct()
+
 @permiso_required('acceso_conv_reunion')
 def conv_reunion(request):
     g_e = request.session['gauser_extra']
@@ -375,21 +402,32 @@ def conv_reunion(request):
         convs = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, creador=g_e.gauser, plantilla=False)
     if request.method == 'POST':
         if request.POST['action'] == 'pdf_convocatoria':
-            # try:
-            convocatoria = ConvReunion.objects.get(id=request.POST['id_conv_reunion'], entidad=g_e.ronda.entidad)
-            fichero = 'convocatoria_%s_%s' % (g_e.ronda.entidad.code, convocatoria.id)
-            c = render_to_string('convreunion2pdf.html', {
-                'convocatoria': convocatoria,
-                'puntos': PuntoConvReunion.objects.filter(convocatoria=convocatoria),
-                'MA': MEDIA_ANAGRAMAS,
-            }, request=request)
-            fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REUNIONES, title=u'Convocatoria de reunión')
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-            return response
-            # except:
-            #     crear_aviso(request, False, 'No es posible generar el pdf de la convocatoria solicitada')
+            try:
+                convocatoria = ConvReunion.objects.get(id=request.POST['id_conv_reunion'], entidad=g_e.ronda.entidad)
+                fichero = 'convocatoria_%s_%s' % (g_e.ronda.entidad.code, convocatoria.id)
+                c = render_to_string('convreunion2pdf.html', {
+                    'convocatoria': convocatoria,
+                    'puntos': PuntoConvReunion.objects.filter(convocatoria=convocatoria),
+                    'MA': MEDIA_ANAGRAMAS,
+                }, request=request)
+                fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REUNIONES, title=u'Convocatoria de reunión')
+                response = HttpResponse(fich, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+                return response
+            except:
+                crear_aviso(request, False, 'No es posible generar el pdf de la convocatoria solicitada')
+        elif request.POST['action'] == 'update_page':
+            try:
+                convs = busca_convocatorias(request)
+                paginator = Paginator(convs, 15)
+                buscar = {'0': False, '1': True}[request.POST['buscar']]
+                convs_paginadas = paginator.page(int(request.POST['page']))
+                html = render_to_string('conv_accordion.html', {'convocatorias': convs_paginadas, 'buscar': buscar})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
 
+    paginator = Paginator(convs, 15)
     return render(request, "conv.html",
                   {
                       'iconos':
@@ -401,7 +439,7 @@ def conv_reunion(request):
                             'permiso': 'libre'},
                            ),
                       'formname': 'convocatorias',
-                      'convocatorias': convs,
+                      'convocatorias': paginator.page(1),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 

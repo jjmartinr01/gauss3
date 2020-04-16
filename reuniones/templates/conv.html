@@ -36,14 +36,15 @@
         <input type="hidden" name="q" id="q" value="">
         <input type="hidden" name="page" id="page" value="">
         <input type="hidden" id="id_conv_reunion" name="id_conv_reunion" value="">
+        <input type="hidden" id="convs_buscar" value="0">
 
         <div>
             <h4 id="title_page"><strong>Convocatorias de reunión</strong></h4>
         </div>
         <div id="div_fieldsets"></div>
-        <dl class="accordion" data-accordion id="list_convocatorias">
+        <div id="list_convocatorias">
             {% include "conv_accordion.html" %}
-        </dl>
+        </div>
     </form>
 {% endblock %}
 
@@ -62,10 +63,12 @@
 
             });
         });
-        $('body').on('click', '#busca_convs_manual', function (e) {
-            e.preventDefault();
-            $.post("/conv_reunion_ajax/", {
-                    action: 'busca_convs_manual',
+
+        function buscar_convocatorias() {
+            $.post("/conv_reunion/", {
+                    action: 'update_page',
+                    buscar: $('#convs_buscar').val(),
+                    page: $('#page').val(),
                     inicio: $('#id_fecha_inicio').val(),
                     fin: $('#id_fecha_fin').val(),
                     texto: $('#busca_texto_conv').val(),
@@ -75,14 +78,31 @@
                     if (data.ok) {
                         $("#list_convocatorias").html(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
+                        window.scrollTo(0, $('#list_convocatorias').offset().top - 150);
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
+        }
+
+        $('body').on('click', '#busca_convs_manual', function (e) {
+            e.preventDefault();
+            $('#convs_buscar').val(1);
+            $('#page').val(1);
+            buscar_convocatorias();
         });
+
+
         $('body').on('click', '.fieldset_close', function (e) {
             e.preventDefault();
             $('.fieldset_box').hide();
+            $('#convs_buscar').val(0);
+            $('#page').val(1);
+            $('#id_fecha_inicio').val('');
+            $('#id_fecha_fin').val('');
+            $('#busca_texto_conv').val('');
+            $('#plantilla_busqueda').val('');
+            buscar_convocatorias();
         });
         {% if request.session.gauser_extra|has_permiso:"c_conv_reunion" %}
             habilita(['s_plus']);
@@ -413,6 +433,14 @@
                 });
         });
 
+        $('body').on('click', '.go_page', function (e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            $('#page').val(page);
+            if (page) {
+                buscar_convocatorias();
+            }
+        });
 
     </script>
 {% endblock %}
