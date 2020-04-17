@@ -1,3 +1,5 @@
+{% load my_templatetags %}
+<dl class="accordion" data-accordion>
 {% for acta in actas_publicadas %}
     <dd class="accordion-navigation" id="accordion{{ acta.id }}"
         style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
@@ -18,3 +20,38 @@
         </div>
     </dd>
 {% endfor %}
+</dl>
+{% if actas_publicadas.paginator.num_pages > 1 %}
+    <br>
+    <div class="row">
+        <div class="columns large-12">
+            <ul class="pagination" role="menubar" aria-label="Pagination">
+                {% if actas_publicadas.has_previous %}
+                    <li class="arrow">
+                        <a class="go_page" data-page="{{ actas_publicadas.previous_page_number }}">&laquo; Anterior</a>
+                    </li>
+                {% else %}
+                    <li class="arrow unavailable" aria-disabled="true">
+                        <a class="go_page">&laquo; Anterior</a>
+                    </li>
+                {% endif %}
+                {% for page in actas_publicadas.paginator.num_pages|number_range %}
+                    {% if page == actas_publicadas.number %}
+                        <li class="current"><a href="" class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                    {% else %}
+                        <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if actas_publicadas.has_next %}
+                    <li class="arrow">
+                        <a class="go_page" data-page="{{ actas_publicadas.next_page_number }}">Siguiente &raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="arrow unavailable" aria-disabled="true">
+                        <a class="go_page">Siguiente &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+{% endif %}

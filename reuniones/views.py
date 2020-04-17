@@ -29,7 +29,7 @@ from mensajes.models import Aviso, Mensaje, Etiqueta
 from mensajes.views import crear_aviso, encolar_mensaje, crea_mensaje_cola
 
 # locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
-locale.setlocale(locale.LC_ALL, 'es_ES.utf8')
+locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
 
 
 # ----------------------------------------------------------------------------------------------------#
@@ -370,15 +370,13 @@ def conv_template_ajax(request):
 def busca_convocatorias(request):
     g_e = request.session['gauser_extra']
     try:
-        inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
+        qin = Q(fecha_hora__gte=datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date())
     except:
-        inicio = datetime.strptime('2000-1-1', '%Y-%m-%d').date()
-    qin = Q(fecha_hora__gte=inicio)
+        qin = Q(fecha_hora__gte=datetime.strptime('2000-1-1', '%Y-%m-%d').date())
     try:
-        fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d').date()
+        qfi = Q(fecha_hora__lte=datetime.strptime(request.POST['fin'], '%Y-%m-%d').date())
     except:
-        fin = timezone.now().date() + timezone.timedelta(50)
-    qfi = Q(fecha_hora__lte=fin)
+        qfi = Q(fecha_hora__lte=timezone.now().date() + timezone.timedelta(50))
     try:
         id = request.POST['plantilla']
         plantilla = ConvReunion.objects.get(entidad=g_e.ronda.entidad, plantilla=True, id=id)
@@ -778,35 +776,6 @@ def conv_reunion_ajax(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'busca_convs_manual':
-            try:
-                try:
-                    inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
-                except:
-                    inicio = datetime.strptime('2000-1-1', '%Y-%m-%d').date()
-                try:
-                    fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d').date()
-                except:
-                    fin = datetime.now().date()
-                try:
-                    id = request.POST['plantilla']
-                    plantilla = ConvReunion.objects.get(entidad=g_e.ronda.entidad, plantilla=True, id=id)
-                except:
-                    plantilla = None
-                if plantilla:
-                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin) & Q(
-                        basada_en=plantilla) & Q(plantilla=False)
-                else:
-                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(fecha_hora__lte=fin) & Q(
-                        plantilla=False)
-                convs = ConvReunion.objects.filter(q1)
-                puntos = PuntoConvReunion.objects.filter(convocatoria__in=convs, punto__icontains=request.POST['texto'])
-                convs_search = convs.filter(q1 & Q(id__in=puntos.values_list('convocatoria__id', flat=True))).distinct()
-                html = render_to_string('conv_accordion.html', {'convocatorias': convs_search, 'buscar': True})
-                return JsonResponse({'ok': True, 'html': html})
-            except:
-                return JsonResponse({'ok': False})
-
 
 
 
@@ -862,8 +831,54 @@ def conv_reunion_ajax(request):
 # FUNCIONES RELACIONADAS CON LA REDACCIÓN DE ACTAS
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
+def busca_actas_redactar(request):
+    g_e = request.session['gauser_extra']
+    subentidades = g_e.subentidades.all()
+    if g_e.has_permiso('w_cualquier_acta_reunion'):
+        actas = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad).distinct()
+    elif g_e.has_permiso('w_actas_subentidades_reunion'):
+        actas = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades).distinct()
+    elif g_e.has_permiso('w_sus_actas_reunion'):
+        actas = ActaReunion.objects.filter(convocatoria__convoca=g_e.gauser,
+                                           convocatoria__entidad=g_e.ronda.entidad).distinct()
+    else:
+        return ActaReunion.objects.none()
+    try:
+        aprobada_isnull = {'0': True, '1': False}[request.POST['aprobada']]
+        qap = Q(fecha_aprobacion__isnull=aprobada_isnull)
+    except:
+        qap = Q()
+    try:
+        publicada = {'0': False, '1': True}[request.POST['publicada']]
+        qpu = Q(publicada=publicada)
+    except:
+        qpu = Q()
+    try:
+        qin = Q(fecha_hora__gte=timezone.datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date())
+    except:
+        qin = Q(fecha_hora__gte=timezone.datetime.strptime('2000-1-1', '%Y-%m-%d').date())
+    try:
+        qfi = Q(fecha_hora__lte=timezone.datetime.strptime(request.POST['fin'], '%Y-%m-%d').date())
+    except:
+        qfi = Q(fecha_hora__lte=timezone.now().date() + timezone.timedelta(50))
+    try:
+        id = request.POST['plantilla']
+        plantilla = ConvReunion.objects.get(entidad=g_e.ronda.entidad, plantilla=True, id=id)
+        qpl = Q(basada_en=plantilla)
+    except:
+        qpl = Q()
+    q1 = Q(entidad=g_e.ronda.entidad) & Q(plantilla=False) & qin & qfi & qpl
+    convs = ConvReunion.objects.filter(q1)
+    q_p1 = Q(convocatoria__in=convs)
+    try:
+        texto = request.POST['texto']
+    except:
+        texto = ''
+    q_p2 = Q(punto__icontains=texto) | Q(texto_acta__icontains=texto)
+    conv_ids = PuntoConvReunion.objects.filter(q_p1, q_p2).values_list('convocatoria__id', flat=True)
+    return actas.filter(qap & qpu & Q(convocatoria__id__in=conv_ids)).distinct()
 
-# @permiso_required('acceso_redactar_actas_reunion')
+@permiso_required('acceso_redactar_actas_reunion')
 def redactar_actas_reunion(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
@@ -893,18 +908,19 @@ def redactar_actas_reunion(request):
                 return response
             except:
                 crear_aviso(request, False, 'No es posible generar el pdf del acta solicitada')
+        elif request.POST['action'] == 'update_page':
+            try:
+                actas = busca_actas_redactar(request)
+                paginator = Paginator(actas, 15)
+                buscar = {'0': False, '1': True}[request.POST['buscar']]
+                actas_paginadas = paginator.page(int(request.POST['page']))
+                html = render_to_string('redactar_actas_reunion_accordion.html', {'actas': actas_paginadas, 'buscar': buscar})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
 
-    subentidades = g_e.subentidades.all()
-    if g_e.has_permiso('w_cualquier_acta_reunion'):
-        actas = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad).distinct()
-    elif g_e.has_permiso('w_actas_subentidades_reunion'):
-        actas = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades).distinct()
-    elif g_e.has_permiso('w_sus_actas_reunion'):
-        actas = ActaReunion.objects.filter(convocatoria__convoca=g_e.gauser,
-                                           convocatoria__entidad=g_e.ronda.entidad).distinct()
-    else:
-        actas = []
-
+    actas = busca_actas_redactar(request)
+    paginator = Paginator(actas, 15)
     return render(request, "redactar_actas_reunion.html",
                   {
                       'iconos':
@@ -913,8 +929,8 @@ def redactar_actas_reunion(request):
                             'permiso': 'libre'},
                            ),
                       'formname': 'actas',
-                      'actas': actas,
-                      'subentidades': subentidades,
+                      'actas': paginator.page(1),
+                      'subentidades': g_e.subentidades.all(),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
@@ -945,9 +961,6 @@ def redactar_actas_reunion_ajax(request):
                 epilogo_html = '<p>No habiendo más puntos que tratar finaliza la reunión a las ...</p>'
                 acta.epilogo = epilogo_html
                 acta.save()
-            # g_es = acta.asistentes.all().values_list('id', 'gauser__last_name', 'gauser__first_name')
-            # keys = ('id', 'text')
-            # asistentes = json.dumps([dict(zip(keys, (row[0], '%s, %s' % (row[1], row[2])))) for row in g_es])
             html_accordion = render_to_string('redactar_actas_reunion_accordion_content.html',
                                               {'acta': acta, 'g_e': g_e, 'puntos': puntos})
             return JsonResponse({'html': html_accordion, 'ok': True})
@@ -1119,47 +1132,7 @@ def redactar_actas_reunion_ajax(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'busca_actas_manual':
-            try:
-                if request.POST['aprobada'] == '1':
-                    qap = Q(fecha_aprobacion__isnull=False)
-                elif request.POST['aprobada'] == '0':
-                    qap = Q(fecha_aprobacion__isnull=True)
-                else:
-                    qap = Q()
-                if request.POST['publicada'] == '1':
-                    qpu = Q(publicada=True)
-                elif request.POST['aprobada'] == '0':
-                    qpu = Q(publicada=False)
-                else:
-                    qpu = Q()
-                try:
-                    inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
-                except:
-                    inicio = datetime.strptime('2000-1-1', '%Y-%m-%d').date()
-                qin = Q(fecha_hora__gte=inicio)
-                try:
-                    fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d').date()
-                except:
-                    fin = datetime.now().date()
-                qfi = Q(fecha_hora__lte=fin)
-                try:
-                    id = request.POST['plantilla']
-                    plantilla = ConvReunion.objects.get(entidad=g_e.ronda.entidad, plantilla=True, id=id)
-                    qpl = Q(basada_en=plantilla)
-                except:
-                    qpl = Q()
-                q1 = Q(entidad=g_e.ronda.entidad) & Q(plantilla=False) & qin & qfi & qpl
-                convs = ConvReunion.objects.filter(q1)
-                q_p1 = Q(convocatoria__in=convs)
-                q_p2 = Q(punto__icontains=request.POST['texto']) | Q(texto_acta__icontains=request.POST['texto'])
-                conv_ids = PuntoConvReunion.objects.filter(q_p1, q_p2).values_list('convocatoria__id', flat=True)
-                actas_search = ActaReunion.objects.filter(qap & qpu & Q(convocatoria__id__in=conv_ids)).distinct()
-                html = render_to_string('redactar_actas_reunion_accordion.html',
-                                        {'actas': actas_search, 'buscar': True})
-                return JsonResponse({'ok': True, 'html': html})
-            except:
-                return JsonResponse({'ok': False})
+
 
 
         elif action == 'send_email':
@@ -1307,7 +1280,30 @@ def firmar_acta_reunion(request):
 # FUNCIONES RELACIONADAS CON LA LECTURA DE ACTAS
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
-
+def busca_actas_leer(request):
+    g_e = request.session['gauser_extra']
+    try:
+        qin = Q(fecha_hora__gte=datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date())
+    except:
+        qin = Q(fecha_hora__gte=datetime.strptime('2000-1-1', '%Y-%m-%d').date())
+    try:
+        qfi = Q(fecha_hora__lte=datetime.strptime(request.POST['fin'], '%Y-%m-%d').date())
+    except:
+        qfi = Q(fecha_hora__lte=timezone.now().date() + timezone.timedelta(50))
+    try:
+        plantilla = ConvReunion.objects.get(entidad=g_e.ronda.entidad, plantilla=True, id=request.POST['plantilla'])
+        q = Q(entidad=g_e.ronda.entidad) & qin & qfi & Q(basada_en=plantilla) & Q(plantilla=False)
+    except:
+        q = Q(entidad=g_e.ronda.entidad) & qin & qfi & Q(plantilla=False)
+    convs = ConvReunion.objects.filter(q)
+    q_p1 = Q(convocatoria__in=convs)
+    try:
+        texto = request.POST['texto']
+    except:
+        texto = ''
+    q_p2 = Q(punto__icontains=texto) | Q(texto_acta__icontains=texto)
+    convs_id = PuntoConvReunion.objects.filter(q_p1, q_p2).values_list('convocatoria__id', flat=True)
+    return ActaReunion.objects.filter(Q(convocatoria__id__in=convs_id), Q(publicada=True)).distinct()
 
 @permiso_required('acceso_lectura_actas_reunion')
 def lectura_actas_reunion(request):
@@ -1335,41 +1331,20 @@ def lectura_actas_reunion(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'busca_actas_manual':
+        elif request.POST['action'] == 'update_page':
             try:
-                try:
-                    inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
-                except:
-                    inicio = datetime.strptime('2000-1-1', '%Y-%m-%d').date()
-                try:
-                    fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d').date()
-                except:
-                    fin = datetime.now().date()
-                try:
-                    id = request.POST['plantilla']
-                    plantilla = ConvReunion.objects.get(entidad=g_e.ronda.entidad, plantilla=True, id=id)
-                except:
-                    plantilla = None
-                if plantilla:
-                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(
-                        fecha_hora__lte=fin) & Q(basada_en=plantilla) & Q(plantilla=False)
-                else:
-                    q1 = Q(entidad=g_e.ronda.entidad) & Q(fecha_hora__gte=inicio) & Q(
-                        fecha_hora__lte=fin) & Q(plantilla=False)
-                convs = ConvReunion.objects.filter(q1)
-                q_p1 = Q(convocatoria__in=convs)
-                q_p2 = Q(punto__icontains=request.POST['texto']) | Q(texto_acta__icontains=request.POST['texto'])
-                convs_id = PuntoConvReunion.objects.filter(q_p1, q_p2).values_list('convocatoria__id', flat=True)
-                actas_search = ActaReunion.objects.filter(Q(convocatoria__id__in=convs_id),
-                                                          Q(publicada=True)).distinct()
-                html = render_to_string('leer_actas_reunion_accordion.html', {'actas_publicadas': actas_search,
-                                                                              'buscar': True})
+                actas = busca_actas_leer(request)
+                paginator = Paginator(actas, 5)
+                buscar = {'0': False, '1': True}[request.POST['buscar']]
+                actas_paginadas = paginator.page(int(request.POST['page']))
+                html = render_to_string('leer_actas_reunion_accordion.html', {'actas_publicadas': actas_paginadas,
+                                                                              'buscar': buscar})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
 
-    actas_publicadas = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad,
-                                                  publicada=True).distinct()
+    actas = busca_actas_leer(request)
+    paginator = Paginator(actas, 5)
     return render(request, "leer_actas_reunion.html",
                   {
                       'iconos':
@@ -1378,5 +1353,5 @@ def lectura_actas_reunion(request):
                             'permiso': 'libre'},
                            ),
                       'formname': 'leer_acta_reunion',
-                      'actas_publicadas': actas_publicadas
+                      'actas_publicadas': paginator.page(1)
                   })

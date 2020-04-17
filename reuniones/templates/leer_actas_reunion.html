@@ -35,15 +35,17 @@
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
         <input type="hidden" id="id_acta" name="id_acta" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="actas_buscar" value="0">
 
 
         <div>
             <h4 class="title_page" id="titulo">Lectura de actas</h4>
         </div>
         <div id="div_fieldsets"></div>
-        <dl class="accordion" data-accordion id="list_actas_publicadas">
+        <div id="list_actas_publicadas">
             {% include "leer_actas_reunion_accordion.html" %}
-        </dl>
+        </div>
         <br>
     </form>
 {% endblock %}
@@ -63,10 +65,12 @@
 
             });
         });
-        $('body').on('click', '#busca_actas_manual', function (e) {
-            e.preventDefault();
+
+        function buscar_actas() {
             $.post("/lectura_actas_reunion/", {
-                    action: 'busca_actas_manual',
+                    action: 'update_page',
+                    buscar: $('#actas_buscar').val(),
+                    page: $('#page').val(),
                     inicio: $('#id_fecha_inicio').val(),
                     fin: $('#id_fecha_fin').val(),
                     texto: $('#busca_texto_acta').val(),
@@ -76,15 +80,41 @@
                     if (data.ok) {
                         $("#list_actas_publicadas").html(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
+                        window.scrollTo(0, $('#list_actas_publicadas').offset().top - 150);
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
+        }
+
+        $('body').on('click', '#busca_actas_manual', function (e) {
+            e.preventDefault();
+            $('#actas_buscar').val(1);
+            $('#page').val(1);
+            buscar_actas();
         });
+
+        $('body').on('click', '.go_page', function (e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            $('#page').val(page);
+            if (page) {
+                buscar_actas();
+            }
+        });
+
         $('body').on('click', '.fieldset_close', function (e) {
             e.preventDefault();
             $('.fieldset_box').hide();
+            $('#actas_buscar').val(0);
+            $('#page').val(1);
+            $('#id_fecha_inicio').val('');
+            $('#id_fecha_fin').val('');
+            $('#busca_texto_acta').val('');
+            $('#plantilla_busqueda').val('');
+            buscar_actas();
         });
+
         $(document).foundation({
             accordion: {
                 callback: function (accordion) {
