@@ -111,7 +111,7 @@ def fichero_del_pre_delete(sender, **kwargs):
         pass
 
 
-PERMISOS = (('r', 'Lectura'),
+PERMISOS = (('r', 'lectura'),
             ('w', 'lectura y escritura'),
             ('x', 'lectura, escritura y borrado'),)
 
@@ -129,7 +129,8 @@ class Compartir_Ges_documental(models.Model):
     documento = models.ForeignKey(Ges_documental, on_delete=models.CASCADE, null=True, blank=True)
     subentidad = models.ForeignKey(Subentidad, on_delete=models.CASCADE, blank=True, null=True)
     cargo = models.ForeignKey(Cargo, on_delete=models.CASCADE, blank=True, null=True)
-    permiso = models.CharField('Permiso sobre el documento', max_length=15, choices=PERMISOS)
+    gauser = models.ForeignKey(Gauser, on_delete=models.CASCADE, null=True, blank=True)
+    permiso = models.CharField('Permiso sobre el documento', max_length=15, choices=PERMISOS, default='r')
 
     def __str__(self):
         return u'%s (%s)' % (self.documento.nombre, self.permiso)

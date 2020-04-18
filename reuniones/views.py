@@ -1334,7 +1334,7 @@ def lectura_actas_reunion(request):
         elif request.POST['action'] == 'update_page':
             try:
                 actas = busca_actas_leer(request)
-                paginator = Paginator(actas, 5)
+                paginator = Paginator(actas, 15)
                 buscar = {'0': False, '1': True}[request.POST['buscar']]
                 actas_paginadas = paginator.page(int(request.POST['page']))
                 html = render_to_string('leer_actas_reunion_accordion.html', {'actas_publicadas': actas_paginadas,
@@ -1344,7 +1344,7 @@ def lectura_actas_reunion(request):
                 return JsonResponse({'ok': False})
 
     actas = busca_actas_leer(request)
-    paginator = Paginator(actas, 5)
+    paginator = Paginator(actas, 15)
     return render(request, "leer_actas_reunion.html",
                   {
                       'iconos':
