@@ -4,6 +4,7 @@ import os
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.db.models import Q
 
 # from autenticar.models import Gauser_extra, Gauser
 from entidades.models import Subentidad, Entidad, Cargo
@@ -79,6 +80,23 @@ class Ges_documental(models.Model):
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 
+    def permisos(self, g_e):
+        q1 = Q(subentidad__in=g_e.subentidades.all()) | Q(cargo__in=g_e.cargos.all()) | Q(gauser=g_e.gauser)
+        q2 = Q(documento=self)
+        return ''.join(Compartir_Ges_documental.objects.filter(q1, q2).values_list('permiso', flat=True))
+
+    def modificable_por(self, g_e):
+        q1 = Q(subentidad__in=g_e.subentidades.all()) | Q(cargo__in=g_e.cargos.all()) | Q(gauser=g_e.gauser)
+        q2 = Q(permiso='w') | Q(permiso='x')
+        q3 = Q(documento=self)
+        return Compartir_Ges_documental.objects.filter(q1, q2, q3).count() > 0
+
+    def borrable_por(self, g_e):
+        q1 = Q(subentidad__in=g_e.subentidades.all()) | Q(cargo__in=g_e.cargos.all()) | Q(gauser=g_e.gauser)
+        q2 = Q(permiso='x')
+        q3 = Q(documento=self)
+        return Compartir_Ges_documental.objects.filter(q1, q2, q3).count() > 0
+
     def permiso_w(self, gauser):
         try:
             Permiso_Ges_documental.objects.get(gauser=gauser, documento=self, permiso='w')
@@ -94,6 +112,7 @@ class Ges_documental(models.Model):
             return False
 
     class Meta:
+        ordering = ['-creado']
         verbose_name_plural = "Documentos (Gestión Documental)"
 
     def __str__(self):
@@ -112,8 +131,8 @@ def fichero_del_pre_delete(sender, **kwargs):
 
 
 PERMISOS = (('r', 'lectura'),
-            ('w', 'lectura y escritura'),
-            ('x', 'lectura, escritura y borrado'),)
+            ('rw', 'lectura y escritura'),
+            ('rwx', 'lectura, escritura y borrado'),)
 
 
 class Permiso_Ges_documental(models.Model):
