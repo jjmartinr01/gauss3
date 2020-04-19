@@ -33,6 +33,7 @@
         {% endif %}
     </ul>
 </td>
+<td>{% for p in d.compartir_ges_documental_set.all %}{{ p.subentidad.nombre }}{{ p.cargo.cargo }}{{ p.gauser.get_full_name }} ({{ p.get_permiso_display }})<br>{% endfor %}</td>
 <td style="text-align:center;"><a class="descargar_doc" data-doc="{{ d.id }}"><i
         class="fa fa-download fa-fw"></i></a></td>
 <td style="text-align:center;" id="etiquetas{{ d.id }}">
@@ -41,6 +42,7 @@
     </a>
     <ul id="drope{{ d.id }}" class="f-dropdown text-left" data-dropdown-content
         aria-hidden="true" tabindex="-1">
+        <li><a class="ver_archivos_carpeta" data-etiqueta="{{ d.etiqueta.id }}" data-doc="{{ d.id }}">Ver los archivos de esta carpeta</a></li>
         {% if d.etiqueta.nombre == "General" %}
             <li>Esta carpeta no se puede editar ni borrar</li>
         {% else %}

@@ -15,7 +15,6 @@ import re
 from datetime import date, datetime
 from bancos.views import num_cuenta2iban
 from compraventa.models import Comprador
-from documentos.models import Permiso_Ges_documental, Ges_documental, Etiqueta_documental
 from formularios.models import Gform
 from gauss.funciones import usuarios_de_gauss, usuarios_ronda
 from contabilidad.models import Remesa_emitida, OrdenAdeudo

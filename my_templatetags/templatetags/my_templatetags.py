@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 from dateutil.tz import tzlocal
 from django.template import Library
 from django.db.models import Q
@@ -6,22 +7,16 @@ from django.utils.safestring import mark_safe
 from django.utils.text import normalize_newlines
 
 from gauss.funciones import human_readable_list
-# from autenticar.models import Gauser_extra, Permiso
 from autenticar.models import Permiso
 from calendario.models import Vevent
-from entidades.models import Gauser_extra, Menu, Ronda, Filtrado, Cargo, Subentidad, ge_id_patron_match, user_auto_id
-from vut.models import Vivienda
+from entidades.models import Gauser_extra, Menu, Ronda, Cargo, Subentidad, ge_id_patron_match, user_auto_id
 
-import re
 from datetime import date, datetime
-from bancos.views import num_cuenta2iban
 from compraventa.models import Comprador
-from documentos.models import Permiso_Ges_documental, Ges_documental, Etiqueta_documental
 from formularios.models import Gform
 from gauss.funciones import usuarios_de_gauss, usuarios_ronda
-from contabilidad.models import Remesa_emitida
 from web.models import Html_web
-from horarios.models import Falta_asistencia, Sesion
+from horarios.models import Falta_asistencia
 from cupo.models import Materia_cupo, Profesor_cupo
 from programaciones.models import Gauser_extra_programaciones
 
@@ -364,35 +359,6 @@ def has_cargos(gauser_extra, cargos_comprobar):
         cargos_comprobar = map(int, cargos_comprobar.split(','))
         p_ids = gauser_extra.cargos.all().values_list('nivel', flat=True)
         return len([nivel for nivel in p_ids if nivel in cargos_comprobar]) > 0
-
-
-@register.filter
-def documentos_carpeta(g_e, carpeta_id):  # Documentos de la carpeta indicada
-    if carpeta_id == 'todas':
-        doc_ids = Permiso_Ges_documental.objects.filter(gauser=g_e.gauser,
-                                                        documento__propietario__entidad=g_e.ronda.entidad).values_list(
-            'documento__id', flat=True)
-        documentos = Ges_documental.objects.filter(
-            Q(acceden__in=g_e.subentidades.all()) | Q(id__in=doc_ids)).distinct().order_by('creado')
-    else:
-        etiqueta = Etiqueta_documental.objects.get(id=carpeta_id)
-        doc_ids = Permiso_Ges_documental.objects.filter(gauser=g_e.gauser, documento__etiqueta=etiqueta).values_list(
-            'documento__id', flat=True)
-        documentos = Ges_documental.objects.filter(Q(etiqueta=etiqueta),
-                                                   Q(acceden__in=g_e.subentidades.all()) | Q(
-                                                       id__in=doc_ids)).distinct().order_by('creado')
-
-    return documentos
-
-
-@register.filter
-def permiso_documento(documento, g_e):  # Documentos de la carpeta indicada
-    try:
-        p = Permiso_Ges_documental.objects.get(gauser=g_e.gauser, documento=documento).permiso
-    except:
-        p = 'r'
-    return p
-
 
 @register.filter
 def lista_loop(fecha):

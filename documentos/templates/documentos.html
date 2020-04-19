@@ -15,6 +15,19 @@
         input[name="documentos"] {
             display: none;
         }
+
+        #tabla_archivos {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            border-spacing: 3px;
+            border-collapse: separate;
+        }
+
+        th, td {
+            padding: 3px;
+        }
+    .tabla_editar_archivo{border: 0;}
     </style>
 {% endblock %}
 
@@ -277,26 +290,26 @@
                 });
         });
 
-        $('body').on('click', '#update_archivo', function (e) {
-            e.preventDefault();
-            var action = 'update_archivo';
-            var doc = $(this).data('doc');
-            var nombre = $('#edit_nombre_archivo').val();
-            var etiqueta = $('#edit_select_etiqueta').val();
-            var cargos = $('#edit_select_cargos').val();
-            var subs = $('#edit_select_subentidades').val();
-            $.post("/documentos/", {
-                    action: action, doc: doc, nombre: nombre, etiqueta: etiqueta, cargos: cargos, subs: subs
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $('#fila' + doc).html(data.html);
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
+        {#$('body').on('click', '#update_archivo', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var action = 'update_archivo';#}
+        {#    var doc = $(this).data('doc');#}
+        {#    var nombre = $('#edit_nombre_archivo').val();#}
+        {#    var etiqueta = $('#edit_select_etiqueta').val();#}
+        {#    var cargos = $('#edit_select_cargos').val();#}
+        {#    var subs = $('#edit_select_subentidades').val();#}
+        {#    $.post("/documentos/", {#}
+        {#            action: action, doc: doc, nombre: nombre, etiqueta: etiqueta, cargos: cargos, subs: subs#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#                $('#fila' + doc).html(data.html);#}
+        {#            } else {#}
+        {#                $("#update_error").show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
 
         {% if g_e|has_permiso:'edita_carpetas' %}
             $('body').on('click', '.editar_carpeta', function (e) {
@@ -337,9 +350,74 @@
                     });
             });
         {% endif %}
-        $('body').on('click', '.fieldset_close', function (e) {
+
+        $('body').on('click', '.fieldset_archivo_editar_close', function (e) {
             e.preventDefault();
-            $('.fieldset_box').hide();
-        })
+            var doc = $(this).data('doc');
+            $.post("/documentos/", {
+                        action: 'fieldset_archivo_editar_close',
+                        doc: $(this).data('doc')
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#fila' + data.doc).html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+        });
+
+        $('body').on('keyup change', '.edit_archivo', function (e) {
+            e.preventDefault();
+            $.post("/documentos/", {
+                        action: 'update_archivo',
+                        campo: $(this).data('campo'),
+                        modelo: $(this).data('modelo'),
+                        id: $(this).data('id'),
+                        valor: $(this).val()
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+        });
+
+        $('body').on('change', '.select_gcs_archivo', function (e) {
+            e.preventDefault();
+            $.post("/documentos/", {
+                        action: 'update_new_permiso',
+                        doc: $(this).data('doc'),
+                        seleccionados: $(this).val()
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#tbody_permisos" + data.doc).html(data.html);
+                            $(".select_gcs_archivo").empty();
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+        });
+
+        $('body').on('click', '.borrar_permiso_archivo', function (e) {
+            e.preventDefault();
+            $.post("/documentos/", {
+                        action: 'borrar_permiso_archivo',
+                        cgd: $(this).data('cgd')
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#fila_permiso" + data.cgd).remove();
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+        });
     </script>
 {% endblock %}

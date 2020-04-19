@@ -85,32 +85,6 @@ class Ges_documental(models.Model):
         q2 = Q(documento=self)
         return ''.join(Compartir_Ges_documental.objects.filter(q1, q2).values_list('permiso', flat=True))
 
-    def modificable_por(self, g_e):
-        q1 = Q(subentidad__in=g_e.subentidades.all()) | Q(cargo__in=g_e.cargos.all()) | Q(gauser=g_e.gauser)
-        q2 = Q(permiso='w') | Q(permiso='x')
-        q3 = Q(documento=self)
-        return Compartir_Ges_documental.objects.filter(q1, q2, q3).count() > 0
-
-    def borrable_por(self, g_e):
-        q1 = Q(subentidad__in=g_e.subentidades.all()) | Q(cargo__in=g_e.cargos.all()) | Q(gauser=g_e.gauser)
-        q2 = Q(permiso='x')
-        q3 = Q(documento=self)
-        return Compartir_Ges_documental.objects.filter(q1, q2, q3).count() > 0
-
-    def permiso_w(self, gauser):
-        try:
-            Permiso_Ges_documental.objects.get(gauser=gauser, documento=self, permiso='w')
-            return True
-        except:
-            return False
-
-    def permiso_x(self, gauser):
-        try:
-            Permiso_Ges_documental.objects.get(gauser=gauser, documento=self, permiso='x')
-            return True
-        except:
-            return False
-
     class Meta:
         ordering = ['-creado']
         verbose_name_plural = "Documentos (Gestión Documental)"
