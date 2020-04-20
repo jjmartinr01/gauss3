@@ -12,7 +12,7 @@ from django.db.models import Q
 from autenticar.control_acceso import permiso_required
 from entidades.views import decode_selectgcs
 from documentos.forms import Ges_documentalForm, Contrato_gaussForm
-from documentos.models import Ges_documental, Contrato_gauss, Etiqueta_documental, Compartir_Ges_documental, Permiso_Ges_documental
+from documentos.models import Ges_documental, Contrato_gauss, Etiqueta_documental, Compartir_Ges_documental #, Permiso_Ges_documental
 from gauss.funciones import html_to_pdf
 from gauss.rutas import MEDIA_DOCUMENTOS, MEDIA_ANAGRAMAS, RUTA_BASE
 from mensajes.models import Aviso
@@ -243,7 +243,7 @@ def documentos(request):
                 html = render_to_string('documentos_table_tr_archivo.html', {'d': doc, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html, 'doc': doc.id})
             else:
-                return JsonResponse({'ok': False, 'mensaje': 'No tienes permisos para borrar compartido.'})
+                return JsonResponse({'ok': False, 'mensaje': 'No tienes permisos para editar el archivo.'})
         else:
             return JsonResponse({'ok': False, 'mensaje': 'Solicitud incorrecta.'})
 
@@ -283,20 +283,20 @@ def documentos(request):
                 crear_aviso(request, False, 'Error. No se ha podido descargar el archivo.')
 
     # -----------
-    for d in Ges_documental.objects.all():
-        for sub in d.acceden.all():
-            Compartir_Ges_documental.objects.get_or_create(subentidad=sub, documento=d)
-        for car in d.cargos.all():
-            Compartir_Ges_documental.objects.get_or_create(cargo=car, documento=d)
-        for p in d.permiso_ges_documental_set.all():
-            c, v = Compartir_Ges_documental.objects.get_or_create(gauser=p.gauser, documento=d)
-            if 'x' in p.permiso:
-                c.permiso = 'rwx'
-            elif 'w' in p.permiso:
-                c.permiso = 'rw'
-            else:
-                c.permiso = 'r'
-            c.save()
+    # for d in Ges_documental.objects.all():
+    #     for sub in d.acceden.all():
+    #         Compartir_Ges_documental.objects.get_or_create(subentidad=sub, documento=d)
+    #     for car in d.cargos.all():
+    #         Compartir_Ges_documental.objects.get_or_create(cargo=car, documento=d)
+    #     for p in d.permiso_ges_documental_set.all():
+    #         c, v = Compartir_Ges_documental.objects.get_or_create(gauser=p.gauser, documento=d)
+    #         if 'x' in p.permiso:
+    #             c.permiso = 'rwx'
+    #         elif 'w' in p.permiso:
+    #             c.permiso = 'rw'
+    #         else:
+    #             c.permiso = 'r'
+    #         c.save()
     # -----------
     Etiqueta_documental.objects.get_or_create(entidad=g_e.ronda.entidad, nombre='General')
     return render(request, "documentos.html",
