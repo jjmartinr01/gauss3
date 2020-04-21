@@ -1,0 +1,11 @@
+<p>Estimado/a,</p>
+<p>Usted tenía acceso al archivo {{ doc.nombre }} almacenado en el espacio que la entidad
+    {{ doc.propietario.ronda.entidad.name }} posee en Gauss.</p>
+<p>Si considera que el borrado ha sido un error, póngase en contacto con el administrador del sistema.</p>
+
+Reciba un cordial saludo,
+{% if emisor.gauser.username == 'gauss' %}
+    GAUSS - {{ doc.propietario.ronda.entidad.name }}
+{% else %}
+    {{ emisor.gauser.get_full_name }}
+{% endif %}

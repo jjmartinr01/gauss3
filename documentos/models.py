@@ -77,6 +77,7 @@ class Ges_documental(models.Model):
     fichero = models.FileField("Fichero con documento", upload_to=update_fichero_documental, blank=True, null=True)
     fich_name = models.CharField("Nombre del fichero", max_length=100, blank=True, null=True)
     content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
+    borrado = models.BooleanField("Archivo borrado?", default=False)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 
@@ -90,7 +91,7 @@ class Ges_documental(models.Model):
         verbose_name_plural = "Documentos (Gestión Documental)"
 
     def __str__(self):
-        return u'%s (%s)' % (self.nombre, self.creado)
+        return '%s (%s) - Borrado: %s' % (self.nombre, self.modificado, self.borrado)
 
 
 @receiver(pre_delete, sender=Ges_documental)
@@ -107,16 +108,6 @@ def fichero_del_pre_delete(sender, **kwargs):
 PERMISOS = (('r', 'lectura'),
             ('rw', 'lectura y escritura'),
             ('rwx', 'lectura, escritura y borrado'),)
-
-
-# class Permiso_Ges_documental(models.Model):
-#     gauser = models.ForeignKey(Gauser, on_delete=models.CASCADE)
-#     documento = models.ForeignKey(Ges_documental, on_delete=models.CASCADE)
-#     permiso = models.CharField('Permiso sobre el documento', max_length=15, choices=PERMISOS)
-#
-#     def __str__(self):
-#         return u'%s (%s)' % (self.documento.nombre, self.gauser.get_full_name())
-
 
 class Compartir_Ges_documental(models.Model):
     documento = models.ForeignKey(Ges_documental, on_delete=models.CASCADE, null=True, blank=True)

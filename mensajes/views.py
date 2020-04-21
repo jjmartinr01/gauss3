@@ -5,6 +5,8 @@ import simplejson as json
 import pexpect
 import os
 import logging
+
+from bs4 import BeautifulSoup
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.http import HttpResponse
@@ -23,7 +25,7 @@ from gauss.funciones import usuarios_ronda
 
 # from entidades.models import Subentidad
 # from autenticar.models import Gauser_extra, Gauser
-from entidades.models import Subentidad, Gauser_extra, Cargo
+from entidades.models import Subentidad, Gauser_extra, Cargo, Entidad
 from autenticar.models import Gauser
 
 from gauss.funciones import usuarios_de_gauss, pass_generator, html_to_pdf, paginar
@@ -620,3 +622,35 @@ def ajax_mensajes(request):
 
             # else:
             # return HttpResponse(status=400)
+
+
+def enviar_correo(etiqueta=Etiqueta.objects.none(), asunto=None, texto_html=None, receptores=Gauser.objects.none(),
+                  emisor=None, entidad=Entidad.objects.none()):
+    if not receptores:
+        return (False, 'No hay definidos destinatarios')
+    if not emisor:
+        if not entidad:
+            return (False, 'No hay definido ni un emisor, ni la entidad de emisión')
+        else:
+            try:
+                emisor = Gauser_extra.objects.get(ronda=entidad.ronda, gauser__username='gauss')
+            except:
+                return (False, 'No ha sido posible definir un emisor')
+    if texto_html:
+        soup = BeautifulSoup(texto_html, 'html.parser')
+        texto = soup.get_text()
+    else:
+        return (False, 'El mensaje no contiene texto')
+    if not etiqueta or type(etiqueta) != Etiqueta:
+        etiqueta = Etiqueta.objects.create(nombre=pass_generator(9, 'abcdefghijkmnopqrs0123456789'), propietario=emisor)
+    if not asunto:
+        asunto = 'Mensaje de %s' % (emisor.gauser.get_full_name())
+    mensaje = Mensaje.objects.create(emisor=emisor, fecha=datetime.now(), asunto=asunto, mensaje=texto_html,
+                                     mensaje_texto=texto)
+    mensaje.etiquetas.add(etiqueta)
+    try:
+        mensaje.receptores.add(*receptores)
+    except:
+        return (False, 'Los receptores deben ser del tipo Gauser')
+    crea_mensaje_cola(mensaje)
+    return (True, 'Enviado correctamente')

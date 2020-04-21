@@ -261,6 +261,7 @@
                                 function (data) {
                                     if (data.ok) {
                                         $('#fila' + doc).remove();
+                                        show_mensajes({title: 'Documento borrado', texto: data.mensaje})
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();
@@ -418,6 +419,10 @@
                             $("#update_error").show().delay(1500).fadeOut();
                         }
                     });
+        });
+        $('body').on('click', '.fieldset_close', function (e) {
+            e.preventDefault();
+            $('.fieldset_box').remove();
         });
     </script>
 {% endblock %}
