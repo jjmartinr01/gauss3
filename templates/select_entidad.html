@@ -52,7 +52,7 @@
         </div>
         <div class="row">
             {% for gauser_extra in gauser_extras %}
-                <div class="columns large-3 div_ent_select" data-id="{{ gauser_extra.id }}">
+                <div class="columns large-3 medium-4 small-6 div_ent_select" data-id="{{ gauser_extra.id }}">
                     <figure>
                         {% if gauser_extra.ronda.entidad.anagrama %}
                             <img src="{{ gauser_extra.ronda.entidad.anagrama.url }}" class="ent_select"
