@@ -5,8 +5,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils.timezone import datetime
+from django.utils.text import slugify
 from django.template import RequestContext
 from django.template.loader import render_to_string
+from django.core.paginator import Paginator
 import simplejson as json
 from django.db.models import Q
 from autenticar.control_acceso import permiso_required
@@ -21,10 +23,31 @@ from mensajes.models import Aviso
 from mensajes.views import crear_aviso, enviar_correo
 
 
-def documentos_ge(g_e):
-    q = Q(subentidad__in=g_e.subentidades.all()) | Q(cargo__in=g_e.cargos.all()) | Q(gauser=g_e.gauser)
-    docs_id = Compartir_Ges_documental.objects.filter(q).values_list('documento__id', flat=True)
-    return Ges_documental.objects.filter(id__in=docs_id, borrado=False).distinct()
+def documentos_ge(request):
+    g_e = request.session['gauser_extra']
+    qa = Q(subentidad__in=g_e.subentidades.all()) | Q(cargo__in=g_e.cargos.all()) | Q(gauser=g_e.gauser)
+    docs_id = Compartir_Ges_documental.objects.filter(qa).values_list('documento__id', flat=True)
+    docs = Ges_documental.objects.filter(id__in=docs_id, borrado=False).distinct()
+    try:
+        inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
+    except:
+        inicio = datetime.strptime('1900-1-1', '%Y-%m-%d').date()
+    try:
+        fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d').date()
+    except:
+        fin = datetime.now().date()
+    try:
+        texto = request.POST['texto']
+    except:
+        texto = ''
+
+    try:
+        etiqueta = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['etiqueta'])
+        qb = Q(creado__gte=inicio) & Q(creado__lte=fin) & Q(nombre__icontains=texto) & Q(etiqueta__in=etiqueta.hijos)
+    except:
+        qb = Q(creado__gte=inicio) & Q(creado__lte=fin) & Q(nombre__icontains=texto)
+
+    return docs.filter(qb)
 
 
 # @permiso_required('acceso_documentos')
@@ -68,7 +91,7 @@ def documentos(request):
                     except:
                         e.padre = None
                     e.save()
-                    docs = documentos_ge(g_e)
+                    docs = documentos_ge(request)
                     html = render_to_string('documentos_table_tr.html', {'docs': docs, 'g_e': g_e})
                     return JsonResponse({'ok': True, 'html': html})
             except:
@@ -98,40 +121,29 @@ def documentos(request):
         elif request.POST['action'] == 'borra_etiqueta' and g_e.has_permiso('borra_cualquier_carpeta'):
             try:
                 Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['etiqueta']).delete()
-                docs = documentos_ge(g_e)
+                docs = documentos_ge(request)
                 html = render_to_string('documentos_table_tr.html', {'docs': docs, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'busca_docs_manual':
+        elif request.POST['action'] == 'update_page':
             try:
-                try:
-                    inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
-                except:
-                    inicio = datetime.strptime('1900-1-1', '%Y-%m-%d').date()
-                try:
-                    fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d').date()
-                except:
-                    fin = datetime.now().date()
-                texto = request.POST['texto']
-                try:
-                    etiqueta = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['etiqueta'])
-                except:
-                    etiqueta = None
-                if etiqueta:
-                    q = Q(propietario__ronda__entidad=g_e.ronda.entidad) & Q(
-                        creado__gte=inicio) & Q(creado__lte=fin) & Q(
-                        nombre__icontains=texto) & Q(etiqueta__in=etiqueta.hijos)
-                else:
-                    q = Q(propietario__ronda__entidad=g_e.ronda.entidad) & Q(
-                        creado__gte=inicio) & Q(creado__lte=fin) & Q(
-                        nombre__icontains=texto)
-                docs = documentos_ge(g_e)
-                docs_search = docs.filter(q)
-                html = render_to_string('documentos_table_tr.html', {'docs': docs_search, 'g_e': g_e})
+                docs = documentos_ge(request)
+                paginator = Paginator(docs, 15)
+                buscar = {'0': False, '1': True}[request.POST['buscar']]
+                docs_paginados = paginator.page(int(request.POST['page']))
+                html = render_to_string('documentos_table.html', {'docs': docs_paginados, 'g_e': g_e, 'buscar': buscar})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+        # elif request.POST['action'] == 'busca_docs_manual':
+        #     try:
+        #         buscar
+        #         docs_search = documentos_ge(request)
+        #         html = render_to_string('documentos_table_tr.html', {'docs': docs_search, 'g_e': g_e, 'buscar': True})
+        #         return JsonResponse({'ok': True, 'html': html})
+        #     except:
+        #         return JsonResponse({'ok': False})
         elif request.POST['action'] == 'ver_formulario_editar':
             try:
                 doc = Ges_documental.objects.get(id=request.POST['doc'], borrado=False)
@@ -287,14 +299,17 @@ def documentos(request):
 
         elif request.POST['action'] == 'descargar_doc':
             try:
-                docs = documentos_ge(g_e)
+                docs = documentos_ge(request)
                 d = docs.get(id=request.POST['documento'])
                 fichero = d.fichero.read()
                 response = HttpResponse(fichero, content_type=d.content_type)
-                response['Content-Disposition'] = 'attachment; filename=' + d.fich_name
+                ext = d.fich_name.rsplit('.', 1)
+                response['Content-Disposition'] = 'attachment; filename=%s.%s' %(slugify(d.nombre), ext)
                 return response
             except:
                 crear_aviso(request, False, 'Error. No se ha podido descargar el archivo.')
+
+
 
     # -----------
     # for d in Ges_documental.objects.all():
@@ -313,6 +328,7 @@ def documentos(request):
     #         c.save()
     # -----------
     Etiqueta_documental.objects.get_or_create(entidad=g_e.ronda.entidad, nombre='General')
+    paginator = Paginator(documentos_ge(request), 15)
     return render(request, "documentos.html",
                   {
                       'iconos':
@@ -325,7 +341,7 @@ def documentos(request):
                             'title': 'Busca/Filtra resultados entre los diferentes archivos'},
                            ),
                       'g_e': g_e,
-                      'docs': documentos_ge(g_e),
+                      'docs': paginator.page(1),
                       'formname': 'documentos',
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })

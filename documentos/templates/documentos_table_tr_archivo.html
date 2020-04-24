@@ -1,9 +1,9 @@
 {% load my_templatetags %}
 {% load documentos_extras %}
-<td id="nombre{{ d.id }}">
+<td id="nombre{{ d.id }}" width="30%">
     <a data-dropdown="drop{{ d.id }}" aria-controls="drop{{ d.id }}" id="a_dropdown{{ d.id }}"
        aria-expanded="false" class="p_documento">{{ d.nombre }}
-    </a>&nbsp;
+    </a>&nbsp;{% if buscar %}<span style="color:red;"><i class="fa fa-check"></i></span>{% endif %}
     <ul id="drop{{ d.id }}" class="f-dropdown text-left" data-dropdown-content
         aria-hidden="true" tabindex="-1">
         <li><a class="descargar_doc" data-doc="{{ d.id }}"><i class="fa fa-download fa-fw"></i>
@@ -33,10 +33,10 @@
         {% endif %}
     </ul>
 </td>
-<td>{% for p in d.compartir_ges_documental_set.all %}{{ p.subentidad.nombre }}{{ p.cargo.cargo }}{{ p.gauser.get_full_name }} ({{ p.get_permiso_display }})<br>{% endfor %}</td>
-<td style="text-align:center;"><a class="descargar_doc" data-doc="{{ d.id }}"><i
+<td width="40%">{% for p in d.compartir_ges_documental_set.all %}{{ p.subentidad.nombre }}{{ p.cargo.cargo }}{{ p.gauser.get_full_name }} ({{ p.get_permiso_display }})<br>{% endfor %}</td>
+<td width="10%" style="text-align:center;"><a class="descargar_doc" data-doc="{{ d.id }}"><i
         class="fa fa-download fa-fw"></i></a></td>
-<td style="text-align:center;" id="etiquetas{{ d.id }}">
+<td width="10%" style="text-align:center;" id="etiquetas{{ d.id }}">
     <a data-dropdown="drope{{ d.id }}" aria-controls="drope{{ d.id }}" id="a_dropdowne{{ d.id }}"
        aria-expanded="false" class="p_documento"><span class="label"><b>{{ d.etiqueta.etiquetas_text }}</b></span>
     </a>
@@ -59,7 +59,7 @@
         {% endif %}
     </ul>
 </td>
-<td style="text-align:center;"
+<td width="10%" style="text-align:center;"
     title="El documento fue añadido el {{ d.creado }}">
     {{ d.creado|date:"d/m/Y" }}
 </td>

@@ -14,11 +14,6 @@ from entidades.models import Alta_Baja, Gauser_extra, DocConfEntidad
 
 logger = logging.getLogger('django')
 
-try:
-    from __builtin__ import str, unicode
-except:
-    from builtins import str
-
 
 def paginar(total, paso=15, c=1):
     lis = range(1, total + 1)
@@ -33,7 +28,7 @@ def paginar(total, paso=15, c=1):
     return pagination
 
 
-def human_readable_list(elements, separator=', ', last_separator=' y ', type='title'):
+def human_readable_list(elements, separator=', ', last_separator=' y ', cap_style='title'):
     """
     :param elements: list of elements to be stringyfied
     :param separator: join string between two list elements
@@ -41,12 +36,14 @@ def human_readable_list(elements, separator=', ', last_separator=' y ', type='ti
     :param type: title (all words first cap), upper (all in caps), lower (all in lowercase), capitalize (first word)
     :return: string with all elements joined
     """
-    try:
-        cap_operation = getattr(str, type)
-        hrl = last_separator.join(cap_operation(separator.join(elements)).rsplit(separator, 1))
-    except:
-        cap_operation = getattr(unicode, type)
-        hrl = last_separator.join(cap_operation(separator.join(elements)).rsplit(separator, 1))
+    if cap_style == 'title':
+        hrl = last_separator.join(separator.join(elements).rsplit(separator, 1)).title()
+    elif cap_style == 'upper':
+        hrl = last_separator.join(separator.join(elements).rsplit(separator, 1)).upper()
+    elif cap_style == 'lower':
+        hrl = last_separator.join(separator.join(elements).rsplit(separator, 1)).lower()
+    else:
+        hrl = last_separator.join(separator.join(elements).rsplit(separator, 1)).capitalize()
     words_to_be_replaced = [' De ', ' Y ', ' E ', ' Al ', ' O ', ' Del ']
     for w in words_to_be_replaced:
         hrl = hrl.replace(w, w.lower())
@@ -69,22 +66,22 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
     :param attach: string con lista de archivos separados por espacios
     :return: El fichero pdf creado
     """
-    logger.info(u'html_to_pdf')
+    logger.info('html_to_pdf')
     fichero_html = media + fichero + '.html'
     fichero_pdf = media + fichero + '.pdf'
     docconf, c = DocConfEntidad.objects.get_or_create(entidad=request.session['gauser_extra'].ronda.entidad)
 
     if not os.path.exists(os.path.dirname(fichero_pdf)):
         os.makedirs(os.path.dirname(fichero_pdf))
-        logger.info(u'Se crea ruta: %s' % (fichero_pdf))
+        logger.info('Se crea ruta: %s' % (fichero_pdf))
 
     if not os.path.exists(os.path.dirname(media)):
         os.makedirs(os.path.dirname(media))
-        logger.info(u'Se crea ruta: %s' % (media))
+        logger.info('Se crea ruta: %s' % (media))
 
     html_template = 'genera_documento2pdf.html'
     c = render_to_string(html_template, {'texto': texto, 'title': title}, request=request)
-    logger.info(u'Escritura en %s' % (fichero_html))
+    logger.info('Escritura en %s' % (fichero_html))
     with open(fichero_html, "w") as html_file:
         html_file.write("{0}".format(c.encode('utf-8')))
 
@@ -94,12 +91,12 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
         estilo = media + 'estilo.xsl'
         comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 --header-html %s --footer-html %s toc --xsl-style-sheet %s %s %s' % (
             cabecera, pie, estilo, fichero_html, fichero_pdf)
-        logger.info(u'Ejecuta: %s' % (comando))
+        logger.info('Ejecuta: %s' % (comando))
         os.system(comando)
     elif tipo == 'inf':
         # comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 --header-html %s --footer-html %s %s %s' % (
         #     cabecera, pie, fichero_html, fichero_pdf)
-        # logger.info(u'Ejecuta: %s' % (comando))
+        # logger.info('Ejecuta: %s' % (comando))
         # os.system(comando)
         options = {
             'page-size': docconf.pagesize,
@@ -122,7 +119,7 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
         pdfkit.from_string(c, fichero_pdf, options)
 
         # comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 %s %s' % (fichero_html, fichero_pdf)
-        # logger.info(u'Ejecuta: %s' % (comando))
+        # logger.info('Ejecuta: %s' % (comando))
         # os.system(comando)
     if attach:
         fichero_pdf2 = media + fichero + '_adjuntos.pdf'
@@ -227,7 +224,7 @@ def nombre_usuario(g_e, alias=False):
         for parte in nombre:
             iniciales_nombre = iniciales_nombre + parte[0]
         iniciales_apellidos = apellidos[0]
-        return u'%s %s' % (iniciales_nombre, iniciales_apellidos)
+        return '%s %s' % (iniciales_nombre, iniciales_apellidos)
 
     if alias:
         return g_e.alias if g_e.alias else nombre(g_e)

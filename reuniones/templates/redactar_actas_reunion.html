@@ -93,23 +93,6 @@
             $('#actas_buscar').val(1);
             $('#page').val(1);
             buscar_actas();
-            {# $.post("/redactar_actas_reunion_ajax/", {#}
-            {#        action: 'busca_actas_manual',#}
-            {#        inicio: $('#id_fecha_inicio').val(),#}
-            {#        fin: $('#id_fecha_fin').val(),#}
-            {#        texto: $('#busca_texto_acta').val(),#}
-            {#        plantilla: $('#plantilla_busqueda').val(),#}
-            {#        publicada: $('#busca_publicada').val(),#}
-            {#        aprobada: $('#busca_aprobada').val()#}
-            {#    },#}
-            {#    function (data) {#}
-            {#        if (data.ok) {#}
-            {#            $("#list_actas").html(data.html);#}
-            {#            $("#update_ok").show().delay(1500).fadeOut();#}
-            {#        } else {#}
-            {#            $("#update_error").show().delay(1500).fadeOut();#}
-            {#        }#}
-            {#    });#}
         });
 
         $('body').on('click', '.go_page', function (e) {

@@ -1,3 +1,4 @@
+{% load my_templatetags %}
 <table id="tabla_archivos">
     <thead>
     <tr>
@@ -12,3 +13,38 @@
     {% include "documentos_table_tr.html" %}
     </tbody>
 </table>
+
+{% if docs.paginator.num_pages > 1 %}
+    <br>
+    <div class="row">
+        <div class="columns large-12">
+            <ul class="pagination" role="menubar" aria-label="Pagination">
+                {% if docs.has_previous %}
+                    <li class="arrow">
+                        <a class="go_page" data-page="{{ docs.previous_page_number }}">&laquo; Anterior</a>
+                    </li>
+                {% else %}
+                    <li class="arrow unavailable" aria-disabled="true">
+                        <a class="go_page">&laquo; Anterior</a>
+                    </li>
+                {% endif %}
+                {% for page in docs.paginator.num_pages|number_range %}
+                    {% if page == docs.number %}
+                        <li class="current"><a href="" class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                    {% else %}
+                        <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if docs.has_next %}
+                    <li class="arrow">
+                        <a class="go_page" data-page="{{ docs.next_page_number }}">Siguiente &raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="arrow unavailable" aria-disabled="true">
+                        <a class="go_page">Siguiente &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+{% endif %}

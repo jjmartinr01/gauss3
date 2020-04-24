@@ -17,17 +17,16 @@
         }
 
         #tabla_archivos {
-            margin-left: auto;
-            margin-right: auto;
             width: 100%;
-            border-spacing: 3px;
-            border-collapse: separate;
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
         }
 
-        th, td {
-            padding: 3px;
+
+        .tabla_editar_archivo {
+            border: 0;
         }
-    .tabla_editar_archivo{border: 0;}
     </style>
 {% endblock %}
 
@@ -37,6 +36,8 @@
         <input type="hidden" id="action" name="action" value="">
         <input type="hidden" id="documento" name="documento" value="">
         <input type="hidden" id="etiqueta_id" name="etiqueta_id" value="">
+        <input type="hidden" id="buscar" name="buscar" value="0">
+        <input type="hidden" name="page" id="page" value="1">
 
         <h4 style="text-align: center;color: #008CBA;">
             <strong> Documentos almacenados en la entidad</strong>
@@ -66,23 +67,57 @@
             }
         });
 
-        $('body').on('click', '#busca_docs_manual', function (e) {
-            e.preventDefault();
+        function buscar_documentos() {
             $.post("/documentos/", {
-                    action: 'busca_docs_manual',
+                    action: 'update_page',
                     inicio: $('#id_fecha_inicio').val(),
                     fin: $('#id_fecha_fin').val(),
                     texto: $('#busca_texto_doc').val(),
-                    etiqueta: $('#etiqueta_busqueda').val()
+                    etiqueta: $('#etiqueta_busqueda').val(),
+                    buscar: $('#buscar').val(),
+                    page: $('#page').val()
                 },
                 function (data) {
                     if (data.ok) {
-                        $("#tabla_archivos tbody").html(data.html);
+                        $("#div_documentos").html(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
+        }
+
+        $('body').on('click', '#busca_docs_manual', function (e) {
+            e.preventDefault();
+            $('#buscar').val(1);
+            $('#page').val(1);
+            buscar_documentos();
+        });
+
+        $('body').on('click', '.fieldset_close_buscar', function (e) {
+            e.preventDefault();
+            $('#buscar').val(0);
+            $('#page').val(1);
+            $('#id_fecha_inicio').val(''),
+            $('#id_fecha_fin').val(''),
+            $('#busca_texto_doc').val(''),
+            $('#etiqueta_busqueda').val(''),
+            buscar_documentos();
+            $('.fieldset_box').remove();
+        });
+
+        $('body').on('click', '.fieldset_close', function (e) {
+            e.preventDefault();
+            $('.fieldset_box').remove();
+        });
+
+        $('body').on('click', '.go_page', function (e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            $('#page').val(page);
+            if (page) {
+                buscar_documentos();
+            }
         });
 
         $('body').on('click', '.descargar_doc', function (e) {
@@ -291,27 +326,6 @@
                 });
         });
 
-        {#$('body').on('click', '#update_archivo', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    var action = 'update_archivo';#}
-        {#    var doc = $(this).data('doc');#}
-        {#    var nombre = $('#edit_nombre_archivo').val();#}
-        {#    var etiqueta = $('#edit_select_etiqueta').val();#}
-        {#    var cargos = $('#edit_select_cargos').val();#}
-        {#    var subs = $('#edit_select_subentidades').val();#}
-        {#    $.post("/documentos/", {#}
-        {#            action: action, doc: doc, nombre: nombre, etiqueta: etiqueta, cargos: cargos, subs: subs#}
-        {#        },#}
-        {#        function (data) {#}
-        {#            if (data.ok) {#}
-        {#                $("#update_ok").show().delay(1500).fadeOut();#}
-        {#                $('#fila' + doc).html(data.html);#}
-        {#            } else {#}
-        {#                $("#update_error").show().delay(1500).fadeOut();#}
-        {#            }#}
-        {#        });#}
-        {# });#}
-
         {% if g_e|has_permiso:'edita_carpetas' %}
             $('body').on('click', '.editar_carpeta', function (e) {
                 e.preventDefault();
@@ -329,6 +343,7 @@
                         }
                     });
             });
+
             $('body').on('click', '#modifica_etiqueta', function (e) {
                 e.preventDefault();
                 $.post("/documentos/", {
@@ -356,73 +371,69 @@
             e.preventDefault();
             var doc = $(this).data('doc');
             $.post("/documentos/", {
-                        action: 'fieldset_archivo_editar_close',
-                        doc: $(this).data('doc')
-                    },
-                    function (data) {
-                        if (data.ok) {
-                            $('#fila' + data.doc).html(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-                    });
+                    action: 'fieldset_archivo_editar_close',
+                    doc: $(this).data('doc')
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#fila' + data.doc).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
         });
 
         $('body').on('keyup change', '.edit_archivo', function (e) {
             e.preventDefault();
             $.post("/documentos/", {
-                        action: 'update_archivo',
-                        campo: $(this).data('campo'),
-                        modelo: $(this).data('modelo'),
-                        id: $(this).data('id'),
-                        valor: $(this).val()
-                    },
-                    function (data) {
-                        if (data.ok) {
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-                    });
+                    action: 'update_archivo',
+                    campo: $(this).data('campo'),
+                    modelo: $(this).data('modelo'),
+                    id: $(this).data('id'),
+                    valor: $(this).val()
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
         });
 
         $('body').on('change', '.select_gcs_archivo', function (e) {
             e.preventDefault();
             $.post("/documentos/", {
-                        action: 'update_new_permiso',
-                        doc: $(this).data('doc'),
-                        seleccionados: $(this).val()
-                    },
-                    function (data) {
-                        if (data.ok) {
-                            $("#tbody_permisos" + data.doc).html(data.html);
-                            $(".select_gcs_archivo").empty();
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-                    });
+                    action: 'update_new_permiso',
+                    doc: $(this).data('doc'),
+                    seleccionados: $(this).val()
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#tbody_permisos" + data.doc).html(data.html);
+                        $(".select_gcs_archivo").empty();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
         });
 
         $('body').on('click', '.borrar_permiso_archivo', function (e) {
             e.preventDefault();
             $.post("/documentos/", {
-                        action: 'borrar_permiso_archivo',
-                        cgd: $(this).data('cgd')
-                    },
-                    function (data) {
-                        if (data.ok) {
-                            $("#fila_permiso" + data.cgd).remove();
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-                    });
-        });
-        $('body').on('click', '.fieldset_close', function (e) {
-            e.preventDefault();
-            $('.fieldset_box').remove();
+                    action: 'borrar_permiso_archivo',
+                    cgd: $(this).data('cgd')
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#fila_permiso" + data.cgd).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
         });
     </script>
 {% endblock %}
