@@ -47,43 +47,22 @@
         </label>
     </div>
 </div>
-{#<div class="row">#}
-{#    <div class="columns large-6">#}
-{#        <label><b>Persona que redacta el acta</b>#}
-{#            <select id="redacta{{ acta.id }}" data-id="{{ acta.id }}">#}
-{#                <option value="establecida"#}
-{#                        selected="selected">{{ acta.redacta.get_full_name }}</option>#}
-{#            </select>#}
-{#        </label>#}
-{#    </div>#}
-{##}
-{#    <div class="columns large-6">#}
-{#        <label><b>Cargo de la persona que redacta</b>#}
-{#            <select class="cargo" id="cargo_redacta{{ configura_convocatoria.id }}"#}
-{#                    data-id="{{ configura_convocatoria.id }}">#}
-{#                {% if cargos|length > 0 %}#}
-{#                    {% for cargo in cargos %}#}
-{#                        <option value="{{ cargo.id }}"#}
-{#                                {% if cargo == configura_convocatoria.cargo_convocante %}selected {% endif %}>#}
-{#                            {{ cargo.cargo }}</option>#}
-{#                    {% endfor %}#}
-{#                {% else %}#}
-{#                    <option value="">-------</option>#}
-{#                {% endif %}#}
-{#            </select>#}
-{#        </label>#}
-{#    </div>#}
-{#</div>#}
 <div class="row">
     <div class="columns large-12">
-        <label>Asistentes a la reunión:
-            <select name="usuarios_asistentes{{ acta.id }}" class="usuarios_asistentes" multiple="multiple" data-id="{{ acta.id }}">
-                {% for asistente in acta.asistentes.all %}
-                    <option value="g{{ asistente.id }}" selected="selected">{{ asistente.gauser.last_name }},
-                        {{ asistente.gauser.first_name }}</option>
-                {% endfor %}
-            </select>
+        <label>Asistentes a la reunión (<span id="num_asistentes{{ acta.id }}">{{ acta.asistentes.all|length }}</span>):
         </label>
+    </div>
+</div>
+<div class="row" style="padding-bottom: 2px;">
+    <div class="columns large-12" id="div_asistentes{{ acta.id }}">
+        {% for asistente in acta.asistentes.all %}
+            {% include "redactar_actas_reunion_accordion_content_asistente.html" %}
+        {% endfor %}
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <select name="usuarios_asistentes{{ acta.id }}" class="usuarios_asistentes" data-id="{{ acta.id }}"></select>
     </div>
 </div>
 <hr>

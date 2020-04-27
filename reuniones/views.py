@@ -391,6 +391,7 @@ def busca_convocatorias(request):
     puntos = PuntoConvReunion.objects.filter(convocatoria__in=convs, punto__icontains=texto)
     return convs.filter(id__in=puntos.values_list('convocatoria__id', flat=True)).distinct()
 
+
 @permiso_required('acceso_conv_reunion')
 def conv_reunion(request):
     g_e = request.session['gauser_extra']
@@ -878,6 +879,7 @@ def busca_actas_redactar(request):
     conv_ids = PuntoConvReunion.objects.filter(q_p1, q_p2).values_list('convocatoria__id', flat=True)
     return actas.filter(qap & qpu & Q(convocatoria__id__in=conv_ids)).distinct()
 
+
 @permiso_required('acceso_redactar_actas_reunion')
 def redactar_actas_reunion(request):
     g_e = request.session['gauser_extra']
@@ -914,7 +916,8 @@ def redactar_actas_reunion(request):
                 paginator = Paginator(actas, 15)
                 buscar = {'0': False, '1': True}[request.POST['buscar']]
                 actas_paginadas = paginator.page(int(request.POST['page']))
-                html = render_to_string('redactar_actas_reunion_accordion.html', {'actas': actas_paginadas, 'buscar': buscar})
+                html = render_to_string('redactar_actas_reunion_accordion.html',
+                                        {'actas': actas_paginadas, 'buscar': buscar})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
@@ -1030,16 +1033,37 @@ def redactar_actas_reunion_ajax(request):
                 if acta.is_redactada_por(g_e):
                     if acta.onlyread:
                         return JsonResponse({'ok': False, 'mensaje': 'El acta está publicada/aprobada'})
-                    asistentes, cs, ss = decode_selectgcs(request.POST.getlist('asistentes[]'), g_e.ronda)
-                    # asistentes = Gauser_extra.objects.filter(ronda=g_e.ronda,
-                    #                                          id__in=request.POST.getlist('asistentes[]'))
-                    acta.asistentes.clear()
-                    acta.asistentes.add(*asistentes)
+                    asistente = Gauser_extra.objects.get(id=int(request.POST['asistente'][1:]), ronda=g_e.ronda)
+                    if asistente not in acta.asistentes.all():
+                        html_span = render_to_string('redactar_actas_reunion_accordion_content_asistente.html',
+                                                     {'acta': acta, 'asistente': asistente})
+                    else:
+                        html_span = ''
+                    acta.asistentes.add(asistente)
                     asistentes_text_list = [a.gauser.get_full_name() for a in acta.asistentes.all()]
                     acta.asistentes_text = human_readable_list(asistentes_text_list)
                     acta.save()
                     borrar_firmas_acta(acta)
-                    return JsonResponse({'ok': True, 'asist': asistentes.count()})
+                    return JsonResponse({'ok': True, 'acta': acta.id, 'html_span': html_span,
+                                         'num_asistentes': acta.asistentes.all().count()})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'borrar_asistente':
+            try:
+                acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
+                if acta.is_redactada_por(g_e):
+                    if acta.onlyread:
+                        return JsonResponse({'ok': False, 'mensaje': 'El acta está publicada/aprobada'})
+                    asistente = Gauser_extra.objects.get(id=int(request.POST['asistente']), ronda=g_e.ronda)
+                    acta.asistentes.remove(asistente)
+                    asistentes_text_list = [a.gauser.get_full_name() for a in acta.asistentes.all()]
+                    acta.asistentes_text = human_readable_list(asistentes_text_list)
+                    acta.save()
+                    borrar_firmas_acta(acta)
+                    return JsonResponse({'ok': True, 'acta': acta.id, 'asistente': asistente.id,
+                                         'num_asistentes': acta.asistentes.all().count()})
                 else:
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
@@ -1304,6 +1328,7 @@ def busca_actas_leer(request):
     q_p2 = Q(punto__icontains=texto) | Q(texto_acta__icontains=texto)
     convs_id = PuntoConvReunion.objects.filter(q_p1, q_p2).values_list('convocatoria__id', flat=True)
     return ActaReunion.objects.filter(Q(convocatoria__id__in=convs_id), Q(publicada=True)).distinct()
+
 
 @permiso_required('acceso_lectura_actas_reunion')
 def lectura_actas_reunion(request):

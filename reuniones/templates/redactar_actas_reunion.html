@@ -141,7 +141,11 @@
                                         conf_select2({'gcs': 'g', 'format_g': '{0}, {1}'})
                                     );
                                     $(".usuarios_asistentes").select2(
-                                        conf_select2({'gcs': 'g', 'format_g': '{0}, {1}'})
+                                        conf_select2({
+                                            'gcs': 'g',
+                                            'format_g': '{0}, {1}',
+                                            'placeholder': 'Escribe parte del nombre del asistente para buscarlo'
+                                        })
                                     );
                                     $("#update_ok").show().delay(1500).fadeOut();
                                 } else {
@@ -157,25 +161,44 @@
             }
         });
 
-        var asistentes_antiguo;
+        {#var asistentes_antiguo;#}
         $('body').on('change.select2', '.usuarios_asistentes', function (e) {
             var acta = $(this).data('id');
-            var asistentes = $(this).val();
-            if (asistentes != asistentes_antiguo) {
-                asistentes_antiguo = asistentes;
-                $.post("/redactar_actas_reunion_ajax/", {
-                        action: 'update_asistentes_reunion',
-                        acta: acta,
-                        asistentes: asistentes
-                    },
-                    function (data) {
-                        if (data.ok) {
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                        }
-                    });
-            }
+            var asistente = $(this).val();
+            $.post("/redactar_actas_reunion_ajax/", {
+                    action: 'update_asistentes_reunion',
+                    acta: acta,
+                    asistente: asistente
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#div_asistentes" + data.acta).append(data.html_span);
+                        $("#num_asistentes" + data.acta).html(data.num_asistentes);
+                        $(".usuarios_asistentes").empty();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.borrar_asistente', function (e) {
+            var acta = $(this).data('acta');
+            var asistente = $(this).data('asistente');
+            $.post("/redactar_actas_reunion_ajax/", {
+                    action: 'borrar_asistente',
+                    acta: acta,
+                    asistente: asistente
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#asistente" + data.acta + '_' + data.asistente).remove();
+                        $("#num_asistentes" + data.acta).html(data.num_asistentes);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
         });
 
         $('body').on('keyup', '.control_code', function (e) {

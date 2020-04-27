@@ -552,9 +552,11 @@
         var format_g = arguments.format_g || "{0}, {1} - {2} (Tutor/a: {3})"; {# Cadena presentación gauser_extras #}
         var cars = arguments.cars || []; {# array con los id de los cargos en los que buscar #}
         var subs = arguments.subs || []; {# array con los id de las subentidades en las que buscar #}
+        var ph = arguments.placeholder || "Escribe parte del nombre4";
+        var mil = arguments.minimumInputLength || 3;
         return {
-            placeholder: "Escribe parte del nombre",
-            minimumInputLength: 3,
+            placeholder: ph,
+            minimumInputLength: mil,
             ajax: {
                 url: "/selectgcs/",
                 dataType: 'json',
