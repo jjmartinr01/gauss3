@@ -39,10 +39,8 @@
 </div>
 <div class="row">
     <div class="columns large-12">
-        <label>Asistentes a la reunión:
-            {% for asistente in acta.asistentes.all %}
-                {{ asistente.gauser.first_name }} {{ asistente.gauser.last_name }},
-            {% endfor %}
+        <label>Asistentes a la reunión:<br>
+        {{ acta.asistentes_text }}
         </label>
     </div>
 </div>
