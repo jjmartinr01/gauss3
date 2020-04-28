@@ -1,0 +1,14 @@
+<p>{% if firma.ge.gauser.sexo == 'H' %}Estimado {% else %}Estimada {% endif %}
+    {{ firma.ge.gauser.get_full_name }}, </p>
+
+<p>Una de las actas que tienes firmadas en la entidad {{ firma.ge.ronda.entidad.name }}, ha
+    sido modificada y tu firma ha sido eliminada.</p>
+<p>Los datos relevantes son:</p>
+<ul>
+    <li>{{ firma.acta.nombre }}</li>
+    <li>Fecha y hora de la convocatoria: {{ firma.acta.convocatoria.fecha_hora|date:'d/m/Y \a \l\a\s H:i' }}</li>
+    <li>Persona que ha hecho la modificación: {{ g_e.gauser.get_full_name }}</li>
+</ul>
+<p>La modificación puede ir desde una coma, a un párrafo completo; o incluso, la modificación
+de los asistentes.</p>
+<p>Deberías releer el acta, comprobar que todo está en orden y firmarla de nuevo.</p>

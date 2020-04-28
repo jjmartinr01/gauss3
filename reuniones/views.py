@@ -26,7 +26,7 @@ from entidades.views import decode_selectgcs
 from gauss.funciones import html_to_pdf, human_readable_list
 from gauss.rutas import MEDIA_ANAGRAMAS, MEDIA_REUNIONES, RUTA_BASE
 from mensajes.models import Aviso, Mensaje, Etiqueta
-from mensajes.views import crear_aviso, encolar_mensaje, crea_mensaje_cola
+from mensajes.views import crear_aviso, encolar_mensaje, crea_mensaje_cola, enviar_correo
 
 # locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
 locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
@@ -976,7 +976,7 @@ def redactar_actas_reunion_ajax(request):
                     texto = request.POST['texto']
                     acta.preambulo = texto
                     acta.save()
-                    borrar_firmas_acta(acta)
+                    borrar_firmas_acta(acta, g_e)
                     return JsonResponse({'ok': True})
                 else:
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
@@ -991,7 +991,7 @@ def redactar_actas_reunion_ajax(request):
                     texto = request.POST['texto']
                     acta.epilogo = texto
                     acta.save()
-                    borrar_firmas_acta(acta)
+                    borrar_firmas_acta(acta, g_e)
                     return JsonResponse({'ok': True})
                 else:
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
@@ -1007,7 +1007,7 @@ def redactar_actas_reunion_ajax(request):
                     texto = request.POST['texto']
                     punto.texto_acta = texto
                     punto.save()
-                    borrar_firmas_acta(acta)
+                    borrar_firmas_acta(acta, g_e)
                     return JsonResponse({'ok': True})
                 else:
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
@@ -1021,7 +1021,7 @@ def redactar_actas_reunion_ajax(request):
                         return JsonResponse({'ok': False})
                     acta.nombre = request.POST['nombre'].strip()
                     acta.save()
-                    borrar_firmas_acta(acta)
+                    borrar_firmas_acta(acta, g_e)
                     return JsonResponse({'ok': True, 'nombre': acta.nombre})
                 else:
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
@@ -1043,7 +1043,7 @@ def redactar_actas_reunion_ajax(request):
                     asistentes_text_list = [a.gauser.get_full_name() for a in acta.asistentes.all()]
                     acta.asistentes_text = human_readable_list(asistentes_text_list)
                     acta.save()
-                    borrar_firmas_acta(acta)
+                    borrar_firmas_acta(acta, g_e)
                     return JsonResponse({'ok': True, 'acta': acta.id, 'html_span': html_span,
                                          'num_asistentes': acta.asistentes.all().count()})
                 else:
@@ -1061,7 +1061,7 @@ def redactar_actas_reunion_ajax(request):
                     asistentes_text_list = [a.gauser.get_full_name() for a in acta.asistentes.all()]
                     acta.asistentes_text = human_readable_list(asistentes_text_list)
                     acta.save()
-                    borrar_firmas_acta(acta)
+                    borrar_firmas_acta(acta, g_e)
                     return JsonResponse({'ok': True, 'acta': acta.id, 'asistente': asistente.id,
                                          'num_asistentes': acta.asistentes.all().count()})
                 else:
@@ -1211,23 +1211,15 @@ def control_asistencia_reunion(request):
                   })
 
 
-def borrar_firmas_acta(acta):
+def borrar_firmas_acta(acta, g_e):
     firmas = FirmaActa.objects.filter(acta=acta, firmada=True)
     for firma in firmas:
         emisor = Gauser_extra.objects.get(gauser__username='gauss', ronda=firma.ge.ronda)
         etiqueta, c = Etiqueta.objects.get_or_create(propietario=emisor, nombre='aviso_acta_modificada')
         receptores = [firma.ge.gauser, ]
-        fecha = timezone.now()
         asunto = 'Un acta que tienes firmada, ha sido modificada.'
-        mensaje = '<p>El acta %s ha sido modificada y tu firma ha sido eliminada.</p><p>Debes releer el acta y firmarla de nuevo.</p>' % (
-            firma.acta.nombre)
-        mensaje_texto = 'El acta %s ha sido modificada y tu firma ha sido eliminada. Debes releer el acta y firmarla de nuevo.' % (
-            firma.acta.nombre)
-        mensaje = Mensaje.objects.create(borrador=False, emisor=emisor, fecha=fecha, asunto=asunto, mensaje=mensaje,
-                                         mensaje_texto=mensaje_texto)
-        mensaje.receptores.add(*receptores)
-        mensaje.etiquetas.add(etiqueta)
-        crea_mensaje_cola(mensaje)
+        html = render_to_string('redactar_actas_reunion_correo_acta_modificada.html', {'firma': firma, 'g_e': g_e})
+        enviar_correo(etiqueta=etiqueta, asunto=asunto, emisor=emisor, receptores=receptores, texto_html=html)
         if firma.firma:
             if os.path.isfile(firma.firma.path):
                 os.remove(firma.firma.path)

@@ -554,11 +554,14 @@
         var subs = arguments.subs || []; {# array con los id de las subentidades en las que buscar #}
         var ph = arguments.placeholder || "Escribe parte del nombre4";
         var mil = arguments.minimumInputLength || 3;
+        var lan = arguments.language || "es";
+        var ajax_url = arguments.url || "/selectgcs/";
         return {
+            language: lan,
             placeholder: ph,
             minimumInputLength: mil,
             ajax: {
-                url: "/selectgcs/",
+                url: ajax_url,
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
