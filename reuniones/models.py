@@ -168,6 +168,7 @@ class FirmaActa(models.Model):
     acta = models.ForeignKey(ActaReunion, blank=True, null=True, on_delete=models.CASCADE)
     ge = models.ForeignKey(GE, blank=True, null=True, on_delete=models.SET_NULL)
     tipo = models.CharField('Tipo de firma', max_length=5, choices=TIPOS, default='FIR')
+    texto_firmado = models.TextField('Contenido del acta en el momento de la firma', default='')
     firmante = models.CharField('Nombre del firmante', blank=True, null=True, max_length=100)
     cargo = models.CharField('Cargo del firmante', blank=True, null=True, max_length=100)
     firma = models.ImageField('Imagen de la firma', upload_to=update_firma, blank=True, null=True)
