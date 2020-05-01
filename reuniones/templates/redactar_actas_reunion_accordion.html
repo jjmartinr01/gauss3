@@ -27,6 +27,12 @@
                 <span id="spanaprob{{ acta.id }}" style="color:green;display: none;"><i class="fa fa-thumbs-up"></i> Aprobada</span>
                 <span id="spannoaprob{{ acta.id }}" style="color:red;"><i class="fa fa-question-circle-o"></i> No aprobada</span>
             {% endif %}
+            {% if acta.firmada %}
+                <span id="spanfirmada{{ acta.id }}" style="color:green;"><i class="fa fa-pencil-square-o"></i> Firmada</span>
+            {% else %}
+                <span id="spannofirmada{{ acta.id }}" style="color:red;"><i class="fa fa-pencil-square-o"></i> No firmada</span>
+                <span id="spannumberfirmantes{{ acta.id }}" style="color:red;">({{ acta.num_firmantes.0 }} de {{ acta.num_firmantes.1 }})</span>
+            {% endif %}
             {% if buscar %}
                 &nbsp;&nbsp;<span style="color: red;"><i class="fa fa-check"></i></span>
             {% endif %}
