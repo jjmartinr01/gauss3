@@ -23,7 +23,7 @@
     {{ acta.preambulo }}
 {% endautoescape %}
 
-{% for p in puntos %}
+{% for p in acta.convocatoria.punto.all %}
     {% autoescape off %}
         <b>{{ p.orden }}.- {{ p.punto }}</b>
         <p>{{ p.texto_acta }}</p>
@@ -34,7 +34,7 @@
     {{ acta.epilogo }}
 {% endautoescape %}
 
-{% for firma in firmas %}
+{% for firma in acta.firmaacta_set.all %}
     <div style="width: 280px;display: inline-block;">
         {% if firma.tipo == 'VB' %}<p>VºBº</p>{% else %}<p>&nbsp;</p>{% endif %}
         {% if firma.firma %}

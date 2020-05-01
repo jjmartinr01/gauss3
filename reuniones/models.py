@@ -174,6 +174,10 @@ class FirmaActa(models.Model):
     firma = models.ImageField('Imagen de la firma', upload_to=update_firma, blank=True, null=True)
     firmada = models.BooleanField('¿Está firmada?', default=False)
 
+    @property
+    def modificada(self):
+        return (not self.firmada) and (len(self.texto_firmado) > 0)
+
     class Meta:
         ordering = ['acta']
 

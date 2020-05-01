@@ -889,21 +889,12 @@ def redactar_actas_reunion(request):
                 acta = ActaReunion.objects.get(id=request.POST['id_acta'], convocatoria__entidad=g_e.ronda.entidad)
                 fecha = acta.convocatoria.fecha_hora.strftime('%Y%m%d')
                 nombre_fichero = slugify('%s-%s' % (acta.nombre, fecha)) + '.pdf'
-                # if acta.fecha_aprobacion or acta.publicada:
-                #     fichero = acta.pdf.read()
-                #     response = HttpResponse(fichero, content_type='application/pdf')
-                #     response['Content-Disposition'] = 'attachment; filename=' + nombre_fichero
-                #     return response
-                # else:
                 fichero = '%s/borradores/acta' % (g_e.ronda.entidad.code)
-                firmas = FirmaActa.objects.filter(acta=acta)
                 c = render_to_string('acta_reunion2pdf.html', {
                     'acta': acta,
-                    'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
                     'MA': MEDIA_ANAGRAMAS,
-                    'firmas': firmas,
                     'ruta_base': RUTA_BASE
-                }, request=request)
+                })
                 fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REUNIONES, title=u'Acta de reunión')
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + nombre_fichero
@@ -1214,49 +1205,44 @@ def control_asistencia_reunion(request):
 def borrar_firmas_acta(acta, g_e):
     firmas = FirmaActa.objects.filter(acta=acta, firmada=True)
     for firma in firmas:
-        emisor = Gauser_extra.objects.get(gauser__username='gauss', ronda=firma.ge.ronda)
-        etiqueta, c = Etiqueta.objects.get_or_create(propietario=emisor, nombre='aviso_acta_modificada')
-        receptores = [firma.ge.gauser, ]
-        asunto = 'Un acta que tienes firmada, ha sido modificada.'
-        html = render_to_string('redactar_actas_reunion_correo_acta_modificada.html', {'firma': firma, 'g_e': g_e})
-        enviar_correo(etiqueta=etiqueta, asunto=asunto, emisor=emisor, receptores=receptores, texto_html=html)
-        if firma.firma:
-            if os.path.isfile(firma.firma.path):
-                os.remove(firma.firma.path)
+        if firma.firmada:
+            emisor = Gauser_extra.objects.get(gauser__username='gauss', ronda=firma.ge.ronda)
+            etiqueta, c = Etiqueta.objects.get_or_create(propietario=emisor, nombre='aviso_acta_modificada')
+            receptores = [firma.ge.gauser, ]
+            asunto = 'Un acta que tienes firmada, ha sido modificada.'
+            html = render_to_string('redactar_actas_reunion_correo_acta_modificada.html', {'firma': firma, 'g_e': g_e})
+            enviar_correo(etiqueta=etiqueta, asunto=asunto, emisor=emisor, receptores=receptores, texto_html=html)
+            if os.path.isfile(RUTA_BASE + firma.firma.url):
+                os.remove(RUTA_BASE + firma.firma.url)
             firma.firma = None
-        firma.firmada = False
-        firma.save()
+            firma.firmada = False
+            firma.save()
     return True
 
 
 @permiso_required('acceso_firmar_actas_reunion')
 def firmar_acta_reunion(request):
     g_e = request.session['gauser_extra']
-    if request.method == 'GET' and 'f' in request.GET:
-        firmas_requeridas = FirmaActa.objects.filter(id=request.GET['f'], ge=g_e, firmada=False)
-    else:
-        firmas_requeridas = FirmaActa.objects.filter(ge=g_e, firmada=False)
+    firmas_requeridas = FirmaActa.objects.filter(ge=g_e, firmada=False)
+
     if request.method == 'POST' and request.is_ajax():
         if request.POST['action'] == 'mostrar_acta':
             try:
-                firmaacta = FirmaActa.objects.get(id=request.POST['firmaacta'], ge=g_e, firmada=False)
+                firmaacta = firmas_requeridas.get(id=request.POST['firmaacta'])
                 acta = firmaacta.acta
-                firmas = FirmaActa.objects.filter(acta=acta)
                 html = render_to_string('acta_reunion2pdf.html', {
                     'acta': acta,
-                    'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
-                    'firmas': firmas,
                     'ruta_base': ''
-                }, request=request)
+                })
                 return JsonResponse(
                     {'ok': True, 'html': html, 'nombre': firmaacta.firmante})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Error para encontrar FirmaActa'})
         elif request.POST['action'] == 'guarda_firma':
             try:
-                firmaacta = FirmaActa.objects.get(id=request.POST['firmaacta'], ge=g_e, firmada=False)
+                firmaacta = firmas_requeridas.get(id=request.POST['firmaacta'])
                 try:
-                    os.remove(firmaacta.firma.path)
+                    os.remove(RUTA_BASE + firmaacta.firma.url)
                 except:
                     pass
                 firma_data = request.POST['firma']
@@ -1264,31 +1250,37 @@ def firmar_acta_reunion(request):
                 ext = format.split('/')[-1]
                 firmaacta.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
                 firmaacta.firmada = True
+                firmaacta.texto_firmado = render_to_string('acta_reunion2pdf.html',
+                                                           {'acta': firmaacta.acta, 'ruta_base': ''})
                 firmaacta.save()
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Error para encontrar FirmaActa'})
 
-    if firmas_requeridas.count() == 1:
-        firmaacta = firmas_requeridas[0]
-        acta = firmaacta.acta
-        firmas = FirmaActa.objects.filter(acta=acta)
-
+    try:
+        firmaacta = firmas_requeridas.get(id=request.GET['f'])
         return render(request, "firmar_acta_reunion.html",
                       {
                           'formname': 'firmar_acta_reunion',
                           'firmaacta': firmaacta,
-                          'acta': acta,
-                          'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
-                          'firmas': firmas,
-                          'num_firmas': 1
+                          'num_firmas': firmas_requeridas.count()
                       })
-    else:
-        return render(request, "firmar_acta_reunion_elegir.html",
-                      {
-                          'formname': 'firmar_acta_reunion',
-                          'firmas_requeridas': firmas_requeridas
-                      })
+    except:
+        if firmas_requeridas.count() == 1:
+            firmaacta = firmas_requeridas[0]
+            return render(request, "firmar_acta_reunion.html",
+                          {
+                              'formname': 'firmar_acta_reunion',
+                              'firmaacta': firmaacta,
+                              'num_firmas': 1
+                          })
+        else:
+            return render(request, "firmar_acta_reunion_elegir.html",
+                          {
+                              'formname': 'elegir_acta_para_firma',
+                              'firmas_requeridas': firmas_requeridas
+                          })
+
 
 
 # ----------------------------------------------------------------------------------------------------#
@@ -1329,13 +1321,10 @@ def lectura_actas_reunion(request):
         if request.POST['action'] == 'open_accordion':
             try:
                 acta = ActaReunion.objects.get(id=request.POST['acta'], convocatoria__entidad=g_e.ronda.entidad)
-                firmas = FirmaActa.objects.filter(acta=acta)
                 html = render_to_string('acta_reunion2pdf.html', {
                     'acta': acta,
-                    'puntos': PuntoConvReunion.objects.filter(convocatoria=acta.convocatoria),
-                    'firmas': firmas,
                     'ruta_base': ''
-                }, request=request)
+                })
                 return JsonResponse(
                     {'ok': True, 'html': html})
             except:
