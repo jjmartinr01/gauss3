@@ -6,7 +6,7 @@ CODE_CONTENEDOR = '1010101010'
 #gauser asociado al centro contenedor al que se podrán asignar Gauser_extras en caso de no poder borrarse:
 GAUSER_COMODIN = 'qazwsxedcrfvtgbyhnujmikolp'
 
-
+WEEKDAYS = {}
 RONDAS = (
     ('0', '2010/2011'),
     ('1', '2011/2012'),
@@ -84,6 +84,8 @@ DIAS = (
     ('S', 'Sábado'),
     ('D', 'Domingo'),
 )
+MESES=('Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre',
+       'Octubre', 'Noviembre', 'Diciembre')
 
 LOCALIDADES = (
     ('26339', 'ABALOS'),

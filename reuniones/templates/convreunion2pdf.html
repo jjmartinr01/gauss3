@@ -3,7 +3,7 @@
     {{ convocatoria.texto_convocatoria }}
 {% endautoescape %}
 <ol>
-    {% for p in puntos %}
+    {% for p in convocatoria.punto.all %}
         <li>{{ p.punto }}</li>
     {% endfor %}
 </ol>

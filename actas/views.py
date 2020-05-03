@@ -569,7 +569,7 @@ def convocatorias_ajax(request):
                                     etiqueta='actas%s' % convocatoria.id)
                     correos = [g.email for g in rs if g.email]
                     mensaje = '<p>Enviado correo a %s personas.</p><p>%s</p>' % (
-                        len(correos), human_readable_list(correos, type='lower'))
+                        len(correos), human_readable_list(correos, cap_style='lower'))
                     return JsonResponse({'ok': True, 'mensaje': mensaje})
                 else:
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para enviar el correo'})
@@ -878,7 +878,7 @@ def redactar_actas_ajax(request):
                                     etiqueta='actas%s' % acta.convocatoria.id)
                     correos = [g.email for g in rs if g.email]
                     mensaje = '<p>Enviado correo a %s personas.</p><p>%s</p>' % (
-                        len(correos), human_readable_list(correos, type='lower'))
+                        len(correos), human_readable_list(correos, cap_style='lower'))
                     return JsonResponse({'ok': True, 'mensaje': mensaje})
                 else:
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para enviar el correo'})

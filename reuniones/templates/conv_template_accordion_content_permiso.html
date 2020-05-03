@@ -1,0 +1,11 @@
+<tr id="tr_permiso{{ p.id }}">
+    <td>{{ p.cargo.cargo }}{{ p.gauser.get_full_name }}</td>
+    <td><a class="cambia_permiso" data-tipo="edita_plantilla" style="font-weight: bold;"
+           data-permiso="{{ p.id }}">{% if p.edita_plantilla %}Sí{% else %}No{% endif %}</a></td>
+    <td><a class="cambia_permiso" data-tipo="puede_convocar" style="font-weight: bold;"
+           data-permiso="{{ p.id }}">{% if p.puede_convocar %}Sí{% else %}No{% endif %}</a></td>
+    <td><a class="cambia_permiso" data-tipo="puede_redactar" style="font-weight: bold;"
+           data-permiso="{{ p.id }}">{% if p.puede_redactar %}Sí{% else %}No{% endif %}</a></td>
+    <td><a class="borra_permiso" data-id="{{ p.id }}"><i class="fa fa-trash"></i></a></td>
+</tr>
+

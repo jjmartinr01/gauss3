@@ -627,20 +627,20 @@ def ajax_mensajes(request):
 def enviar_correo(etiqueta=Etiqueta.objects.none(), asunto=None, texto_html=None, receptores=Gauser.objects.none(),
                   emisor=None, entidad=Entidad.objects.none()):
     if not receptores:
-        return (False, 'No hay definidos destinatarios')
+        return False, 'No hay definidos destinatarios'
     if not emisor:
         if not entidad:
-            return (False, 'No hay definido ni un emisor, ni la entidad de emisión')
+            return False, 'No hay definido ni un emisor, ni la entidad de emisión'
         else:
             try:
                 emisor = Gauser_extra.objects.get(ronda=entidad.ronda, gauser__username='gauss')
             except:
-                return (False, 'No ha sido posible definir un emisor')
+                return False, 'No ha sido posible definir un emisor'
     if texto_html:
         soup = BeautifulSoup(texto_html, 'html.parser')
         texto = soup.get_text()
     else:
-        return (False, 'El mensaje no contiene texto')
+        return False, 'El mensaje no contiene texto'
     if not etiqueta or type(etiqueta) != Etiqueta:
         etiqueta = Etiqueta.objects.create(nombre=pass_generator(9, 'abcdefghijkmnopqrs0123456789'), propietario=emisor)
     if not asunto:
@@ -651,6 +651,6 @@ def enviar_correo(etiqueta=Etiqueta.objects.none(), asunto=None, texto_html=None
     try:
         mensaje.receptores.add(*receptores)
     except:
-        return (False, 'Los receptores deben ser del tipo Gauser')
+        return False, 'Los receptores deben ser del tipo Gauser'
     crea_mensaje_cola(mensaje)
-    return (True, 'Enviado correctamente')
+    return True, 'Enviado correctamente'

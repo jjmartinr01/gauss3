@@ -23,8 +23,9 @@ from autenticar.control_acceso import permiso_required
 from calendario.models import Vevent
 from entidades.models import Subentidad, Gauser_extra
 from entidades.views import decode_selectgcs
-from gauss.funciones import html_to_pdf, human_readable_list
+from gauss.funciones import html_to_pdf, human_readable_list, usuarios_ronda
 from gauss.rutas import MEDIA_ANAGRAMAS, MEDIA_REUNIONES, RUTA_BASE
+from gauss.constantes import DIAS, MESES
 from mensajes.models import Aviso, Mensaje, Etiqueta
 from mensajes.views import crear_aviso, encolar_mensaje, crea_mensaje_cola, enviar_correo
 
@@ -41,10 +42,11 @@ locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
 @permiso_required('acceso_conv_template')
 def conv_template(request):
     g_e = request.session['gauser_extra']
+    posibilidades = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
     if g_e.has_permiso('w_conv_reunion'):
-        configuraciones = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
+        configuraciones = posibilidades
     else:
-        configuraciones = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, creador=g_e.gauser, plantilla=True)
+        configuraciones = [p for p in posibilidades if p.permiso(g_e, 'edita_plantilla')]
 
     return render(request, "conv_template.html",
                   {
@@ -84,7 +86,7 @@ def conv_template_ajax(request):
             conv_template = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['conv_template'])
             plantillas = [] if conv_template.plantilla else ConvReunion.objects.filter(entidad=g_e.ronda.entidad,
                                                                                        plantilla=True)
-            if g_e.has_permiso('w_conv_template') or conv_template.creador == g_e.gauser:
+            if g_e.has_permiso('w_conv_template') or conv_template.permiso(g_e, 'edita_plantilla'):
                 try:
                     cargos = Gauser_extra.objects.get(gauser=conv_template.convoca, ronda=g_e.ronda).cargos.all()
                 except:
@@ -100,7 +102,7 @@ def conv_template_ajax(request):
             return JsonResponse({'ok': ok, 'html': html})
         elif action == 'delete_conv_template':
             conv_template = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['conv_template'])
-            if g_e.has_permiso('w_conv_template') or conv_template.creador == g_e.gauser:
+            if g_e.has_permiso('w_conv_template') or conv_template.permiso(g_e, 'edita_plantilla'):
                 ok = True
                 # if request.POST['is_plantilla'] == 'False':
                 #     ActaReunion.objects.get(convocatoria=conv_template).delete()
@@ -111,7 +113,7 @@ def conv_template_ajax(request):
         elif action == 'update_convoca_conv_template':
             try:
                 conv_template = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['conv_template'])
-                if g_e.has_permiso('w_conv_template') or conv_template.creador == g_e.gauser:
+                if g_e.has_permiso('w_conv_template') or conv_template.permiso(g_e, 'edita_plantilla'):
                     ge = Gauser_extra.objects.get(id=request.POST['convoca'], ronda=g_e.ronda)
                     cargos = ge.cargos.all()
                     conv_template.convoca = ge.gauser
@@ -133,7 +135,7 @@ def conv_template_ajax(request):
         elif action == 'update_cargo_conv_template':
             try:
                 conv_template = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['conv_template'])
-                if g_e.has_permiso('w_conv_template') or conv_template.creador == g_e.gauser:
+                if g_e.has_permiso('w_conv_template') or conv_template.permiso(g_e, 'edita_plantilla'):
                     cargo_convocante = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
                     conv_template.cargo_convocante = cargo_convocante
                     conv_template.cargo_convocante_text = cargo_convocante.cargo
@@ -144,7 +146,7 @@ def conv_template_ajax(request):
         elif action == 'update_lugar_conv_template':
             try:
                 conv_template = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['conv_template'])
-                if g_e.has_permiso('w_conv_template') or conv_template.creador == g_e.gauser:
+                if g_e.has_permiso('w_conv_template') or conv_template.permiso(g_e, 'edita_plantilla'):
                     conv_template.lugar = request.POST['lugar']
                     conv_template.save()
                 return JsonResponse({'ok': True})
@@ -153,7 +155,7 @@ def conv_template_ajax(request):
         elif action == 'update_subentidades_convocadas_conv_template':
             try:
                 conv_template = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['conv_template'])
-                if g_e.has_permiso('w_conv_template') or conv_template.creador == g_e.gauser:
+                if g_e.has_permiso('w_conv_template') or conv_template.permiso(g_e, 'edita_plantilla'):
                     subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad,
                                                              id__in=request.POST.getlist('subentidades[]'))
                     conv_template.convocados.clear()
@@ -169,7 +171,7 @@ def conv_template_ajax(request):
         elif action == 'update_nombre_conv_template':
             try:
                 conv_template = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['conv_template'])
-                if g_e.has_permiso('w_conv_template') or conv_template.creador == g_e.gauser:
+                if g_e.has_permiso('w_conv_template') or conv_template.permiso(g_e, 'edita_plantilla'):
                     conv_template.nombre = request.POST['nombre'].strip()
                     conv_template.save()
                     # try:
@@ -184,7 +186,7 @@ def conv_template_ajax(request):
         elif action == 'update_texto_configura_convocatoria':
             try:
                 configuracion = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['configuracion'])
-                if g_e.has_permiso('w_conv_template') or configuracion.creador == g_e.gauser:
+                if g_e.has_permiso('w_conv_template') or configuracion.permiso(g_e, 'edita_plantilla'):
                     configuracion.texto_convocatoria = request.POST['texto']
                     configuracion.save()
                     html = render_to_string('convocatoria_texto.html', {'c': configuracion})
@@ -197,7 +199,7 @@ def conv_template_ajax(request):
             try:
                 punto = PuntoConvReunion.objects.get(id=request.POST['punto'])
                 conv_template = punto.convocatoria
-                if g_e.has_permiso('w_conv_template') or conv_template.creador == g_e.gauser:
+                if g_e.has_permiso('w_conv_template') or conv_template.permiso(g_e, 'edita_plantilla'):
                     puntos = PuntoConvReunion.objects.filter(convocatoria=conv_template)
                     orden_nuevo = int(request.POST['orden'])
                     if orden_nuevo > puntos.count():
@@ -228,7 +230,7 @@ def conv_template_ajax(request):
             try:
                 punto = PuntoConvReunion.objects.get(id=request.POST['punto'])
                 conv_template = punto.convocatoria
-                if g_e.has_permiso('w_conv_template') or conv_template.creador == g_e.gauser:
+                if g_e.has_permiso('w_conv_template') or conv_template.permiso(g_e, 'edita_plantilla'):
                     punto.punto = request.POST['texto']
                     punto.save()
                     return JsonResponse({'ok': True})
@@ -239,7 +241,7 @@ def conv_template_ajax(request):
         elif action == 'add_punto_conv_template':
             try:
                 conv_template = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['conv_template'])
-                if g_e.has_permiso('w_conv_template') or conv_template.creador == g_e.gauser:
+                if g_e.has_permiso('w_conv_template') or conv_template.permiso(g_e, 'edita_plantilla'):
                     orden_nuevo = PuntoConvReunion.objects.filter(convocatoria=conv_template).count() + 1
                     PuntoConvReunion.objects.create(convocatoria=conv_template, orden=orden_nuevo, punto='Texto ...')
                     puntos = PuntoConvReunion.objects.filter(convocatoria=conv_template)
@@ -253,7 +255,7 @@ def conv_template_ajax(request):
             try:
                 punto = PuntoConvReunion.objects.get(id=request.POST['punto'])
                 conv_reunion = punto.convocatoria
-                if g_e.has_permiso('w_conv_reunion') or conv_reunion.creador == g_e.gauser:
+                if g_e.has_permiso('w_conv_reunion') or conv_reunion.permiso(g_e, 'edita_plantilla'):
                     punto.delete()
                     return JsonResponse({'ok': True, 'punto': request.POST['punto']})
                 else:
@@ -264,7 +266,7 @@ def conv_template_ajax(request):
         # elif action == 'update_cargos_convocados_configura_convocatoria':
         #     try:
         #         configuracion = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['configuracion'])
-        #         if g_e.has_permiso('edita_configuraciones_convocatorias') or configuracion.creador == g_e.gauser:
+        #         if g_e.has_permiso('edita_configuraciones_convocatorias') or configuracion.permiso(g_e, 'edita_plantilla'):
         #             cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad,
         #                                           id__in=request.POST.getlist('cargos[]'))
         #             configuracion.cargos_convocados.clear()
@@ -302,7 +304,7 @@ def conv_template_ajax(request):
         #
         # elif action == 'update_plantilla':
         #     conv = ConvReunion.objects.get(id=request.POST['convocatoria'], entidad=g_e.ronda.entidad, plantilla=False)
-        #     if g_e.has_permiso('crea_convocatorias') or conv.creador == g_e.gauser:
+        #     if g_e.has_permiso('crea_convocatorias') or conv.permiso(g_e, 'edita_plantilla'):
         #         try:
         #             conf = ConvReunion.objects.get(id=request.POST['plantilla'], entidad=g_e.ronda.entidad,
         #                                            plantilla=True)
@@ -350,7 +352,7 @@ def conv_template_ajax(request):
         #     try:
         #         configuracion = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['configuracion'])
         #         acta = ActaReunion.objects.get(convocatoria=configuracion)
-        #         if g_e.has_permiso('edita_configuraciones_convocatorias') or configuracion.creador == g_e.gauser:
+        #         if g_e.has_permiso('edita_configuraciones_convocatorias') or configuracion.permiso(g_e, 'edita_plantilla'):
         #             ge = Gauser_extra.objects.get(id=request.POST['redacta'], ronda=g_e.ronda)
         #             acta.redacta = ge.gauser
         #             acta.save()
@@ -395,10 +397,11 @@ def busca_convocatorias(request):
 @permiso_required('acceso_conv_reunion')
 def conv_reunion(request):
     g_e = request.session['gauser_extra']
+    posibilidades = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=False)
     if g_e.has_permiso('c_conv_reunion'):
-        convs = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=False)
+        convs = posibilidades
     else:
-        convs = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, creador=g_e.gauser, plantilla=False)
+        convs = [p for p in posibilidades if p.permiso(g_e, 'puede_convocar')]
     if request.method == 'POST':
         if request.POST['action'] == 'pdf_convocatoria':
             try:
@@ -409,7 +412,7 @@ def conv_reunion(request):
                     'puntos': PuntoConvReunion.objects.filter(convocatoria=convocatoria),
                     'MA': MEDIA_ANAGRAMAS,
                 }, request=request)
-                fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REUNIONES, title=u'Convocatoria de reunión')
+                fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REUNIONES, title='Convocatoria de reunión')
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
                 return response
@@ -442,13 +445,20 @@ def conv_reunion(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
-
+def get_plantillas(g_e):
+    if g_e.has_permiso('c_conv_reunion'):
+        return ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
+    else:
+        q1 = Q(gauser=g_e.gauser) | Q(cargo__in=g_e.cargos.all())
+        q2 = Q(puede_convocar=True)
+        conv_ids = PermisoReunion.objects.filter(q1, q2).values_list('plantilla__id', flat=True)
+        return ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True, id__in=conv_ids)
 @login_required()
 def conv_reunion_ajax(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
-        if action == 'nueva_convocatoria' and g_e.has_permiso('c_conv_reunion'):
+        if action == 'nueva_convocatoria' and get_plantillas(g_e).count() > 0:
             try:
                 conv = ConvReunion.objects.create(creador=g_e.gauser, entidad=g_e.ronda.entidad, plantilla=False,
                                                   nombre='ConvReunion ...')
@@ -462,8 +472,8 @@ def conv_reunion_ajax(request):
         elif action == 'open_accordion':
             conv = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['convocatoria'], plantilla=False)
             if conv.fecha_hora > timezone.now():
-                plantillas = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
-                if g_e.has_permiso('w_conv_reunion') or conv.creador == g_e.gauser:
+                plantillas = get_plantillas(g_e)
+                if conv.basada_en in plantillas or conv.creador == g_e.gauser:
                     try:
                         cargos = Gauser_extra.objects.get(gauser=conv.convoca, ronda=g_e.ronda).cargos.all()
                     except:
@@ -480,7 +490,7 @@ def conv_reunion_ajax(request):
                 return JsonResponse({'ok': True, 'html': html})
         elif action == 'editar_conv':
             conv = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['convocatoria'], plantilla=False)
-            plantillas = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
+            plantillas = get_plantillas(g_e)
             if g_e.has_permiso('w_conv_reunion') or conv.creador == g_e.gauser:
                 try:
                     cargos = Gauser_extra.objects.get(gauser=conv.convoca, ronda=g_e.ronda).cargos.all()
@@ -531,21 +541,23 @@ def conv_reunion_ajax(request):
         elif action == 'update_plantilla':
             conv = ConvReunion.objects.get(id=request.POST['convocatoria'], entidad=g_e.ronda.entidad, plantilla=False)
             if g_e.has_permiso('w_conv_reunion') or conv.creador == g_e.gauser:
-                plantillas = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
-                # try:
-                plantilla = plantillas.get(id=request.POST['plantilla'])
-                conv.basada_en = plantilla
-                conv.texto_convocatoria = plantilla.texto_convocatoria
-                conv.convoca = plantilla.convoca
-                conv.convoca_text = plantilla.convoca.get_full_name()
-                conv.lugar = plantilla.lugar
-                conv.nombre = plantilla.nombre
-                conv.cargo_convocante = plantilla.cargo_convocante
-                conv.cargo_convocante_text = plantilla.cargo_convocante.cargo
-                conv.convocados.clear()
-                conv.convocados.add(*plantilla.convocados.all())
-                conv.convocados_text = plantilla.convocados_text
-                conv.save()
+                plantillas = get_plantillas(g_e)
+                try:
+                    plantilla = plantillas.get(id=request.POST['plantilla'])
+                    conv.basada_en = plantilla
+                    conv.texto_convocatoria = plantilla.texto_convocatoria
+                    conv.convoca = plantilla.convoca
+                    conv.convoca_text = plantilla.convoca.get_full_name()
+                    conv.lugar = plantilla.lugar
+                    conv.nombre = plantilla.nombre
+                    conv.cargo_convocante = plantilla.cargo_convocante
+                    conv.cargo_convocante_text = plantilla.cargo_convocante.cargo
+                    conv.convocados.clear()
+                    conv.convocados.add(*plantilla.convocados.all())
+                    conv.convocados_text = plantilla.convocados_text
+                    conv.save()
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso'})
                 try:
                     cargos = Gauser_extra.objects.get(gauser=conv.convoca, ronda=g_e.ronda).cargos.all()
                 except:
@@ -559,9 +571,9 @@ def conv_reunion_ajax(request):
                     acta.save()
                 except:
                     pass
-                day_name = conv.fecha_hora.strftime('%A').lower()
+                day_name = DIAS[conv.fecha_hora.weekday()][1].lower()
                 day_num = conv.fecha_hora.day
-                month_name = conv.fecha_hora.strftime('%B').lower()
+                month_name = MESES[conv.fecha_hora.month - 1].lower()
                 year = conv.fecha_hora.year
                 datetime_time = conv.fecha_hora.strftime("%H:%M")
                 lugar = conv.lugar if conv.lugar else '«lugar»'
@@ -577,8 +589,6 @@ def conv_reunion_ajax(request):
                      'month_name': month_name, 'year': year, 'datetime_time': datetime_time, 'lugar': lugar,
                      'texto_convocados': texto_convocados, 'cargo': cargo, 'convoca': convoca}
                 return JsonResponse(d)
-                # except:
-                #     return JsonResponse({'ok': False})
         elif action == 'update_fecha_hora':
             try:
                 convocatoria = ConvReunion.objects.get(id=request.POST['conv_reunion'], entidad=g_e.ronda.entidad)
@@ -586,9 +596,9 @@ def conv_reunion_ajax(request):
                     fecha_hora = datetime.strptime(request.POST['fecha_hora'], "%d/%m/%Y %H:%M")
                     convocatoria.fecha_hora = fecha_hora
                     convocatoria.save()
-                    day_name = fecha_hora.strftime('%A').lower()
+                    day_name = DIAS[fecha_hora.weekday()][1].lower()
                     day_num = fecha_hora.day
-                    month_name = fecha_hora.strftime('%B').lower()
+                    month_name = MESES[fecha_hora.month - 1].lower()
                     year = fecha_hora.year
                     datetime_time = fecha_hora.strftime("%H:%M")
                     return JsonResponse(
@@ -771,36 +781,72 @@ def conv_reunion_ajax(request):
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'ver_formulario_buscar':
-            plantillas = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
+            plantillas = get_plantillas(g_e)
             try:
                 html = render_to_string("conv_fieldset_buscar.html", {'plantillas_disponibles': plantillas, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-
-
-
-
+        elif request.POST['action'] == 'add_permisos_conv':
+            try:
+                plantilla = ConvReunion.objects.get(entidad=g_e.ronda.entidad, plantilla=True,
+                                                       id=request.POST['plantilla'])
+                if plantilla.permiso(g_e, 'edita_plantilla'):
+                    ges, cs, ss = decode_selectgcs([request.POST['seleccionado']], g_e.ronda)
+                    p, cr = PermisoReunion.objects.none(), False
+                    for ge in ges:
+                        p, cr = PermisoReunion.objects.get_or_create(plantilla=plantilla, gauser=ge.gauser)
+                    for c in cs:
+                        p, cr = PermisoReunion.objects.get_or_create(plantilla=plantilla, cargo=c)
+                    if cr:
+                        html_permiso = render_to_string("conv_template_accordion_content_permiso.html", {'p': p})
+                    else:
+                        html_permiso = ''
+                    return JsonResponse({'ok': True, 'html_permiso': html_permiso, 'plantilla': plantilla.id})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_permisos_conv':
+            try:
+                pr = PermisoReunion.objects.get(plantilla__entidad=g_e.ronda.entidad,
+                                                     plantilla__plantilla=True, id=request.POST['permiso'])
+                if pr.plantilla.permiso(g_e, 'edita_plantilla'):
+                    estado = getattr(pr, request.POST['tipo'])
+                    setattr(pr, request.POST['tipo'], not estado)
+                    pr.save()
+                    return JsonResponse({'ok': True, 'sino': ['No', 'Sí'][not estado]})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permisos para ejecutar la acción solicitada'})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borra_permiso_plantilla':
+            try:
+                pr = PermisoReunion.objects.get(plantilla__entidad=g_e.ronda.entidad,
+                                                     plantilla__plantilla=True, id=request.POST['permiso'])
+                if pr.plantilla.permiso(g_e, 'edita_plantilla'):
+                    pr.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permisos para ejecutar la acción solicitada'})
+            except:
+                return JsonResponse({'ok': False})
         elif action == 'send_email':
             try:
                 convocatoria = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['convocatoria'],
                                                        plantilla=False)
                 if g_e.has_permiso('m_conv_reunion') or convocatoria.creador == g_e.gauser:
-                    n = convocatoria.nombre
-                    t = convocatoria.texto_convocatoria
-                    html = '<h2>%s</h2>%s' % (n, t)
+                    asunto = 'Convocatoria: %s' % (convocatoria.nombre)
+                    html = render_to_string('convreunion2pdf.html', {'convocatoria': convocatoria})
                     if convocatoria.convocados.all().count() > 0:
-                        rs = [ge.gauser for ge in
-                              Gauser_extra.objects.filter(subentidades__in=convocatoria.convocados.all())]
+                        rs = [ge.gauser for ge in usuarios_ronda(g_e.ronda, subentidades=convocatoria.convocados.all())]
                     else:
-                        rs = [ge.gauser for ge in
-                              Gauser_extra.objects.filter(ronda__entidad=convocatoria.entidad)]
-                    encolar_mensaje(emisor=g_e, receptores=rs, asunto='ConvReunion: %s' % n, html=html,
-                                    etiqueta='actas%s' % convocatoria.id)
-                    correos = [g.email for g in rs if g.email]
-                    mensaje = '<p>Enviado correo a %s personas.</p><p>%s</p>' % (
-                        len(correos), human_readable_list(correos, type='lower'))
-                    return JsonResponse({'ok': True, 'mensaje': mensaje})
+                        rs = [ge.gauser for ge in usuarios_ronda(g_e.ronda)]
+                    try:
+                        nombre_etiqueta = convocatoria.basada_en.nombre
+                    except:
+                        nombre_etiqueta = "Convocatoria entidad %s" % g_e.ronda.entidad.name
+                    etiqueta = Etiqueta.objects.get_or_create(nombre=nombre_etiqueta, propietario=g_e)
+                    enviar_correo(etiqueta=etiqueta, asunto=asunto, texto_html=html, receptores=rs, emisor=g_e)
+                    return JsonResponse({'ok': True})
                 else:
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para enviar el correo'})
             except:
@@ -834,15 +880,20 @@ def conv_reunion_ajax(request):
 # ----------------------------------------------------------------------------------------------------#
 def busca_actas_redactar(request):
     g_e = request.session['gauser_extra']
-    subentidades = g_e.subentidades.all()
-    if g_e.has_permiso('w_cualquier_acta_reunion'):
-        actas = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad).distinct()
-    elif g_e.has_permiso('w_actas_subentidades_reunion'):
-        actas = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades).distinct()
-    elif g_e.has_permiso('w_sus_actas_reunion'):
-        actas = ActaReunion.objects.filter(convocatoria__convoca=g_e.gauser,
-                                           convocatoria__entidad=g_e.ronda.entidad).distinct()
-    else:
+    actas_entidad = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad)
+    actas_id = [acta.id for acta in actas_entidad if acta.is_redactada_por(g_e)]
+    actas = actas_entidad.filter(id__in=actas_id)
+    # subentidades = g_e.subentidades.all()
+    # if g_e.has_permiso('w_cualquier_acta_reunion'):
+    #     actas = ActaReunion.objects.filter(convocatoria__entidad=g_e.ronda.entidad).distinct()
+    # elif g_e.has_permiso('w_actas_subentidades_reunion'):
+    #     actas = ActaReunion.objects.filter(convocatoria__convocados__in=subentidades).distinct()
+    # elif g_e.has_permiso('w_sus_actas_reunion'):
+    #     actas = ActaReunion.objects.filter(convocatoria__convoca=g_e.gauser,
+    #                                        convocatoria__entidad=g_e.ronda.entidad).distinct()
+    # else:
+    #     return ActaReunion.objects.none()
+    if actas.count() == 0:
         return ActaReunion.objects.none()
     try:
         aprobada_isnull = {'0': True, '1': False}[request.POST['aprobada']]
@@ -1147,33 +1198,30 @@ def redactar_actas_reunion_ajax(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-
-
-
         elif action == 'send_email':
             try:
                 acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=request.POST['acta'])
-                if g_e.has_permiso('mail_actas') or acta.redacta == g_e.gauser:
-                    n = acta.nombre
-                    t = acta.contenido_html
-                    html = '<h2>%s</h2>%s' % (n, t)
+                if g_e.has_permiso('mail_actas') or acta.is_redactada_por(g_e):
+                    asunto = 'Acta: %s' % (acta.convocatoria.nombre)
+                    html = render_to_string('acta_reunion2pdf.html', {
+                        'acta': acta,
+                        'ruta_base': ''
+                    })
                     if acta.convocatoria.convocados.all().count() > 0:
-                        rs = [ge.gauser for ge in
-                              Gauser_extra.objects.filter(subentidades__in=acta.convocatoria.convocados.all())]
+                        rs = [ge.gauser for ge in usuarios_ronda(g_e.ronda, subentidades=acta.convocatoria.convocados.all())]
                     else:
-                        rs = [ge.gauser for ge in
-                              Gauser_extra.objects.filter(ronda__entidad=acta.convocatoria.entidad)]
-                    encolar_mensaje(emisor=g_e, receptores=rs, asunto='%s' % n, html=html,
-                                    etiqueta='actas%s' % acta.convocatoria.id)
-                    correos = [g.email for g in rs if g.email]
-                    mensaje = '<p>Enviado correo a %s personas.</p><p>%s</p>' % (
-                        len(correos), human_readable_list(correos, type='lower'))
-                    return JsonResponse({'ok': True, 'mensaje': mensaje})
+                        rs = [ge.gauser for ge in usuarios_ronda(g_e.ronda)]
+                    try:
+                        nombre_etiqueta = "Acta %s" % acta.convocatoria.basada_en.nombre
+                    except:
+                        nombre_etiqueta = "Acta entidad %s" % g_e.ronda.entidad.name
+                    etiqueta = Etiqueta.objects.get_or_create(nombre=nombre_etiqueta, propietario=g_e)
+                    enviar_correo(etiqueta=etiqueta, asunto=asunto, texto_html=html, receptores=rs, emisor=g_e)
+                    return JsonResponse({'ok': True})
                 else:
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para enviar el correo'})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Error al tratar de llevar a cabo la acción solicitada'})
-
 
 @permiso_required('acceso_control_asistencia_reunion')
 def control_asistencia_reunion(request):

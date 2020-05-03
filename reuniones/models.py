@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import os
 import re
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from autenticar.models import Gauser
 from entidades.models import Subentidad, Cargo, Entidad
@@ -47,14 +48,20 @@ class ConvReunion(models.Model):
     modificado = models.DateField("Fecha de modificación", auto_now=True)
     educa_pk = models.IntegerField("pk de la convocatoria en gauss_educa", blank=True, null=True)
 
+    def permiso(self, g_e, p):
+        q1 = Q(cargo__in=g_e.cargos.all()) | Q(gauser=g_e.gauser)
+        q2 = Q(plantilla=self) | Q(plantilla=self.basada_en)
+        q3 = eval('Q(%s=True)' % p)
+        return PermisoReunion.objects.filter(q1, q2, q3).count() > 0 or self.creador == g_e.gauser
+
     class Meta:
         ordering = ['-fecha_hora']
 
     def __str__(self):
         try:
-            return u'%s (%s) -- %s' % (self.nombre, self.fecha_hora, self.entidad)
+            return '%s (%s) -- %s' % (self.nombre, self.fecha_hora, self.entidad)
         except:
-            return u'%s (%s)' % (self.nombre, self.fecha_hora)
+            return '%s (%s)' % (self.nombre, self.fecha_hora)
 
 
 class PuntoConvReunion(models.Model):
@@ -68,7 +75,7 @@ class PuntoConvReunion(models.Model):
         ordering = ['convocatoria', 'orden']
 
     def __str__(self):
-        return u'%s (%s)' % (self.convocatoria, self.punto[:100])
+        return '%s (%s)' % (self.convocatoria, self.punto[:100])
 
 
 class ActaReunion(models.Model):
@@ -89,9 +96,12 @@ class ActaReunion(models.Model):
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 
     def is_redactada_por(self, g_e):
-        if g_e.gauser.username == 'gauss' or g_e.has_permiso('w_cualquier_acta_reunion'):
-            return True
-        elif self.convocatoria.creador == g_e.gauser or self.redacta == g_e.gauser:
+        q1 = g_e.gauser.username == 'gauss'
+        q2 = g_e.has_permiso('w_cualquier_acta_reunion')
+        q3 = self.convocatoria.creador == g_e.gauser
+        q4 = self.redacta == g_e.gauser
+        q5 = self.convocatoria.permiso(g_e, 'puede_redactar')
+        if q1 or q2 or q3 or q4 or q5:
             return True
         elif g_e.has_permiso('w_actas_subentidades_reunion'):
             subentidades_convocadas = self.convocatoria.convocados.all()
@@ -155,10 +165,10 @@ class ActaReunion(models.Model):
 
     def __str__(self):
         try:
-            return u'Acta de la convocatoria de %s (%s) - %s' % (
+            return 'Acta de la convocatoria de %s (%s) - %s' % (
                 self.convocatoria.nombre, self.convocatoria.fecha_hora, self.convocatoria.convocante.entidad.name)
         except:
-            return u'Acta de la convocatoria de %s (%s)' % (
+            return 'Acta de la convocatoria de %s (%s)' % (
                 self.convocatoria.nombre, self.convocatoria.fecha_hora)
 
 
@@ -188,7 +198,7 @@ class FirmaActa(models.Model):
         ordering = ['acta']
 
     def __str__(self):
-        return u'%s (%s)' % (self.acta, self.firmante)
+        return '%s (%s)' % (self.acta, self.firmante)
 
 
 class AcuerdoActa(models.Model):
@@ -199,4 +209,17 @@ class AcuerdoActa(models.Model):
         ordering = ['acta']
 
     def __str__(self):
-        return u'%s (%s)' % (self.acta, self.acuerdo)
+        return '%s (%s)' % (self.acta, self.acuerdo)
+
+class PermisoReunion(models.Model):
+    plantilla = models.ForeignKey(ConvReunion, blank=True, null=True, on_delete=models.CASCADE)
+    gauser = models.ForeignKey(Gauser, on_delete=models.CASCADE, null=True, blank=True)
+    cargo = models.ForeignKey(Cargo, on_delete=models.CASCADE, blank=True, null=True)
+    edita_plantilla = models.BooleanField('Puede editar la plantilla', default=False)
+    puede_convocar = models.BooleanField('Puede hacer convocatorias basadas en la plantilla', default=False)
+    puede_redactar = models.BooleanField('Puede redactar actas basadas en la plantilla', default=False)
+
+    def __str__(self):
+        return '%s - (%s) edita: %s, convoca: %s, redacta: %s' % (self.plantilla, self.gauser.get_full_name(),
+                                                                  self.edita_plantilla, self.puede_convocar,
+                                                                  self.puede_redactar)

@@ -84,6 +84,9 @@
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
+                                        $(".select_permiso").select2(
+                                            conf_select2({'gcs': 'gc', 'format_g': '{0}, {1}'})
+                                        );
                                     } else {
                                         show_mensajes({
                                             title: "Error",
@@ -283,5 +286,72 @@
                 });
         });
 
+        $("body").on("change.select2", ".select_permiso", function (e) {
+            var plantilla = $(this).data('plantilla');
+            var seleccionado = $(this).val();
+            $.post("/conv_reunion_ajax/", {
+                    action: 'add_permisos_conv',
+                    plantilla: plantilla,
+                    seleccionado: seleccionado
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#tbody" + data.plantilla).append(data.html_permiso);
+                        $(".select_permiso").empty();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+        $("body").on("click", ".cambia_permiso", function (e) {
+            var elemento = $(this);
+            var permiso = $(this).data('permiso');
+            var tipo = $(this).data('tipo');
+            $.post("/conv_reunion_ajax/", {
+                    action: 'update_permisos_conv',
+                    permiso: permiso,
+                    tipo: tipo
+                },
+                function (data) {
+                    if (data.ok) {
+                        elemento.html(data.sino);
+                        console.log(elemento);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+
+        $('body').on('click', '.borra_permiso', function (e) {
+            e.preventDefault();
+            $('#q').val($(this).data('id'));
+            show_mensajes({
+                title: 'Borrar permiso',
+                texto: 'Si aceptas, este permiso será eliminado completamente de la base de datos.',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/conv_reunion_ajax/", {
+                                action: 'borra_permiso_plantilla',
+                                permiso: $('#q').val()
+                            },
+                            function (data) {
+                                if (data.ok) {
+                                    permiso_id = $('#q').val();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                    $('#tr_permiso' + permiso_id).remove();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+        });
     </script>
 {% endblock %}

@@ -68,6 +68,33 @@
 <hr>
 <div class="row">
     <div class="columns large-12">
+        <label for="select_permiso{{ conv_template.id }}">Buscar persona o cargo para asignarle permisos:</label>
+        <select id="select_permiso{{ conv_template.id }}" class="select_permiso"
+                data-plantilla="{{ conv_template.id }}"></select>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+<table width="100%">
+<thead>
+    <tr>
+        <th style="width: 40%;" title="Persona o Cargo de la entidad con quien se asocia el permiso">Persona/Cargo</th>
+        <th style="width: 15%;" title="¿Tiene permiso para editar esta plantilla destinada a realizar convocatorias?">Edita</th>
+        <th style="width: 15%;" title="¿Tiene permiso para convocar reuniones utilizando esta plantilla?">Convoca</th>
+        <th style="width: 15%;" title="¿Tiene permiso para redactar actas de reuniones convocadas con esta plantilla?">Redacta</th>
+        <th style="width: 15%;" title="Pulsa sobre el icono de la papelera para eliminar el correspondiente permiso">¿Borrar?</th>
+    </tr>
+</thead>
+    <tbody id="tbody{{ conv_template.id }}">
+    {% for p in conv_template.permisoreunion_set.all %}
+        {% include "conv_template_accordion_content_permiso.html" %}
+    {% endfor %}
+    </tbody>
+</table>
+    </div></div>
+<hr>
+<div class="row">
+    <div class="columns large-12">
         <label><b>Título de la convocatoria y texto base utilizado para crear la convocatoria</b> (texto en azul no es
             editable)</label>
     </div>
