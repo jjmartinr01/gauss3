@@ -1351,7 +1351,10 @@ def busca_actas_leer(request):
         q = Q(entidad=g_e.ronda.entidad) & qin & qfi & Q(basada_en=plantilla) & Q(plantilla=False)
     except:
         q = Q(entidad=g_e.ronda.entidad) & qin & qfi & Q(plantilla=False)
-    convs = ConvReunion.objects.filter(q)
+    if g_e.has_permiso('r_actas_reunion'):
+        convs = ConvReunion.objects.filter(q)
+    else:
+        convs = ConvReunion.objects.filter(q & Q(convocados__in=g_e.subentidades.all())).distinct()
     q_p1 = Q(convocatoria__in=convs)
     try:
         texto = request.POST['texto']
