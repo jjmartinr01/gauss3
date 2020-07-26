@@ -124,7 +124,9 @@ def viviendas(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                       'viviendas': vvs,
                       'usuarios': usuarios_ronda(g_e.ronda),
-                      'propuestas_copropiedad': PropuestaPropietario.objects.filter(propuesto=g_e.gauser, aceptada=False, deadline__gt=timezone.now())
+                      'propuestas_copropiedad': PropuestaPropietario.objects.filter(propuesto=g_e.gauser,
+                                                                                    aceptada=False,
+                                                                                    deadline__gt=timezone.now())
                   })
 
 
@@ -149,7 +151,8 @@ def ajax_viviendas(request):
                     vivienda = Vivienda.objects.get(id=request.POST['vivienda'])
                     if vivienda in viviendas_autorizado(g_e):
                         usuarios = usuarios_ronda(g_e.ronda)
-                        html = render_to_string('vivienda_accordion_content.html', {'vivienda': vivienda, 'g_e': g_e, 'usuarios': usuarios})
+                        html = render_to_string('vivienda_accordion_content.html',
+                                                {'vivienda': vivienda, 'g_e': g_e, 'usuarios': usuarios})
                         return JsonResponse({'ok': True, 'html': html})
                     else:
                         return JsonResponse({'ok': False})
@@ -198,11 +201,11 @@ def ajax_viviendas(request):
                         vivienda.propietarios.add(propuesta.propuesto)
                         propuesta.aceptada = True
                         propuesta.save()
-                        return JsonResponse({'ok': True, 'recarga': True, 'p':propuesta.aceptada})
+                        return JsonResponse({'ok': True, 'recarga': True, 'p': propuesta.aceptada})
                     else:
                         propuesta.deadline = timezone.now().date()
                         propuesta.save()
-                        return JsonResponse({'ok': True,'recarga': False})
+                        return JsonResponse({'ok': True, 'recarga': False})
                 except:
                     return JsonResponse({'ok': False, 'mensaje': "Error al tratar de realizar la acción solicitada."})
             elif request.POST['action'] == 'define_pagador':
@@ -426,7 +429,8 @@ def ajax_viviendas(request):
                             s = requests.Session()
                             s.verify = False
                             try:
-                                p1 = s.get('https://hospederias.guardiacivil.es/hospederias/configuracion.do', timeout=5)
+                                p1 = s.get('https://hospederias.guardiacivil.es/hospederias/configuracion.do',
+                                           timeout=5)
                             except:
                                 return False
                             cookies_header = ''
@@ -1024,14 +1028,23 @@ def ajax_reservas_vut(request):
                     return JsonResponse({'ok': False, 'mensaje': 'Error'})
     else:
         if request.POST['action'] == 'upload_vut_file':
+            excepciones = ''
             portales = {'BOO': 'Booking', 'WIM': 'Wimdu', 'HOM': 'Homeaway', 'AIR': 'Airbnb', 'REN': 'Rentalia',
                         'OAP': 'Only Apartments', 'NIU': 'Niumba'}
             air = ['Código de confirmación', 'Estado', 'Nombre de la persona', 'Contacto', 'N.º de adultos',
                    'N.º de niños', 'N.º de bebés', 'Fecha de inicio', 'Fecha de finalización', 'N.º de noches',
-                   'Reservada', 'Anuncio', 'Ingresos']
+                   'Reservada', 'Anuncio', 'Pago de la ayuda por el coronavirus', 'Importe total del cobro',
+                   'Importe de la reserva']
+            # air = ['Código de confirmación', 'Estado', 'Nombre de la persona', 'Contacto', 'N.º de adultos',
+            #        'N.º de niños', 'N.º de bebés', 'Fecha de inicio', 'Fecha de finalización', 'N.º de noches',
+            #        'Reservada', 'Anuncio', 'Ingresos']
+            # boo = ['Número de reserva', 'Reservado por', 'Nombre del cliente (o clientes)', 'Entrada', 'Salida',
+            #        'Fecha de reserva', 'Estado', 'Habitaciones', 'Personas', 'Adultos', 'Niños', 'Edades de los niños:',
+            #        'Precio', 'Comisión %', 'Importe de la comisión', 'Estado del pago', 'Forma de pago', 'Comentarios']
             boo = ['Número de reserva', 'Reservado por', 'Nombre del cliente (o clientes)', 'Entrada', 'Salida',
                    'Fecha de reserva', 'Estado', 'Habitaciones', 'Personas', 'Adultos', 'Niños', 'Edades de los niños:',
-                   'Precio', 'Comisión %', 'Importe de la comisión', 'Estado del pago', 'Forma de pago', 'Comentarios']
+                   'Precio', 'Comisión %', 'Importe de la comisión', 'Estado del pago', 'Forma de pago', 'Comentarios',
+                   'Grupo de reserva']
             portal = None
             n_files = int(request.POST['n_files'])
             informe_reservas = {'errores': [], 'nuevas': [], 'actualizadas': [], 'info': [], 'canceladas': [],
@@ -1048,13 +1061,15 @@ def ajax_reservas_vut(request):
                     # datareader = csv.reader(io.TextIOWrapper(webpage))
                     reader = csv.DictReader(TextIOWrapper(fichero))
                     fieldnames = reader.fieldnames
-                    if air[0] in fieldnames and len(fieldnames) == 13:
+                    # if air[0] in fieldnames and len(fieldnames) == 13:
+                    if air[0] in fieldnames:
                         portal = 'AIR'
                 elif fichero.content_type == 'application/vnd.ms-excel':
                     book = xlrd.open_workbook(file_contents=fichero.read())
                     sheet = book.sheet_by_index(0)
                     fieldnames = [sheet.cell(0, col_index).value for col_index in range(sheet.ncols)]
-                    if boo[0] in fieldnames and len(fieldnames) == 18:
+                    # if boo[0] in fieldnames and len(fieldnames) == 18:
+                    if boo[0] in fieldnames:
                         portal = 'BOO'
                 if portal:
                     if portal == 'AIR':
@@ -1066,7 +1081,8 @@ def ajax_reservas_vut(request):
                         adultos = 'N.º de adultos'  # .encode('utf-8')
                         ninos = 'N.º de niños'  # .encode('utf-8')
                         nombre = 'Nombre de la persona'
-                        total = 'Ingresos'
+                        # total = 'Ingresos'
+                        total = 'Importe total del cobro'
                         estado = 'Estado'
                         estados = {'Aceptada': 'ACE', 'Cancelada': 'CAN'}
                         for row in reader:
@@ -1085,12 +1101,13 @@ def ajax_reservas_vut(request):
                                 solapadas = reservas_solapadas(reserva)
                                 if solapadas:
                                     informe_reservas['solapadas'].append(solapadas)
-                            except:
+                            except Exception as ex:
                                 error = ''
                                 if n_files > 1:
                                     error += 'Fichero: %s (%s). ' % (fichero.name, portales[portal])
                                 error += 'La reserva %s (%s) no se ha podido registrar. Su estado es: %s' % (
                                     row[code], portales[portal], row[estado])
+                                excepciones += "{0} {1} - {2!r}".format(row[code], type(ex).__name__, ex.args)
                                 informe_reservas['errores'].append(error)
                     elif portal == 'BOO':
                         for row_index in range(1, sheet.nrows):
@@ -1131,7 +1148,6 @@ def ajax_reservas_vut(request):
                             reserva.nombre = row['Reservado por']
                             salida = datetime.strptime(row['Salida'], '%Y-%m-%d').date()
                             reserva.noches = (salida - entrada).days
-                            total = float(row['Precio'].split()[0].replace(',', '.'))
                             if row['Importe de la comisión']:
                                 imp_comision = float(row['Importe de la comisión'].split()[0].replace(',', '.'))
                                 comision = float(str(row['Comisión %']).split()[0].replace(',', '.'))
@@ -1139,6 +1155,10 @@ def ajax_reservas_vut(request):
                                 imp_comision = 0
                                 comision = 100
                             reserva.total = imp_comision * (100 - comision) / comision
+                            # Se podría haber calculado el total así:
+                            # total = float(row['Precio'].split()[0].replace(',', '.'))
+                            # reserva.total = total - imp_comision
+                            # Pero en las reservas canceladas podría ocurrir algún error.
                             reserva.limpieza = 0
                             reserva.estado = estado
                             reserva.code = code
@@ -1151,7 +1171,7 @@ def ajax_reservas_vut(request):
                     return JsonResponse({'ok': False, 'mensaje': 'No se sabe el portal'})
             html = render_to_string('reservas_vut_mensaje_upload_vut_file.html',
                                     {'informe': informe_reservas, 'viviendas': viviendas})
-            return JsonResponse({'html': html, 'portal': portal, 'ok': True})
+            return JsonResponse({'html': html, 'portal': portal, 'ok': True, 'excepciones': excepciones})
 
 
 def graba_registro(registro):
@@ -1176,7 +1196,8 @@ def graba_registro(registro):
                     mensaje = '<p>En el registro de %s, reserva %s</p><p>La Guardia Civil dice:</p>%s' % (
                         viajero.nombre_completo, viajero.reserva, r.text.replace('\r\n', '<br>'))
                     viajero.observaciones += mensaje
-                    emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
+                    emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0],
+                                                      ronda=vivienda.entidad.ronda)
                     encolar_mensaje(emisor=emisor, receptores=receptores,
                                     asunto='Error en comunicación a la Guardia Civil', html=mensaje,
                                     etiqueta='guardia_civl%s' % vivienda.id)
@@ -1185,7 +1206,8 @@ def graba_registro(registro):
                     mensaje = '<p>En el registro de %s, reserva %s</p><p>La Guardia Civil dice:</p>%s' % (
                         viajero.nombre_completo, viajero.reserva, r.text.replace('\r\n', '<br>'))
                     viajero.observaciones += mensaje
-                    emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
+                    emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0],
+                                                      ronda=vivienda.entidad.ronda)
                     encolar_mensaje(emisor=emisor, receptores=vivienda.propietarios.all(),
                                     asunto='Comunicación a la Guardia Civil', html=mensaje,
                                     etiqueta='guardia_civl%s' % vivienda.id)
