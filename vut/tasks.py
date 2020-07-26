@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
 from django.core.files.base import ContentFile
+from django.template.loader import render_to_string
 from time import sleep
 from bs4 import BeautifulSoup
 from celery import shared_task
 from django.db.models import Q
 import requests
+
+from gauss.funciones import usuarios_ronda
 from gauss.rutas import RUTA_BASE, MEDIA_VUT
 from autenticar.models import Gauser, Permiso
 from entidades.models import Gauser_extra
@@ -60,7 +63,8 @@ def comunica_viajero2PNGC():
                         mensaje = '<p>En el registro de %s, reserva %s</p><p>La Guardia Civil dice:</p>%s' % (
                             viajero.nombre_completo, viajero.reserva, r.text.replace('\r\n', '<br>'))
                         viajero.observaciones += mensaje
-                        emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
+                        emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0],
+                                                          ronda=vivienda.entidad.ronda)
                         encolar_mensaje(emisor=emisor, receptores=receptores,
                                         asunto='Error en comunicación a la Guardia Civil', html=mensaje,
                                         etiqueta='guardia_civl%s' % vivienda.id)
@@ -72,7 +76,8 @@ def comunica_viajero2PNGC():
                         mensaje = '<p>En el registro de %s, reserva %s</p><p>La Guardia Civil dice:</p>%s' % (
                             viajero.nombre_completo, viajero.reserva, r.text.replace('\r\n', '<br>'))
                         viajero.observaciones += mensaje
-                        emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
+                        emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0],
+                                                          ronda=vivienda.entidad.ronda)
                         encolar_mensaje(emisor=emisor, receptores=[vivienda.propietarios.all()],
                                         asunto='Comunicación a la Guardia Civil', html=mensaje,
                                         etiqueta='guardia_civl%s' % vivienda.id)
@@ -88,7 +93,8 @@ def comunica_viajero2PNGC():
                     receptores = Gauser.objects.filter(id__in=gauser_autorizados)
                     mensaje = '<p>No se ha podido establecer comunicación con la Guardia Civil.</p>'
                     viajero.observaciones += mensaje
-                    emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
+                    emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0],
+                                                      ronda=vivienda.entidad.ronda)
                     encolar_mensaje(emisor=emisor, receptores=receptores,
                                     asunto='Error en comunicación a la Guardia Civil', html=mensaje,
                                     etiqueta='guardia_civl%s' % vivienda.id)
@@ -386,52 +392,108 @@ def comunica_viajero2PNGC():
                         logger.info("Error al solicitar generar parte PDF")
                     # En este punto termina el proceso de grabación
                     if p4.status_code == 200:
-                        logger.info(u'Todo correcto')
+                        logger.info('Todo correcto')
                         s.close()
                         viajero.fichero_policia = True
                         viajero.observaciones += '<br><span style="color:green;">Registro finalizado con todas las comunicaciones correctas.</span>'
                         viajero.observaciones += '<hr>Información JSON: <br> %s' % huespedJson
                         viajero.save()
-                        emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
-                        gtexto = 'Registrado en Policía el viajero: %s %s (%s)' % (
-                        viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
-                        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+                        enviar_mensaje_registro(viajero, log='Correcto')
+                        # emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0],
+                        #                                   ronda=vivienda.entidad.ronda)
+                        # gtexto = 'Registrado en Policía el viajero: %s %s (%s)' % (
+                        #     viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                        # envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                         return True
                     else:
                         logger.info('Error durante el grabado del viajero. Hacer el registro manualmente.')
                         viajero.observaciones += '<br><span style="color:red;">Error durante el grabado del viajero. Hacer el registro manualmente.</span>'
                         viajero.save()
                         s.close()
-                        emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
-                        gtexto = 'Error durante el grabado del viajero. Hacer el registro manualmente. Viajero: %s %s (%s)' % (
-                            viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
-                        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+                        logger.info('Error4')
+                        enviar_mensaje_registro(viajero, log='Error4')
+                        # emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0],
+                        #                                   ronda=vivienda.entidad.ronda)
+                        # gtexto = 'Error durante el grabado del viajero. Hacer el registro manualmente. Viajero: %s %s (%s)' % (
+                        #     viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                        # envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                         return p4
                 else:
-                    logger.info(u'Error al hacer el login en webpol para el viajero: %s' % (viajero))
+                    # 'Error al hacer el login en webpol para el viajero: %s' % (viajero)
+                    logger.info('Error2 %s' % viajero)
                     viajero.observaciones += 'Error al hacer el login en webpol para el viajero'
                     viajero.save()
                     s.close()
-                    emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
-                    gtexto = 'Error al hacer el login en la web de la Policía Nacional. Viajero: %s %s (%s)' % (
-                        viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
-                    envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+                    enviar_mensaje_registro(viajero, log='Error2')
+                    # gtexto = 'Error al hacer el login en la web de la Policía Nacional. Viajero: %s %s (%s)' % (
+                    #     viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+                    # envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
             else:
-                gtexto = 'Error. Debes indicar en GAUSS si el registro se hace en Policía Nacional o Guardia Civil. Vivienda: %s' % (
-                    viajero.reserva.vivienda.nombre)
-                envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+                logger.info('Error3')
+                enviar_mensaje_registro(viajero, log='Error3')
+                # gtexto = 'Error. Debes indicar en GAUSS si el registro se hace en Policía Nacional o Guardia Civil. Vivienda: %s' % (
+                #     viajero.reserva.vivienda.nombre)
+                # envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
                 return False
         except:
-            logger.info("6")
-            mensaje = 'Error en la comunicación con Policía/Guardia Civil. Se debe hacer el registro manualmente.'
-            ronda = viajero.reserva.vivienda.entidad.ronda
-            permiso = Permiso.objects.get(code_nombre='recibe_errores_de_viajeros')
-            receptores_ge = Gauser_extra.objects.filter(ronda=ronda, permisos__in=[permiso])
-            receptores = Gauser.objects.filter(id__in=receptores_ge.values_list('gauser__id', flat=True))
-            emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
-            encolar_mensaje(emisor=emisor, receptores=receptores,
-                            asunto='Error en RegistroPolicia', html=mensaje, etiqueta='error%s' % ronda.id)
-            gtexto = 'Error en la comunicación con Policía/Guardia Civil. Se debe hacer el registro manualmente. Viajero: %s %s (%s)' % (
-                viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
-            envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+            logger.info('Error1')
+            enviar_mensaje_registro(viajero, log='Error1')
+            # mensaje = 'Error en la comunicación con Policía/Guardia Civil. Se debe hacer el registro manualmente.'
+            # ronda = viajero.reserva.vivienda.entidad.ronda
+            # permiso = Permiso.objects.get(code_nombre='recibe_errores_de_viajeros')
+            # receptores_ge = Gauser_extra.objects.filter(ronda=ronda, permisos__in=[permiso])
+            # receptores = Gauser.objects.filter(id__in=receptores_ge.values_list('gauser__id', flat=True))
+            # emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
+            # encolar_mensaje(emisor=emisor, receptores=receptores,
+            #                 asunto='Error en Registro Policia', html=mensaje, etiqueta='error%s' % ronda.id)
+            # gtexto = 'Error en la comunicación con Policía/Guardia Civil. Se debe hacer el registro manualmente. Viajero: %s %s (%s)' % (
+            #     viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
+            # envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
             return False
+
+
+def enviar_mensaje_registro(viajero, log='Correcto'):
+    reserva = viajero.reserva
+    vivienda = reserva.vivienda
+    ronda = vivienda.entidad.ronda
+    html = render_to_string('correo_PN_GC.html', {'viajero': viajero, 'log': log})
+    #Si es correcto solo recibirán mensaje los propietarios. Si hay errores, el Administrador con el
+    #permiso requerido recibirá un correo con el fin de corregir el programa o ayudar al interesado:
+    usuarios = usuarios_ronda(ronda)
+    if log != 'Correcto':
+        permiso = Permiso.objects.get(code_nombre='recibe_errores_de_viajeros')
+        receptores_ge = usuarios.filter(Q(gauser__in=vivienda.propietarios.all()) | Q(permisos__in=[permiso]))
+        receptores = [receptor_ge.gauser for receptor_ge in receptores_ge]
+    else:
+        receptores = [propietario for propietario in vivienda.propietarios.all()]
+    emisor = usuarios.get(gauser=vivienda.propietarios.all()[0])
+    if log == 'Correcto':
+        asunto = 'Efectuado registro de viajero en %s' % vivienda.get_police_display()
+        gtexto = 'Registrado en la %s el viajero: %s %s (%s)' % (
+            vivienda.get_police_display(), viajero.nombre, viajero.apellido1, vivienda.nombre)
+        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+    elif log == 'Error1':
+        asunto = 'Error al hacer el registro de viajero en %s' % vivienda.get_police_display()
+        gtexto = 'Error en la comunicación con %s. Se debe hacer el registro manualmente. Viajero: %s %s (%s)' % (
+            vivienda.get_police_display(), viajero.nombre, viajero.apellido1, vivienda.nombre)
+        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+    elif log == 'Error2':
+        asunto = 'Error al identificarse en web de %s' % vivienda.get_police_display()
+        gtexto = 'Error al hacer el login en la web de la %s. Viajero: %s %s (%s)' % (
+            vivienda.get_police_display(), viajero.nombre, viajero.apellido1, vivienda.nombre)
+        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+    elif log == 'Error3':
+        asunto = 'Error registro GAUSS - Policía Nacional o Guardia Civil sin configurar'
+        gtexto = 'Error. Debes indicar en GAUSS si el registro se hace en Policía Nacional o Guardia Civil. Vivienda: %s' % (
+            viajero.reserva.vivienda.nombre)
+        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+    elif log == 'Error4':
+        asunto = 'Error con registro de viajero en GAUSS'
+        gtexto = 'Error durante el grabado del viajero. Hacer el registro manualmente. Viajero: %s %s (%s)' % (
+            viajero.nombre, viajero.apellido1, vivienda.nombre)
+        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+    else:
+        asunto = 'Error en registro VUT'
+    etiqueta = 'error-vut%s' % ronda.id
+    encolar_mensaje(emisor=emisor, receptores=receptores, asunto=asunto, html=html, etiqueta=etiqueta)
+    return True

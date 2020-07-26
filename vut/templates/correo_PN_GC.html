@@ -1,0 +1,49 @@
+<p>Hola,</p>
+{% if log == 'Correcto' %}
+    <p>Se ha registrado correctamente en la web de la {{ viajero.reserva.vivienda.get_police_display }} el
+    viajero:</p>
+    <ul>
+        <li>{{ viajero.nombre }} {{ viajero.apellido1 }} {{ viajero.apellido2 }}</li>
+        <li>Vivienda: {{ viajero.reserva.vivienda }}</li>
+        <li>Reserva ({{ viajero.reserva.get_portal_display }}): Entrada el {{ viajero.reserva.entrada }} y salida
+            el {{ viajero.reserva.salida }}</li>
+    </ul>
+    <p>Información obtenida durante el proceso de registro:</p>
+    <p>{{ viajero.observaciones }}</p>
+{% elif log == 'Error1' %}
+    <p>Se ha producido un error en la comunicación con la {{ viajero.reserva.vivienda.get_police_display }}.
+        Se debe hacer el registro manualmente.</p>
+    <p>Los datos del viajero con el que se ha producido el error son:</p>
+    <ul>
+        <li>{{ viajero.nombre }} {{ viajero.apellido1 }} {{ viajero.apellido2 }}</li>
+        <li>Vivienda: {{ viajero.reserva.vivienda }}</li>
+        <li>Reserva ({{ viajero.reserva.get_portal_display }}): Entrada el {{ viajero.reserva.entrada }} y salida
+            el {{ viajero.reserva.salida }}</li>
+    </ul>
+    <p>Puedes encontrar más información en: GAUSS -> Viviendas Uso Turístico -> Reservas/Registro ->
+        pestaña Ficheros Policía/Guardia Civil</p>
+{% elif log == 'Error2' %}
+    <p>Se ha producido un error al intentar entrar en la web de la
+        {{ viajero.reserva.vivienda.get_police_display }}.</p>
+    <p>Esto puede deberse a que los datos de usuario y contraseña definidos en GAUSS, para el acceso
+        a la web de la {{ viajero.reserva.vivienda.get_police_display }} no sean correctos.</p>
+    <p>Puedes modificar dicha información en: GAUSS -> Viviendas Uso Turístico -> Viviendas ->
+        Selecciona tu vivienda</p>
+    <p>Observaciones creadas sobre el viajero no registrado:</p>
+    <p>{{ viajero.observaciones }}</p>
+{% elif log == 'Error3' %}
+    <p>Para que el registro de viajeros funcione debes indicar en qué organismo se produce dicho
+        registro.</p>
+    <p>Si tu vivienda está en una localidad con Policía Nacional, ese es el organismo que debes indicar.
+        En otro caso debes hacerlo a través de la Guardia Civil.</p>
+    <p>Puedes indicar dicha información en: GAUSS -> Viviendas Uso Turístico -> Viviendas ->
+        Selecciona tu vivienda</p>
+    <p>Observaciones creadas sobre el viajero no registrado:</p>
+    <p>{{ viajero.observaciones }}</p>
+    {% elif log == 'Error4' %}
+    <p>Se ha producido un error en la última fase del registro. Debes hacer el registro del viajero
+    manualmente.</p>
+    <p>Observaciones creadas sobre el viajero no registrado:</p>
+    <p>{{ viajero.observaciones }}</p>
+{% endif %}
+
