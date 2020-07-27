@@ -1,7 +1,11 @@
 import logging
 import paho.mqtt.client as mqtt
 from gauss.settings import MQTT_PASS, MQTT_USER
-logger = logging.getLogger('django')
+
+try:
+    logger = logging.getLogger('domotica')
+except:
+    logger = logging.getLogger('django')
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
