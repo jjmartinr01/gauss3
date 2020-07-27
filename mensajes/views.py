@@ -30,6 +30,7 @@ from autenticar.models import Gauser
 
 from gauss.funciones import usuarios_de_gauss, pass_generator, html_to_pdf, paginar
 
+logger = logging.getLogger('django')
 
 class AdjuntoForm(ModelForm):
     class Meta:
@@ -87,6 +88,7 @@ def crea_mensaje_cola(mensaje):
             correos += [mail[a - num_max_mails:a] for a in partes]
         else:
             correos.append(mail)
+    logger.info('MenId: %s, NumCorreos: %s' % (mensaje.id, len(correos)))
     for correo in correos:
         m = Mensaje_cola.objects.create(mensaje=mensaje, receptores=';'.join(correo), enviado=False)
     m.ultima_parte = True
@@ -499,9 +501,8 @@ def crear_aviso(request, aceptado, mensaje, link=""):
                       link=link)
             m.save()
     else:
-        logger = logging.getLogger(__name__)
         logger.info(
-            u"%s, %s, %s, %s, %s" % (request.session['gauser_extra'], request.path, request.method, ip, mensaje))
+            "%s, %s, %s, %s, %s" % (request.session['gauser_extra'], request.path, request.method, ip, mensaje))
     return m
 
 

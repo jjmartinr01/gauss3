@@ -33,7 +33,7 @@ class Adjunto(models.Model):
         return os.path.split(f)[1]
 
     def __str__(self):
-        return u'%s (%s)' % (self.fichero, self.propietario.gauser.get_full_name())
+        return '%s (%s)' % (self.fichero, self.propietario.gauser.get_full_name())
 
 
 class Etiqueta(models.Model):
@@ -44,7 +44,7 @@ class Etiqueta(models.Model):
         app_label = 'mensajes'
 
     def __str__(self):
-        return u'%s (%s)' % (self.nombre, self.propietario.gauser.get_full_name())
+        return '%s (%s)' % (self.nombre, self.propietario.gauser.get_full_name())
 
 
 class Mensaje(models.Model):
@@ -71,7 +71,7 @@ class Mensaje(models.Model):
             return sin_tags
 
     def __str__(self):
-        return u'Enviado por %s (%s) - %s' % (self.emisor.gauser.get_full_name(), self.fecha, self.asunto)
+        return 'Enviado por %s (%s) - %s' % (self.emisor, self.fecha, self.asunto)
 
 
 class Borrado(models.Model):
@@ -82,7 +82,7 @@ class Borrado(models.Model):
         app_label = 'mensajes'
 
     def __str__(self):
-        return u'Borrado por %s (%s) - %s' % (
+        return 'Borrado por %s (%s) - %s' % (
         self.eraser.gauser.get_full_name(), self.mensaje.fecha, self.mensaje.asunto)
 
 
@@ -94,7 +94,7 @@ class Leido(models.Model):
         app_label = 'mensajes'
 
     def __str__(self):
-        return u'Leído por %s (%s) - %s' % (self.lector.gauser.get_full_name(), self.mensaje.fecha, self.mensaje.asunto)
+        return 'Leído por %s (%s) - %s' % (self.lector.gauser.get_full_name(), self.mensaje.fecha, self.mensaje.asunto)
 
 
 class Importante(models.Model):
@@ -105,7 +105,7 @@ class Importante(models.Model):
         app_label = 'mensajes'
 
     def __str__(self):
-        return u'Marcado como importante por %s (%s) - %s' % (
+        return 'Marcado como importante por %s (%s) - %s' % (
         self.marcador.gauser.get_full_name(), self.mensaje.fecha, self.mensaje.asunto)
 
 
@@ -121,7 +121,7 @@ class Aviso(models.Model):
         app_label = 'mensajes'
 
     def __str__(self):
-        return u'%s (%s)--%s' % (self.aviso, self.fecha, self.usuario)
+        return '%s (%s)--%s' % (self.aviso, self.fecha, self.usuario)
 
 
 class Mensaje_cola(models.Model):
@@ -135,4 +135,4 @@ class Mensaje_cola(models.Model):
         ordering = ['creado', 'id']
         app_label = 'mensajes'
     def __str__(self):
-        return u'%s (%s - %s)' % (self.mensaje.asunto, self.creado, self.modificado)
+        return '%s (%s - %s)' % (self.mensaje.asunto, self.creado, self.modificado)

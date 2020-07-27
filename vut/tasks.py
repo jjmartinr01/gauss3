@@ -461,6 +461,7 @@ def enviar_mensaje_registro(viajero, log='Correcto'):
     #permiso requerido recibirá un correo con el fin de corregir el programa o ayudar al interesado:
     usuarios = usuarios_ronda(ronda)
     if log != 'Correcto':
+        logger.info('!=Correcto')
         permiso = Permiso.objects.get(code_nombre='recibe_errores_de_viajeros')
         receptores_ge = usuarios.filter(Q(gauser__in=vivienda.propietarios.all()) | Q(permisos__in=[permiso]))
         receptores = [receptor_ge.gauser for receptor_ge in receptores_ge]
@@ -496,4 +497,5 @@ def enviar_mensaje_registro(viajero, log='Correcto'):
         asunto = 'Error en registro VUT'
     etiqueta = 'error-vut%s' % ronda.id
     encolar_mensaje(emisor=emisor, receptores=receptores, asunto=asunto, html=html, etiqueta=etiqueta)
+    logger.info(asunto)
     return True
