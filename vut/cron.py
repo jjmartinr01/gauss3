@@ -370,7 +370,7 @@ def comunica_viajero2PNGC():
                         viajero.observaciones += '<hr>Información JSON: <br> %s' % huespedJson
                         viajero.save()
                         emisor = Gauser_extra.objects.get(gauser=vivienda.propietarios.all()[0], ronda=vivienda.entidad.ronda)
-                        gtexto = 'Registrado en Policía el viajero: %s %s (%s)' % (
+                        gtexto = 'Se ha registrado en Policía el viajero: %s %s (%s)' % (
                         viajero.nombre, viajero.apellido1, viajero.reserva.vivienda.nombre)
                         envia_telegram(emisor, gtexto)
                         return True

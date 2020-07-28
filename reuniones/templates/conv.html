@@ -113,6 +113,9 @@
                         $("#update_ok").show().delay(1500).fadeOut();
                         $('#list_convocatorias').prepend(data.html);
                         $(document).scrollTop($('#list_convocatorias').offset().top - 150);
+                        if (data.mensaje){
+                            show_mensajes({title: '<i class="fa fa-warning"></i> Aviso', texto: data.mensaje})
+                        }
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }

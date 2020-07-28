@@ -143,7 +143,8 @@ def encolar_mensaje(emisor=None, receptores=[], asunto='', html='', texto='', et
             mensaje.adjuntos.add(adjunto)
         crea_mensaje_cola(mensaje)
         return True
-    except:
+    except Exception as ex:
+        logger.info("Error encolar mensaje: {0} - {1!r}".format(type(ex).__name__, ex.args))
         return False
 
 

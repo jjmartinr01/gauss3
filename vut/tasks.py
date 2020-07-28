@@ -392,7 +392,7 @@ def comunica_viajero2PNGC():
                         logger.info("Error al solicitar generar parte PDF")
                     # En este punto termina el proceso de grabación
                     if p4.status_code == 200:
-                        logger.info('Todo correcto')
+                        logger.info('Todo correcto celery')
                         s.close()
                         viajero.fichero_policia = True
                         viajero.observaciones += '<br><span style="color:green;">Registro finalizado con todas las comunicaciones correctas.</span>'
@@ -495,6 +495,7 @@ def enviar_mensaje_registro(viajero, log='Correcto'):
         envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
     else:
         asunto = 'Error en registro VUT'
+        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=asunto)
     etiqueta = 'error-vut%s' % ronda.id
     encolar_mensaje(emisor=emisor, receptores=receptores, asunto=asunto, html=html, etiqueta=etiqueta)
     logger.info(asunto)

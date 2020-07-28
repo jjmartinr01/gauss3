@@ -458,15 +458,18 @@ def conv_reunion_ajax(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
-        if action == 'nueva_convocatoria' and get_plantillas(g_e).count() > 0:
+        if action == 'nueva_convocatoria':
             try:
+                mensaje = ''
+                if not get_plantillas(g_e).count() > 0:
+                    mensaje = 'Es conveniente que te crees plantillas para que el proceso redactar convocatorias sea más sencillo.'
                 conv = ConvReunion.objects.create(creador=g_e.gauser, entidad=g_e.ronda.entidad, plantilla=False,
                                                   nombre='ConvReunion ...')
                 ActaReunion.objects.create(convocatoria=conv, nombre='Acta: %s' % conv.nombre)
                 conv.texto_convocatoria = render_to_string('conv_texto.html', {'c': conv})
                 conv.save()
                 html = render_to_string('conv_accordion.html', {'convocatorias': [conv]})
-                return JsonResponse({'ok': True, 'html': html})
+                return JsonResponse({'ok': True, 'html': html, 'mensaje': mensaje})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'open_accordion':
