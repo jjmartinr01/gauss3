@@ -3,7 +3,7 @@ from django.template import Library
 from datetime import datetime, timedelta
 from autenticar.models import Permiso
 from domotica.models import Grupo
-
+from vut.models import DomoticaVUT
 
 register = Library()
 
@@ -40,3 +40,7 @@ def borra_dispositivo_domotica(g_e, dispositivo):
         return True
     else:
         return False
+
+@register.filter
+def copiasVUT(dispositivo):
+    return DomoticaVUT.objects.filter(dispositivo=dispositivo)

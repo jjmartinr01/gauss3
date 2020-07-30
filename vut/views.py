@@ -80,6 +80,15 @@ def has_permiso_on_vivienda(g_e, vivienda, permiso):
         except:
             return False
 
+#-------------------------------------------------------------------------------
+
+
+# */2 * * * * /home/gauss/django/gauss3/bin/python /home/gauss/django/gauss3/manage.py runtask comunica_viajero2PNGC  --settings=gauss.settings # krono$
+# */2 * * * * /home/gauss/django/gauss3/bin/python /home/gauss/django/gauss3/manage.py runtask mail_mensajes_cola  --settings=gauss.settings # kronos:9$
+
+
+#-------------------------------------------------------------------------------
+
 
 @permiso_required('acceso_viviendas')
 def viviendas(request):

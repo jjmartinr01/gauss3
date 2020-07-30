@@ -8,8 +8,6 @@ from autenticar.models import Gauser
 from gauss.funciones import pass_generator
 
 
-# Create your models here.
-
 class Etiqueta_domotica(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     nombre = models.CharField("Carpeta/Etiqueta", max_length=300, null=True, blank=True)

@@ -184,6 +184,17 @@
                 </label>
             </div>
         </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Hasta el momento está compartido con:</b>
+                    <ol>
+                        {% for copia in gdispositivo.dispositivo|copiasVUT %}
+                            <li>{{ copia.vivienda }}</li>
+                        {% endfor %}
+                    </ol>
+                </label>
+            </div>
+        </div>
     {% endif %}
 </fieldset>
 
