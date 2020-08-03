@@ -186,7 +186,8 @@
     <script>
         var starDate = new Date();
         var endDate = new Date();
-        var yesterday = starDate.setDate(starDate.getDate()-1);
+        var yesterday = new Date();
+        yesterday.setDate(yesterday.getDate()-1);
         $("#entrada_nueva_reserva").fdatepicker({
             format: 'dd/mm/yyyy',
             weekStart: 1,
