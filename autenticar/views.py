@@ -573,7 +573,7 @@ def index(request):
     else:
         logout(request)
         form = CaptchaForm()
-        return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso'})
+        return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso', 'ip': ip})
 
 
 def no_login(request):
