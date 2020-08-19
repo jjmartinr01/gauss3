@@ -25,9 +25,9 @@ from mensajes.views import crear_aviso, enviar_correo
 
 def documentos_ge(request):
     g_e = request.session['gauser_extra']
-    # qa = Q(subentidad__in=g_e.subentidades.all()) | Q(cargo__in=g_e.cargos.all()) | Q(gauser=g_e.gauser)
-    qa = Q(subentidad__entidad=g_e.ronda.entidad) | Q(cargo__in=g_e.cargos.all())
-    docs_id = Compartir_Ges_documental.objects.filter(qa).values_list('documento__id', flat=True)
+    qa = Q(subentidad__in=g_e.subentidades.all()) | Q(cargo__in=g_e.cargos.all()) | Q(gauser=g_e.gauser)
+    qb = qa & Q(documento__etiqueta__entidad=g_e.ronda.entidad)
+    docs_id = Compartir_Ges_documental.objects.filter(qb).values_list('documento__id', flat=True)
     docs = Ges_documental.objects.filter(id__in=docs_id, borrado=False).distinct()
     try:
         inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d').date()
