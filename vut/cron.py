@@ -35,7 +35,7 @@ def comunica_viajero2PNGC():
         if type(viajero) is not Viajero:
             return False
         if viajero.fichero_policia:
-            return False
+            return (False, 'ya enviado')
         if not viajero.observaciones:
             viajero.observaciones = ''
             viajero.save()
@@ -237,6 +237,7 @@ def comunica_viajero2PNGC():
                                     'fechaNacimiento': viajero.nacimiento.strftime('%d/%m/%Y'), '_csrf': csrf_token,
                                     'jsonHiddenComunes': '',
                                     'nacionalidadStr': viajero.get_pais_display().encode('utf-8'),
+                                    # 'nacionalidadStr': viajero.get_pais_display().encode('iso-8859-1'),
                                     'sexoStr': sexo[viajero.sexo], 'tipoDocumentoStr': viajero.get_tipo_ndi_display()}
                     logger.info("Definido data_viajero")
                     huesped_url = 'https://webpol.policia.es/e-hotel/hospederia/manual/insertar/huesped'
