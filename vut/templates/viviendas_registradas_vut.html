@@ -81,6 +81,7 @@
                                 {% for copropietario in v|copropietarios:s %}
                                     <small>- {{ copropietario.get_full_name }}</small>
                                 {% endfor %}
+                                <span style="font-size: small;color:gray;">{{ v.address }}-{{ v.municipio }}</span>
                             </p>
                         {% endfor %}
                     </td>
