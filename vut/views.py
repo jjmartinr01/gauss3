@@ -80,14 +80,15 @@ def has_permiso_on_vivienda(g_e, vivienda, permiso):
         except:
             return False
 
-#-------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------
 
 
 # */2 * * * * /home/gauss/django/gauss3/bin/python /home/gauss/django/gauss3/manage.py runtask comunica_viajero2PNGC  --settings=gauss.settings # krono$
 # */2 * * * * /home/gauss/django/gauss3/bin/python /home/gauss/django/gauss3/manage.py runtask mail_mensajes_cola  --settings=gauss.settings # kronos:9$
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 @permiso_required('acceso_viviendas')
@@ -1753,6 +1754,23 @@ def viviendas_registradas_vut(request):
                 return JsonResponse({'ok': True, 'id': vivienda.id, 'reg': vivienda.nregistro})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'filtra_viviendas':
+            try:
+                texto = request.POST['texto']
+                f_u = Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)
+                usuarios_f = usuarios.filter(f_u)
+                propietarios = usuarios_f.values_list('gauser__id', flat=True)
+                f_v = Q(nombre__icontains=texto) | Q(address__icontains=texto) | Q(municipio__icontains=texto) | Q(
+                    propietarios__in=propietarios)
+                viviendas = viviendas.filter(f_v)
+                set_usuarios = set(viviendas.values_list('propietarios__id', flat=True)) | set(propietarios)
+                usuarios = usuarios.filter(gauser__id__in=set_usuarios)
+                html = render_to_string("viviendas_registradas_vut_tbody.html",
+                                        {'socios': usuarios, 'viviendas': viviendas, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'texto': texto, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+
     return render(request, "viviendas_registradas_vut.html",
                   {
                       'formname': 'viviendas_registradas_vut',
