@@ -17,6 +17,7 @@ urlpatterns = [
     path('registro_viajero_manual/', views.registro_viajero_manual),
     path('web_vut/', views.web_vut),
     path('web_vut_id/<int:vivienda_id>/', views.web_vut_id),
+    path('reserva_vut_crea_recibo/<int:reserva_id>/', views.reserva_vut_crea_recibo),
     # path('web_vut_id/', views.web_vut_id),
 ]
 

@@ -1,6 +1,9 @@
 {% load vut_extras %}
 <tr class="tr_reserva" data-reserva="{{ r.id }}" id="reserva{{ r.id }}">
-    <td>{{ r.vivienda.nombre }}<br><span class="label secondary round">{{ r.get_portal_display }}</span></td>
+    <td>{{ r.vivienda.nombre }}<br><span class="label secondary round">{{ r.get_portal_display }}</span>
+        <a href="/reserva_vut_crea_recibo/{{ r.id }}" title="Haz click para crear un recibo de pago para el viajero"><i
+                class="fa fa-file-text-o"></i></a>
+    </td>
     {% if r|contains_hoy %}
         <td style="max-width: 225px;overflow:hidden;" title="{{ r.nombre }}"><a class="button small copy_url_viajero"
                                                                                 data-code="{{ r.code }}"

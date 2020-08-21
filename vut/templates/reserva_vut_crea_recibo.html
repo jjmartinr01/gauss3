@@ -1,0 +1,190 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    {#    <style>#}
+    {#        .title_recibo {#}
+    {#            font-weight: bold;#}
+    {#            font-size: x-large;#}
+    {#        }#}
+    {##}
+    {#        .sub_title_recibo {#}
+    {#            font-size: small;#}
+    {#            color: gray;#}
+    {#        }#}
+    {##}
+    {#        .recibo {#}
+    {#            font-weight: bold;#}
+    {#            font-size: x-large;#}
+    {#            color: grey;#}
+    {#        }#}
+    {##}
+    {#        table {#}
+    {#            display: block;#}
+    {#            overflow-x: auto;#}
+    {#            white-space: nowrap;#}
+    {#        }#}
+    {#    </style>#}
+{% endblock %}
+
+{% block contenido %}
+
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="recibo_html" id="recibo_html" value="">
+
+        <div>
+            <h4 style="text-align: center;color: #008CBA;"><strong>Crear recibo/factura de una reserva</strong></h4>
+        </div>
+
+        <div id="recibo_content">
+            <style>
+                .title_recibo {
+                    font-weight: bold;
+                    font-size: x-large;
+                }
+
+                .sub_title_recibo {
+                    font-size: small;
+                    color: gray;
+                }
+
+                .recibo {
+                    font-weight: bold;
+                    font-size: x-large;
+                    color: grey;
+                }
+
+                td, th {
+                    border: #bbbbbb 1px solid;
+                }
+
+                table {
+                    width: 100%;
+                    border: solid 1px #bbbbbb;
+                }
+            </style>
+            <div class="row">
+                <div class="columns-12">
+                    <span class="title_recibo" contenteditable="true">{{ reserva.vivienda.nombre }}</span>
+                    <br>
+                    <span class="sub_title_recibo"
+                          contenteditable="true">{{ reserva.vivienda.gpropietario.get_full_name }} - DNI: {{ reserva.vivienda.gpropietario.dni }}</span>
+                    <br>
+                    <span class="sub_title_recibo"
+                          contenteditable="true">{{ reserva.vivienda.address }} - {{ reserva.vivienda.municipio }} - {{ reserva.vivienda.provincia }}</span>
+                    <br>
+                    <span class="sub_title_recibo"
+                          contenteditable="true">{{ reserva.vivienda.gpropietario.email }}</span>
+                </div>
+            </div>
+            <br><br>
+            <div class="row">
+                <div class="columns-12">
+                    <span class="recibo" contenteditable="true">Recibo/Factura</span>
+                    <br>
+                    <span contenteditable="true">nº 111111</span>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <table>
+                    <tr>
+                        <td><span contenteditable="true">Fecha de entrada: </span>
+                            <span contenteditable="true">{{ reserva.entrada }}</span>
+                            <br>
+                            <span contenteditable="true">Fecha de salida: </span>
+                            <span contenteditable="true">{{ reserva.salida }}</span>
+                        </td>
+                        <td><span contenteditable="true" style="font-weight: bold;">Cobrado a: </span><br>
+                            <span contenteditable="true">{{ reserva.nombre }}</span><br>
+                            <span contenteditable="true">Dirección de la persona física o jurídica</span><br>
+                            <span contenteditable="true">CIF/NIF de la persona</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <br>
+            <div class="row">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Plataforma</th>
+                        <th>Descripción</th>
+                        <th>Precio por noche</th>
+                        <th>Nº Noches</th>
+                        <th>Precio</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="primera_fila">
+                        <td contenteditable="true">{{ reserva.get_portal_display }}</td>
+                        <td contenteditable="true">Alojamiento en vivienda de uso turístico<br>
+                            {{ reserva.vivienda.address }} - {{ reserva.vivienda.municipio }}
+                            - {{ reserva.vivienda.provincia }} <br>
+                            {{ reserva.vivienda.nregistro }}</td>
+                        <td contenteditable="true">{{ reserva.precio_noche }}</td>
+                        <td contenteditable="true">{{ reserva.noches }}</td>
+                        <td contenteditable="true">{{ reserva.total }}</td>
+                    </tr>
+                    <tr></tr>
+                    <tr>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true">****Prestador del servicio: NO PROFESIONAL<br>
+                            Cobro realizado a través de la plataforma {{ reserva.get_portal_display }} con
+                            número de reserva {{ reserva.code }}<br>
+                            Actividad exenta de IVA
+                        </td>
+                    </tr>
+                    <tr></tr>
+                    <tr></tr>
+                    <tr></tr>
+                    <tr></tr>
+                    <tr>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td><b contenteditable="true">Importe total:</b></td>
+                        <td><b contenteditable="true">{{ reserva.total }}</b></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-6 medium-6 small-6">
+                <a class="button secondary" id="add_row"><i class="fa fa-plus-square-o"></i> Añade fila</a>
+            </div>
+            <div class="columns large-6 medium-6 small-6">
+                <div class="right"><a class="button" id="pdf_recibo"><i class="fa fa-file-pdf-o"></i> Genera PDF</a>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('#pdf_recibo').click(function (e) {
+            e.preventDefault();
+            var html = $('#recibo_content').html();
+            $('#recibo_html').val(html);
+            document
+        .{{formname}}.
+            submit();
+        });
+
+        $('#add_row').click(function (e) {
+            e.preventDefault();
+            var new_row = '<tr><td contenteditable="true"></td>' +
+                '<td contenteditable="true"></td>' +
+                '<td contenteditable="true"></td>' +
+                '<td contenteditable="true"></td>' +
+                '<td contenteditable="true"></td></tr>';
+            $(new_row).insertAfter($('#primera_fila'));
+        })
+
+    </script>
+{% endblock %}

@@ -2883,3 +2883,48 @@ def web_vut_id(request, vivienda_id):
                       'formname': 'web_vut_id',
                       'vivienda': vivienda
                   })
+
+
+def reserva_vut_crea_recibo(request, reserva_id):
+    g_e = request.session['gauser_extra']
+
+    viviendas = viviendas_con_permiso(g_e, 'crea_reservas')
+    reserva = Reserva.objects.get(id=reserva_id)
+    if reserva.vivienda in viviendas:
+        if request.method == 'POST':
+            c = request.POST['recibo_html']
+            ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, reserva.vivienda.entidad.code, reserva.vivienda.id)
+            fich = html_to_pdf(request, c, fichero='recibo_viajero', media=ruta,
+                               title='Justificante de pago', tipo='sin_cabecera')
+            response = HttpResponse(fich, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=justificante_de_pago.pdf'
+            return response
+        return render(request, "reserva_vut_crea_recibo.html",
+                      {
+                          'formname': 'reserva_vut_crea_recibo',
+                          'reserva': reserva
+                      })
+
+
+
+    try:
+        viviendas = viviendas_con_permiso(g_e, 'crea_reservas')
+        reserva = Reserva.objects.get(id=reserva_id)
+        if reserva.vivienda in viviendas:
+            if request.method == 'POST':
+                c = request.POST['html']
+                ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, reserva.vivienda.entidad.code, reserva.vivienda.id)
+                fich = html_to_pdf(request, c, fichero='recibo_viajero', media=ruta,
+                                   title='Justificante de pago', tipo='sin_cabecera')
+                response = HttpResponse(fich, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename=justificante_de_pago.pdf'
+                return response
+            return render(request, "reserva_vut_crea_recibo.html",
+                          {
+                              'formname': 'reserva_vut_crea_recibo',
+                              'reserva': reserva
+                          })
+        else:
+            return render(request, "no_login.html", {'pag': '"Crear recibo para esta reserva"', })
+    except:
+        return render(request, "no_login.html", {'pag': '"Crear recibo para esta reserva"', })

@@ -337,6 +337,9 @@ class Reserva(models.Model):
     @property
     def salida2(self):
         return self.entrada + timedelta(self.noches)
+    @property
+    def precio_noche(self):
+        return self.total/self.noches
 
     def save(self, *args, **kwargs):
         self.salida = self.entrada + timedelta(self.noches)
