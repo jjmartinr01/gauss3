@@ -517,31 +517,10 @@
         });
 
         $('#Contenido').on('click', '.copy_url_viajero', function () {
-            var code = $(this).data('code');
             var secret = $(this).data('secret');
-            var c = copiar_al_portapapeles('https://gaumentada.es/viajeros/?s=' + secret + '&c=' + code);
-            {#$('#text_to_be_copied').val('https://gaumentada.es/viajeros/?s=' + secret + '&c=' + code);#}
-            {#var isiOSDevice = navigator.userAgent.match(/ipad|iphone/i);#}
-            {#if (isiOSDevice) {#}
-            {#    var input = document.getElementById('text_to_be_copied');#}
-            {#    var editable = input.contentEditable;#}
-            {#    var readOnly = input.readOnly;#}
-            {#    input.contentEditable = true;#}
-            {#    input.readOnly = false;#}
-            {#    var range = document.createRange();#}
-            {#    range.selectNodeContents(input);#}
-            {#    var selection = window.getSelection();#}
-            {#    selection.removeAllRanges();#}
-            {#    selection.addRange(range);#}
-            {#    input.setSelectionRange(0, 999999);#}
-            {#    input.contentEditable = editable;#}
-            {#    input.readOnly = readOnly;#}
-            {# } else {#}
-            {#    $('#text_to_be_copied').select();#}
-            {# }#}
-            {#document.execCommand("copy");#}
-            {#$("#text_to_be_copied").blur();#}
-            {# Esto es necesario para que no salga el teclado en el móvil #}
+            var protocol = window.location.protocol; {# http: o https: #}
+            var host = window.location.host; {# Por ejemplo: gaumentada.es:5656   (proporciona dominio + puerto) #}
+            var c = copiar_al_portapapeles(protocol + '//' + host + '/rvpd/' + secret + '/');
             if (c) {
                 show_mensajes({
                     title: 'URL copiada',
@@ -580,7 +559,7 @@
             e.preventDefault();
             $('#action').val('descargar_fichero_policia');
             $('#fichero_policia').val($(this).data('id'));
-            document.{{formname}}.submit();
+            document.getElementById('{{formname}}').submit();
         });
 
         $('body').on('click', '.activar_registro', function (e) {
@@ -589,7 +568,7 @@
             $.post("/ajax_reservas_vut/", {action: 'activar_registro', viajero: viajero},
                 function (data) {
                     if (data['ok']) {
-                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#update_ok').show().delay(1500).fadeOut();
                         $('#registro_policia' + viajero).html('<span style="color:green"><i class="fa fa-refresh"></i></span>');
                         $('#estado_registro' + viajero).html('<span style="color:green"><i class="fa fa-refresh"></i></span>');
                         $('#observaciones' + viajero).html(data['observaciones']);
@@ -598,7 +577,7 @@
                             'texto': 'En un par de minutos Gauss intentará registrar al viajero.'
                         }), 200);
                     } else {
-                        $("#update_error").show().delay(1500).fadeOut();
+                        $('#update_error').show().delay(1500).fadeOut();
                         $('#observaciones' + viajero).html(data['observaciones']);
                     }
                 });

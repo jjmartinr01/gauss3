@@ -310,14 +310,20 @@ class Ayudante(models.Model):
         return u'%s %s, %s - %s' % (self.apellido1, self.apellido2, self.nombre, self.vivienda)
 
 
-def aleatorio():  # Esta función no se puede borrar porque afecta a las migrations
-    return True  # Es un error de django
-
+def aleatorio(size=9, chars='abcdefghijklmnopqrstuvwxyz1234567890'):
+    secret = '' #Esta línea solo sirve para evitar un warning en pycharm al no detectar secret antes del try
+    while True:
+        try:
+            secret = ''.join(random.choice(chars) for x in range(size))
+            Reserva.objects.get(secret=secret)
+        except:
+            break
+    return secret
 
 class Reserva(models.Model):
     ESTADO = (('ACE', 'Aceptada'), ('CAN', 'Cancelada'))
     vivienda = models.ForeignKey(Vivienda, on_delete=models.CASCADE, blank=True, null=True)
-    secret = models.CharField('Cadena secreta utilizada en url de registro', max_length=20, default=pass_generator)
+    secret = models.CharField('Cadena secreta utilizada en url de registro', max_length=20, default=aleatorio)
     nombre = models.CharField('Nombre', blank=True, max_length=150, null=True, default='')
     entrada = models.DateField('Fecha y hora de entrada', blank=True, null=True, default=now)
     salida = models.DateField('Fecha y hora de salida', blank=True, null=True, default=now)

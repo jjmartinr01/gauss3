@@ -800,8 +800,7 @@ def ajax_reservas_vut(request):
                     noches = (salida - entrada).days
                     if vivienda in viviendas and float(request.POST['total']) >= 0:
                         reserva = Reserva.objects.create(vivienda=vivienda, entrada=entrada, noches=noches,
-                                                         total=float(request.POST['total']),
-                                                         secret=pass_generator(), code=pass_generator(),
+                                                         total=float(request.POST['total']), code=pass_generator(),
                                                          nombre=request.POST['nombre'], portal='OTR')
                         html = render_to_string('tr_reserva.html', {'r': reserva})
                         return JsonResponse({'html': html, 'ok': True})
@@ -1148,8 +1147,7 @@ def ajax_reservas_vut(request):
                                         else:
                                             informe_reservas['actualizadas'].append(reserva)
                                 if not reserva:
-                                    reserva = Reserva.objects.create(entrada=entrada, code=code, secret=g_e.id,
-                                                                     portal=portal)
+                                    reserva = Reserva.objects.create(entrada=entrada, code=code, portal=portal)
                                     if estado == 'CAN':
                                         informe_reservas['canceladas'].append(reserva)
                                     else:
@@ -1725,6 +1723,67 @@ def viajeros(request):
     return JsonResponse({'ok': False})
 
 
+def rvpd(request, secret_id): #rvpd: recepción viajeros policía y domótica
+    year = datetime.today().year
+    anyos = range(year, year - 100, -1)
+    hoy = datetime.today().date()
+    try:
+        reserva = Reserva.objects.get(secret=secret_id)
+        if hoy < reserva.entrada:
+            data = {'fechas': True, 'entrada': reserva.entrada, 'salida': reserva.salida}
+            return render(request, "rvpd_error.html", data)
+        elif hoy > reserva.salida:
+            return render(request, "rvpd_error.html", {'fechas': True, 'entrada': False})
+    except:
+        return render(request, "rvpd_error.html", {'fechas': False})
+
+    if request.method == 'GET':
+        domoticas = DomoticaVUT.objects.filter(vivienda=reserva.vivienda)
+        return render(request, "rvpd.html",
+                      {
+                          'formname': 'rvpd',
+                          'reserva': reserva,
+                          'paises': PAISES,
+                          'anyos': anyos,
+                          'domoticas': domoticas
+                      })
+    elif request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'enviar_datos':
+            try:
+                viajero, creado = Viajero.objects.get_or_create(reserva=reserva, ndi=request.POST['ndi'])
+                if not creado:
+                    ruta = os.path.join(
+                        "%svut/%s/firmas/" % (RUTA_MEDIA, reserva.vivienda.id),
+                        str(reserva.code) + '_' + str(viajero.ndi) + '.png')
+                    if os.path.isfile(ruta):
+                        os.remove(ruta)
+                firma_data = request.POST['firma']
+                format, imgstr = firma_data.split(';base64,')
+                ext = format.split('/')[-1]
+                viajero.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+                viajero.tipo_ndi = request.POST['tipo_ndi']
+                viajero.fecha_exp = datetime.strptime(request.POST['fecha_exp'], '%Y-%m-%d')
+                viajero.apellido1 = request.POST['apellido1'][:30]
+                viajero.apellido2 = request.POST['apellido2'][:30]
+                viajero.nombre = request.POST['nombre'][:30]
+                viajero.sexo = request.POST['sexo']
+                viajero.nacimiento = datetime.strptime(request.POST['nacimiento'], '%Y-%m-%d')
+                viajero.pais = request.POST['pais']
+                viajero.save()
+                crea_fichero_policia(viajero)
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'domotica':
+            try:
+                domotica = DomoticaVUT.objects.get(id=request.POST['domotica'])
+                s = requests.Session()
+                s.verify = False
+                p = s.post(domotica.url, timeout=5)
+                return JsonResponse({'ok': True, 'response': p.status_code})
+            except:
+                return JsonResponse({'ok': False})
+    return JsonResponse({'ok': False})
 ################################################################################
 
 @permiso_required('viviendas_registradas_vut')

@@ -6,7 +6,6 @@
     </td>
     {% if r|contains_hoy %}
         <td style="max-width: 225px;overflow:hidden;" title="{{ r.nombre }}"><a class="button small copy_url_viajero"
-                                                                                data-code="{{ r.code }}"
                                                                                 data-secret="{{ r.secret }}">{{ r.nombre }}<br><span
                 class="label secondary round">{{ r.code }}</span></a></td>
     {% else %}

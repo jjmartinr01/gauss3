@@ -1,0 +1,31 @@
+{% extends "base_empty.html" %}
+
+{% block contenido %}
+    <br><br>
+    {% if fechas %}
+        {% if entrada %}
+            <h4 style="text-align: center;color: #008CBA;font-weight: bold;"><strong>Este enlace no está activo en estos momentos.</strong></h4>
+            <h4 style="text-align: center;color: #008CBA;font-weight: bold;"><strong>Estará activo entre el {{ entrada }} y el {{ salida }}.</strong></h4>
+        {% else %}
+            <h4 style="text-align: center;color: #008CBA;font-weight: bold;"><strong>Este enlace ha caducado y ya no está activo.</strong></h4>
+        {% endif %}
+    {% else %}
+        <div>
+            <h4 style="text-align: center;color: #008CBA;font-weight: bold;"><strong>Ha habido un error la página solicitada no existe</strong></h4>
+            <p style="text-align: center;color: #008CBA;font-weight: bold;">Por favor, asegúrate de que has escrito bien la url en el navegador</p>
+        </div>
+    {% endif %}
+{% endblock %}
+{% block final %}
+{% endblock %}
+
+
+
+	
+
+
+
+
+
+
+
