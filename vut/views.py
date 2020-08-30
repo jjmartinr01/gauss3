@@ -1516,7 +1516,7 @@ def graba_registro(registro):
                     s.close()
                     return p4
             else:
-                logger.info(u'Error al hacer el login en webpol para el viajero: %s' % (viajero))
+                logger.info('Error al hacer el login en webpol para el viajero: %s' % (viajero))
                 viajero.observaciones += 'Error al hacer el login en webpol para el viajero'
                 viajero.save()
                 s.close()

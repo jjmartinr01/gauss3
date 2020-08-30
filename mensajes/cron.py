@@ -9,7 +9,7 @@ from gauss.rutas import MEDIA_ADJUNTOS
 from mensajes.models import Mensaje_cola, Aviso
 
 
-# @kronos.register('*/2 * * * *')
+@kronos.register('*/2 * * * *')
 def mail_mensajes_cola():
     mensajes_cola = Mensaje_cola.objects.filter(enviado=False)
 

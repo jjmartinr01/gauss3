@@ -10,7 +10,7 @@ from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asi
 
 # logger = logging.getLogger('django')
 
-# @kronos.register('*/2 * * * *')
+@kronos.register('*/2 * * * *')
 def carga_masiva_from_file():
     cargas_necesarias = CargaMasiva.objects.filter(cargado=False)
     for carga in cargas_necesarias:
