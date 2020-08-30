@@ -99,8 +99,8 @@ def comunica_viajero2PNGC():
                     return False
             elif vivienda.police == 'PN':
                 logger.info("entra al registro PN. Viajero: %s" % viajero)
-                # RegistraViajeroPN(viajero)
-                # return True
+                RegistraViajeroPN(viajero)
+                return True
                 # Iniciamos una sesión
                 s = requests.Session()
                 s.verify = False  # Para que los certificados ssl no sean verificados. Comunicación https confiada

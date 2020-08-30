@@ -150,7 +150,6 @@ def RegistraViajeroPN(viajero):
     # Sexo: 2 -> Masculino, 3-> Femenino
     isexo = '2' if viajero.sexo == 'M' else '3'
     xph = '/html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[3]/div[2]/div/div/div/ul/li[%s]' % isexo
-    print(xph)
     driver.find_element_by_xpath(xph).click()
     driver.find_element(By.ID, "fechaEntrada").send_keys(viajero.fecha_entrada.strftime('%d/%m/%Y'))
     # Botón de grabar:
