@@ -12,12 +12,14 @@ from django.utils.html import strip_tags
 from django.db.models import Q
 import kronos
 import requests
+
+from gauss.funciones import usuarios_ronda
 from gauss.rutas import RUTA_BASE, MEDIA_VUT
 from autenticar.models import Gauser, Permiso
 from entidades.models import Gauser_extra
 from mensajes.views import encolar_mensaje
 from vut.models import RegistroPolicia, Viajero, Autorizado
-from gtelegram.views import envia_telegram
+from gtelegram.views import envia_telegram, envia_telegram_gausers
 from vut.seleniumPN import RegistraViajeroPN
 
 logger = logging.getLogger('django')
@@ -100,6 +102,7 @@ def comunica_viajero2PNGC():
             elif vivienda.police == 'PN':
                 logger.info("entra al registro PN. Viajero: %s" % viajero)
                 RegistraViajeroPN(viajero)
+                enviar_mensaje_registro(viajero, log='Correcto')
                 return True
                 # Iniciamos una sesión
                 s = requests.Session()
@@ -414,6 +417,54 @@ def comunica_viajero2PNGC():
             envia_telegram(emisor, gtexto)
             return False
 
+def enviar_mensaje_registro(viajero, log='Correcto'):
+    reserva = viajero.reserva
+    vivienda = reserva.vivienda
+    ronda = vivienda.entidad.ronda
+    html = render_to_string('correo_PN_GC.html', {'viajero': viajero, 'log': log})
+    #Si es correcto solo recibirán mensaje los propietarios. Si hay errores, el Administrador con el
+    #permiso requerido recibirá un correo con el fin de corregir el programa o ayudar al interesado:
+    usuarios = usuarios_ronda(ronda)
+    if log != 'Correcto':
+        logger.info('!=Correcto')
+        permiso = Permiso.objects.get(code_nombre='recibe_errores_de_viajeros')
+        receptores_ge = usuarios.filter(Q(gauser__in=vivienda.propietarios.all()) | Q(permisos__in=[permiso]))
+        receptores = [receptor_ge.gauser for receptor_ge in receptores_ge]
+    else:
+        receptores = [propietario for propietario in vivienda.propietarios.all()]
+    emisor = usuarios.get(gauser=vivienda.propietarios.all()[0])
+    if log == 'Correcto':
+        asunto = 'Efectuado registro de viajero en %s' % vivienda.get_police_display()
+        gtexto = 'Registrado en la %s el viajero: %s %s (%s)' % (
+            vivienda.get_police_display(), viajero.nombre, viajero.apellido1, vivienda.nombre)
+        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+    elif log == 'Error1':
+        asunto = 'Error al hacer el registro de viajero en %s' % vivienda.get_police_display()
+        gtexto = 'Error en la comunicación con %s. Se debe hacer el registro manualmente. Viajero: %s %s (%s)' % (
+            vivienda.get_police_display(), viajero.nombre, viajero.apellido1, vivienda.nombre)
+        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+    elif log == 'Error2':
+        asunto = 'Error al identificarse en web de %s' % vivienda.get_police_display()
+        gtexto = 'Error al hacer el login en la web de la %s. Viajero: %s %s (%s)' % (
+            vivienda.get_police_display(), viajero.nombre, viajero.apellido1, vivienda.nombre)
+        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+    elif log == 'Error3':
+        asunto = 'Error registro GAUSS - Policía Nacional o Guardia Civil sin configurar'
+        gtexto = 'Error. Debes indicar en GAUSS si el registro se hace en Policía Nacional o Guardia Civil. Vivienda: %s' % (
+            viajero.reserva.vivienda.nombre)
+        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+    elif log == 'Error4':
+        asunto = 'Error con registro de viajero en GAUSS'
+        gtexto = 'Error durante el grabado del viajero. Hacer el registro manualmente. Viajero: %s %s (%s)' % (
+            viajero.nombre, viajero.apellido1, vivienda.nombre)
+        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=gtexto)
+    else:
+        asunto = 'Error en registro VUT'
+        envia_telegram_gausers(gausers=vivienda.propietarios.all(), texto=asunto)
+    etiqueta = 'error-vut%s' % ronda.id
+    encolar_mensaje(emisor=emisor, receptores=receptores, asunto=asunto, html=html, etiqueta=etiqueta)
+    logger.info(asunto)
+    return True
 
 # def comunica_viajero2PNGC2(registro):
 #     registros = [registro]

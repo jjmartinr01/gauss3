@@ -108,6 +108,7 @@ def comunica_viajero2PNGC():
             elif vivienda.police == 'PN':
                 logger.info("entra al registro PN. Viajero: %s" % viajero)
                 RegistraViajeroPN(viajero)
+                enviar_mensaje_registro(viajero, log='Correcto')
                 return True
                 # Iniciamos una sesión
                 s = requests.Session()
