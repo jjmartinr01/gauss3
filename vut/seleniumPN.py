@@ -172,5 +172,7 @@ def RegistraViajeroPN(viajero):
         driver.find_element_by_xpath('/html/body/div[2]/form/div/div[2]/i[2]').click()
         time.sleep(0.5)
         driver.quit()
+        return True
     except:
         driver.quit()
+        return False
