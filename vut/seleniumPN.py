@@ -4,7 +4,8 @@ import logging
 import time
 import json
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
+# from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions
@@ -97,8 +98,8 @@ xpath_indexes_paises = {
 def RegistraViajeroPN(viajero):
     options = Options()
     options.headless = True
-    # driver = webdriver.Firefox(options=options, executable_path=r'C:\Utility\BrowserDrivers\geckodriver.exe')
-    driver = webdriver.Firefox(options=options)
+    # driver = webdriver.Firefox(options=options)
+    driver = webdriver.Chrome(chrome_options=options)
     try:
         driver.get("https://webpol.policia.es/e-hotel/login")
         logger.info("driver login")
