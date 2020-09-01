@@ -99,66 +99,77 @@ def RegistraViajeroPN(viajero):
     options.headless = True
     # driver = webdriver.Firefox(options=options, executable_path=r'C:\Utility\BrowserDrivers\geckodriver.exe')
     driver = webdriver.Firefox(options=options)
-    driver.get("https://webpol.policia.es/e-hotel/login")
-    driver.set_window_size(1920, 1080)
-    driver.find_element(By.ID, "password").send_keys(viajero.reserva.vivienda.police_pass)
-    driver.find_element(By.ID, "username").send_keys(viajero.reserva.vivienda.police_code)
-    driver.find_element(By.CSS_SELECTOR, ".fa-sign-in").click()
-    driver.find_element(By.ID, "grabadorManual").click()
-    driver.find_element(By.ID, "nombre").send_keys(viajero.nombre)
-    driver.find_element(By.ID, "apellido1").send_keys(viajero.apellido1)
-    driver.find_element(By.ID, "apellido2").send_keys(viajero.apellido2)
-    driver.find_element_by_xpath('//*[@id="nacionalidad_chosen"]').click()
-    # Ejemplos: 58 ecuador, 64 españa, ...
-    ind = xpath_indexes_paises[viajero.pais][0]
-    xph = '/html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[1]/div/div/div/ul/li[%s]' % ind
-    driver.find_element_by_xpath(xph).click()
-    driver.find_element_by_xpath('//*[@id="tipoDocumento_chosen"]').click()
-    # driver.find_element_by_xpath('/html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/a').click()
-    time.sleep(1)
-    # La selección del tipo de documento (indice de xpath) depende de la nacionalidad elegida:
-    # España:
-    # DNI:       /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[2]
-    # Pasaporte: /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[3]
-    # C. Conduc: /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[4]
-    # Europa:
-    # Pasaporte: /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[2]
-    # Carta ext: /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[3]
-    # NIE:       /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[4]
-    # Perm. UE:  /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[5]
-    # Mundo:
-    # Pasaporte: /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[2]
-    # Carta ext: /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[3]
-    # NIE:       /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[4]
-    if viajero.pais == 'A9109AAAAA':
-        xpath_indexes_documentos = {'D': 2, 'P': 3, 'C': 4}
-    else:
-        xpath_indexes_documentos = {'P': 2, 'I': 3, 'N': 4, 'X': 5}
-    idoc = xpath_indexes_documentos[viajero.tipo_ndi]
-    xph = '/html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[%s]' % idoc
-    driver.find_element_by_xpath(xph).click()
-    # time.sleep(1)
-    driver.find_element(By.ID, "numIdentificacion").send_keys(viajero.ndi)
-    driver.find_element(By.ID, "fechaExpedicionDoc").send_keys(viajero.fecha_exp.strftime('%d/%m/%Y'))
-    driver.find_element(By.ID, "dia").send_keys(viajero.nacimiento.day)
-    driver.find_element(By.ID, "mes").send_keys(viajero.nacimiento.month)
-    driver.find_element(By.ID, "ano").send_keys(viajero.nacimiento.year)
-    # driver.find_element(By.CSS_SELECTOR, "#sexo_chosen span").click()
-    xph = '/html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[3]/div[2]/div/div/a/span'
-    driver.find_element_by_xpath(xph).click()
-    time.sleep(1)
-    # Sexo: 2 -> Masculino, 3-> Femenino
-    isexo = '2' if viajero.sexo == 'M' else '3'
-    xph = '/html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[3]/div[2]/div/div/div/ul/li[%s]' % isexo
-    driver.find_element_by_xpath(xph).click()
-    driver.find_element(By.ID, "fechaEntrada").send_keys(viajero.fecha_entrada.strftime('%d/%m/%Y'))
-    # Botón de grabar:
-    driver.find_element_by_xpath('/html/body/div[4]/div/div/form/div/fieldset/div[3]/button[1]/span').click()
-    time.sleep(1)
-    # Cancelar impresión del parte:
-    driver.find_element_by_xpath('/html/body/div[1]/div/div/div[2]/form/div[2]/button[2]/span').click()
-    time.sleep(0.5)
-    # salir: /html/body/div[2]/form/div/div[2]/i[2]
-    driver.find_element_by_xpath('/html/body/div[2]/form/div/div[2]/i[2]').click()
-    time.sleep(0.5)
-    driver.quit()
+    try:
+        driver.get("https://webpol.policia.es/e-hotel/login")
+        logger.info("driver login")
+        driver.set_window_size(1920, 1080)
+        driver.find_element(By.ID, "password").send_keys(viajero.reserva.vivienda.police_pass)
+        logger.info("send police_pass")
+        driver.find_element(By.ID, "username").send_keys(viajero.reserva.vivienda.police_code)
+        logger.info("send police_code")
+        driver.find_element(By.CSS_SELECTOR, ".fa-sign-in").click()
+        logger.info("click sign-in")
+        driver.find_element(By.ID, "grabadorManual").click()
+        logger.info("click grabadorManual")
+        driver.find_element(By.ID, "nombre").send_keys(viajero.nombre)
+        driver.find_element(By.ID, "apellido1").send_keys(viajero.apellido1)
+        driver.find_element(By.ID, "apellido2").send_keys(viajero.apellido2)
+        logger.info("send nombre y apellidos")
+        driver.find_element_by_xpath('//*[@id="nacionalidad_chosen"]').click()
+        # Ejemplos: 58 ecuador, 64 españa, ...
+        ind = xpath_indexes_paises[viajero.pais][0]
+        xph = '/html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[1]/div/div/div/ul/li[%s]' % ind
+        driver.find_element_by_xpath(xph).click()
+        driver.find_element_by_xpath('//*[@id="tipoDocumento_chosen"]').click()
+        # driver.find_element_by_xpath('/html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/a').click()
+        time.sleep(1)
+        # La selección del tipo de documento (indice de xpath) depende de la nacionalidad elegida:
+        # España:
+        # DNI:       /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[2]
+        # Pasaporte: /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[3]
+        # C. Conduc: /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[4]
+        # Europa:
+        # Pasaporte: /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[2]
+        # Carta ext: /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[3]
+        # NIE:       /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[4]
+        # Perm. UE:  /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[5]
+        # Mundo:
+        # Pasaporte: /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[2]
+        # Carta ext: /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[3]
+        # NIE:       /html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[4]
+        if viajero.pais == 'A9109AAAAA':
+            xpath_indexes_documentos = {'D': 2, 'P': 3, 'C': 4}
+        else:
+            xpath_indexes_documentos = {'P': 2, 'I': 3, 'N': 4, 'X': 5}
+        idoc = xpath_indexes_documentos[viajero.tipo_ndi]
+        xph = '/html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[2]/div[2]/div/div/div/ul/li[%s]' % idoc
+        driver.find_element_by_xpath(xph).click()
+        # time.sleep(1)
+        driver.find_element(By.ID, "numIdentificacion").send_keys(viajero.ndi)
+        driver.find_element(By.ID, "fechaExpedicionDoc").send_keys(viajero.fecha_exp.strftime('%d/%m/%Y'))
+        driver.find_element(By.ID, "dia").send_keys(viajero.nacimiento.day)
+        driver.find_element(By.ID, "mes").send_keys(viajero.nacimiento.month)
+        driver.find_element(By.ID, "ano").send_keys(viajero.nacimiento.year)
+        logger.info("send nacimiento")
+        # driver.find_element(By.CSS_SELECTOR, "#sexo_chosen span").click()
+        xph = '/html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[3]/div[2]/div/div/a/span'
+        driver.find_element_by_xpath(xph).click()
+        time.sleep(1)
+        # Sexo: 2 -> Masculino, 3-> Femenino
+        isexo = '2' if viajero.sexo == 'M' else '3'
+        xph = '/html/body/div[4]/div/div/form/div/fieldset/div[2]/div/fieldset/div[3]/div[2]/div/div/div/ul/li[%s]' % isexo
+        driver.find_element_by_xpath(xph).click()
+        driver.find_element(By.ID, "fechaEntrada").send_keys(viajero.fecha_entrada.strftime('%d/%m/%Y'))
+        # Botón de grabar:
+        driver.find_element_by_xpath('/html/body/div[4]/div/div/form/div/fieldset/div[3]/button[1]/span').click()
+        logger.info("click grabar")
+        time.sleep(1)
+        # Cancelar impresión del parte:
+        driver.find_element_by_xpath('/html/body/div[1]/div/div/div[2]/form/div[2]/button[2]/span').click()
+        time.sleep(0.5)
+        # salir: /html/body/div[2]/form/div/div[2]/i[2]
+        driver.find_element_by_xpath('/html/body/div[2]/form/div/div[2]/i[2]').click()
+        time.sleep(0.5)
+        driver.quit()
+    except:
+        driver.quit()
