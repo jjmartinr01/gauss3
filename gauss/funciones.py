@@ -83,6 +83,7 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
     c = render_to_string(html_template, {'texto': texto, 'title': title}, request=request)
     logger.info('Escritura en %s' % (fichero_html))
     logger.info('go to open %s' % (fichero_html))
+    c=texto
     try:
         logger.info(os.path.isfile(fichero_html) + 'go to open %s' % (fichero_html))
         with open(fichero_html, "w") as html_file:
