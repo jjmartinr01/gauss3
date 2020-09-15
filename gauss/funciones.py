@@ -83,7 +83,6 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
     c = render_to_string(html_template, {'texto': texto, 'title': title}, request=request)
     logger.info('Escritura en %s' % (fichero_html))
     logger.info('go to open %s' % (fichero_html))
-    c=texto
     try:
         logger.info(os.path.isfile(fichero_html) + 'go to open %s' % (fichero_html))
         with open(fichero_html, "w") as html_file:
@@ -128,15 +127,15 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
                    'margin-left': '20', 'encoding': "UTF-8", 'no-outline': None, '--header-spacing': '5',
                    '--load-error-handling': 'ignore'}
         logger.info('Preparado para generar pdf sin cabecera')
-        # try:
-        #     pdfkit.from_string(c, fichero_pdf, options)
-        # except Exception as e:
-        #     logger.info(str(e))
-
-        logger.info('Generado el pdf sin cabecera')
-        comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 %s %s' % (fichero_html, fichero_pdf)
-        logger.info('Ejecuta: %s' % (comando))
-        os.system(comando)
+        try:
+            pdfkit.from_string(c, fichero_pdf, options)
+        except Exception as e:
+            logger.info(str(e))
+        #
+        # logger.info('Generado el pdf sin cabecera')
+        # comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 %s %s' % (fichero_html, fichero_pdf)
+        # logger.info('Ejecuta: %s' % (comando))
+        # os.system(comando)
     if attach:
         fichero_pdf2 = media + fichero + '_adjuntos.pdf'
         comando = 'pdftk %s attach_files %s output %s' % (fichero_pdf, attach, fichero_pdf2)
