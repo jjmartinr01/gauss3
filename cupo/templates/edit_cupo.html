@@ -137,7 +137,8 @@
         $('#file-pdf-o_sign').click(function (e) {
             e.preventDefault();
             $('#action').val('genera_informe');
-            window.{{ formname }}.submit();
+            document.getElementById("{{ formname }}").submit();
+            {#window.{{ formname }}.submit();#}
         });
         cupo_id = {{ cupo.id }};
         especialidad_id = 0;

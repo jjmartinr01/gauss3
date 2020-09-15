@@ -44,23 +44,28 @@
 </div>
 
 
-{#<fieldset>#}
-{#    <legend>Autorizados</legend>#}
-{#    <div id="autorizados{{ grupo.id }}">#}
-{#        {% for autorizado in grupo.autorizado_set.all %}#}
-{#            {% if not forloop.first %}#}
-{#                <hr>#}
-{#            {% endif %}#}
-{#            {% include "grupo_accordion_content_autorizado.html" %}#}
-{#        {% endfor %}#}
-{#    </div>#}
-{#    <div class="row">#}
-{#        <div class="columns large-12">#}
-{#            {% if g_e|has_permiso:'add_autorizado_vut' %}#}
-{#                <a class="button add_autorizado_vut" data-id="{{ grupo.id }}"><i#}
-{#                        class="fa fa-user-circle"></i>#}
-{#                    Añadir Autorizado</a>#}
-{#            {% endif %}#}
-{#        </div>#}
-{#    </div>#}
-{#</fieldset>#}
+<fieldset>
+    <legend>Autorizados gestión del grupo</legend>
+    <div class="row" style="padding-bottom: 2px;">
+        <div class="columns large-12" id="div_autorizados{{ grupo.id }}">
+            <table style="width: 100%">
+                <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Permiso</th>
+                    <th>¿Borrar?</th>
+                </tr>
+                </thead>
+                <tbody id="tbody{{ grupo.id }}">
+                {% include "grupos_domotica_accordion_content_autorizados.html" %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <select name="usuarios_autorizados{{ grupo.id }}" class="usuarios_autorizados"
+                    data-id="{{ grupo.id }}"></select>
+        </div>
+    </div>
+</fieldset>

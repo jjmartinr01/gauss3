@@ -1,0 +1,9 @@
+{% load entidades_extras %}
+{% if variante %}
+    <label><b>Texto del informe (modelo: {{ variante.nombre }})</b>
+        <div contenteditable="true" class="ckeditor update_texto variante"
+             data-id="{{ variante.id }}" data-campo="variante">
+            {% autoescape off %}{{ variante.texto }}{% endautoescape %}
+        </div>
+    </label>
+{% endif %}

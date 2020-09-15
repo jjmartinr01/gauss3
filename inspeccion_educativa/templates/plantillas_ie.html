@@ -1,0 +1,302 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+        }
+
+        .ckeditor {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+
+        {#.describir_solucion {#}
+        {#    border: lightgrey 1px solid;#}
+        {#    min-height: 100px;#}
+        {# }#}
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_plantillas_ie" name="id_plantillas_ie" value="">
+
+        <div id="div_plantillas_ie_seleccionados"></div>
+
+        <div>
+            <h4 id="title_page"><strong>Plantillas para informes de Inspección Educativa</strong></h4>
+        </div>
+        <div id="formulario_add"></div>
+        <div id="formulario_search">
+            <div class="row">
+                <div class="columns large-4">
+                    <label>Buscar entre esta fecha ...</label>
+                    <input id="id_fecha_inicio" name="fecha_inicio" type="text"
+                           value="{{ g_e.ronda.inicio|date:'d-m-Y' }}">
+                </div>
+                <div class="columns large-4">
+                    <label>... y esta otra</label>
+                    <input id="id_fecha_fin" name="fecha_fin" type="text" value="{% now "d\-m\-Y" %}">
+                </div>
+                <div class="columns large-4">
+                    <label>Buscar en ...</label>
+                    <select id="tipo_busqueda" name="tipo_busqueda">
+                        {# Se busca en negativo, por eso SAL es para entradas y ENT para salidas. Ver el views.py #}
+                        <option value="tod">Todas las plantillas</option>
+                        {% for t in tipos %}<option value="{{ t.0 }}">{{ t.1 }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-10">
+                    <input type="text" name="busca_plantillas_ie" id="busca_plantillas_ie"
+                           placeholder="Escribe parte del texto incluido en el actuación">
+                </div>
+                <div class="columns large-2">
+                    <a id="busca_plantillas_ie_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>
+                </div>
+            </div>
+        </div>
+
+        <div id="listado_plantillas_ie">
+            <br><br>
+            <dl class="accordion" data-accordion id="list_plantillas_ie">
+                {% include 'plantillas_ie_accordion.html' %}
+            </dl>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+
+        function destroyEditorInstances() {
+            for (var instance in CKEDITOR.instances) {
+                CKEDITOR.instances[instance].destroy();
+            }
+        }
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-p_ie')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/plantillas_ie/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        destroyEditorInstances();
+                                        CKEDITOR.inlineAll();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+        {##}
+        {#$('body').on('change', '.selector', function () {#}
+        {#    var campo = $(this).data('campo');#}
+        {#    var id = $(this).data('id');#}
+        {#    var valor = $(this).val();#}
+        {#    $.post("/plantillas_ie/", {#}
+        {#            action: 'update_selector',#}
+        {#            id: id,#}
+        {#            campo: campo,#}
+        {#            valor: valor#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#                if (campo == 'tipo'){#}
+        {#                    $('#tipo' + id).html(data.tipo);#}
+        {#                }#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
+        {##}
+        {#$('body').on('change', '.centro', function () {#}
+        {#    var id = $(this).data('id');#}
+        {#    var centro_id = $(this).val();#}
+        {#    $.post("/plantillas_ie/", {#}
+        {#            action: 'update_centro',#}
+        {#            id: id,#}
+        {#            centro_id: centro_id#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
+        {##}
+        {#$('body').on('click', '.realizada', function () {#}
+        {#    var id = $(this).data('id');#}
+        {#    $.post("/plantillas_ie/", {#}
+        {#            action: 'update_realizada',#}
+        {#            id: id#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $('#realizada' + id).html(data.valor);#}
+        {#                if (data.realizada) {#}
+        {#                    $('#panel' + id).html(data.html);#}
+        {#                    $('#ss' + id).show();#}
+        {#                    $('#ns' + id).hide();#}
+        {#                } else {#}
+        {#                    $('#panel' + id).html(data.html);#}
+        {#                    $('#ns' + id).show();#}
+        {#                    $('#ss' + id).hide();#}
+        {#                }#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
+        {##}
+        {#$('body').on('keyup', '.update_texto', function () {#}
+        {#    var id = $(this).data('id');#}
+        {#    var campo = $(this).data('campo');#}
+        {#    if ($(this).hasClass('observaciones')) {#}
+        {#        var valor = $(this).html();#}
+        {#    } else {#}
+        {#        var valor = $(this).val();#}
+        {#        $('#asunto' + id).html(valor);#}
+        {#    }#}
+        {#    $.post("/plantillas_ie/", {action: 'update_texto', id: id, valor: valor, campo: campo},#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
+        {##}
+        {#        $('body').on('keyup', '.describir_solucion', function () {#}
+        {#            var valor = $(this).html();#}
+        {#            var id = $(this).data('id');#}
+        {#            $.post("/plantillas_ie/", {action: 'update_describir_solucion', id: id, valor: valor},#}
+        {#                function (data) {#}
+        {#                    if (data.ok) {#}
+        {#                        $("#update_ok").show().delay(1500).fadeOut();#}
+        {#                    } else {#}
+        {#                        $('#update_error').show().delay(1500).fadeOut();#}
+        {#                    }#}
+        {#                });#}
+        {#        });#}
+        {##}
+        {#        $('body').on('click', '.enviar_mensaje', function () {#}
+        {#            var id = $(this).data('id');#}
+        {#            $.post("/plantillas_ie/", {action: 'enviar_mensaje', id: id},#}
+        {#                function (data) {#}
+        {#                    if (data.ok) {#}
+        {#                        $('#enviar_mensaje' + id).hide();#}
+        {#                        show_mensajes({#}
+        {#                            title: '<i class="fa fa-info-circle"></i> Información',#}
+        {#                            texto: 'Se ha enviado un mensaje al encargado de este tipo de plantillas'#}
+        {#                        });#}
+        {#                        $("#update_ok").show().delay(1500).fadeOut();#}
+        {#                    } else {#}
+        {#                        $('#update_error').show().delay(1500).fadeOut();#}
+        {#                    }#}
+        {#                });#}
+        {#        });#}
+        {##}
+        {#$('body').on('click', '.borrar_tarea_ie', function () {#}
+        {#    id = $(this).data('id');#}
+        {#    show_mensajes({#}
+        {#        title: '<i class="fa fa-warning"></i> ¿Borrar esta tarea de inspección?',#}
+        {#        texto: 'Si aceptas la tarea se borrará por completo de la base de datos', size: 'large', buttons: {#}
+        {#            "Cancelar": function () {#}
+        {#                hide_mensajes();#}
+        {#            },#}
+        {#            "Borrar": function () {#}
+        {#                hide_mensajes();#}
+        {#                $.post("/plantillas_ie/", {action: 'borrar_tarea_ie', id: id},#}
+        {#                    function (data) {#}
+        {#                        if (data.ok) {#}
+        {#                            $('#accordion' + id).remove();#}
+        {#                            $("#update_ok").show().delay(1500).fadeOut();#}
+        {#                        } else {#}
+        {#                            $('#update_error').show().delay(1500).fadeOut();#}
+        {#                        }#}
+        {#                    });#}
+        {#            }#}
+        {#        }#}
+        {#    });#}
+        {##}
+        {# });#}
+        {##}
+        {##}
+        {# ####################################################### #}
+        {##}
+        {#        $("body").on('click', '#busca_plantillas_ie_manual', function (e) {#}
+        {#            var texto = $('#busca_plantillas_ie').val();#}
+        {#            var id_fecha_inicio = $('#id_fecha_inicio').val();#}
+        {#            var id_fecha_fin = $('#id_fecha_fin').val();#}
+        {#            var tipo_busqueda = $('#tipo_busqueda').val();#}
+        {#            $.post("/plantillas_ie/", {#}
+        {#                    action: 'busca_plantillas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,#}
+        {#                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda#}
+        {#                },#}
+        {#                function (data) {#}
+        {#                    $('#list_plantillas_ie').html(data['html']);#}
+        {#                    $(document).foundation();#}
+        {#                });#}
+        {#        });#}
+        {#        $("body").on('keyup', '#busca_plantillas_ie', function (e) {#}
+        {#            var texto = $('#busca_plantillas_ie').val();#}
+        {#            var id_fecha_inicio = $('#id_fecha_inicio').val();#}
+        {#            var id_fecha_fin = $('#id_fecha_fin').val();#}
+        {#            var tipo_busqueda = $('#tipo_busqueda').val();#}
+        {#            $.post("/plantillas_ie/", {#}
+        {#                    action: 'busca_plantillas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,#}
+        {#                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda#}
+        {#                },#}
+        {#                function (data) {#}
+        {#                    $('#list_plantillas_ie').html(data['html']);#}
+        {#                    $(document).foundation();#}
+        {#                });#}
+        {#        });#}
+
+
+        {% if g_e|has_permiso:"acceso_plantillas_informes_ie" %}
+            habilita(['s_plus']);
+            $('#plus_sign').click(function (event) {
+                event.preventDefault();
+                $.post("/plantillas_ie/", {action: 'crea_plantilla_ie'}, function (data) {
+                    if (data.ok) {
+                        $('#list_plantillas_ie').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    $(document).scrollTop($('#title_page').offset().top - 150);
+                    {#habilita(['h_plus', 's_check', 's_search']);#}
+                });
+            });
+        {% endif %}
+
+    </script>
+
+{% endblock %}

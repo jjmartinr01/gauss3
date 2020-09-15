@@ -145,7 +145,8 @@
                 $('#action').val('genera_informe');
                 $('#cupo').val($(this).data('cupo'));
                 console.log('cupo', $('#cupo').val(), $(this).data('cupo'));
-                window.{{ formname }}.submit();
+                document.getElementById("{{ formname }}").submit();
+                {#window.{{ formname }}.submit();#}
             });
             $('body').on('click', '.add_filtro', function (e) {
                 e.preventDefault();

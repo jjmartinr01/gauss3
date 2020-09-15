@@ -1,0 +1,31 @@
+{% load entidades_extras %}
+{% if buscadas %}
+    {% if plantillas_ie|length == 1 %}
+        <b>Se ha encontrado {{ plantillas_ie|length }} solicitud de actuación</b>
+    {% else %}
+        <b>Se han encontrado {{ plantillas_ie|length }} solicitudes de actuación</b>
+    {% endif %}
+{% endif %}
+{% for p_ie in plantillas_ie %}
+    <input type="hidden" name="plantillas_ie_seleccionadas" value="{{ p_ie.id }}">
+
+    <dd class="accordion-navigation" id="accordion{{ p_ie.id }}"
+        style="border-bottom: dotted 1px black">
+        <a href="#panel{{ p_ie.id }}">
+            <i id="circle{{ p_ie.id }}" class="fa fa-plus-circle circle_icon"></i>
+            <b id="asunto{{ p_ie.id }}">{% if not p_ie.tarea.asunto %}
+                <span style="color:red">Nueva plantilla de informe de Inspección</span>
+            {% else %}{{ p_ie.tarea.asunto }}{% endif %}</b> -- ({{ p_ie.modificado|date:"d-m-Y" }})
+
+                Creada por: <span style="color: green; padding-right: 20px;"><i
+                        class="fa fa-user"></i> {{ p_ie.creador.gauser.get_full_name }}</span>
+
+            {% if buscadas %}
+                <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
+            {% endif %}
+        </a>
+
+        <div id="panel{{ p_ie.id }}" class="content accordion-p_ie" data-id="{{ p_ie.id }}">
+        </div>
+    </dd>
+{% endfor %}

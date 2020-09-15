@@ -44,7 +44,7 @@ def gestionar_reparaciones(request):
             q_inicio = Q(fecha_comunicado__gte=inicio)
             q_fin = Q(fecha_comunicado__lte=fin)
             q_tipo = Q(tipo__in=tipo)
-            q_entidad = Q(detecta__entidad=g_e.ronda.entidad)
+            q_entidad = Q(detecta__ronda__entidad=g_e.ronda.entidad)
             reparaciones = Reparacion.objects.filter(q_entidad, q_texto, q_inicio, q_fin, q_tipo)
 
             fichero = 'Reparaciones%s_%s_%s' % (
@@ -56,8 +56,8 @@ def gestionar_reparaciones(request):
             response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
             return response
 
-    Reparacion.objects.filter(detecta__entidad=g_e.ronda.entidad, borrar=True).delete()
-    reparaciones = Reparacion.objects.filter(detecta__entidad=g_e.ronda.entidad, fecha_comunicado__gte=g_e.ronda.inicio,
+    Reparacion.objects.filter(detecta__ronda__entidad=g_e.ronda.entidad, borrar=True).delete()
+    reparaciones = Reparacion.objects.filter(detecta__ronda__entidad=g_e.ronda.entidad, fecha_comunicado__gte=g_e.ronda.inicio,
                                              detecta__ronda=g_e.ronda).order_by('-fecha_comunicado', 'resuelta')
 
     return render(request, "reparaciones.html",
@@ -93,7 +93,7 @@ def gestionar_reparaciones_ajax(request):
                 JsonResponse({'ok': False})
         elif request.POST['action'] == 'open_accordion':
             try:
-                reparacion = Reparacion.objects.get(detecta__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                reparacion = Reparacion.objects.get(detecta__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
                 html = render_to_string('reparacion_accordion_content.html', {'reparacion': reparacion, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
             except:
@@ -101,7 +101,7 @@ def gestionar_reparaciones_ajax(request):
 
         elif request.POST['action'] == 'update_lugar':
             try:
-                reparacion = Reparacion.objects.get(detecta__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                reparacion = Reparacion.objects.get(detecta__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
                 reparacion.lugar = request.POST['valor']
                 if len(reparacion.lugar) < 3:
                     reparacion.borrar = True
@@ -114,7 +114,7 @@ def gestionar_reparaciones_ajax(request):
 
         elif request.POST['action'] == 'update_tipo':
             try:
-                reparacion = Reparacion.objects.get(detecta__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                reparacion = Reparacion.objects.get(detecta__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
                 reparacion.tipo = request.POST['valor']
                 reparacion.save()
                 return JsonResponse({'ok': True, 'valor': reparacion.get_tipo_display()})
@@ -123,7 +123,7 @@ def gestionar_reparaciones_ajax(request):
 
         elif request.POST['action'] == 'enviar_mensaje':
             try:
-                reparacion = Reparacion.objects.get(detecta__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                reparacion = Reparacion.objects.get(detecta__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
                 reparacion.comunicado_a_reparador = True
                 mensaje = render_to_string('reparaciones_mail.html', {'reparacion': reparacion})
                 # mensaje = u'El usuario %s ha grabado una incidencia de reparación. Los datos significativos son:<br><strong>Lugar:</strong> <em>%s</em> <br><strong>Descripción:</strong> <em>%s</em> <br>Gracias por tu atención.' % (
@@ -142,7 +142,7 @@ def gestionar_reparaciones_ajax(request):
 
         elif request.POST['action'] == 'update_resuelta':
             try:
-                reparacion = Reparacion.objects.get(detecta__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                reparacion = Reparacion.objects.get(detecta__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
                 reparacion.resuelta = not reparacion.resuelta
                 reparacion.reparador = g_e
                 reparacion.save()
@@ -162,7 +162,7 @@ def gestionar_reparaciones_ajax(request):
 
         elif request.POST['action'] == 'update_describir_problema':
             try:
-                reparacion = Reparacion.objects.get(detecta__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                reparacion = Reparacion.objects.get(detecta__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
                 reparacion.describir_problema = request.POST['valor']
                 if len(reparacion.describir_problema) < 5:
                     reparacion.borrar = True
@@ -175,7 +175,7 @@ def gestionar_reparaciones_ajax(request):
 
         elif request.POST['action'] == 'update_describir_solucion':
             try:
-                reparacion = Reparacion.objects.get(detecta__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                reparacion = Reparacion.objects.get(detecta__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
                 reparacion.describir_solucion = request.POST['valor']
                 reparacion.reparador = g_e
                 reparacion.save()
@@ -185,7 +185,7 @@ def gestionar_reparaciones_ajax(request):
 
         elif request.POST['action'] == 'borrar_solicitud':
             try:
-                Reparacion.objects.get(detecta__entidad=g_e.ronda.entidad, id=request.POST['id']).delete()
+                Reparacion.objects.get(detecta__ronda__entidad=g_e.ronda.entidad, id=request.POST['id']).delete()
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
@@ -207,7 +207,7 @@ def gestionar_reparaciones_ajax(request):
                 q_inicio = Q(fecha_comunicado__gte=inicio)
                 q_fin = Q(fecha_comunicado__lte=fin)
                 q_tipo = Q(tipo__in=tipo)
-                q_entidad = Q(detecta__entidad=g_e.ronda.entidad)
+                q_entidad = Q(detecta__ronda__entidad=g_e.ronda.entidad)
                 rs = Reparacion.objects.filter(q_entidad, q_texto, q_inicio, q_fin, q_tipo)
                 html = render_to_string('reparacion_accordion.html', {'reparaciones': rs, 'g_e': g_e, 'buscadas': True})
                 return JsonResponse({'ok': True, 'html': html})

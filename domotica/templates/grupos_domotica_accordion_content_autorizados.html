@@ -1,0 +1,11 @@
+{% for a in grupo.gauserpermitidogrupo_set.all %}
+<tr id="tr_autorizado{{ a.id }}">
+    <td><span>{{ a.gauser.last_name }}, {{ a.gauser.first_name }}</span></td>
+    <td><select class="permiso_grupo" data-grupo="{{ grupo.id }}" data-autorizado="{{ a.id }}">
+        <option value="VU" {% if a.permiso == 'VU' %}selected{% endif %}>Puede acceder al grupo</option>
+    <option value="VUE" {% if a.permiso == 'VUE' %}selected{% endif %}>Puede acceder y editar el grupo</option>
+    <option value="VUEB" {% if a.permiso == 'VUEB' %}selected{% endif %}>Puede acceder, editar y borrar el grupo</option>
+    </select></td>
+    <td><a class="borrar_autorizado button tiny" data-grupo="{{ grupo.id }}" data-autorizado="{{ a.id }}"><i class="fa fa-trash"></i></a></td>
+</tr>
+{% endfor %}

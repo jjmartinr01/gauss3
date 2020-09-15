@@ -56,30 +56,6 @@ INSPECTORES = (
     ("15", "PEDRO CÉSAR CACEO BARRIO"),
     ("16", "JOSÉ IGNACIO RUBIO SANCHO")
 )
-# ('PARTICIPACIÓN', 'DEFINICIÓN'),
-PARTICIPACIONES = (('CC', 'Comité de Calidad'),
-                   ('CO', 'Colaboración'),
-                   ('EC', 'Equipo Coordinación'),
-                   ('IN', 'Individual'),
-                   ('IP', 'Inspectores de Primaria'),
-                   ('IS', 'Inspectores de Secundaria'),
-                   ('LA', 'Logroño-Rioja Alta'),
-                   ('LB', 'Logroño-Rioja Baja'),
-                   ('LM', 'Logroño-Rioja Media'),
-                   ('TT', 'Todos'))
-
-# ('OBJETO', 'DEFINICIÓN'),
-OBJETOS = (('C', 'Centro'),
-           ('P', 'Profesores'),
-           ('A', 'Alumnos/Padres'),
-           ('OT', 'Otros'))
-
-# 'TIPO DE ACTUACIÓN', 'DEFINICIÓN'
-TIPOS = (
-    ('ES', 'Específica'),
-    ('HA', 'Habitual'),
-    ('IN', 'Incidental'),
-    ('PR', 'Prioritaria'))
 
 # ID', 'NOMBRE CENTRO', 'TIPO', 'LOCALIDAD'
 CENTROS = (
@@ -313,6 +289,32 @@ CENTROS = (
     ("873", "C.P.F.P. ESCUELA DEPORTIVA DE LA FEDERACIÓN RIOJANA DE NATACIÓN", "C.P.F.P.", "LOGROÑO"),
 )
 
+
+# ('PARTICIPACIÓN', 'DEFINICIÓN'),
+PARTICIPACIONES = (('CC', 'Comité de Calidad'),
+                   ('CO', 'Colaboración'),
+                   ('EC', 'Equipo Coordinación'),
+                   ('IN', 'Individual'),
+                   ('IP', 'Inspectores de Primaria'),
+                   ('IS', 'Inspectores de Secundaria'),
+                   ('LA', 'Logroño-Rioja Alta'),
+                   ('LB', 'Logroño-Rioja Baja'),
+                   ('LM', 'Logroño-Rioja Media'),
+                   ('TT', 'Todos'))
+
+# ('OBJETO', 'DEFINICIÓN'),
+OBJETOS = (('C', 'Centro'),
+           ('P', 'Profesores'),
+           ('A', 'Alumnos/Padres'),
+           ('OT', 'Otros'))
+
+# 'TIPO DE ACTUACIÓN', 'DEFINICIÓN'
+TIPOS = (
+    ('ES', 'Específica'),
+    ('HA', 'Habitual'),
+    ('IN', 'Incidental'),
+    ('PR', 'Prioritaria'))
+
 LOCALIZACIONES = (("CE", "Centro"), ("OT", "Otros"), ("SE", "Sede"))
 
 # "FUNCIÓN INSPECTORA","DEFINICIÓN"),
@@ -352,6 +354,8 @@ SECTORES = (
     ("LB", "Logroño-Rioja Baja"),
     ("LM", "Logroño-Rioja Media"),
 )
+
+
 
 # ("742", "C.R.A. ENTREVALLES", "C.R.A.", "BADARÁN")
 class CentroMDB(models.Model):
@@ -407,3 +411,36 @@ class InspectorTarea(models.Model):
 
     def __str__(self):
         return '%s - %s - %s' % (self.permiso, self.inspector, self.tarea)
+
+
+class PlantillaInformeInspeccion(models.Model):
+    creador = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
+    asunto = models.CharField('Nombre del asunto', blank=True, null=True, default='', max_length=300)
+    destinatario = models.TextField('Destinatario del informe', blank=True, null=True, default='')
+    modificado = models.DateField("Fecha de modificación", auto_now=True)
+
+class VariantePII(models.Model):
+    plantilla = models.ForeignKey(PlantillaInformeInspeccion, on_delete=models.CASCADE)
+    nombre = models.CharField('Nombre de la variante del informe', blank=True, null=True, default='', max_length=300)
+    texto = models.TextField('Contenido del informe', blank=True, null=True, default='')
+
+class InformeInspeccion(models.Model):
+    inspector = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
+    variante = models.ForeignKey(VariantePII, blank=True, null=True, on_delete=models.SET_NULL)
+    title = models.CharField('Nombre de la variable', blank=True, null=True, default='', max_length=300)
+    destinatario = models.TextField('Destinatario del informe', blank=True, null=True, default='')
+    modificado = models.DateField("Fecha de modificación", auto_now=True)
+
+class FirmaII(models.Model):
+    FV = (('F', 'Firmado'), ('V', 'Visto Bueno'))
+    informe = models.ForeignKey(InformeInspeccion, on_delete=models.CASCADE)
+    firmante = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
+    tipo = models.CharField('Tipo de firma', default='F', choices=FV, max_length=5)
+    cargo = models.CharField('Cargo del firmante', blank=True, null=True, max_length=150)
+    nombre = models.CharField('Nombre del firmante', blank=True, null=True, max_length=150)
+    visible = models.BooleanField('Firma visible?', default=False)
+
+# class IIVariable(models.Model):
+#     informe = models.ForeignKey(PlantillaInformeInspeccion, on_delete=models.CASCADE)
+#     nombre=models.CharField('Nombre de la variable', blank=True, null=True, default='', max_length=300)
+#     valor = models.CharField('Valor de la variable', blank=True, null=True, default='', max_length=300)

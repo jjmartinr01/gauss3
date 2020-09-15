@@ -14,6 +14,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 
 from entidades.models import Gauser_extra
+from entidades.views import decode_selectgcs
 from gauss.funciones import html_to_pdf, pass_generator, usuarios_ronda
 from gauss.rutas import RUTA_MEDIA, MEDIA_VUT, RUTA_BASE
 from autenticar.control_acceso import permiso_required
@@ -335,7 +336,32 @@ def ajax_grupos_domotica(request):
                         return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el grupo."})
                 except:
                     return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar el grupo."})
-
+            elif request.POST['action'] == 'update_usuarios_autorizados':
+                try:
+                    grupo = Grupo.objects.get(id=request.POST['grupo'])
+                    operacion = request.POST['operacion']
+                    if operacion == 'add':
+                        autorizado = Gauser_extra.objects.get(id=request.POST['autorizado'][1:]).gauser
+                    elif operacion == 'delete' or operacion == 'change_permiso':
+                        gpg = GauserPermitidoGrupo.objects.get(id=request.POST['autorizado'])
+                        autorizado = gpg.gauser
+                    else:
+                        autorizado = None
+                    # Condiciones con las que tendría permiso para editar el grupo y añadir autorizados:
+                    c1 = grupo.gauserpermitidogrupo_set.filter(gauser=g_e.gauser, permiso__icontains='VUE').count() > 0
+                    c2 = g_e.has_permiso('edita_grupos_domotica')
+                    c3 = grupo.propietario == g_e.gauser
+                    if (c1 or c2 or c3) and request.POST['operacion'] == 'add':
+                        GauserPermitidoGrupo.objects.get_or_create(gauser=autorizado, grupo=grupo)
+                    elif (c1 or c2 or c3) and request.POST['operacion'] == 'delete':
+                        gpg.delete()
+                    elif (c1 or c2 or c3) and request.POST['operacion'] == 'change_permiso':
+                        gpg.permiso = request.POST['permiso']
+                        gpg.save()
+                    html = render_to_string('grupos_domotica_accordion_content_autorizados.html', {'grupo': grupo})
+                    return JsonResponse({'ok': True, 'html': html, 'permiso': c1 or c2 or c3})
+                except:
+                    return JsonResponse({'ok': False})
 
 # @permiso_required('acceso_configura_domotica')
 def configura_domotica(request):

@@ -71,11 +71,11 @@ def delete_gauserpermitidogrupo(sender, instance, *args, **kwargs):
 
 
 class GauserPermitidoGrupo(models.Model):
-    PERMISOS = (('VU', 'Ve el lugar/ubicación'), ('VUE', 'Puede usar y editar el lugar'),
-                ('VUEB', 'Puede usar, editar y borrar el lugar'))
+    PERMISOS = (('VU', 'Ve el grupo'), ('VUE', 'Puede usar y editar el grupo'),
+                ('VUEB', 'Puede usar, editar y borrar el grupo'))
     gauser = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
     grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE)
-    permiso = models.CharField("Permiso", max_length=8, default='USAR')
+    permiso = models.CharField("Permiso", max_length=8, default='VU')
     creado = models.DateField('Fecha de creación', auto_now_add=True)
     modificado = models.DateField('Fecha de modificación', auto_now=True)
 
