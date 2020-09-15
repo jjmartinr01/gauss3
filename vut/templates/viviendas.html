@@ -648,7 +648,11 @@
                 e.preventDefault();
                 $('#id_vivienda').val($(this).data('id'));
                 $('#action').val('libro_registros');
-                $('#protocol_domain').val(window.location.protocol + window.location.hostname);
+                var protocol = window.location.protocol;
+                var port = window.location.port;
+                var domain = window.location.hostname;
+                $('#protocol_domain').val( protocol + '//' + domain + ':' + port);
+                {#window.console.log($('#protocol_domain').val())#}
                 document.getElementById('{{formname}}').submit();
                 {#document.{{formname}}.submit();#}
             });
