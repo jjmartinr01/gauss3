@@ -82,9 +82,11 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
     html_template = 'genera_documento2pdf.html'
     c = render_to_string(html_template, {'texto': texto, 'title': title}, request=request)
     logger.info('Escritura en %s' % (fichero_html))
+    logger.info('go to open %s' % (fichero_html))
     with open(fichero_html, "w") as html_file:
+        logger.info('Writing file: %s' % (fichero_html))
         html_file.write("{0}".format(c.encode('utf-8')))
-    logger.info('Write file: %s' % (fichero_html))
+    logger.info('Written file: %s' % (fichero_html))
     cabecera = MEDIA_ANAGRAMAS + '%s_cabecera.html' % request.session['gauser_extra'].ronda.entidad.code
     pie = MEDIA_ANAGRAMAS + '%s_pie.html' % request.session['gauser_extra'].ronda.entidad.code
     logger.info('cabecera y pie definidas')
