@@ -126,8 +126,9 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
         options = {'page-size': 'A4', 'margin-top': '20', 'margin-right': '20', 'margin-bottom': '20',
                    'margin-left': '20', 'encoding': "UTF-8", 'no-outline': None, '--header-spacing': '5',
                    '--load-error-handling': 'ignore'}
+        logger.info('Preparado para generar pdf sin cabecera')
         pdfkit.from_string(c, fichero_pdf, options)
-
+        logger.info('Generado el pdf sin cabecera')
         # comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 %s %s' % (fichero_html, fichero_pdf)
         # logger.info('Ejecuta: %s' % (comando))
         # os.system(comando)
@@ -141,6 +142,7 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
         pagecount = int(os.system(comando))
         return pagecount, open(fichero_pdf)
     else:
+        logger.info('return fichero %s' % fichero_pdf)
         return open(fichero_pdf, 'rb')
 
 
