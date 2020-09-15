@@ -90,7 +90,6 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
             html_file.write("{0}".format(c.encode('utf-8')))
     except Exception as e:
         logger.info(str(e))
-        return False
 
     logger.info('Written file: %s' % (fichero_html))
     cabecera = MEDIA_ANAGRAMAS + '%s_cabecera.html' % request.session['gauser_extra'].ronda.entidad.code
