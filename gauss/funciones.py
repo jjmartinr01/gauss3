@@ -84,9 +84,10 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
     logger.info('Escritura en %s' % (fichero_html))
     with open(fichero_html, "w") as html_file:
         html_file.write("{0}".format(c.encode('utf-8')))
-
+    logger.info('Write file: %s' % (fichero_html))
     cabecera = MEDIA_ANAGRAMAS + '%s_cabecera.html' % request.session['gauser_extra'].ronda.entidad.code
     pie = MEDIA_ANAGRAMAS + '%s_pie.html' % request.session['gauser_extra'].ronda.entidad.code
+    logger.info('cabecera y pie definidas')
     if tipo == 'doc':
         estilo = media + 'estilo.xsl'
         comando = 'wkhtmltopdf -q -L 20 -R 20 -B 20 --header-spacing 5 --header-html %s --footer-html %s toc --xsl-style-sheet %s %s %s' % (
@@ -111,7 +112,9 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
             '--header-spacing': docconf.headerspacing,
             '--load-error-handling': 'ignore',
         }
+        logger.info('Preparado para generar pdf')
         pdfkit.from_string(c, fichero_pdf, options)
+        logger.info('Pdf generado')
     elif tipo == 'sin_cabecera':
         options = {'page-size': 'A4', 'margin-top': '20', 'margin-right': '20', 'margin-bottom': '20',
                    'margin-left': '20', 'encoding': "UTF-8", 'no-outline': None, '--header-spacing': '5',
