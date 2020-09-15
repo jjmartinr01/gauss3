@@ -112,8 +112,9 @@ def viviendas(request):
                 viajeros = Viajero.objects.filter(reserva__vivienda=vivienda,
                                                   reserva__entrada__gte=fecha_anterior_limite)
                 if viajeros.count() > 0:
+                    p_d = request.POST['protocol_domain']
                     c = render_to_string('libro_registro_policia.html',
-                                         {'vivienda': vivienda, 'viajeros': viajeros,  'req': request})
+                                         {'vivienda': vivienda, 'viajeros': viajeros,  'p_d': p_d})
                     ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, vivienda.entidad.code, vivienda.id)
                     fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
                                        title='Libro de registro de viajeros', tipo='sin_cabecera')

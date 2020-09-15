@@ -21,6 +21,7 @@
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
         <input type="hidden" id="id_vivienda" name="id_vivienda" value="">
+        <input type="hidden" id="protocol_domain" name="protocol_domain" value="">
 
         <div>
             <h4 style="text-align: center;color: #008CBA;"><strong>Viviendas de uso turístico</strong>
@@ -647,7 +648,9 @@
                 e.preventDefault();
                 $('#id_vivienda').val($(this).data('id'));
                 $('#action').val('libro_registros');
-                document.{{formname}}.submit();
+                $('#protocol_domain').val(window.location.protocol + window.location.hostname);
+                document.getElementById('{{formname}}').submit();
+                {#document.{{formname}}.submit();#}
             });
         {% endif %}
 
