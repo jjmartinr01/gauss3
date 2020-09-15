@@ -652,9 +652,7 @@
                 var port = window.location.port;
                 var domain = window.location.hostname;
                 $('#protocol_domain').val( protocol + '//' + domain + ':' + port);
-                {#window.console.log($('#protocol_domain').val())#}
                 document.getElementById('{{formname}}').submit();
-                {#document.{{formname}}.submit();#}
             });
         {% endif %}
 
