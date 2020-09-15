@@ -116,9 +116,12 @@ def viviendas(request):
                                          {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
                     ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, vivienda.entidad.code, vivienda.id)
                     fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
-                                       title=u'Libro de registro de viajeros', tipo='sin_cabecera')
+                                       title='Libro de registro de viajeros', tipo='sin_cabecera')
+                    logger.info('Creado pdf libro de registros')
                     response = HttpResponse(fich, content_type='application/pdf')
+                    logger.info('Creado pdf libro de registros 2')
                     response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
+                    logger.info('Creado pdf libro de registros 3')
                     return response
                 else:
                     crear_aviso(request, False,

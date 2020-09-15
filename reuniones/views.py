@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+import logging
 # import urlparse
 import urllib  # .parse import parse_qs # Sirve para leer los forms serializados y pasados por ajax
 import base64
@@ -32,7 +32,7 @@ from mensajes.views import crear_aviso, encolar_mensaje, crea_mensaje_cola, envi
 # locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
 locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
 
-
+logger = logging.getLogger('django')
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
 # FUNCIONES RELACIONADAS CON LA CREACIÓN DE PLANTILLAS DE CONVOCATORIAS DE REUNIÓN
@@ -949,7 +949,8 @@ def redactar_actas_reunion(request):
                     'MA': MEDIA_ANAGRAMAS,
                     'ruta_base': RUTA_BASE
                 })
-                fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REUNIONES, title=u'Acta de reunión')
+                fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REUNIONES, title='Acta de reunión')
+                logger.info('Creado pdf: %s' % nombre_fichero)
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + nombre_fichero
                 return response
