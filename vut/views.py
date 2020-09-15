@@ -113,7 +113,7 @@ def viviendas(request):
                                                   reserva__entrada__gte=fecha_anterior_limite)
                 if viajeros.count() > 0:
                     c = render_to_string('libro_registro_policia.html',
-                                         {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
+                                         {'vivienda': vivienda, 'viajeros': viajeros,  'req': request})
                     ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, vivienda.entidad.code, vivienda.id)
                     fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
                                        title='Libro de registro de viajeros', tipo='sin_cabecera')
@@ -1726,7 +1726,7 @@ def viajeros(request):
     return JsonResponse({'ok': False})
 
 
-def rvpd(request, secret_id): #rvpd: recepción viajeros policía y domótica
+def rvpd(request, secret_id):  # rvpd: recepción viajeros policía y domótica
     year = datetime.today().year
     anyos = range(year, year - 100, -1)
     hoy = datetime.today().date()
@@ -1787,6 +1787,8 @@ def rvpd(request, secret_id): #rvpd: recepción viajeros policía y domótica
             except:
                 return JsonResponse({'ok': False})
     return JsonResponse({'ok': False})
+
+
 ################################################################################
 
 @permiso_required('viviendas_registradas_vut')
@@ -2966,8 +2968,6 @@ def reserva_vut_crea_recibo(request, reserva_id):
                           'formname': 'reserva_vut_crea_recibo',
                           'reserva': reserva
                       })
-
-
 
     try:
         viviendas = viviendas_con_permiso(g_e, 'crea_reservas')
