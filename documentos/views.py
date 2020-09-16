@@ -304,8 +304,10 @@ def documentos(request):
                 d = docs.get(id=request.POST['documento'])
                 fichero = d.fichero.read()
                 response = HttpResponse(fichero, content_type=d.content_type)
-                ext = d.fich_name.rsplit('.', 1)
-                response['Content-Disposition'] = 'attachment; filename=%s.%s' %(slugify(d.nombre), ext)
+                nombre = slugify(d.fich_name.rpartition('.')[0])
+                ext = d.fich_name.rpartition('.')[2]
+                # response['Content-Disposition'] = 'attachment; filename=%s.%s' %(slugify(d.nombre), ext)
+                response['Content-Disposition'] = 'attachment; filename=%s.%s' % (nombre, ext)
                 return response
             except:
                 crear_aviso(request, False, 'Error. No se ha podido descargar el archivo.')
