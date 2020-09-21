@@ -45,7 +45,7 @@ def actillas(request):
         grupos = Grupo.objects.filter(id__in=request.POST.getlist('grupo'))
         fichero = 'actillaS_' + str(g_e.ronda.entidad.code) + '_' + slugify(datetime.now())
         c = render_to_string('actillas2pdf.html', {'grupos': grupos, })
-        fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_ACTILLAS, title=u'Actilla de evaluación')
+        fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_ACTILLAS, title='Actilla de evaluación')
         response = HttpResponse(fich, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename=' + fichero
         return response
@@ -108,7 +108,7 @@ def actividades_horarios(request):
                 actividad = Actividad.objects.get(entidad=g_e.ronda.entidad, id=request.POST['id'])
                 attr = request.POST['attr']
                 valor = not getattr(actividad, attr)
-                logger.info(u'%s, change_%s %s' % (g_e, attr, actividad.id))
+                logger.info('%s, change_%s %s' % (g_e, attr, actividad.id))
                 setattr(actividad, attr, valor)
                 actividad.save()
                 return JsonResponse({'ok': True, 'estado': valor})
@@ -319,27 +319,27 @@ def horario_subentidad(request):
     horarios = Horario.objects.filter(entidad=g_e.ronda.entidad, ronda=g_e.ronda)
     horario = get_horario(horarios, id_horario=id_horario)
     # if horarios.count() == 0:
-    #     logger.info(u'No existen horarios. Redireccionado para crear un horario.')
+    #     logger.info('No existen horarios. Redireccionado para crear un horario.')
     #     crear_aviso(request, False, 'Para ver un horario, antes debes crearlo.')
     #     return redirect('/define_horario/')
     # try:
     #     horario = horarios.get(id=request.GET['h'])
-    #     logger.info(u'Ha solicitado el horario "%s"' % horario.descripcion[:90])
+    #     logger.info('Ha solicitado el horario "%s"' % horario.descripcion[:90])
     # except:
     #     try:
     #         horario = horarios.get(predeterminado=True)
-    #         logger.info(u'Se autoselecciona el horario predeterminado')
+    #         logger.info('Se autoselecciona el horario predeterminado')
     #     except ObjectDoesNotExist:
     #         horario = horarios[0]
     #         horario.predeterminado = True
     #         horario.save()
-    #         logger.info(u'No existe horario predeterminado. Se crea uno.')
+    #         logger.info('No existe horario predeterminado. Se crea uno.')
     #     except MultipleObjectsReturned:
     #         horarios.update(predeterminado=False)
     #         horario = horarios[0]
     #         horario.predeterminado = True
     #         horario.save()
-    #         logger.info(u'Existen varios horarios predeterminados. Se reconvierten para dejar uno solo.')
+    #         logger.info('Existen varios horarios predeterminados. Se reconvierten para dejar uno solo.')
     grupos = Grupo.objects.filter(ronda=g_e.ronda)
     grupos_id = horario.sesion_set.all().values_list('grupo__id', flat=True).distinct()
     grupos_horario = grupos.filter(id__in=grupos_id)
@@ -835,7 +835,7 @@ def carga_masiva_horarios(request):
         ronda = request.session['gauser_extra'].ronda
         action = request.POST['action']
         if action == 'carga_masiva_racima_xml':
-            logger.info(u'Carga de archivo de tipo: ' + request.FILES['file_masivo'].content_type)
+            logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo'].content_type)
             if 'xml' in request.FILES['file_masivo'].content_type:
                 xml_file = ElementTree.XML(request.FILES['file_masivo'].read())  # ,parser)
                 if xml_file.tag == 'SERVICIO':  # Si ocurre esto es el archivo de exportación de RACIMA
@@ -854,15 +854,12 @@ def carga_masiva_horarios(request):
                     carga_masiva_from_file.delay()
                     # xml_penalara(xml_file, request)
             else:
-                crear_aviso(request, False, u'El archivo cargado no tiene el formato adecuado.')
+                crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.')
         elif action == 'carga_masiva_racima_xls':
-            logger.info(u'Carga de archivo de tipo: ' + request.FILES['file_masivo_xls'].content_type)
-            # Borramos las sesiones existentes antes de cargar las nuevas:
-            horario = Horario.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
-            Sesion.objects.filter(horario=horario).delete()
-            c = CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo_xls'], tipo='HORARIOXLS')
+            logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls'].content_type)
+            CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo_xls'], tipo='HORARIOXLS')
             carga_masiva_from_file.delay()
-            crear_aviso(request, False, u'El archivo cargado puede tardar unos minutos en ser procesado.')
+            crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
             # f = c.fichero.read()
             # book = xlrd.open_workbook(file_contents=f)
             # sheet = book.sheet_by_index(0)
@@ -979,13 +976,13 @@ def xml_racima(xml_file, request):
         try:
             curso = Curso.objects.get(clave_ex=curso_codigo, ronda=g_e.ronda)
             curso.nombre = nombre
-            curso.observaciones += u'<br>Actualizado el %s' % datetime.now()
+            curso.observaciones += '<br>Actualizado el %s' % datetime.now()
             curso.save()
-            logger.info(u'Se actualiza el curso: %s' % curso)
+            logger.info('Se actualiza el curso: %s' % curso)
         except:
-            observaciones = u'Creado el %s' % datetime.now()
+            observaciones = 'Creado el %s' % datetime.now()
             Curso.objects.create(nombre=nombre, clave_ex=curso_codigo, observaciones=observaciones, ronda=g_e.ronda)
-            logger.info(u'Se ha creado el curso %s, con código %s' % (nombre, curso_codigo))
+            logger.info('Se ha creado el curso %s, con código %s' % (nombre, curso_codigo))
     # for elemento in xml_file.xpath(".//grupo_datos[@seq='MATERIAS']/grupo_datos"):
     for elemento in xml_file.findall(".//grupo_datos[@seq='MATERIAS']/grupo_datos"):
         nombre = elemento.find('dato[@nombre_dato="D_MATERIAC"]').text
@@ -994,7 +991,7 @@ def xml_racima(xml_file, request):
         try:
             curso = Curso.objects.get(clave_ex=curso_codigo, ronda=g_e.ronda)
         except:
-            observaciones = u'Creado el %s. Por no existir y tener asociada la materia %s' % (
+            observaciones = 'Creado el %s. Por no existir y tener asociada la materia %s' % (
                 datetime.now(), materia_codigo)
             curso = Curso.objects.create(clave_ex=curso_codigo, ronda=g_e.ronda, observaciones=observaciones,
                                          nombre='Curso inventado')
@@ -1011,14 +1008,14 @@ def xml_racima(xml_file, request):
                                           curso__ronda=g_e.ronda)
         if materias.count() == 0:
             try:
-                observaciones = u'Creada el %s' % datetime.now()
+                observaciones = 'Creada el %s' % datetime.now()
                 Materia.objects.create(curso=curso, nombre=nombre, clave_ex=materia_codigo, observaciones=observaciones,
                                        horas=horas, duracion=duracion)
-                logger.info(u'Se ha creado la materia %s, con código %s' % (nombre, materia_codigo))
+                logger.info('Se ha creado la materia %s, con código %s' % (nombre, materia_codigo))
             except:
-                logger.warning(u'No se ha creado la materia %s. No existe curso %s' % (nombre, materia_codigo))
+                logger.warning('No se ha creado la materia %s. No existe curso %s' % (nombre, materia_codigo))
                 crear_aviso(request, False,
-                            u'La materia %s, asignada al curso %s no ha podido ser creada ya que dicho curso no existe.' % (
+                            'La materia %s, asignada al curso %s no ha podido ser creada ya que dicho curso no existe.' % (
                                 nombre, curso_codigo))
         elif materias.count() > 1:
             materia = materias[0]
@@ -1027,18 +1024,18 @@ def xml_racima(xml_file, request):
             materia.nombre = nombre
             materia.horas = horas
             materia.duracion = duracion
-            materia.observaciones += u'<br>Actualizada el %s' % datetime.now()
+            materia.observaciones += '<br>Actualizada el %s' % datetime.now()
             materia.save()
-            logger.info(u'Se actualiza la materia: %s' % nombre)
+            logger.info('Se actualiza la materia: %s' % nombre)
         else:
             materia = materias[0]
             materia.curso = curso
             materia.nombre = nombre
             materia.horas = horas
             materia.duracion = duracion
-            materia.observaciones += u'<br>Actualizada el %s' % datetime.now()
+            materia.observaciones += '<br>Actualizada el %s' % datetime.now()
             materia.save()
-            logger.info(u'Se actualiza la materia: %s' % nombre)
+            logger.info('Se actualiza la materia: %s' % nombre)
 
         # try:
         #     materia = Materia.objects.get(curso__clave_ex=curso_codigo, clave_ex=materia_codigo,
@@ -1047,19 +1044,19 @@ def xml_racima(xml_file, request):
         #     materia.nombre = nombre
         #     materia.horas = horas
         #     materia.duracion = duracion
-        #     materia.observaciones += u'<br>Actualizada el %s' % datetime.now()
+        #     materia.observaciones += '<br>Actualizada el %s' % datetime.now()
         #     materia.save()
-        #     logger.info(u'Se actualiza la materia: %s' % nombre)
+        #     logger.info('Se actualiza la materia: %s' % nombre)
         # except:
         #     try:
-        #         observaciones = u'Creada el %s' % datetime.now()
+        #         observaciones = 'Creada el %s' % datetime.now()
         #         Materia.objects.create(curso=curso, nombre=nombre, clave_ex=materia_codigo, observaciones=observaciones,
         #                                horas=horas, duracion=duracion)
-        #         logger.info(u'Se ha creado la materia %s, con código %s' % (nombre, materia_codigo))
+        #         logger.info('Se ha creado la materia %s, con código %s' % (nombre, materia_codigo))
         #     except:
-        #         logger.warning(u'No se ha creado la materia %s. No existe curso %s' % (nombre, materia_codigo))
+        #         logger.warning('No se ha creado la materia %s. No existe curso %s' % (nombre, materia_codigo))
         #         crear_aviso(request, False,
-        #                     u'La materia %s, asignada al curso %s no ha podido ser creada ya que dicho curso no existe.' % (
+        #                     'La materia %s, asignada al curso %s no ha podido ser creada ya que dicho curso no existe.' % (
         #                         nombre, curso_codigo))
 
     # for elemento in xml_file.xpath(".//grupo_datos[@seq='ACTIVIDADES']/grupo_datos"):
@@ -1069,14 +1066,14 @@ def xml_racima(xml_file, request):
         try:
             actividad = Actividad.objects.get(clave_ex=actividad_codigo, entidad=g_e.ronda.entidad)
             actividad.nombre = nombre
-            actividad.observaciones += u'<br>Actualizada el %s' % datetime.now()
+            actividad.observaciones += '<br>Actualizada el %s' % datetime.now()
             actividad.save()
-            logger.info(u'Se actualiza la actividad: %s' % nombre)
+            logger.info('Se actualiza la actividad: %s' % nombre)
         except:
-            observaciones = u'Creada el %s' % datetime.now()
+            observaciones = 'Creada el %s' % datetime.now()
             Actividad.objects.create(nombre=nombre, clave_ex=actividad_codigo, observaciones=observaciones,
                                      entidad=g_e.ronda.entidad)
-            logger.info(u'Se ha creado la actividad "%s", con código %s' % (nombre, actividad_codigo))
+            logger.info('Se ha creado la actividad "%s", con código %s' % (nombre, actividad_codigo))
     # for elemento in xml_file.xpath(".//grupo_datos[@seq='DEPENDENCIAS']/grupo_datos"):
     for elemento in xml_file.findall(".//grupo_datos[@seq='DEPENDENCIAS']/grupo_datos"):
         nombre = elemento.find('dato[@nombre_dato="D_DEPENDENCIA"]').text
@@ -1085,38 +1082,38 @@ def xml_racima(xml_file, request):
 
         dependencias = Dependencia.objects.filter(entidad=g_e.ronda.entidad, clave_ex=dependencia_codigo)
         if dependencias.count() == 0:
-            observaciones = u'Creada el %s' % datetime.now()
+            observaciones = 'Creada el %s' % datetime.now()
             dependencia = Dependencia.objects.create(entidad=g_e.ronda.entidad, nombre=nombre, abrev=abrev,
                                                      clave_ex=dependencia_codigo, observaciones=observaciones)
-            logger.info(u'Se ha creado la dependencia "%s", con código %s' % (nombre, dependencia_codigo))
+            logger.info('Se ha creado la dependencia "%s", con código %s' % (nombre, dependencia_codigo))
         elif dependencias.count() > 1:
             dependencia = dependencias[0]
             dependencias.exclude(pk__in=[dependencia.pk]).delete()
             dependencia.nombre = nombre
             dependencia.abrev = abrev
-            dependencia.observaciones += u'<br>Actualizada el %s' % datetime.now()
+            dependencia.observaciones += '<br>Actualizada el %s' % datetime.now()
             dependencia.save()
-            logger.info(u'Se actualiza la dependencia: %s' % nombre)
+            logger.info('Se actualiza la dependencia: %s' % nombre)
         else:
             dependencia = dependencias[0]
             dependencia.nombre = nombre
             dependencia.abrev = abrev
-            dependencia.observaciones += u'<br>Actualizada el %s' % datetime.now()
+            dependencia.observaciones += '<br>Actualizada el %s' % datetime.now()
             dependencia.save()
-            logger.info(u'Se actualiza la dependencia: %s' % nombre)
+            logger.info('Se actualiza la dependencia: %s' % nombre)
 
         # try:
         #     dependencia = Dependencia.objects.get(entidad=g_e.ronda.entidad, clave_ex=dependencia_codigo)
         #     dependencia.nombre = nombre
         #     dependencia.abrev = abrev
-        #     materia.observaciones += u'<br>Actualizada el %s' % datetime.now()
+        #     materia.observaciones += '<br>Actualizada el %s' % datetime.now()
         #     dependencia.save()
-        #     logger.info(u'Se actualiza la dependencia: %s' % nombre)
+        #     logger.info('Se actualiza la dependencia: %s' % nombre)
         # except:
-        #     observaciones = u'Creada el %s' % datetime.now()
+        #     observaciones = 'Creada el %s' % datetime.now()
         #     Dependencia.objects.create(entidad=g_e.ronda.entidad, nombre=nombre, clave_ex=dependencia_codigo, abrev=abrev,
         #                                observaciones=observaciones)
-        #     logger.info(u'Se ha creado la dependencia "%s", con código %s' % (nombre, dependencia_codigo))
+        #     logger.info('Se ha creado la dependencia "%s", con código %s' % (nombre, dependencia_codigo))
 
     # for elemento in xml_file.xpath(".//grupo_datos[@seq='JORNADAS_ESCOLARES']/grupo_datos"):
     # for elemento in xml_file.findall(".//grupo_datos[@seq='JORNADAS_ESCOLARES']/grupo_datos"):
@@ -1131,7 +1128,7 @@ def xml_racima(xml_file, request):
     #         Jornada_escolar.objects.create(entidad=g_e_entidad,
     #                                        curso_escolar=g_e_entidad.curso_escolar,
     #                                        nombre=jornada, clave_ex=jornada_codigo)
-    #         crear_aviso(request, False, u'Se añade una nueva jornada escolar: ' + jornada)
+    #         crear_aviso(request, False, 'Se añade una nueva jornada escolar: ' + jornada)
 
     # for elemento in xml_file.xpath(".//grupo_datos[@seq='TRAMOS_HORARIOS']/grupo_datos"):
     for elemento in xml_file.findall(".//grupo_datos[@seq='TRAMOS_HORARIOS']/grupo_datos"):
@@ -1151,11 +1148,11 @@ def xml_racima(xml_file, request):
             tramo.inicio = h_inicio
             tramo.fin = h_fin
             tramo.save()
-            logger.info(u'Se actualiza el tramo horario: %s' % nombre)
+            logger.info('Se actualiza el tramo horario: %s' % nombre)
         except:
             Tramo_horario.objects.create(horario=horario, nombre=nombre,
                                          clave_ex=tramo_codigo, inicio=h_inicio, fin=h_fin)
-            logger.info(u'Se ha creado el tramo horario "%s", con código %s' % (nombre, tramo_codigo))
+            logger.info('Se ha creado el tramo horario "%s", con código %s' % (nombre, tramo_codigo))
 
     grupos = Grupo.objects.filter(ronda=g_e.ronda)
     grupos_nombre = [(g.id, g.nombre) for g in grupos]
@@ -1173,7 +1170,7 @@ def xml_racima(xml_file, request):
             if not curso.nombre in grupo.observaciones:
                 grupo.observaciones += ', ' + curso.nombre
             grupo.save()
-            logger.info(u'Se actualiza el grupo (Grupo): %s' % nombre)
+            logger.info('Se actualiza el grupo (Grupo): %s' % nombre)
         except:
             grupo_id = get_coincidente(nombre, grupos_nombre)
             if grupo_id:
@@ -1185,21 +1182,21 @@ def xml_racima(xml_file, request):
                         if not curso.nombre in grupo.observaciones:
                             grupo.observaciones += ', ' + curso.nombre
                     else:
-                        grupo.observaciones = u'No creada por el xml de Racima'
+                        grupo.observaciones = 'No creada por el xml de Racima'
                     grupo.save()
-                    logger.info(u'Se actualiza el grupo (Grupo): %s' % nombre)
+                    logger.info('Se actualiza el grupo (Grupo): %s' % nombre)
                 except:
-                    observaciones = u'Creado el %s a través del xml de Racima (mixto)' % datetime.now()
+                    observaciones = 'Creado el %s a través del xml de Racima (mixto)' % datetime.now()
                     grupo = Grupo.objects.create(ronda=g_e.ronda, nombre=nombre, clave_ex=grupo_codigo,
                                                  observaciones=observaciones)
                     grupo.cursos.add(curso)
-                    logger.warning(u'Se ha creado el grupo "%s", con código %s' % (nombre, grupo_codigo))
+                    logger.warning('Se ha creado el grupo "%s", con código %s' % (nombre, grupo_codigo))
             else:
-                observaciones = u'Creado el %s a través del xml de Racima' % datetime.now()
+                observaciones = 'Creado el %s a través del xml de Racima' % datetime.now()
                 grupo = Grupo.objects.create(ronda=g_e.ronda, nombre=nombre, clave_ex=grupo_codigo,
                                              observaciones=observaciones)
                 grupo.cursos.add(curso)
-                logger.warning(u'Se ha creado el grupo "%s", con código %s' % (nombre, grupo_codigo))
+                logger.warning('Se ha creado el grupo "%s", con código %s' % (nombre, grupo_codigo))
 
     sub_docentes = Subentidad.objects.filter(Q(entidad=g_e.ronda.entidad), Q(fecha_expira__gt=datetime.today()),
                                              Q(nombre__icontains='docente') | Q(nombre__icontains='profesor') | Q(
@@ -1212,8 +1209,8 @@ def xml_racima(xml_file, request):
         profesor_apellido2 = elemento.find('dato[@nombre_dato="APELLIDO2"]').text or ''
         nombre_docente = profesor_nombre + ' ' + profesor_apellido1 + ' ' + profesor_apellido2
         espec = elemento.find('dato[@nombre_dato="D_PUESTO"]').text
-        if espec == u"Pedagogía Terapeutica":
-            espec = u"Pedagogía Terapéutica"
+        if espec == "Pedagogía Terapeutica":
+            espec = "Pedagogía Terapéutica"
         profesor_codigo = elemento.find('dato[@nombre_dato="X_EMPLEADO"]').text
         crea_departamentos(g_e.ronda)
         especialidades = Especialidad_entidad.objects.filter(especialidad__nombre__icontains=espec, ronda=g_e.ronda)
@@ -1222,26 +1219,26 @@ def xml_racima(xml_file, request):
                                                                       ~Q(cuerpo__nombre__icontains="catedr"))
             if esp_funcionario.count() == 0:
                 especialidad = None
-                crear_aviso(request, False, u'No se ha encontrado la especialidad asociada a: %s' % (espec))
+                crear_aviso(request, False, 'No se ha encontrado la especialidad asociada a: %s' % (espec))
             else:
                 especialidad = Especialidad_entidad.objects.create(especialidad=esp_funcionario[0], ronda=g_e.ronda)
         else:
             especialidad = especialidades[0]
         try:
             gauser_extra = Gauser_extra.objects.get(clave_ex=profesor_codigo, ronda=g_e.ronda)
-            logger.info(u'Se identifica al gauser_extra: %s' % gauser_extra.gauser.get_full_name())
+            logger.info('Se identifica al gauser_extra: %s' % gauser_extra.gauser.get_full_name())
         except:
             gauser_extra_id = get_coincidente(nombre_docente, nombres_docentes)
             if gauser_extra_id:
                 gauser_extra = Gauser_extra.objects.get(ronda=g_e.ronda, id=gauser_extra_id)
                 gauser_extra.clave_ex = profesor_codigo
                 gauser_extra.save()
-                logger.info(u'Se actualiza el docente %s con la clave_ex %s' % (
+                logger.info('Se actualiza el docente %s con la clave_ex %s' % (
                     gauser_extra.gauser.get_full_name(), profesor_codigo))
             else:
                 gauser_extra = None
-                logger.warning(u'Docente %s %s no encontrado' % (profesor_nombre, nombre_docente))
-                crear_aviso(request, False, u'No se encuentra un gauser_extra de (%s %s) que cumpla condiciones' % (
+                logger.warning('Docente %s %s no encontrado' % (profesor_nombre, nombre_docente))
+                crear_aviso(request, False, 'No se encuentra un gauser_extra de (%s %s) que cumpla condiciones' % (
                     profesor_nombre, nombre_docente))
         if gauser_extra:
             gep = Gauser_extra_programaciones.objects.get_or_create(ge=gauser_extra)
@@ -1251,9 +1248,9 @@ def xml_racima(xml_file, request):
                 gep[0].departamento = departamento
             except:
                 if not gep[0].departamento:
-                    logger.warning(u'Docente %s sin departamento %s' % (nombre_docente, espec))
+                    logger.warning('Docente %s sin departamento %s' % (nombre_docente, espec))
                 else:
-                    logger.warning(u'Docente %s con departamento ya asignado' % (nombre_docente))
+                    logger.warning('Docente %s con departamento ya asignado' % (nombre_docente))
 
             # if especialidades.count() == 1:
             #     gep[0].especialidad = especialidades[0]
@@ -1261,24 +1258,24 @@ def xml_racima(xml_file, request):
             #         departamento = Departamento.objects.get(nombre=espec)
             #         gep[0].departamento = departamento
             #     except:
-            #         logger.warning(u'Docente %s sin departamento %s' % (nombre_docente, espec))
+            #         logger.warning('Docente %s sin departamento %s' % (nombre_docente, espec))
             # elif especialidades.count() == 0:
             #     incidencias['especialidades'] = True
-            #     logger.warning(u'Docente %s sin especialidad %s' % (nombre_docente, espec))
-            #     crear_aviso(request, False, u'Es necesario asignar la especialidad %s a %s' % (espec, nombre_docente))
+            #     logger.warning('Docente %s sin especialidad %s' % (nombre_docente, espec))
+            #     crear_aviso(request, False, 'Es necesario asignar la especialidad %s a %s' % (espec, nombre_docente))
             # else:
             #     try:
             #         departamento = Departamento.objects.get(nombre=espec)
             #         gep[0].departamento = departamento
             #     except:
-            #         logger.warning(u'Docente %s sin departamento %s' % (nombre_docente, espec))
+            #         logger.warning('Docente %s sin departamento %s' % (nombre_docente, espec))
             #     incidencias['especialidades'] = True
-            #     logger.warning(u'Docente %s sin especialidad %s, existen coincidencias' % (nombre_docente, espec))
+            #     logger.warning('Docente %s sin especialidad %s, existen coincidencias' % (nombre_docente, espec))
             incidencias['especialidades'] = True
             gep[0].puesto = espec
             gep[0].save()
     if incidencias:
-        crear_aviso(request, False, u'Se han producido incidencias en la asignación de especialidades al profesorado')
+        crear_aviso(request, False, 'Se han producido incidencias en la asignación de especialidades al profesorado')
     return incidencias
 
 
@@ -1292,8 +1289,8 @@ def xml_penalara(xml_file, request):
         try:
             docente = Gauser_extra.objects.get(ronda=g_e.ronda, clave_ex=clave_docente)
         except:
-            crear_aviso(request, False, u'No se encuentra el docente con clave: %s' % clave_docente)
-            logger.info(u'No se encuentra el docente con clave: %s' % clave_docente)
+            crear_aviso(request, False, 'No se encuentra el docente con clave: %s' % clave_docente)
+            logger.info('No se encuentra el docente con clave: %s' % clave_docente)
             docente = None
 
         dia = dias[sesion.find('DIA').text]
@@ -1313,10 +1310,10 @@ def xml_penalara(xml_file, request):
             except:
                 if '#' in clave_materia:
                     crear_aviso(request, True,
-                                u'Encontrada materia con #. Se buscará la actividad equivalente de código %s' % (
+                                'Encontrada materia con #. Se buscará la actividad equivalente de código %s' % (
                                     clave_materia))
                 else:
-                    crear_aviso(request, False, u'No se encuentra la materia con clave: %s. Clave del grupo: %s' % (
+                    crear_aviso(request, False, 'No se encuentra la materia con clave: %s. Clave del grupo: %s' % (
                         materia, sesion.find('GRUPO').text))
                 materia = None
         else:
@@ -1329,20 +1326,20 @@ def xml_penalara(xml_file, request):
                 try:
                     grupo = Grupo.objects.get(Q(ronda=g_e.ronda), Q(clave_ex=grupo_c[1]) | Q(nombre=grupo_c[1]))
                 except:
-                    crear_aviso(request, False, u'No se encuentra el grupo con clave: ' + grupo_c[1])
+                    crear_aviso(request, False, 'No se encuentra el grupo con clave: ' + grupo_c[1])
                     grupo = None
                 try:
                     curso = Curso.objects.get(ronda=g_e.ronda, clave_ex=grupo_c[0])
                     grupo.cursos.add(curso)
                     grupo.save()
                 except:
-                    crear_aviso(request, False, u'No se encuentra el curso con clave: ' + grupo_c[0])
+                    crear_aviso(request, False, 'No se encuentra el curso con clave: ' + grupo_c[0])
             else:
                 try:
                     grupo = Grupo.objects.get(ronda=g_e.ronda, clave_ex=grupo_c, nombre=grupo_c)
                 except:
                     grupo = Grupo.objects.create(ronda=g_e.ronda, clave_ex=grupo_c, nombre=grupo_c)
-                    crear_aviso(request, False, u'Se ha creado un grupo nuevo: ' + grupo_c)
+                    crear_aviso(request, False, 'Se ha creado un grupo nuevo: ' + grupo_c)
         else:
             grupo = None
 
@@ -1351,7 +1348,7 @@ def xml_penalara(xml_file, request):
             try:
                 dependencia = Dependencia.objects.get(entidad=g_e.ronda.entidad, clave_ex=dependencia)
             except:
-                crear_aviso(request, False, u'Se crea el aula: ' + dependencia)
+                crear_aviso(request, False, 'Se crea el aula: ' + dependencia)
                 dependencia = Dependencia.objects.create(entidad=g_e.ronda.entidad, nombre=dependencia,
                                                          clave_ex=dependencia)
 
@@ -1364,14 +1361,14 @@ def xml_penalara(xml_file, request):
                 try:
                     if '#' in materia_sostenido:
                         materia_sostenido = materia_sostenido.replace('#', '')
-                        crear_aviso(request, False, u'Tratando de encontrar la actividad: ' + materia_sostenido)
+                        crear_aviso(request, False, 'Tratando de encontrar la actividad: ' + materia_sostenido)
                         actividad = Actividad.objects.get(clave_ex=materia_sostenido, entidad=g_e.ronda.entidad)
                     else:
-                        crear_aviso(request, False, u'Se crea la actividad: ' + actividad)
+                        crear_aviso(request, False, 'Se crea la actividad: ' + actividad)
                         actividad = Actividad.objects.create(nombre=actividad, clave_ex=actividad,
                                                              entidad=g_e.ronda.entidad)
                 except:
-                    crear_aviso(request, False, u'Se crea la actividad: ' + actividad)
+                    crear_aviso(request, False, 'Se crea la actividad: ' + actividad)
                     actividad = Actividad.objects.create(nombre=actividad, clave_ex=actividad,
                                                          entidad=g_e.ronda.entidad)
 

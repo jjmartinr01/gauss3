@@ -53,7 +53,7 @@ class Curso(models.Model):
         ordering = ['etapa', 'tipo', 'nombre']
 
     def __str__(self):
-        return u'%s (%s)' % (self.nombre, self.ronda.entidad.name)
+        return '%s (%s)' % (self.nombre, self.ronda.entidad.name)
 
 
 # Ligar un Grupo a un curso es problemático porque alumnos de un grupo pueden pertenecer a varios cursos. Por ejemplo
@@ -88,7 +88,7 @@ class Grupo(models.Model):
 
     def __str__(self):
         cursos = self.cursos.all().values_list('nombre', flat=True)
-        return u'%s - %s - %s' % (self.nombre, ', '.join(cursos), self.ronda)
+        return '%s - %s - %s' % (self.nombre, ', '.join(cursos), self.ronda)
 
 
 # class Materia(models.Model):
@@ -109,7 +109,7 @@ class Grupo(models.Model):
 #
 #     def __str__(self):
 #         curso_nombre = self.curso.nombre if self.curso else 'No asignada a un curso'
-#         return u'%s - %s (%s horas)' % (self.nombre, curso_nombre, self.horas)
+#         return '%s - %s (%s horas)' % (self.nombre, curso_nombre, self.horas)
 
 
 class Horario(models.Model):
@@ -271,7 +271,7 @@ class Horario(models.Model):
 
     def __str__(self):
         p = ' - Predeterminado' if self.predeterminado else ''
-        return u'Horario de %s (%s)%s' % (self.entidad, self.descripcion[:150], p)
+        return 'Horario de %s (%s)%s' % (self.entidad, self.descripcion[:150], p)
 
 
 class Tramo_horario(models.Model):
@@ -286,8 +286,13 @@ class Tramo_horario(models.Model):
         ordering = ['inicio']
 
     def __str__(self):
-        return u'%s (%s-%s) - %s (%s)' % (
-            self.nombre, self.inicio, self.fin, self.horario.entidad.name, self.horario.entidad.ronda.nombre)
+        return 'Sesion'
+        try:
+            nombre = self.nombre
+        except:
+            nombre = 'Sin nombre'
+        return '%s (%s-%s) - %s (%s)' % (
+            nombre, self.inicio, self.fin, self.horario.entidad.name, self.horario.entidad.ronda.nombre)
 
 
 class Actividad(models.Model):
@@ -304,7 +309,7 @@ class Actividad(models.Model):
         ordering = ['id']
 
     def __str__(self):
-        return u'%s %s (%s)' % (self.nombre, self.entidad, self.clave_ex)
+        return '%s %s (%s)' % (self.nombre, self.entidad, self.clave_ex)
 
 
 class Sesion(models.Model):
@@ -343,9 +348,9 @@ class Sesion(models.Model):
         return (hora_fin.hour * 60 + hora_fin.minute - hora_inicio.hour * 60 - hora_inicio.minute) * pixels_minuto
 
     def __str__(self):
-        return u'%s - %s' % (self.dia, self.horario)
+        return '%s - %s' % (self.dia, self.horario)
 
-        # return u'%s - %s (%s)' % (self.dia, self.horario, self.g_e.gauser.get_full_name())
+        # return '%s - %s (%s)' % (self.dia, self.horario, self.g_e.gauser.get_full_name())
 
 
 # import csv
@@ -452,7 +457,7 @@ class Falta_asistencia(models.Model):
     justificada = models.BooleanField('La ha justificado?', default=False)
 
     def __str__(self):
-        return u'Falta: %s - %s (%s)' % (self.g_e, self.sesion.materia.nombre, self.fecha_falta)
+        return 'Falta: %s - %s (%s)' % (self.g_e, self.sesion.materia.nombre, self.fecha_falta)
 
 
 def update_tarea(instance, filename):
@@ -469,7 +474,7 @@ class Guardia(models.Model):
     content_type = models.CharField('Content Type del archivo tarea', max_length=50, blank=True, null=True)
 
     def __str__(self):
-        return u'%s - %s' % (self.fecha, self.sesion)
+        return '%s - %s' % (self.fecha, self.sesion)
 
 
 class Gauser_extra_horarios(models.Model):
@@ -480,7 +485,7 @@ class Gauser_extra_horarios(models.Model):
                                 on_delete=models.CASCADE)
 
     def __str__(self):
-        return u'%s - %s' % (self.ge, self.grupo)
+        return '%s - %s' % (self.ge, self.grupo)
 
 
 def update_fichero_carga_masiva(instance, filename):
@@ -502,7 +507,7 @@ class CargaMasiva(models.Model):
         ordering = ['-ronda']
 
     def __str__(self):
-        return u'%s -- Cargado: %s' % (self.ronda, self.cargado)
+        return '%s -- Cargado: %s' % (self.ronda, self.cargado)
 
 
 class PlataformaDistancia(models.Model):

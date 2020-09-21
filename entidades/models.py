@@ -857,7 +857,7 @@ class CargaMasiva(models.Model):
 
     class Meta:
         verbose_name_plural = "Cargas Masivas"
-        ordering = ['-ronda']
+        ordering = ['ronda']
 
     def __str__(self):
         return '%s -- Cargado: %s' % (self.ronda, self.cargado)

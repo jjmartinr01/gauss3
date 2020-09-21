@@ -15,6 +15,7 @@ from gauss.rutas import MEDIA_FILES
 
 logger = logging.getLogger('django')
 
+
 def get_coincidente(texto, lista_ids_textos):  # Devuelve el id del gauser_extra coincidente
     lista_textos = [n[1] for n in lista_ids_textos]
     try:
@@ -26,11 +27,9 @@ def get_coincidente(texto, lista_ids_textos):  # Devuelve el id del gauser_extra
     except:
         return None
 
+
 @shared_task
 def carga_masiva_from_file():
-    # f = open(MEDIA_FILES + 'prueba_rabitt.txt', 'w+')
-    # f.write('Esta es el contenido PLUMIER')
-    # f.close()
     cargas_necesarias = CargaMasiva.objects.filter(cargado=False)
     for carga in cargas_necesarias:
         if carga.tipo == 'PLUMIER':
@@ -52,7 +51,7 @@ def carga_masiva_from_file():
                 try:
                     tramo_horario = Tramo_horario.objects.get(horario=horario, clave_ex=clave_tramo_horario)
                 except:
-                    logger.info(u'No se encuentra el tramo horario con clave: %s' % clave_tramo_horario)
+                    logger.info('No se encuentra el tramo horario con clave: %s' % clave_tramo_horario)
                     tramo_horario = None
 
                 clave_materia = sesion.find('MATERIA').text
@@ -63,11 +62,11 @@ def carga_masiva_from_file():
                         if '#' in clave_materia:
                             pass
                             logger.info('Encontrada materia con #. Se buscará la actividad equivalente de código %s' % (
-                                            clave_materia))
+                                clave_materia))
                         else:
                             pass
                             logger.info('No se encuentra la materia con clave: %s. Clave del grupo: %s' % (
-                                            clave_materia, sesion.find('GRUPO').text))
+                                clave_materia, sesion.find('GRUPO').text))
                         materia = None
                 else:
                     materia = None
@@ -77,23 +76,24 @@ def carga_masiva_from_file():
                     if '-' in grupo_c:  # Si no tiene '-' es porque es un grupo no definido en RACIMA. Por ejemplo 1COMP, 2COMP, ...
                         grupo_c = grupo_c.split('-')
                         try:
-                            grupo = Grupo.objects.get(Q(ronda=carga.ronda), Q(clave_ex=grupo_c[1]) | Q(nombre=grupo_c[1]))
+                            grupo = Grupo.objects.get(Q(ronda=carga.ronda),
+                                                      Q(clave_ex=grupo_c[1]) | Q(nombre=grupo_c[1]))
                         except:
-                            # crear_aviso(request, False, u'No se encuentra el grupo con clave: ' + grupo_c[1])
+                            # crear_aviso(request, False, 'No se encuentra el grupo con clave: ' + grupo_c[1])
                             grupo = None
                         try:
                             curso = Curso.objects.get(ronda=carga.ronda, clave_ex=grupo_c[0])
                             grupo.cursos.add(curso)
                             grupo.save()
                         except:
-                            # crear_aviso(request, False, u'No se encuentra el curso con clave: ' + grupo_c[0])
+                            # crear_aviso(request, False, 'No se encuentra el curso con clave: ' + grupo_c[0])
                             pass
                     else:
                         try:
                             grupo = Grupo.objects.get(ronda=carga.ronda, clave_ex=grupo_c, nombre=grupo_c)
                         except:
                             grupo = Grupo.objects.create(ronda=carga.ronda, clave_ex=grupo_c, nombre=grupo_c)
-                            # crear_aviso(request, False, u'Se ha creado un grupo nuevo: ' + grupo_c)
+                            # crear_aviso(request, False, 'Se ha creado un grupo nuevo: ' + grupo_c)
                 else:
                     grupo = None
 
@@ -102,7 +102,7 @@ def carga_masiva_from_file():
                     try:
                         dependencia = Dependencia.objects.get(entidad=carga.ronda.entidad, clave_ex=dependencia)
                     except:
-                        # crear_aviso(request, False, u'Se crea el aula: ' + dependencia)
+                        # crear_aviso(request, False, 'Se crea el aula: ' + dependencia)
                         dependencia = Dependencia.objects.create(entidad=carga.ronda.entidad, nombre=dependencia,
                                                                  clave_ex=dependencia)
 
@@ -115,14 +115,15 @@ def carga_masiva_from_file():
                         try:
                             if '#' in materia_sostenido:
                                 materia_sostenido = materia_sostenido.replace('#', '')
-                                # crear_aviso(request, False, u'Tratando de encontrar la actividad: ' + materia_sostenido)
-                                actividad = Actividad.objects.get(clave_ex=materia_sostenido, entidad=carga.ronda.entidad)
+                                # crear_aviso(request, False, 'Tratando de encontrar la actividad: ' + materia_sostenido)
+                                actividad = Actividad.objects.get(clave_ex=materia_sostenido,
+                                                                  entidad=carga.ronda.entidad)
                             else:
-                                # crear_aviso(request, False, u'Se crea la actividad: ' + actividad)
+                                # crear_aviso(request, False, 'Se crea la actividad: ' + actividad)
                                 actividad = Actividad.objects.create(nombre=actividad, clave_ex=actividad,
                                                                      entidad=carga.ronda.entidad)
                         except:
-                            # crear_aviso(request, False, u'Se crea la actividad: ' + actividad)
+                            # crear_aviso(request, False, 'Se crea la actividad: ' + actividad)
                             actividad = Actividad.objects.create(nombre=actividad, clave_ex=actividad,
                                                                  entidad=carga.ronda.entidad)
 
@@ -152,11 +153,11 @@ def carga_masiva_from_file():
                 try:
                     curso = Curso.objects.get(clave_ex=curso_codigo, ronda=carga.ronda)
                     curso.nombre = nombre
-                    curso.observaciones += u'<br>Actualizado el %s' % datetime.now()
+                    curso.observaciones += '<br>Actualizado el %s' % datetime.now()
                     curso.save()
                     logger.info('Se actualiza el curso: %s' % curso)
                 except:
-                    observaciones = u'Creado el %s' % datetime.now()
+                    observaciones = 'Creado el %s' % datetime.now()
                     Curso.objects.create(nombre=nombre, clave_ex=curso_codigo, observaciones=observaciones,
                                          ronda=carga.ronda)
                     logger.info('Se ha creado el curso %s, con código %s' % (nombre, curso_codigo))
@@ -168,7 +169,7 @@ def carga_masiva_from_file():
                 try:
                     curso = Curso.objects.get(clave_ex=curso_codigo, ronda=carga.ronda)
                 except:
-                    observaciones = u'Creado el %s. Por no existir y tener asociada la materia %s' % (
+                    observaciones = 'Creado el %s. Por no existir y tener asociada la materia %s' % (
                         datetime.now(), materia_codigo)
                     curso = Curso.objects.create(clave_ex=curso_codigo, ronda=carga.ronda, observaciones=observaciones,
                                                  nombre='Curso inventado')
@@ -199,7 +200,7 @@ def carga_masiva_from_file():
                     materia.nombre = nombre
                     materia.horas = horas
                     materia.duracion = duracion
-                    materia.observaciones += u'<br>Actualizada el %s' % datetime.now()
+                    materia.observaciones += '<br>Actualizada el %s' % datetime.now()
                     materia.save()
                     logger.info('Se actualiza la materia: %s' % nombre)
                 else:
@@ -208,7 +209,7 @@ def carga_masiva_from_file():
                     materia.nombre = nombre
                     materia.horas = horas
                     materia.duracion = duracion
-                    materia.observaciones += u'<br>Actualizada el %s' % datetime.now()
+                    materia.observaciones += '<br>Actualizada el %s' % datetime.now()
                     materia.save()
                     logger.info('Se actualiza la materia: %s' % nombre)
 
@@ -219,19 +220,19 @@ def carga_masiva_from_file():
                 #     materia.nombre = nombre
                 #     materia.horas = horas
                 #     materia.duracion = duracion
-                #     materia.observaciones += u'<br>Actualizada el %s' % datetime.now()
+                #     materia.observaciones += '<br>Actualizada el %s' % datetime.now()
                 #     materia.save()
-                #     logger.info(u'Se actualiza la materia: %s' % nombre)
+                #     logger.info('Se actualiza la materia: %s' % nombre)
                 # except:
                 #     try:
-                #         observaciones = u'Creada el %s' % datetime.now()
+                #         observaciones = 'Creada el %s' % datetime.now()
                 #         Materia.objects.create(curso=curso, nombre=nombre, clave_ex=materia_codigo, observaciones=observaciones,
                 #                                horas=horas, duracion=duracion)
-                #         logger.info(u'Se ha creado la materia %s, con código %s' % (nombre, materia_codigo))
+                #         logger.info('Se ha creado la materia %s, con código %s' % (nombre, materia_codigo))
                 #     except:
-                #         logger.warning(u'No se ha creado la materia %s. No existe curso %s' % (nombre, materia_codigo))
+                #         logger.warning('No se ha creado la materia %s. No existe curso %s' % (nombre, materia_codigo))
                 #         crear_aviso(request, False,
-                #                     u'La materia %s, asignada al curso %s no ha podido ser creada ya que dicho curso no existe.' % (
+                #                     'La materia %s, asignada al curso %s no ha podido ser creada ya que dicho curso no existe.' % (
                 #                         nombre, curso_codigo))
 
             # for elemento in xml_file.xpath(".//grupo_datos[@seq='ACTIVIDADES']/grupo_datos"):
@@ -241,11 +242,11 @@ def carga_masiva_from_file():
                 try:
                     actividad = Actividad.objects.get(clave_ex=actividad_codigo, entidad=carga.ronda.entidad)
                     actividad.nombre = nombre
-                    actividad.observaciones += u'<br>Actualizada el %s' % datetime.now()
+                    actividad.observaciones += '<br>Actualizada el %s' % datetime.now()
                     actividad.save()
                     logger.info('Se actualiza la actividad: %s' % nombre)
                 except:
-                    observaciones = u'Creada el %s' % datetime.now()
+                    observaciones = 'Creada el %s' % datetime.now()
                     Actividad.objects.create(nombre=nombre, clave_ex=actividad_codigo, observaciones=observaciones,
                                              entidad=carga.ronda.entidad)
                     logger.info('Se ha creado la actividad "%s", con código %s' % (nombre, actividad_codigo))
@@ -257,7 +258,7 @@ def carga_masiva_from_file():
 
                 dependencias = Dependencia.objects.filter(entidad=carga.ronda.entidad, clave_ex=dependencia_codigo)
                 if dependencias.count() == 0:
-                    observaciones = u'Creada el %s' % datetime.now()
+                    observaciones = 'Creada el %s' % datetime.now()
                     dependencia = Dependencia.objects.create(entidad=carga.ronda.entidad, nombre=nombre, abrev=abrev,
                                                              clave_ex=dependencia_codigo, observaciones=observaciones)
                     logger.info('Se ha creado la dependencia "%s", con código %s' % (nombre, dependencia_codigo))
@@ -266,14 +267,14 @@ def carga_masiva_from_file():
                     dependencias.exclude(pk__in=[dependencia.pk]).delete()
                     dependencia.nombre = nombre
                     dependencia.abrev = abrev
-                    dependencia.observaciones += u'<br>Actualizada el %s' % datetime.now()
+                    dependencia.observaciones += '<br>Actualizada el %s' % datetime.now()
                     dependencia.save()
                     logger.info('Se actualiza la dependencia: %s' % nombre)
                 else:
                     dependencia = dependencias[0]
                     dependencia.nombre = nombre
                     dependencia.abrev = abrev
-                    dependencia.observaciones += u'<br>Actualizada el %s' % datetime.now()
+                    dependencia.observaciones += '<br>Actualizada el %s' % datetime.now()
                     dependencia.save()
                     logger.info('Se actualiza la dependencia: %s' % nombre)
 
@@ -281,14 +282,14 @@ def carga_masiva_from_file():
                 #     dependencia = Dependencia.objects.get(entidad=carga.ronda.entidad, clave_ex=dependencia_codigo)
                 #     dependencia.nombre = nombre
                 #     dependencia.abrev = abrev
-                #     materia.observaciones += u'<br>Actualizada el %s' % datetime.now()
+                #     materia.observaciones += '<br>Actualizada el %s' % datetime.now()
                 #     dependencia.save()
-                #     logger.info(u'Se actualiza la dependencia: %s' % nombre)
+                #     logger.info('Se actualiza la dependencia: %s' % nombre)
                 # except:
-                #     observaciones = u'Creada el %s' % datetime.now()
+                #     observaciones = 'Creada el %s' % datetime.now()
                 #     Dependencia.objects.create(entidad=carga.ronda.entidad, nombre=nombre, clave_ex=dependencia_codigo, abrev=abrev,
                 #                                observaciones=observaciones)
-                #     logger.info(u'Se ha creado la dependencia "%s", con código %s' % (nombre, dependencia_codigo))
+                #     logger.info('Se ha creado la dependencia "%s", con código %s' % (nombre, dependencia_codigo))
 
             # for elemento in xml_file.xpath(".//grupo_datos[@seq='JORNADAS_ESCOLARES']/grupo_datos"):
             # for elemento in xml_file.findall(".//grupo_datos[@seq='JORNADAS_ESCOLARES']/grupo_datos"):
@@ -303,7 +304,7 @@ def carga_masiva_from_file():
             #         Jornada_escolar.objects.create(entidad=g_e_entidad,
             #                                        curso_escolar=g_e_entidad.curso_escolar,
             #                                        nombre=jornada, clave_ex=jornada_codigo)
-            #         crear_aviso(request, False, u'Se añade una nueva jornada escolar: ' + jornada)
+            #         crear_aviso(request, False, 'Se añade una nueva jornada escolar: ' + jornada)
 
             # for elemento in xml_file.xpath(".//grupo_datos[@seq='TRAMOS_HORARIOS']/grupo_datos"):
             for elemento in xml_file.findall(".//grupo_datos[@seq='TRAMOS_HORARIOS']/grupo_datos"):
@@ -357,7 +358,7 @@ def carga_masiva_from_file():
                                 if not curso.nombre in grupo.observaciones:
                                     grupo.observaciones += ', ' + curso.nombre
                             else:
-                                grupo.observaciones = u'No creada por el xml de Racima'
+                                grupo.observaciones = 'No creada por el xml de Racima'
                             grupo.save()
                             logger.info('Se actualiza el grupo (Grupo): %s' % nombre)
                         except:
@@ -373,7 +374,8 @@ def carga_masiva_from_file():
                         grupo.cursos.add(curso)
                         logger.warning('Se ha creado el grupo "%s", con código %s' % (nombre, grupo_codigo))
 
-            sub_docentes = Subentidad.objects.filter(Q(entidad=carga.ronda.entidad), Q(fecha_expira__gt=datetime.today()),
+            sub_docentes = Subentidad.objects.filter(Q(entidad=carga.ronda.entidad),
+                                                     Q(fecha_expira__gt=datetime.today()),
                                                      Q(nombre__icontains='docente') | Q(
                                                          nombre__icontains='profesor') | Q(
                                                          nombre__icontains='maestro'))
@@ -434,38 +436,45 @@ def carga_masiva_from_file():
                     #         departamento = Departamento.objects.get(nombre=espec)
                     #         gep[0].departamento = departamento
                     #     except:
-                    #         logger.warning(u'Docente %s sin departamento %s' % (nombre_docente, espec))
+                    #         logger.warning('Docente %s sin departamento %s' % (nombre_docente, espec))
                     # elif especialidades.count() == 0:
                     #     incidencias['especialidades'] = True
-                    #     logger.warning(u'Docente %s sin especialidad %s' % (nombre_docente, espec))
-                    #     crear_aviso(request, False, u'Es necesario asignar la especialidad %s a %s' % (espec, nombre_docente))
+                    #     logger.warning('Docente %s sin especialidad %s' % (nombre_docente, espec))
+                    #     crear_aviso(request, False, 'Es necesario asignar la especialidad %s a %s' % (espec, nombre_docente))
                     # else:
                     #     try:
                     #         departamento = Departamento.objects.get(nombre=espec)
                     #         gep[0].departamento = departamento
                     #     except:
-                    #         logger.warning(u'Docente %s sin departamento %s' % (nombre_docente, espec))
+                    #         logger.warning('Docente %s sin departamento %s' % (nombre_docente, espec))
                     #     incidencias['especialidades'] = True
-                    #     logger.warning(u'Docente %s sin especialidad %s, existen coincidencias' % (nombre_docente, espec))
+                    #     logger.warning('Docente %s sin especialidad %s, existen coincidencias' % (nombre_docente, espec))
                     # incidencias['especialidades'] = True
                     gep[0].puesto = espec
                     gep[0].save()
             carga.cargado = True
             carga.save()
-        elif carga.tipo == 'HORARIOXLS':
-            horario = Horario.objects.get(entidad=carga.ronda.entidad, predeterminado=True)
+        if carga.tipo == 'HORARIOXLS':
+            try:
+                horario = Horario.objects.get(entidad=carga.ronda.entidad, predeterminado=True)
+                Sesion.objects.filter(horario=horario).delete()
+                logger.info('Se han borrado las sesiones del horario predeterminado')
+            except:
+                horario = Horario.objects.create(entidad=carga.ronda.entidad, ronda=carga.ronda, nombre='Horario nuevo',
+                                       predeterminado=True)
+                logger.info('No existe horario predeterminado. Se ha creado uno.')
             f = carga.fichero.read()
             book = xlrd.open_workbook(file_contents=f)
             sheet = book.sheet_by_index(0)
-            # Get the keys from line 1 of excel file:
+            # Get the keys from line 5 of excel file:
             keys = {"Profeso": "", "CENTRO": "", "DOCENTE": "", "X_DOCENTE": "", "DEPARTAMENTO": "",
                     "X_DEPARTAMENTO": "", "FECHA INICIO": "", "FECHA FIN": "", "DÍA": "", "HORA INICIO": "",
                     "HORA FIN": "", "HORA INICIO CADENA": "", "HORA FIN CADENA": "", "X_ACTIVIDAD": "",
                     "ACTIVIDAD": "", "L_REQUNIDAD": "", "DOCENCIA": "", "MINUTOS": "", "X_DEPENDENCIA": "",
                     "C_CODDEP": "", "X_DEPENDENCIA2": "", "C_CODDEP2": "", "X_UNIDAD": "", "UNIDAD": "",
                     "MATERIA": "", "X_MATERIOAOMG": "", "CURSO": "", "OMC": ""}
-            keys_index = {col_index: str(sheet.cell(0, col_index).value) for col_index in range(sheet.ncols)}
-            for row_index in range(1, sheet.nrows):
+            keys_index = {col_index: str(sheet.cell(4, col_index).value) for col_index in range(sheet.ncols)}
+            for row_index in range(5, sheet.nrows):
                 for col_index in range(sheet.ncols):
                     keys[keys_index[col_index]] = sheet.cell(row_index, col_index).value
                 inicio = int(keys['HORA INICIO'])

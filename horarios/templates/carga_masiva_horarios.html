@@ -10,43 +10,47 @@
         </div>
 
         <input type="hidden" name="action" id="action" value="carga_masiva_racima_xml">
-{#        <div class="panel callout">#}
-{#            <div class="row">#}
-{#                <div class="large-4 columns">#}
-{#                    <b>Archivo xml (Racima y Peñalara):</b>#}
-{#                </div>#}
-{#                <div class="large-8 columns">#}
-{#                    <input type="file" name="file_masivo" id="file_masivo"/>#}
-{#                </div>#}
-{#            </div>#}
-{#            <hr>#}
-{#            <div class="row">#}
-{#                <div class="large-12 columns">#}
-{#                    <p>Este formulario sirve para cargar dos archivos diferentes:</p>#}
-{#                    <ol>#}
-{#                        <li><b>El primero se obtiene de:</b>#}
-{#                            Racima <i class="fa fa-long-arrow-right"></i> Utilidades#}
-{#                            <i class="fa fa-long-arrow-right"></i> Intercambios de información#}
-{#                            <i class="fa fa-long-arrow-right"></i> Exportar datos desde Gestión de Centros#}
-{#                            <i class="fa fa-long-arrow-right"></i> Exportación hacia generadores de horarios#}
-{#                        </li>#}
-{#                        <li><b>El segundo de:</b>#}
-{#                            Peñalara <i class="fa fa-long-arrow-right"></i> Exportar#}
-{#                            <i class="fa fa-long-arrow-right"></i> Plumier#}
-{#                        </li>#}
-{#                    </ol>#}
-{#                    <p><i>GAUSS distinguirá automáticamente uno de otro.</i></p>#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
-
         <div class="panel callout">
             <div class="row">
-                    <div class="large-12 columns">
-                        <p>Este formulario sirve para cargar los horarios de los profesores a través de un
-                            archivo XLS obtenido de Racima.</p>
-                        <ul>
-                            <li><b>La ruta para obtenerlo es:</b> Racima <i class="fa fa-long-arrow-right"></i> Módulo
+                <div class="large-12 columns">
+                    <p style="font-weight: bold;color: #008CBA">La carga de horarios se hace a través de dos archivos, ambos
+                    obtenidos de Racima.</p>
+                    <p style="font-weight: bold;color: #008CBA">El primero de ellos tiene extensión "xml" y se puede cargar antes
+                        de introducir los horarios en Racima. El segundo tiene extensión "xls" y debe cargarse
+                    una vez introducidos los horarios en Racima.</p>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="large-12 columns">
+                    <p><b>1º.- Carga el archivo xml obtenido siguiendo la siguiente ruta en Racima:</b></p>
+                    <p>
+                            Racima <i class="fa fa-long-arrow-right"></i> Módulo
+                                de Gestión <i class="fa fa-long-arrow-right"></i> Utilidades
+                            <i class="fa fa-long-arrow-right"></i> Intercambios de información
+                            <i class="fa fa-long-arrow-right"></i> Exportar datos desde Gestión de Centros
+                            <i class="fa fa-long-arrow-right"></i> Exportación hacia generadores de horarios
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="large-3 columns">
+                    <b>Archivo xml (Racima):</b>
+                </div>
+                    <div class="large-6 columns center-block">
+                    <input type="file" name="file_masivo" id="file_masivo"/>
+                </div>
+                <div class="large-3 columns">
+                    <a class="button" id="archivo_xml">Cargar el archivo xml</a>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="large-12 columns">
+                    <p><b>2º.- Una vez cargada el archivo anterior, puedes cargar los horarios de los profesores a través de un
+                            archivo XLS obtenido de Racima:</b></p>
+                    <p>
+                            Racima <i class="fa fa-long-arrow-right"></i> Módulo
                                 de Gestión
                                 <i class="fa fa-long-arrow-right"></i> Seguimiento
                                 <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
@@ -54,11 +58,10 @@
                                 <i class="fa fa-long-arrow-right"></i> <i>Elegir consulta "Horario del profesorado
                                 del centro con sus materias"</i>
                                 <i class="fa fa-long-arrow-right"></i> Exportar datos (XLS)
-                            </li>
-                        </ul>
-                    </div>
+                    </p>
                 </div>
-            <hr>
+            </div>
+
             <div class="row">
                 <div class="large-3 columns">
                     <b>Archivo xls (Racima):</b>
@@ -70,18 +73,8 @@
                     <a class="button" id="archivo_xls">Cargar el archivo xls</a>
                 </div>
             </div>
-{#            <hr>#}
-{#            <div class="row">#}
-{#                <div class="large-12 columns">#}
-{#                    <a class="button" id="archivo_xls">Cargar el archivo xls</a>#}
-{#                </div>#}
-{#            </div>#}
-{##}
-{#            <hr>#}
-
-
-
         </div>
+
         {% if 'especialidades' in incidencias %}
             {{ incidencias.especialidades }}
         {% endif %}
@@ -92,26 +85,23 @@
 
 {% block final %}
     <script>
-
-        {#habilita(['s_check']);#}
-        {#$('#check_sign').click(function (e) {#}
-        {#    e.preventDefault();#}
-        {#    if ($('#file_masivo').val()) {#}
-        {#        $('#action').val('carga_masiva_racima_xml');#}
-        {#        document.{{formname}}.submit();#}
-        {#    } else {#}
-        {#        show_mensajes({#}
-        {#            title: '<i class="fa fa-warning"></i> No has cargado un archivo', texto: 'Para ' +#}
-        {#            'subir un archivo primero debes cargarlo pulsando en "Examinar..."'#}
-        {#        })#}
-        {#    }#}
-        {# });#}
-
         $('#archivo_xls').click(function (e) {
             e.preventDefault();
             if ($('#file_masivo_xls').val()) {
                 $('#action').val('carga_masiva_racima_xls');
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
+            } else {
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> No has cargado un archivo!!!!', texto: 'Para ' +
+                    'subir un archivo primero debes cargarlo pulsando en "Examinar..."'
+                })
+            }
+        });
+        $('#archivo_xml').click(function (e) {
+            e.preventDefault();
+            if ($('#file_masivo').val()) {
+                $('#action').val('carga_masiva_racima_xml');
+                document.getElementById("{{ formname }}").submit();
             } else {
                 show_mensajes({
                     title: '<i class="fa fa-warning"></i> No has cargado un archivo!!!!', texto: 'Para ' +
@@ -145,8 +135,5 @@
                     }
                 });
         });
-
-
-
     </script>
 {% endblock %}

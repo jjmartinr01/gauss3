@@ -1,41 +1,31 @@
 {% load entidades_extras %}
 {% if buscadas %}
-    {% if tareas_ie|length == 1 %}
-        <b>Se ha encontrado {{ tareas_ie|length }} solicitud de actuación</b>
+    {% if informes_ie|length == 1 %}
+        <b>Se ha encontrado 1 Informe de Inspección</b>
     {% else %}
-        <b>Se han encontrado {{ tareas_ie|length }} solicitudes de actuación</b>
+        <b>Se han encontrado {{ informes_ie|length }} Informes de Inspección</b>
     {% endif %}
 {% endif %}
-{% for tarea_ie in tareas_ie %}
-    <input type="hidden" name="tareas_ie_seleccionadas" value="{{ tarea_ie.id }}">
+{% for ie in informes_ie %}
+    <input type="hidden" name="informes_ie_seleccionados" value="{{ ie.id }}">
 
-    <dd class="accordion-navigation" id="accordion{{ tarea_ie.id }}"
+    <dd class="accordion-navigation" id="accordion{{ ie.id }}"
         style="border-bottom: dotted 1px black">
-        <a href="#panel{{ tarea_ie.id }}">
-            <i id="circle{{ tarea_ie.id }}" class="fa fa-plus-circle circle_icon"></i>
-            <b id="asunto{{ tarea_ie.id }}">{% if not tarea_ie.tarea.asunto %}
-                <span style="color:red">Nueva actuación de Inspección Educativa</span>
-            {% else %}{{ tarea_ie.tarea.asunto }}{% endif %}</b> -- <span
-                id="tipo{{ tarea_ie.id }}">{{ tarea_ie.tarea.get_tipo_display }}</span> -- <span
-                id="localizacion{{ tarea_ie.id }}">{{ tarea_ie.tarea.get_localizacion_display }}</span>
-            ({{ tarea_ie.tarea.fecha|date:"d-m-Y" }})
-            <span style="color:green;{% if not tarea_ie.resuelta %}display:none;{% endif %}"
-                  id="ss{{ tarea_ie.id }}"
-                  title="Actuación de Inspección finalizada"><i class="fa fa-thumbs-up"></i> </span>
-            <span style="color:red;{% if tarea_ie.resuelta %}display:none;{% endif %}" id="ns{{ tarea_ie.id }}"
-                  title="Actuación de Inspección pendiente de finalizar"><i class="fa fa-warning"></i> </span>
-            {% if tarea_ie.inspector.gauser == g_e.gauser %}
-                <span style="color: green; padding-right: 20px;"><i
-                        class="fa fa-user"></i> {{ g_e.gauser.get_full_name }}</span>
-            {% else %}
-                <span style="color: red; padding-right: 20px;"><i class="fa fa-user"></i> {{ g_e.gauser.get_full_name }}</span>
-            {% endif %}
+        <a href="#panel{{ ie.id }}">
+            <i id="circle{{ ie.id }}" class="fa fa-plus-circle circle_icon"></i>
+            <b id="asunto{{ ie.id }}">{% if not ie.asunto %}
+                <span style="color:red">Nuevo Informe de Inspección</span>
+            {% else %}{{ ie.asunto }}{% endif %}</b> -- ({{ ie.modificado|date:"d-m-Y" }})
+
+                Creado por: <span style="color: green; padding-right: 20px;"><i
+                        class="fa fa-user"></i> {{ ie.inspector.gauser.get_full_name }}</span>
+
             {% if buscadas %}
                 <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
             {% endif %}
         </a>
 
-        <div id="panel{{ tarea_ie.id }}" class="content accordion-tarea_ie" data-id="{{ tarea_ie.id }}">
+        <div id="panel{{ ie.id }}" class="content accordion-ie" data-id="{{ ie.id }}">
         </div>
     </dd>
 {% endfor %}

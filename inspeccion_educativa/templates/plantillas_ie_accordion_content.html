@@ -10,7 +10,7 @@
     </div>
     <div class="columns large-2">
         {% if p_ie.creador.gauser == g_e.gauser or g_e|has_permiso:'borra_cualquier_plantilla_ie' %}
-            <a class="button alert borrar_tarea_ie" data-id="{{ p_ie.id }}">
+            <a class="button alert borrar_p_ie" data-id="{{ p_ie.id }}">
                 <i class="fa fa-trash-o"></i> Borrar</a>
         {% endif %}
     </div>
@@ -25,66 +25,12 @@
 </div>
 <div class="row">
     <div class="columns large-12">
-        <label><b>Posibles modelos de este informe</b> <a class="add_variante right"><i class="fa fa-plus-square"></i>
-            Nuevo modelo</a> </label>
-        <table style="width: 100%;">
-            <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>¿Seleccionada?</th>
-                <th>¿Borrar?</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for v in p_ie.variantepii_set.all %}
-                <tr>
-                    <td contenteditable="true">{{ v.nombre }}</td>
-                    <td><input type="radio" name="variante{{ p_ie.id }}" value="{{ v.id }}"
-                    {% if v == variante %}checked{% endif %}></td>
-                <td><a class="borrar_variante button tiny" data-id="{{ v.id }}"><i class="fa fa-trash"></i></a> </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        <label><b>Posibles modelos de este informe</b>
+{#            <a class="add_variante right" data-id="{{ p_ie.id }}"><i class="fa fa-plus-square"></i>#}
+{#                Nuevo modelo</a>#}
+        </label>
     </div>
 </div>
-<div class="row">
-    <div class="columns large-12" id="div_texto_informe{{ p_ie.id }}">
-        {% include 'plantillas_ie_accordion_content_variante.html' %}
-    </div>
+<div id="variantes{{ p_ie.id }}">
+    {% include 'plantillas_ie_accordion_content_variante.html' %}
 </div>
-
-
-{#<br>#}
-{#<div class="row">#}
-{#    <div class="columns large-12">#}
-{#        {% with permiso="controla_plantillas_"|add:p_ie.tarea.tipo %}#}
-{#            {% if g_e|has_permiso:permiso and not p_ie.tarea.realizada %}#}
-{#                <label><b>Descripción de la solución</b>#}
-{#                    <div contenteditable="true" class="ckeditor describir_solucion"#}
-{#                         data-id="{{ p_ie.id }}">#}
-{#                        {% autoescape off %}{{ p_ie.describir_solucion }}{% endautoescape %}#}
-{#                    </div>#}
-{#                </label>#}
-{#            {% else %}#}
-{#                <label><b>Descripción de la solución</b></label> {% autoescape off %}#}
-{#                {{ p_ie.describir_solucion }}#}
-{#            {% endautoescape %}#}
-{#            {% endif %}#}
-{#        {% endwith %}#}
-{#    </div>#}
-{#</div>#}
-{#<br>#}
-{#{% if p_ie.inspector == g_e and not p_ie.comunicado_a_reparador %}#}
-{#<div class="row" id="enviar_mensaje{{ p_ie.id }}">#}
-{#    <div class="columns large-12">#}
-{#        <b>Esta solicitud de reparación se borrará automáticamente si no pulsas "Aceptar"</b>#}
-{#    </div>#}
-{#    <div class="columns large-12">#}
-{#        <a class="button enviar_mensaje" data-id="{{ p_ie.id }}">Aceptar</a>#}
-{#    </div>#}
-{#</div>#}
-{#{% endif %}#}
-<script>
-    $('select').select2();
-</script>
