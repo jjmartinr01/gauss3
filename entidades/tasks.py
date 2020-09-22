@@ -97,7 +97,7 @@ def create_usuario(datos, carga, tipo):
     if gauser:
         try:
             gauser_extra = Gauser_extra.objects.get(gauser=gauser, ronda=carga.ronda)
-            mensaje = u'Existe el g_e %s con el dni %s. No se vuelve a crear fff.' % (gauser, dni)
+            mensaje = 'Existe el g_e %s con el dni %s. No se vuelve a crear fff.' % (gauser, dni)
             logger.info(mensaje)
         except ObjectDoesNotExist:
             gauser_extra = None
@@ -331,59 +331,62 @@ def carga_masiva_from_excel():
                     cargoa = Cargo.objects.get_or_create(cargo='Alumno/a', entidad=carga.ronda.entidad, nivel=6)
                     cargop = Cargo.objects.get_or_create(cargo='Padre/Madre', entidad=carga.ronda.entidad, nivel=6)
                     for row_index in range(5, sheet.nrows):
-                        d = adic
-                        # d = {kra[keys[col_index]]: sheet.cell(row_index, col_index).value for col_index in
-                        #      xrange(sheet.ncols)}
-                        for col_index in range(sheet.ncols):
-                            d[kra[keys[col_index]]] = sheet.cell(row_index, col_index).value
-                        d['apellidos'] = '%s %s' % (d['last_name1'], d['last_name2'])
-                        d['apellidos_tutor1'] = '%s %s' % (d['last_name1_tutor1'], d['last_name2_tutor1'])
-                        d['apellidos_tutor2'] = '%s %s' % (d['last_name1_tutor2'], d['last_name2_tutor2'])
-                        # sub = Subentidad.objects.get_or_create(nombre=d['subentidades'], mensajes=True,
-                        #                                        entidad=carga.ronda.entidad, parent=suba,
-                        #                                        edad_min=12, edad_max=67, fecha_expira=fecha_expira)
-                        # d['subentidades'] = str(sub[0].id) + ',' + str(suba.id)
-                        grupo, c = Grupo.objects.get_or_create(nombre=d['subentidades'], ronda=carga.ronda)
-                        if c:
-                            logger.info('Carga masiva xls. Se crea grupo %s' % grupo.nombre)
-                        d['subentidades'] = str(suba.id)
-                        d['subentidades_tutor1'] = str(subp.id)
-                        d['subentidades_tutor2'] = str(subp.id)
-                        d['activo'] = True
-                        d['observaciones'] = u'<b>Localidad de nacimiento:</b> %s<br><b>Nacionalidad:</b> %s<br>' \
-                                             u'<b>Código del país de nacimiento:</b> %s<br><b>País de nacimiento:</b> %s<br>' \
-                                             u'<b>Código de la provincia de nacimiento:</b> %s<br><b>Ha pagado el seguro escolar:</b> %s<br>' \
-                                             u'<b>Año de la matrícula:</b> %s<br><b>Número de matrículas en este curso:</b> %s<br>' \
-                                             u'<b>Observaciones de la matrícula:</b> %s<br><b>Número de SS:</b> %s<br>' \
-                                             u'<b>Nº de expediente en el centro:</b> %s<br><b>Fecha de matrícula:</b> %s<br>' \
-                                             u'<b>Nº de matrículas en el expediente:</b> %s<br><b>Repeticiones en el curso:</b> %s<br>' \
-                                             u'<b>Familia numerosa:</b> %s<br><b>Lengua materna:</b> %s<br><b>Año de incorporación al sistema educativo:</b> %s<br>' % (
-                                                 d['localidad_nacimiento'], d['nacionalidad'],
-                                                 d['code_pais_nacimiento'],
-                                                 d['pais_nacimiento'], d['code_provincia_nacimiento'],
-                                                 d['pago_seguro_escolar'], d['year_matricula'], d['num_matriculas'],
-                                                 d['observaciones_matricula'],
-                                                 d['num_ss'], d['num_exp'], d['fecha_matricula'],
-                                                 d['num_matriculas_exp'],
-                                                 d['rep_curso'], d['familia_numerosa'], d['lengua_materna'],
-                                                 d['year_incorporacion'])
+                        try:
+                            d = adic
+                            # d = {kra[keys[col_index]]: sheet.cell(row_index, col_index).value for col_index in
+                            #      xrange(sheet.ncols)}
+                            for col_index in range(sheet.ncols):
+                                d[kra[keys[col_index]]] = sheet.cell(row_index, col_index).value
+                            d['apellidos'] = '%s %s' % (d['last_name1'], d['last_name2'])
+                            d['apellidos_tutor1'] = '%s %s' % (d['last_name1_tutor1'], d['last_name2_tutor1'])
+                            d['apellidos_tutor2'] = '%s %s' % (d['last_name1_tutor2'], d['last_name2_tutor2'])
+                            # sub = Subentidad.objects.get_or_create(nombre=d['subentidades'], mensajes=True,
+                            #                                        entidad=carga.ronda.entidad, parent=suba,
+                            #                                        edad_min=12, edad_max=67, fecha_expira=fecha_expira)
+                            # d['subentidades'] = str(sub[0].id) + ',' + str(suba.id)
+                            grupo, c = Grupo.objects.get_or_create(nombre=d['subentidades'], ronda=carga.ronda)
+                            if c:
+                                logger.info('Carga masiva xls. Se crea grupo %s' % grupo.nombre)
+                            d['subentidades'] = str(suba.id)
+                            d['subentidades_tutor1'] = str(subp.id)
+                            d['subentidades_tutor2'] = str(subp.id)
+                            d['activo'] = True
+                            d['observaciones'] = '<b>Localidad de nacimiento:</b> %s<br><b>Nacionalidad:</b> %s<br>' \
+                                                 '<b>Código del país de nacimiento:</b> %s<br><b>País de nacimiento:</b> %s<br>' \
+                                                 '<b>Código de la provincia de nacimiento:</b> %s<br><b>Ha pagado el seguro escolar:</b> %s<br>' \
+                                                 '<b>Año de la matrícula:</b> %s<br><b>Número de matrículas en este curso:</b> %s<br>' \
+                                                 '<b>Observaciones de la matrícula:</b> %s<br><b>Número de SS:</b> %s<br>' \
+                                                 '<b>Nº de expediente en el centro:</b> %s<br><b>Fecha de matrícula:</b> %s<br>' \
+                                                 '<b>Nº de matrículas en el expediente:</b> %s<br><b>Repeticiones en el curso:</b> %s<br>' \
+                                                 '<b>Familia numerosa:</b> %s<br><b>Lengua materna:</b> %s<br><b>Año de incorporación al sistema educativo:</b> %s<br>' % (
+                                                     d['localidad_nacimiento'], d['nacionalidad'],
+                                                     d['code_pais_nacimiento'],
+                                                     d['pais_nacimiento'], d['code_provincia_nacimiento'],
+                                                     d['pago_seguro_escolar'], d['year_matricula'], d['num_matriculas'],
+                                                     d['observaciones_matricula'],
+                                                     d['num_ss'], d['num_exp'], d['fecha_matricula'],
+                                                     d['num_matriculas_exp'],
+                                                     d['rep_curso'], d['familia_numerosa'], d['lengua_materna'],
+                                                     d['year_incorporacion'])
 
-                        tutor1 = create_usuario(d, carga, '_tutor1')
-                        if tutor1:
-                            tutor1.cargos.add(cargop[0])
-                            tutor1.save()
-                        tutor2 = create_usuario(d, carga, '_tutor2')
-                        if tutor2:
-                            tutor2.cargos.add(cargop[0])
-                            tutor2.save()
-                        gauser_extra = create_usuario(d, carga, '')
-                        gauser_extra.tutor1 = tutor1
-                        gauser_extra.tutor2 = tutor2
-                        gauser_extra.subentidades.add(suba)
-                        gauser_extra.cargos.add(cargoa[0])
-                        gauser_extra.save()
-                        gauser_extra.gauser_extra_estudios.grupo = grupo
-                        gauser_extra.gauser_extra_estudios.save()
+                            tutor1 = create_usuario(d, carga, '_tutor1')
+                            if tutor1:
+                                tutor1.cargos.add(cargop[0])
+                                tutor1.save()
+                            tutor2 = create_usuario(d, carga, '_tutor2')
+                            if tutor2:
+                                tutor2.cargos.add(cargop[0])
+                                tutor2.save()
+                            gauser_extra = create_usuario(d, carga, '')
+                            gauser_extra.tutor1 = tutor1
+                            gauser_extra.tutor2 = tutor2
+                            gauser_extra.subentidades.add(suba)
+                            gauser_extra.cargos.add(cargoa[0])
+                            gauser_extra.save()
+                            gauser_extra.gauser_extra_estudios.grupo = grupo
+                            gauser_extra.gauser_extra_estudios.save()
+                        except:
+                            logger.info('Error: %s -- %s' % (d['apellidos'], d['apellidos_tutor1']))
                 carga.cargado = True
                 carga.save()
             elif carga.tipo == 'PENDIENTES':

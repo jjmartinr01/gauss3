@@ -311,7 +311,7 @@ class Departamento(models.Model):
 
     @property
     def entidad(self):
-        return self.materia.curso.ronda.entidad
+        return self.ronda.entidad
 
     def __str__(self):
         return '%s (%s)' % (self.nombre, self.ronda)
