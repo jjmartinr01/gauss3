@@ -14,11 +14,12 @@
         </select>
     </div>
     <div class="columns large-4">
-        {% if ie.creador.gauser == g_e.gauser or g_e|has_permiso:'borra_informes_ie' %}
             <ul class="button-group">
+                {% if ie.inspector.gauser == g_e.gauser or g_e|has_permiso:'borra_informes_ie' %}
                 <li><a class="button alert borrar_ie tiny" data-id="{{ ie.id }}"
                        title="Borrar completamente este informe de la base de datos"><i class="fa fa-trash-o"></i>
                     Borrar</a></li>
+                {% endif %}
                 <li><a class="button copiar_ie tiny" data-id="{{ ie.id }}"
                        title="Hacer una copia (un duplicado) de este informe"><i class="fa fa-copy"></i> Copiar</a>
                 </li>
@@ -26,7 +27,6 @@
                        title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>
                 </li>
             </ul>
-        {% endif %}
     </div>
 </div>
 <div class="row">
