@@ -1,23 +1,13 @@
 {% load entidades_extras %}
 {% load inspeccion_educativa_extras %}
 <style>
-    .informe_no_editable{
+    .informe_no_editable {
         background-color: lightgrey;
         width: 100%;
     }
 </style>
-<div class="row">
-<fieldset>
-    <legend>Variables definidas en el informe</legend>
-    {% for variable in ie.get_variables %}
-        <div class="columns large-4">
-            <label>{{ variable.nombre|texto2nombre }} ({{ variable.nombre }})
-                <input type="text" class="update_texto variable" value="{{ variable.valor }}"
-                       data-id="{{ variable.id }}" data-campo="valor">
-            </label>
-        </div>
-    {% endfor %}
-</fieldset>
+<div class="row" id="variables{{ ie.id }}">
+    {% include "informes_ie_accordion_content_texto_variables.html" %}
 </div>
 <div class="row">
     <div class="columns large-12">

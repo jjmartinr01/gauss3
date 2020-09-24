@@ -3,6 +3,7 @@ import logging
 import xlwt
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
+from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.template.loader import render_to_string
@@ -15,6 +16,8 @@ from django.core.paginator import Paginator
 import sys
 from django.core import serializers
 
+from gauss.funciones import html_to_pdf
+from gauss.rutas import MEDIA_INSPECCION
 from gauss.constantes import CODE_CONTENEDOR
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required
 from inspeccion_educativa.models import *
@@ -221,9 +224,9 @@ def informes_ie(request):
     if request.method == 'POST' and request.is_ajax():
         if request.POST['action'] == 'crea_informe_ie':
             if g_e.has_permiso('crea_informes_ie') or True:  # El permiso da igual
-                p = InformeInspeccion.objects.create(inspector=g_e, title='Nuevo informe de Inspección')
+                ie = InformeInspeccion.objects.create(inspector=g_e, title='Nuevo informe de Inspección')
                 html = render_to_string('informes_ie_accordion.html',
-                                        {'buscadas': False, 'informes_ie': [p], 'g_e': g_e, 'nueva': True})
+                                        {'buscadas': False, 'informes_ie': [ie], 'g_e': g_e, 'nueva': True})
                 return JsonResponse({'ok': True, 'html': html})
             else:
                 JsonResponse({'ok': False})
@@ -260,81 +263,36 @@ def informes_ie(request):
                     ie = InformeInspeccion.objects.get(inspector__ronda__entidad=g_e.ronda.entidad, id=id)
                     setattr(ie, request.POST['campo'], request.POST['valor'])
                     ie.save()
+                    html_v = render_to_string('informes_ie_accordion_content_texto_variables.html', {'ie': ie})
                 else:
                     v = VariableII.objects.get(id=id, informe__inspector__ronda__entidad=g_e.ronda.entidad)
                     v.valor = request.POST['valor']
                     v.save()
                     ie = v.informe
+                    html_v = False
                 html = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie})
-                return JsonResponse({'ok': True, 'html': html, 'ie': ie.id})
+                return JsonResponse({'ok': True, 'html': html, 'ie': ie.id, 'html_v': html_v})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'update_texto_variante2':
+        elif request.POST['action'] == 'copiar_ie':
             try:
-                id = request.POST['id']
-                vp_ie = VariantePII.objects.get(informe__creador__ronda__entidad=g_e.ronda.entidad, id=id)
-                setattr(vp_ie, request.POST['campo'], request.POST['valor'])
-                vp_ie.save()
+                ie = InformeInspeccion.objects.get(inspector__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                ie.pk = None
+                ie.asunto = ie.asunto + ' (Copia)'
+                ie.save()
+                html = render_to_string('informes_ie_accordion.html',
+                                        {'buscadas': False, 'informes_ie': [ie], 'g_e': g_e, 'nueva': True})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borrar_ie':
+            try:
+                ie = InformeInspeccion.objects.get(inspector__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                if g_e.has_permiso('borra_informes_ie') or g_e.gauser == ie.inspector.gauser:
+                    ie.delete()  # Borrar la informe y todas sus variantes
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'copiar_variante2':
-            try:
-                id = request.POST['id']
-                vp_ie = VariantePII.objects.get(informe__creador__ronda__entidad=g_e.ronda.entidad, id=id)
-                nombre = vp_ie.nombre + ' (copia)'
-                variante = VariantePII.objects.create(informe=vp_ie.informe, nombre=nombre, texto=vp_ie.texto)
-                html = render_to_string('informes_ie_accordion_content_texto.html',
-                                        {'p_ie': vp_ie.informe, 'variante': variante})
-                return JsonResponse({'ok': True, 'html': html, 'p_ie': vp_ie.informe.id})
-            except:
-                return JsonResponse({'ok': False})
-
-        elif request.POST['action'] == 'borrar_p_ie2':
-            try:
-                p_ie = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad,
-                                                              id=request.POST['id'])
-                if g_e.has_permiso('borra_cualquier_informe_ie') or g_e.gauser == p_ie.creador.gauser:
-                    p_ie.delete()  # Borrar la informe y todas sus variantes
-                return JsonResponse({'ok': True})
-            except:
-                return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'borrar_variante2':
-            try:
-                id = request.POST['id']
-                variante = VariantePII.objects.get(informe__creador__ronda__entidad=g_e.ronda.entidad, id=id)
-                p_ie = variante.informe
-                if g_e.has_permiso('borra_cualquier_informe_ie') or g_e.gauser == variante.informe.creador.gauser:
-                    if p_ie.variantepii_set.all().count() > 1:
-                        variante.delete()  # Borrar la variante
-                    else:
-                        return JsonResponse({'ok': False,
-                                             'mensaje': 'No es posible el borrado. Al menos debe haber un modelo de informe.'})
-                html = render_to_string('informes_ie_accordion_content_texto.html',
-                                        {'p_ie': p_ie, 'variante': p_ie.variantepii_set.all()[0]})
-                return JsonResponse({'ok': True, 'html': html, 'p_ie': variante.informe.id})
-            except:
-                return JsonResponse(
-                    {'ok': False, 'mensaje': 'Se ha producido un error y no se ha podido hacer borrado'})
-
-
-
-    # informes = PlantillaInformeInspeccion.objects.filter(creador__ronda__entidad=g_e.ronda.entidad)
-    # logger.info('Entra en ' + request.META['PATH_INFO'])
-    # if 'ge' in request.GET:
-    #     pass
-    # return render(request, "informes_ie.html", {
-    #     'iconos':
-    #         ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
-    #           'title': 'Crear una nueva informe de Informe de Inspección',
-    #           'permiso': 'acceso_informes_informes_ie'},
-    #          ),
-    #     'g_e': g_e, 'informes_ie': informes})
-
-
-
-
-
         elif request.POST['action'] == 'busca_informes_ie':
             try:
                 try:
@@ -346,25 +304,32 @@ def informes_ie(request):
                 except:
                     fin = datetime.strptime('01-01-3000', '%d-%m-%Y')
                 texto = request.POST['texto'] if request.POST['texto'] else ''
-                tipos = [t[0] for t in TIPOS]
-                tipo = [request.POST['tipo_busqueda']] if request.POST['tipo_busqueda'] in tipos else tipos
-                q_texto = Q(tarea__observaciones__icontains=texto)  # | Q(describir_solucion__icontains=texto)
-                q_inicio = Q(tarea__fecha__gte=inicio)
-                q_fin = Q(tarea__fecha__lte=fin)
-                q_tipo = Q(tarea__tipo__in=tipo)
+                q_texto = Q(texto__icontains=texto)  # | Q(describir_solucion__icontains=texto)
+                q_inicio = Q(modificado__gte=inicio)
+                q_fin = Q(modificado__lte=fin)
                 q_entidad = Q(inspector__ronda__entidad=g_e.ronda.entidad)
-                its = InspectorTarea.objects.filter(q_entidad, q_texto, q_inicio, q_fin, q_tipo)
+                ies = InformeInspeccion.objects.filter(q_entidad, q_texto, q_inicio, q_fin)
+                if request.POST['tipo_busqueda']:
+                    p = PlantillaInformeInspeccion.objects.get(id=request.POST['tipo_busqueda'])
+                    ies=ies.filter(variante__plantilla=p)
                 html = render_to_string('informes_ie_accordion.html',
-                                        {'informes_ie': its, 'g_e': g_e, 'buscadas': True})
-                a = ', '.join(tipo)
-                return JsonResponse({'ok': True, 'html': html, 'a': a})
+                                        {'informes_ie': ies, 'g_e': g_e, 'buscadas': True})
+                return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+    elif request.method == 'POST' and not request.is_ajax():
+        if request.POST['action'] == 'pdf_ie':
+            ie = InformeInspeccion.objects.get(inspector__gauser=g_e.gauser, id=request.POST['id_ie'])
+            texto_html = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie})
+            ruta = MEDIA_INSPECCION + '%s/' % g_e.ronda.entidad.code
+            fich = html_to_pdf(request, texto_html, fichero='IE', media=ruta, title='Informe de Inspección Técnica Educativa')
+            response = HttpResponse(fich, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(ie.asunto)
+            return response
 
-    informes = InformeInspeccion.objects.filter(inspector=g_e)
+    informes = InformeInspeccion.objects.filter(inspector__gauser=g_e.gauser)
     logger.info('Entra en ' + request.META['PATH_INFO'])
-    if 'ge' in request.GET:
-        pass
+    plantillas = PlantillaInformeInspeccion.objects.filter(creador__ronda__entidad=g_e.ronda.entidad)
     return render(request, "informes_ie.html", {
         'iconos':
             ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
@@ -374,7 +339,7 @@ def informes_ie(request):
               'title': 'Generar informe con las reparaciones de la entidad',
               'permiso': 'genera_informe_informes_ie'},
              ),
-        'g_e': g_e, 'informes_ie': informes, 'tipos': TIPOS})
+        'g_e': g_e, 'informes_ie': informes, 'plantillas': plantillas, 'formname': 'informes_inspeccion'})
 
 
 # @permiso_required('acceso_plantillas_informes_ie')

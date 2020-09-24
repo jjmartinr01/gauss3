@@ -1,0 +1,12 @@
+{% load inspeccion_educativa_extras %}
+<fieldset>
+    <legend>Variables definidas en el informe</legend>
+    {% for variable in ie.get_variables %}
+        <div class="columns large-4">
+            <label>{{ variable.nombre|texto2nombre }} ({{ variable.nombre }})
+                <input type="text" class="update_texto variable" value="{{ variable.valor }}"
+                       data-id="{{ variable.id }}" data-campo="valor">
+            </label>
+        </div>
+    {% endfor %}
+</fieldset>

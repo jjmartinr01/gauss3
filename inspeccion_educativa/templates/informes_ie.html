@@ -19,6 +19,7 @@
         <input type="hidden" name="q" id="q" value="">
         <input type="hidden" name="page" id="page" value="">
         <input type="hidden" id="id_informes_ie" name="id_informes_ie" value="">
+        <input type="hidden" id="id_ie" name="id_ie" value="">
 
         <div id="div_informes_ie_seleccionados"></div>
 
@@ -41,9 +42,9 @@
                     <label>Buscar en ...</label>
                     <select id="tipo_busqueda" name="tipo_busqueda">
                         {# Se busca en negativo, por eso SAL es para entradas y ENT para salidas. Ver el views.py #}
-                        <option value="tod">Todas las informes</option>
-                        {% for t in tipos %}
-                            <option value="{{ t.0 }}">{{ t.1 }}</option>{% endfor %}
+                        <option value="">Todas los informes</option>
+                        {% for p in plantillas %}
+                            <option value="{{ p.id }}">{{ p.asunto }}</option>{% endfor %}
                     </select>
                 </div>
             </div>
@@ -69,6 +70,22 @@
 
 {% block final %}
     <script>
+
+        {% if g_e|has_permiso:"acceso_informes_ie" %}
+            habilita(['s_plus']);
+            $('#plus_sign').click(function (event) {
+                event.preventDefault();
+                $.post("/informes_ie/", {action: 'crea_informe_ie'}, function (data) {
+                    if (data.ok) {
+                        $('#list_informes_ie').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    $(document).scrollTop($('#title_page').offset().top - 150);
+                });
+            });
+        {% endif %}
 
         function destroyEditorInstances() {
             for (var instance in CKEDITOR.instances) {
@@ -124,10 +141,9 @@
             if (element.hasClass('asunto')) {
                 texto = element.val();
                 $('#asunto' + id).html(texto);
-            } else if (element.hasClass('variable')){
+            } else if (element.hasClass('variable')) {
                 texto = element.val();
-            }
-            else {
+            } else {
                 texto = element.html();
             }
             return texto;
@@ -146,6 +162,9 @@
                         function (data) {
                             if (data.ok) {
                                 $('#texto_informe' + data.ie).html(data.html);
+                                if (data.html_v) {
+                                    $('#variables' + data.ie).html(data.html_v);
+                                }
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $('#update_error').show().delay(1500).fadeOut();
@@ -157,17 +176,16 @@
 
         $('body').on('click', '.copiar_ie', function () {
             var id = $(this).data('id');
-            $.post("/informes_ie/", {action: 'copiar_variante', id: id},
+            $.post("/informes_ie/", {action: 'copiar_ie', id: id},
                 function (data) {
                     if (data.ok) {
-                        $("#contenido_informe" + data.ie).html(data.html);
+                        $('#list_informes_ie').prepend(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
         });
-
 
         $('body').on('click', '.borrar_ie', function () {
             id = $(this).data('id');
@@ -195,56 +213,47 @@
         });
 
 
+        {######################################################## #}
 
-
-        {# ####################################################### #}
-        {##}
-        {#        $("body").on('click', '#busca_informes_ie_manual', function (e) {#}
-        {#            var texto = $('#busca_informes_ie').val();#}
-        {#            var id_fecha_inicio = $('#id_fecha_inicio').val();#}
-        {#            var id_fecha_fin = $('#id_fecha_fin').val();#}
-        {#            var tipo_busqueda = $('#tipo_busqueda').val();#}
-        {#            $.post("/informes_ie/", {#}
-        {#                    action: 'busca_informes_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,#}
-        {#                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda#}
-        {#                },#}
-        {#                function (data) {#}
-        {#                    $('#list_informes_ie').html(data['html']);#}
-        {#                    $(document).foundation();#}
-        {#                });#}
-        {#        });#}
-        {#        $("body").on('keyup', '#busca_informes_ie', function (e) {#}
-        {#            var texto = $('#busca_informes_ie').val();#}
-        {#            var id_fecha_inicio = $('#id_fecha_inicio').val();#}
-        {#            var id_fecha_fin = $('#id_fecha_fin').val();#}
-        {#            var tipo_busqueda = $('#tipo_busqueda').val();#}
-        {#            $.post("/informes_ie/", {#}
-        {#                    action: 'busca_informes_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,#}
-        {#                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda#}
-        {#                },#}
-        {#                function (data) {#}
-        {#                    $('#list_informes_ie').html(data['html']);#}
-        {#                    $(document).foundation();#}
-        {#                });#}
-        {#        });#}
-
-
-        {% if g_e|has_permiso:"acceso_informes_ie" %}
-            habilita(['s_plus']);
-            $('#plus_sign').click(function (event) {
-                event.preventDefault();
-                $.post("/informes_ie/", {action: 'crea_informe_ie'}, function (data) {
-                    if (data.ok) {
-                        $('#list_informes_ie').prepend(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                    $(document).scrollTop($('#title_page').offset().top - 150);
+        $("body").on('click', '#busca_informes_ie_manual', function (e) {
+            var texto = $('#busca_informes_ie').val();
+            var id_fecha_inicio = $('#id_fecha_inicio').val();
+            var id_fecha_fin = $('#id_fecha_fin').val();
+            var tipo_busqueda = $('#tipo_busqueda').val();
+            $.post("/informes_ie/", {
+                    action: 'busca_informes_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
+                },
+                function (data) {
+                    $('#list_informes_ie').html(data['html']);
+                    $(document).foundation();
                 });
-            });
-        {% endif %}
+        });
+        $("body").on('keyup', '#busca_informes_ie', function (e) {
+            var texto = $('#busca_informes_ie').val();
+            var id_fecha_inicio = $('#id_fecha_inicio').val();
+            var id_fecha_fin = $('#id_fecha_fin').val();
+            var tipo_busqueda = $('#tipo_busqueda').val();
+            $.post("/informes_ie/", {
+                    action: 'busca_informes_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
+                },
+                function (data) {
+                    $('#list_informes_ie').html(data['html']);
+                    $(document).foundation();
+                });
+        });
 
+        $('#Contenido').on('click', '.pdf_ie', function (e) {
+            e.preventDefault();
+            $('#id_ie').val($(this).data('id'));
+            $('#action').val('pdf_ie');
+            {#var protocol = window.location.protocol;#}
+            {#var port = window.location.port;#}
+            {#var domain = window.location.hostname;#}
+            {#$('#protocol_domain').val( protocol + '//' + domain + ':' + port);#}
+            document.getElementById('{{formname}}').submit();
+        });
     </script>
 
 {% endblock %}
