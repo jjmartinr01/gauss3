@@ -4,7 +4,7 @@
 </div>
 <div class="row">
     <div class="columns large-8">
-        <select id="variante{{ ie.id }}" class="elige_variante" data-ie="{{ ie.id }}">
+        <select id="variante{{ ie.id }}" class="select_variante" data-ie="{{ ie.id }}">
             <option value="">No está basado en ningún modelo</option>
             {% for v in vs %}
                 <option value="{{ v.id }}" {% if ie.variante == v %}selected{% endif %}>{{ v.plantilla.asunto }}
@@ -16,13 +16,15 @@
     <div class="columns large-4">
         {% if ie.creador.gauser == g_e.gauser or g_e|has_permiso:'borra_informes_ie' %}
             <ul class="button-group">
-                <li><a href="#" class="button alert borrar_ie small" data-id="{{ ie.id }}"
+                <li><a href="#" class="button alert borrar_ie tiny" data-id="{{ ie.id }}"
                        title="Borrar completamente este informe de la base de datos"><i class="fa fa-trash-o"></i>
                     Borrar</a></li>
-                <li><a href="#" class="button copiar_ie small" data-id="{{ ie.id }}"
+                <li><a href="#" class="button copiar_ie tiny" data-id="{{ ie.id }}"
                        title="Hacer una copia (un duplicado) de este informe"><i class="fa fa-copy"></i> Copiar</a>
                 </li>
-                {#  <li><a href="#" class="button">Button 3</a></li>#}
+                <li><a href="#" class="button pdf_ie tiny" data-id="{{ ie.id }}"
+                       title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                </li>
             </ul>
         {% endif %}
     </div>
@@ -45,28 +47,9 @@
                                      placeholder="Introduce aquí el asunto del Informe de Inspección"></label>
     </div>
 </div>
-{#<div class="row">#}
-{#    <div class="columns large-12">#}
-{#        <label><b>Posibles modelos de este informe</b>#}
-            {#            <a class="add_variante right" data-id="{{ ie.id }}"><i class="fa fa-plus-square"></i>#}
-            {#                Nuevo modelo</a>#}
-{#        </label>#}
-{#    </div>#}
-{#</div>#}
-{#<div id="variantes{{ ie.id }}">#}
-    {#    {% include 'informes_ie_accordion_content_variante.html' %}#}
-{#</div>#}
 
-<div class="row" id="texto_informe{{ ie.id }}">
-    <div class="columns large-12">
-{#        {% if variante %}#}
-            <label><b>Texto del informe (modelo: {{ variante.nombre }})</b></label>
-                <div contenteditable="true" class="ckeditor update_texto_variante"
-                     data-id="{{ variante.id }}" data-campo="texto">
-                    {% autoescape off %}{{ variante.texto }}{% endautoescape %}
-                </div>
-{#        {% endif %}#}
-    </div>
+<div id="contenido_informe{{ ie.id }}">
+    {% include "informes_ie_accordion_content_texto.html" %}
 </div>
 <script>
     $('select').select2();

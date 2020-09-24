@@ -236,12 +236,37 @@ def informes_ie(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'select_variante':
+            try:
+                va = request.POST['va']
+                variante = VariantePII.objects.get(plantilla__creador__ronda__entidad=g_e.ronda.entidad, id=va)
+                ie = InformeInspeccion.objects.get(inspector__gauser=g_e.gauser,
+                                                   inspector__ronda__entidad=g_e.ronda.entidad,
+                                                   id=request.POST['ie'])
+                ie.asunto = variante.plantilla.asunto
+                ie.destinatario = variante.plantilla.destinatario
+                ie.variante = variante
+                ie.texto = variante.texto
+                ie.save()
+                html = render_to_string('informes_ie_accordion_content_texto.html',
+                                        {'ie': ie})
+                return JsonResponse({'ok': True, 'html': html, 'ie': ie.id})
+            except:
+                return JsonResponse({'ok': False})
         elif request.POST['action'] == 'update_texto':
             try:
-                ie = InformeInspeccion.objects.get(inspector__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
-                setattr(ie, request.POST['campo'], request.POST['valor'])
-                ie.save()
-                return JsonResponse({'ok': True})
+                id = request.POST['id']
+                if request.POST['v'] == "0":
+                    ie = InformeInspeccion.objects.get(inspector__ronda__entidad=g_e.ronda.entidad, id=id)
+                    setattr(ie, request.POST['campo'], request.POST['valor'])
+                    ie.save()
+                else:
+                    v = VariableII.objects.get(id=id, informe__inspector__ronda__entidad=g_e.ronda.entidad)
+                    v.valor = request.POST['valor']
+                    v.save()
+                    ie = v.informe
+                html = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie})
+                return JsonResponse({'ok': True, 'html': html, 'ie': ie.id})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'update_texto_variante2':
@@ -259,20 +284,12 @@ def informes_ie(request):
                 vp_ie = VariantePII.objects.get(informe__creador__ronda__entidad=g_e.ronda.entidad, id=id)
                 nombre = vp_ie.nombre + ' (copia)'
                 variante = VariantePII.objects.create(informe=vp_ie.informe, nombre=nombre, texto=vp_ie.texto)
-                html = render_to_string('informes_ie_accordion_content_variante.html',
+                html = render_to_string('informes_ie_accordion_content_texto.html',
                                         {'p_ie': vp_ie.informe, 'variante': variante})
                 return JsonResponse({'ok': True, 'html': html, 'p_ie': vp_ie.informe.id})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'select_variante2':
-            try:
-                id = request.POST['id']
-                variante = VariantePII.objects.get(informe__creador__ronda__entidad=g_e.ronda.entidad, id=id)
-                html = render_to_string('informes_ie_accordion_content_variante.html',
-                                        {'p_ie': variante.informe, 'variante': variante})
-                return JsonResponse({'ok': True, 'html': html, 'p_ie': variante.informe.id})
-            except:
-                return JsonResponse({'ok': False})
+
         elif request.POST['action'] == 'borrar_p_ie2':
             try:
                 p_ie = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad,
@@ -293,7 +310,7 @@ def informes_ie(request):
                     else:
                         return JsonResponse({'ok': False,
                                              'mensaje': 'No es posible el borrado. Al menos debe haber un modelo de informe.'})
-                html = render_to_string('informes_ie_accordion_content_variante.html',
+                html = render_to_string('informes_ie_accordion_content_texto.html',
                                         {'p_ie': p_ie, 'variante': p_ie.variantepii_set.all()[0]})
                 return JsonResponse({'ok': True, 'html': html, 'p_ie': variante.informe.id})
             except:

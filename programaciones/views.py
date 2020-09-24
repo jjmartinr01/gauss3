@@ -268,10 +268,10 @@ def departamentos_centro_educativo(request):
                     ge.departamentos.add(departamento)
                 error = None
                 crear_aviso(request, True,
-                            u'Modificación/Creación del departamento: <strong>%s</strong>' % departamento.nombre)
+                            'Modificación/Creación del departamento: <strong>%s</strong>' % departamento.nombre)
             else:
                 crear_aviso(request, True,
-                            u'Error en la modificación/mreación del departamento: <strong>%s</strong>' % departamento.nombre)
+                            'Error en la modificación/mreación del departamento: <strong>%s</strong>' % departamento.nombre)
                 error = form.errors
             data = render_to_string("list_departamentos.html",
                                     {'departamentos': Departamento.objects.filter(entidad=g_e.ronda.entidad,
@@ -614,14 +614,14 @@ def resultados_aprendizaje(request):
 @permiso_required('acceso_programaciones_ccff')
 def programaciones(request):
     g_e = request.session['gauser_extra']
-    crear_aviso(request, True, u'Entra en programaciones')
+    crear_aviso(request, True, 'Entra en programaciones')
     if request.method == 'POST':
         if request.POST['action'] == 'pdf_programacion' and g_e.has_permiso('crea_programaciones_ccff'):
             programacion = Programacion_modulo.objects.get(id=request.POST['id_programacion'])
             fichero = '%s_%s.pdf' % (g_e.ronda.entidad.code, programacion.id)
             try:
                 fich = open(MEDIA_ESCRITOS + fichero)
-                crear_aviso(request, True, u"Descarga pdf: %s" % (programacion.asunto))
+                crear_aviso(request, True, "Descarga pdf: %s" % (programacion.asunto))
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + programacion.asunto.replace(' ',
                                                                                                         '_') + '.pdf'
@@ -631,7 +631,7 @@ def programaciones(request):
                 c = render_to_string('programacion2pdf.html', {'programacion': programacion},
                                      request=request)
                 fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_ESCRITOS,
-                                   title=u'Programacion_modulo generado con GAUSS')
+                                   title='Programacion_modulo generado con GAUSS')
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + programacion.asunto.replace(' ',
                                                                                                         '_') + '.pdf'
@@ -641,16 +641,16 @@ def programaciones(request):
             try:
                 fich_name = replace_normalize(programacion.modulo.nombre) + '.pdf'
                 fichero = open(programacion.file_path + '.pdf', 'rb')
-                crear_aviso(request, True, u"Descarga programacion (pdf): %s" % (programacion))
+                crear_aviso(request, True, "Descarga programacion (pdf): %s" % (programacion))
                 response = HttpResponse(fichero, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + fich_name
                 return response
             except:
-                crear_aviso(request, True, u'Detecta id y se genera el pdf de la programación: %s' % (programacion))
+                crear_aviso(request, True, 'Detecta id y se genera el pdf de la programación: %s' % (programacion))
                 c = render_to_string('programacion2pdf.html', {'prog': programacion})
                 fichero = replace_normalize(programacion.modulo.materia.nombre)
                 ronda = g_e.ronda.entidad.ronda.nombre.replace('/', '-')
-                file_path = u'%s%s/%s/%s/%s/%s/' % (MEDIA_PROGRAMACIONES, g_e.ronda.entidad.code,
+                file_path = '%s%s/%s/%s/%s/%s/' % (MEDIA_PROGRAMACIONES, g_e.ronda.entidad.code,
                                                     ronda, g_e.gauser_extra_programaciones.departamento.nombre,
                                                     programacion.modulo.materia.curso.get_etapa_display(),
                                                     programacion.modulo.materia.curso.nombre)
@@ -658,7 +658,7 @@ def programaciones(request):
                 programacion.file_path = file_path + fichero
                 programacion.save()
                 fich = html_to_pdf(request, c, fichero=fichero, media=file_path,
-                                   title=u'Programación del módulo generada con GAUSS')
+                                   title='Programación del módulo generada con GAUSS')
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
                 return response
@@ -666,7 +666,7 @@ def programaciones(request):
             programacion = Programacion_modulo.objects.get(id=request.POST['id_programacion'])
             fich_name = replace_normalize(programacion.modulo.materia.nombre) + '.html'
             fichero = open(programacion.file_path + '.html')
-            crear_aviso(request, True, u"Descarga programacion (html): %s" % (programacion))
+            crear_aviso(request, True, "Descarga programacion (html): %s" % (programacion))
             response = HttpResponse(fichero, content_type='text/html')
             response['Content-Disposition'] = 'attachment; filename=' + fich_name
             return response
@@ -716,7 +716,7 @@ def programaciones(request):
 # @access_required
 def objetivos_criterios(request):
     g_e = request.session['gauser_extra']
-    crear_aviso(request, True, u'Entra en objetivos criterios')
+    crear_aviso(request, True, 'Entra en objetivos criterios')
     return render(request, "objetivos_criterios_evaluacion_foundation.html",
                   {
                       'formname': 'objetivos_criterios',
@@ -818,7 +818,7 @@ def ajax_programaciones(request):
                 '-creado').values_list('id', 'titulo__nombre', 'modulo__nombre')
             ps = [[v[0], v[1], v[2]] for v in programaciones_contain_texto]
             keys = ('id', 'text')
-            d = [dict(zip(keys, (row[0], u'<b>Título: </b>%s<br><b>Módulo: </b>%s' % (row[1], row[2])))) for row in ps]
+            d = [dict(zip(keys, (row[0], '<b>Título: </b>%s<br><b>Módulo: </b>%s' % (row[1], row[2])))) for row in ps]
             return HttpResponse(json.dumps(d))
         elif action == 'programacion_append':
             programacion = Programacion_modulo.objects.get(id=request.POST['id_programacion'])
@@ -827,7 +827,7 @@ def ajax_programaciones(request):
         elif action == 'del_programacion':
             programacion = Programacion_modulo.objects.get(id=request.POST['id'])
             try:
-                crear_aviso(request, True, u'Ejecuta borrar programación: %s' % (programacion.modulo.nombre))
+                crear_aviso(request, True, 'Ejecuta borrar programación: %s' % (programacion.modulo.nombre))
             except:
                 pass
             programacion.delete()
@@ -865,7 +865,7 @@ def ajax_programaciones(request):
                             cont.save()
                     accordion = render_to_string('programacion_append.html', {'programacion': programacion, },
                                                  request=request)
-                    crear_aviso(request, True, u'Ejecuta copiar programacion: %s' % (programacion.modulo))
+                    crear_aviso(request, True, 'Ejecuta copiar programacion: %s' % (programacion.modulo))
                     # return HttpResponse(json.dumps({'ok': True, 'accordion': accordion, 'id': programacion.id}))
                     return JsonResponse({'ok': True, 'accordion': accordion, 'id': programacion.id})
                 except Exception as e:
@@ -886,7 +886,7 @@ def ajax_programaciones(request):
                 programacion.titulo = titulo
                 programacion.save()
             except:
-                crear_aviso(request, True, u'Busca materia para objetivos y criterios')
+                crear_aviso(request, True, 'Busca materia para objetivos y criterios')
             texto = request.POST['q']
             estudios = titulo.cursos.all()
             ex_modulos = Programacion_modulo.objects.filter(g_e__ronda=g_e.ronda).values_list(
@@ -1208,7 +1208,7 @@ def editar_programacion(request):
     if request.method == 'POST':
         if request.POST['action'] == 'pdf':
             programacion = Programacion_modulo.objects.get(id=request.POST['programacion'])
-            crear_aviso(request, True, u'Detecta id y se genera el pdf de la programación: %s' % (programacion))
+            crear_aviso(request, True, 'Detecta id y se genera el pdf de la programación: %s' % (programacion))
             c = render_to_string('programacion2pdf.html', {'prog': programacion})
             # -----------------------------------
             ruta = '%s%s/' % (MEDIA_PROGRAMACIONES, g_e.ronda.entidad.code)
@@ -1233,7 +1233,7 @@ def editar_programacion(request):
             # -----------------------------------
             # fichero = replace_normalize(programacion.modulo.materia.nombre)
             # curso = g_e.ronda.entidad.ronda.nombre.replace('/', '-')
-            # file_path = u'%s%s/%s/%s/%s/%s/' % (MEDIA_PROGRAMACIONES, g_e.ronda.entidad.code,
+            # file_path = '%s%s/%s/%s/%s/%s/' % (MEDIA_PROGRAMACIONES, g_e.ronda.entidad.code,
             #                                     curso, g_e.gauser_extra_programaciones.departamento.nombre,
             #                                     programacion.modulo.materia.curso.get_etapa_display(),
             #                                     programacion.modulo.materia.curso.nombre)
@@ -1252,7 +1252,7 @@ def editar_programacion(request):
             # -----------------------------------
         if request.POST['action'] == 'pdf_ud':
             ud = UD_modulo.objects.get(id=request.POST['unidad_didactica'])
-            crear_aviso(request, True, u'Genera el pdf de la unidad didáctica: %s' % (ud.nombre))
+            crear_aviso(request, True, 'Genera el pdf de la unidad didáctica: %s' % (ud.nombre))
             fichero = '%s_%s_%s' % (g_e.ronda.entidad.code, ud.programacion.id, ud.id)
             c = render_to_string('ud2pdf.html', {'ud': ud})
             fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_PROGRAMACIONES,
@@ -1268,7 +1268,7 @@ def editar_programacion(request):
                                                                    g_e__ronda__entidad=g_e.ronda.entidad)
                 else:
                     programacion = Programacion_modulo.objects.get(pk=request.GET['prog'], g_e=g_e)
-                crear_aviso(request, True, u'Entra en editar el programacion %s.' % (programacion.id))
+                crear_aviso(request, True, 'Entra en editar el programacion %s.' % (programacion.id))
             except:
                 return redirect('/programaciones/')
         else:
@@ -1278,7 +1278,7 @@ def editar_programacion(request):
                 c = '<p>Además, para verificar el progreso y calificar adecuadamente a los alumnos se establece ...</p>'
                 programacion = Programacion_modulo.objects.create(g_e=g_e, act_refuerzo='', act_fct='', crit_eval_gen=c,
                                                                   pro_formacion='')
-            crear_aviso(request, True, u'Entra en crear programacion.')
+            crear_aviso(request, True, 'Entra en crear programacion.')
     return render(request, "crear_programacion_foundation.html",
                   {
                       'formname': 'Crear_programacion',
@@ -1306,14 +1306,14 @@ class Titulo_FPForm(ModelForm):
 # @access_required
 def titulos(request):
     g_e = request.session['gauser_extra']
-    crear_aviso(request, True, u'Entra en títulos educativos')
+    crear_aviso(request, True, 'Entra en títulos educativos')
     if request.method == 'POST':
         if request.POST['action'] == 'pdf_titulo' and g_e.has_permiso('crear_titulo'):
             titulo = Titulo_FP.objects.get(id=request.POST['id_titulo'])
             fichero = '%s_%s.pdf' % (g_e.ronda.entidad.code, titulo.id)
             try:
                 fich = open(MEDIA_ESCRITOS + fichero, 'rb')
-                crear_aviso(request, True, u"Descarga pdf: %s" % (titulo.asunto))
+                crear_aviso(request, True, "Descarga pdf: %s" % (titulo.asunto))
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + titulo.asunto.replace(' ', '_') + '.pdf'
                 return response
@@ -1380,7 +1380,7 @@ def ajax_titulos(request):
             return HttpResponse(accordion)
         elif action == 'delete_titulo':
             titulo = Titulo_FP.objects.get(id=request.POST['id'])
-            crear_aviso(request, True, u'Ejecuta borrar titulo: %s' % (titulo.asunto))
+            crear_aviso(request, True, 'Ejecuta borrar titulo: %s' % (titulo.asunto))
             titulo.delete()
             return HttpResponse(True)
         elif action == 'copy_titulo':
@@ -1389,7 +1389,7 @@ def ajax_titulos(request):
                                              entidad=g_e.ronda.entidad, texto=titulo.texto)
             copia.autores.add(g_e.gauser)
             accordion = render_to_string('titulo_append_foundation.html', {'titulo': copia, 'borrador': True})
-            crear_aviso(request, True, u'Ejecuta copiar titulo: %s' % (titulo.asunto))
+            crear_aviso(request, True, 'Ejecuta copiar titulo: %s' % (titulo.asunto))
             return HttpResponse(json.dumps({'accordion': accordion, 'id': copia.id}))
         elif action == 'busca_receptor':
             texto = request.POST['q']
@@ -1408,7 +1408,7 @@ def ajax_titulos(request):
             form = ContactoForm(request.POST, instance=contacto)
             if form.is_valid():
                 contacto = form.save()
-                crear_aviso(request, True, u'Contacto creado correctamente.')
+                crear_aviso(request, True, 'Contacto creado correctamente.')
                 texto = '%s (%s)' % (contacto.nombre, contacto.cargo)
                 return HttpResponse(json.dumps({'id': str(contacto.id) + "___contacto", 'text': texto}))
         elif action == 'busca_gausers':
@@ -1486,7 +1486,7 @@ def editar_titulo(request):
             titulo.asunto = request.POST['asunto']
             titulo.texto = request.POST['texto']
             titulo.save()
-            crear_aviso(request, True, u'Detecta id y se propone a generar el pdf de: %s' % (titulo.asunto))
+            crear_aviso(request, True, 'Detecta id y se propone a generar el pdf de: %s' % (titulo.asunto))
             fichero = '%s_%s' % (g_e.ronda.entidad.code, titulo.id)
             c = render_to_string('titulo2pdf.html', {
                 'titulo': titulo,
@@ -1501,12 +1501,12 @@ def editar_titulo(request):
         form_contacto = ContactoForm()
         try:
             titulo = Titulo_FP.objects.get(pk=request.GET['doc'])
-            crear_aviso(request, True, u'Entra en editar el titulo %s.' % (titulo.id))
+            crear_aviso(request, True, 'Entra en editar el titulo %s.' % (titulo.id))
         except:
             titulo = Titulo_FP.objects.create(entidad=g_e.ronda.entidad, firmante=g_e.gauser, fecha_firma=date.today(),
                                               asunto='', texto='')
             titulo.autores.add(g_e.gauser)
-            crear_aviso(request, True, u'Entra en crear titulo.')
+            crear_aviso(request, True, 'Entra en crear titulo.')
     # return render(request, "crear_titulo_foundation.html",
     return render(request, "crear_titulo_foundation_ckeditor.html",
                   {

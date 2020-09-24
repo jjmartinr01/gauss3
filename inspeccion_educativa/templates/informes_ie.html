@@ -42,7 +42,8 @@
                     <select id="tipo_busqueda" name="tipo_busqueda">
                         {# Se busca en negativo, por eso SAL es para entradas y ENT para salidas. Ver el views.py #}
                         <option value="tod">Todas las informes</option>
-                        {% for t in tipos %}<option value="{{ t.0 }}">{{ t.1 }}</option>{% endfor %}
+                        {% for t in tipos %}
+                            <option value="{{ t.0 }}">{{ t.1 }}</option>{% endfor %}
                     </select>
                 </div>
             </div>
@@ -104,69 +105,68 @@
             }
         });
 
+        $('body').on('change', '.select_variante', function () {
+            var va = $(this).val();
+            var ie = $(this).data('ie');
+            $.post("/informes_ie/", {action: 'select_variante', va: va, ie: ie},
+                function (data) {
+                    if (data.ok) {
+                        $("#contenido_informe" + data.ie).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        function get_texto_from_update_texto(element, id) {
+            var texto;
+            if (element.hasClass('asunto')) {
+                texto = element.val();
+                $('#asunto' + id).html(texto);
+            } else if (element.hasClass('variable')){
+                texto = element.val();
+            }
+            else {
+                texto = element.html();
+            }
+            return texto;
+        }
+
         $('body').on('keyup', '.update_texto', function () {
-            var id = $(this).data('id');
-            var campo = $(this).data('campo');
-            if ($(this).hasClass('asunto')) {
-                var valor = $(this).val();
-                $('#asunto' + id).html(valor);
-            } else {
-                var valor = $(this).html();
-            }
-            $.post("/informes_ie/", {action: 'update_texto', id: id, valor: valor, campo: campo},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-         });
+            var element = $(this);
+            var id = element.data('id');
+            var campo = element.data('campo');
+            var v = element.hasClass('variable') ? 1 : 0;
+            var antiguo_texto = get_texto_from_update_texto(element, id);
+            setTimeout(function () {
+                var nuevo_texto = get_texto_from_update_texto(element, id);
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/informes_ie/", {action: 'update_texto', id: id, valor: nuevo_texto, campo: campo, v: v},
+                        function (data) {
+                            if (data.ok) {
+                                $('#texto_informe' + data.ie).html(data.html);
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
 
-        $('body').on('keyup', '.update_texto_variante', function () {
-            var id = $(this).data('id');
-            var campo = $(this).data('campo');
-            if ($(this).hasClass('asunto')) {
-                var valor = $(this).val();
-                $('#asunto' + id).html(valor);
-            } else {
-                var valor = $(this).html();
-            }
-            $.post("/informes_ie/", {action: 'update_texto_variante', id: id, valor: valor, campo: campo},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-         });
-
-        $('body').on('click', '.copiar_variante', function () {
+        $('body').on('click', '.copiar_ie', function () {
             var id = $(this).data('id');
             $.post("/informes_ie/", {action: 'copiar_variante', id: id},
                 function (data) {
                     if (data.ok) {
-                        $("#variantes" + data.ie).html(data.html);
+                        $("#contenido_informe" + data.ie).html(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
-         });
-
-        $('body').on('click', '.select_variante', function () {
-            var id = $(this).val();
-            $.post("/informes_ie/", {action: 'select_variante', id: id},
-                function (data) {
-                    if (data.ok) {
-                        $("#variantes" + data.ie).html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-         });
+        });
 
 
         $('body').on('click', '.borrar_ie', function () {
@@ -192,34 +192,9 @@
                 }
             });
 
-         });
+        });
 
-        $('body').on('click', '.borrar_variante', function () {
-            id = $(this).data('id');
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar este modelo de informe de informe de inspección?',
-                texto: 'Si aceptas el modelo se borrará por completo de la base de datos', size: 'large', buttons: {
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    },
-                    "Borrar": function () {
-                        hide_mensajes();
-                        $.post("/informes_ie/", {action: 'borrar_variante', id: id},
-                            function (data) {
-                                if (data.ok) {
-                                    $("#variantes" + data.ie).html(data.html);
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                    show_mensajes({title:'<i class="fa fa-warning"></i> Error en borrado',
-                                    texto: data.mensaje})
-                                }
-                            });
-                    }
-                }
-            });
 
-         });
 
 
         {# ####################################################### #}
@@ -266,7 +241,6 @@
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                     $(document).scrollTop($('#title_page').offset().top - 150);
-                    {#habilita(['h_plus', 's_check', 's_search']);#}
                 });
             });
         {% endif %}

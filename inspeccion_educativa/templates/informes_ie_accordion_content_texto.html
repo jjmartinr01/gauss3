@@ -1,0 +1,39 @@
+{% load entidades_extras %}
+{% load inspeccion_educativa_extras %}
+<style>
+    .informe_no_editable{
+        background-color: lightgrey;
+        width: 100%;
+    }
+</style>
+<div class="row">
+<fieldset>
+    <legend>Variables definidas en el informe</legend>
+    {% for variable in ie.get_variables %}
+        <div class="columns large-4">
+            <label>{{ variable.nombre|texto2nombre }} ({{ variable.nombre }})
+                <input type="text" class="update_texto variable" value="{{ variable.valor }}"
+                       data-id="{{ variable.id }}" data-campo="valor">
+            </label>
+        </div>
+    {% endfor %}
+</fieldset>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Texto del informe (no editable):</b></label>
+        <div style="min-height: 100px;" id="texto_informe{{ ie.id }}">
+            {% include "informes_ie_accordion_content_texto2pdf.html" %}
+        </div>
+    </div>
+</div>
+
+<div class="row" id="texto_informe_plantilla{{ ie.id }}">
+    <div class="columns large-12">
+        <label><b>Texto del informe editable:</b></label>
+        <div contenteditable="true" class="ckeditor update_texto"
+             data-id="{{ ie.id }}" data-campo="texto">
+            {% autoescape off %}{{ ie.texto }}{% endautoescape %}
+        </div>
+    </div>
+</div>

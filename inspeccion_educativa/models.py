@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+import re
+import os
 from datetime import datetime
 from django.db import models
-import os
+from django.template import Context, Template
 from autenticar.models import Gauser
 from entidades.models import Entidad, Ronda, Gauser_extra
 
@@ -427,7 +429,6 @@ class VariantePII(models.Model):
     class Meta:
         ordering = ['plantilla__id', 'id',]
 
-
 class InformeInspeccion(models.Model):
     inspector = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
     variante = models.ForeignKey(VariantePII, blank=True, null=True, on_delete=models.SET_NULL)
@@ -436,6 +437,30 @@ class InformeInspeccion(models.Model):
     asunto = models.CharField('Nombre del asunto', blank=True, null=True, default='', max_length=300)
     texto = models.TextField('Contenido del informe', blank=True, null=True, default='')
     modificado = models.DateField("Fecha de modificación", auto_now=True)
+
+    @property
+    def texto_procesado(self):
+        template = Template(self.texto)
+        # d = {v.nombre: v.valor for v in self.variableii_set.all()}
+        # context = Context(d)
+        # return template.render(context)
+        return template.render(Context({v.nombre: v.valor for v in self.variableii_set.all()}))
+
+    @property
+    def get_variables(self):
+        nombres = [n.strip() for n in re.findall(r'{{(.*?)}}', self.texto)]
+        for nombre in nombres:
+            VariableII.objects.get_or_create(informe=self, nombre=nombre)
+        for variable in self.variableii_set.all():
+            if variable.nombre not in nombres:
+                variable.delete()
+        return self.variableii_set.all()
+
+
+class VariableII(models.Model):
+    informe = models.ForeignKey(InformeInspeccion, blank=True, null=True, on_delete=models.CASCADE)
+    nombre = models.CharField('Nombre de la variable', blank=True, null=True, default='', max_length=50)
+    valor = models.CharField('Valor de la variable', blank=True, null=True, default='', max_length=150)
 
 class FirmaII(models.Model):
     FV = (('F', 'Firmado'), ('V', 'Visto Bueno'))

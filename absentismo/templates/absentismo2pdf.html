@@ -6,9 +6,9 @@
 
 <span style="font-size:14pt;">{% if actuado.gauser.sexo == 'H' %}Alumno: {% else %} Alumna: {% endif %} <strong> {{expediente.expedientado.gauser.get_full_name}}</strong></span>
 <br/>
-<span style="font-size:14pt;">Centro: <strong> {{expediente.expedientado.entidad.name}}</strong></span>
+<span style="font-size:14pt;">Centro: <strong> {{expediente.expedientado.ronda.entidad.name}}</strong></span>
 <br/>
-<span style="font-size:14pt;">Localidad: <strong> {{expediente.expedientado.entidad.localidad }}</strong></span>
+<span style="font-size:14pt;">Localidad: <strong> {{expediente.expedientado.ronda.entidad.localidad }}</strong></span>
 
 
 <h2 class="pagebreak"> DATOS PERSONALES </h2>
@@ -60,7 +60,7 @@
 
 <div style="text-align:center;">
 <table>
-<tr><td>En {{expediente.expedientado.entidad.localidad }}, a {% now "j" %} de {% now "F" %} de {% now "Y" %}</td></tr>
+<tr><td>En {{expediente.expedientado.ronda.entidad.localidad }}, a {% now "j" %} de {% now "F" %} de {% now "Y" %}</td></tr>
 </table>
 <br>
 
