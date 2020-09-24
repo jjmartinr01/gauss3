@@ -976,6 +976,16 @@ def xml_racima(xml_file, request):
         try:
             curso = Curso.objects.get(clave_ex=curso_codigo, ronda=g_e.ronda)
             curso.nombre = nombre
+            if 'E.S.O.' in nombre:
+                curso.etapa = 'da'
+            elif 'Bachillerato' in nombre:
+                curso.etpa = 'fa'
+            elif 'F.P.S.E.G.M.' in nombre:
+                curso.etapa = 'ga'
+            elif 'F.P.S.E.G.S.' in nombre:
+                curso.etapa = 'ha'
+            elif 'Formaci' in nombre:
+                curso.etapa = 'ea'
             curso.observaciones += '<br>Actualizado el %s' % datetime.now()
             curso.save()
             logger.info('Se actualiza el curso: %s' % curso)
