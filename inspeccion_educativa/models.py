@@ -310,6 +310,7 @@ OBJETOS = (('C', 'Centro'),
            ('A', 'Alumnos/Padres'),
            ('OT', 'Otros'))
 
+
 # 'TIPO DE ACTUACIÓN', 'DEFINICIÓN'
 TIPOS = (
     ('ES', 'Específica'),

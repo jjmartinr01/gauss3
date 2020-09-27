@@ -163,6 +163,8 @@
                 function (data) {
                     if (data.ok) {
                         $("#variantes" + data.p_ie).html(data.html);
+                        destroyEditorInstances();
+                        CKEDITOR.inlineAll();
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();

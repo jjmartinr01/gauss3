@@ -129,6 +129,7 @@
                 function (data) {
                     if (data.ok) {
                         $("#contenido_informe" + data.ie).html(data.html);
+                        $("#destinatario" + data.ie).html(data.destinatario);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();

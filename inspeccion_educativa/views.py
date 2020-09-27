@@ -218,6 +218,62 @@ def tareas_ie(request):
         'g_e': g_e, 'tareas_ie': tareas, 'tipos': TIPOS})
 
 
+def carga_actuaciones_ie(request):
+    campos = ["Id", "Id INSPECTORES", "FECHA", "SECTOR", "CENTRO", "LOCALIZACIÓN", "Especificar otros",
+              "ACTUACIÓN",
+              "NIVEL", "OBJETO", "TEMA", "TIPO DE ACTUACIÓN", "FUNCIÓN INSPECTORA", "PARTICIPACIÓN",
+              "Especificar colaboración", "NOTAS ACLARATORIAS", "NOMBRE INSPECTOR"]
+    errores = ''
+    from horarios.models import CargaMasiva
+    import xlrd
+    cargas_necesarias = CargaMasiva.objects.filter(cargado=False)
+    for carga in cargas_necesarias:
+        f = carga.fichero.read()
+        book = xlrd.open_workbook(file_contents=f)
+        sheet = book.sheet_by_index(0)
+        # Get the keys from line 5 of excel file:
+        dict_names = {}
+        for col_index in range(sheet.ncols):
+            dict_names[sheet.cell(0, col_index).value] = col_index
+        # return HttpResponse(sheet.cell(1, dict_names['FECHA'])
+        for row_index in range(1, sheet.nrows):
+            # try:
+            a1 = sheet.cell_value(rowx=row_index, colx=dict_names['FECHA'])
+            try:
+                fecha = datetime(*xlrd.xldate_as_tuple(a1, book.datemode))
+            except:
+                fecha = None
+            centro = CentroMDB.objects.get(code_mdb=str(int(sheet.cell(row_index, dict_names['CENTRO']).value)))
+            # datetime.strptime(sheet.cell(row_index, dict_names['FECHA']).value,
+            #                   '%d/%m/%Y')
+            t = TareaInspeccion.objects.create(ronda_centro=carga.ronda,
+                                               localizacion=str(
+                                                   sheet.cell(row_index, dict_names['LOCALIZACIÓN']).value),
+                                               nivel=str(sheet.cell(row_index, dict_names['NIVEL']).value),
+                                               actuacion=str(sheet.cell(row_index, dict_names['ACTUACIÓN']).value),
+                                               realizada=True,
+                                               inspector_mdb=str(
+                                                   int(sheet.cell(row_index, dict_names['Id INSPECTORES']).value)),
+                                               fecha=fecha,
+                                               sector=str(sheet.cell(row_index, dict_names['SECTOR']).value),
+                                               centro_mdb=centro,
+                                               colaboracion=str(
+                                                   sheet.cell(row_index, dict_names['Especificar colaboración']).value),
+                                               participacion=str(
+                                                   sheet.cell(row_index, dict_names['PARTICIPACIÓN']).value),
+                                               funcion=str(
+                                                   sheet.cell(row_index, dict_names['FUNCIÓN INSPECTORA']).value),
+                                               tipo=str(sheet.cell(row_index, dict_names['TIPO DE ACTUACIÓN']).value),
+                                               asunto=str(sheet.cell(row_index, dict_names['TEMA']).value),
+                                               objeto=str(sheet.cell(row_index, dict_names['OBJETO']).value),
+                                               )
+            # except:
+            #     errores += ', ' + str(sheet.cell(row_index, dict_names['Id']).value)
+        carga.cargado = True
+        carga.save()
+    return HttpResponse(errores)
+
+
 # @permiso_required('acceso_informes_ie')
 def informes_ie(request):
     g_e = request.session["gauser_extra"]
@@ -233,7 +289,7 @@ def informes_ie(request):
         elif request.POST['action'] == 'open_accordion':
             try:
                 ie = InformeInspeccion.objects.get(inspector__ronda__entidad=g_e.ronda.entidad,
-                                                           id=request.POST['id'])
+                                                   id=request.POST['id'])
                 vs = VariantePII.objects.filter(plantilla__creador__ronda__entidad=g_e.ronda.entidad)
                 html = render_to_string('informes_ie_accordion_content.html', {'ie': ie, 'g_e': g_e, 'vs': vs})
                 return JsonResponse({'ok': True, 'html': html})
@@ -253,7 +309,7 @@ def informes_ie(request):
                 ie.save()
                 html = render_to_string('informes_ie_accordion_content_texto.html',
                                         {'ie': ie})
-                return JsonResponse({'ok': True, 'html': html, 'ie': ie.id})
+                return JsonResponse({'ok': True, 'html': html, 'ie': ie.id, 'destinatario': ie.destinatario})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'update_texto':
@@ -311,7 +367,7 @@ def informes_ie(request):
                 ies = InformeInspeccion.objects.filter(q_entidad, q_texto, q_inicio, q_fin)
                 if request.POST['tipo_busqueda']:
                     p = PlantillaInformeInspeccion.objects.get(id=request.POST['tipo_busqueda'])
-                    ies=ies.filter(variante__plantilla=p)
+                    ies = ies.filter(variante__plantilla=p)
                 html = render_to_string('informes_ie_accordion.html',
                                         {'informes_ie': ies, 'g_e': g_e, 'buscadas': True})
                 return JsonResponse({'ok': True, 'html': html})
@@ -322,7 +378,8 @@ def informes_ie(request):
             ie = InformeInspeccion.objects.get(inspector__gauser=g_e.gauser, id=request.POST['id_ie'])
             texto_html = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie})
             ruta = MEDIA_INSPECCION + '%s/' % g_e.ronda.entidad.code
-            fich = html_to_pdf(request, texto_html, fichero='IE', media=ruta, title='Informe de Inspección Técnica Educativa')
+            fich = html_to_pdf(request, texto_html, fichero='IE', media=ruta,
+                               title='Informe de Inspección Técnica Educativa')
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(ie.asunto)
             return response
@@ -358,7 +415,7 @@ def plantillas_ie(request):
         elif request.POST['action'] == 'open_accordion':
             try:
                 p = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad,
-                                                    id=request.POST['id'])
+                                                           id=request.POST['id'])
                 v = p.variantepii_set.all()[0]
                 html = render_to_string('plantillas_ie_accordion_content.html', {'p_ie': p, 'g_e': g_e, 'variante': v})
                 return JsonResponse({'ok': True, 'html': html})
@@ -366,7 +423,8 @@ def plantillas_ie(request):
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'update_texto':
             try:
-                p_ie = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                p_ie = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad,
+                                                              id=request.POST['id'])
                 setattr(p_ie, request.POST['campo'], request.POST['valor'])
                 p_ie.save()
                 return JsonResponse({'ok': True})
@@ -387,7 +445,8 @@ def plantillas_ie(request):
                 vp_ie = VariantePII.objects.get(plantilla__creador__ronda__entidad=g_e.ronda.entidad, id=id)
                 nombre = vp_ie.nombre + ' (copia)'
                 variante = VariantePII.objects.create(plantilla=vp_ie.plantilla, nombre=nombre, texto=vp_ie.texto)
-                html = render_to_string('plantillas_ie_accordion_content_variante.html', {'p_ie': vp_ie.plantilla, 'variante': variante})
+                html = render_to_string('plantillas_ie_accordion_content_variante.html',
+                                        {'p_ie': vp_ie.plantilla, 'variante': variante})
                 return JsonResponse({'ok': True, 'html': html, 'p_ie': vp_ie.plantilla.id})
             except:
                 return JsonResponse({'ok': False})
@@ -395,13 +454,15 @@ def plantillas_ie(request):
             try:
                 id = request.POST['id']
                 variante = VariantePII.objects.get(plantilla__creador__ronda__entidad=g_e.ronda.entidad, id=id)
-                html = render_to_string('plantillas_ie_accordion_content_variante.html', {'p_ie': variante.plantilla, 'variante': variante})
+                html = render_to_string('plantillas_ie_accordion_content_variante.html',
+                                        {'p_ie': variante.plantilla, 'variante': variante})
                 return JsonResponse({'ok': True, 'html': html, 'p_ie': variante.plantilla.id})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'borrar_p_ie':
             try:
-                p_ie = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                p_ie = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad,
+                                                              id=request.POST['id'])
                 if g_e.has_permiso('borra_cualquier_plantilla_ie') or g_e.gauser == p_ie.creador.gauser:
                     p_ie.delete()  # Borrar la plantilla y todas sus variantes
                 return JsonResponse({'ok': True})
@@ -416,12 +477,14 @@ def plantillas_ie(request):
                     if p_ie.variantepii_set.all().count() > 1:
                         variante.delete()  # Borrar la variante
                     else:
-                        return JsonResponse({'ok': False, 'mensaje': 'No es posible el borrado. Al menos debe haber un modelo de informe.'})
+                        return JsonResponse({'ok': False,
+                                             'mensaje': 'No es posible el borrado. Al menos debe haber un modelo de informe.'})
                 html = render_to_string('plantillas_ie_accordion_content_variante.html',
                                         {'p_ie': p_ie, 'variante': p_ie.variantepii_set.all()[0]})
                 return JsonResponse({'ok': True, 'html': html, 'p_ie': variante.plantilla.id})
             except:
-                return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error y no se ha podido hacer borrado'})
+                return JsonResponse(
+                    {'ok': False, 'mensaje': 'Se ha producido un error y no se ha podido hacer borrado'})
 
         elif request.POST['action'] == 'busca_plantillas_ie':
             try:
