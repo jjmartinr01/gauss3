@@ -502,8 +502,10 @@ def crear_aviso(request, aceptado, mensaje, link=""):
                       link=link)
             m.save()
     else:
-        logger.info(
-            "%s, %s, %s, %s, %s" % (request.session['gauser_extra'], request.path, request.method, ip, mensaje))
+        Aviso.objects.create(usuario=request.session['gauser_extra'], aviso=mensaje, ip=ip, fecha=fecha,
+                             aceptado=aceptado, link=link)
+        # logger.info(
+        #     "%s, %s, %s, %s, %s" % (request.session['gauser_extra'], request.path, request.method, ip, mensaje))
     return m
 
 

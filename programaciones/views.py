@@ -232,7 +232,7 @@ def departamentos_centro_educativo(request):
     ronda = request.session['ronda']
     if request.method == 'POST':
         action = request.POST['action']
-        logger.info(u'%s post %s' % (g_e, action))
+        logger.info('%s post %s' % (g_e, action))
         # if action == 'formulario_departamento' and request.is_ajax():
         #     if request.POST['id']:
         #         departamento = Departamento.objects.get(id=request.POST['id'])
@@ -343,7 +343,7 @@ def departamentos_centro_educativo_ajax(request):
             departamento = Departamento.objects.get(pk=request.POST['id'], entidad=g_e.ronda.entidad)
             nombre = departamento.nombre
             departamento.delete()
-            return HttpResponse(u'Se ha borrado el departamento/sección: <strong>%s</strong>' % nombre)
+            return HttpResponse('Se ha borrado el departamento/sección: <strong>%s</strong>' % nombre)
         elif action == 'nombre_departamento' and g_e.has_permiso('edita_departamentos'):
             try:
                 departamento = Departamento.objects.get(pk=request.POST['id'], entidad=g_e.ronda.entidad)
@@ -1213,7 +1213,7 @@ def editar_programacion(request):
             # -----------------------------------
             ruta = '%s%s/' % (MEDIA_PROGRAMACIONES, g_e.ronda.entidad.code)
             fich = html_to_pdf(request, c, fichero='programacion_ccff', media=ruta,
-                               title=u'Programación del módulo generada con GAUSS')
+                               title='Programación del módulo generada con GAUSS')
             materia = Materia.objects.get(curso__ronda=g_e.ronda, clave_ex=programacion.modulo.materia.clave_ex)
             try:
                 p = ProgramacionSubida.objects.get(materia=materia)
@@ -1241,7 +1241,7 @@ def editar_programacion(request):
             # programacion.file_path = file_path + fichero
             # programacion.save()
             # fich = html_to_pdf(request, c, fichero=fichero, media=file_path,
-            #                    title=u'Programación del módulo generada con GAUSS')
+            #                    title='Programación del módulo generada con GAUSS')
             # response = HttpResponse(fich, content_type='application/pdf')
             # response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
             # return response
@@ -1256,7 +1256,7 @@ def editar_programacion(request):
             fichero = '%s_%s_%s' % (g_e.ronda.entidad.code, ud.programacion.id, ud.id)
             c = render_to_string('ud2pdf.html', {'ud': ud})
             fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_PROGRAMACIONES,
-                               title=u'Programacion_modulo generado con GAUSS')
+                               title='Programacion_modulo generado con GAUSS')
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=' + ud.nombre.replace(' ', '_') + '.pdf'
             return response
@@ -1321,7 +1321,7 @@ def titulos(request):
                 fichero = '%s_%s' % (g_e.ronda.entidad.code, titulo.id)
                 c = render_to_string('titulo2pdf.html', {'titulo': titulo}, request=request)
                 fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_ESCRITOS,
-                                   title=u'Titulo_FP generado con GAUSS')
+                                   title='Titulo_FP generado con GAUSS')
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + titulo.asunto.replace(' ', '_') + '.pdf'
                 return response
@@ -1492,7 +1492,7 @@ def editar_titulo(request):
                 'titulo': titulo,
             }, request=request)
             fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_ESCRITOS,
-                               title=u'Titulo_FP generado con GAUSS')
+                               title='Titulo_FP generado con GAUSS')
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=' + titulo.asunto.replace(' ',
                                                                                               '_') + '.pdf'

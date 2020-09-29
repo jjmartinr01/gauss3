@@ -309,7 +309,8 @@ def informes_ie(request):
                 ie.save()
                 html = render_to_string('informes_ie_accordion_content_texto.html',
                                         {'ie': ie})
-                return JsonResponse({'ok': True, 'html': html, 'ie': ie.id, 'destinatario': ie.destinatario})
+                return JsonResponse({'ok': True, 'html': html, 'ie': ie.id, 'destinatario': ie.destinatario,
+                                     'asunto': ie.asunto})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'update_texto':
