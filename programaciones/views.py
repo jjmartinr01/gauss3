@@ -648,19 +648,29 @@ def programaciones(request):
             except:
                 crear_aviso(request, True, 'Detecta id y se genera el pdf de la programación: %s' % (programacion))
                 c = render_to_string('programacion2pdf.html', {'prog': programacion})
+                crear_aviso(request, True, 'prog 2')
                 fichero = replace_normalize(programacion.modulo.materia.nombre)
+                crear_aviso(request, True, 'prog 3')
                 ronda = g_e.ronda.entidad.ronda.nombre.replace('/', '-')
+                crear_aviso(request, True, 'prog 4')
                 file_path = '%s%s/%s/%s/%s/%s/' % (MEDIA_PROGRAMACIONES, g_e.ronda.entidad.code,
                                                     ronda, g_e.gauser_extra_programaciones.departamento.nombre,
                                                     programacion.modulo.materia.curso.get_etapa_display(),
                                                     programacion.modulo.materia.curso.nombre)
+                crear_aviso(request, True, 'prog 5')
                 file_path = replace_normalize(file_path)
+                crear_aviso(request, True, 'prog 6')
                 programacion.file_path = file_path + fichero
+                crear_aviso(request, True, 'prog 7')
                 programacion.save()
+                crear_aviso(request, True, 'prog 8')
                 fich = html_to_pdf(request, c, fichero=fichero, media=file_path,
                                    title='Programación del módulo generada con GAUSS')
+                crear_aviso(request, True, 'prog 9')
                 response = HttpResponse(fich, content_type='application/pdf')
+                crear_aviso(request, True, 'prog 10')
                 response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+                crear_aviso(request, True, 'prog 11')
                 return response
         elif request.POST['action'] == 'download_html':
             programacion = Programacion_modulo.objects.get(id=request.POST['id_programacion'])
