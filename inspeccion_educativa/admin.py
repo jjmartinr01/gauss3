@@ -5,3 +5,7 @@ from inspeccion_educativa.models import *
 admin.site.register(TareaInspeccion)
 admin.site.register(InspectorTarea)
 admin.site.register(CentroMDB)
+admin.site.register(PlantillaInformeInspeccion)
+admin.site.register(VariantePII)
+admin.site.register(InformeInspeccion)
+admin.site.register(VariableII)

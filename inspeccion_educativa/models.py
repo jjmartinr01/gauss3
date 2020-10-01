@@ -422,6 +422,9 @@ class PlantillaInformeInspeccion(models.Model):
     destinatario = models.TextField('Destinatario del informe', blank=True, null=True, default='')
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 
+    def __str__(self):
+        return '%s - %s' % (self.asunto, self.creador)
+
 class VariantePII(models.Model):
     plantilla = models.ForeignKey(PlantillaInformeInspeccion, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre de la variante del informe', blank=True, null=True, default='', max_length=300)
@@ -429,6 +432,9 @@ class VariantePII(models.Model):
 
     class Meta:
         ordering = ['plantilla__id', 'id',]
+
+    def __str__(self):
+        return '%s - %s' % (self.plantilla, self.nombre)
 
 class InformeInspeccion(models.Model):
     inspector = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
@@ -457,11 +463,17 @@ class InformeInspeccion(models.Model):
                 variable.delete()
         return self.variableii_set.all()
 
+    def __str__(self):
+        return '%s - %s' % (self.inspector, self.asunto)
+
 
 class VariableII(models.Model):
     informe = models.ForeignKey(InformeInspeccion, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre de la variable', blank=True, null=True, default='', max_length=50)
     valor = models.CharField('Valor de la variable', blank=True, null=True, default='', max_length=150)
+
+    def __str__(self):
+        return '%s - %s - %s' % (self.informe, self.nombre, self.valor)
 
 class FirmaII(models.Model):
     FV = (('F', 'Firmado'), ('V', 'Visto Bueno'))

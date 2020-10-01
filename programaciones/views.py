@@ -653,10 +653,14 @@ def programaciones(request):
                 crear_aviso(request, True, 'prog 3')
                 ronda = g_e.ronda.entidad.ronda.nombre.replace('/', '-')
                 crear_aviso(request, True, 'prog 4')
-                file_path = '%s%s/%s/%s/%s/%s/' % (MEDIA_PROGRAMACIONES, g_e.ronda.entidad.code,
+                try:
+                    file_path = '%s%s/%s/%s/%s/%s/' % (MEDIA_PROGRAMACIONES, g_e.ronda.entidad.code,
                                                     ronda, g_e.gauser_extra_programaciones.departamento.nombre,
                                                     programacion.modulo.materia.curso.get_etapa_display(),
                                                     programacion.modulo.materia.curso.nombre)
+                except:
+                    crear_aviso(request, False, 'Se ha producido un error. Probablemente se deba a que no te han asociado un departamento.')
+                    HttpResponse('Error. Probablemente se deba a que no te han asignado un departamento.')
                 crear_aviso(request, True, 'prog 5')
                 file_path = replace_normalize(file_path)
                 crear_aviso(request, True, 'prog 6')
