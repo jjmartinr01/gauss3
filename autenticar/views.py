@@ -547,9 +547,8 @@ def index(request):
                             g_s.append(g_e.gauser)
 
                     emisor = Gauser_extra.objects.filter(gauser__email='gauss@gaumentada.es')[0]
-                    h = 'https' if request.is_secure() else 'http'
-                    texto_mail = render_to_string("mail_recupera_password.html",
-                                                  {'enlaces': enlaces, 'request': request, 'h': h})
+                    h = request.POST['protocol_domain']
+                    texto_mail = render_to_string("mail_recupera_password.html", {'enlaces': enlaces, 'h': h})
                     mensaje = Mensaje.objects.create(emisor=emisor, fecha=datetime.now(), tipo='mail',
                                                      asunto="Acceso a GAUSS", mensaje=texto_mail)
                     mensaje.receptores.add(g_s[0])

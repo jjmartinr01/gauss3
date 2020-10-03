@@ -62,13 +62,13 @@
         <input type="hidden" name="link" id="link" value="">
         <input type="hidden" name="r" id="r" value="">
     {% endif %}
+    <input type="hidden" id="protocol_domain" value="" name="protocol_domain">
 
     <div class="row">&nbsp;</div>
     <div class="panel">
         <div class="row">
             <div class="large-6 small-6 medium-6 columns end text-right">
                 <img src="/static/images/logo_gauss_acceso.png" height="76" width="273">
-                {#                <img src="{% static "images/logo_gauss_acceso.png" %}" height="76" width="273" alt="My image"/>#}
             </div>
         </div>
         <div id="introduce_user_pass" style="display:{% if tipo == 'acceso' %}block{% else %}none{% endif %};">
@@ -246,6 +246,11 @@
         $('#introduce_user_pass').hide('slow');
         $('#introduce_mail').show('slow');
         $('#action').val('solicita_pass');
+        var protocol = window.location.protocol;
+        var port = window.location.port;
+        var domain = window.location.hostname;
+        var protocol_domain = protocol + '//' + domain + ':' + port
+        $('#protocol_domain').val(protocol_domain);
     });
     $('#recarga_captcha').click(function (e) {
         e.preventDefault();
@@ -302,6 +307,6 @@
         var cadena = hoy.getFullYear() + '/' + (hoy.getMonth() + 1) + '/' + hoy.getDate();
         localStorage.setItem('gaumentada', cadena);
     });
-    console.log('{{ ip }}');
+
 </script>
 </html>
