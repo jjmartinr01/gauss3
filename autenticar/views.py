@@ -379,14 +379,23 @@ def enlazar(request):
 @gauss_required
 def ejecutar_query(request):
     g_e = request.session['gauser_extra']
+    resultado = ''
+    query = ''
     if g_e.gauser.username == 'gauss':
-
+        if request.method == 'POST':
+            query = request.POST['query']
+            try:
+                resultado = eval(query)
+            except Exception as msg:
+                resultado = msg
         return render(request, "ejecutar_query.html",
                       {
                           'iconos': ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
                                       'title': 'Ejecutar query',
                                       'permiso': 'libre'}, {}),
-                          'formname': 'query',
+                          'formname': 'queryform',
+                          'query': query,
+                          'resultado': resultado,
                           'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                       })
     else:

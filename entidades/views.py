@@ -2217,6 +2217,24 @@ def crea_entidad(request):
 
 
 #########################################################################
+@gauss_required
+def crear_entidades_from_file(request):
+    '''
+    Esta función ha sido creada para cargar el archivo de Racima que lista los centros:
+    Racima -> Gestión -> Seguimiento -> Catálogo de consultas -> Centro -> Datos de los centros
+    '''
+    g_e = request.session['gauser_extra']
+
+    if g_e.gauser.username == 'gauss':
+        from gauss.settings import INSTALLED_APPS
+        if request.method == 'POST':
+            pass
+
+    else:
+        crear_aviso(request, False, 'No tienes permiso para gestionar los módulos de la entidad')
+        return redirect('/calendario/')
+
+#########################################################################
 
 @gauss_required
 def modulos_entidad(request):

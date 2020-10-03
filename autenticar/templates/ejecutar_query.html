@@ -9,14 +9,22 @@
             <h4 style="text-align: center;color: #008CBA;"><strong> Ejecución de query</strong></h4>
         </div>
 
-    <div class="row">
-        <div class="columns large-12">
-            <label>Escribe la query que será ejecutada:
-            <textarea id="query"></textarea>
-            </label>
+        <div class="row">
+            <div class="columns large-12">
+                <label>Escribe la query que será ejecutada:
+                    <input type="text" id="query" name="query" value="{{ query }}">
+                </label>
+            </div>
         </div>
-    </div>
-
+        {% if resultado %}
+            <div class="row">
+                <div class="columns large-12">
+                    <label>Resultado de la ejecución del comando:
+                        <div>{{ resultado }}</div>
+                    </label>
+                </div>
+            </div>
+        {% endif %}
     </form>
 
 {% endblock %}
@@ -27,7 +35,7 @@
         habilita(['s_check']);
         $('#check_sign').click(function (e) {
             e.preventDefault();
-                document.getElementById("{{ formname }}").submit();;
+            document.getElementById("{{ formname }}").submit();
         });
     </script>
 {% endblock %}

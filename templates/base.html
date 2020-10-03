@@ -212,6 +212,8 @@
                             &nbsp;&nbsp;Borrar entidades</a></li>
                         <li><a class="menu_nivel2" href="/crea_entidad/">
                             &nbsp;&nbsp;Crea entidad</a></li>
+                        <li><a class="menu_nivel2" href="/ejecutar_query/">
+                            &nbsp;&nbsp;Ejecutar query</a></li>
                     {% endif %}
                     {% for menu in g_e.ronda.entidad|menus %}
                         {% if g_e|has_permiso:menu.menu_default.code_menu %}
@@ -258,6 +260,11 @@
                                     <a href="/crea_entidad/" class="">
                                         <div class="menu_element">
                                             Crea entidad
+                                        </div>
+                                    </a>
+                                    <a href="/ejecutar_query/" class="">
+                                        <div class="menu_element">
+                                            Ejecutar query
                                         </div>
                                     </a>
                                 </div>
