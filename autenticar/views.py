@@ -277,7 +277,7 @@ def actualizar_menus_permisos(request):
             ip = x_forwarded_for.split(',')[-1].strip()
         else:
             ip = request.META.get('REMOTE_ADDR')
-        logger.info(u'%s, acceso denegado a %s desde %s' % (g_e, request.path_info, ip))
+        logger.info('%s, acceso denegado a %s desde %s' % (g_e, request.path_info, ip))
         return render(request, "enlazar.html", {'page': '/principal/', })
 
 
@@ -361,18 +361,34 @@ def enlazar(request):
                 login(request, enlace.usuario)
                 request.session["gauser_extra"] = g_e
                 request.session['num_items_page'] = 15
-                logger.info(u'%s se loguea en GAUSS a través de un enlace' % (full_name))
+                logger.info('%s se loguea en GAUSS a través de un enlace' % (full_name))
                 return render(request, "enlazar.html", {'page': enlace.enlace})
             else:
-                logger.info(u'%s no se puede loguear en GAUSS a través de un enlace caducado' % (full_name))
+                logger.info('%s no se puede loguear en GAUSS a través de un enlace caducado' % (full_name))
                 return render(request, "no_enlace.html", {'usuario': enlace.usuario, })
         else:
-            logger.info(u'%s no se puede loguear en GAUSS. Su usuario no está activo' % (full_name))
+            logger.info('%s no se puede loguear en GAUSS. Su usuario no está activo' % (full_name))
             return render(request, "no_cuenta.html", {'usuario': enlace.usuario, })
     except:
         logout(request)
         form = CaptchaForm()
         return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso'})
+
+@gauss_required
+def ejecutar_query(request):
+    g_e = request.session['gauser_extra']
+    if g_e.gauser.username == 'gauss':
+
+        return render(request, "ejecutar_query.html",
+                      {
+                          'iconos': ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
+                                      'title': 'Ejecutar query',
+                                      'permiso': 'libre'}, {}),
+                          'formname': 'query',
+                          'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                      })
+    else:
+        return render(request, "no_login.html", {'pag': ''})
 
 ##########################################################################
 ###############  PÁGINA DE ACCESO
@@ -421,7 +437,7 @@ def index(request):
                         else:
                             gauser_extras = gauser_extras.exclude(pk=gauser_extra.id)
                     if entidades_disponibles > 1:
-                        logger.info(u'Gauser con acceso a múltiples entidades.')
+                        logger.info('Gauser con acceso a múltiples entidades.')
                         return render(request, "select_entidad.html", {'gauser_extras': gauser_extras, })
                     elif entidades_disponibles == 1:
                         request.session["gauser_extra"] = gauser_extras[0]
@@ -430,19 +446,19 @@ def index(request):
                         # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
                         gauss = Gauser.objects.get(username='gauss')
                         Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
-                        logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+                        logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
                         usernombre = request.session['gauser_extra'].gauser.username
                         # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
                         #     return render(request, "enlace_gauss_larioja_org.html")
                         return redirect(url_destino)
                     else:
-                        logger.info(u'Gauser activo, pero no tiene asociada ninguna entidad.')
+                        logger.info('Gauser activo, pero no tiene asociada ninguna entidad.')
                         return render(request, "no_cuenta.html", {'usuario': user, })
                 else:
                     return render(request, "no_cuenta.html", {'usuario': user, })
             else:
                 sleep(3)
-                logger.info(u'Usuario: %s, no reconocido. Intenta acceso desde %s' % (u, ip))
+                logger.info('Usuario: %s, no reconocido. Intenta acceso desde %s' % (u, ip))
                 logout(request)
                 form = CaptchaForm()
                 return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso'})
@@ -486,7 +502,7 @@ def index(request):
                         else:
                             gauser_extras = gauser_extras.exclude(pk=gauser_extra.id)
                     if entidades_disponibles > 1:
-                        logger.info(u'Gauser con acceso a múltiples entidades.')
+                        logger.info('Gauser con acceso a múltiples entidades.')
                         return render(request, "select_entidad.html", {'gauser_extras': gauser_extras, })
                     elif entidades_disponibles == 1:
                         request.session["gauser_extra"] = gauser_extras[0]
@@ -495,19 +511,19 @@ def index(request):
                         # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
                         gauss = Gauser.objects.get(username='gauss')
                         Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
-                        logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+                        logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
                         usernombre = request.session['gauser_extra'].gauser.username
                         # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
                         #     return render(request, "enlace_gauss_larioja_org.html")
                         return redirect(url_destino)
                     else:
-                        logger.info(u'Gauser activo, pero no tiene asociada ninguna entidad.')
+                        logger.info('Gauser activo, pero no tiene asociada ninguna entidad.')
                         return render(request, "no_cuenta.html", {'usuario': user, })
                 else:
                     return render(request, "no_cuenta.html", {'usuario': user, })
             else:
                 sleep(3)
-                logger.info(u'Usuario: %s, no reconocido. Intenta acceso desde %s' % (usuario, ip))
+                logger.info('Usuario: %s, no reconocido. Intenta acceso desde %s' % (usuario, ip))
                 logout(request)
                 form = CaptchaForm()
                 return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso'})
@@ -528,8 +544,7 @@ def index(request):
                             g_s.append(g_e.gauser)
 
                     emisor = Gauser_extra.objects.filter(gauser__email='gauss@gaumentada.es')[0]
-                    texto_mail = render_to_string("mail_recupera_password.html", {'enlaces': enlaces},
-                                                  request=request)
+                    texto_mail = render_to_string("mail_recupera_password.html", {'enlaces': enlaces, 'request': request})
                     mensaje = Mensaje.objects.create(emisor=emisor, fecha=datetime.now(), tipo='mail',
                                                      asunto="Acceso a GAUSS", mensaje=texto_mail)
                     mensaje.receptores.add(g_s[0])
@@ -550,7 +565,7 @@ def index(request):
             # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
             gauss = Gauser.objects.get(username='gauss')
             Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
-            logger.info(u'%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+            logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
             usernombre = request.session['gauser_extra'].gauser.username
             # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
             #     return render(request, "enlace_gauss_larioja_org.html")
@@ -668,7 +683,7 @@ def create_usuario(datos, request, tipo):
     if gauser:
         try:
             gauser_extra = Gauser_extra.objects.get(gauser=gauser, ronda=g_e.ronda)
-            mensaje = u'Existe el g_e %s con el dni %s. No se vuelve a crear.' % (gauser, datos['dni' + tipo])
+            mensaje = 'Existe el g_e %s con el dni %s. No se vuelve a crear.' % (gauser, datos['dni' + tipo])
             logger.info(mensaje)
         except ObjectDoesNotExist:
             gauser_extra = None
@@ -678,7 +693,7 @@ def create_usuario(datos, request, tipo):
             gauser_extra = ges[0]
             ges.exclude(id=gauser_extra.id).delete()
             logger.warning('Varios Gauser_extra asociados al Gauser %s, se borran todos menos uno.' % (gauser))
-            mensaje = u'Varios Gauser_extra asociados al Gauser %s, se borran todos menos uno.' % (gauser)
+            mensaje = 'Varios Gauser_extra asociados al Gauser %s, se borran todos menos uno.' % (gauser)
             crear_aviso(request, False, mensaje)
     else:
         gauser_extra = None
@@ -701,7 +716,7 @@ def create_usuario(datos, request, tipo):
                 setattr(gauser, key, value)
             gauser.save()
         else:
-            mensaje = u'No se ha podido crear un usuario porque no se han indicado nombre y apellidos'
+            mensaje = 'No se ha podido crear un usuario porque no se han indicado nombre y apellidos'
             crear_aviso(request, False, mensaje)
             logger.warning(mensaje)
     if gauser and not gauser_extra:
@@ -719,7 +734,7 @@ def create_usuario(datos, request, tipo):
             asocia_banco_ge(gauser_extra)
         except:
             crear_aviso(request, False,
-                        u'El IBAN asociado a %s parece no ser correcto. No se ha podido asociar una entidad bancaria al mismo.' % (
+                        'El IBAN asociado a %s parece no ser correcto. No se ha podido asociar una entidad bancaria al mismo.' % (
                                 gauser.first_name.decode('utf8') + ' ' + gauser.last_name.decode('utf8')))
     if gauser_extra:
         logger.info('antes de subentidades')
@@ -866,7 +881,7 @@ def perfiles_permisos(request):
             return JsonResponse(menus)
 
     elif request.method == 'POST':
-        crear_aviso(request, True, u'Entra en ' + request.META['PATH_INFO'] + ' POST action: ' + request.POST['action'])
+        crear_aviso(request, True, 'Entra en ' + request.META['PATH_INFO'] + ' POST action: ' + request.POST['action'])
         if request.POST['action'] == 'gauser_extra_selected':
             gauser_extra = Gauser_extra.objects.get(id=request.POST['gauser_extra_selected'])
             form = Gauser_per_Form(instance=gauser_extra)
@@ -970,7 +985,7 @@ def recupera_password(request):
 
 # def load_gauser_educa(request):
 #     # for k in request.GET.keys():
-#     #     logger.info(u'%s valor: %s' % (k, request.GET[k]))
+#     #     logger.info('%s valor: %s' % (k, request.GET[k]))
 #
 #     params = ['sexo', 'dni', 'address', 'postalcode', 'localidad', 'provincia', 'nacimiento', 'telfij', 'telmov',
 #               'familia', 'username', 'email', 'password', 'first_name', 'last_name']

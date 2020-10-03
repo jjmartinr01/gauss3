@@ -181,7 +181,7 @@
         $('#check_sign').click(function (e) {
             e.preventDefault();
             if ($('#file_masivo').val()){
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
             }else{
                 show_mensajes({title: '<i class="fa fa-warning"></i> No has cargado un archivo', texto: 'Para ' +
                 'subir un archivo primero debes cargarlo pulsando en "Examinar..."'})

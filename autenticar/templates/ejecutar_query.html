@@ -1,0 +1,33 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Ejecución de query</strong></h4>
+        </div>
+
+    <div class="row">
+        <div class="columns large-12">
+            <label>Escribe la query que será ejecutada:
+            <textarea id="query"></textarea>
+            </label>
+        </div>
+    </div>
+
+    </form>
+
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        habilita(['s_check']);
+        $('#check_sign').click(function (e) {
+            e.preventDefault();
+                document.getElementById("{{ formname }}").submit();;
+        });
+    </script>
+{% endblock %}

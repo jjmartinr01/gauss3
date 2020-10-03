@@ -19,6 +19,6 @@ urlpatterns = [
     url(r'^actualizar_menus_permisos/$', views.actualizar_menus_permisos, name='actualizar_menus_permisos'),
     url(r'^borrar_entidades/$', views.borrar_entidades, name='borrar_entidades'),
     url(r'^execute_migrations/$', views.execute_migrations, name='execute_migrations'),
-    # url(r'^load_gauser_educa/$', views.load_gauser_educa, name='load_gauser_educa'),
+    url(r'^ejecutar_query/$', views.ejecutar_query, name='ejecutar_query'),
     # url(r'^gestionar_candidatos/$', views.gestionar_candidatos, name='gestionar_candidatos'),
 ]
