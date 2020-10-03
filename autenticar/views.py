@@ -32,7 +32,8 @@ from gauss.funciones import usuarios_de_gauss, pass_generator
 from gauss.settings import RUTA_BASE_SETTINGS
 from estudios.models import Grupo, Gauser_extra_estudios
 from autenticar.models import Enlace, Permiso, Gauser, Menu_default  # , Candidato
-from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, CargaMasiva, ConfigurationUpdate, Ronda, Reserva_plaza
+from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, CargaMasiva, ConfigurationUpdate, Ronda, \
+    Reserva_plaza
 from entidades.tasks import carga_masiva_from_excel
 from mensajes.views import crear_aviso, crea_mensaje_cola
 from mensajes.models import Aviso, Mensaje
@@ -374,6 +375,7 @@ def enlazar(request):
         form = CaptchaForm()
         return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso'})
 
+
 @gauss_required
 def ejecutar_query(request):
     g_e = request.session['gauser_extra']
@@ -390,12 +392,13 @@ def ejecutar_query(request):
     else:
         return render(request, "no_login.html", {'pag': ''})
 
+
 ##########################################################################
 ###############  PÁGINA DE ACCESO
 
 @LogGauss
 def index(request):
-    url_destino = '/calendario/' #Esta será la url a la que el sistema vaya por defecto
+    url_destino = '/calendario/'  # Esta será la url a la que el sistema vaya por defecto
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[-1].strip()
@@ -544,7 +547,9 @@ def index(request):
                             g_s.append(g_e.gauser)
 
                     emisor = Gauser_extra.objects.filter(gauser__email='gauss@gaumentada.es')[0]
-                    texto_mail = render_to_string("mail_recupera_password.html", {'enlaces': enlaces, 'request': request})
+                    h = 'https' if request.is_secure() else 'http'
+                    texto_mail = render_to_string("mail_recupera_password.html",
+                                                  {'enlaces': enlaces, 'request': request, 'h': h})
                     mensaje = Mensaje.objects.create(emisor=emisor, fecha=datetime.now(), tipo='mail',
                                                      asunto="Acceso a GAUSS", mensaje=texto_mail)
                     mensaje.receptores.add(g_s[0])
