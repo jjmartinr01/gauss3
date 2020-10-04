@@ -9,6 +9,6 @@ urlpatterns = [
     path('cargar_centros_mdb/', views.cargar_centros_mdb),
     path('informes_ie/', views.informes_ie),
     path('plantillas_ie/', views.plantillas_ie),
-    path('carga_actuaciones_ie/', views.carga_actuaciones_ie),
+    # path('carga_actuaciones_ie/', views.carga_actuaciones_ie),
     path('carga_masiva_inspeccion/', views.carga_masiva_inspeccion),
 ]

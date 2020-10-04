@@ -61,18 +61,18 @@ INSPECTORES = (
 
 INSPECTORES_GAUSER = {
     "1": "mpmaneroi01",
-    "2": "afdasfasdffasfdsafafds456",
-    "4": "afdasfasdffasfdsafafds456",
+    "2": "",
+    "4": "",
     "5": "jagarridor01",
     "6": "tsanmiguelm01",
     "7": "asilvand01",
-    "8": "afdasfasdffasfdsafafds456",
+    "8": "",
     "9": "arojass01",
     "11": "mpreneth01",
-    "12": "afdasfasdffasfdsafafds456",
-    "13": "afdasfasdffasfdsafafds456",
+    "12": "",
+    "13": "",
     "15": "pccaceob01",
-    "16": "afdasfasdffasfdsafafds456",
+    "16": "",
 }
 
 # ID', 'NOMBRE CENTRO', 'TIPO', 'LOCALIDAD'
