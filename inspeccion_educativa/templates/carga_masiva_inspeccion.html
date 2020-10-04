@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Carga masiva de datos</strong></h4>
+        </div>
+
+        <input type="hidden" name="action" id="action" value="carga_masiva_racima_xls">
+        <div class="panel callout">
+            {% if g_e|has_permiso:'carga_datos_centros' %}
+                <div class="row">
+                    <div class="large-12 columns">
+                        <p style="font-weight: bold;color: #008CBA">Tienes permiso para cargar el archivo que contiene
+                            datos de los
+                            centros educativos. Se obtiene siguiendo a siguiente ruta:</p>
+                        <p>
+                            Racima <i class="fa fa-long-arrow-right"></i> Módulo
+                            de Gestión <i class="fa fa-long-arrow-right"></i> Seguimiento
+                            <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                            <i class="fa fa-long-arrow-right"></i> Módulo: Centro
+                            <i class="fa fa-long-arrow-right"></i> Consulta: Datos de los centros
+                        </p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="large-3 columns">
+                        <b>Archivo xls (Racima):</b>
+                    </div>
+                    <div class="large-6 columns center-block">
+                        <input type="file" name="file_centros_racima" id="file_centros_racima"/>
+                    </div>
+                    <div class="large-3 columns">
+                        <a class="button" id="carga_masiva_centros_racima">Cargar el archivo</a>
+                    </div>
+                </div>
+            {% endif %}
+            <hr>
+{#            {% if g_e|has_permiso:'carga_excel_mdb' %}#}
+                <div class="row">
+                    <div class="large-12 columns">
+                        <p style="font-weight: bold;color: #008CBA">Carga del excel exportado del aplicativo MDB de Inspección:</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="large-3 columns">
+                        <b>Archivo xls (MDB):</b>
+                    </div>
+                    <div class="large-6 columns center-block">
+                        <input type="file" name="file_xls_mdb" id="file_xls_mdb"/>
+                    </div>
+                    <div class="large-3 columns">
+                        <a class="button" id="carga_masiva_xls_mdb">Cargar el archivo</a>
+                    </div>
+                </div>
+{#            {% endif %}#}
+        </div>
+    </form>
+
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        {% if g_e|has_permiso:'carga_datos_centros' %}
+            $('#carga_masiva_centros_racima').click(function (e) {
+                e.preventDefault();
+                if ($('#file_centros_racima').val()) {
+                    $('#action').val('carga_masiva_centros_racima');
+                    document.getElementById("{{ formname }}").submit();
+                } else {
+                    show_mensajes({
+                        title: '<i class="fa fa-warning"></i> No has cargado un archivo!!!!', texto: 'Para ' +
+                            'subir un archivo primero debes cargarlo pulsando en "Examinar..."'
+                    })
+                }
+            });
+        {% endif %}
+
+    $('#carga_masiva_xls_mdb').click(function (e) {
+                e.preventDefault();
+                if ($('#file_xls_mdb').val()) {
+                    $('#action').val('carga_masiva_xls_mdb');
+                    document.getElementById("{{ formname }}").submit();
+                } else {
+                    show_mensajes({
+                        title: '<i class="fa fa-warning"></i> No has cargado un archivo!!!!', texto: 'Para ' +
+                            'subir un archivo primero debes cargarlo pulsando en "Examinar..."'
+                    })
+                }
+            });
+
+    </script>
+{% endblock %}

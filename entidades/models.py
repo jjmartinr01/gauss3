@@ -16,7 +16,6 @@ from django.db.models import Q
 from autenticar.models import Gauser, Permiso, Menu_default
 
 
-
 def pass_generator(size=6, chars=string.ascii_letters + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
@@ -142,7 +141,7 @@ class Entidad(models.Model):
         nacimiento_early = date(date.today().year - 100, 1, 1)
         nacimiento_last = date(date.today().year - 3, 12, 31)
         filtro = ~Q(gauser__id__in=bajas) & ~Q(gauser__username='gauss') & Q(ronda=self.ronda) & Q(
-                gauser__nacimiento__gte=nacimiento_early) & Q(gauser__nacimiento__lte=nacimiento_last)
+            gauser__nacimiento__gte=nacimiento_early) & Q(gauser__nacimiento__lte=nacimiento_last)
         return Gauser_extra.objects.filter(filtro).count()
 
     def __str__(self):
@@ -152,6 +151,44 @@ class Entidad(models.Model):
 @receiver(post_save, sender=Entidad, dispatch_uid="entidad_auto_id_creation")
 def crea_entidad_auto_id(sender, instance, **kwargs):
     Entidad_auto_id.objects.get_or_create(entidad=instance)
+
+
+# La siguiente clase/tabla se define para cargar los datos del fichero:
+# Racima -> Gestión -> Seguimiento -> Catálogo de consultas -> Centro -> Datos de los centros
+class EntidadExtra(models.Model):
+    entidad = models.OneToOneField(Entidad, on_delete=models.CASCADE)
+    titularidad = models.CharField('Titularidad', max_length=35, blank=True, null=True)
+    tipo_centro = models.CharField('Tipo de centro', max_length=75, blank=True, null=True)
+    depende_de = models.ForeignKey(Entidad, on_delete=models.SET_NULL, blank=True, null=True, related_name='depende_de')
+    comedor = models.BooleanField('¿Tiene servicio de comedor?', default=False)
+    transporte = models.BooleanField('¿Tiene servicio de transporte escolar?', default=False)
+    director = models.CharField('Nombre del director/a', max_length=75, blank=True, null=True)
+    clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
+
+    def __str__(self):
+        return '%s -> %s, %s' % (self.entidad, self.titularidad, self.tipo_centro)
+
+
+# La siguiente clase/tabla se define para cargar los datos del fichero:
+# Racima -> Gestión -> Seguimiento -> Catálogo de consultas -> Centro -> Datos de los centros
+# En dicho archivo una entrada de centro da lugar a varios expedientes:
+class EntidadExtraExpediente(models.Model):
+    eextra = models.ForeignKey(EntidadExtra, on_delete=models.CASCADE)
+    expediente = models.CharField('Tipo de expediente', max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return '%s -> %s' % (self.eextra, self.expediente)
+
+
+# La siguiente clase/tabla se define para cargar los datos del fichero:
+# Racima -> Gestión -> Seguimiento -> Catálogo de consultas -> Centro -> Datos de los centros
+# En dicho archivo una entrada de expediente puede dar lugar a varias ofertas:
+class EntidadExtraExpedienteOferta(models.Model):
+    eeexpediente = models.ForeignKey(EntidadExtraExpediente, on_delete=models.CASCADE)
+    oferta = models.CharField('Oferta', max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return '%s -> %s' % (self.eeexpediente, self.oferta)
 
 
 class DocConfEntidad(models.Model):
@@ -411,8 +448,10 @@ def update_foto(instance, filename):
     nombre = filename.partition('.')
     return os.path.join("fotos/", str(instance.ronda.entidad.code) + '_' + str(instance.id) + '.' + nombre[2])
 
+
 def pass_generator50():
     return pass_generator(size=50, chars='abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ123456789')
+
 
 class Gauser_extra(models.Model):
     gauser = models.ForeignKey('autenticar.Gauser', null=True, blank=True, related_name='entidades',
@@ -822,6 +861,7 @@ class CampoF(models.Model):
     def __str__(self):
         return '%s (%s)' % (self.filtrado, self.campo)
 
+
 ########################### FIN CONFIGURACIÓN FILTROS ###########################
 
 
@@ -847,13 +887,17 @@ def update_fichero_carga_masiva(instance, filename):
 class CargaMasiva(models.Model):
     TIPOS = (('EXCEL', 'Usuarios cargados desde Racima'),
              ('PENDIENTES', 'Alumnos con materias pendientes cargados desde Racima'),
-             ('HORARIOXLS', 'Sesiones cargadas desde el archivo excel de Racima'), ('', ''), ('', ''),)
+             ('HORARIOXLS', 'Sesiones cargadas desde el archivo excel de Racima'),
+             ('CENTROSRACIMA', 'Consulta -> Centro -> Datos de los centros'), ('', ''),)
     ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE)
+    # Persona que ha realizado la carga masiva
+    g_e = models.ForeignKey(Gauser_extra, on_delete=models.SET_NULL, blank=True, null=True)
     fichero = models.FileField("Fichero con datos", upload_to=update_fichero_carga_masiva, blank=True)
     tipo = models.CharField("Tipo de archivo", max_length=15, choices=TIPOS)
     incidencias = models.TextField("Incidencias producidas", blank=True, null=True, default='')
     cargado = models.BooleanField("¿Se ha cargado el archivo?", default=False)
     error = models.BooleanField("¿Se ha producido un error en la carga del archivo archivo?", default=False)
+    creado = models.DateField('Fecha de creación', auto_now_add=True, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "Cargas Masivas"
@@ -861,7 +905,6 @@ class CargaMasiva(models.Model):
 
     def __str__(self):
         return '%s -- Cargado: %s' % (self.ronda, self.cargado)
-
 
 
 # n='cosa'
@@ -875,7 +918,6 @@ class CargaMasiva(models.Model):
 # exec("%s = '%s'" %(n,m))
 
 
-
 class EnlaceGE(models.Model):
     usuario = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
     code = models.CharField("Código", max_length=50, default=pass_generator50)
@@ -884,4 +926,3 @@ class EnlaceGE(models.Model):
 
     def __str__(self):
         return '%s -- %s (%s)' % (self.enlace, self.usuario, self.deadline)
-

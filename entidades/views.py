@@ -2115,7 +2115,7 @@ class eForm(ModelForm):
         exclude = ['organization', 'ronda', 'anagrama']
 
 
-# @gauss_required
+@gauss_required
 def crea_entidad(request):
     g_e = request.session['gauser_extra']
     oform = oForm()

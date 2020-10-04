@@ -33,6 +33,14 @@ MENU_DEFAULT = [
      'pos': 3,
      'parent': 'acceso_inspeccion_educativa'
      },
+    {'code_menu': 'acceso_carga_masiva_inspeccion',
+     'texto_menu': 'Carga masiva de archivos',
+     'href': 'carga_masiva_inspeccion',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 4,
+     'parent': 'acceso_inspeccion_educativa'
+     },
 ]
 # Se añaden otros permisos para el usuario
 
@@ -87,5 +95,9 @@ PERMISOS = [{'code_nombre': 'crea_tareas_ie',
             {'code_nombre': 'borra_informes_ie',
              'nombre': 'Tiene permiso para borrar informes de Inspección Educativa',
              'menu': 'acceso_informes_ie'
+             },
+            {'code_nombre': 'carga_datos_centros',
+             'nombre': 'Tiene permiso para cargar archivo "Datos de los centros"',
+             'menu': 'acceso_carga_masiva_inspeccion'
              },
             ]

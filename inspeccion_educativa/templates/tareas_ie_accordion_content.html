@@ -24,16 +24,16 @@
             <label><b>Función inspectora </b></label> {{ instarea.tarea.get_funcion_display }}
         {% endif %}
     </div>
-    <div class="columns large-2 end" style="text-align: center;">
-        <label><b>¿Finalizada?</b></label>
-        {% if g_e|has_permiso:'edita_cualquier_tarea_ie' %}
-            <b class="center"><a class="realizada" data-id="{{ instarea.id }}"
-                                 id="realizada{{ instarea.id }}">{% if instarea.tarea.realizada %}Sí{% else %}
-                No{% endif %}</a></b>
-        {% else %}
-            <b>{% if instarea.tarea.realizada %}Sí{% else %}No{% endif %}</b>
-        {% endif %}
-    </div>
+{#    <div class="columns large-2 end" style="text-align: center;">#}
+{#        <label><b>¿Finalizada?</b></label>#}
+{#        {% if g_e|has_permiso:'edita_cualquier_tarea_ie' %}#}
+{#            <b class="center"><a class="realizada" data-id="{{ instarea.id }}"#}
+{#                                 id="realizada{{ instarea.id }}">{% if instarea.tarea.realizada %}Sí{% else %}#}
+{#                No{% endif %}</a></b>#}
+{#        {% else %}#}
+{#            <b>{% if instarea.tarea.realizada %}Sí{% else %}No{% endif %}</b>#}
+{#        {% endif %}#}
+{#    </div>#}
     <div class="columns large-2">
         {% if not instarea.tarea.realizada %}
             {% if instarea.inspector == g_e or g_e|has_permiso:'borra_cualquier_tarea_ie' %}

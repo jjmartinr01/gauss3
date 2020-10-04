@@ -59,6 +59,22 @@ INSPECTORES = (
     ("16", "JOSÉ IGNACIO RUBIO SANCHO")
 )
 
+INSPECTORES_GAUSER = {
+    "1": "mpmaneroi01",
+    "2": "afdasfasdffasfdsafafds456",
+    "4": "afdasfasdffasfdsafafds456",
+    "5": "jagarridor01",
+    "6": "tsanmiguelm01",
+    "7": "asilvand01",
+    "8": "afdasfasdffasfdsafafds456",
+    "9": "arojass01",
+    "11": "mpreneth01",
+    "12": "afdasfasdffasfdsafafds456",
+    "13": "afdasfasdffasfdsafafds456",
+    "15": "pccaceob01",
+    "16": "afdasfasdffasfdsafafds456",
+}
+
 # ID', 'NOMBRE CENTRO', 'TIPO', 'LOCALIDAD'
 CENTROS = (
     ("633", "ATENCIÓN INVIDENTES", "O.N.C.E.", "LOGROÑO"),
