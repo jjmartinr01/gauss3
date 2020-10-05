@@ -460,7 +460,10 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
         code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
         entidad, created = Entidad.objects.get_or_create(code=code_entidad)
         # Copiar los permisos que tiene el director del Ciudad de Haro
-        permisos_director = Cargo.objects.get(entidad__code=26008475, cargo__icontains='Director').permisos.all()
+        try:
+            permisos_director = Cargo.objects.get(entidad__code=26008475, cargo__icontains='Director').permisos.all()
+        except:
+            permisos_director = Permiso.objects.none()
         if created:
             entidad.name = sheet.cell(row_index, dict_names['Centro']).value
             entidad.organization = carga.g_e.ronda.entidad.organization
@@ -550,8 +553,11 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
                  ('acceso_programaciones_didacticas', 'Programaciones didácticas', 14),
                  ('acceso_reuniones', 'Reuniones', 15), ('acceso_domotica', 'Domótica', 16)]
         for m in menus:
-            md = Menu_default.objects.get(code_menu=m[0])
-            Menu.objects.get_or_create(entidad=entidad, menu_default=md, texto_menu=m[1], pos=m[2])
+            try:
+                md = Menu_default.objects.get(code_menu=m[0])
+                Menu.objects.get_or_create(entidad=entidad, menu_default=md, texto_menu=m[1], pos=m[2])
+            except:
+                pass
         ee, created = EntidadExtra.objects.get_or_create(entidad=entidad)
         ee.titularidad = sheet.cell(row_index, dict_names['Titularidad']).value
         ee.tipo_centro = sheet.cell(row_index, dict_names['Tipo centro']).value
@@ -592,10 +598,6 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
         except:
             g_e_entidad = Gauser_extra.objects.create(gauser=gauser_entidad, ronda=entidad.ronda, activo=True)
             g_e_entidad.permisos.add(*permisos_director)
-    print('Entidades existen:\n')
-    print(entidades_existen)
-    print('Entidades no existen:\n')
-    print(entidades_no_existen)
 
 
 @shared_task
