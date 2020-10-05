@@ -541,10 +541,13 @@ def carga_masiva_inspeccion(request):
     if request.method == 'POST':
         action = request.POST['action']
         if action == 'carga_masiva_centros_racima':
+            crear_aviso(request, True, 'cm_ins1')
             logger.info('Carga de archivo de tipo: ' + request.FILES['file_centros_racima'].content_type)
             CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_centros_racima'],
                                        tipo='CENTROSRACIMA', g_e=g_e)
+            crear_aviso(request, True, 'cm_ins2')
             carga_masiva_from_excel.apply_async(expires=300)
+            crear_aviso(request, True, 'cm_ins3')
             crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
         elif action == 'carga_masiva_xls_mdb':
             from inspeccion_educativa.models import INSPECTORES_GAUSER
