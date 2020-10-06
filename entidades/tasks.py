@@ -555,7 +555,10 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
         for m in menus:
             try:
                 md = Menu_default.objects.get(code_menu=m[0])
-                Menu.objects.get_or_create(entidad=entidad, menu_default=md, texto_menu=m[1], pos=m[2])
+                try:
+                    Menu.objects.get(entidad=entidad, menu_default=md)
+                except:
+                    Menu.objects.create(entidad=entidad, menu_default=md, texto_menu=m[1], pos=m[2])
             except Exception as msg:
                 Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros2: %s' % str(msg), fecha=now())
         ee, created = EntidadExtra.objects.get_or_create(entidad=entidad)
