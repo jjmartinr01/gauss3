@@ -335,7 +335,8 @@ def informes_ie(request):
                     ie = v.informe
                     html_v = False
                 html = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie})
-                return JsonResponse({'ok': True, 'html': html, 'ie': ie.id, 'html_v': html_v})
+                num_v = ie.get_variables.count()
+                return JsonResponse({'ok': True, 'html': html, 'ie': ie.id, 'html_v': html_v, 'num_v': num_v})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'copiar_ie':

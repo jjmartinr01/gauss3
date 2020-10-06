@@ -132,6 +132,8 @@
                         $("#contenido_informe" + data.ie).html(data.html);
                         $("#destinatario" + data.ie).html(data.destinatario);
                         $("#input_asunto" + data.ie).val(data.asunto);
+                        destroyEditorInstances();
+                        CKEDITOR.inlineAll();
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
@@ -167,6 +169,11 @@
                                 $('#texto_informe' + data.ie).html(data.html);
                                 if (data.html_v) {
                                     $('#variables' + data.ie).html(data.html_v);
+                                }
+                                if (data.num_v > 0){
+                                    $('#variables_texto2pdf' + data.ie).show();
+                                }else{
+                                    $('#variables_texto2pdf' + data.ie).hide();
                                 }
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
