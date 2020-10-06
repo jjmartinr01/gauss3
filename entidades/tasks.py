@@ -14,6 +14,7 @@ from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva, Entid
 from autenticar.models import Gauser, Permiso, Menu_default
 from gauss.constantes import PROVINCIAS, CODE_CONTENEDOR
 from bancos.views import asocia_banco_ge
+from mensajes.models import Aviso
 
 logger = logging.getLogger('django')
 
@@ -450,8 +451,12 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
     book = xlrd.open_workbook(file_contents=f)
     sheet = book.sheet_by_index(0)
 
-    entidades_no_existen = []
-    entidades_existen = []
+    # Copiar los permisos que tiene el director del Ciudad de Haro
+    try:
+        permisos_director = Cargo.objects.get(entidad__code=26008475, cargo__icontains='Director').permisos.all()
+    except Exception as msg:
+        permisos_director = Permiso.objects.none()
+        Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros1: %s' % str(msg), fecha=now())
     # Get the keys from line 5 of excel file:
     dict_names = {}
     for col_index in range(sheet.ncols):
@@ -459,11 +464,6 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
     for row_index in range(5, sheet.nrows):
         code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
         entidad, created = Entidad.objects.get_or_create(code=code_entidad)
-        # Copiar los permisos que tiene el director del Ciudad de Haro
-        try:
-            permisos_director = Cargo.objects.get(entidad__code=26008475, cargo__icontains='Director').permisos.all()
-        except:
-            permisos_director = Permiso.objects.none()
         if created:
             entidad.name = sheet.cell(row_index, dict_names['Centro']).value
             entidad.organization = carga.g_e.ronda.entidad.organization
@@ -556,16 +556,17 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
             try:
                 md = Menu_default.objects.get(code_menu=m[0])
                 Menu.objects.get_or_create(entidad=entidad, menu_default=md, texto_menu=m[1], pos=m[2])
-            except:
-                pass
+            except Exception as msg:
+                Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros2: %s' % str(msg), fecha=now())
         ee, created = EntidadExtra.objects.get_or_create(entidad=entidad)
         ee.titularidad = sheet.cell(row_index, dict_names['Titularidad']).value
         ee.tipo_centro = sheet.cell(row_index, dict_names['Tipo centro']).value
         try:
             code_entidad_padre = int(sheet.cell(row_index, dict_names['IES del que depende']).value)
             ee.depende_de = Entidad.objects.get(code=code_entidad_padre)
-        except:
+        except Exception as msg:
             ee.depende_de = None
+            Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros3: %s' % str(msg), fecha=now())
         if 'S' in sheet.cell(row_index, dict_names['Servicio comedor']).value:
             ee.comedor = True
         else:
@@ -590,14 +591,16 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
         # Código para crear usuario con todos los permisos disponibles a través de los cargos:
         try:
             gauser_entidad = Gauser.objects.get(username=entidad.code)
-        except:
+        except Exception as msg:
             email = 'inventado@%s.com' % entidad.code
             gauser_entidad = Gauser.objects.create_user(entidad.code, email, entidad.code, last_login=now())
+            Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros4: %s' % str(msg), fecha=now())
         try:
             Gauser_extra.objects.get(gauser=gauser_entidad, ronda=entidad.ronda)
-        except:
+        except Exception as msg:
             g_e_entidad = Gauser_extra.objects.create(gauser=gauser_entidad, ronda=entidad.ronda, activo=True)
             g_e_entidad.permisos.add(*permisos_director)
+            Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros5: %s' % str(msg), fecha=now())
 
 
 @shared_task
