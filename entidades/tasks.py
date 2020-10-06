@@ -477,11 +477,11 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
             entidad.save()
             cargo_director = Cargo.objects.create(entidad=entidad, cargo='Director/a', nivel=1)
             cargo_director.permisos.add(*permisos_director)
-            Cargo.objects.create(entidad=entidad, nombre='Jefe/a de Estudios', nivel=2)
-            Cargo.objects.create(entidad=entidad, nombre='Profesor/a', nivel=3)
-            Cargo.objects.create(entidad=entidad, nombre='Maestro/a', nivel=3)
-            Cargo.objects.create(entidad=entidad, nombre='Alumno/a')
-            Cargo.objects.create(entidad=entidad, nombre='Madre/Padre')
+            Cargo.objects.create(entidad=entidad, cargo='Jefe/a de Estudios', nivel=2)
+            Cargo.objects.create(entidad=entidad, cargo='Profesor/a', nivel=3)
+            Cargo.objects.create(entidad=entidad, cargo='Maestro/a', nivel=3)
+            Cargo.objects.create(entidad=entidad, cargo='Alumno/a')
+            Cargo.objects.create(entidad=entidad, cargo='Madre/Padre')
         if not entidad.ronda:
             y1, y2 = datetime.today().year, datetime.today().year + 1
             inicio = datetime.strptime("1/9/%s" % y1, "%d/%m/%Y")
@@ -566,7 +566,6 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
             ee.depende_de = Entidad.objects.get(code=code_entidad_padre)
         except Exception as msg:
             ee.depende_de = None
-            Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros3: %s' % str(msg), fecha=now())
         if 'S' in sheet.cell(row_index, dict_names['Servicio comedor']).value:
             ee.comedor = True
         else:
@@ -600,7 +599,6 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
         except Exception as msg:
             g_e_entidad = Gauser_extra.objects.create(gauser=gauser_entidad, ronda=entidad.ronda, activo=True)
             g_e_entidad.permisos.add(*permisos_director)
-            Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros5: %s' % str(msg), fecha=now())
 
 
 @shared_task

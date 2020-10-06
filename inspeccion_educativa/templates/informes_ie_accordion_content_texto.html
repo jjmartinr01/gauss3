@@ -6,6 +6,7 @@
         width: 100%;
     }
 </style>
+{% if ie.get_variables|length > 0 %}
 <div class="row" id="variables{{ ie.id }}">
     {% include "informes_ie_accordion_content_texto_variables.html" %}
 </div>
@@ -17,11 +18,11 @@
         </div>
     </div>
 </div>
-
+{% endif %}
 <div class="row" id="texto_informe_plantilla{{ ie.id }}">
     <div class="columns large-12">
         <label><b>Texto del informe editable:</b></label>
-        <div contenteditable="true" class="ckeditor update_texto"
+        <div contenteditable="true" class="ckeditor update_texto" id="texto_editable{{ ie.id }}"
              data-id="{{ ie.id }}" data-campo="texto">
             {% autoescape off %}{{ ie.texto }}{% endautoescape %}
         </div>
