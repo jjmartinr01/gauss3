@@ -336,6 +336,8 @@ class Cargo(models.Model):
     permisos = models.ManyToManyField('autenticar.Permiso', blank=True)
     nivel = models.IntegerField('Nivel jerárquico en el organigrama', null=True, blank=True, choices=NIVELES,
                                 default=6)
+    borrable = models.BooleanField('¿Este cargo se puede borrar?', default=True)
+    clave_cargo = models.CharField('Clave asociada al cargo', max_length=30, default='')
 
     class Meta:
         ordering = ['nivel', 'cargo']

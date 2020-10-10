@@ -21,16 +21,35 @@
         text-align: right;
     }
 </style>
-{% if g_e|has_permiso:'borra_perfiles' %}
-    <div class="row">
-        <div class="large-9 medium-6 small-3 columns">
-            &nbsp;
-        </div>
-        <div class="large-3 medium-6 small-9 columns" style="text-align: right;">
-            <a class="button del_cargo" data-cargo="{{ cargo.id }}"><i class="fa fa-trash-o"></i> Borrar</a>
-        </div>
+<div class="row">
+    <div class="large-12 medium-12 small-12 columns" style="text-align: right;">
+        <ul class="button-group">
+            {% if cargo.borrable %}
+                {% if g_e|has_permiso:'crea_perfiles' %}
+                    <li><a class="button copiar_cargo" data-cargo="{{ cargo.id }}"
+                           title="Hacer una copia (un duplicado) de este cargo"><i class="fa fa-copy"></i> Copiar</a>
+                    </li>
+                {% else %}
+                    <li><a class="button secondary"
+                           title="No tienes permisos para hacer una copia (un duplicado) de este cargo"><i
+                            class="fa fa-copy"></i> Copiar</a></li>
+                {% endif %}
+                {% if g_e|has_permiso:'borra_perfiles' %}
+                    <li><a class="button del_cargo alert" data-cargo="{{ cargo.id }}"><i class="fa fa-trash-o"></i>
+                        Borrar</a></li>
+                {% else %}
+                    <li><a class="button secondary" title="No tienes permisos para borrar este cargo"><i
+                            class="fa fa-trash-o"></i> Borrar</a></li>
+                {% endif %}
+            {% else %}
+                <li><a class="button secondary cargo_no_copiable"
+                           title="Este cargo no se puede copiar"><i class="fa fa-copy"></i> Copiar</a></li>
+                <li><a class="button secondary cargo_no_borrable" title="Este cargo no se puede borrar"><i class="fa fa-trash-o"></i>
+                    Borrar</a></li>
+            {% endif %}
+        </ul>
     </div>
-{% endif %}
+</div>
 <div class="row">
     <div class="large-7 columns">
         {% if g_e|has_permiso:'edita_perfiles' %}
@@ -142,13 +161,30 @@
     {% if g_e|has_permiso:'borra_perfiles' %}
         $('#Contenido').on('click', '.del_cargo', function (e) {
             e.preventDefault();
-            var cargo = $(this).data('cargo');
-            $.post("/organigrama/", {action: 'del_cargo', cargo: cargo}, function (data) {
-                $('#accordion' + data).remove();
-                $("#update_ok").show().delay(1500).fadeOut();
+            cargo_seleccionado = $(this).data('cargo');
+            var texto = 'Si aceptas el perfil/cargo se borrará completamente de la base de datos.'
+            show_mensajes({
+                title: 'Eliminar completamente el cargo/perfil', texto: texto, buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/organigrama/", {action: 'del_cargo', cargo: cargo_seleccionado},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#accordion' + data.id).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
             });
         });
     {% endif %}
+
 
     {% if g_e|has_permiso:'edita_perfiles' %}
         $('#Contenido').on('keyup', '#id_cargo', function () {
@@ -166,6 +202,51 @@
             $.post("/organigrama/", {action: 'change_nivel_cargo', cargo: cargo, nivel: nivel}, function (data) {
                 $('#span_nivel' + cargo).html(data);
                 $("#update_ok").show().delay(1500).fadeOut();
+            });
+        });
+    {% endif %}
+
+    {% if g_e|has_permiso:'crea_perfiles' %}
+        $('#Contenido').on('click', '.copiar_cargo', function (e) {
+            e.preventDefault();
+            cargo_seleccionado = $(this).data('cargo');
+            var texto = 'Si aceptas el perfil/cargo copiará según la opción elegida.'
+            show_mensajes({
+                title: 'Copiar el cargo/perfil', texto: texto, buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Copiar con miembros": function () {
+                        hide_mensajes();
+                        $.post("/organigrama/", {action: 'copiar_cargo_con', cargo: cargo_seleccionado},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#list_cargos').append(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                    setTimeout(function () {
+                                        show_mensajes({title: 'Cargo/Perfil copiado correctamente'})
+                                    }, 300);
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                    },
+                    "Copiar sin miembros": function () {
+                        hide_mensajes();
+                        $.post("/organigrama/", {action: 'copiar_cargo_sin', cargo: cargo_seleccionado},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#list_cargos').append(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                    setTimeout(function () {
+                                        show_mensajes({title: 'Cargo/Perfil copiado correctamente'})
+                                    }, 300);
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
             });
         });
     {% endif %}
@@ -240,5 +321,15 @@
         });
     {% endif %}
 
+    $('#Contenido').on('click','.cargo_no_copiable', function (e){
+        e.preventDefault();
+        show_mensajes({title: '<i class="fa fa-warning"></i> No se puede copiar!!',
+            texto: 'Este cargo/perfil se ha creado automáticamente y no puede ser copiado.'})
+    });
+    $('#Contenido').on('click','.cargo_no_borrable', function (e){
+        e.preventDefault();
+        show_mensajes({title: '<i class="fa fa-warning"></i> No se puede borrar!!',
+            texto: 'Este cargo/perfil se ha creado automáticamente y no puede ser borrado.'})
+    });
 
 </script>

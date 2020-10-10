@@ -7,11 +7,11 @@ import os
 import pdfkit
 from datetime import date
 from django.db.models import Q
-from django.template import RequestContext
+from django.template import Context, Template
 from django.template.loader import render_to_string
 from gauss.rutas import MEDIA_DOCUMENTOS, MEDIA_ANAGRAMAS
 from entidades.models import Alta_Baja, Gauser_extra, DocConfEntidad
-
+from datetime import date, timedelta
 logger = logging.getLogger('django')
 
 
@@ -148,6 +148,57 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
     else:
         logger.info('return fichero %s' % fichero_pdf)
         return open(fichero_pdf, 'rb')
+
+def html_to_pdf_options(request, html, opciones, fichero='borrar', title='Documento generado por GAUSS', media=''):
+    """
+    :param options: Opciones de wkhtmltopdf a ser usadas
+    :param request: datos de session necesarios para identificar usuario
+    :param html: html que será convertido en pdf
+    :param fichero: string con el nombre del fichero
+    :return: El fichero pdf creado
+    """
+    fichero_pdf = media + fichero + '.pdf'
+    docconf, c = DocConfEntidad.objects.get_or_create(entidad=request.session['gauser_extra'].ronda.entidad)
+
+    if not os.path.exists(os.path.dirname(fichero_pdf)):
+        os.makedirs(os.path.dirname(fichero_pdf))
+        logger.info('Se crea ruta: %s' % (fichero_pdf))
+
+    if not os.path.exists(os.path.dirname(media)):
+        os.makedirs(os.path.dirname(media))
+        logger.info('Se crea ruta: %s' % (media))
+
+    template = Template(html)
+    opciones['title'] = title
+    context = Context(opciones)
+    c = template.render(context)
+    cabecera = MEDIA_ANAGRAMAS + '%s_cabecera.html' % request.session['gauser_extra'].ronda.entidad.code
+    pie = MEDIA_ANAGRAMAS + '%s_pie.html' % request.session['gauser_extra'].ronda.entidad.code
+    logger.info('cabecera y pie definidas. Tipo:')
+    options_default = {
+        'orientation': 'Portrait',
+        'page-size': docconf.pagesize,
+        'margin-top': docconf.margintop,
+        'margin-right': docconf.marginright,
+        'margin-bottom': docconf.marginbottom,
+        'margin-left': docconf.marginleft,
+        'encoding': docconf.encoding,
+        'no-outline': None,
+        '--header-html': 'file://%s' % cabecera,
+        '--footer-html': 'file://%s' % pie,
+        '--header-spacing': docconf.headerspacing,
+        '--load-error-handling': 'ignore',
+    }
+    options = {}
+    for o in options_default:
+        try:
+            options[o] = opciones[o]
+        except:
+            options[o] = options_default[o]
+    logger.info('Preparado para generar pdf')
+    pdfkit.from_string(c, fichero_pdf, options)
+    logger.info('Pdf generado')
+    return open(fichero_pdf, 'rb')
 
 
 # Generador de contraseñas

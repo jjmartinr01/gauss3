@@ -16,7 +16,7 @@ from django.core.paginator import Paginator
 import sys
 from django.core import serializers
 
-from gauss.funciones import html_to_pdf
+from gauss.funciones import html_to_pdf, html_to_pdf_options, usuarios_ronda
 from gauss.rutas import MEDIA_INSPECCION
 from gauss.constantes import CODE_CONTENEDOR
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required
@@ -24,7 +24,7 @@ from inspeccion_educativa.models import *
 from autenticar.views import crear_nombre_usuario
 from mensajes.views import encolar_mensaje, crea_mensaje_cola
 from entidades.tasks import carga_masiva_from_excel
-from entidades.models import CargaMasiva
+from entidades.models import CargaMasiva, Cargo
 from mensajes.views import crear_aviso
 from mensajes.models import Aviso
 
@@ -40,16 +40,36 @@ def cargar_centros_mdb(request):
     return HttpResponse('CentrosMDB creados')
 
 
+def todos_lunes(ronda):
+    d = ronda.inicio
+    dias_sumar = 7 - d.weekday() if (7 - d.weekday()) < 7 else 0 # Días a sumar para obtener el primer lunes de la ronda
+    lunes = d + timedelta(days=dias_sumar)  # First lunes
+    fechas_lunes = []
+    while lunes < ronda.fin:
+        lunes += timedelta(days=7)
+        fechas_lunes.append(lunes)
+    return fechas_lunes
+
 # @permiso_required('acceso_tareas_ie')
 def tareas_ie(request):
     g_e = request.session["gauser_extra"]
+    try:
+        cargo = Cargo.objects.get(clave_cargo='%s_ie' % g_e.ronda.entidad.code)
+        inspectores = usuarios_ronda(g_e.ronda, cargos=[cargo])
+    except:
+        cargo = Cargo.objects.create(entidad=g_e.ronda.entidad, cargo='Inspector de Educación',
+                                     borrable=False, clave_cargo='%s_ie' % g_e.ronda.entidad.code)
+        inspectores = Gauser_extra.objects.none()
+        msg = '''Se ha creado el cargo "Inspector de Educación" al que se deben añadir miembros para que
+        se pueda asignar una actuación de Inspección a una persona.'''
+        crear_aviso(request, False, msg)
     if request.method == 'POST' and request.is_ajax():
         if request.POST['action'] == 'crea_tarea_ie':
             if g_e.has_permiso('crea_tareas_ie'):
                 tarea = TareaInspeccion.objects.create(ronda_centro=g_e.ronda.entidad.ronda, fecha=datetime.today(),
                                                        # asunto='Nueva actuación de Inspección Educativa',
-                                                       observaciones='')
-                itarea = InspectorTarea.objects.create(inspector=g_e, tarea=tarea, permiso='rwx')
+                                                       observaciones='', creador=g_e)
+                itarea = InspectorTarea.objects.create(inspector=g_e, tarea=tarea, permiso='rwx', rol='1')
                 html = render_to_string('tareas_ie_accordion.html',
                                         {'buscadas': False, 'tareas_ie': [itarea], 'g_e': g_e, 'nueva': True})
                 return JsonResponse({'ok': True, 'html': html})
@@ -57,15 +77,17 @@ def tareas_ie(request):
                 JsonResponse({'ok': False})
         elif request.POST['action'] == 'open_accordion':
             try:
-                # itarea = InspectorTarea.objects.get(inspector__ronda__entidad=g_e.ronda.entidad,
-                #                                     id=request.POST['id'])
                 itarea = InspectorTarea.objects.get(id=request.POST['id'])
-                centros = CentroMDB.objects.all()
+                centrosmdb = CentroMDB.objects.all()
+                centros = Entidad.objects.filter(organization=g_e.ronda.entidad.organization)
+                cargo = Cargo.objects.get(clave_cargo='%s_ie' % g_e.ronda.entidad.code)
+                inspectores = usuarios_ronda(g_e.ronda, cargos=[cargo])
                 html = render_to_string('tareas_ie_accordion_content.html',
                                         {'instarea': itarea, 'g_e': g_e, 'localizaciones': LOCALIZACIONES,
-                                         'objetos': OBJETOS, 'tipos': TIPOS, 'funciones': FUNCIONES,
+                                         'objetos': OBJETOS, 'tipos': TIPOS, 'funciones': FUNCIONES, 'roles': ROLES,
                                          'actuaciones': ACTUACIONES, 'niveles': NIVELES, 'sectores': SECTORES,
-                                         'centros': centros, 'inspectores': INSPECTORES})
+                                         'centros': centros, 'inspectores': inspectores, 'permisos': PERMISOS,
+                                         'centrosmdb': centrosmdb})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -83,9 +105,11 @@ def tareas_ie(request):
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'update_centro':
             try:
-                centro = CentroMDB.objects.get(id=request.POST['centro_id'])
                 itarea = InspectorTarea.objects.get(inspector__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
-                itarea.tarea.centro_mdb = centro
+                if request.POST['campo'] == 'centro':
+                    itarea.tarea.centro = Entidad.objects.get(id=request.POST['centro_id'])
+                else:
+                    itarea.tarea.centro_mdb = CentroMDB.objects.get(id=request.POST['centro_id'])
                 itarea.tarea.save()
                 return JsonResponse({'ok': True})
             except:
@@ -138,47 +162,40 @@ def tareas_ie(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
-
-
-
-        # elif request.POST['action'] == 'update_tipo':
-        #     try:
-        #         reparacion = InspectorTarea.objects.get(detecta__entidad=g_e.ronda.entidad, id=request.POST['id'])
-        #         reparacion.tipo = request.POST['valor']
-        #         reparacion.save()
-        #         return JsonResponse({'ok': True, 'valor': reparacion.get_tipo_display()})
-        #     except:
-        #         return JsonResponse({'ok': False})
-        #
-        # elif request.POST['action'] == 'enviar_mensaje':
-        #     try:
-        #         reparacion = InspectorTarea.objects.get(detecta__entidad=g_e.ronda.entidad, id=request.POST['id'])
-        #         reparacion.comunicado_a_reparador = True
-        #         mensaje = render_to_string('tareas_ie_mail.html', {'reparacion': reparacion})
-        #         # mensaje = u'El usuario %s ha grabado una incidencia de reparación. Los datos significativos son:<br><strong>Lugar:</strong> <em>%s</em> <br><strong>Descripción:</strong> <em>%s</em> <br>Gracias por tu atención.' % (
-        #         #     g_e.gauser.get_full_name(), reparacion.lugar, reparacion.describir_problema)
-        #         permisos = ['controla_tareas_ie_%s' % reparacion.tipo, 'controla_tareas_ie']
-        #         cargos = Cargo.objects.filter(permisos__code_nombre__in=permisos, entidad=g_e.ronda.entidad).distinct()
-        #
-        #         receptores = Gauser_extra.objects.filter(Q(ronda=g_e.ronda), Q(permisos__code_nombre__in=permisos) | Q(
-        #             cargos__in=cargos)).values_list('gauser__id', flat=True)
-        #         encolar_mensaje(emisor=g_e, receptores=receptores, asunto='Solicitud de reparación', html=mensaje,
-        #                         etiqueta='reparacion%s' % reparacion.id)
-        #         reparacion.save()
-        #         return JsonResponse({'ok': True})
-        #     except:
-        #         return JsonResponse({'ok': False})
-
-        # elif request.POST['action'] == 'update_describir_solucion':
-        #     try:
-        #         reparacion = InspectorTarea.objects.get(detecta__entidad=g_e.ronda.entidad, id=request.POST['id'])
-        #         reparacion.describir_solucion = request.POST['valor']
-        #         reparacion.reparador = g_e
-        #         reparacion.save()
-        #         return JsonResponse({'ok': True})
-        #     except:
-        #         return JsonResponse({'ok': False})
-
+        elif request.POST['action'] == 'add_participante':
+            try:
+                tarea = TareaInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad, id=request.POST['tarea'])
+                instarea = InspectorTarea.objects.create(tarea=tarea)
+                inspectores = usuarios_ronda(g_e.ronda, cargos=[cargo])
+                html = render_to_string('tareas_ie_accordion_content_tr.html',
+                                        {'instarea': instarea, 'inspectores': inspectores, 'roles': ROLES,
+                                         'permisos': PERMISOS, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html, 'tarea': tarea.id})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'mod_participante':
+            try:
+                instarea = InspectorTarea.objects.get(id=request.POST['instarea'])
+                if instarea.tarea.creador.gauser == g_e.gauser or 'w' in instarea.tarea.permiso(g_e.gauser):
+                    if request.POST['campo'] == 'inspector':
+                        instarea.inspector = inspectores.get(id=request.POST['valor'])
+                    else:
+                        setattr(instarea, request.POST['campo'], request.POST['valor'])
+                    instarea.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'del_participante':
+            try:
+                instarea = InspectorTarea.objects.get(id=request.POST['instarea'])
+                id = instarea.id
+                if instarea.tarea.creador.gauser == g_e.gauser or 'x' in instarea.tarea.permiso(g_e.gauser):
+                    instarea.delete()
+                    return JsonResponse({'ok': True, 'id': id})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos de borrado'})
+            except:
+                return JsonResponse({'ok': False, 'msg': 'Se ha producido un error'})
         elif request.POST['action'] == 'busca_tareas_ie':
             try:
                 try:
@@ -192,27 +209,91 @@ def tareas_ie(request):
                 texto = request.POST['texto'] if request.POST['texto'] else ''
                 tipos = [t[0] for t in TIPOS]
                 tipo = [request.POST['tipo_busqueda']] if request.POST['tipo_busqueda'] in tipos else tipos
-                q_texto = Q(tarea__observaciones__icontains=texto)  # | Q(describir_solucion__icontains=texto)
+                q_texto = Q(tarea__observaciones__icontains=texto) | Q(tarea__asunto__icontains=texto)
                 q_inicio = Q(tarea__fecha__gte=inicio)
                 q_fin = Q(tarea__fecha__lte=fin)
                 q_tipo = Q(tarea__tipo__in=tipo)
                 q_entidad = Q(inspector__ronda__entidad=g_e.ronda.entidad)
                 its = InspectorTarea.objects.filter(q_entidad, q_texto, q_inicio, q_fin, q_tipo)
-                html = render_to_string('tareas_ie_accordion.html', {'tareas_ie': its, 'g_e': g_e, 'buscadas': True})
-                a = ', '.join(tipo)
-                return JsonResponse({'ok': True, 'html': html, 'a': a})
+                num_act = its.count()
+                max = 100 # Número máximo de actuaciones a mostrar en una búsqueda
+                if num_act > max:
+                    exc_max = True
+                    its = InspectorTarea.objects.none()
+                else:
+                    exc_max = False
+                html = render_to_string('tareas_ie_accordion.html', {'tareas_ie': its, 'g_e': g_e, 'exc_max': exc_max,
+                                                                     'buscadas': True, 'num_act': num_act, 'max': max})
+                return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-
+        elif request.POST['action'] == 'paginar_tareas_ie':
+            try:
+                posibles_tareas_ie = InspectorTarea.objects.filter(Q(inspector=g_e))
+                posibles_tareas_ie = InspectorTarea.objects.all()
+                paginator = Paginator(posibles_tareas_ie, 25)
+                tareas_ie = paginator.page(int(request.POST['page']))
+                html = render_to_string('tareas_ie_accordion.html', {'tareas_ie': tareas_ie, 'pag': True})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+    elif request.method == 'POST' and not request.is_ajax():
+        if request.POST['action'] == 'genera_informe':
+            instareas = InspectorTarea.objects.all()
+            fichero = 'Informe_%s_%s' % (str(g_e.ronda.entidad.code), g_e.id)
+            texto_html = render_to_string('informe_personal2pdf.html', {'instareas': instareas, 'title': fichero})
+            ruta = MEDIA_INSPECCION + '%s/' % g_e.ronda.entidad.code
+            opciones = {
+                'orientation': 'Landscape',
+                'page-size': 'A4',
+                'margin-top': '5.5cm',
+                'margin-right': '0.5cm',
+                'margin-bottom': '0.5cm',
+                'margin-left': '0.5cm',
+            }
+            fich = html_to_pdf_options(request, texto_html, opciones, fichero=fichero, media=ruta)
+            response = HttpResponse(fich, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+            logger.info('%s, genera informe de inspección' % (g_e))
+            return response
+        if request.POST['action'] == 'crea_informe_semanal':
+            lunes = datetime.strptime(request.POST['semana'], '%d-%m-%Y')
+            viernes = lunes + timedelta(days=4)
+            instareas = InspectorTarea.objects.filter(tarea__fecha__gte=lunes, tarea__fecha__lte=viernes)
+            fichero = 'Informe_%s_%s' % (str(g_e.ronda.entidad.code), g_e.id)
+            texto_html = render_to_string('informe_personal2pdf.html', {'instareas': instareas, 'title': fichero})
+            ruta = MEDIA_INSPECCION + '%s/' % g_e.ronda.entidad.code
+            opciones = {
+                'orientation': 'Landscape',
+                'page-size': 'A4',
+                'margin-top': '5.5cm',
+                'margin-right': '0.5cm',
+                'margin-bottom': '0.5cm',
+                'margin-left': '0.5cm',
+            }
+            fich = html_to_pdf_options(request, texto_html, opciones, fichero=fichero, media=ruta)
+            response = HttpResponse(fich, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+            logger.info('%s, genera informe de inspección' % (g_e))
+            return response
+    logger.info('Entra en ' + request.META['PATH_INFO'])
+    # Para evitar que se añadan participaciones/colaboraciones vacías en las tareas de inspección
+    # borramos las que no tienen asociado un inspector.
+    # InspectorTarea.objects.filter(tarea__creador=g_e, inspector__isnull=True).delete()
     fecha_min = localdate() - timedelta(2)
     fecha_max = localdate() + timedelta(7)
     q = Q(tarea__realizada=False) | Q(tarea__fecha__gte=fecha_min, tarea__fecha__lte=fecha_max)
-    tareas = InspectorTarea.objects.filter(Q(inspector=g_e) & q)
-    tareas = InspectorTarea.objects.all()
-    logger.info('Entra en ' + request.META['PATH_INFO'])
-    if 'ge' in request.GET:
-        pass
-
+    posibles_tareas_ie = InspectorTarea.objects.filter(Q(inspector=g_e) & q)
+    posibles_tareas_ie = InspectorTarea.objects.all()
+    paginator = Paginator(posibles_tareas_ie, 25)
+    tareas_ie = paginator.page(1)
+    lunes = todos_lunes(g_e.ronda)
+    semanas = []
+    for l in lunes:
+        v = l + timedelta(days=4)
+        l_string = l.strftime("%d-%m-%Y")
+        v_string = v.strftime("%d-%m-%Y")
+        semanas.append((l_string, 'Semana del %s al %s' % (l_string, v_string)))
     return render(request, "tareas_ie.html", {
         'iconos':
             ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
@@ -222,7 +303,7 @@ def tareas_ie(request):
               'title': 'Generar informe con las reparaciones de la entidad',
               'permiso': 'genera_informe_tareas_ie'},
              ),
-        'g_e': g_e, 'tareas_ie': tareas, 'tipos': TIPOS})
+        'g_e': g_e, 'tareas_ie': tareas_ie, 'tipos': TIPOS, 'pag': 1, 'formname': 'tareas_ie', 'semanas': semanas})
 
 
 # def carga_actuaciones_ie(request):
@@ -239,46 +320,46 @@ def tareas_ie(request):
 #         book = xlrd.open_workbook(file_contents=f)
 #         sheet = book.sheet_by_index(0)
 #         Get the keys from line 5 of excel file:
-        # dict_names = {}
-        # for col_index in range(sheet.ncols):
-        #     dict_names[sheet.cell(0, col_index).value] = col_index
-        # return HttpResponse(sheet.cell(1, dict_names['FECHA'])
-        # for row_index in range(1, sheet.nrows):
-        #     try:
-            # a1 = sheet.cell_value(rowx=row_index, colx=dict_names['FECHA'])
-            # try:
-            #     fecha = datetime(*xlrd.xldate_as_tuple(a1, book.datemode))
-            # except:
-            #     fecha = None
-            # centro = CentroMDB.objects.get(code_mdb=str(int(sheet.cell(row_index, dict_names['CENTRO']).value)))
-            # datetime.strptime(sheet.cell(row_index, dict_names['FECHA']).value,
-            #                   '%d/%m/%Y')
-            # t = TareaInspeccion.objects.create(ronda_centro=carga.ronda,
-            #                                    localizacion=str(
-            #                                        sheet.cell(row_index, dict_names['LOCALIZACIÓN']).value),
-            #                                    nivel=str(sheet.cell(row_index, dict_names['NIVEL']).value),
-            #                                    actuacion=str(sheet.cell(row_index, dict_names['ACTUACIÓN']).value),
-            #                                    realizada=True,
-            #                                    inspector_mdb=str(
-            #                                        int(sheet.cell(row_index, dict_names['Id INSPECTORES']).value)),
-            #                                    fecha=fecha,
-            #                                    sector=str(sheet.cell(row_index, dict_names['SECTOR']).value),
-            #                                    centro_mdb=centro,
-            #                                    colaboracion=str(
-            #                                        sheet.cell(row_index, dict_names['Especificar colaboración']).value),
-            #                                    participacion=str(
-            #                                        sheet.cell(row_index, dict_names['PARTICIPACIÓN']).value),
-            #                                    funcion=str(
-            #                                        sheet.cell(row_index, dict_names['FUNCIÓN INSPECTORA']).value),
-            #                                    tipo=str(sheet.cell(row_index, dict_names['TIPO DE ACTUACIÓN']).value),
-            #                                    asunto=str(sheet.cell(row_index, dict_names['TEMA']).value),
-            #                                    objeto=str(sheet.cell(row_index, dict_names['OBJETO']).value),
-            #                                    )
-            # except:
-            #     errores += ', ' + str(sheet.cell(row_index, dict_names['Id']).value)
-        # carga.cargado = True
-        # carga.save()
-    # return HttpResponse(errores)
+# dict_names = {}
+# for col_index in range(sheet.ncols):
+#     dict_names[sheet.cell(0, col_index).value] = col_index
+# return HttpResponse(sheet.cell(1, dict_names['FECHA'])
+# for row_index in range(1, sheet.nrows):
+#     try:
+# a1 = sheet.cell_value(rowx=row_index, colx=dict_names['FECHA'])
+# try:
+#     fecha = datetime(*xlrd.xldate_as_tuple(a1, book.datemode))
+# except:
+#     fecha = None
+# centro = CentroMDB.objects.get(code_mdb=str(int(sheet.cell(row_index, dict_names['CENTRO']).value)))
+# datetime.strptime(sheet.cell(row_index, dict_names['FECHA']).value,
+#                   '%d/%m/%Y')
+# t = TareaInspeccion.objects.create(ronda_centro=carga.ronda,
+#                                    localizacion=str(
+#                                        sheet.cell(row_index, dict_names['LOCALIZACIÓN']).value),
+#                                    nivel=str(sheet.cell(row_index, dict_names['NIVEL']).value),
+#                                    actuacion=str(sheet.cell(row_index, dict_names['ACTUACIÓN']).value),
+#                                    realizada=True,
+#                                    inspector_mdb=str(
+#                                        int(sheet.cell(row_index, dict_names['Id INSPECTORES']).value)),
+#                                    fecha=fecha,
+#                                    sector=str(sheet.cell(row_index, dict_names['SECTOR']).value),
+#                                    centro_mdb=centro,
+#                                    colaboracion=str(
+#                                        sheet.cell(row_index, dict_names['Especificar colaboración']).value),
+#                                    participacion=str(
+#                                        sheet.cell(row_index, dict_names['PARTICIPACIÓN']).value),
+#                                    funcion=str(
+#                                        sheet.cell(row_index, dict_names['FUNCIÓN INSPECTORA']).value),
+#                                    tipo=str(sheet.cell(row_index, dict_names['TIPO DE ACTUACIÓN']).value),
+#                                    asunto=str(sheet.cell(row_index, dict_names['TEMA']).value),
+#                                    objeto=str(sheet.cell(row_index, dict_names['OBJETO']).value),
+#                                    )
+# except:
+#     errores += ', ' + str(sheet.cell(row_index, dict_names['Id']).value)
+# carga.cargado = True
+# carga.save()
+# return HttpResponse(errores)
 
 
 # @permiso_required('acceso_informes_ie')
@@ -554,7 +635,7 @@ def carga_masiva_inspeccion(request):
             from inspeccion_educativa.models import INSPECTORES_GAUSER
             logger.info('Carga de archivo de tipo: ' + request.FILES['file_xls_mdb'].content_type)
             carga = CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_xls_mdb'],
-                                       tipo='CENTROSRACIMA', g_e=g_e, cargado=True)
+                                               tipo='CENTROSRACIMA', g_e=g_e, cargado=True)
             f = carga.fichero.read()
             import xlrd
             book = xlrd.open_workbook(file_contents=f)
@@ -575,41 +656,44 @@ def carga_masiva_inspeccion(request):
                 centro = CentroMDB.objects.get(code_mdb=str(int(sheet.cell(row_index, dict_names['CENTRO']).value)))
                 # datetime.strptime(sheet.cell(row_index, dict_names['FECHA']).value,
                 #                   '%d/%m/%Y')
-                t = TareaInspeccion.objects.create(ronda_centro=carga.ronda,
-                                                   localizacion=str(
-                                                       sheet.cell(row_index, dict_names['LOCALIZACIÓN']).value),
-                                                   nivel=str(sheet.cell(row_index, dict_names['NIVEL']).value),
-                                                   actuacion=str(
-                                                       sheet.cell(row_index, dict_names['ACTUACIÓN']).value),
-                                                   realizada=True,
-                                                   inspector_mdb=str(
-                                                       int(sheet.cell(row_index,
-                                                                      dict_names['Id INSPECTORES']).value)),
-                                                   fecha=fecha,
-                                                   sector=str(sheet.cell(row_index, dict_names['SECTOR']).value),
-                                                   centro_mdb=centro,
-                                                   colaboracion=str(
-                                                       sheet.cell(row_index,
-                                                                  dict_names['Especificar colaboración']).value),
-                                                   participacion=str(
-                                                       sheet.cell(row_index, dict_names['PARTICIPACIÓN']).value),
-                                                   funcion=str(
-                                                       sheet.cell(row_index,
-                                                                  dict_names['FUNCIÓN INSPECTORA']).value),
-                                                   tipo=str(sheet.cell(row_index,
-                                                                       dict_names['TIPO DE ACTUACIÓN']).value),
-                                                   asunto=str(sheet.cell(row_index, dict_names['TEMA']).value),
-                                                   objeto=str(sheet.cell(row_index, dict_names['OBJETO']).value),
-                                                   )
-
-                # crear_aviso(request, aceptado=False, INSPECTORES_GAUSER[t.inspector_mdb])
-                username = INSPECTORES_GAUSER[t.inspector_mdb]
                 try:
-                    ge = Gauser_extra.objects.get(ronda=g_e.ronda, gauser__username=username)
+                    TareaInspeccion.objects.get(clave_ex=sheet.cell(row_index, dict_names['Id']).value)
                 except:
-                    ge = None
-                InspectorTarea.objects.create(tarea=t, inspector=ge, rol='1', permiso='rwx')
+                    t = TareaInspeccion.objects.create(ronda_centro=carga.ronda,
+                                                       clave_ex=sheet.cell(row_index, dict_names['Id']).value,
+                                                       localizacion=str(
+                                                           sheet.cell(row_index, dict_names['LOCALIZACIÓN']).value),
+                                                       nivel=str(sheet.cell(row_index, dict_names['NIVEL']).value),
+                                                       actuacion=str(
+                                                           sheet.cell(row_index, dict_names['ACTUACIÓN']).value),
+                                                       realizada=True,
+                                                       inspector_mdb=str(
+                                                           int(sheet.cell(row_index,
+                                                                          dict_names['Id INSPECTORES']).value)),
+                                                       fecha=fecha,
+                                                       sector=str(sheet.cell(row_index, dict_names['SECTOR']).value),
+                                                       centro_mdb=centro,
+                                                       colaboracion=str(
+                                                           sheet.cell(row_index,
+                                                                      dict_names['Especificar colaboración']).value),
+                                                       participacion=str(
+                                                           sheet.cell(row_index, dict_names['PARTICIPACIÓN']).value),
+                                                       funcion=str(
+                                                           sheet.cell(row_index,
+                                                                      dict_names['FUNCIÓN INSPECTORA']).value),
+                                                       tipo=str(sheet.cell(row_index,
+                                                                           dict_names['TIPO DE ACTUACIÓN']).value),
+                                                       asunto=str(sheet.cell(row_index, dict_names['TEMA']).value),
+                                                       objeto=str(sheet.cell(row_index, dict_names['OBJETO']).value),
+                                                       )
 
+                    # crear_aviso(request, aceptado=False, INSPECTORES_GAUSER[t.inspector_mdb])
+                    username = INSPECTORES_GAUSER[t.inspector_mdb]
+                    try:
+                        ge = Gauser_extra.objects.get(ronda=g_e.ronda, gauser__username=username)
+                    except:
+                        ge = None
+                    InspectorTarea.objects.create(tarea=t, inspector=ge, rol='1', permiso='rwx')
 
     return render(request, "carga_masiva_inspeccion.html",
                   {
@@ -617,4 +701,3 @@ def carga_masiva_inspeccion(request):
                       'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
-

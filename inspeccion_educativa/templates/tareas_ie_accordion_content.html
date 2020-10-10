@@ -1,195 +1,245 @@
 {% load entidades_extras %}
-<div class="row">
-    <div class="columns large-4">
-        {% if instarea.inspector == g_e and not instarea.tarea.realizada %}
-            <label><b>Inspector</b><select class="selector" data-campo="inspector_mdb" data-id="{{ instarea.id }}">
-                <option value="">---------</option>
-                {% for i in inspectores %}
-                    <option value="{{ i.0 }}" {% if instarea.tarea.inspector_mdb == i.0 %}selected{% endif %}>{{ i.1 }}</option>
-                {% endfor %}
-            </select></label>
-        {% else %}
-            <label><b>Inspector </b></label> {{ instarea.tarea.get_inspector_mdb_display }}
-        {% endif %}
+{% load inspeccion_educativa_extras %}
+{% if instarea|permiso_instarea_w:g_e %}
+    <div class="row">
+        <div class="columns large-12">
+            {% if instarea.tarea.creador.gauser == g_e.gauser or g_e|has_permiso:'borra_cualquier_tarea_ie' %}
+                <a class="button alert borrar_tarea_ie right" data-id="{{ instarea.id }}">
+                    <i class="fa fa-trash-o"></i> Borrar</a>
+            {% else %}
+                <a class="button secondary right" title="No tienes permisos para borrar la actuación">
+                    <i class="fa fa-trash-o"></i> Borrar</a>
+            {% endif %}
+        </div>
     </div>
-    <div class="columns large-4">
-        {% if instarea.inspector == g_e and not instarea.tarea.realizada %}
+    <div class="row">
+        <div class="columns large-9">
+            <label><b>Asunto: </b><input type="text" class="update_texto" data-campo="asunto"
+                                         data-id="{{ instarea.id }}"
+                                         value="{{ instarea.tarea.asunto }}"
+                                         placeholder="Introduce aquí el nombre de la actuación"></label>
+        </div>
+        <div class="columns large-3">
             <label><b>Función inspectora</b><select class="selector" data-campo="funcion" data-id="{{ instarea.id }}">
                 <option value="">---------</option>
                 {% for f in funciones %}
-                    <option value="{{ f.0 }}" {% if instarea.tarea.funcion == f.0 %}selected{% endif %}>{{ f.1 }}</option>
+                    <option value="{{ f.0 }}"
+                            {% if instarea.tarea.funcion == f.0 %}selected{% endif %}>{{ f.1 }}</option>
                 {% endfor %}
             </select></label>
-        {% else %}
-            <label><b>Función inspectora </b></label> {{ instarea.tarea.get_funcion_display }}
-        {% endif %}
+        </div>
     </div>
-{#    <div class="columns large-2 end" style="text-align: center;">#}
-{#        <label><b>¿Finalizada?</b></label>#}
-{#        {% if g_e|has_permiso:'edita_cualquier_tarea_ie' %}#}
-{#            <b class="center"><a class="realizada" data-id="{{ instarea.id }}"#}
-{#                                 id="realizada{{ instarea.id }}">{% if instarea.tarea.realizada %}Sí{% else %}#}
-{#                No{% endif %}</a></b>#}
-{#        {% else %}#}
-{#            <b>{% if instarea.tarea.realizada %}Sí{% else %}No{% endif %}</b>#}
-{#        {% endif %}#}
-{#    </div>#}
-    <div class="columns large-2">
-        {% if not instarea.tarea.realizada %}
-            {% if instarea.inspector == g_e or g_e|has_permiso:'borra_cualquier_tarea_ie' %}
-                <a class="button alert borrar_tarea_ie" data-id="{{ instarea.id }}">
-                    <i class="fa fa-trash-o"></i> Borrar</a>
-            {% endif %}
-        {% endif %}
-    </div>
-</div>
-<div class="row">
-    <div class="columns large-12">
-        {% if instarea.inspector == g_e and not instarea.tarea.realizada %}
-        <label><b>Asunto: </b><input type="text" class="update_texto" data-campo="asunto" data-id="{{ instarea.id }}"
-                                     value="{{ instarea.tarea.asunto }}" placeholder="Introduce aquí el nombre de la actuación"></label>
-        {% else %}
-            <label><b>Asunto: </b></label> {{ instarea.tarea.asunto }}
-        {% endif %}
-    </div>
-</div>
 
-<div class="row">
-    <div class="columns large-3">
-        {% if instarea.inspector == g_e and not instarea.tarea.realizada %}
-                <label><b>Tipo de actuación</b><select class="selector" data-campo="tipo" data-id="{{ instarea.id }}">
-                    <option value="">---------</option>
-                    {% for t in tipos %}
-                        <option value="{{ t.0 }}" {% if instarea.tarea.tipo == t.0 %}selected{% endif %}>{{ t.1 }}</option>
-                    {% endfor %}
-                </select> </label>
-            {% else %}
-            <label><b>Tipo de actuación</b></label> {{ instarea.tarea.get_tipo_display }}
-        {% endif %}
-    </div>
-    <div class="columns large-3">
-        {% if instarea.inspector == g_e and not instarea.tarea.realizada %}
+    <div class="row">
+        <div class="columns large-3">
+            <label><b>Tipo de actuación</b><select class="selector" data-campo="tipo" data-id="{{ instarea.id }}">
+                <option value="">---------</option>
+                {% for t in tipos %}
+                    <option value="{{ t.0 }}"
+                            {% if instarea.tarea.tipo == t.0 %}selected{% endif %}>{{ t.1 }}</option>
+                {% endfor %}
+            </select> </label>
+        </div>
+        <div class="columns large-3">
             <label><b>Actuación</b><select class="selector" data-campo="actuacion" data-id="{{ instarea.id }}">
                 <option value="">---------</option>
                 {% for a in actuaciones %}
-                    <option value="{{ a.0 }}" {% if instarea.tarea.actuacion == a.0 %}selected{% endif %}>{{ a.1 }}</option>
+                    <option value="{{ a.0 }}"
+                            {% if instarea.tarea.actuacion == a.0 %}selected{% endif %}>{{ a.1 }}</option>
                 {% endfor %}
             </select></label>
-        {% else %}
-            <label><b>Actuación </b></label> {{ instarea.tarea.get_actuacion_display }}
-        {% endif %}
-    </div>
-    <div class="columns large-3">
-        {% if instarea.inspector == g_e and not instarea.tarea.realizada %}
+        </div>
+        <div class="columns large-3">
             <label><b>Sector</b><select class="selector" data-campo="sector" data-id="{{ instarea.id }}">
                 <option value="">---------</option>
                 {% for s in sectores %}
-                    <option value="{{ s.0 }}" {% if instarea.tarea.sector == s.0 %}selected{% endif %}>{{ s.1 }}</option>
+                    <option value="{{ s.0 }}"
+                            {% if instarea.tarea.sector == s.0 %}selected{% endif %}>{{ s.1 }}</option>
                 {% endfor %}
             </select></label>
-        {% else %}
-            <label><b>Sector </b></label> {{ instarea.tarea.get_sector_display }}
-        {% endif %}
-    </div>
-    <div class="columns large-3">
-        {% if instarea.inspector == g_e and not instarea.tarea.realizada %}
+        </div>
+        <div class="columns large-3">
             <label><b>Nivel</b><select class="selector" data-campo="nivel" data-id="{{ instarea.id }}">
                 <option value="">---------</option>
                 {% for n in niveles %}
-                    <option value="{{ n.0 }}" {% if instarea.tarea.nivel == n.0 %}selected{% endif %}>{{ n.1 }}</option>
+                    <option value="{{ n.0 }}"
+                            {% if instarea.tarea.nivel == n.0 %}selected{% endif %}>{{ n.1 }}</option>
                 {% endfor %}
             </select></label>
-        {% else %}
-            <label><b>Nivel </b></label> {{ instarea.tarea.get_nivel_display }}
-        {% endif %}
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="columns large-3">
-        {% if instarea.inspector == g_e and not instarea.tarea.realizada %}
+    <div class="row">
+        <div class="columns large-2">
             <label><b>Objeto</b><select class="selector" data-campo="objeto" data-id="{{ instarea.id }}">
                 <option value="">---------</option>
                 {% for o in objetos %}
-                    <option value="{{ o.0 }}" {% if instarea.tarea.objeto == o.0 %}selected{% endif %}>{{ o.1 }}</option>
+                    <option value="{{ o.0 }}"
+                            {% if instarea.tarea.objeto == o.0 %}selected{% endif %}>{{ o.1 }}</option>
                 {% endfor %}
             </select></label>
-        {% else %}
-            <label><b>Objeto </b></label> {{ instarea.tarea.get_objeto_display }}
-        {% endif %}
-    </div>
-    <div class="columns large-6">
-        {% if instarea.inspector == g_e and not instarea.tarea.realizada %}
-            <label><b>Centro</b><select class="centro" data-id="{{ instarea.id }}">
+        </div>
+        <div class="columns large-4">
+            <label><b>Centro MDB</b><select class="centro" data-id="{{ instarea.id }}" data-campo="centro_mdb">
+                <option value="">---------</option>
+                {% for c in centrosmdb %}
+                    <option value="{{ c.id }}"
+                            {% if instarea.tarea.centro_mdb.id == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+                {% endfor %}
+            </select></label>
+        </div>
+
+        <div class="columns large-4">
+            <label><b>Centro</b><select class="centro" data-id="{{ instarea.id }}" data-campo="centro">
                 <option value="">---------</option>
                 {% for c in centros %}
-                    <option value="{{ c.id }}" {% if instarea.tarea.centro_mdb.id == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+                    <option value="{{ c.id }}"
+                            {% if instarea.tarea.centro.id == c.id %}selected{% endif %}>{{ c.name }}</option>
                 {% endfor %}
             </select></label>
-        {% else %}
-            <label><b>Centro </b></label> {{ instarea.tarea.centro_mdb.nombre }}
-        {% endif %}
-    </div>
-    <div class="columns large-3">
-        {% if instarea.inspector == g_e and not instarea.tarea.realizada %}
-            <label><b>Localización</b><select class="selector" data-campo="localizacion" data-id="{{ instarea.id }}">
+        </div>
+
+        <div class="columns large-2">
+            <label><b>Localización</b><select class="selector" data-campo="localizacion"
+                                              data-id="{{ instarea.id }}">
                 <option value="">---------</option>
                 {% for l in localizaciones %}
-                    <option value="{{ l.0 }}" {% if instarea.tarea.localizacion == l.0 %}selected{% endif %}>{{ l.1 }}</option>
+                    <option value="{{ l.0 }}"
+                            {% if instarea.tarea.localizacion == l.0 %}selected{% endif %}>{{ l.1 }}</option>
                 {% endfor %}
             </select></label>
-        {% else %}
-            <label><b>Localización </b></label> {{ instarea.tarea.get_localizacion_display }}
-        {% endif %}
+        </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="columns large-12">
-        {% if instarea.inspector == g_e and not instarea.tarea.realizada %}
+    <div class="row">
+        <div class="columns large-12">
             <label><b>Observaciones</b>
                 <div contenteditable="true" class="ckeditor update_texto observaciones"
                      data-id="{{ instarea.id }}" data-campo="observaciones">
                     {% autoescape off %}{{ instarea.tarea.observaciones }}{% endautoescape %}
                 </div>
             </label>
-        {% else %}
-            <hr>
-            <label><b>Observaciones</b></label> {% autoescape off %}
-            {{ instarea.tarea.observaciones }}
-        {% endautoescape %}
-        {% endif %}
+        </div>
     </div>
-</div>
-{#<br>#}
-{#<div class="row">#}
-{#    <div class="columns large-12">#}
-{#        {% with permiso="controla_instareas_"|add:instarea.tarea.tipo %}#}
-{#            {% if g_e|has_permiso:permiso and not instarea.tarea.realizada %}#}
-{#                <label><b>Descripción de la solución</b>#}
-{#                    <div contenteditable="true" class="ckeditor describir_solucion"#}
-{#                         data-id="{{ instarea.id }}">#}
-{#                        {% autoescape off %}{{ instarea.describir_solucion }}{% endautoescape %}#}
-{#                    </div>#}
-{#                </label>#}
-{#            {% else %}#}
-{#                <label><b>Descripción de la solución</b></label> {% autoescape off %}#}
-{#                {{ instarea.describir_solucion }}#}
-{#            {% endautoescape %}#}
-{#            {% endif %}#}
-{#        {% endwith %}#}
-{#    </div>#}
-{#</div>#}
-{#<br>#}
-{#{% if instarea.inspector == g_e and not instarea.comunicado_a_reparador %}#}
-{#<div class="row" id="enviar_mensaje{{ instarea.id }}">#}
-{#    <div class="columns large-12">#}
-{#        <b>Esta solicitud de reparación se borrará automáticamente si no pulsas "Aceptar"</b>#}
-{#    </div>#}
-{#    <div class="columns large-12">#}
-{#        <a class="button enviar_mensaje" data-id="{{ instarea.id }}">Aceptar</a>#}
-{#    </div>#}
-{#</div>#}
-{#{% endif %}#}
-<script>
-    $('select').select2();
-</script>
+
+    <div class="row" style="padding: 3px;">
+        <div class="columns large-12">
+            <label>Participantes en esta actuación: <a class="add_participante right"
+                                                       data-tarea="{{ instarea.tarea.id }}"><span class="label"><i
+                    class="fa fa-plus"></i> Añadir participante</span> </a>
+            </label>
+        </div>
+    </div>
+    <div class="row" style="padding-bottom: 2px;">
+        <div class="columns large-12" id="div_asistentes{{ instarea.tarea.id }}">
+            <table style="width: 100%">
+                <thead>
+                <tr>
+                    <th>Inspector</th>
+                    <th>Participación</th>
+                    <th>Tipo de permiso</th>
+                    <th>¿Borrar?</th>
+                </tr>
+                </thead>
+                <tbody id="tbodypermisos{{ instarea.tarea.id }}">
+                {% include "tareas_ie_accordion_content_tr.html" %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        $('select').select2({placeholder: "Escribe parte del nombre para buscar coincidencias"});
+    </script>
+{% else %}
+    <div class="row">
+        <div class="columns large-12">
+            {% if instarea.tarea.creador.gauser == g_e.gauser or g_e|has_permiso:'borra_cualquier_tarea_ie' %}
+                <a class="button alert borrar_tarea_ie right small" data-id="{{ instarea.id }}">
+                    <i class="fa fa-trash-o"></i> Borrar</a>
+            {% else %}
+                <a class="button secondary right small" title="No tienes permisos para borrar la actuación">
+                    <i class="fa fa-trash-o"></i> Borrar</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-9">
+            <label><b>Asunto: </b></label> {{ instarea.tarea.asunto }}
+        </div>
+        <div class="columns large-3">
+            <label><b>Función inspectora </b></label> {{ instarea.tarea.get_funcion_display }}
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="columns large-3">
+            <label><b>Tipo de actuación</b></label> {{ instarea.tarea.get_tipo_display }}
+        </div>
+        <div class="columns large-3">
+            <label><b>Actuación </b></label> {{ instarea.tarea.get_actuacion_display }}
+        </div>
+        <div class="columns large-3">
+            <label><b>Sector </b></label> {{ instarea.tarea.get_sector_display }}
+        </div>
+        <div class="columns large-3">
+            <label><b>Nivel </b></label> {{ instarea.tarea.get_nivel_display }}
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="columns large-3">
+            <label><b>Objeto </b></label> {{ instarea.tarea.get_objeto_display }}
+        </div>
+        {% if instarea.tarea.centro %}
+            <div class="columns large-6">
+                <label><b>Centro </b></label> {{ instarea.tarea.centro.name }}
+            </div>
+        {% else %}
+            <div class="columns large-6">
+                <label><b>Centro (MDB) </b></label> {{ instarea.tarea.centro_mdb.nombre }}
+            </div>
+        {% endif %}
+
+        <div class="columns large-3">
+            <label><b>Localización </b></label> {{ instarea.tarea.get_localizacion_display }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="columns large-12">
+            <hr>
+            <label><b>Observaciones</b></label>
+            {% if instarea.tarea.observaciones %}
+                {% autoescape off %}
+                    {{ instarea.tarea.observaciones }}
+                {% endautoescape %}
+            {% else %}
+                No se han hecho observaciones
+            {% endif %}
+        </div>
+    </div>
+    <hr>
+    <div class="row" style="padding: 3px;">
+        <div class="columns large-12">
+            <label>Participantes en esta actuación:
+            </label>
+        </div>
+    </div>
+    <div class="row" style="padding-bottom: 2px;">
+        <div class="columns large-12">
+            <table style="width: 100%">
+                <thead>
+                <tr>
+                    <th>Inspector</th>
+                    <th>Participación</th>
+                    <th>Tipo de permiso</th>
+                    <th>¿Borrar?</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% include "tareas_ie_accordion_content_tr.html" %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endif %}

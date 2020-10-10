@@ -1596,14 +1596,46 @@ def organigrama(request):
             except:
                 return JsonResponse({'ok': False})
         elif action == 'del_cargo' and g_e.has_permiso('borra_perfiles'):
-            cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
-            id = cargo.id
-            cargo.delete()
-            return HttpResponse(id)
+            try:
+                cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
+                id = cargo.id
+                cargo.delete()
+                return JsonResponse({'ok': True, 'id': id})
+            except:
+                return JsonResponse({'ok': False})
         elif action == 'add_cargo' and g_e.has_permiso('crea_perfiles'):
             cargo = Cargo.objects.create(entidad=g_e.ronda.entidad, cargo='Nuevo cargo', nivel=6)
             data = render_to_string("accordion_cargo.html", {'cargo': cargo})
             return HttpResponse(data)
+        elif action == 'copiar_cargo_sin' and g_e.has_permiso('crea_perfiles'):
+            try:
+                cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
+                permisos = cargo.permisos.all()
+                cargo.pk = None
+                cargo.cargo = cargo.cargo + ' (copia)'
+                cargo.save()
+                cargo.permisos.add(*permisos)
+                html = render_to_string("accordion_cargo.html", {'cargo': cargo})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'copiar_cargo_con' and g_e.has_permiso('crea_perfiles'):
+            try:
+                cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
+                usuarios = usuarios_ronda(g_e.ronda, cargos=[cargo])
+                permisos = cargo.permisos.all()
+                cargo.pk = None
+                cargo.cargo = cargo.cargo + ' (copia)'
+                cargo.save()
+                cargo.permisos.add(*permisos)
+                for u in usuarios:
+                    u.cargos.add(cargo)
+                html = render_to_string("accordion_cargo.html", {'cargo': cargo})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+
+
 
     cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad).order_by('nivel')
     menus = Menu.objects.filter(entidad=g_e.ronda.entidad, menu_default__tipo='Accesible')

@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+<head>
+    {#    <meta name="pdfkit-page-size" content="A4"/>#}
+    {#    <meta name="pdfkit-orientation"#}
+    {#          content="{% if options.orientation %}{{ options.orientation }}{% else %}Portrait{% endif %}"/>#}
+    {#    <meta name="pdfkit-margin-top"#}
+    {#          content="{% if options.margin-top %}{{ options.margin-top }}{% else %}2cm{% endif %}"/>#}
+    {#    <meta name="pdfkit-margin-right"#}
+    {#    content="{% if options.margin-right %}{{ options.margin-right }}{% else %}2cm{% endif %}"/>#}
+    {#    <meta name="pdfkit-margin-bottom"#}
+    {#    content="{% if options.margin-bottom %}{{ options.margin-bottom }}{% else %}2cm{% endif %}"/>#}
+    {#    <meta name="pdfkit-margin-left"#}
+    {#    content="{% if options.margin-left %}{{ options.margin-left }}{% else %}2cm{% endif %}"/>#}
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>{{ title }}</title>
+    <style>
+
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 8pt;
+            text-align: justify;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+        .pagebreak {
+            page-break-before: always;
+        }
+
+        {# Las siguientes tres líneas de estilo son para conseguir que la cabecera de la tabla no se solape #}
+        {# con el texto de la primera fila de cada página. Esta información ha sido obtenida de: #}
+        {# https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2367 #}
+        thead {
+            display: table-header-group
+        }
+
+        tfoot {
+            display: table-row-group
+        }
+
+        tr {
+            page-break-inside: avoid
+        }
+    </style>
+</head>
+<body>
+<table style="width: 100%">
+    <thead>
+    <tr>
+        <th>Fecha</th>
+        <th>Centro</th>
+        <th>Localidad</th>
+        <th>Lugar</th>
+        <th>Act.</th>
+        <th>Nivel</th>
+        <th>Obj.</th>
+        <th>Asunto</th>
+        <th>Tipo</th>
+        <th>Func.</th>
+        <th>Participantes</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for i in instareas %}
+        <tr>
+            <td>{{ i.tarea.fecha|date:'d-m-Y' }}</td>
+            <td>{% if i.tarea.centro %}{{ i.tarea.centro.name }}{% else %}
+                {{ i.tarea.get_centro_mdb_display }}{% endif %}</td>
+            <td>{{ i.tarea.centro.localidad }}</td>
+            <td>{{ i.tarea.localizacion }}</td>
+            <td>{{ i.tarea.actuacion }}</td>
+            <td>{{ i.tarea.nivel }}</td>
+            <td>{{ i.tarea.objeto }}</td>
+            <td>{{ i.tarea.asunto }}</td>
+            <td>{{ i.tarea.tipo }}</td>
+            <td>{{ i.tarea.funcion }}</td>
+            <td></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>
+

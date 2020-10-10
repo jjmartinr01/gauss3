@@ -1,41 +1,82 @@
 {% load entidades_extras %}
+{% load my_templatetags %}
 {% if buscadas %}
-    {% if tareas_ie|length == 1 %}
-        <b>Se ha encontrado {{ tareas_ie|length }} solicitud de actuación</b>
+    {% if exc_max %}
+        <b>Se han encontrado <span style="color:red;">{{ num_act }}</span> actuaciones que coinciden con la búsqueda.</b> <b style="color:red;">Solo
+            se muestran resultados con un número de coincidencias inferior a {{ max }}.</b>
     {% else %}
-        <b>Se han encontrado {{ tareas_ie|length }} solicitudes de actuación</b>
+        {% if num_act == 1 %}
+            <b>Se ha encontrado {{ num_act }} actuación que coincide con la búsqueda</b>
+        {% else %}
+            <b>Se han encontrado {{ num_act }} actuaciones que coinciden con la búsqueda</b>
+        {% endif %}
+        <a class="listado_normal right"><span class="label rounded">Volver al listado normal</span></a>
     {% endif %}
 {% endif %}
-{% for tarea_ie in tareas_ie %}
-    <input type="hidden" name="tareas_ie_seleccionadas" value="{{ tarea_ie.id }}">
+<dl class="accordion" data-accordion id="list_tareas_ie">
+    {% for tarea_ie in tareas_ie %}
+        <input type="hidden" name="tareas_ie_seleccionadas" value="{{ tarea_ie.id }}">
 
-    <dd class="accordion-navigation" id="accordion{{ tarea_ie.id }}"
-        style="border-bottom: dotted 1px black">
-        <a href="#panel{{ tarea_ie.id }}">
-            <i id="circle{{ tarea_ie.id }}" class="fa fa-plus-circle circle_icon"></i>
-            <b id="asunto{{ tarea_ie.id }}">{% if not tarea_ie.tarea.asunto %}
-                <span style="color:red">Nueva actuación de Inspección Educativa</span>
-            {% else %}{{ tarea_ie.tarea.asunto }}{% endif %}</b> -- <span
-                id="tipo{{ tarea_ie.id }}">{{ tarea_ie.tarea.get_tipo_display }}</span> -- <span
-                id="localizacion{{ tarea_ie.id }}">{{ tarea_ie.tarea.get_localizacion_display }}</span>
-            ({{ tarea_ie.tarea.fecha|date:"d-m-Y" }})
-            <span style="color:green;{% if not tarea_ie.resuelta %}display:none;{% endif %}"
-                  id="ss{{ tarea_ie.id }}"
-                  title="Actuación de Inspección finalizada"><i class="fa fa-thumbs-up"></i> </span>
-            <span style="color:red;{% if tarea_ie.resuelta %}display:none;{% endif %}" id="ns{{ tarea_ie.id }}"
-                  title="Actuación de Inspección pendiente de finalizar"><i class="fa fa-warning"></i> </span>
-            {% if tarea_ie.inspector.gauser == g_e.gauser %}
-                <span style="color: green; padding-right: 20px;"><i
-                        class="fa fa-user"></i> {{ tarea_ie.inspector.gauser.get_full_name }}</span>
-            {% else %}
-                <span style="color: red; padding-right: 20px;"><i class="fa fa-user"></i> {{ tarea_ie.inspector.gauser.get_full_name }}</span>
-            {% endif %}
-            {% if buscadas %}
-                <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
-            {% endif %}
-        </a>
+        <dd class="accordion-navigation" id="accordion{{ tarea_ie.id }}"
+            style="border-bottom: dotted 1px black">
+            <a href="#panel{{ tarea_ie.id }}">
+                <i id="circle{{ tarea_ie.id }}" class="fa fa-plus-circle circle_icon"></i>
+                <b id="asunto{{ tarea_ie.id }}">{% if not tarea_ie.tarea.asunto %}
+                    <span style="color:red">Nueva actuación de Inspección Educativa</span>
+                {% else %}{{ tarea_ie.tarea.asunto }}{% endif %}</b> -- <span
+                    id="tipo{{ tarea_ie.id }}">{{ tarea_ie.tarea.get_tipo_display }}</span> -- <span
+                    id="localizacion{{ tarea_ie.id }}">{{ tarea_ie.tarea.get_localizacion_display }}</span>
+                ({{ tarea_ie.tarea.fecha|date:"d-m-Y" }})
 
-        <div id="panel{{ tarea_ie.id }}" class="content accordion-tarea_ie" data-id="{{ tarea_ie.id }}">
+                {% if tarea_ie.inspector %}
+                    <span style="color: green; padding-right: 20px;"><i
+                            class="fa fa-user"></i> {{ tarea_ie.inspector.gauser.get_full_name }}</span>
+                {% else %}
+                    <span style="color: red; padding-right: 20px;"><i
+                            class="fa fa-user"></i> {{ tarea_ie.tarea.get_inspector_mdb_display }}</span>
+                {% endif %}
+                {% if buscadas %}
+                    <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
+                {% endif %}
+            </a>
+
+            <div id="panel{{ tarea_ie.id }}" class="content accordion-tarea_ie" data-id="{{ tarea_ie.id }}">
+            </div>
+        </dd>
+    {% endfor %}
+</dl>
+
+{% if pag %}
+    <br>
+    <div class="row">
+        <div class="columns large-12">
+            <ul class="pagination" role="menubar" aria-label="Pagination">
+                {% if tareas_ie.has_previous %}
+                    <li class="arrow">
+                        <a class="go_page" data-page="{{ tareas_ie.previous_page_number }}">&laquo; Anterior</a>
+                    </li>
+                {% else %}
+                    <li class="arrow unavailable" aria-disabled="true">
+                        <a class="go_page">&laquo; Anterior</a>
+                    </li>
+                {% endif %}
+                {% for page in tareas_ie.paginator.num_pages|number_range %}
+                    {% if page == tareas_ie.number %}
+                        <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
+                    {% else %}
+                        <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if tareas_ie.has_next %}
+                    <li class="arrow">
+                        <a class="go_page" data-page="{{ tareas_ie.next_page_number }}">Siguiente &raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="arrow unavailable" aria-disabled="true">
+                        <a class="go_page">Siguiente &raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
-    </dd>
-{% endfor %}
+    </div>
+{% endif %}

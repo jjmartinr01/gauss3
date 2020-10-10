@@ -6,6 +6,7 @@ from django.db import models
 from django.template import Context, Template
 from autenticar.models import Gauser
 from entidades.models import Entidad, Ronda, Gauser_extra
+from django.utils.timezone import now
 
 # Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
 # def update_fichero(instance, filename):
@@ -391,7 +392,7 @@ class CentroMDB(models.Model):
 class TareaInspeccion(models.Model):
     # entidad_inspectora = models.ForeignKey(Entidad, blank=True, null=True, on_delete=models.CASCADE, related_name="entidades_inspectoras")
     # centro_educativo  = models.ForeignKey(Entidad, blank=True, null=True, on_delete=models.CASCADE)
-    # inspector = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.CASCADE)
+    creador = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.CASCADE)
     ronda_centro = models.ForeignKey(Ronda, blank=True, null=True, on_delete=models.CASCADE)
     fecha = models.DateField("Fecha de realización", blank=True, null=True)
     sector = models.CharField("Sector", max_length=10, choices=SECTORES, blank=True)
@@ -406,10 +407,14 @@ class TareaInspeccion(models.Model):
     colaboracion = models.CharField("Especifica colaboración", max_length=300, blank=True)
     observaciones = models.TextField("Notas aclaratorias/Observaciones", blank=True, null=True)
     centro_mdb = models.ForeignKey(CentroMDB, null=True, blank=True, on_delete=models.CASCADE)
+    centro = models.ForeignKey(Entidad, null=True, blank=True, on_delete=models.SET_NULL)
     inspector_mdb = models.CharField("Inspector MDB", max_length=10, choices=INSPECTORES, blank=True)
     realizada = models.BooleanField("¿Está realizada?", default=False)
+    clave_ex = models.IntegerField("Id de la MDB para identificar tarea", default=0)
 
-    # ficheros = models.ManyToManyField(Fichero, related_name="adjuntos", blank=True)
+    def permiso(self, gauser):
+        return ''.join(list(self.inspectortarea_set.filter(inspector__gauser=gauser).values_list('permiso', flat=True)))
+
 
     def __str__(self):
         return '%s - %s - %s' % (self.fecha, self.ronda_centro, self.asunto)
@@ -427,6 +432,9 @@ class InspectorTarea(models.Model):
     tarea = models.ForeignKey(TareaInspeccion, blank=True, null=True, on_delete=models.CASCADE)
     rol = models.CharField("Rol del inspector", max_length=10, choices=ROLES, blank=True)
     permiso = models.CharField('Permisos sobre la tarea', max_length=15, choices=PERMISOS, default='r')
+
+    class Meta:
+        ordering = ['-tarea__fecha']
 
     def __str__(self):
         return '%s - %s - %s' % (self.permiso, self.inspector, self.tarea)
@@ -452,6 +460,7 @@ class VariantePII(models.Model):
     def __str__(self):
         return '%s - %s' % (self.plantilla, self.nombre)
 
+
 class InformeInspeccion(models.Model):
     inspector = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
     variante = models.ForeignKey(VariantePII, blank=True, null=True, on_delete=models.SET_NULL)
@@ -460,6 +469,7 @@ class InformeInspeccion(models.Model):
     asunto = models.CharField('Nombre del asunto', blank=True, null=True, default='', max_length=300)
     texto = models.TextField('Contenido del informe', blank=True, null=True, default='')
     modificado = models.DateField("Fecha de modificación", auto_now=True)
+    creado = models.DateField("Fecha de creación", default=now)
 
     @property
     def texto_procesado(self):
