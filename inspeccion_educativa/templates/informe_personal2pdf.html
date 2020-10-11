@@ -70,7 +70,7 @@
         <tr>
             <td>{{ i.tarea.fecha|date:'d-m-Y' }}</td>
             <td>{% if i.tarea.centro %}{{ i.tarea.centro.name }}{% else %}
-                {{ i.tarea.get_centro_mdb_display }}{% endif %}</td>
+                {{ i.tarea.centro_mdb.nombre }}{% endif %}</td>
             <td>{{ i.tarea.centro.localidad }}</td>
             <td>{{ i.tarea.localizacion }}</td>
             <td>{{ i.tarea.actuacion }}</td>
@@ -83,6 +83,14 @@
         </tr>
     {% endfor %}
     </tbody>
+</table>
+
+<br>
+<table style="width: 80%; alignment: right;">
+    <tr><td colspan="3">En {{ instareas.0.tarea.creador.ronda.entidad.localidad }} a {% now "d \d\e F \d\e Y" %},</td></tr>
+    <tr><td>VºBº EL/LA INSPECTOR/A COORDINADOR/A</td><td>&nbsp;</td><td>EL/LA INSPECTOR/A</td></tr>
+    <tr><td>&nbsp;</td><td></td><td></td></tr>
+    <tr><td>Fdo. ____________________________</td><td></td><td>Fdo. ____________________________</td></tr>
 </table>
 </body>
 </html>

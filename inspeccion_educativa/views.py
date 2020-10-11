@@ -42,7 +42,8 @@ def cargar_centros_mdb(request):
 
 def todos_lunes(ronda):
     d = ronda.inicio
-    dias_sumar = 7 - d.weekday() if (7 - d.weekday()) < 7 else 0 # Días a sumar para obtener el primer lunes de la ronda
+    dias_sumar = 7 - d.weekday() if (
+                                                7 - d.weekday()) < 7 else 0  # Días a sumar para obtener el primer lunes de la ronda
     lunes = d + timedelta(days=dias_sumar)  # First lunes
     fechas_lunes = []
     while lunes < ronda.fin:
@@ -50,7 +51,8 @@ def todos_lunes(ronda):
         fechas_lunes.append(lunes)
     return fechas_lunes
 
-# @permiso_required('acceso_tareas_ie')
+
+@permiso_required('acceso_tareas_ie')
 def tareas_ie(request):
     g_e = request.session["gauser_extra"]
     try:
@@ -114,37 +116,25 @@ def tareas_ie(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'update_realizada':
-            try:
-                itarea = InspectorTarea.objects.get(inspector__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
-                itarea.tarea.realizada = not itarea.tarea.realizada
-                itarea.tarea.save()
-                centros = CentroMDB.objects.all()
-                html = render_to_string('tareas_ie_accordion_content.html',
-                                        {'instarea': itarea, 'g_e': g_e, 'localizaciones': LOCALIZACIONES,
-                                         'objetos': OBJETOS, 'tipos': TIPOS, 'funciones': FUNCIONES,
-                                         'actuaciones': ACTUACIONES, 'niveles': NIVELES, 'sectores': SECTORES,
-                                         'centros': centros, 'inspectores': INSPECTORES})
-                # if reparacion.resuelta:
-                #     mensaje = u'El %s grabaste una incidencia de reparación en la que indicabas lo siguiente:<br><br><em>%s</em> <br>A fecha %s se ha indicado en GAUSS que %s ha solucionado la incidencia.<br> <strong>%s</strong><br>Gracias por tu atención' % (
-                #         reparacion.fecha_comunicado.strftime("%d-%m-%Y"), reparacion.describir_problema,
-                #         reparacion.fecha_solucion.strftime("%d-%m-%Y"), reparacion.reparador.gauser.get_full_name(),
-                #         reparacion.describir_solucion)
-                #     encolar_mensaje(emisor=g_e, receptores=[reparacion.detecta.gauser],
-                #                     asunto='Reparación solicitada realizada', html=mensaje,
-                #                     etiqueta='reparacion%s' % reparacion.id)
-                return JsonResponse({'ok': True, 'valor': ['No', 'Sí'][itarea.tarea.realizada],
-                                     'realizada': itarea.tarea.realizada, 'html': html})
-            except:
-                return JsonResponse({'ok': False})
+        # elif request.POST['action'] == 'update_realizada':
+        #     try:
+        #         itarea = InspectorTarea.objects.get(inspector__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
+        #         itarea.tarea.realizada = not itarea.tarea.realizada
+        #         itarea.tarea.save()
+        #         centros = CentroMDB.objects.all()
+        #         html = render_to_string('tareas_ie_accordion_content.html',
+        #                                 {'instarea': itarea, 'g_e': g_e, 'localizaciones': LOCALIZACIONES,
+        #                                  'objetos': OBJETOS, 'tipos': TIPOS, 'funciones': FUNCIONES,
+        #                                  'actuaciones': ACTUACIONES, 'niveles': NIVELES, 'sectores': SECTORES,
+        #                                  'centros': centros, 'inspectores': INSPECTORES})
+        #         return JsonResponse({'ok': True, 'valor': ['No', 'Sí'][itarea.tarea.realizada],
+        #                              'realizada': itarea.tarea.realizada, 'html': html})
+        #     except:
+        #         return JsonResponse({'ok': False})
         elif request.POST['action'] == 'update_texto':
             try:
                 itarea = InspectorTarea.objects.get(inspector__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
                 setattr(itarea.tarea, request.POST['campo'], request.POST['valor'])
-                # if len(reparacion.describir_problema) < 5:
-                #     reparacion.borrar = True
-                # else:
-                #     reparacion.borrar = False
                 itarea.tarea.save()
                 return JsonResponse({'ok': True})
             except:
@@ -216,7 +206,7 @@ def tareas_ie(request):
                 q_entidad = Q(inspector__ronda__entidad=g_e.ronda.entidad)
                 its = InspectorTarea.objects.filter(q_entidad, q_texto, q_inicio, q_fin, q_tipo)
                 num_act = its.count()
-                max = 100 # Número máximo de actuaciones a mostrar en una búsqueda
+                max = 100  # Número máximo de actuaciones a mostrar en una búsqueda
                 if num_act > max:
                     exc_max = True
                     its = InspectorTarea.objects.none()
@@ -229,8 +219,12 @@ def tareas_ie(request):
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'paginar_tareas_ie':
             try:
-                posibles_tareas_ie = InspectorTarea.objects.filter(Q(inspector=g_e))
-                posibles_tareas_ie = InspectorTarea.objects.all()
+                q1 = Q(tarea__fecha__gte=g_e.ronda.inicio, tarea__fecha__lte=g_e.ronda.fin)
+                if g_e.has_permiso('ve_cualquier_tarea_ie'):
+                    q2 = Q(tarea__creador__ronda__entidad=g_e.ronda.entidad)
+                else:
+                    q2 = Q(tarea__creador__gauser=g_e.gauser) | Q(inspector__gauser=g_e.gauser)
+                posibles_tareas_ie = InspectorTarea.objects.filter(q1 & q2)
                 paginator = Paginator(posibles_tareas_ie, 25)
                 tareas_ie = paginator.page(int(request.POST['page']))
                 html = render_to_string('tareas_ie_accordion.html', {'tareas_ie': tareas_ie, 'pag': True})
@@ -257,10 +251,12 @@ def tareas_ie(request):
             logger.info('%s, genera informe de inspección' % (g_e))
             return response
         if request.POST['action'] == 'crea_informe_semanal':
+            inspector = inspectores.get(id=request.POST['inspector_informe'])
             lunes = datetime.strptime(request.POST['semana'], '%d-%m-%Y')
             viernes = lunes + timedelta(days=4)
-            instareas = InspectorTarea.objects.filter(tarea__fecha__gte=lunes, tarea__fecha__lte=viernes)
-            fichero = 'Informe_%s_%s' % (str(g_e.ronda.entidad.code), g_e.id)
+            instareas = InspectorTarea.objects.filter(inspector=inspector, tarea__fecha__gte=lunes,
+                                                      tarea__fecha__lte=viernes)
+            fichero = 'Informe_%s_%s' % (str(g_e.ronda.entidad.code), inspector.gauser.username)
             texto_html = render_to_string('informe_personal2pdf.html', {'instareas': instareas, 'title': fichero})
             ruta = MEDIA_INSPECCION + '%s/' % g_e.ronda.entidad.code
             opciones = {
@@ -279,12 +275,13 @@ def tareas_ie(request):
     logger.info('Entra en ' + request.META['PATH_INFO'])
     # Para evitar que se añadan participaciones/colaboraciones vacías en las tareas de inspección
     # borramos las que no tienen asociado un inspector.
-    # InspectorTarea.objects.filter(tarea__creador=g_e, inspector__isnull=True).delete()
-    fecha_min = localdate() - timedelta(2)
-    fecha_max = localdate() + timedelta(7)
-    q = Q(tarea__realizada=False) | Q(tarea__fecha__gte=fecha_min, tarea__fecha__lte=fecha_max)
-    posibles_tareas_ie = InspectorTarea.objects.filter(Q(inspector=g_e) & q)
-    posibles_tareas_ie = InspectorTarea.objects.all()
+    InspectorTarea.objects.filter(tarea__creador=g_e, inspector__isnull=True).delete()
+    q1 = Q(tarea__fecha__gte=g_e.ronda.inicio, tarea__fecha__lte=g_e.ronda.fin)
+    if g_e.has_permiso('ve_cualquier_tarea_ie'):
+        q2 = Q(tarea__creador__ronda__entidad=g_e.ronda.entidad)
+    else:
+        q2 = Q(tarea__creador__gauser=g_e.gauser) | Q(inspector__gauser=g_e.gauser)
+    posibles_tareas_ie = InspectorTarea.objects.filter(q1 & q2)
     paginator = Paginator(posibles_tareas_ie, 25)
     tareas_ie = paginator.page(1)
     lunes = todos_lunes(g_e.ronda)
@@ -302,8 +299,12 @@ def tareas_ie(request):
              {'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'Informe',
               'title': 'Generar informe con las reparaciones de la entidad',
               'permiso': 'genera_informe_tareas_ie'},
+             {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar',
+              'title': 'Buscar actuaciones de Inspección',
+              'permiso': 'acceso_tareas_ie'},
              ),
-        'g_e': g_e, 'tareas_ie': tareas_ie, 'tipos': TIPOS, 'pag': 1, 'formname': 'tareas_ie', 'semanas': semanas})
+        'g_e': g_e, 'tareas_ie': tareas_ie, 'tipos': TIPOS, 'pag': 1, 'formname': 'tareas_ie', 'semanas': semanas,
+        'inspectores': inspectores})
 
 
 # def carga_actuaciones_ie(request):
@@ -617,7 +618,7 @@ def plantillas_ie(request):
     })
 
 
-# @permiso_required('acceso_carga_masiva_inspeccion')
+@permiso_required('acceso_carga_masiva_inspeccion')
 def carga_masiva_inspeccion(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':
@@ -685,12 +686,14 @@ def carga_masiva_inspeccion(request):
                                                                            dict_names['TIPO DE ACTUACIÓN']).value),
                                                        asunto=str(sheet.cell(row_index, dict_names['TEMA']).value),
                                                        objeto=str(sheet.cell(row_index, dict_names['OBJETO']).value),
+                                                       creador=g_e
                                                        )
-
                     # crear_aviso(request, aceptado=False, INSPECTORES_GAUSER[t.inspector_mdb])
                     username = INSPECTORES_GAUSER[t.inspector_mdb]
                     try:
                         ge = Gauser_extra.objects.get(ronda=g_e.ronda, gauser__username=username)
+                        t.creador = ge
+                        t.save()
                     except:
                         ge = None
                     InspectorTarea.objects.create(tarea=t, inspector=ge, rol='1', permiso='rwx')

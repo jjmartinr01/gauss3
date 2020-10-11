@@ -385,6 +385,9 @@ class CentroMDB(models.Model):
     nombre = models.CharField("Nombre MDB", max_length=210, null=True, blank=True)
     localidad = models.CharField("Localidad MDB", max_length=30, null=True, blank=True)
 
+    class Meta:
+        verbose_name_plural = 'Centros MDB'
+
     def __str__(self):
         return '%s (%s) - %s - %s' % (self.nombre, self.code, self.code_mdb, self.localidad)
 
@@ -415,6 +418,9 @@ class TareaInspeccion(models.Model):
     def permiso(self, gauser):
         return ''.join(list(self.inspectortarea_set.filter(inspector__gauser=gauser).values_list('permiso', flat=True)))
 
+    class Meta:
+        verbose_name_plural = 'Actuaciones de Inspección'
+
 
     def __str__(self):
         return '%s - %s - %s' % (self.fecha, self.ronda_centro, self.asunto)
@@ -435,6 +441,7 @@ class InspectorTarea(models.Model):
 
     class Meta:
         ordering = ['-tarea__fecha']
+        verbose_name_plural = 'Inspectores asociados con Tareas/Actuaciones'
 
     def __str__(self):
         return '%s - %s - %s' % (self.permiso, self.inspector, self.tarea)
@@ -446,6 +453,9 @@ class PlantillaInformeInspeccion(models.Model):
     destinatario = models.TextField('Destinatario del informe', blank=True, null=True, default='')
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 
+    class Meta:
+        verbose_name_plural = 'Plantillas de Informes de Inspección'
+
     def __str__(self):
         return '%s - %s' % (self.asunto, self.creador)
 
@@ -456,6 +466,7 @@ class VariantePII(models.Model):
 
     class Meta:
         ordering = ['plantilla__id', 'id',]
+        verbose_name_plural = 'Modelos pertenecientes a plantillas de informes'
 
     def __str__(self):
         return '%s - %s' % (self.plantilla, self.nombre)
@@ -489,6 +500,9 @@ class InformeInspeccion(models.Model):
                 variable.delete()
         return self.variableii_set.all()
 
+    class Meta:
+        verbose_name_plural = 'Informes de Inspección'
+
     def __str__(self):
         return '%s - %s' % (self.inspector, self.asunto)
 
@@ -497,6 +511,9 @@ class VariableII(models.Model):
     informe = models.ForeignKey(InformeInspeccion, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre de la variable', blank=True, null=True, default='', max_length=50)
     valor = models.CharField('Valor de la variable', blank=True, null=True, default='', max_length=150)
+
+    class Meta:
+        verbose_name_plural = 'Variables asociadas a un informe'
 
     def __str__(self):
         return '%s - %s - %s' % (self.informe, self.nombre, self.valor)

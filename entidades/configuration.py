@@ -87,6 +87,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 8,
      'parent': 'acceso_gestion_entidad'
+     },
+    {'code_menu': 'acceso_doc_configuration',
+     'texto_menu': 'Configuración de documentos',
+     'href': 'doc_configuration',  # 'rondas_entidad'
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 9,
+     'parent': 'acceso_gestion_entidad'
      }
 ]
 # Se añaden otros permisos para el usuario

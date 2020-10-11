@@ -12,20 +12,28 @@ register = Library()
 def texto2nombre(s):
     return s.title().replace('_', ' ')
 
+
 @register.filter
 def permiso_instarea_w(instarea, g_e):
+    c1 = instarea.tarea.creador.gauser == g_e.gauser
+    c2 = 'w' in instarea.tarea.permiso(g_e.gauser)
+    c3 = g_e.has_permiso('edita_cualquier_tarea_ie')
     try:
-        if instarea.tarea.creador.gauser == g_e.gauser or 'w' in instarea.tarea.permiso(g_e.gauser):
+        if c1 or c2 or c3:
             return True
         else:
             return False
     except:
         return False
 
+
 @register.filter
 def permiso_instarea_x(instarea, g_e):
+    c1 = instarea.tarea.creador.gauser == g_e.gauser
+    c2 = 'x' in instarea.tarea.permiso(g_e.gauser)
+    c3 = g_e.has_permiso('borra_cualquier_tarea_ie')
     try:
-        if instarea.tarea.creador.gauser == g_e.gauser or 'x' in instarea.tarea.permiso(g_e.gauser):
+        if c1 or c2 or c3:
             return True
         else:
             return False

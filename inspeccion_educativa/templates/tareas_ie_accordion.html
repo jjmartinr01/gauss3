@@ -2,8 +2,9 @@
 {% load my_templatetags %}
 {% if buscadas %}
     {% if exc_max %}
-        <b>Se han encontrado <span style="color:red;">{{ num_act }}</span> actuaciones que coinciden con la búsqueda.</b> <b style="color:red;">Solo
-            se muestran resultados con un número de coincidencias inferior a {{ max }}.</b>
+        <b>Se han encontrado <span style="color:red;">{{ num_act }}</span> actuaciones que coinciden con la
+            búsqueda.</b> <b style="color:red;">Solo
+        se muestran resultados con un número de coincidencias inferior a {{ max }}.</b>
     {% else %}
         {% if num_act == 1 %}
             <b>Se ha encontrado {{ num_act }} actuación que coincide con la búsqueda</b>
@@ -47,36 +48,38 @@
 </dl>
 
 {% if pag %}
-    <br>
-    <div class="row">
-        <div class="columns large-12">
-            <ul class="pagination" role="menubar" aria-label="Pagination">
-                {% if tareas_ie.has_previous %}
-                    <li class="arrow">
-                        <a class="go_page" data-page="{{ tareas_ie.previous_page_number }}">&laquo; Anterior</a>
-                    </li>
-                {% else %}
-                    <li class="arrow unavailable" aria-disabled="true">
-                        <a class="go_page">&laquo; Anterior</a>
-                    </li>
-                {% endif %}
-                {% for page in tareas_ie.paginator.num_pages|number_range %}
-                    {% if page == tareas_ie.number %}
-                        <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
+    {% if tareas_ie.paginator.num_pages > 1 %}
+        <br>
+        <div class="row">
+            <div class="columns large-12">
+                <ul class="pagination" role="menubar" aria-label="Pagination">
+                    {% if tareas_ie.has_previous %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ tareas_ie.previous_page_number }}">&laquo; Anterior</a>
+                        </li>
                     {% else %}
-                        <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">&laquo; Anterior</a>
+                        </li>
                     {% endif %}
-                {% endfor %}
-                {% if tareas_ie.has_next %}
-                    <li class="arrow">
-                        <a class="go_page" data-page="{{ tareas_ie.next_page_number }}">Siguiente &raquo;</a>
-                    </li>
-                {% else %}
-                    <li class="arrow unavailable" aria-disabled="true">
-                        <a class="go_page">Siguiente &raquo;</a>
-                    </li>
-                {% endif %}
-            </ul>
+                    {% for page in tareas_ie.paginator.num_pages|number_range %}
+                        {% if page == tareas_ie.number %}
+                            <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
+                        {% else %}
+                            <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if tareas_ie.has_next %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ tareas_ie.next_page_number }}">Siguiente &raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">Siguiente &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
-    </div>
+    {% endif %}
 {% endif %}

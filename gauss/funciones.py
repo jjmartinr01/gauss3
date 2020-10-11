@@ -69,7 +69,7 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
     logger.info('html_to_pdf')
     fichero_html = media + fichero + '.html'
     fichero_pdf = media + fichero + '.pdf'
-    docconf, c = DocConfEntidad.objects.get_or_create(entidad=request.session['gauser_extra'].ronda.entidad)
+    docconf, c = DocConfEntidad.objects.get_or_create(entidad=request.session['gauser_extra'].ronda.entidad, predeterminado=True)
 
     if not os.path.exists(os.path.dirname(fichero_pdf)):
         os.makedirs(os.path.dirname(fichero_pdf))
@@ -158,7 +158,7 @@ def html_to_pdf_options(request, html, opciones, fichero='borrar', title='Docume
     :return: El fichero pdf creado
     """
     fichero_pdf = media + fichero + '.pdf'
-    docconf, c = DocConfEntidad.objects.get_or_create(entidad=request.session['gauser_extra'].ronda.entidad)
+    docconf, c = DocConfEntidad.objects.get_or_create(entidad=request.session['gauser_extra'].ronda.entidad, predeterminado=True)
 
     if not os.path.exists(os.path.dirname(fichero_pdf)):
         os.makedirs(os.path.dirname(fichero_pdf))

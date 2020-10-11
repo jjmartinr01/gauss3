@@ -922,7 +922,7 @@ def configura_rondas(request):
 @permiso_required('acceso_datos_entidad')
 def datos_entidad(request):
     g_e = request.session["gauser_extra"]
-    docConf, c = DocConfEntidad.objects.get_or_create(entidad=g_e.ronda.entidad)
+    docConf, c = DocConfEntidad.objects.get_or_create(entidad=g_e.ronda.entidad, predeterminado=True)
     if request.method == 'POST':
         action = request.POST['action']
         if action == 'update_cabecera_html' and request.is_ajax():
@@ -935,6 +935,7 @@ def datos_entidad(request):
                 f.close()
                 return JsonResponse({'ok': True})
             except:
+                return JsonResponse({'ok': False})
                 return JsonResponse({'ok': False})
         elif action == 'update_pie_html' and request.is_ajax():
             try:
@@ -950,7 +951,7 @@ def datos_entidad(request):
         elif action == 'update_campo' and request.is_ajax():
             try:
                 mensaje = ''
-                objeto = docConf if request.POST['objeto'] == 'docconfentidad' else g_e.ronda.entidad
+                objeto = docConf if request.POST['objeto'] == 'DocConfEntidad' else g_e.ronda.entidad
                 valor = request.POST['valor']
                 campo = request.POST['campo']
                 if campo == 'iban' and len(valor) == 24:
@@ -2435,6 +2436,44 @@ def crealinkge(request):
                       'iconos':
                           ({'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Ayuda',
                             'title': 'Ayuda sobre está página', 'permiso': 'libre'},),
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+@permiso_required('acceso_doc_configuration')
+def doc_configuration(request):
+    g_e = request.session['gauser_extra']
+    dces = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)
+    try:
+        DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+    except:
+        try:
+            dce = dces[0]
+            dce.predeterminado = True
+            dce.save()
+        except:
+            dce = DocConfEntidad.objects.create(entidad=g_e.ronda.entidad, predeterminado=True)
+            dces = [dce]
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'crea_informe_ie':
+            if g_e.has_permiso('crea_informes_ie') or True:  # El permiso da igual
+                dce = DocConfEntidad.objects.create(entidad=g_e.ronda.entidad)
+                html = render_to_string('doc_configuration_accordion.html', {'docs_conf': [dce], 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            else:
+                JsonResponse({'ok': False})
+        elif request.POST['action'] == 'open_accordion':
+            try:
+                dce = dces.get(id=request.POST['id'])
+                html = render_to_string('doc_configuration_accordion_content.html', {'doc_conf': dce, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+
+
+    return render(request, "doc_configuration.html",
+                  {
+                      'formname': 'doc_configuration',
+                      'docs_conf': dces,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 

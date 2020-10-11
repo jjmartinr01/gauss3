@@ -139,42 +139,42 @@
         <div class="row">
             <div class="columns large-3">
                 <label>Margen sup.
-                    <input type="text" data-campo="margintop" value="{{ entidad.docconfentidad.margintop }}"
-                           data-objeto="docconfentidad" class="campo_char"></label>
+                    <input type="text" data-campo="margintop" value="{{ entidad.docconf.margintop }}"
+                           data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{entidad.doc_conf.id}}"></label>
             </div>
             <div class="columns large-3">
                 <label>Margen inf.
-                    <input type="text" data-campo="marginbottom" value="{{ entidad.docconfentidad.marginbottom }}"
-                           data-objeto="docconfentidad" class="campo_char"></label>
+                    <input type="text" data-campo="marginbottom" value="{{ entidad.docconf.marginbottom }}"
+                           data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{entidad.doc_conf.id}}"></label>
             </div>
             <div class="columns large-3">
                 <label>Margen izq.
-                    <input type="text" data-campo="marginleft" value="{{ entidad.docconfentidad.marginleft }}"
-                           data-objeto="docconfentidad" class="campo_char"></label>
+                    <input type="text" data-campo="marginleft" value="{{ entidad.docconf.marginleft }}"
+                           data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{entidad.doc_conf.id}}"></label>
             </div>
             <div class="columns large-3">
                 <label>Margen der.
-                    <input type="text" data-campo="marginright" value="{{ entidad.docconfentidad.marginright }}"
-                           data-objeto="docconfentidad" class="campo_char"></label>
+                    <input type="text" data-campo="marginright" value="{{ entidad.docconf.marginright }}"
+                           data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{entidad.doc_conf.id}}"></label>
             </div>
         </div>
 
         <div class="row">
             <div class="columns large-12">
                 <label>Definir la cabecera de la página en los documentos</label>
-                <div contenteditable="true" id="cabecera_html"
+                <div contenteditable="true" id="cabecera_html" data-doc_conf="{{entidad.doc_conf.id}}"
                      style="border: lightgrey solid 1px; padding:10px;">
                     {% autoescape off %}
-                        {{ entidad.docconfentidad.header|default_if_none:"" }}
+                        {{ entidad.docconf.header|default_if_none:"" }}
                     {% endautoescape %}
                 </div>
             </div>
             <div class="columns large-12">
                 <label>Definir el pie de página en los documentos</label>
-                <div contenteditable="true" id="pie_html"
+                <div contenteditable="true" id="pie_html" data-doc_conf="{{entidad.doc_conf.id}}"
                      style="border: lightgrey solid 1px; padding:10px;">
                     {% autoescape off %}
-                        {{ entidad.docconfentidad.footer|default_if_none:"" }}
+                        {{ entidad.docconf.footer|default_if_none:"" }}
                     {% endautoescape %}
                 </div>
             </div>

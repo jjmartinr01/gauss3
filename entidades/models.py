@@ -102,6 +102,13 @@ class Entidad(models.Model):
         verbose_name_plural = "Entidades"
 
     @property
+    def docconf(self):
+        try:
+            return DocConfEntidad.objects.get(entidad=self, predeterminado=True)
+        except:
+            return DocConfEntidad.objects.filter(entidad=self)[0]
+
+    @property
     def de_la_entidad(self):
         gn = self.get_general_name_display()
         return 'de la %s' % (gn) if self.general_name < 100 else 'del %s' % (gn)
@@ -192,16 +199,20 @@ class EntidadExtraExpedienteOferta(models.Model):
 
 
 class DocConfEntidad(models.Model):
-    entidad = models.OneToOneField(Entidad, on_delete=models.CASCADE)
+    ORIENTATION=(('Portrait', 'Vertical'), ('Landscape', 'Horizontal'))
+    entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
+    predeterminado = models.BooleanField('¿Es la configuración predeterminada?', default=False)
+    nombre = models.CharField('Nombre de la configuración', max_length=50, default='')
     header = models.TextField("Cabecera de página", blank=True, null=True)
     footer = models.TextField("Pie de página", blank=True, null=True)
     pagesize = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='A4')
-    margintop = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='52')
-    marginright = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='20')
-    marginbottom = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='10')
-    marginleft = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='20')
-    encoding = models.CharField('Tamaño del papel', max_length=15, blank=True, null=True, default='UTF-8')
-    headerspacing = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='5')
+    margintop = models.CharField('Margen Top', max_length=5, blank=True, null=True, default='52')
+    marginright = models.CharField('Margen Right', max_length=5, blank=True, null=True, default='20')
+    marginbottom = models.CharField('Margen Bottom', max_length=5, blank=True, null=True, default='10')
+    marginleft = models.CharField('Margen Left', max_length=5, blank=True, null=True, default='20')
+    encoding = models.CharField('Encoding', max_length=15, blank=True, null=True, default='UTF-8')
+    headerspacing = models.CharField('Header Spacing', max_length=5, blank=True, null=True, default='5')
+    orientation = models.CharField('Orientación del papel', max_length=12, choices=ORIENTATION, default='Portrait')
 
     def __str__(self):
         return '%s (top: %s, bottom: %s, left: %s, right: %s)' % (

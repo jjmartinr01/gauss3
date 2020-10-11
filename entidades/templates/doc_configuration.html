@@ -7,16 +7,6 @@
             text-align: center;
             color: #008CBA;
         }
-
-        .observaciones {
-            border: lightgrey 1px solid;
-            min-height: 100px;
-        }
-
-        {#.describir_solucion {#}
-        {#    border: lightgrey 1px solid;#}
-        {#    min-height: 100px;#}
-        {# }#}
     </style>
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
@@ -25,84 +15,11 @@
         <input type="hidden" name="page" id="page" value="">
         <input type="hidden" id="id_tareas_ie" name="id_tareas_ie" value="">
 
-        <div id="div_tareas_ie_seleccionados"></div>
-
         <div>
-            <h4 id="title_page"><strong>Actuaciones de Inspección Educativa</strong></h4>
+            <h4 id="title_page"><strong>Configuración de los documentos generados</strong></h4>
         </div>
-        <div id="formulario_add"></div>
-        <fieldset id="fieldset_buscar" style="display: none;">
-            <legend>Búsqueda de actuaciones</legend>
-            <div id="formulario_search">
-                <div class="row">
-                    <div class="columns large-4">
-                        <label>Buscar entre esta fecha ...</label>
-                        <input id="id_fecha_inicio" name="fecha_inicio" type="text"
-                               value="{{ g_e.ronda.inicio|date:'d-m-Y' }}">
-                    </div>
-                    <div class="columns large-4">
-                        <label>... y esta otra</label>
-                        <input id="id_fecha_fin" name="fecha_fin" type="text" value="{% now "d\-m\-Y" %}">
-                    </div>
-                    <div class="columns large-4">
-                        <label>Buscar en ...</label>
-                        <select id="tipo_busqueda" name="tipo_busqueda">
-                            {# Se busca en negativo, por eso SAL es para entradas y ENT para salidas. Ver el views.py #}
-                            <option value="tod">Todas las actuaciones</option>
-                            {% for t in tipos %}
-                                <option value="{{ t.0 }}">{{ t.1 }}</option>{% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="columns large-10">
-                        <input type="text" name="busca_tareas_ie" id="busca_tareas_ie"
-                               placeholder="Escribe parte del texto incluido en el actuación">
-                    </div>
-                    <div class="columns large-2">
-                        <a id="busca_tareas_ie_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>
-                    </div>
-                </div>
-            </div>
-        </fieldset>
-        <fieldset>
-            <legend>Generar informe semanal</legend>
-            <div class="row">
-                {% if g_e|has_permiso:'genera_informe_tareas_ie' %}
-                    <div class="columns large-4">
-                        <label>Selecciona el inspector
-                            <select name="inspector_informe">
-                                {% for i in inspectores %}
-                                    <option value="{{ i.id }}"
-                                            {% if i == g_e %}selected{% endif %}>{{ i.gauser.get_full_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </label>
-                    </div>
-                {% else %}
-                    <div class="columns large-4">
-                        <input type="hidden" name="inspector_informe" value="{{ g_e.id }}">
-                        <label>Inspector<br><b>{{ g_e.gauser.get_full_name }}</b></label>
-                    </div>
-                {% endif %}
-                <div class="columns large-6">
-                    <label>Selecciona una semana de trabajo y pulsa "Generar PDF"
-                        <select name="semana">
-                            {% for s in semanas %}
-                                <option value="{{ s.0 }}">{{ s.1 }}</option>
-                            {% endfor %}
-                        </select>
-                    </label>
-                </div>
-                <div class="columns large-2">
-                    <label>&nbsp;<br><a class="button tiny" id="crea_informe_semanal">Generar PDF</a>
-                    </label>
-                </div>
-            </div>
-        </fieldset>
-
-        <div id="listado_tareas_ie">
-            {% include 'tareas_ie_accordion.html' %}
+        <div id="listado_doc_configuraciones">
+            {% include 'doc_configuration_accordion.html' %}
         </div>
     </form>
 {% endblock %}
@@ -119,18 +36,18 @@
         $(document).foundation({
             accordion: {
                 callback: function (accordion) {
-                    if (accordion.hasClass('accordion-tarea_ie')) {
+                    if (accordion.hasClass('accordion-doc_conf')) {
                         var id = accordion.data('id');
                         if ($('#circle' + id).hasClass('fa-plus-circle')) {
                             $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
                             window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post("/tareas_ie/", {action: 'open_accordion', id: id},
+                            $.post("/doc_configuration/", {action: 'open_accordion', id: id},
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
-                                        destroyEditorInstances();
-                                        CKEDITOR.inlineAll();
+                                        {#destroyEditorInstances();#}
+                                        {#CKEDITOR.inlineAll();#}
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();
@@ -149,7 +66,7 @@
             var campo = $(this).data('campo');
             var id = $(this).data('id');
             var valor = $(this).val();
-            $.post("/tareas_ie/", {
+            $.post("/doc_configuration/", {
                     action: 'update_selector',
                     id: id,
                     campo: campo,
@@ -171,7 +88,7 @@
             var id = $(this).data('id');
             var centro_id = $(this).val();
             var campo = $(this).data('campo');
-            $.post("/tareas_ie/", {
+            $.post("/doc_configuration/", {
                     action: 'update_centro',
                     id: id,
                     centro_id: centro_id,
@@ -188,7 +105,7 @@
 
         $('body').on('click', '.realizada', function () {
             var id = $(this).data('id');
-            $.post("/tareas_ie/", {
+            $.post("/doc_configuration/", {
                     action: 'update_realizada',
                     id: id
                 },
@@ -220,7 +137,7 @@
                 var valor = $(this).val();
                 $('#asunto' + id).html(valor);
             }
-            $.post("/tareas_ie/", {action: 'update_texto', id: id, valor: valor, campo: campo},
+            $.post("/doc_configuration/", {action: 'update_texto', id: id, valor: valor, campo: campo},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -230,7 +147,7 @@
                 });
         });
 
-        $('body').on('click', '.borrar_tarea_ie', function () {
+        $('body').on('click', '.borrar_doc_conf', function () {
             id = $(this).data('id');
             show_mensajes({
                 title: '<i class="fa fa-warning"></i> ¿Borrar esta tarea de inspección?',
@@ -240,7 +157,7 @@
                     },
                     "Borrar": function () {
                         hide_mensajes();
-                        $.post("/tareas_ie/", {action: 'borrar_tarea_ie', id: id},
+                        $.post("/doc_configuration/", {action: 'borrar_doc_conf', id: id},
                             function (data) {
                                 if (data.ok) {
                                     $('#accordion' + id).remove();
@@ -254,11 +171,11 @@
             });
         });
 
-        {% if g_e|has_permiso:"crea_tareas_ie" %}
+
             habilita(['s_plus']);
             $('#plus_sign').click(function (event) {
                 event.preventDefault();
-                $.post("/tareas_ie/", {action: 'crea_tarea_ie'}, function (data) {
+                $.post("/doc_configuration/", {action: 'crea_doc_conf'}, function (data) {
                     if (data.ok) {
                         $('#list_tareas_ie').prepend(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -268,7 +185,7 @@
                     $(document).scrollTop($('#title_page').offset().top - 150);
                 });
             });
-        {% endif %}
+
 
         habilita(['s_search']);
         $('#search_sign').click(function (event) {
@@ -278,7 +195,7 @@
 
         $('body').on('click', '.add_participante', function (e) {
             var tarea = $(this).data('tarea');
-            $.post("/tareas_ie/", {
+            $.post("/doc_configuration/", {
                     action: 'add_participante',
                     tarea: tarea
                 },
@@ -296,7 +213,7 @@
             var instarea = $(this).data('instarea');
             var campo = $(this).data('campo');
             var valor = $(this).val();
-            $.post("/tareas_ie/", {
+            $.post("/doc_configuration/", {
                     action: 'mod_participante',
                     instarea: instarea, campo: campo, valor: valor
                 },
@@ -311,7 +228,7 @@
 
         $('body').on('click', '.del_participante', function (e) {
             var instarea = $(this).data('instarea');
-            $.post("/tareas_ie/", {
+            $.post("/doc_configuration/", {
                     action: 'del_participante', instarea: instarea
                 },
                 function (data) {
@@ -329,7 +246,7 @@
             var id_fecha_inicio = $('#id_fecha_inicio').val();
             var id_fecha_fin = $('#id_fecha_fin').val();
             var tipo_busqueda = $('#tipo_busqueda').val();
-            $.post("/tareas_ie/", {
+            $.post("/doc_configuration/", {
                     action: 'busca_tareas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,
                     id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
                 },
@@ -344,7 +261,7 @@
             var id_fecha_inicio = $('#id_fecha_inicio').val();
             var id_fecha_fin = $('#id_fecha_fin').val();
             var tipo_busqueda = $('#tipo_busqueda').val();
-            $.post("/tareas_ie/", {
+            $.post("/doc_configuration/", {
                     action: 'busca_tareas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,
                     id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
                 },
@@ -358,7 +275,7 @@
             e.preventDefault();
             var page = $(this).data('page');
             if (page) {
-                $.post("/tareas_ie/", {action: 'paginar_tareas_ie', page: page},
+                $.post("/doc_configuration/", {action: 'paginar_tareas_ie', page: page},
                     function (data) {
                         if (data.ok) {
                             $('#listado_tareas_ie').html(data.html);
@@ -373,7 +290,7 @@
         $('body').on('click', '.listado_normal', function (e) {
             e.preventDefault();
             var page = $(this).data('page');
-            $.post("/tareas_ie/", {action: 'paginar_tareas_ie', page: 1},
+            $.post("/doc_configuration/", {action: 'paginar_tareas_ie', page: 1},
                 function (data) {
                     if (data.ok) {
                         $('#listado_tareas_ie').html(data.html);
@@ -389,14 +306,7 @@
             $('#action').val('crea_informe_semanal');
             document.getElementById("{{ formname }}").submit();
         });
-        {% if g_e|has_permiso:"genera_informe_tareas_ie" %}
-            {#habilita(['s_file-pdf-o']);#}
-            $('#file-pdf-o_sign').click(function (event) {
-                event.preventDefault();
-                $('#action').val('genera_informe');
-                document.getElementById("{{ formname }}").submit();
-            });
-        {% endif %}
+
     </script>
 
 {% endblock %}
