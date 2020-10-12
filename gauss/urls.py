@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import include, url
 from django.conf import settings
+from django.conf.urls.static import static
 
 # Línea introducida para usar las urls de Foundation
 # from django.views.generic import TemplateView
@@ -64,35 +65,8 @@ urlpatterns = [url(r'^', include('autenticar.urls')),
                url(r'^', include('web.urls')),
                ]
 
-# if settings.DEBUG:
-#     urlpatterns += [
-#         url(r'^media/(?P<path>.*)$', django.views.static,  name='static.serve', {
-#             'document_root': settings.MEDIA_ROOT,
-#         }),
-#         url(r'^static/(?P<path>.*)$', django.views.static,  name='static.serve', {
-#             'document_root': settings.STATIC_ROOT,
-#         }),
-#     ]
+# Las siguientes líneas son para visualizar MEDIA cuando corres el servidor de django
+# Ayuda obtenida de: https://overiq.com/django-1-10/handling-media-files-in-django/
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-
-# from gauss import settings
-#
-# if settings.DEBUG:
-#     from django.views.static import serve
-#
-#     _media_url = settings.MEDIA_URL
-#     if _media_url.startswith('/'):
-#         _media_url = _media_url[1:]
-#         urlpatterns += [(r'^%s(?P<path>.*)$' % _media_url, serve, {'document_root': settings.MEDIA_ROOT})]
-#     del (_media_url, serve)
-#
-# from django.conf.urls.static import static
-#
-# urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-#
-#
-# import os
-# SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
-# STATICFILES_DIRS = (
-#   os.path.join(SITE_ROOT, 'static/'),
-# )

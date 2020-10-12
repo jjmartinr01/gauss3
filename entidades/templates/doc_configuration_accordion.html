@@ -8,7 +8,7 @@
             style="border-bottom: dotted 1px black">
             <a href="#panel{{ doc_conf.id }}">
                 <i id="circle{{ doc_conf.id }}" class="fa fa-plus-circle circle_icon"></i>
-                <b id="asunto{{ doc_conf.id }}">{% if not doc_conf.nombre %}
+                <b id="nombre{{ doc_conf.id }}">{% if not doc_conf.nombre %}
                     <span style="color:red">Nueva configuración de documentos</span>
                 {% else %}{{ doc_conf.nombre }}{% endif %}</b>
             </a>

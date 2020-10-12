@@ -5,78 +5,67 @@
 {#    encoding = models.CharField('Encoding', max_length=15, blank=True, null=True, default='UTF-8')#}
 {#    headerspacing#}
 <div class="row">
-    <div class="columns large-8">
+    <div class="columns large-7">
         <label>Nombre
-            <input type="text" data-campo="margintop" value="{{ doc_conf.margintop }}"
+            <input type="text" data-campo="nombre" value="{{ doc_conf.nombre }}"
                    data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{ doc_conf.id }}"></label>
     </div>
     <div class="columns large-2">
         <label title="¿Esta es la configuración predeterminada?">Predeterminada<br><b>
-            <a id="predeterminada{{ doc_conf.id }}" class="seleccionar" data-campo="predeterminado"
-               data-doc_conf="{{ doc_conf.id }}">{% if doc_conf.predeterminada %}Sí{% else %}
+            <a id="predeterminado{{ doc_conf.id }}" class="campo_select" data-campo="predeterminado"
+               data-doc_conf="{{ doc_conf.id }}">{% if doc_conf.predeterminado %}Sí{% else %}
                 No{% endif %}</a></b></label>
     </div>
-    <div class="columns large-2">
-        <label title="Haz click aquí para borrar esta configuración"><br>
-            <a class="button tiny borrar_doc_conf" data-doc_conf="{{ doc_conf.id }}"><i class="fa fa-trash"></i> Borrar</a></label>
+    <div class="columns large-3">
+
+        <ul class="button-group radius">
+            <li title="Crear  un PDF de ejemplo con esta configuración">
+                <a class="button tiny pdf_doc_conf" data-doc_conf="{{ doc_conf.id }}"><i
+                        class="fa fa-file-pdf-o"></i> PDF</a></li>
+            {% if doc_conf.predeterminado %}
+            <li title="No se puede borrar la configuración predeterminada">
+                <a class="button tiny secondary"><i class="fa fa-trash"></i> Borrar</a></li>
+            {% else %}
+                <li title="Haz click aquí para borrar esta configuración">
+                <a class="button tiny borrar_doc_conf alert" data-doc_conf="{{ doc_conf.id }}"><i
+                        class="fa fa-trash"></i> Borrar</a></li>
+            {% endif %}
+        </ul>
     </div>
 </div>
 <div class="row">
     <div class="columns large-2">
-        <label>Margen sup.
-            <input type="text" data-campo="margintop" value="{{ doc_conf.margintop }}"
+        <label>Margen sup. (mm)
+            <input type="number" min="0" max="100" data-campo="margintop" value="{{ doc_conf.margintop }}"
                    data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{ doc_conf.id }}"></label>
     </div>
     <div class="columns large-2">
-        <label>Margen inf.
-            <input type="text" data-campo="marginbottom" value="{{ doc_conf.marginbottom }}"
+        <label>Margen inf. (mm)
+            <input type="number" min="0" max="100" data-campo="marginbottom" value="{{ doc_conf.marginbottom }}"
                    data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{ doc_conf.id }}"></label>
     </div>
     <div class="columns large-2">
-        <label>Margen izq.
-            <input type="text" data-campo="marginleft" value="{{ doc_conf.marginleft }}"
+        <label>Margen izq. (mm)
+            <input type="number" min="0" max="100" data-campo="marginleft" value="{{ doc_conf.marginleft }}"
                    data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{ doc_conf.id }}"></label>
     </div>
     <div class="columns large-2">
-        <label>Margen der.
-            <input type="text" data-campo="marginright" value="{{ doc_conf.marginright }}"
+        <label>Margen der. (mm)
+            <input type="number" min="0" max="100" data-campo="marginright" value="{{ doc_conf.marginright }}"
                    data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{ doc_conf.id }}"></label>
     </div>
     <div class="columns large-2">
-        <label>Espacio Cabecera
-            <input type="text" data-campo="headerspacing" value="{{ doc_conf.headerspacing }}"
+        <label title="Espacio entre la cabecera y el texto">Espacio Cab. (mm)
+            <input type="number" min="0" max="100" data-campo="headerspacing" value="{{ doc_conf.headerspacing }}"
                    data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{ doc_conf.id }}"></label>
     </div>
     <div class="columns large-2">
         <label title="Haz click para elegir la orientación del papel">Orientación papel<br><b>
-            <a id="orientation{{ doc_conf.id }}" class="seleccionar" data-campo="orientation"
+            <a id="orientation{{ doc_conf.id }}" class="campo_select" data-campo="orientation"
                data-doc_conf="{{ doc_conf.id }}">{% if doc_conf.orientation == 'Landscape' %}Horizontal{% else %}
                 Vertical{% endif %}</a></b></label>
     </div>
 </div>
-
-{#<div class="row">#}
-{#    <div class="columns large-3">#}
-{#        <label>Margen sup.#}
-{#            <input type="text" data-campo="margintop" value="{{ doc_conf.margintop }}"#}
-{#                   data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{ doc_conf.id }}"></label>#}
-{#    </div>#}
-{#    <div class="columns large-3">#}
-{#        <label>Margen inf.#}
-{#            <input type="text" data-campo="marginbottom" value="{{ doc_conf.marginbottom }}"#}
-{#                   data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{ doc_conf.id }}"></label>#}
-{#    </div>#}
-{#    <div class="columns large-3">#}
-{#        <label>Margen izq.#}
-{#            <input type="text" data-campo="marginleft" value="{{ doc_conf.marginleft }}"#}
-{#                   data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{ doc_conf.id }}"></label>#}
-{#    </div>#}
-{#    <div class="columns large-3">#}
-{#        <label>Margen der.#}
-{#            <input type="text" data-campo="marginright" value="{{ doc_conf.marginright }}"#}
-{#                   data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{ doc_conf.id }}"></label>#}
-{#    </div>#}
-{#</div>#}
 
 <div class="row">
     <div class="columns large-12">
@@ -90,16 +79,11 @@
     </div>
     <div class="columns large-12">
         <label>Definir el pie de página en los documentos</label>
-        <textarea id="pie_html{{ doc_conf.id }}" class="editable"
+        <div contenteditable="true" id="pie_html{{ doc_conf.id }}" class="editable"
              style="border: lightgrey solid 1px; padding:10px;" data-doc_conf="{{ doc_conf.id }}">
             {% autoescape off %}
                 {{ doc_conf.footer|default_if_none:"" }}
             {% endautoescape %}
-        </textarea>
+        </div>
     </div>
 </div>
-
-<script>
-    CKEDITOR.replace('cabecera_html{{ doc_conf.id }}');
-    CKEDITOR.replace('pie_html{{ doc_conf.id }}');
-</script>

@@ -86,6 +86,8 @@ MEDIA_PENDIENTES = RUTA_MEDIA + "pendientes/"
 
 MEDIA_INSPECCION = RUTA_MEDIA + "inspeccion/"
 
+MEDIA_DOCCONF = RUTA_MEDIA + "docconf/"
+
 def buscar_identificador(request, href):
     for menu_creado in request.session['lateral']:
         if menu_creado['href'] == href:

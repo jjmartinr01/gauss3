@@ -214,6 +214,35 @@ class DocConfEntidad(models.Model):
     headerspacing = models.CharField('Header Spacing', max_length=5, blank=True, null=True, default='5')
     orientation = models.CharField('Orientación del papel', max_length=12, choices=ORIENTATION, default='Portrait')
 
+    @property
+    def url_header(self):
+        return '%s%s_header_%s.html' % (MEDIA_DOCCONF, self.entidad.code, self.pk)
+
+    @property
+    def url_footer(self):
+        return '%s%s_footer_%s.html' % (MEDIA_DOCCONF, self.entidad.code, self.pk)
+
+    @property
+    def url_pdf(self):
+        return '%s%s_pdf_%s.pdf' % (MEDIA_DOCCONF, self.entidad.code, self.pk)
+
+    @property
+    def get_opciones(self):
+        return {
+                'orientation': self.orientation,
+                'page-size': self.pagesize,
+                'margin-top': self.margintop,
+                'margin-right': self.marginright,
+                'margin-bottom': self.marginbottom,
+                'margin-left': self.marginleft,
+                'header-spacing': self.headerspacing,
+                'encoding': self.encoding,
+                'header-html': self.url_header,
+                '--footer-html': self.url_footer,
+                'no-outline': None,
+                'load-error-handling': 'ignore'
+            }
+
     def __str__(self):
         return '%s (top: %s, bottom: %s, left: %s, right: %s)' % (
             self.entidad, self.margintop, self.marginbottom, self.marginleft, self.marginright)

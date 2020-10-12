@@ -6,6 +6,7 @@ import os
 import re
 import logging
 import xlwt
+import pdfkit
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -33,7 +34,7 @@ from mensajes.models import Aviso, Mensaje, Etiqueta
 from mensajes.views import crear_aviso
 from bancos.views import asocia_banco_entidad, asocia_banco_ge, num_cuenta2iban
 from gauss.rutas import *
-from gauss.funciones import usuarios_de_gauss, pass_generator, html_to_pdf, usuarios_ronda
+from gauss.funciones import usuarios_de_gauss, pass_generator, html_to_pdf, usuarios_ronda, html_to_pdf_options
 from datetime import date
 import simplejson as json
 from django.template.loader import render_to_string
@@ -2439,7 +2440,7 @@ def crealinkge(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
-@permiso_required('acceso_doc_configuration')
+# @permiso_required('acceso_doc_configuration')
 def doc_configuration(request):
     g_e = request.session['gauser_extra']
     dces = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)
@@ -2454,8 +2455,8 @@ def doc_configuration(request):
             dce = DocConfEntidad.objects.create(entidad=g_e.ronda.entidad, predeterminado=True)
             dces = [dce]
     if request.method == 'POST' and request.is_ajax():
-        if request.POST['action'] == 'crea_informe_ie':
-            if g_e.has_permiso('crea_informes_ie') or True:  # El permiso da igual
+        if request.POST['action'] == 'crea_doc_conf':
+            if g_e.has_permiso('acceso_doc_configuration'):
                 dce = DocConfEntidad.objects.create(entidad=g_e.ronda.entidad)
                 html = render_to_string('doc_configuration_accordion.html', {'docs_conf': [dce], 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
@@ -2468,10 +2469,82 @@ def doc_configuration(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-
+        elif request.POST['action'] == 'update_campo_char':
+            try:
+                dce = dces.get(id=request.POST['doc_conf'])
+                setattr(dce, request.POST['campo'], request.POST['valor'])
+                dce.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_campo_select':
+            try:
+                dce = dces.get(id=request.POST['doc_conf'])
+                if request.POST['campo'] == 'predeterminado':
+                    for d in dces:
+                        d.predeterminado = False
+                        d.save()
+                    dce.predeterminado = True
+                    dce.save()
+                    valor = 'Sí'
+                elif request.POST['campo'] == 'orientation':
+                    o = {'Landscape': 'Portrait', 'Portrait': 'Landscape'}
+                    o_es = {'Landscape': 'Horizontal', 'Portrait': 'Vertical'}
+                    dce.orientation = o[dce.orientation]
+                    dce.save()
+                    valor = o_es[dce.orientation]
+                else:
+                    valor = 'Error'
+                return JsonResponse({'ok': True, 'valor': valor, 'id': dce.id, 'campo': request.POST['campo']})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_html':
+            if not os.path.exists(os.path.dirname(MEDIA_DOCCONF)):
+                os.makedirs(os.path.dirname(MEDIA_DOCCONF))
+            try:
+                dce = dces.get(id=request.POST['id'])
+                if request.POST['editor'] == 'cabecera':
+                    dce.header = request.POST['html']
+                    fichero_html = dce.url_header
+                else:
+                    dce.footer = request.POST['html']
+                    fichero_html = dce.url_footer
+                dce.save()
+                html = render_to_string('template_cabecera_pie.html', {'html': request.POST['html']})
+                with open(fichero_html, "w") as html_file:
+                    html_file.write("{0}".format(html))
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borrar_doc_conf':
+            try:
+                dce = dces.get(id=request.POST['id'])
+                if dce.predeterminado:
+                    return JsonResponse({'ok': False, 'msg': 'No se puede borrar la configuración predeterminada'})
+                else:
+                    dce.delete()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+    elif request.method == 'POST' and not request.is_ajax():
+        if request.POST['action'] == 'pdf_doc_conf':
+            dce = dces.get(id=request.POST['doc_conf'])
+            c = render_to_string('docconf_pruebas_template.html', {'g_e': g_e})
+            # if not os.path.exists(os.path.dirname(dce.url_pdf)):
+            #     os.makedirs(os.path.dirname(dce.url_pdf))
+            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            fich = open(dce.url_pdf, 'rb')
+            response = HttpResponse(fich, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=doc_conf%s.pdf'% dce.id
+            return response
 
     return render(request, "doc_configuration.html",
                   {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Nueva',
+                            'permiso': 'acceso_doc_configuration',
+                            'title': 'Nueva configuración de documento'},
+                           ),
                       'formname': 'doc_configuration',
                       'docs_conf': dces,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),

@@ -184,10 +184,10 @@ def html_to_pdf_options(request, html, opciones, fichero='borrar', title='Docume
         'margin-left': docconf.marginleft,
         'encoding': docconf.encoding,
         'no-outline': None,
-        '--header-html': 'file://%s' % cabecera,
-        '--footer-html': 'file://%s' % pie,
-        '--header-spacing': docconf.headerspacing,
-        '--load-error-handling': 'ignore',
+        'header-html': 'file://%s' % cabecera,
+        'footer-html': 'file://%s' % pie,
+        'header-spacing': docconf.headerspacing,
+        'load-error-handling': 'ignore',
     }
     options = {}
     for o in options_default:

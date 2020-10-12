@@ -11,9 +11,7 @@
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
-        <input type="hidden" name="q" id="q" value="">
-        <input type="hidden" name="page" id="page" value="">
-        <input type="hidden" id="id_tareas_ie" name="id_tareas_ie" value="">
+        <input type="hidden" name="doc_conf" id="doc_conf" value="">
 
         <div>
             <h4 id="title_page"><strong>Configuración de los documentos generados</strong></h4>
@@ -26,11 +24,39 @@
 
 {% block final %}
     <script>
-
         function destroyEditorInstances() {
             for (var instance in CKEDITOR.instances) {
                 CKEDITOR.instances[instance].destroy();
             }
+        }
+
+        function send_datos(id, editor, html) {
+            $.post("/doc_configuration/", {action: 'update_html', html: html, id: id, editor: editor},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        }
+
+        function reinicia_ckeditores(id) {
+            destroyEditorInstances();
+            var cabecera_html = CKEDITOR.replace('cabecera_html' + id);
+            cabecera_html.config.allowedContent = true;
+            cabecera_html.config.extraAllowedContent = '*(*)';
+            var pie_html = CKEDITOR.replace('pie_html' + id);
+            pie_html.config.allowedContent = true;
+            pie_html.config.extraAllowedContent = '*(*)';
+            cabecera_html.on('change', function (e) {
+                var html = cabecera_html.getData();
+                send_datos(id, 'cabecera', html);
+            });
+            pie_html.on('change', function (e) {
+                var html = pie_html.getData();
+                send_datos(id, 'pie', html);
+            });
         }
 
         $(document).foundation({
@@ -46,8 +72,8 @@
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
-                                        {#destroyEditorInstances();#}
-                                        {#CKEDITOR.inlineAll();#}
+                                        reinicia_ckeditores(id);
+
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();
@@ -62,96 +88,56 @@
             }
         });
 
-        $('body').on('change', '.selector', function () {
+        $('body').on('click', '.campo_select', function () {
+            var doc_conf = $(this).data('doc_conf');
             var campo = $(this).data('campo');
-            var id = $(this).data('id');
+            $.post("/doc_configuration/", {
+                    action: 'update_campo_select', doc_conf: doc_conf, campo: campo
+                },
+                function (data) {
+                    if (data.ok) {
+                        if (data.campo === 'predeterminado') {
+                            $('#predeterminado' + data.id).html(data.valor);
+                        } else if (data.campo === 'orientation') {
+                            $('#orientation' + data.id).html(data.valor);
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup change', '.campo_char', function () {
+            var doc_conf = $(this).data('doc_conf');
+            var campo = $(this).data('campo');
             var valor = $(this).val();
-            $.post("/doc_configuration/", {
-                    action: 'update_selector',
-                    id: id,
-                    campo: campo,
-                    valor: valor
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        if (campo == 'tipo') {
-                            $('#tipo' + id).html(data.tipo);
-                        }
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('change', '.centro', function () {
-            var id = $(this).data('id');
-            var centro_id = $(this).val();
-            var campo = $(this).data('campo');
-            $.post("/doc_configuration/", {
-                    action: 'update_centro',
-                    id: id,
-                    centro_id: centro_id,
-                    campo: campo
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.realizada', function () {
-            var id = $(this).data('id');
-            $.post("/doc_configuration/", {
-                    action: 'update_realizada',
-                    id: id
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#realizada' + id).html(data.valor);
-                        if (data.realizada) {
-                            $('#panel' + id).html(data.html);
-                            $('#ss' + id).show();
-                            $('#ns' + id).hide();
-                        } else {
-                            $('#panel' + id).html(data.html);
-                            $('#ns' + id).show();
-                            $('#ss' + id).hide();
-                        }
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('keyup', '.update_texto', function () {
-            var id = $(this).data('id');
-            var campo = $(this).data('campo');
-            if ($(this).hasClass('observaciones')) {
-                var valor = $(this).html();
-            } else {
-                var valor = $(this).val();
-                $('#asunto' + id).html(valor);
+            {# En los campos number valor será '' si no es número #}
+            if (campo === 'nombre') {
+                $('#nombre' + doc_conf).html(valor);
             }
-            $.post("/doc_configuration/", {action: 'update_texto', id: id, valor: valor, campo: campo},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
+            if (valor) {
+                $.post("/doc_configuration/", {
+                        action: 'update_campo_char', doc_conf: doc_conf, campo: campo, valor: valor
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            } else {
+                $('#update_error').show().delay(1500).fadeOut();
+            }
         });
 
         $('body').on('click', '.borrar_doc_conf', function () {
-            id = $(this).data('id');
+            id = $(this).data('doc_conf');
             show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar esta tarea de inspección?',
-                texto: 'Si aceptas la tarea se borrará por completo de la base de datos', size: 'large', buttons: {
+                title: '<i class="fa fa-warning"></i> ¿Borrar esta configuración de documentos?',
+                texto: 'Si aceptas la configuración se borrará por completo de la base de datos', size: 'large',
+                buttons: {
                     "Cancelar": function () {
                         hide_mensajes();
                     },
@@ -171,139 +157,24 @@
             });
         });
 
-
-            habilita(['s_plus']);
-            $('#plus_sign').click(function (event) {
-                event.preventDefault();
-                $.post("/doc_configuration/", {action: 'crea_doc_conf'}, function (data) {
-                    if (data.ok) {
-                        $('#list_tareas_ie').prepend(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                    $(document).scrollTop($('#title_page').offset().top - 150);
-                });
+        habilita(['s_plus']);
+        $('#plus_sign').click(function (event) {
+            event.preventDefault();
+            $.post("/doc_configuration/", {action: 'crea_doc_conf'}, function (data) {
+                if (data.ok) {
+                    $('#list_doc_configurations').prepend(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
+                $(document).scrollTop($('#title_page').offset().top - 150);
             });
+        });
 
-
-        habilita(['s_search']);
-        $('#search_sign').click(function (event) {
+        $('body').on('click', '.pdf_doc_conf', function (event) {
             event.preventDefault();
-            $('#fieldset_buscar').toggle();
-        });
-
-        $('body').on('click', '.add_participante', function (e) {
-            var tarea = $(this).data('tarea');
-            $.post("/doc_configuration/", {
-                    action: 'add_participante',
-                    tarea: tarea
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#tbodypermisos" + data.tarea).html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('change', '.mod_participante', function (e) {
-            var instarea = $(this).data('instarea');
-            var campo = $(this).data('campo');
-            var valor = $(this).val();
-            $.post("/doc_configuration/", {
-                    action: 'mod_participante',
-                    instarea: instarea, campo: campo, valor: valor
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.del_participante', function (e) {
-            var instarea = $(this).data('instarea');
-            $.post("/doc_configuration/", {
-                    action: 'del_participante', instarea: instarea
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#fila_permiso" + data.id).remove();
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $("body").on('click', '#busca_tareas_ie_manual', function (e) {
-            var texto = $('#busca_tareas_ie').val();
-            var id_fecha_inicio = $('#id_fecha_inicio').val();
-            var id_fecha_fin = $('#id_fecha_fin').val();
-            var tipo_busqueda = $('#tipo_busqueda').val();
-            $.post("/doc_configuration/", {
-                    action: 'busca_tareas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,
-                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
-                },
-                function (data) {
-                    $('#listado_tareas_ie').html(data['html']);
-                    $(document).foundation();
-                });
-        });
-
-        $("body").on('keyup', '#busca_tareas_ie', function (e) {
-            var texto = $('#busca_tareas_ie').val();
-            var id_fecha_inicio = $('#id_fecha_inicio').val();
-            var id_fecha_fin = $('#id_fecha_fin').val();
-            var tipo_busqueda = $('#tipo_busqueda').val();
-            $.post("/doc_configuration/", {
-                    action: 'busca_tareas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,
-                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
-                },
-                function (data) {
-                    $('#listado_tareas_ie').html(data['html']);
-                    $(document).foundation();
-                });
-        });
-
-        $('body').on('click', '.go_page', function (e) {
-            e.preventDefault();
-            var page = $(this).data('page');
-            if (page) {
-                $.post("/doc_configuration/", {action: 'paginar_tareas_ie', page: page},
-                    function (data) {
-                        if (data.ok) {
-                            $('#listado_tareas_ie').html(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $('#update_error').show().delay(1500).fadeOut();
-                        }
-                    });
-            }
-        });
-
-        $('body').on('click', '.listado_normal', function (e) {
-            e.preventDefault();
-            var page = $(this).data('page');
-            $.post("/doc_configuration/", {action: 'paginar_tareas_ie', page: 1},
-                function (data) {
-                    if (data.ok) {
-                        $('#listado_tareas_ie').html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('#crea_informe_semanal').click(function (event) {
-            event.preventDefault();
-            $('#action').val('crea_informe_semanal');
+            $('#doc_conf').val($(this).data('doc_conf'));
+            $('#action').val('pdf_doc_conf');
             document.getElementById("{{ formname }}").submit();
         });
 
