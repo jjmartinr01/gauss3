@@ -16,7 +16,7 @@ from django.core.paginator import Paginator
 import sys
 from django.core import serializers
 
-from gauss.funciones import html_to_pdf, html_to_pdf_options, usuarios_ronda
+from gauss.funciones import html_to_pdf, html_to_pdf_options, usuarios_ronda, html_to_pdf_dce
 from gauss.rutas import MEDIA_INSPECCION
 from gauss.constantes import CODE_CONTENEDOR
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required
@@ -24,7 +24,7 @@ from inspeccion_educativa.models import *
 from autenticar.views import crear_nombre_usuario
 from mensajes.views import encolar_mensaje, crea_mensaje_cola
 from entidades.tasks import carga_masiva_from_excel
-from entidades.models import CargaMasiva, Cargo
+from entidades.models import CargaMasiva, Cargo, DocConfEntidad
 from mensajes.views import crear_aviso
 from mensajes.models import Aviso
 
@@ -52,7 +52,7 @@ def todos_lunes(ronda):
     return fechas_lunes
 
 
-@permiso_required('acceso_tareas_ie')
+# @permiso_required('acceso_tareas_ie')
 def tareas_ie(request):
     g_e = request.session["gauser_extra"]
     try:
@@ -65,6 +65,16 @@ def tareas_ie(request):
         msg = '''Se ha creado el cargo "Inspector de Educación" al que se deben añadir miembros para que
         se pueda asignar una actuación de Inspección a una persona.'''
         crear_aviso(request, False, msg)
+
+    # inf_informe = 'Configuración informes emitidos por Inspección'
+    # try:
+    #     DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=inf_informe)
+    # except:
+    #     dcepred = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+    #     dcepred.pk = None
+    #     dcepred.nombre = inf_informe
+    #     dcepred.predeterminado = False
+    #     dcepred.save()
     if request.method == 'POST' and request.is_ajax():
         if request.POST['action'] == 'crea_tarea_ie':
             if g_e.has_permiso('crea_tareas_ie'):
@@ -251,13 +261,23 @@ def tareas_ie(request):
             logger.info('%s, genera informe de inspección' % (g_e))
             return response
         if request.POST['action'] == 'crea_informe_semanal':
+            inf_semanal = 'Configuración informes semanales de actuaciones'
+            try:
+                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=inf_semanal)
+            except:
+                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+                dce.pk = None
+                dce.nombre = inf_semanal
+                dce.predeterminado = False
+                dce.editable = False
+                dce.save()
             inspector = inspectores.get(id=request.POST['inspector_informe'])
             lunes = datetime.strptime(request.POST['semana'], '%d-%m-%Y')
             viernes = lunes + timedelta(days=4)
             instareas = InspectorTarea.objects.filter(inspector=inspector, tarea__fecha__gte=lunes,
                                                       tarea__fecha__lte=viernes)
-            fichero = 'Informe_%s_%s' % (str(g_e.ronda.entidad.code), inspector.gauser.username)
-            texto_html = render_to_string('informe_personal2pdf.html', {'instareas': instareas, 'title': fichero})
+            fichero = 'Informe_%s_%s.pdf' % (str(g_e.ronda.entidad.code), inspector.gauser.username)
+            texto_html = render_to_string('informe_personal2pdf.html', {'instareas': instareas, 'lunes': lunes, 'viernes': viernes})
             ruta = MEDIA_INSPECCION + '%s/' % g_e.ronda.entidad.code
             opciones = {
                 'orientation': 'Landscape',
@@ -267,9 +287,9 @@ def tareas_ie(request):
                 'margin-bottom': '0.5cm',
                 'margin-left': '0.5cm',
             }
-            fich = html_to_pdf_options(request, texto_html, opciones, fichero=fichero, media=ruta)
+            fich = html_to_pdf_dce(texto_html, dce, ruta, filename=fichero)
             response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+            response['Content-Disposition'] = 'attachment; filename=' + fichero
             logger.info('%s, genera informe de inspección' % (g_e))
             return response
     logger.info('Entra en ' + request.META['PATH_INFO'])

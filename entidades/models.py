@@ -5,6 +5,7 @@ import random
 import string
 from datetime import date, timedelta, datetime
 from django.db import models
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -213,6 +214,7 @@ class DocConfEntidad(models.Model):
     encoding = models.CharField('Encoding', max_length=15, blank=True, null=True, default='UTF-8')
     headerspacing = models.CharField('Header Spacing', max_length=5, blank=True, null=True, default='5')
     orientation = models.CharField('Orientación del papel', max_length=12, choices=ORIENTATION, default='Portrait')
+    editable = models.BooleanField('¿Es editable el asunto?', default=True)
 
     @property
     def url_header(self):
@@ -246,6 +248,18 @@ class DocConfEntidad(models.Model):
     def __str__(self):
         return '%s (top: %s, bottom: %s, left: %s, right: %s)' % (
             self.entidad, self.margintop, self.marginbottom, self.marginleft, self.marginright)
+
+# Cada vez que se graba un DocConfEntidad se actualizan los html asociados a la cabecera y el pie
+@receiver(post_save, sender=DocConfEntidad, dispatch_uid="update_html_header_footer")
+def update_html_header_footer(sender, instance, **kwargs):
+    if not os.path.exists(os.path.dirname(instance.url_header)):
+        os.makedirs(os.path.dirname(instance.url_header))
+    html_header = render_to_string('template_cabecera_pie.html', {'html': instance.header})
+    with open(instance.url_header, "w") as html_file:
+        html_file.write("{0}".format(html_header))
+    html_footer = render_to_string('template_cabecera_pie.html', {'html': instance.footer})
+    with open(instance.url_footer, "w") as html_file:
+        html_file.write("{0}".format(html_footer))
 
 
 class Subentidad(models.Model):

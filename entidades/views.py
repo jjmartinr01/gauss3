@@ -29,18 +29,16 @@ from mensajes.views import encolar_mensaje, crea_mensaje_cola
 from autenticar.models import Gauser, Permiso
 from estudios.models import Gauser_extra_estudios, Grupo
 from entidades.models import *
-# from entidades.configuration import FILTROS
 from mensajes.models import Aviso, Mensaje, Etiqueta
 from mensajes.views import crear_aviso
-from bancos.views import asocia_banco_entidad, asocia_banco_ge, num_cuenta2iban
+from bancos.views import asocia_banco_entidad, num_cuenta2iban
 from gauss.rutas import *
-from gauss.funciones import usuarios_de_gauss, pass_generator, html_to_pdf, usuarios_ronda, html_to_pdf_options
+from gauss.funciones import usuarios_de_gauss, pass_generator, usuarios_ronda
 from datetime import date
 import simplejson as json
 from django.template.loader import render_to_string
 from django.http import HttpResponse, FileResponse
-from entidades.forms import GauserForm, Gauser_extraForm, EntidadForm, Gauser_mis_datos_Form, \
-    Gauser_extra_mis_datos_Form
+from entidades.forms import EntidadForm, Gauser_extra_mis_datos_Form
 from gauss.constantes import PROVINCIAS
 from captcha.fields import CaptchaField
 
@@ -2505,14 +2503,14 @@ def doc_configuration(request):
                 dce = dces.get(id=request.POST['id'])
                 if request.POST['editor'] == 'cabecera':
                     dce.header = request.POST['html']
-                    fichero_html = dce.url_header
+                    # fichero_html = dce.url_header
                 else:
                     dce.footer = request.POST['html']
-                    fichero_html = dce.url_footer
+                    # fichero_html = dce.url_footer
                 dce.save()
-                html = render_to_string('template_cabecera_pie.html', {'html': request.POST['html']})
-                with open(fichero_html, "w") as html_file:
-                    html_file.write("{0}".format(html))
+                # html = render_to_string('template_cabecera_pie.html', {'html': request.POST['html']})
+                # with open(fichero_html, "w") as html_file:
+                #     html_file.write("{0}".format(html))
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})

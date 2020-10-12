@@ -5,11 +5,18 @@
 {#    encoding = models.CharField('Encoding', max_length=15, blank=True, null=True, default='UTF-8')#}
 {#    headerspacing#}
 <div class="row">
+{% if doc_conf.editable %}
     <div class="columns large-7">
         <label>Nombre
             <input type="text" data-campo="nombre" value="{{ doc_conf.nombre }}"
                    data-objeto="DocConfEntidad" class="campo_char" data-doc_conf="{{ doc_conf.id }}"></label>
     </div>
+{% else %}
+    <div class="columns large-7">
+        <label>Nombre<br>
+            <b>{{ doc_conf.nombre }}</b></label>
+    </div>
+{% endif %}
     <div class="columns large-2">
         <label title="¿Esta es la configuración predeterminada?">Predeterminada<br><b>
             <a id="predeterminado{{ doc_conf.id }}" class="campo_select" data-campo="predeterminado"

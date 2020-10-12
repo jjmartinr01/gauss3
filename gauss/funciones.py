@@ -200,6 +200,28 @@ def html_to_pdf_options(request, html, opciones, fichero='borrar', title='Docume
     logger.info('Pdf generado')
     return open(fichero_pdf, 'rb')
 
+def html_to_pdf_dce(html, docconf, media, filename=''):
+    """
+    :param html: html bien construido a convertir a pdf
+    :param docconf: Instancia de DocConfEntidad a utilizar para generar el documento
+    :param fichero: string con el nombre del fichero
+    :return: El fichero pdf creado
+    """
+    if not filename:
+        filename = pass_generator(10)
+        ruta = media + filename + '.pdf'
+    else:
+        ruta = media + filename + '.pdf'
+    if not os.path.exists(os.path.dirname(ruta)):
+        os.makedirs(os.path.dirname(ruta))
+        logger.info('Se crea ruta: %s' % (ruta))
+    if not os.path.exists(os.path.dirname(media)):
+        os.makedirs(os.path.dirname(media))
+        logger.info('Se crea ruta: %s' % (media))
+
+    pdfkit.from_string(html, ruta, docconf.get_opciones)
+    return open(ruta, 'rb')
+
 
 # Generador de contraseñas
 def pass_generator(size=6, chars=string.ascii_letters + string.digits):

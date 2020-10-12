@@ -13,7 +13,7 @@
     {#    <meta name="pdfkit-margin-left"#}
     {#    content="{% if options.margin-left %}{{ options.margin-left }}{% else %}2cm{% endif %}"/>#}
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>{{ title }}</title>
+    <title>Informe Semanal de Inspección ({{ instareas.0.inspector.gauser.get_full_name|upper }})</title>
     <style>
 
         html {
@@ -49,6 +49,20 @@
     </style>
 </head>
 <body>
+<table style="width: 100%">
+    <tbody>
+    <tr>
+        <td style="border: 1px solid black; border-collapse: collapse;">
+            <table style="width: 100%">
+                <tr>
+                    <td>INSPECTOR/A: {{ instareas.0.inspector.gauser.get_full_name|upper }}</td>
+                    <td>SEMANA DEL {{ lunes|date:'d-m-Y' }} AL {{ viernes|date:'d-N-Y' }}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    </tbody>
+</table>
 <table style="width: 100%">
     <thead>
     <tr>
@@ -87,10 +101,24 @@
 
 <br>
 <table style="width: 80%; alignment: right;">
-    <tr><td colspan="3">En {{ instareas.0.tarea.creador.ronda.entidad.localidad }} a {% now "d \d\e F \d\e Y" %},</td></tr>
-    <tr><td>VºBº EL/LA INSPECTOR/A COORDINADOR/A</td><td>&nbsp;</td><td>EL/LA INSPECTOR/A</td></tr>
-    <tr><td>&nbsp;</td><td></td><td></td></tr>
-    <tr><td>Fdo. ____________________________</td><td></td><td>Fdo. ____________________________</td></tr>
+    <tr>
+        <td colspan="3">En {{ instareas.0.tarea.creador.ronda.entidad.localidad }} a {% now "d \d\e F \d\e Y" %},</td>
+    </tr>
+    <tr>
+        <td>VºBº EL/LA INSPECTOR/A COORDINADOR/A</td>
+        <td>&nbsp;</td>
+        <td>EL/LA INSPECTOR/A</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Fdo. ____________________________</td>
+        <td></td>
+        <td>Fdo. ____________________________</td>
+    </tr>
 </table>
 </body>
 </html>
