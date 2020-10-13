@@ -16,10 +16,8 @@
             <b id="asunto{{ p_ie.id }}">{% if not p_ie.asunto %}
                 <span style="color:red">Nueva plantilla de informe de Inspección</span>
             {% else %}{{ p_ie.asunto }}{% endif %}</b> -- ({{ p_ie.modificado|date:"d-m-Y" }})
-
-                Creada por: <span style="color: green; padding-right: 20px;"><i
-                        class="fa fa-user"></i> {{ p_ie.creador.gauser.get_full_name }}</span>
-
+            Creada por: <span style="color: green; padding-right: 20px;"><i
+                class="fa fa-user"></i> {{ p_ie.creador.gauser.get_full_name }}</span>
             {% if buscadas %}
                 <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
             {% endif %}

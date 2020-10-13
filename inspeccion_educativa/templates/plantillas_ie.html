@@ -228,37 +228,35 @@
         });
 
 
-        {# ####################################################### #}
-        {##}
-        {#        $("body").on('click', '#busca_plantillas_ie_manual', function (e) {#}
-        {#            var texto = $('#busca_plantillas_ie').val();#}
-        {#            var id_fecha_inicio = $('#id_fecha_inicio').val();#}
-        {#            var id_fecha_fin = $('#id_fecha_fin').val();#}
-        {#            var tipo_busqueda = $('#tipo_busqueda').val();#}
-        {#            $.post("/plantillas_ie/", {#}
-        {#                    action: 'busca_plantillas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,#}
-        {#                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda#}
-        {#                },#}
-        {#                function (data) {#}
-        {#                    $('#list_plantillas_ie').html(data['html']);#}
-        {#                    $(document).foundation();#}
-        {#                });#}
-        {#        });#}
-        {#        $("body").on('keyup', '#busca_plantillas_ie', function (e) {#}
-        {#            var texto = $('#busca_plantillas_ie').val();#}
-        {#            var id_fecha_inicio = $('#id_fecha_inicio').val();#}
-        {#            var id_fecha_fin = $('#id_fecha_fin').val();#}
-        {#            var tipo_busqueda = $('#tipo_busqueda').val();#}
-        {#            $.post("/plantillas_ie/", {#}
-        {#                    action: 'busca_plantillas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,#}
-        {#                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda#}
-        {#                },#}
-        {#                function (data) {#}
-        {#                    $('#list_plantillas_ie').html(data['html']);#}
-        {#                    $(document).foundation();#}
-        {#                });#}
-        {#        });#}
 
+        $("body").on('click', '#busca_plantillas_ie_manual', function (e) {
+            var texto = $('#busca_plantillas_ie').val();
+            var id_fecha_inicio = $('#id_fecha_inicio').val();
+            var id_fecha_fin = $('#id_fecha_fin').val();
+            var tipo_busqueda = $('#tipo_busqueda').val();
+            $.post("/plantillas_ie/", {
+                    action: 'busca_plantillas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
+                },
+                function (data) {
+                    $('#list_plantillas_ie').html(data['html']);
+                    $(document).foundation();
+                });
+        });
+        $("body").on('keyup', '#busca_plantillas_ie', function (e) {
+            var texto = $('#busca_plantillas_ie').val();
+            var id_fecha_inicio = $('#id_fecha_inicio').val();
+            var id_fecha_fin = $('#id_fecha_fin').val();
+            var tipo_busqueda = $('#tipo_busqueda').val();
+            $.post("/plantillas_ie/", {
+                    action: 'busca_plantillas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
+                },
+                function (data) {
+                    $('#list_plantillas_ie').html(data['html']);
+                    $(document).foundation();
+                });
+        });
 
         {% if g_e|has_permiso:"acceso_plantillas_informes_ie" %}
             habilita(['s_plus']);
@@ -272,7 +270,6 @@
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                     $(document).scrollTop($('#title_page').offset().top - 150);
-                    {#habilita(['h_plus', 's_check', 's_search']);#}
                 });
             });
         {% endif %}

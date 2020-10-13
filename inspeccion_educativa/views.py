@@ -471,17 +471,19 @@ def informes_ie(request):
                 except:
                     fin = datetime.strptime('01-01-3000', '%d-%m-%Y')
                 texto = request.POST['texto'] if request.POST['texto'] else ''
-                q_texto = Q(texto__icontains=texto)  # | Q(describir_solucion__icontains=texto)
+                ids = VariableII.objects.filter(valor__icontains=texto).values_list('informe__id', flat=True)
+                q_texto = Q(texto__icontains=texto) | Q(asunto__icontains=texto) | Q(id__in=ids)
                 q_inicio = Q(modificado__gte=inicio)
                 q_fin = Q(modificado__lte=fin)
                 q_entidad = Q(inspector__ronda__entidad=g_e.ronda.entidad)
-                ies = InformeInspeccion.objects.filter(q_entidad, q_texto, q_inicio, q_fin)
+                ies_base = InformeInspeccion.objects.filter(q_entidad, q_inicio, q_fin)
+                ies = ies_base.filter(q_texto)
                 if request.POST['tipo_busqueda']:
                     p = PlantillaInformeInspeccion.objects.get(id=request.POST['tipo_busqueda'])
                     ies = ies.filter(variante__plantilla=p)
                 html = render_to_string('informes_ie_accordion.html',
                                         {'informes_ie': ies, 'g_e': g_e, 'buscadas': True})
-                return JsonResponse({'ok': True, 'html': html})
+                return JsonResponse({'ok': True, 'html': html, 'ids': ids.count()})
             except:
                 return JsonResponse({'ok': False})
     elif request.method == 'POST' and not request.is_ajax():
@@ -598,7 +600,7 @@ def plantillas_ie(request):
                     {'ok': False, 'mensaje': 'Se ha producido un error y no se ha podido hacer borrado'})
 
         elif request.POST['action'] == 'busca_plantillas_ie':
-            try:
+            # try:
                 try:
                     inicio = datetime.strptime(request.POST['id_fecha_inicio'], '%d-%m-%Y')
                 except:
@@ -608,20 +610,22 @@ def plantillas_ie(request):
                 except:
                     fin = datetime.strptime('01-01-3000', '%d-%m-%Y')
                 texto = request.POST['texto'] if request.POST['texto'] else ''
-                tipos = [t[0] for t in TIPOS]
-                tipo = [request.POST['tipo_busqueda']] if request.POST['tipo_busqueda'] in tipos else tipos
-                q_texto = Q(tarea__observaciones__icontains=texto)  # | Q(describir_solucion__icontains=texto)
-                q_inicio = Q(tarea__fecha__gte=inicio)
-                q_fin = Q(tarea__fecha__lte=fin)
-                q_tipo = Q(tarea__tipo__in=tipo)
-                q_entidad = Q(inspector__ronda__entidad=g_e.ronda.entidad)
-                its = InspectorTarea.objects.filter(q_entidad, q_texto, q_inicio, q_fin, q_tipo)
+                q_variante = Q(nombre__icontains=texto) | Q(texto__icontains=texto)
+                ids = VariantePII.objects.filter(q_variante).distinct().values_list('plantilla__id', flat=True)
+                q_varios = Q(destinatario__icontains=texto) | Q(asunto__icontains=texto) | Q(id__in=ids)
+                q_inicio = Q(modificado__gte=inicio)
+                q_fin = Q(modificado__lte=fin)
+                q_entidad = Q(creador__ronda__entidad=g_e.ronda.entidad)
+                piis_base = PlantillaInformeInspeccion.objects.filter(q_entidad & q_inicio & q_fin)
+                piis = piis_base.filter(q_varios)
+                # if request.POST['tipo_busqueda']:
+                #     p = PlantillaInformeInspeccion.objects.get(id=request.POST['tipo_busqueda'])
+                #     ies = ies.filter(variante__plantilla=p)
                 html = render_to_string('plantillas_ie_accordion.html',
-                                        {'plantillas_ie': its, 'g_e': g_e, 'buscadas': True})
-                a = ', '.join(tipo)
-                return JsonResponse({'ok': True, 'html': html, 'a': a})
-            except:
-                return JsonResponse({'ok': False})
+                                            {'plantillas_ie': piis, 'g_e': g_e, 'buscadas': True})
+                return JsonResponse({'ok': True, 'html': html, 'ids': ids.count()})
+            # except:
+            #     return JsonResponse({'ok': False})
 
     plantillas = PlantillaInformeInspeccion.objects.filter(creador__ronda__entidad=g_e.ronda.entidad)
     logger.info('Entra en ' + request.META['PATH_INFO'])
