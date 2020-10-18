@@ -27,7 +27,7 @@
                 {% else %}{{ tarea_ie.tarea.asunto }}{% endif %}</b> -- <span
                     id="tipo{{ tarea_ie.id }}">{{ tarea_ie.tarea.get_tipo_display }}</span> -- <span
                     id="localizacion{{ tarea_ie.id }}">{{ tarea_ie.tarea.get_localizacion_display }}</span>
-                ({{ tarea_ie.tarea.fecha|date:"d-m-Y" }})
+                (<span id="fecha{{ tarea_ie.id }}">{{ tarea_ie.tarea.fecha|date:"d-m-Y" }}</span>)
 
                 {% if tarea_ie.inspector %}
                     <span style="color: green; padding-right: 20px;"><i

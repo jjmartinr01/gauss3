@@ -211,16 +211,40 @@
                 });
         });
 
-        $('body').on('keyup', '.update_texto', function () {
+        $('body').on('change', '.fecha', function () {
             var id = $(this).data('id');
-            var campo = $(this).data('campo');
-            if ($(this).hasClass('observaciones')) {
-                var valor = $(this).html();
+            var valor = $(this).val();
+            $.post("/tareas_ie/", {action: 'update_fecha', id: id, valor: valor},
+                function (data) {
+                    if (data.ok) {
+                        $('#fecha' + data.id).html(data.fecha);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        function get_texto_from_update_texto(element, id) {
+            var texto;
+            if (element.hasClass('observaciones')) {
+                texto = element.html();
             } else {
-                var valor = $(this).val();
-                $('#asunto' + id).html(valor);
+                texto = element.val();
+                $('#asunto' + id).html(texto);
             }
-            $.post("/tareas_ie/", {action: 'update_texto', id: id, valor: valor, campo: campo},
+            return texto;
+        }
+
+        $('body').on('keyup', '.update_texto', function () {
+            var element = $(this);
+            var id = element.data('id');
+            var campo = element.data('campo');
+            var antiguo_texto = get_texto_from_update_texto(element, id);
+            setTimeout(function () {
+                var nuevo_texto = get_texto_from_update_texto(element, id);
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/tareas_ie/", {action: 'update_texto', id: id, valor: nuevo_texto, campo: campo},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -228,7 +252,15 @@
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
+                }
+            }, 750);
+
+
+
+
+
         });
+
 
         $('body').on('click', '.borrar_tarea_ie', function () {
             id = $(this).data('id');

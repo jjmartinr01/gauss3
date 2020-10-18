@@ -616,7 +616,7 @@ def carga_masiva_from_excel():
             elif carga.tipo == 'CENTROSRACIMA':
                 carga_masiva_tipo_CENTROSRACIMA(carga)
             elif carga.tipo == 'EXCELMDB':
-                carga_masiva_tipo_CENTROSRACIMA(carga)
+                pass
         except:
             logger.info('Carga masiva xls se produce error con carga.id=%s' % carga.id)
             carga.error = True

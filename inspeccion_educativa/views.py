@@ -33,17 +33,37 @@ logger = logging.getLogger('django')
 
 @gauss_required
 def cargar_centros_mdb(request):
-    from inspeccion_educativa.models import CENTROS
+    from inspeccion_educativa.models import rel_code_MDB
     # ("742", "C.R.A. ENTREVALLES", "C.R.A.", "BADARÁN")
-    for centro in CENTROS:
-        CentroMDB.objects.get_or_create(code_mdb=centro[0], tipo=centro[2], nombre=centro[1], localidad=centro[3])
-    return HttpResponse('CentrosMDB creados')
+    errores_mdb = 0
+    errs = 0
+    for centro in rel_code_MDB:
+        try:
+            c = CentroMDB.objects.get(code_mdb=centro[1])
+            c.code = centro[0]
+            c.save()
+            try:
+                e = Entidad.objects.get(code=int(c.code))
+                ts = TareaInspeccion.objects.filter(centro_mdb=c)
+                for t in ts:
+                    t.centro = e
+                    t.save()
+            except:
+                errs += 1
+        except:
+            errores_mdb += 1
+    return HttpResponse('CentrosMDB unidos a los code reales. %s errores mdb, %s errores tareas' % (errores_mdb, errs))
+    # from inspeccion_educativa.models import CENTROS
+    # # ("742", "C.R.A. ENTREVALLES", "C.R.A.", "BADARÁN")
+    # for centro in CENTROS:
+    #     CentroMDB.objects.get_or_create(code_mdb=centro[0], tipo=centro[2], nombre=centro[1], localidad=centro[3])
+    # return HttpResponse('CentrosMDB creados')
 
 
 def todos_lunes(ronda):
     d = ronda.inicio
     dias_sumar = 7 - d.weekday() if (
-                                                7 - d.weekday()) < 7 else 0  # Días a sumar para obtener el primer lunes de la ronda
+                                            7 - d.weekday()) < 7 else 0  # Días a sumar para obtener el primer lunes de la ronda
     lunes = d + timedelta(days=dias_sumar)  # First lunes
     fechas_lunes = []
     while lunes < ronda.fin:
@@ -52,7 +72,7 @@ def todos_lunes(ronda):
     return fechas_lunes
 
 
-# @permiso_required('acceso_tareas_ie')
+@permiso_required('acceso_tareas_ie')
 def tareas_ie(request):
     g_e = request.session["gauser_extra"]
     try:
@@ -149,6 +169,14 @@ def tareas_ie(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_fecha':
+            try:
+                itarea = InspectorTarea.objects.get(inspector__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                itarea.tarea.fecha = datetime.strptime(request.POST['valor'], '%Y-%m-%d')
+                itarea.tarea.save()
+                return JsonResponse({'ok': True, 'fecha': itarea.tarea.fecha.strftime('%d-%m-%Y'), 'id': itarea.id})
+            except:
+                return JsonResponse({'ok': False})
         elif request.POST['action'] == 'borrar_tarea_ie':
             try:
                 itarea = InspectorTarea.objects.get(inspector__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
@@ -209,7 +237,8 @@ def tareas_ie(request):
                 texto = request.POST['texto'] if request.POST['texto'] else ''
                 tipos = [t[0] for t in TIPOS]
                 tipo = [request.POST['tipo_busqueda']] if request.POST['tipo_busqueda'] in tipos else tipos
-                q_texto = Q(tarea__observaciones__icontains=texto) | Q(tarea__asunto__icontains=texto)
+                q_texto = Q(tarea__observaciones__icontains=texto) | Q(tarea__asunto__icontains=texto) | Q(
+                    inspector__gauss__first_name__icontains=texto) | Q(inspector__gauss__last_name__icontains=texto)
                 q_inicio = Q(tarea__fecha__gte=inicio)
                 q_fin = Q(tarea__fecha__lte=fin)
                 q_tipo = Q(tarea__tipo__in=tipo)
@@ -277,7 +306,8 @@ def tareas_ie(request):
             instareas = InspectorTarea.objects.filter(inspector=inspector, tarea__fecha__gte=lunes,
                                                       tarea__fecha__lte=viernes)
             fichero = 'Informe_%s_%s.pdf' % (str(g_e.ronda.entidad.code), inspector.gauser.username)
-            texto_html = render_to_string('informe_personal2pdf.html', {'instareas': instareas, 'lunes': lunes, 'viernes': viernes})
+            texto_html = render_to_string('informe_personal2pdf.html',
+                                          {'instareas': instareas, 'lunes': lunes, 'viernes': viernes})
             ruta = MEDIA_INSPECCION + '%s/' % g_e.ronda.entidad.code
             opciones = {
                 'orientation': 'Landscape',
@@ -601,31 +631,31 @@ def plantillas_ie(request):
 
         elif request.POST['action'] == 'busca_plantillas_ie':
             # try:
-                try:
-                    inicio = datetime.strptime(request.POST['id_fecha_inicio'], '%d-%m-%Y')
-                except:
-                    inicio = datetime.strptime('01-01-2000', '%d-%m-%Y')
-                try:
-                    fin = datetime.strptime(request.POST['id_fecha_fin'], '%d-%m-%Y')
-                except:
-                    fin = datetime.strptime('01-01-3000', '%d-%m-%Y')
-                texto = request.POST['texto'] if request.POST['texto'] else ''
-                q_variante = Q(nombre__icontains=texto) | Q(texto__icontains=texto)
-                ids = VariantePII.objects.filter(q_variante).distinct().values_list('plantilla__id', flat=True)
-                q_varios = Q(destinatario__icontains=texto) | Q(asunto__icontains=texto) | Q(id__in=ids)
-                q_inicio = Q(modificado__gte=inicio)
-                q_fin = Q(modificado__lte=fin)
-                q_entidad = Q(creador__ronda__entidad=g_e.ronda.entidad)
-                piis_base = PlantillaInformeInspeccion.objects.filter(q_entidad & q_inicio & q_fin)
-                piis = piis_base.filter(q_varios)
-                # if request.POST['tipo_busqueda']:
-                #     p = PlantillaInformeInspeccion.objects.get(id=request.POST['tipo_busqueda'])
-                #     ies = ies.filter(variante__plantilla=p)
-                html = render_to_string('plantillas_ie_accordion.html',
-                                            {'plantillas_ie': piis, 'g_e': g_e, 'buscadas': True})
-                return JsonResponse({'ok': True, 'html': html, 'ids': ids.count()})
-            # except:
-            #     return JsonResponse({'ok': False})
+            try:
+                inicio = datetime.strptime(request.POST['id_fecha_inicio'], '%d-%m-%Y')
+            except:
+                inicio = datetime.strptime('01-01-2000', '%d-%m-%Y')
+            try:
+                fin = datetime.strptime(request.POST['id_fecha_fin'], '%d-%m-%Y')
+            except:
+                fin = datetime.strptime('01-01-3000', '%d-%m-%Y')
+            texto = request.POST['texto'] if request.POST['texto'] else ''
+            q_variante = Q(nombre__icontains=texto) | Q(texto__icontains=texto)
+            ids = VariantePII.objects.filter(q_variante).distinct().values_list('plantilla__id', flat=True)
+            q_varios = Q(destinatario__icontains=texto) | Q(asunto__icontains=texto) | Q(id__in=ids)
+            q_inicio = Q(modificado__gte=inicio)
+            q_fin = Q(modificado__lte=fin)
+            q_entidad = Q(creador__ronda__entidad=g_e.ronda.entidad)
+            piis_base = PlantillaInformeInspeccion.objects.filter(q_entidad & q_inicio & q_fin)
+            piis = piis_base.filter(q_varios)
+            # if request.POST['tipo_busqueda']:
+            #     p = PlantillaInformeInspeccion.objects.get(id=request.POST['tipo_busqueda'])
+            #     ies = ies.filter(variante__plantilla=p)
+            html = render_to_string('plantillas_ie_accordion.html',
+                                    {'plantillas_ie': piis, 'g_e': g_e, 'buscadas': True})
+            return JsonResponse({'ok': True, 'html': html, 'ids': ids.count()})
+        # except:
+        #     return JsonResponse({'ok': False})
 
     plantillas = PlantillaInformeInspeccion.objects.filter(creador__ronda__entidad=g_e.ronda.entidad)
     logger.info('Entra en ' + request.META['PATH_INFO'])
@@ -679,6 +709,10 @@ def carga_masiva_inspeccion(request):
                 except:
                     fecha = None
                 centro = CentroMDB.objects.get(code_mdb=str(int(sheet.cell(row_index, dict_names['CENTRO']).value)))
+                try:
+                    entidad = Entidad.objects.get(code=int(centro.code))
+                except:
+                    entidad = None
                 # datetime.strptime(sheet.cell(row_index, dict_names['FECHA']).value,
                 #                   '%d/%m/%Y')
                 try:
@@ -712,6 +746,9 @@ def carga_masiva_inspeccion(request):
                                                        objeto=str(sheet.cell(row_index, dict_names['OBJETO']).value),
                                                        creador=g_e
                                                        )
+                    if entidad:
+                        t.centro = entidad
+                        t.save()
                     # crear_aviso(request, aceptado=False, INSPECTORES_GAUSER[t.inspector_mdb])
                     username = INSPECTORES_GAUSER[t.inspector_mdb]
                     try:
