@@ -833,7 +833,8 @@ def firmar_orden_adeudo(request, id_oa):
                 orden_adeudo.firma = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
                 orden_adeudo.fecha_firma = date.today()
                 orden_adeudo.save()
-                orden_adeudo.texto_firmado = render_to_string('orden_adeudo2pdf.html', {'orden': orden_adeudo})
+                orden_adeudo.texto_firmado = render_to_string('orden_adeudo2pdf.html', {'orden': orden_adeudo,
+                                                                                        'firma_data': firma_data})
                 orden_adeudo.save()
                 crear_aviso(request, False, 'Orden de adeudo firmada correctamente.')
                 return JsonResponse({'ok': True})
