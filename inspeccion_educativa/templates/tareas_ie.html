@@ -110,6 +110,48 @@
 {% block final %}
     <script>
 
+
+
+    function constructEditorInstances() {
+        CKEDITOR.editorConfig = function (config){
+            config.toolbarGroups = [
+        { name: 'clipboard',   groups: [ 'Cut','Copy','Paste','PasteText','PasteFromWord','Undo','Redo' ] },
+        { name: 'editing',     groups: [ 'find', 'selection', 'spellchecker' ] },
+        { name: 'links' },
+        { name: 'insert' },
+        {#{ name: 'forms' },#}
+        { name: 'tools' },
+        { name: 'document',       groups: [ 'mode', 'document', 'doctools' ] },
+        { name: 'others' },
+        '/',
+        { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+        { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ] },
+        { name: 'styles',      groups : [ 'Styles','Format','Font','FontSize' ] },
+        { name: 'colors',        groups : [ 'TextColor','BGColor' ] },
+        { name: 'about' }
+    ];
+        }
+            for (var instance in CKEDITOR.instances) {
+                CKEDITOR.instances[instance].inline({
+                    toolbarGroups: [
+        { name: 'clipboard',   groups: [ 'Cut','Copy','Paste','PasteText','PasteFromWord','Undo','Redo' ] },
+        { name: 'editing',     groups: [ 'find', 'selection', 'spellchecker' ] },
+        { name: 'links' },
+        { name: 'insert' },
+        {#{ name: 'forms' },#}
+        { name: 'tools' },
+        { name: 'document',       groups: [ 'mode', 'document', 'doctools' ] },
+        { name: 'others' },
+        '/',
+        { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+        { name: 'styles',      groups : [ 'Styles','Format','Font','FontSize' ] },
+        { name: 'colors',        groups : [ 'TextColor','BGColor' ] },
+        { name: 'about' }
+    ]
+                });
+            }
+        }
+
         function destroyEditorInstances() {
             for (var instance in CKEDITOR.instances) {
                 CKEDITOR.instances[instance].destroy();
@@ -130,7 +172,8 @@
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
                                         destroyEditorInstances();
-                                        CKEDITOR.inlineAll();
+                                        constructEditorInstances();
+                                        {#CKEDITOR.inlineAll();#}
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();

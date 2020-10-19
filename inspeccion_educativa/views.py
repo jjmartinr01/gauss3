@@ -238,7 +238,7 @@ def tareas_ie(request):
                 tipos = [t[0] for t in TIPOS]
                 tipo = [request.POST['tipo_busqueda']] if request.POST['tipo_busqueda'] in tipos else tipos
                 q_texto = Q(tarea__observaciones__icontains=texto) | Q(tarea__asunto__icontains=texto) | Q(
-                    inspector__gauss__first_name__icontains=texto) | Q(inspector__gauss__last_name__icontains=texto)
+                    inspector__gauser__first_name__icontains=texto) | Q(inspector__gauser__last_name__icontains=texto)
                 q_inicio = Q(tarea__fecha__gte=inicio)
                 q_fin = Q(tarea__fecha__lte=fin)
                 q_tipo = Q(tarea__tipo__in=tipo)

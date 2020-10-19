@@ -92,6 +92,11 @@
                 CKEDITOR.instances[instance].destroy();
             }
         }
+        function constructEditorInstances(id) {
+            CKEDITOR.replace('texto_editable' + id);
+            {#CKEDITOR.replace('destinatario' + id);#}
+            CKEDITOR.inline('destinatario' + id);
+        }
 
         $(document).foundation({
             accordion: {
@@ -107,8 +112,8 @@
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
                                         destroyEditorInstances();
+                                        {#constructEditorInstances(id);#}
                                         CKEDITOR.inlineAll();
-                                        {#CKEDITOR.replace('texto_editable' + id);#}
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();
@@ -171,9 +176,9 @@
                                     $('#variables' + data.ie).html(data.html_v);
                                 }
                                 if (data.num_v > 0){
-                                    $('#variables_texto2pdf' + data.ie).show();
+                                    $('.variables_texto2pdf' + data.ie).show();
                                 }else{
-                                    $('#variables_texto2pdf' + data.ie).hide();
+                                    $('.variables_texto2pdf' + data.ie).hide();
                                 }
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
