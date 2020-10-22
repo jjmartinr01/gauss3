@@ -104,9 +104,9 @@
                 </label>
             </div>
             <div class="large-4 columns">
-                <label>DNI (Letra mayúscula)
+                <label>DNI (Letra sin espacios)
                     <input type="text" value="{{ miembro_unidad.gauser.dni }}" data-id="{{ miembro_unidad.id }}"
-                           data-campo="dni" class="campo_gauser" id="dni">
+                           data-campo="dni" class="campo_gauser" id="dni" style="text-transform:uppercase">
                 </label>
             </div>
             <div class="large-5 columns">
@@ -416,21 +416,39 @@
             return a + this.generar_letra_nif_nie(a)
         }
 
-        if ($('#dni').val() != crear_nif($('#dni').val())) {
-            $('#dni').val('');
-            var ge_id = $('#dni').data('id');
-            $.post("/mis_datos_ajax/", {
+        {# ################################################################### #}
+        {# ################# PARA ESCRIBIR CORRECTAMENTE EL DNI############### #}
+        {# ################################################################### #}
+        var dni_element = $('#dni');
+        var dni_creado = crear_nif(dni_element.val());
+        var ge_id = dni_element.data('id');
+        if (dni_element.val() !== dni_creado) {
+            var dni_mejorado = dni_element.val().replace('-', '').replace(' ', '').toUpperCase();
+            if (dni_mejorado === dni_creado) {
+                dni_element.val(dni_creado);
+                $.post("/mis_datos_ajax/", {
+                    action: 'campo_gauser',
+                    ge_id: ge_id,
+                    campo: 'dni',
+                    valor: dni_creado
+                }, function (data) {
+                }, 'json');
+            } else {
+                $.post("/mis_datos_ajax/", {
                     action: 'campo_gauser',
                     ge_id: ge_id,
                     campo: 'dni',
                     valor: ''
                 }, function (data) {
                 }, 'json');
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> Error en DNI',
-                texto: 'Tu DNI está mal registrado. Por favor corrígelo.'
-            });
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Error en DNI',
+                    texto: 'Tu DNI está mal registrado. Por favor corrígelo.'
+                });
+            }
         }
+        {# ################################################################### #}
+        {# ################################################################### #}
 
         $('#Contenido').on('keyup change', '#num_cuenta_bancaria', function () {
             var ok = false;
@@ -531,8 +549,10 @@
             var campo = $(this).data('campo');
             var valor = $(this).val();
             var enviar = true;
-            if (campo = 'dni') {
-                enviar = valor == crear_nif(valor)
+            if (campo === 'dni') {
+                valor = valor.replace('-', '').replace(' ', '').toUpperCase();
+                $(this).val(valor);
+                enviar = valor === crear_nif(valor)
             }
             if (enviar) {
                 $.post("/mis_datos_ajax/", {
