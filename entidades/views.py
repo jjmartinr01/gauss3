@@ -87,6 +87,12 @@ def mis_datos_ajax(request):
             try:
                 ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['ge_id'])
                 g = ge.gauser
+                if request.POST['campo'] == 'dni':
+                    num_gdni = Gauser.objects.filter(dni=request.POST['valor']).exclude(id=g.id).count()
+                    if num_gdni > 1:
+                        return JsonResponse({'ok': False, 'msg': 'Existen %s usuarios con ese dni' % num_gdni})
+                    elif num_gdni == 1:
+                        return JsonResponse({'ok': False, 'msg': 'Ya existe un usuario con ese dni'})
                 setattr(g, request.POST['campo'], request.POST['valor'])
                 g.save()
                 if ge == g_e:
@@ -133,7 +139,8 @@ def mis_datos_ajax(request):
 # Problemas iniciales encontrados:
 # - cargos y subentidades que se ha conseguido a través de templatetags
 # - Select2 ajax activarlo para cargar tutores (sin hacer)
-@login_required()
+# @login_required()
+@permiso_required('acceso_miembros_entidad')
 def usuarios_entidad_ajax(request):
     g_e = request.session["gauser_extra"]
     if request.is_ajax():
@@ -152,6 +159,12 @@ def usuarios_entidad_ajax(request):
                 if g_e.has_permiso('modifica_datos_usuarios'):
                     try:
                         gauser = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda).gauser
+                        if request.POST['campo'] == 'dni':
+                            num_gdni = Gauser.objects.filter(dni=request.POST['valor']).exclude(id=gauser.id).count()
+                            if num_gdni > 1:
+                                return JsonResponse({'ok': False, 'msg': 'Existen %s usuarios con ese dni' % num_gdni})
+                            elif num_gdni == 1:
+                                return JsonResponse({'ok': False, 'msg': 'Ya existe un usuario con ese dni'})
                         setattr(gauser, request.POST['campo'], request.POST['valor'])
                         gauser.save()
                         return JsonResponse({'ok': True})
@@ -372,7 +385,7 @@ def configura_auto_id(request):
 ########################### FUNCIONES LIGADAS AL LISTADO DE USUARIOS ###########################
 
 
-# @permiso_required('acceso_listados_usuarios')
+@permiso_required('acceso_listados_usuarios')
 def listados_usuarios(request):
     g_e = request.session['gauser_extra']
     filtrados = Filtrado.objects.filter(propietario__ronda__entidad=g_e.ronda.entidad, propietario__gauser=g_e.gauser)
@@ -482,7 +495,7 @@ def crea_query(filtrado):
 
 
 # @login_required()
-# @permiso_required('acceso_listados_usuarios')
+@permiso_required('acceso_listados_usuarios')
 def ajax_filtro(request):
     g_e = request.session['gauser_extra']
     if request.is_ajax():
@@ -693,7 +706,7 @@ def buscar_usuarios_cargos_subentidades(request):
 # ###################################################################################f
 # ###################################################################################f
 
-# @permiso_required('acceso_dependencias_entidad')
+@permiso_required('acceso_dependencias_entidad')
 def dependencias_entidad(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST' and request.is_ajax():
@@ -934,7 +947,6 @@ def datos_entidad(request):
                 f.close()
                 return JsonResponse({'ok': True})
             except:
-                return JsonResponse({'ok': False})
                 return JsonResponse({'ok': False})
         elif action == 'update_pie_html' and request.is_ajax():
             try:
@@ -1276,7 +1288,7 @@ def add_usuario(request):
                   })
 
 
-# @permiso_required('acceso_tutores_entidad')
+@permiso_required('acceso_tutores_entidad')
 def tutores_entidad(request):
     g_e = request.session['gauser_extra']
     sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
@@ -1506,7 +1518,7 @@ def bajas_usuarios(request):
                   })
 
 
-# @permiso_required('acceso_gestionar_perfiles')
+@permiso_required('acceso_gestionar_perfiles')
 def organigrama(request):
     g_e = request.session['gauser_extra']
     crear_aviso(request, True, request.META['PATH_INFO'])
@@ -2402,7 +2414,7 @@ def linkge(request, code):
             return redirect('/')
 
 
-# @permiso_required('acceso_getion_bajas')
+@permiso_required('acceso_getion_bajas')
 def crealinkge(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
@@ -2438,7 +2450,7 @@ def crealinkge(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
-# @permiso_required('acceso_doc_configuration')
+@permiso_required('acceso_doc_configuration')
 def doc_configuration(request):
     g_e = request.session['gauser_extra']
     dces = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)

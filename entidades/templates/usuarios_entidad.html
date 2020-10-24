@@ -74,6 +74,50 @@
             });
         }
 
+        function generar_letra_nif_nie(b) {
+            var c = ["T", "R", "W", "A", "G", "M", "Y", "F", "P", "D", "X", "B", "N", "J", "Z", "S", "Q", "V", "H", "L", "C", "K", "E"];
+            if (b.substring(0, 1).toUpperCase() === "X") {
+                b = b.replace(/x/i, "0")
+            } else {
+                if (b.substring(0, 1).toUpperCase() === "Y") {
+                    b = b.replace(/y/i, "1")
+                } else {
+                    if (b.substring(0, 1).toUpperCase() === "Z") {
+                        b = b.replace(/z/i, "2")
+                    }
+                }
+            }
+            var a = b % 23;
+            return c[a]
+        }
+
+        function es_creable_nif(a) {
+            return a.substring(0, 1).match(/([A-Z])/i) == null && a.substring(0, 1).match(/[^a-zA-Z0-9]/i) == null
+        }
+
+        function crear_nif(b) {
+            var c = -1;
+            var a;
+            b = b.replace(/[^a-zA-Z0-9]+/g, "");
+            if (b.match(/([A-Z])/i) != null) {
+                c = b.match(/([A-Z])/i).index
+            }
+            if (c != -1) {
+                a = b.substring(0, c)
+            } else {
+                a = b
+            }
+            if (a.length < 8) {
+                var d = "00000000";
+                a = d.substring(0, 8 - (a.length)) + a
+            } else {
+                if (a.length > 8) {
+                    a = a.substring(0, 8)
+                }
+            }
+            return a + this.generar_letra_nif_nie(a)
+        }
+
         {% if request.session.gauser_extra|has_permiso:'modifica_datos_usuarios' %}
             function post_change(action, campo, ge, valor) {
                 $.post("/usuarios_entidad_ajax/", {
@@ -95,6 +139,14 @@
                         return true;
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
+                        if (data.msg) {
+                            setTimeout(function () {
+                                show_mensajes({
+                                    title: '<i class="fa fa-warning"></i> Error',
+                                    texto: data.msg
+                                })
+                            }, 200);
+                        }
                         return false;
                     }
                 });
@@ -105,11 +157,21 @@
                 var campo = elemento.data('campo');
                 var valor = elemento.val();
                 var ge = $('#gauser_extra_selected').val();
-                setTimeout(function () {
-                    if (valor == elemento.val()) {
-                        post_change('mod_gauser_data', campo, ge, valor);
-                    }
-                }, 750);
+                var enviar = true;
+                if (campo === 'dni') {
+                    valor = valor.replace('-', '').replace(' ', '').toUpperCase();
+                    $(this).val(valor);
+                    enviar = valor === crear_nif(valor)
+                }
+                if (enviar) {
+                    setTimeout(function () {
+                        if (valor == elemento.val()) {
+                            post_change('mod_gauser_data', campo, ge, valor);
+                        }
+                    }, 750);
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                }
             });
 
             $('#Contenido').on('keyup change', '.gauser_extra', function (e) {

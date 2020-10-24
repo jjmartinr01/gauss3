@@ -794,21 +794,48 @@ def comprueba_ordenes_adeudo(g_e):
     else:
         return OrdenAdeudo.objects.none()
 
+def get_dce(entidad):
+    doc_adeudo = 'Configuración para órdenes de adeudo'
+    try:
+        dce = DocConfEntidad.objects.get(entidad=entidad, nombre=doc_adeudo)
+    except:
+        try:
+            dce = DocConfEntidad.objects.get(entidad=entidad, predeterminado=True)
+        except:
+            dce = DocConfEntidad.objects.filter(entidad=entidad)[0]
+            dce.predeterminado = True
+            dce.save()
+        dce.pk = None
+        dce.nombre = doc_adeudo
+        dce.predeterminado = False
+        dce.editable = False
+        dce.save()
+    return dce
 
-# @permiso_required('acceso_ordenes_adeudo')
+@permiso_required('acceso_ordenes_adeudo')
 def ordenes_adeudo(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
+        dce = get_dce(g_e.ronda.entidad)
         orden = OrdenAdeudo.objects.get(id=request.POST['orden_id'], politica__entidad=g_e.ronda.entidad,
-                                        firma__isnull=False)
-        fichero = 'orden_adeudo_directo_SEPA'
-        # c = render_to_string('orden_adeudo2pdf.html', {'orden': orden})
+                                        firma__isnull=False, gauser=g_e.gauser)
         c = orden.texto_firmado
-        fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_CONTABILIDAD, title='Orden de adeudo directo SEPA')
+        pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+        fich = open(dce.url_pdf, 'rb')
         response = HttpResponse(fich, content_type='application/pdf')
-        nombre = slugify('%s_%s' % (orden.politica.concepto, orden.gauser.get_full_name()))
-        response['Content-Disposition'] = 'attachment; filename=' + nombre + '.pdf'
+        response['Content-Disposition'] = 'attachment; filename=orden_adeudo_directo_SEPA%s.pdf' % orden.id
         return response
+
+
+
+        # fichero = 'orden_adeudo_directo_SEPA'
+        # # c = render_to_string('orden_adeudo2pdf.html', {'orden': orden})
+        # c = orden.texto_firmado
+        # fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_CONTABILIDAD, title='Orden de adeudo directo SEPA')
+        # response = HttpResponse(fich, content_type='application/pdf')
+        # nombre = slugify('%s_%s' % (orden.politica.concepto, orden.gauser.get_full_name()))
+        # response['Content-Disposition'] = 'attachment; filename=' + nombre + '.pdf'
+        # return response
     ordenes_firmadas = OrdenAdeudo.objects.filter(fecha_firma__isnull=False, politica__entidad=g_e.ronda.entidad)
     politicas = Politica_cuotas.objects.filter(entidad=g_e.entidad)
     return render(request, "ordenes_adeudo.html",
@@ -858,21 +885,22 @@ def firmar_orden_adeudo(request, id_oa):
 def mis_ordenes_adeudo(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
-        doc_adeudo = 'Configuración para órdenes de adeudo'
-        try:
-            dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_adeudo)
-        except:
-            try:
-                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
-            except:
-                dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
-                dce.predeterminado = True
-                dce.save()
-            dce.pk = None
-            dce.nombre = doc_adeudo
-            dce.predeterminado = False
-            dce.editable = False
-            dce.save()
+        dce = get_dce(g_e.ronda.entidad)
+        # doc_adeudo = 'Configuración para órdenes de adeudo'
+        # try:
+        #     dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_adeudo)
+        # except:
+        #     try:
+        #         dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+        #     except:
+        #         dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
+        #         dce.predeterminado = True
+        #         dce.save()
+        #     dce.pk = None
+        #     dce.nombre = doc_adeudo
+        #     dce.predeterminado = False
+        #     dce.editable = False
+        #     dce.save()
         orden = OrdenAdeudo.objects.get(id=request.POST['orden_id'], politica__entidad=g_e.ronda.entidad,
                                         firma__isnull=False, gauser=g_e.gauser)
         c = orden.texto_firmado

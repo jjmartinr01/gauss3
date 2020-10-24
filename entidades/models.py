@@ -3,6 +3,7 @@
 # from __future__ import unicode_literals
 import random
 import string
+import logging
 from datetime import date, timedelta, datetime
 from django.db import models
 from django.template.loader import render_to_string
@@ -15,6 +16,8 @@ from gauss.rutas import *
 from bancos.models import Banco
 from django.db.models import Q
 from autenticar.models import Gauser, Permiso, Menu_default
+
+logger = logging.getLogger('django')
 
 
 def pass_generator(size=6, chars=string.ascii_letters + string.digits):
@@ -200,7 +203,7 @@ class EntidadExtraExpedienteOferta(models.Model):
 
 
 class DocConfEntidad(models.Model):
-    ORIENTATION=(('Portrait', 'Vertical'), ('Landscape', 'Horizontal'))
+    ORIENTATION = (('Portrait', 'Vertical'), ('Landscape', 'Horizontal'))
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     predeterminado = models.BooleanField('¿Es la configuración predeterminada?', default=False)
     nombre = models.CharField('Nombre de la configuración', max_length=50, default='')
@@ -231,23 +234,24 @@ class DocConfEntidad(models.Model):
     @property
     def get_opciones(self):
         return {
-                'orientation': self.orientation,
-                'page-size': self.pagesize,
-                'margin-top': self.margintop,
-                'margin-right': self.marginright,
-                'margin-bottom': self.marginbottom,
-                'margin-left': self.marginleft,
-                'header-spacing': self.headerspacing,
-                'encoding': self.encoding,
-                'header-html': self.url_header,
-                '--footer-html': self.url_footer,
-                'no-outline': None,
-                'load-error-handling': 'ignore'
-            }
+            'orientation': self.orientation,
+            'page-size': self.pagesize,
+            'margin-top': self.margintop,
+            'margin-right': self.marginright,
+            'margin-bottom': self.marginbottom,
+            'margin-left': self.marginleft,
+            'header-spacing': self.headerspacing,
+            'encoding': self.encoding,
+            'header-html': self.url_header,
+            '--footer-html': self.url_footer,
+            'no-outline': None,
+            'load-error-handling': 'ignore'
+        }
 
     def __str__(self):
         return '%s (top: %s, bottom: %s, left: %s, right: %s)' % (
             self.entidad, self.margintop, self.marginbottom, self.marginleft, self.marginright)
+
 
 # Cada vez que se graba un DocConfEntidad se actualizan los html asociados a la cabecera y el pie
 @receiver(post_save, sender=DocConfEntidad, dispatch_uid="update_html_header_footer")
@@ -322,54 +326,46 @@ class Alta_Baja(models.Model):
     def dar_alta(self, autor):
         ge, tutor1, tutor2 = None, None, None
         if self.fecha_baja:
+            # Recuperar el usuario
             ges = Gauser_extra.objects.filter(gauser=self.gauser, ronda__entidad=self.entidad)
             try:
                 ge = ges.get(ronda=self.entidad.ronda)
-                tutor1 = ge.tutor1
-                tutor2 = ge.tutor2
             except:
                 ge = ges.order_by('ronda').reverse()[0]
-                tutor1 = ge.tutor1
-                tutor2 = ge.tutor2
                 ge.pk = None
-                if tutor1: tutor1.pk = None
-                if tutor2: tutor2.pk = None
-            if tutor1:
-                tutor1.ronda = self.entidad.ronda
-                tutor1.activo = True
-                tutor1.save()
-                try:
-                    baja = Alta_Baja.objects.get(gauser=tutor1.gauser, entidad=self.entidad)
-                    baja.observaciones += "(Autor: %s) Es dado de alta con fecha %s<br>" % (autor, date.today())
-                    baja.fecha_baja = None
-                    baja.autor = autor
-                    baja.save()
-                except:
-                    Alta_Baja.objects.create(gauser=tutor1.gauser, entidad=self.entidad, fecha_baja=None, autor=autor,
-                                             observaciones='(Autor: %s) Se da de alta.<br>' % (autor))
-            if tutor2:
-                tutor2.ronda = self.entidad.ronda
-                tutor2.activo = True
-                tutor2.save()
-                try:
-                    baja = Alta_Baja.objects.get(gauser=tutor2.gauser, entidad=self.entidad)
-                    baja.observaciones += "(Autor: %s) Es dado de alta con fecha %s<br>" % (autor, date.today())
-                    baja.fecha_baja = None
-                    baja.autor = autor
-                    baja.save()
-                except:
-                    Alta_Baja.objects.create(gauser=tutor2.gauser, entidad=self.entidad, fecha_baja=None, autor=autor,
-                                             observaciones='(Autor: %s) Se da de alta.<br>' % (autor))
-            ge.ronda = self.entidad.ronda
+                ge.ronda = self.entidad.ronda
             ge.activo = True
-            ge.tutor1 = tutor1
-            ge.tutor2 = tutor2
             ge.save()
-            self.observaciones += "(Autor: %s) Es dado de alta con fecha %s<br>" % (autor, date.today())
+            # Recuperar tutores
+            try:
+                tutores = ((ge.tutor1, 'tutor1'), (ge.tutor2, 'tutor2'))
+                for tutor, id_tutor in tutores:
+                    if tutor:
+                        # Comprobar si el tutor es de la ronda actual
+                        if tutor.ronda != ge.ronda:
+                            try:
+                                tutor_encontrado = Gauser_extra.objects.get(gauser=tutor.gauser, ronda=ge.ronda)
+                            except:
+                                tutor_encontrado = tutor
+                                tutor_encontrado.pk = None
+                                tutor_encontrado.ronda = ge.ronda
+                            tutor_encontrado.activo = True
+                            tutor_encontrado.save()
+                            setattr(ge, id_tutor, tutor_encontrado)
+                            ge.save()
+                            # Arreglar la baja del tutor:
+                            b, c = Alta_Baja.objects.get_or_create(gauser=tutor_encontrado.gauser, entidad=self.entidad)
+                            b.observaciones += "(Autor: %s) Es dado de alta con fecha %s<br>" % (autor, timezone.now())
+                            b.fecha_baja = None
+                            b.autor = autor
+                            b.save()
+            except Exception as msg:
+                logger.info('%s' % str(msg))
+            self.observaciones += "(Autor: %s) Es dado de alta con fecha %s<br>" % (autor, timezone.now())
             self.fecha_baja = None
             self.autor = autor
             self.save()
-        return {'ge': ge, 'tutor1': tutor1, 'tutor2': tutor2}
+        return {'ge': ge, 'tutor1': ge.tutor1, 'tutor2': ge.tutor2}
 
     class Meta:
         verbose_name_plural = "Altas y bajas"

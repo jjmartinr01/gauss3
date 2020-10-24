@@ -3,7 +3,7 @@ import re
 import os
 from django.db import models
 from django.utils.text import slugify
-from django.utils.timezone import datetime
+from django.utils.timezone import datetime, timedelta
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
@@ -145,8 +145,11 @@ class Politica_cuotas(models.Model):
                     num = deudores.count()
                     texto = ', '.join(deudores.values_list('gauser__first_name', flat=True))
                     try:
-                        oa = OrdenAdeudo.objects.filter(politica=self, fecha_firma__isnull=False,
-                                                        gauser__id__in=familiares_gauser)[0]
+                        # fecha_18 = datetime.today() - timedelta(days=18*365.25)
+                        # oa = OrdenAdeudo.objects.filter(politica=self, gauser__id__in=familiares_gauser,
+                        #                                 fecha_firma__isnull=False, gauser__nacimiento__lte=fecha_18)[0]
+                        oa = OrdenAdeudo.objects.filter(politica=self, gauser__id__in=familiares_gauser,
+                                                        fecha_firma__isnull=False)[0]
                     except:
                         oa = OrdenAdeudo.objects.none()
                     dicts_destinatarios.append({'oa': oa, 'ge': u, 'num': num, 'texto': texto})
