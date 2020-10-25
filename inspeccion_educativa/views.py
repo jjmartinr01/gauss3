@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import xlwt
+import pdfkit
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.utils.text import slugify
@@ -518,11 +519,25 @@ def informes_ie(request):
                 return JsonResponse({'ok': False})
     elif request.method == 'POST' and not request.is_ajax():
         if request.POST['action'] == 'pdf_ie':
+            doc_ie = 'Configuración de informes de Inspección Educativa'
+            try:
+                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_ie)
+            except:
+                try:
+                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+                except:
+                    dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
+                    dce.predeterminado = True
+                    dce.save()
+                dce.pk = None
+                dce.nombre = doc_ie
+                dce.predeterminado = False
+                dce.editable = False
+                dce.save()
             ie = InformeInspeccion.objects.get(inspector__gauser=g_e.gauser, id=request.POST['id_ie'])
-            texto_html = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie})
-            ruta = MEDIA_INSPECCION + '%s/' % g_e.ronda.entidad.code
-            fich = html_to_pdf(request, texto_html, fichero='IE', media=ruta,
-                               title='Informe de Inspección Técnica Educativa')
+            c = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie, 'pdf': True})
+            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            fich = open(dce.url_pdf, 'rb')
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(ie.asunto)
             return response

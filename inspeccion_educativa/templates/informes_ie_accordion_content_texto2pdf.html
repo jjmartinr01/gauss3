@@ -1,13 +1,67 @@
 {% load inspeccion_educativa_extras %}
-<div class="informe_no_editable">
-<table class="informe_no_editable">
-    <tr>
-        <td style="width: 109mm;">&nbsp;</td>
-        <td style="width: 101mm;" title="Destinatario del informe">{% autoescape off %}{{ ie.destinatario }}{% endautoescape %}</td>
-    </tr>
-</table>
-{#<br>#}
+{% if pdf %}
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>Informe Semanal de Inspección ({{ instareas.0.inspector.gauser.get_full_name|upper }})</title>
+        <style type="text/css">
+            html {
+                font-family: Arial, Helvetica, sans-serif;
+            }
 
-<p style="font-weight: bold" title="Asunto del informe">Asunto: {{ ie.asunto }}</p>
-<div title="Contenido del informe">{% autoescape off %}{{ ie.texto_procesado }}{% endautoescape %}</div>
-</div>
+            table {
+                margin-left: auto;
+                margin-right: auto;
+                width: 100%;
+            }
+
+            .pagebreak {
+                page-break-before: always;
+            }
+
+            {# Las siguientes tres líneas de estilo son para conseguir que la cabecera de la tabla no se solape #}
+            {# con el texto de la primera fila de cada página. Esta información ha sido obtenida de: #}
+            {# https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2367 #}
+            thead {
+                display: table-header-group
+            }
+
+            tfoot {
+                display: table-row-group
+            }
+
+            tr {
+                page-break-inside: avoid
+            }
+        </style>
+    </head>
+    <body>
+    <div class="informe_no_editable">
+        <table class="informe_no_editable">
+            <tr>
+                <td style="width: 109mm;">&nbsp;</td>
+                <td style="width: 101mm;" title="Destinatario del informe">
+                    {% autoescape off %}{{ ie.destinatario }}{% endautoescape %}</td>
+            </tr>
+        </table>
+
+        <p style="font-weight: bold" title="Asunto del informe">Asunto: {{ ie.asunto }}</p>
+        <div title="Contenido del informe">{% autoescape off %}{{ ie.texto_procesado }}{% endautoescape %}</div>
+    </div>
+    </body>
+    </html>
+{% else %}
+    <div class="informe_no_editable">
+        <table class="informe_no_editable">
+            <tr>
+                <td style="width: 109mm;">&nbsp;</td>
+                <td style="width: 101mm;" title="Destinatario del informe">
+                    {% autoescape off %}{{ ie.destinatario }}{% endautoescape %}</td>
+            </tr>
+        </table>
+
+        <p style="font-weight: bold" title="Asunto del informe">Asunto: {{ ie.asunto }}</p>
+        <div title="Contenido del informe">{% autoescape off %}{{ ie.texto_procesado }}{% endautoescape %}</div>
+    </div>
+{% endif %}

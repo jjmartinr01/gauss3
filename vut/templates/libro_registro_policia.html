@@ -50,7 +50,7 @@
     Fecha de nacimiento(3): {{ viajero.nacimiento|date:'Ymd' }}<br>
     País de nacionalidad(4): {{ viajero.get_pais_display|upper }}<br>
     Fecha de entrada(5): {{ viajero.reserva.entrada|date:'Ymd' }}<br>
-    <p class="center">Logroño, a {{ viajero.reserva.entrada|date:'j' }} de {{ viajero.reserva.entrada|date:'F'|lower }}
+    <p class="center">{{ vivienda.municipio }}, a {{ viajero.reserva.entrada|date:'j' }} de {{ viajero.reserva.entrada|date:'F'|lower }}
         de {{ viajero.reserva.entrada|date:'Y' }}</p>
     <table><tr><td>Firma del viajero</td><td><img src="{{ p_d }}{{ viajero.firma.url }}" width="120px" alt="firma del viajero"></td></tr></table>
     <div style="font-size: small">
