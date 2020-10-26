@@ -1,3 +1,4 @@
+{% load inspeccion_educativa_extras %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
 <head>
@@ -82,7 +83,7 @@
             <td>{{ i.tarea.asunto }}</td>
             <td>{{ i.tarea.tipo }}</td>
             <td>{{ i.tarea.funcion }}</td>
-            <td></td>
+            <td>{{ i|inspectores_colaboradores }}</td>
         </tr>
     {% endfor %}
     </tbody>

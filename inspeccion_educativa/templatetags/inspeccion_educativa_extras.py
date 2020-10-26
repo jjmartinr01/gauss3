@@ -39,3 +39,19 @@ def permiso_instarea_x(instarea, g_e):
             return False
     except:
         return False
+
+def get_iniciales(nombre):
+    words = nombre.split(' ')
+    character = ''
+    for word in words:
+        character += word[0]
+    return character
+
+@register.filter
+def inspectores_colaboradores(instarea):
+    # inspector = instarea.inspector
+    # inspectores = instarea.tarea.inspectortarea_set.exclude(inspector=inspector)
+    iniciales = []
+    for i in instarea.tarea.inspectortarea_set.all():
+        iniciales.append(get_iniciales(i.inspector.gauser.get_full_name()))
+    return ', '.join(iniciales)

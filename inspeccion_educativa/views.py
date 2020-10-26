@@ -73,7 +73,7 @@ def todos_lunes(ronda):
     return fechas_lunes
 
 
-@permiso_required('acceso_tareas_ie')
+# @permiso_required('acceso_tareas_ie')
 def tareas_ie(request):
     g_e = request.session["gauser_extra"]
     try:

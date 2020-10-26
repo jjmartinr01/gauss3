@@ -498,7 +498,7 @@ def create_remesas_info_xls(remesa_emitida, destinatarios):
     return {'ctrlsum': ctrlsum, 'nboftxs': nboftxs}
 
 
-@permiso_required('acceso_politica_cuotas')
+# @permiso_required('acceso_politica_cuotas')
 def politica_cuotas(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
