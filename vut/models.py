@@ -509,7 +509,7 @@ class ContratoVUT(models.Model):
     # dni4 = models.CharField('DNI 1', max_length=100, blank=True, null=True)
     # viajero5 = models.CharField('Nombre 1', max_length=100, blank=True, null=True)
     # dni5 = models.CharField('DNI 1', max_length=100, blank=True, null=True)
-    texto = models.TextField('Descripción de la información recogida', null=True, blank=True)
+    texto = models.TextField('Descripción de la información recogida', null=True, blank=True, default='')
     editado = models.BooleanField('¿Ha sido editado manualmente?', default=False)
     creado = models.DateField('Fecha de creación', auto_now_add=True)
     modificado = models.DateField('Fecha de modificación', auto_now=True)

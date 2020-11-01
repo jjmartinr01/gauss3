@@ -2998,7 +2998,7 @@ def reserva_vut_crea_recibo(request, reserva_id):
         return render(request, "no_login.html", {'pag': '"Crear recibo para esta reserva"', })
 
 
-@permiso_required('acceso_contratos_vut')
+# @permiso_required('acceso_contratos_vut')
 def contratos_vut(request):
     g_e = request.session['gauser_extra']
     vvs = viviendas_autorizado(g_e)
@@ -3162,8 +3162,11 @@ def genera_pdf_contrato(contrato):
                                     </style>
                                 </head>
                                 <body>"""
-    firmas = render_to_string('contratos_vut_accordion_content_texto_firmas.html',
+    if contrato_vut.hay_firmas:
+        firmas = render_to_string('contratos_vut_accordion_content_texto_firmas.html',
                               {'contrato': contrato_vut})
+    else:
+        firmas = ''
     final = "</body></html>"
     html = preambulo + contrato_vut.texto + firmas + final
     filename = 'Contrato_%s_%s.pdf' % (str(contrato_vut.propietario.gauser.id), str(contrato_vut.id))
