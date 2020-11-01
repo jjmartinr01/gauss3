@@ -2998,7 +2998,7 @@ def reserva_vut_crea_recibo(request, reserva_id):
         return render(request, "no_login.html", {'pag': '"Crear recibo para esta reserva"', })
 
 
-# @permiso_required('acceso_contratos_vut')
+@permiso_required('acceso_contratos_vut')
 def contratos_vut(request):
     g_e = request.session['gauser_extra']
     vvs = viviendas_autorizado(g_e)
