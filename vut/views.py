@@ -3019,9 +3019,9 @@ def contratos_vut(request):
                     contrato_vut = ContratoVUT.objects.create(entrada=ahora, salida=ahora + timedelta(days=10),
                                                               max_per=4, vivienda=vvs[0],
                                                               fecha=ahora, total=100, propietario=g_e, nombre=nombre)
-                # texto = render_to_string('contratos_vut_accordion_content_texto.html', {'contrato': contrato_vut})
-                # contrato_vut.texto = texto
-                # contrato_vut.save()
+                texto = render_to_string('contratos_vut_accordion_content_texto.html', {'contrato': contrato_vut})
+                contrato_vut.texto = texto
+                contrato_vut.save()
                 html = render_to_string('contratos_vut_accordion.html',
                                         {'buscadas': False, 'contratos_vut': [contrato_vut], 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
