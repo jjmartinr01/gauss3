@@ -3,8 +3,10 @@ from django.template import Library
 from datetime import datetime, timedelta
 from django.utils import timezone
 from autenticar.models import Permiso
-from vut.models import Vivienda, ContabilidadVUT, PartidaVUT, RegistroPolicia
+from vut.models import Vivienda, ContabilidadVUT, PartidaVUT, RegistroPolicia, Reserva
 import json
+
+from vut.views import viviendas_autorizado
 
 register = Library()
 
@@ -146,3 +148,24 @@ def reservas2eventos(vivienda):
 @register.filter
 def num_registradas(viviendas):
     return viviendas.filter(nregistro__iregex=r'^[0-9a-zA-Z]').count()
+
+@register.filter
+def permiso_contrato_w(contrato, g_e):
+    if contrato.reserva:
+        vvs = viviendas_autorizado(g_e)
+        if contrato.reserva.vivienda in vvs:
+            return True
+        else:
+            return False
+    else:
+        return True
+
+@register.filter
+def posibles_reservas(g_e):
+    vvs = viviendas_autorizado(g_e)
+    return Reserva.objects.filter(vivienda__in=vvs, salida__gte=timezone.datetime.today())
+
+@register.filter
+def posibles_viviendas(g_e):
+    return viviendas_autorizado(g_e)
+

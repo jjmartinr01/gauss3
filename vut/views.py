@@ -2,6 +2,8 @@
 from __future__ import unicode_literals
 import logging
 from datetime import datetime, timedelta
+
+import pdfkit
 from dateutil.rrule import rrule, MONTHLY
 import csv
 import base64
@@ -31,9 +33,10 @@ from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.core.paginator import Paginator
+from django.forms.models import model_to_dict
 
-from entidades.models import Gauser_extra, Entidad
-from gauss.funciones import html_to_pdf, pass_generator, usuarios_ronda
+from entidades.models import Gauser_extra, Entidad, DocConfEntidad
+from gauss.funciones import html_to_pdf, pass_generator, usuarios_ronda, html_to_pdf_dce
 from gauss.rutas import RUTA_MEDIA, MEDIA_VUT, RUTA_BASE
 from autenticar.control_acceso import permiso_required
 from mensajes.models import Aviso
@@ -41,10 +44,12 @@ from autenticar.models import Permiso, Gauser
 from mensajes.views import encolar_mensaje, crear_aviso
 from vut.models import Vivienda, Ayudante, Reserva, Viajero, RegistroPolicia, PAISES, Autorizado, CalendarioVivienda, \
     ContabilidadVUT, PartidaVUT, AsientoVUT, AutorizadoContabilidadVut, PORTALES, DomoticaVUT, FotoWebVivienda, \
-    DayWebVivienda, PropuestaPropietario
+    DayWebVivienda, PropuestaPropietario, ContratoVUT
 from vut.tasks import comunica_viajero2PNGC
+import locale
 
 # Create your views here.
+locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
 logger = logging.getLogger('django')
 
 
@@ -114,7 +119,7 @@ def viviendas(request):
                 if viajeros.count() > 0:
                     p_d = request.POST['protocol_domain']
                     c = render_to_string('libro_registro_policia.html',
-                                         {'vivienda': vivienda, 'viajeros': viajeros,  'p_d': p_d})
+                                         {'vivienda': vivienda, 'viajeros': viajeros, 'p_d': p_d})
                     ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, vivienda.entidad.code, vivienda.id)
                     fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
                                        title='Libro de registro de viajeros', tipo='sin_cabecera')
@@ -525,7 +530,7 @@ def ajax_viviendas(request):
             return JsonResponse({'html': html, 'vivienda': vivienda.id})
 
 
-# @permiso_required('acceso_reservas')
+@permiso_required('acceso_reservas')
 def reservas_vut(request):
     g_e = request.session['gauser_extra']
     request.session['next_days_reserva_vut'] = 7
@@ -2991,3 +2996,212 @@ def reserva_vut_crea_recibo(request, reserva_id):
             return render(request, "no_login.html", {'pag': '"Crear recibo para esta reserva"', })
     except:
         return render(request, "no_login.html", {'pag': '"Crear recibo para esta reserva"', })
+
+
+# @permiso_required('acceso_contratos_vut')
+def contratos_vut(request):
+    g_e = request.session['gauser_extra']
+    vvs = viviendas_autorizado(g_e)
+    contratos = ContratoVUT.objects.filter(propietario=g_e)
+
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'crea_contrato_vut':
+            try:
+                if request.POST['reserva']:
+                    reserva = Reserva.objects.get(vivienda__in=vvs, id=request.POST['id'])
+                    contrato_vut = ContratoVUT.objects.create(entrada=reserva.entrada, nombre=str(reserva),
+                                                              vivienda=vvs[0],
+                                                              salida=reserva.salida, fecha=timezone.datetime.today(),
+                                                              total=reserva.total, max_per=4, propietario=g_e)
+                else:
+                    ahora = timezone.datetime.now()
+                    nombre = 'Nuevo contrato para VUT'
+                    contrato_vut = ContratoVUT.objects.create(entrada=ahora, salida=ahora + timedelta(days=10),
+                                                              max_per=4, vivienda=vvs[0],
+                                                              fecha=ahora, total=100, propietario=g_e, nombre=nombre)
+                # texto = render_to_string('contratos_vut_accordion_content_texto.html', {'contrato': contrato_vut})
+                # contrato_vut.texto = texto
+                # contrato_vut.save()
+                html = render_to_string('contratos_vut_accordion.html',
+                                        {'buscadas': False, 'contratos_vut': [contrato_vut], 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': msg})
+        elif request.POST['action'] == 'open_accordion':
+            try:
+                contrato_vut = ContratoVUT.objects.get(id=request.POST['id'], propietario=g_e)
+                html = render_to_string('contratos_vut_accordion_content.html',
+                                        {'contrato': contrato_vut, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html, 'editado': contrato_vut.editado})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'borrar_contrato_vut':
+            try:
+                contrato_vut = ContratoVUT.objects.get(id=request.POST['id'], propietario=g_e)
+                contrato_vut.delete()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_texto':
+            try:
+                msg = ''
+                contrato_vut = ContratoVUT.objects.get(id=request.POST['id'], propietario=g_e)
+                hay_firmas = contrato_vut.hay_firmas
+                setattr(contrato_vut, request.POST['campo'], request.POST['valor'])
+                if request.POST['campo'] != 'nombre' and hay_firmas:
+                    contrato_vut.firma0, contrato_vut.firma1, contrato_vut.firma2, contrato_vut.firma3 = '', '', '', ''
+                    msg = 'Firmas eliminadas'
+                contrato_vut.save()
+                return JsonResponse({'ok': True, 'msg': msg})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_fecha':
+            try:
+                contrato_vut = ContratoVUT.objects.get(id=request.POST['id'], propietario=g_e)
+                fecha_anterior = getattr(contrato_vut, request.POST['campo'])
+                fecha = timezone.datetime.strptime(request.POST['valor'], '%Y-%m-%d')
+                if request.POST['campo'] != 'fecha':
+                    fecha = fecha.replace(hour=fecha_anterior.hour, minute=fecha_anterior.minute)
+                setattr(contrato_vut, request.POST['campo'], fecha)
+                contrato_vut.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_hora':
+            try:
+                contrato_vut = ContratoVUT.objects.get(id=request.POST['id'], propietario=g_e)
+                fecha_anterior = getattr(contrato_vut, request.POST['campo'])
+                hora = timezone.datetime.strptime(request.POST['valor'], '%H:%M')
+                fecha_real = fecha_anterior.replace(hour=hora.hour, minute=hora.minute)
+                setattr(contrato_vut, request.POST['campo'], fecha_real)
+                contrato_vut.save()
+                return JsonResponse({'ok': True, 'f': str(fecha_real)})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_animales':
+            try:
+                contrato_vut = ContratoVUT.objects.get(id=request.POST['id'], propietario=g_e)
+                contrato_vut.animales = not contrato_vut.animales
+                contrato_vut.save()
+                return JsonResponse({'ok': True, 'html': ['No', 'Sí'][contrato_vut.animales]})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_contrato':
+            try:
+                contrato_vut = ContratoVUT.objects.get(id=request.POST['id'], propietario=g_e)
+                texto = render_to_string('contratos_vut_accordion_content_texto.html', {'contrato': contrato_vut})
+                contrato_vut.texto = texto
+                contrato_vut.editado = True
+                contrato_vut.save()
+                return JsonResponse({'ok': True, 'texto': texto})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_vivienda':
+            try:
+                contrato_vut = ContratoVUT.objects.get(id=request.POST['id'], propietario=g_e)
+                vivienda = vvs.get(id=request.POST['valor'])
+                contrato_vut.vivienda = vivienda
+                contrato_vut.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+
+
+        elif request.POST['action'] == 'paginar_contratos_vut':
+            try:
+                q1 = Q(tarea__fecha__gte=g_e.ronda.inicio, tarea__fecha__lte=g_e.ronda.fin)
+                if g_e.has_permiso('ve_cualquier_contrato_vut'):
+                    q2 = Q(tarea__creador__ronda__entidad=g_e.ronda.entidad)
+                else:
+                    q2 = Q(tarea__creador__gauser=g_e.gauser) | Q(inspector__gauser=g_e.gauser)
+                posibles_contratos_vut = InspectorTarea.objects.filter(q1 & q2)
+                paginator = Paginator(posibles_contratos_vut, 25)
+                contratos_vut = paginator.page(int(request.POST['page']))
+                html = render_to_string('contratos_vut_accordion.html', {'contratos_vut': contratos_vut, 'pag': True})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+    elif request.method == 'POST' and not request.is_ajax():
+        if request.POST['action'] == 'pdf_contrato':
+            contrato_vut = ContratoVUT.objects.get(id=request.POST['id_contrato_vut'], propietario=g_e)
+            return genera_pdf_contrato(contrato_vut)
+
+    return render(request, "contratos_vut.html",
+                  {
+                      'formname': 'contratos_vut',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Nuevo contrato',
+                            'permiso': 'libre', 'title': 'Crear un nuevo contrato para vut'},
+                           ),
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                      'contratos_vut': contratos,
+                      'g_e': g_e
+                  })
+
+
+def genera_pdf_contrato(contrato):
+    dce_nombre = 'Contrato alquiler VUT'
+    try:
+        dce = DocConfEntidad.objects.get(entidad=contrato.propietario.ronda.entidad, nombre=dce_nombre)
+    except:
+        dce = DocConfEntidad.objects.get(entidad=contrato.propietario.ronda.entidad, predeterminado=True)
+        dce.pk = None
+        dce.nombre = dce_nombre
+        dce.predeterminado = False
+        dce.editable = False
+        dce.save()
+    contrato_vut = contrato
+    preambulo = """<!DOCTYPE html>
+                                <html lang="es">
+                                <head>
+                                    <meta charset="UTF-8">
+                                    <title>Contrato VUT ARVUTUR</title>
+                                    <style>
+                                    body { font-family: sans-serif; }
+                                    p, li { text-align: justify; }
+                                    </style>
+                                </head>
+                                <body>"""
+    firmas = render_to_string('contratos_vut_accordion_content_texto_firmas.html',
+                              {'contrato': contrato_vut})
+    final = "</body></html>"
+    html = preambulo + contrato_vut.texto + firmas + final
+    filename = 'Contrato_%s_%s.pdf' % (str(contrato_vut.propietario.gauser.id), str(contrato_vut.id))
+    ruta = MEDIA_VUT + '%s/contratos_alquiler/' % contrato_vut.propietario.ronda.entidad.code
+    fichero = '%s%s' % (ruta, filename)
+    if not os.path.exists(os.path.dirname(ruta)):
+        os.makedirs(os.path.dirname(ruta))
+    pdfkit.from_string(html, fichero, dce.get_opciones)
+    fich = open(fichero, 'rb')
+    response = HttpResponse(fich, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename=%s' % filename
+    logger.info('Se genera pdf del contrato id: %s ' % contrato_vut.id)
+    return response
+
+
+def firconvut(request, secret_id, n):
+    try:
+        if n == '0':
+            g_e = request.session['gauser_extra']
+            contrato = ContratoVUT.objects.get(secret=secret_id, salida__gte=timezone.datetime.now(), propietario=g_e)
+            nombre_firmante = g_e.gauser.get_full_name()
+        else:
+            contrato = ContratoVUT.objects.get(secret=secret_id, salida__gte=timezone.datetime.now())
+            nombre_firmante = getattr(contrato, 'viajero%s' % n)
+            if not nombre_firmante:
+                return redirect('/')
+        if request.method == 'POST':
+            if request.POST['action'] == 'add_firma':
+                setattr(contrato, 'firma%s' % n, request.POST['firma'])
+                contrato.save()
+            elif request.POST['action'] == 'genera_pdf':
+                return genera_pdf_contrato(contrato)
+        firmado = True if getattr(contrato, 'firma%s' % n) else False
+        return render(request, "contratos_vut_firmar.html",
+                      {
+                          'formname': 'firma_contrato_vut',
+                          'contrato': contrato,
+                          'firmante': (n, nombre_firmante, firmado)
+                      })
+    except:
+        return redirect('/')

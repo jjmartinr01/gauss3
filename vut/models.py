@@ -85,7 +85,8 @@ PAISES = (('A9401AAAAA', 'AFGANISTAN'), ('A9399AAAAA', 'AFRICA'), ('A9102AAAAA',
 
 class Vivienda(models.Model):
     POL = (('PN', 'Policía Nacional'), ('GC', 'Guardia Civil'))
-    propietario = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.CASCADE, related_name='borrar')
+    propietario = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.CASCADE,
+                                    related_name='borrar')
     gpropietario = models.ForeignKey(Gauser, null=True, blank=True, on_delete=models.CASCADE, related_name='gborrar')
     propietarios = models.ManyToManyField(Gauser, blank=True)
     entidad = models.ForeignKey(Entidad, blank=True, null=True, on_delete=models.CASCADE)
@@ -139,13 +140,14 @@ PORTALES = (('BOO', 'Booking'), ('AIR', 'Airbnb'), ('HOM', 'Homeaway'), ('REN', 
 
 
 def fecha_limite():
-    return now().date()+timedelta(7)
+    return now().date() + timedelta(7)
+
 
 class PropuestaPropietario(models.Model):
     propone = models.ForeignKey(Gauser, blank=True, null=True, related_name='propietario', on_delete=models.CASCADE)
     propuesto = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
     aceptada = models.BooleanField('La persona propuesta acepta la propiedad de la vivienda?', default=False)
-    vivienda = models.ForeignKey(Vivienda, blank=True, null=True,on_delete=models.CASCADE)
+    vivienda = models.ForeignKey(Vivienda, blank=True, null=True, on_delete=models.CASCADE)
     deadline = models.DateField('Fecha límite para aceptar la propuesta', default=fecha_limite)
 
     class Meta:
@@ -311,7 +313,7 @@ class Ayudante(models.Model):
 
 
 def aleatorio(size=9, chars='abcdefghijklmnopqrstuvwxyz1234567890'):
-    secret = '' #Esta línea solo sirve para evitar un warning en pycharm al no detectar secret antes del try
+    secret = ''  # Esta línea solo sirve para evitar un warning en pycharm al no detectar secret antes del try
     while True:
         try:
             secret = ''.join(random.choice(chars) for x in range(size))
@@ -319,6 +321,7 @@ def aleatorio(size=9, chars='abcdefghijklmnopqrstuvwxyz1234567890'):
         except:
             break
     return secret
+
 
 class Reserva(models.Model):
     ESTADO = (('ACE', 'Aceptada'), ('CAN', 'Cancelada'))
@@ -343,16 +346,17 @@ class Reserva(models.Model):
     @property
     def salida2(self):
         return self.entrada + timedelta(self.noches)
+
     @property
     def precio_noche(self):
-        return self.total/self.noches
+        return self.total / self.noches
 
     def save(self, *args, **kwargs):
         self.salida = self.entrada + timedelta(self.noches)
         super(Reserva, self).save(*args, **kwargs)
 
     def __str__(self):
-        return u'%s - %s - %s (%s) - %s' % (self.vivienda, self.nombre, self.code, self.total, self.entrada)
+        return '%s - %s - %s (%s) - %s' % (self.vivienda, self.nombre, self.code, self.total, self.entrada)
 
 
 def update_firma(instance, filename):
@@ -471,6 +475,59 @@ class RegistroPolicia(models.Model):
 
 
 ###################################################################################################
+########################## CONTRATO VUT ###########################################################
+###################################################################################################
+def contrato_secret():
+    return pass_generator(size=9)
+
+
+class ContratoVUT(models.Model):
+    nombre = models.CharField('Nombre del contrato', max_length=200, blank=True, null=True)
+    vivienda = models.ForeignKey(Vivienda, blank=True, null=True, on_delete=models.CASCADE)
+    propietario = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.CASCADE)
+    firma0 = models.TextField('Firma propietario', null=True, blank=True)
+    entrada = models.DateTimeField('Fecha de entrada', blank=True, null=True)
+    salida = models.DateTimeField('Fecha de salida', blank=True, null=True)
+    total = models.FloatField('Precio total de la estancia', default=0)
+    max_per = models.IntegerField('Número máximo de inquilinos', default=2)
+    animales = models.BooleanField('¿Se permiten animales', default=False)
+    fecha = models.DateField('Fecha de firma del contrato', blank=True, null=True)
+    secret = models.CharField('Código secreto asociado a este contrato', max_length=10, default=contrato_secret)
+    viajero1 = models.CharField('Nombre 1', max_length=100, blank=True, null=True, default='')
+    dni1 = models.CharField('DNI 1', max_length=12, blank=True, null=True, default='')
+    address1 = models.CharField('Dirección 1', max_length=100, blank=True, null=True, default='')
+    firma1 = models.TextField('Firma viajero 1', null=True, blank=True, default='')
+    viajero2 = models.CharField('Nombre 1', max_length=100, blank=True, null=True, default='')
+    dni2 = models.CharField('DNI 1', max_length=12, blank=True, null=True, default='')
+    address2 = models.CharField('Dirección 2', max_length=100, blank=True, null=True, default='')
+    firma2 = models.TextField('Firma viajero 2', null=True, blank=True, default='')
+    viajero3 = models.CharField('Nombre 1', max_length=100, blank=True, null=True, default='')
+    dni3 = models.CharField('DNI 1', max_length=12, blank=True, null=True, default='')
+    address3 = models.CharField('Dirección 3', max_length=100, blank=True, null=True, default='')
+    firma3 = models.TextField('Firma viajero 3', null=True, blank=True, default='')
+    # viajero4 = models.CharField('Nombre 1', max_length=100, blank=True, null=True)
+    # dni4 = models.CharField('DNI 1', max_length=100, blank=True, null=True)
+    # viajero5 = models.CharField('Nombre 1', max_length=100, blank=True, null=True)
+    # dni5 = models.CharField('DNI 1', max_length=100, blank=True, null=True)
+    texto = models.TextField('Descripción de la información recogida', null=True, blank=True)
+    editado = models.BooleanField('¿Ha sido editado manualmente?', default=False)
+    creado = models.DateField('Fecha de creación', auto_now_add=True)
+    modificado = models.DateField('Fecha de modificación', auto_now=True)
+
+    @property
+    def dias(self):
+        return abs((self.salida - self.entrada).days)
+
+    @property
+    def hay_firmas(self):
+        if self.firma0 or self.firma1 or self.firma2 or self.firma3:
+            return True
+        else:
+            return False
+
+
+
+###################################################################################################
 ########################## CONTABILIDAD ###########################################################
 ###################################################################################################
 
@@ -575,7 +632,7 @@ class AsientoVUT(models.Model):
 
 class DomoticaVUT(models.Model):
     TIPO_DOMOTICA = (
-    ('SELFLOCKING', 'Auto-bloqueo'), ('ONOFF', 'Interruptor'), ('TERMOSTATO', 'Control de temperatura'))
+        ('SELFLOCKING', 'Auto-bloqueo'), ('ONOFF', 'Interruptor'), ('TERMOSTATO', 'Control de temperatura'))
     vivienda = models.ForeignKey(Vivienda, blank=True, null=True, on_delete=models.CASCADE)
     propietario = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
     url = models.CharField('URL para la activación del dispositivo', blank=True, null=True, max_length=250)

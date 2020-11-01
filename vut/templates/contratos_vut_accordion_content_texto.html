@@ -1,0 +1,184 @@
+{% load my_templatetags %}
+<h2 style="text-align: center;"><strong>CONTRATO DE ARRENDAMIENTO VUT</strong></h2>
+
+<p><b>Normativa aplicable:</b> Decreto 10/2017, de 17 de marzo, por el que se aprueba el Reglamento General de Turismo
+    de La Rioja en desarrollo de la Ley 2/2001, de 31 de mayo, de Turismo de La Rioja (artículos 66 a 71)</p>
+
+<table>
+    <tr>
+        <td><b>Nº de Licencia:</b></td>
+        <td id="num_licencia{{ contrato.id }}">{{ contrato.vivienda.nregistro }}</td>
+    </tr>
+    <tr>
+        <td><b>VIVIENDA:</b></td>
+        <td id="vivienda{{ contrato.id }}">{{ contrato.vivienda }}</td>
+    </tr>
+    <tr>
+        <td><b>FECHA ENTRADA:</b></td>
+        <td id="entradatexto{{ contrato.id }}">{{ contrato.entrada }}</td>
+    </tr>
+    <tr>
+        <td><b>FECHA SALIDA:</b></td>
+        <td id="salidatexto{{ contrato.id }}">{{ contrato.salida }}</td>
+    </tr>
+</table>
+
+<h3>REUNIDOS</h3>
+<p>De una parte:</p>
+
+<p>{{ contrato.propietario.gauser.get_full_name }}, mayor de edad, con domicilio a efectos de notificaciones
+    en {{ contrato.propietario.gauser.address }}, con D.N.I nº {{ contrato.propietario.gauser.dni }}, (De ahora en
+    adelante denominado "El Propietario y/o el arrendador".)</p>
+
+<p>De otra parte:</p>
+<p><span id="viajero1_{{ contrato.id }}">{{ contrato.viajero1 }}</span> mayor de edad, con D.N.I. nº <span
+        id="dni1_{{ contrato.id }}">{{ contrato.dni1 }}</span>, con domicilio a efectos de notificaciones en <span
+        id="domicilio1_{{ contrato.id }}">{{ contrato.address1 }}</span>.</p>
+{% if contrato.viajero2 %}
+    <p><span id="viajero2_{{ contrato.id }}">{{ contrato.viajero2 }}</span> mayor de edad, con D.N.I. nº <span
+            id="dni2_{{ contrato.id }}">{{ contrato.dni2 }}</span>, con domicilio a efectos de notificaciones en <span
+            id="domicilio2_{{ contrato.id }}">{{ contrato.address2 }}</span>.</p>
+{% endif %}
+{% if contrato.viajero3 %}
+    <p><span id="viajero3_{{ contrato.id }}">{{ contrato.viajero3 }}</span> mayor de edad, con D.N.I. nº <span
+            id="dni3_{{ contrato.id }}">{{ contrato.dni3 }}</span>, con domicilio a efectos de notificaciones en <span
+            id="domicilio3_{{ contrato.id }}">{{ contrato.address3 }}</span>.</p>
+{% endif %}
+<p>(De ahora en adelante serán denominados "La Parte Arrendataria".)</p>
+
+<p>Ambas partes se reconocen capacidad legal suficiente para este acto y libremente,</p>
+
+<h3>EXPONEN:</h3>
+
+<ol>
+    <li>Que {{ contrato.propietario.gauser.get_full_name }} es propietario de la vivienda indicada. La misma se
+        encuentra limpia, en perfecto estado de uso, conservación y habitabilidad y los suministros y servicios que
+        posee se encuentran también en perfecto funcionamiento.
+    </li>
+    <li>Ambas partes han acordado concertar el arrendamiento para uso turístico, de la vivienda antes descrita, no
+        pudiendo variar dicho uso en ningún caso, por lo que establecen el presente contrato, que se regirá por lo
+        dispuesto en los siguientes,
+    </li>
+</ol>
+
+<h3>CLÁUSULAS:</h3>
+
+<p><b>PRIMERA.- OBJETO:</b> El Propietario cede en arrendamiento para uso turístico.</p>
+
+<p><b>SEGUNDA.- DURACIÓN:</b> Este contrato se otorga por la temporada de <span
+        id="duracion{{ contrato.id }}">{{ contrato.dias }}</span> días.</p>
+<ul>
+    <li>Entrada: el día <span id="fechaentrada{{ contrato.id }}">{{ contrato.entrada }}</span> a partir de las <span
+            id="horaentrada{{ contrato.id }}">{{ contrato.entrada }}</span></li>
+    <li>Salida: el día <span id="fechasalida{{ contrato.id }}">{{ contrato.salida }}</span>, antes de las <span
+            id="horasalida{{ contrato.id }}">{{ contrato.salida }}</span></li>
+</ul>
+
+<p><b>TERCERA.- PUESTA A DISPOSICIÓN Y FIN DE CONTRATO:</b> La vivienda se pondrá a disposición de la parte arrendataria
+    con la entrega de llaves, recibiendo la parte arrendataria la vivienda en un estado adecuado al fin al que se
+    destina y con conocimiento previo de las características de la misma, especialmente su estado de uso y conservación.
+    Llegado el día del vencimiento del contrato, La Parte Arrendataria, con anterioridad a la hora fijada, entregará las
+    llaves a la Parte Arrendadora.
+    Llegado el momento de la hora fijada para la salida, la Parte Arrendataria dejará la vivienda, en el estado en que
+    la encontró, dejándola libre de efectos y enseres y permaneciendo en perfecto estado los servicios de que dispone,
+    así como los muebles y enseres.</p>
+
+<p><b>CUARTA.- PRÓRROGA:</b> La vigencia del contrato no está sometida a ningún tipo de prórroga adicional, salvo que
+    llegado el día del vencimiento del contrato las partes pudieran pactar expresamente y por escrito algo distinto.</p>
+
+<p><b>QUINTA.- RENTA:</b> La renta de la temporada neta es de <span
+        id="total{{ contrato.id }}">{{ contrato.total }}</span> Euros, que han de estar abonados en el momento de la
+    entrada a la finca.</p>
+
+<p><b>SEXTA.- NÚMERO DE OCUPANTES:</b> La vivienda es alquilada por el propietario a número máximo de <span
+        id="num_per{{ contrato.id }}">{{ contrato.num_per }}</span> personas. La parte arrendataria se compromete, salvo
+    autorización expresa del propietario, a no sobrepasar este número de personas.</p>
+
+<p><b>SÉPTIMA.- ANIMALES DE COMPAÑÍA:</b> <span id="animales{{ contrato.id }}">{% if contrato.animales %}Se admite que
+    "La Parte Arrendataria" tenga animales en la vivienda, asumiendo la reparación de los desperfectos que estos
+    pudieran causar. "La Parte Arrendataria" asume la limpieza completa de la vivienda antes de abandonarla, añadiéndose
+    esta obligación a la cláusula OCTAVA, en el apartado "DE LA PARTE ARRENDATARIA" del presente contrato.{% else %}No
+    se admiten animales de compañía.{% endif %}</span></p>
+
+<p><b>OCTAVA.- OBLIGACIONES DE LAS PARTES:</b></p>
+<p>DE LA PARTE ARRENDADORA:</p>
+<ul>
+    <li>Mantendrá los suministros de agua y luz, gas etc., al corriente de pago y en pleno
+    funcionamiento así como el seguro de la vivienda vigente, durante el tiempo pactado en el contrato.</li>
+    <li>Pondrá a disposición de la Parte Arrendataria la vivienda en buen estado de uso, habitabilidad, limpieza y
+        seguridad.
+    </li>
+    <li>Reparará en el menor tiempo posible cualquier posible avería o mal funcionamiento del equipamiento doméstico
+        esencial para el uso temporal vacacional que la Parte Arrendataria dará a la vivienda.
+    </li>
+    <li>Realizará por sí mismo, o a través de terceros, la comprobación del estado de la vivienda junto con la parte
+        Arrendataria, a su llegada y su salida, para verificar el buen estado y uso de la misma.
+    </li>
+</ul>
+<p>DE LA PARTE ARRENDATARIA:</p>
+<ul>
+    <li>Comprobará a su entrada/llegada a la vivienda que esta se encuentra en buen estado para el uso requerido.</li>
+    <li>Estará obligada a conservar la Vivienda en perfecto estado durante el plazo de duración libremente pactado entre ambas
+        partes.
+    </li>
+    <li>La Parte Arrendataria no podrá realizar en la vivienda actividades molestas, insalubres, nocivas, peligrosas,
+        ilícitas o contrarias a los Estatutos de la Comunidad. Tampoco podrá almacenar materias inflamables, explosivas
+        o corrosivas en la vivienda y/o desarrollar en la misma actividades mercantiles o de industria.
+    </li>
+    <li>La Parte Arrendataria será directa y exclusivamente responsable y exime de toda responsabilidad a la propiedad
+        por: Los daños que puedan ocasionarse a personas o cosas y sean derivados de instalaciones para servicios y
+        suministros de la casa de temporada arrendada. Los daños, deterioros o pérdidas que se produzcan en la misma, ya
+        sean causados por la parte arrendataria o por las personas que convivan en la vivienda.
+    </li>
+    <li>La Parte Arrendataria no podrá hacer obras, ni introducir modificación alguna sin permiso escrito de la
+        Arrendadora. En ningún caso podrá hacer taladros o agujeros en las paredes.
+    </li>
+    <li>La Parte Arrendataria no podrá hacer copia de las llaves u otros métodos de acceso a la vivienda.</li>
+</ul>
+
+<p><b>NOVENA.- DESISTIMIENTO O CANCELACIÓN:</b> La Parte Arrendataria podrá desistir en todo momento de este contrato, y
+    deberá, en todo caso, notificarlo de forma expresa y por escrito. No obstante, cuando esto se produjese, queda
+    obligada a satisfacer una penalización, que según corresponda, será abonada o retenida de las cantidades que ya se
+    hubiesen pagado hasta el momento, en atención al momento en el que se produce el desistimiento:</p>
+<ol>
+    <li>Hasta 15 días antes del inicio del arrendamiento: 25 % de la renta total.</li>
+    <li>Hasta 7 días antes del inicio del arrendamiento: 50 % de la renta total.</li>
+    <li>A partir de los 7 días antes del arrendamiento: la parte Arrendataria quedaría obligada al pago total de la
+        renta por el arrendamiento de la vivienda.
+    </li>
+    <li>Cuando el desistimiento o cancelación se realice por la Parte Arrendadora, deberá devolver a la parte
+        Arrendataria todo pago que este hubiese realizado hasta el momento.
+    </li>
+    <li>De producirse del desistimiento o cancelación, por cualquiera de las dos partes, por motivos de fuerza mayor,
+        debidamente justificada, no se aplicará penalización alguna. Se entenderán motivos por fuerza mayor las
+        circunstancias ajenas a quien las provoca, anormales e imprevisibles, cuyas consecuencias no habrían podido
+        evitarse, a pesar de haber actuado con la diligencia debida.
+    </li>
+</ol>
+
+<p><b>DÉCIMA.- CLÁUSULA PENAL:</b> El incumplimiento de la obligación de abandonar la Vivienda en el plazo pactado
+    obligará a la Parte Arrendadora a satisfacer en concepto de cláusula penal, la suma correspondiente al triple de la
+    renta diaria, exigibles por semanas vencidas hasta la libre disponibilidad de la vivienda por el arrendador, sin
+    prejuicio de las costas, gastos y demás indemnizaciones que fueran a su cargo incluso minutas de abogados y
+    procurador, aunque no fuera preceptiva su intervención.</p>
+
+<p><b>UNDÉCIMA.- PROTECCIÓN DE DATOS:</b> Las partes de este contrato conocen y se obligan a cumplir lo establecido en
+    la ley orgánica 3/2018, de 5 de diciembre, de Protección de Datos y Garantía de los derechos digitales. De esta
+    forma, las partes son conscientes de que mediante la firma de este contrato consienten que sus datos personales
+    recogidos en el presente Contrato, así como aquellos que se pudiesen recoger en el futuro para poder dar
+    cumplimiento o una correcta ejecución de este mismo, podrían ser incorporados por la otra parte a su propio fichero
+    automatizado o no de recogida de datos con el fin de ejecutar correctamente la relación contractual, y
+    eventualmente, para una gestión administrativa y/o comercial. En todo caso, las partes se comprometen a que estos
+    datos personales no serán comunicados en ningún caso a terceros, aunque, si se diese el caso, de que fuera a
+    realizarse algún tipo de comunicación de datos personales, se comprometen siempre, y de forma previa, a solicitar el
+    consentimiento expreso, informado e inequívoco, de la parte que es titular de dichos datos de carácter personal. De
+    esta cláusula no resulta ninguna limitación o restricción para las partes en cuanto al ejercicio de los derechos de
+    acceso, rectificación, supresión, limitación, portabilidad u oposición con los que pudieran contar.</p>
+
+<p><b>DUODÉCIMA.- FUERO Y LEGISLACION APLICABLE:</b> Las partes integrantes se someten a la jurisdicción y competencia
+    de los tribunales y juzgados del lugar donde está sita la Vivienda, con renuncia expresa a su fuero propio. Son
+    aplicables las leyes de España y en concreto Decreto 10/2017 de 17 de marzo, por el que se aprueba el Reglamento
+    General de Turismo de La Rioja en desarrollo de la Ley 2/2001, de 31 de mayo, de Turismo de La Rioja (artículos 66 a
+    71)
+    Ambas partes se ratifican en el presente contrato y firman por duplicado, a un solo efecto, en el lugar y fecha
+    indicados en el encabezamiento.</p>

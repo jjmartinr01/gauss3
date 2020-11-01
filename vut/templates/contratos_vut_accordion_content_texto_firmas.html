@@ -1,0 +1,27 @@
+<p>En {{ contrato.vivienda.municipio }} a {{ contrato.fecha|date:'j \d\e F \d\e Y' }},</p>
+<table>
+    <tr>
+        <td><img src="{{ contrato.firma0 }}" width="120px" alt="Firma propietario"></td>
+        {% if contrato.firma1 %}
+            <td><img src="{{ contrato.firma1 }}" width="120px" alt="Firma inquilino 1"></td>
+        {% endif %}
+        {% if contrato.firma2 %}
+            <td><img src="{{ contrato.firma2 }}" width="120px" alt="Firma inquilino 2"></td>
+        {% endif %}
+        {% if contrato.firma3 %}
+            <td><img src="{{ contrato.firma3 }}" width="120px" alt="Firma inquilino 3"></td>
+        {% endif %}
+    </tr>
+    <tr>
+        <td>Fdo: {{ contrato.propietario.gauser.get_full_name }}</td>
+        {% if contrato.firma1 %}
+            <td>Fdo: {{ contrato.viajero1 }}</td>
+        {% endif %}
+        {% if contrato.firma2 %}
+            <td>Fdo: {{ contrato.viajero2 }}</td>
+        {% endif %}
+        {% if contrato.firma3 %}
+            <td>Fdo: {{ contrato.viajero3 }}</td>
+        {% endif %}
+    </tr>
+</table>

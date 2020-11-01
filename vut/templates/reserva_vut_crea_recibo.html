@@ -171,9 +171,7 @@
             e.preventDefault();
             var html = $('#recibo_content').html();
             $('#recibo_html').val(html);
-            document
-        .{{formname}}.
-            submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('#add_row').click(function (e) {

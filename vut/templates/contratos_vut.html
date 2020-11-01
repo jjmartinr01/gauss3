@@ -1,0 +1,398 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}{% load vut_extras %}
+
+{% block contenido %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+        }
+
+        .observaciones {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+
+        {#.describir_solucion {#}
+        {#    border: lightgrey 1px solid;#}
+        {#    min-height: 100px;#}
+        {# }#}
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_contrato_vut" name="id_contrato_vut" value="">
+
+        <div id="div_contratos_vut_seleccionados"></div>
+
+        <div>
+            <h4 id="title_page"><strong>Contratos para VUT</strong></h4>
+        </div>
+        <fieldset id="fieldset_crear">
+            <legend>Crear nuevo contrato</legend>
+            <div id="formulario_crear">
+                <div class="row">
+                    <div class="columns large-10">
+                        <label><b>Puedes crear un nuevo contrato basado en las siguientes reservas: </b><select
+                                class="reservas" data-id="{{ contrato.id }}">
+                            <option value="">No basado en ninguna de las reservas existentes</option>
+                            {% for reserva in g_e|posibles_reservas %}
+                                <option value="{{ reserva.id }}">{{ reserva }}</option>
+                            {% endfor %}
+                        </select></label>
+                    </div>
+                    <div class="columns large-2">
+                        <label>&nbsp;</label>
+                        <a class="button tiny" id="button_crea_contrato_vut"><i class="fa fa-plus"></i> <b>Crear</b></a>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+        <div id="listado_contratos_vut">
+            {% include 'contratos_vut_accordion.html' %}
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        {# Configuración del ckeditor #}
+        config = {
+            removePlugins: 'exportpdf',
+            toolbar: [
+                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
+                {
+                    name: 'basicstyles',
+                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
+                },
+                {
+                    name: 'paragraph',
+                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
+                },
+                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
+                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
+                {name: 'colors', items: ['TextColor', 'BGColor']},
+                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
+                {name: 'document', items: ['Source']},
+                {name: 'about', items: ['About']}
+            ],
+            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
+        }
+
+        function destroyEditorInstances() {
+            for (var instance in CKEDITOR.instances) {
+                CKEDITOR.instances[instance].destroy();
+            }
+        }
+
+        function create_editor(id, destroy_other_instances) {
+            if (destroy_other_instances) {
+                destroyEditorInstances();
+            }
+            setTimeout(function () {
+                editor = CKEDITOR.replace(id, config);
+                editor.on('change', function () {
+                    var antiguo_texto = editor.getData();
+                    setTimeout(function () {
+                        var nuevo_texto = editor.getData();
+                        if (antiguo_texto === nuevo_texto) {
+                            antiguo_texto = ''
+                            var id = $('#id_contrato_vut').val();
+                            $.post("/contratos_vut/", {
+                                    action: 'update_texto',
+                                    id: id,
+                                    valor: nuevo_texto,
+                                    campo: 'texto'
+                                },
+                                function (data) {
+                                    if (data.ok) {
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                        if (data.msg) {
+                                            show_mensajes({title: 'AVISO', texto: data.msg})
+                                            $('.hay_firmas').hide();
+                                        }
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
+                    }, 750);
+                });
+            }, 200);
+        }
+
+        function update_editado(id) {
+            $('#ckeditor' + id).show();
+            $('.editable').attr('readonly', true);
+            $('.vivienda').attr('disabled', true);
+            $('.animales').addClass('readonly');
+            $('.update_contrato').hide();
+            setTimeout(function () {
+                create_editor('texto' + id, true);
+            }, 300);
+        }
+
+        $('#button_crea_contrato_vut').click(function (event) {
+            event.preventDefault();
+            $.post("/contratos_vut/", {action: 'crea_contrato_vut', reserva: $(this).val()}, function (data) {
+                if (data.ok) {
+                    $('#list_contratos_vut').prepend(data.html);
+                    $("#update_ok").show().delay(1500).fadeOut();
+                } else {
+                    $("#update_error").show().delay(1500).fadeOut();
+                    setTimeout(function () {
+                        show_mensajes({
+                            title: '<i class="fa fa-warning"></i> Error',
+                            texto: data.msg
+                        })
+                    }, 200);
+                }
+                $(document).scrollTop($('#title_page').offset().top - 150);
+            });
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-contrato_vut')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/contratos_vut/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#id_contrato_vut').val(id);
+                                        $('#panel' + id).html(data.html);
+                                        $(document).foundation('alert', 'reflow');
+                                        if (data.editado) {
+                                            update_editado(id);
+                                        }
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                            $('#id_contrato_vut').val('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('body').on('click', '.borrar_contrato_vut', function () {
+            id = $(this).data('contrato');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar este contrato?',
+                texto: 'Si aceptas el contrato se borrará por completo de la base de datos', size: 'large', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/contratos_vut/", {action: 'borrar_contrato_vut', id: id},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#accordion' + id).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+        function get_texto_from_update_texto(element, id) {
+            var texto;
+            texto = element.val();
+            if (element.hasClass('nombre')) {
+                $('#nombre' + id).html(texto);
+            }
+            return texto;
+        }
+
+        $('body').on('keyup change', '.update_texto', function () {
+            var element = $(this);
+            var id = element.data('contrato');
+            var campo = element.data('campo');
+            var antiguo_texto = get_texto_from_update_texto(element, id);
+            setTimeout(function () {
+                var nuevo_texto = get_texto_from_update_texto(element, id);
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/contratos_vut/", {action: 'update_texto', id: id, valor: nuevo_texto, campo: campo},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                                if (data.msg) {
+                                    show_mensajes({title: 'AVISO', texto: data.msg})
+                                    $('.hay_firmas').hide();
+                                }
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
+        $('body').on('keyup change', '.fecha', function () {
+            var element = $(this);
+            var id = element.data('contrato');
+            var campo = element.data('campo');
+            var valor = element.val()
+            $.post("/contratos_vut/", {action: 'update_fecha', id: id, valor: valor, campo: campo},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        $('body').on('keyup change', '.hora', function () {
+            var element = $(this);
+            var id = element.data('contrato');
+            var campo = element.data('campo');
+            var valor = element.val()
+            $.post("/contratos_vut/", {action: 'update_hora', id: id, valor: valor, campo: campo},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        $('body').on('change', '.vivienda', function () {
+            var element = $(this);
+            var id = element.data('contrato');
+            var valor = element.val()
+            $.post("/contratos_vut/", {action: 'update_vivienda', id: id, valor: valor},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.animales', function (e) {
+            e.preventDefault();
+            var element = $(this);
+            if (!element.hasClass('readonly')) {
+                var id = element.data('contrato');
+                $.post("/contratos_vut/", {
+                        action: 'update_animales',
+                        id: id
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#animales' + id).html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        });
+
+        $('body').on('click', '.update_contrato', function () {
+            var id = $(this).data('contrato');
+            $.post("/contratos_vut/", {
+                    action: 'update_contrato',
+                    id: id
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#texto' + id).html(data.texto);
+                        update_editado(id);
+                        {#setTimeout(function () {#}
+                        {#editor.setData(data.texto);#}
+                        {# }, 500);#}
+
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('#Contenido').on('click', '.copy_url_viajero', function () {
+            var secret = $(this).data('secret');
+            var protocol = window.location.protocol;
+            {# http: o https: #}
+            var host = window.location.host;
+            {# Por ejemplo: gaumentada.es:5656   (proporciona dominio + puerto) #}
+            var campo = $(this).data('campo');
+            {# 1: firma1, 2: firma2, 3: firma3 #}
+            var c = copiar_al_portapapeles(protocol + '//' + host + '/firconvut/' + secret + '/' + campo + '/');
+            if (c) {
+                show_mensajes({
+                    title: 'Enlace web a firma copiado',
+                    texto: 'Se ha copiado en el portapapeles el enlace para que el inquilino pueda firmar el contrato'
+                });
+            }
+        });
+        $('#Contenido').on('click', '.firmar_propietario', function (e) {
+            e.preventDefault();
+            var secret = $(this).data('secret');
+            console.log(secret)
+            var protocol = window.location.protocol;
+            {# http: o https: #}
+            var host = window.location.host;
+            {# Por ejemplo: gaumentada.es:5656   (proporciona dominio + puerto) #}
+            window.location.href = protocol + '//' + host + '/firconvut/' + secret + '/0/';
+        });
+
+
+        $('body').on('click', '.go_page', function (e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            if (page) {
+                $.post("/contratos_vut/", {action: 'paginar_contratos_vut', page: page},
+                    function (data) {
+                        if (data.ok) {
+                            $('#listado_contratos_vut').html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        });
+
+        $('body').on('click', '.listado_normal', function (e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            $.post("/contratos_vut/", {action: 'paginar_contratos_vut', page: 1},
+                function (data) {
+                    if (data.ok) {
+                        $('#listado_contratos_vut').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+        $('body').on('click', '.pdf_contrato', function (e) {
+            e.preventDefault();
+            $('#action').val('pdf_contrato');
+            $('#id_contrato_vut').val($(this).data('contrato'));
+            document.getElementById("{{ formname }}").submit();
+        });
+    </script>
+
+{% endblock %}

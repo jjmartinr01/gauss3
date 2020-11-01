@@ -1,0 +1,200 @@
+{% load entidades_extras %}
+{% load vut_extras %}
+<div class="row">
+    <div class="columns large-12">
+        <ul class="button-group right">
+            <li><a class="button pdf_contrato" data-contrato="{{ contrato.id }}"
+                   title="Grabar datos y crear un PDF de este contrato"><i class="fa fa-file-pdf-o"></i> PDF</a>
+            </li>
+            <li><a class="button alert borrar_contrato_vut" data-contrato="{{ contrato.id }}">
+                <i class="fa fa-trash-o"></i> Borrar</a></li>
+            {#                <li><a class="button copiar_ie tiny" data-id="{{ ie.id }}"#}
+            {#                       title="Hacer una copia (un duplicado) de este informe"><i class="fa fa-copy"></i> Copiar</a>#}
+            {#                </li>#}
+        </ul>
+
+    </div>
+</div>
+{% if not contrato.editado %}
+<div data-alert class="alert-box warning radius">
+    <h3 style="font-weight: bold;"><i class="fa fa-info-circle"></i> Primer paso: Campos del formulario</h3>
+    <p style="font-weight: bold;">Rellena todos los campos mostrados a continuación.</p>
+    <a href="#" class="close">&times;</a>
+</div>
+{% endif %}
+<div class="row">
+    <div class="columns large-8">
+        <label><b>Nombre: </b><input type="text" class="update_texto nombre" data-contrato="{{ contrato.id }}"
+                                     value="{{ contrato.nombre }}" data-campo="nombre"></label>
+    </div>
+    <div class="columns large-4">
+        <label><b>Vivienda: </b><select class="vivienda editable" data-contrato={{ contrato.id }}>
+            {% for v in g_e|posibles_viviendas %}
+                <option value="{{ v.id }}" {% if contrato.vivienda == v %}selected{% endif %}>{{ v.nombre }}</option>
+            {% endfor %}
+        </select></label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-3">
+        <label><b>Fecha de entrada:</b><input type="date" class="fecha editable" data-contrato="{{ contrato.id }}"
+                                              value="{{ contrato.entrada|date:'Y-m-d' }}" data-campo="entrada"
+                                              id="fechaentrada{{ contrato.id }}"
+                                              data-idtexto="entradatexto{{ contrato.id }}"></label>
+    </div>
+    <div class="columns large-3">
+        <label><b>Hora de entrada:</b><input type="time" class="hora editable" data-contrato="{{ contrato.id }}"
+                                             value="{{ contrato.entrada|date:'H:i' }}" data-campo="entrada"
+                                             id="horaentrada{{ contrato.id }}"
+                                             data-idtexto=""></label>
+    </div>
+    <div class="columns large-3">
+        <label><b>Fecha de salida:</b><input type="date" class="fecha editable" data-contrato="{{ contrato.id }}"
+                                             value="{{ contrato.salida|date:'Y-m-d' }}" data-campo="salida"
+                                             id="fechasalida{{ contrato.id }}"
+                                             data-idtexto=""></label>
+    </div>
+    <div class="columns large-3">
+        <label><b>Hora de salida:</b><input type="time" class="hora editable" data-contrato="{{ contrato.id }}"
+                                            value="{{ contrato.salida|date:'H:i' }}" data-campo="salida"
+                                            id="horasalida{{ contrato.id }}"
+                                            data-idtexto=""></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-3">
+        <label><b>Fecha contrato:</b><input type="date" class="fecha editable" data-contrato="{{ contrato.id }}"
+                                            value="{{ contrato.fecha|date:'Y-m-d' }}" data-campo="fecha"
+                                            data-idtexto=""></label>
+    </div>
+    <div class="columns large-3">
+        <label><b>Precio total:</b><input type="number" class="update_texto editable" data-contrato="{{ contrato.id }}"
+                                          value="{{ contrato.total }}" min="0" step="0.01" data-campo="total"
+                                          data-idtexto=""></label>
+    </div>
+    <div class="columns large-3">
+        <label><b>Número de personas:</b>
+            <input type="number" class="update_texto editable" data-contrato="{{ contrato.id }}"
+                   value="{{ contrato.max_per }}" min="1" max="10" step="1" data-campo="max_per"
+                   data-idtexto=""></label>
+    </div>
+    <div class="columns large-3">
+        <label><b>¿Animales?:</b></label><b>
+        <a class="animales" data-contrato="{{ contrato.id }}" id="animales{{ contrato.id }}"
+           data-idtexto="">{% if contrato.animales %}Sí{% else %}No{% endif %}</a></b>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-4">
+        <label><b>Nombre inquilino 1</b>
+            <input type="text" class="update_texto editable" data-campo="viajero1" data-contrato="{{ contrato.id }}"
+                   value="{{ contrato.viajero1 }}" data-idtexto=""></label>
+    </div>
+    <div class="columns large-3">
+        <label><b>DNI inquilino 1</b>
+            <input type="text" class="update_texto editable" data-campo="dni1" data-contrato="{{ contrato.id }}"
+                   value="{{ contrato.dni1 }}" data-idtexto=""></label>
+    </div>
+    <div class="columns large-5">
+        <label><b>Dirección inquilino 1</b>
+            <input type="text" class="update_texto editable" data-campo="address1" data-contrato="{{ contrato.id }}"
+                   value="{{ contrato.address1 }}" data-idtexto=""></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-4">
+        <label><b>Nombre inquilino 2</b>
+            <input type="text" class="update_texto editable" data-campo="viajero2" data-contrato="{{ contrato.id }}"
+                   value="{{ contrato.viajero2 }}" data-idtexto=""></label>
+    </div>
+    <div class="columns large-3">
+        <label><b>DNI inquilino 2</b>
+            <input type="text" class="update_texto editable" data-campo="dni2" data-contrato="{{ contrato.id }}"
+                   value="{{ contrato.dni2 }}" data-idtexto=""></label>
+    </div>
+    <div class="columns large-5">
+        <label><b>Dirección inquilino 2</b>
+            <input type="text" class="update_texto editable" data-campo="address2" data-contrato="{{ contrato.id }}"
+                   value="{{ contrato.address2 }}"></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-4">
+        <label><b>Nombre inquilino 3</b>
+            <input type="text" class="update_texto editable" data-campo="viajero3" data-contrato="{{ contrato.id }}"
+                   value="{{ contrato.viajero3 }}" data-idtexto=""></label>
+    </div>
+    <div class="columns large-3">
+        <label><b>DNI inquilino 3</b>
+            <input type="text" class="update_texto editable" data-campo="dni3" data-contrato="{{ contrato.id }}"
+                   value="{{ contrato.dni3 }}" data-idtexto=""></label>
+    </div>
+    <div class="columns large-5">
+        <label><b>Dirección inquilino 3</b>
+            <input type="text" class="update_texto editable" data-campo="address3" data-contrato="{{ contrato.id }}"
+                   value="{{ contrato.address3 }}" data-idtexto=""></label>
+    </div>
+</div>
+{% if not contrato.editado %}
+<div data-alert class="alert-box warning radius">
+    <h3 style="font-weight: bold;"><i class="fa fa-info-circle"></i> Segundo paso: Edición manual</h3>
+    <p style="font-weight: bold;">Una vez rellenados los campos anteriores, puedes editar manualmente el contrato
+        pulsando en <span class="label info"><i class="fa fa-edit"></i> Editar el contrato</span>.</p>
+    <a href="#" class="close">&times;</a>
+</div>
+{% endif %}
+<div class="row" id="buton_update_contrato">
+    <div class="columns large-12">
+        <a class="update_contrato button" data-contrato="{{ contrato.id }}"><i class="fa fa-edit"></i> Editar el contrato</a>
+    </div>
+</div>
+
+<div class="row" id="ckeditor{{ contrato.id }}" style="display: none">
+    <div class="columns large-12">
+    {% if contrato.hay_firmas %}
+        <h2 style="color:red" class="hay_firmas"><i class="fa fa-warning"></i> El contrato ya está firmado. Cualquier
+        modificación eliminará las firmas existentes.</h2>
+    {% endif %}
+        <label><b>Texto del contrato:</b>
+            <div id="texto{{ contrato.id }}" class="update_texto" data-campo="texto" data-contrato="{{ contrato.id }}"
+                 contenteditable="true">{% autoescape off %}{{ contrato.texto }}{% endautoescape %}</div>
+        </label>
+    </div>
+</div>
+{% if not contrato.firma0 %}
+<div data-alert class="alert-box warning radius">
+    <h3 style="font-weight: bold;"><i class="fa fa-info-circle"></i> Tercer paso: Firma del contrato</h3>
+    <p style="font-weight: bold;">La firma del propietario se hace pulsando sobre el botón indicado un poco más
+    abajo.</p>
+    <p style="font-weight: bold;">La firma de los inquilinos la realizan ellos accediendo a un enlace que les
+        proporcionas tú como propietario. Para ello, debes
+    copiar los enlaces mostrados y enviárselos a los interesados (a través de e-mail, Whatsapp, Telegram, ...</p>
+    <a href="#" class="close">&times;</a>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="columns large-12">
+        <a class="button radius firmar_propietario" data-secret="{{ contrato.secret }}">
+            <i class="fa fa-pencil"></i> Firma del propietario</a>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <a class="button radius copy_url_viajero" data-secret="{{ contrato.secret }}" data-campo="1"><i
+                    class="fa fa-link"></i> Copiar enlace a firma del inquilino 1</a>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <a class="button radius copy_url_viajero" data-secret="{{ contrato.secret }}" data-campo="2"><i
+                    class="fa fa-link"></i> Copiar enlace a firma del inquilino 2</a>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <a class="button radius copy_url_viajero" data-secret="{{ contrato.secret }}" data-campo="3"><i
+                    class="fa fa-link"></i> Copiar enlace a firma del inquilino 3</a>
+    </div>
+</div>

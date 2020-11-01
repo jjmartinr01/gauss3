@@ -54,6 +54,14 @@ MENU_DEFAULT = [
      'pos': 7,
      'parent': 'acceso_vut'
      },
+{'code_menu': 'acceso_contratos_vut',
+     'texto_menu': 'Contrato VUT',
+     'href': 'contratos_vut',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 5,
+     'parent': 'acceso_vut'
+     },
     # {'code_menu': 'web_vut',
     #  'texto_menu': 'Web VUT',
     #  'href': 'web_vut',
@@ -236,5 +244,37 @@ PERMISOS = [{'code_nombre': 'crea_viviendas',
             {'code_nombre': 'borra_viviendas_registradas',
              'nombre': 'Permiso para borrar viviendas registradas por otros usuarios',
              'menu': 'acceso_viviendas'
-             }
+             },
+# {'code_nombre': 'crea_contratos_vut',
+#              'nombre': 'Tiene permiso para crear contratos vut',
+#              'menu': 'acceso_contratos_vut'
+#              },
+#             {'code_nombre': 'edita_contratos_vut',
+#              'nombre': 'Tiene permiso para editar contratos vut',
+#              'menu': 'acceso_contratos_vut'
+#              },
+#             {'code_nombre': 'copia_contratos_vut',
+#              'nombre': 'Tiene permiso para copiar contratos vut',
+#              'menu': 'acceso_contratos_vut'
+#              },
+#             {'code_nombre': 'borra_contratos_vut',
+#              'nombre': 'Tiene permiso para borrar contratos vut',
+#              'menu': 'acceso_contratos_vut'
+#              },
+#             {'code_nombre': 've_cualquier_contrato_vut',
+#              'nombre': 'Tiene permiso para ver cualquier contratos vut',
+#              'menu': 'acceso_contratos_vut'
+#              },
+#             {'code_nombre': 'edita_cualquier_contrato_vut',
+#              'nombre': 'Tiene permiso para editar contratos vut',
+#              'menu': 'acceso_contratos_vut'
+#              },
+#             {'code_nombre': 'copia_cualquier_contrato_vut',
+#              'nombre': 'Tiene permiso para copiar cualquier contratos vut',
+#              'menu': 'acceso_contratos_vut'
+#              },
+#             {'code_nombre': 'borra_cualquier_contrato_vut',
+#              'nombre': 'Tiene permiso para borrar cualquier contratos vut',
+#              'menu': 'acceso_contratos_vut'
+#              },
             ]

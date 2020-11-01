@@ -107,7 +107,7 @@ def tareas_ie(request):
                                         {'buscadas': False, 'tareas_ie': [itarea], 'g_e': g_e, 'nueva': True})
                 return JsonResponse({'ok': True, 'html': html})
             else:
-                JsonResponse({'ok': False})
+                return JsonResponse({'ok': False})
         elif request.POST['action'] == 'open_accordion':
             try:
                 itarea = InspectorTarea.objects.get(id=request.POST['id'])

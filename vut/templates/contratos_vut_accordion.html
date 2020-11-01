@@ -1,0 +1,74 @@
+{% load entidades_extras %}
+{% load my_templatetags %}
+{% if buscadas %}
+    {% if exc_max %}
+        <b>Se han encontrado <span style="color:red;">{{ num_act }}</span> contratos que coinciden con la
+            búsqueda.</b> <b style="color:red;">Solo
+        se muestran resultados con un número de coincidencias inferior a {{ max }}.</b>
+    {% else %}
+        {% if num_act == 1 %}
+            <b>Se ha encontrado {{ num_act }} contrato que coincide con la búsqueda</b>
+        {% else %}
+            <b>Se han encontrado {{ num_act }} contratos que coinciden con la búsqueda</b>
+        {% endif %}
+        <a class="listado_normal right"><span class="label rounded">Volver al listado normal</span></a>
+    {% endif %}
+{% endif %}
+<dl class="accordion" data-accordion id="list_contratos_vut">
+    {% for contrato_vut in contratos_vut %}
+        <input type="hidden" name="contratos_vut_seleccionados" value="{{ contrato_vut.id }}">
+
+        <dd class="accordion-navigation" id="accordion{{ contrato_vut.id }}"
+            style="border-bottom: dotted 1px black">
+            <a href="#panel{{ contrato_vut.id }}">
+                <i id="circle{{ contrato_vut.id }}" class="fa fa-plus-circle circle_icon"></i>
+                <b id="nombre{{ contrato_vut.id }}">{% if not contrato_vut.viajero1 %}
+                    <span style="color:red">{{ contrato_vut.nombre }}</span>
+                {% else %}{{ contrato_vut.nombre }}{% endif %}</b>
+                {% if buscadas %}
+                    <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
+                {% endif %}
+            </a>
+
+            <div id="panel{{ contrato_vut.id }}" class="content accordion-contrato_vut" data-id="{{ contrato_vut.id }}">
+            </div>
+        </dd>
+    {% endfor %}
+</dl>
+
+{% if pag %}
+    {% if contratos_vut.paginator.num_pages > 1 %}
+        <br>
+        <div class="row">
+            <div class="columns large-12">
+                <ul class="pagination" role="menubar" aria-label="Pagination">
+                    {% if contratos_vut.has_previous %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ contratos_vut.previous_page_number }}">&laquo; Anterior</a>
+                        </li>
+                    {% else %}
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">&laquo; Anterior</a>
+                        </li>
+                    {% endif %}
+                    {% for page in contratos_vut.paginator.num_pages|number_range %}
+                        {% if page == contratos_vut.number %}
+                            <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
+                        {% else %}
+                            <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if contratos_vut.has_next %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ contratos_vut.next_page_number }}">Siguiente &raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">Siguiente &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
