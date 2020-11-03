@@ -172,6 +172,18 @@
                 });
         });
 
+        $('body').on('click', '.copiar_p_ie', function () {
+            var id = $(this).data('id');
+            $.post("/plantillas_ie/", {action: 'copiar_p_ie', id: id},
+                function (data) {
+                    if (data.ok) {
+                        $('#list_plantillas_ie').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
 
         $('body').on('click', '.borrar_p_ie', function () {
             id = $(this).data('id');
@@ -195,7 +207,6 @@
                     }
                 }
             });
-
         });
 
         $('body').on('click', '.borrar_variante', function () {

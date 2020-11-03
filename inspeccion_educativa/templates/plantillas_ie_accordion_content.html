@@ -1,33 +1,104 @@
 {% load entidades_extras %}
-<div class="row">
-    <div class="columns large-12"><b>Destinatario</b></div>
-</div>
-<div class="row">
-    <div class="columns large-10">
-        <div contenteditable="true" class="ckeditor update_texto destinatario" data-id="{{ p_ie.id }}"
-             data-campo="destinatario">{% autoescape off %}{{ p_ie.destinatario }}{% endautoescape %}
+{% if p_ie.creador.gauser == g_e.gauser %}
+    <div class="row">
+        <div class="columns large-12"><b>Destinatario</b></div>
+    </div>
+    <div class="row">
+        <div class="columns large-8">
+            <div contenteditable="true" class="ckeditor update_texto destinatario" data-id="{{ p_ie.id }}"
+                 data-campo="destinatario">{% autoescape off %}{{ p_ie.destinatario }}{% endautoescape %}
+            </div>
+        </div>
+        <div class="columns large-4">
+            <ul class="button-group">
+                {% if p_ie.creador.gauser == g_e.gauser or g_e|has_permiso:'borra_cualquier_plantilla_ie' %}
+                    <li><a class="button alert borrar_p_ie" data-id="{{ p_ie.id }}">
+                        <i class="fa fa-trash-o"></i> Borrar</a></li>
+                {% endif %}
+                <li><a class="button copiar_p_ie" data-id="{{ p_ie.id }}"
+                       title="Hacer una copia de esta plantilla"><i class="fa fa-copy"></i> Copiar</a>
+                </li>
+            </ul>
         </div>
     </div>
-    <div class="columns large-2">
-        {% if p_ie.creador.gauser == g_e.gauser or g_e|has_permiso:'borra_cualquier_plantilla_ie' %}
-            <a class="button alert borrar_p_ie" data-id="{{ p_ie.id }}">
-                <i class="fa fa-trash-o"></i> Borrar</a>
-        {% endif %}
+
+    <div class="row">
+        <div class="columns large-12">
+            <label><b>Asunto: </b><input type="text" class="update_texto" data-campo="asunto"
+                                         data-id="{{ p_ie.id }}"
+                                         value="{{ p_ie.asunto }}"
+                                         placeholder="Introduce aquí el asunto del Informe de Inspección"></label>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="columns large-12">
-        <label><b>Asunto: </b><input type="text" class="update_texto" data-campo="asunto"
-                                     data-id="{{ p_ie.id }}"
-                                     value="{{ p_ie.asunto }}"
-                                     placeholder="Introduce aquí el asunto del Informe de Inspección"></label>
+    <div class="row">
+        <div class="columns large-12">
+            <label><b>Posibles modelos de este informe</b></label>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="columns large-12">
-        <label><b>Posibles modelos de este informe</b></label>
+    <div id="variantes{{ p_ie.id }}">
+        {% include 'plantillas_ie_accordion_content_variante.html' %}
     </div>
-</div>
-<div id="variantes{{ p_ie.id }}">
-    {% include 'plantillas_ie_accordion_content_variante.html' %}
-</div>
+{% else %}
+    <div class="row">
+        <div class="columns large-12"><b>Destinatario</b></div>
+    </div>
+    <div class="row">
+        <div class="columns large-8">
+            <div>{% autoescape off %}{{ p_ie.destinatario }}{% endautoescape %}</div>
+        </div>
+        <div class="columns large-4">
+            <ul class="button-group">
+                {% if g_e|has_permiso:'borra_cualquier_plantilla_ie' %}
+                    <li><a class="button alert borrar_p_ie" data-id="{{ p_ie.id }}">
+                        <i class="fa fa-trash-o"></i> Borrar</a></li>
+                {% endif %}
+                <li><a class="button copiar_p_ie" data-id="{{ p_ie.id }}"
+                       title="Hacer una copia de esta plantilla"><i class="fa fa-copy"></i> Copiar</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label><b>Asunto: </b>{{ p_ie.asunto }}</label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label><b>Posibles modelos de este informe</b></label>
+        </div>
+    </div>
+    <div id="variantes{{ p_ie.id }}">
+        <div class="row">
+            <div class="columns large-12">
+                <table style="width: 100%;">
+                    <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>¿Seleccionada?</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for v in p_ie.variantepii_set.all %}
+                        <tr>
+                            <td contenteditable="true" class="update_texto_variante" data-id="{{ v.id }}"
+                                data-campo="nombre">{{ v.nombre }}</td>
+                            <td><input type="radio" name="variante{{ v.id }}" value="{{ v.id }}" class="select_variante"
+                                       {% if v == variante %}checked{% endif %}></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                {% if variante %}
+                    <label><b>Texto del informe (modelo: {{ variante.nombre }})</b>
+                        <div>{% autoescape off %}{{ variante.texto }}{% endautoescape %}</div>
+                    </label>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endif %}

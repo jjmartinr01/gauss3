@@ -558,7 +558,7 @@ def informes_ie(request):
         'g_e': g_e, 'informes_ie': informes, 'plantillas': plantillas, 'formname': 'informes_inspeccion'})
 
 
-# @permiso_required('acceso_plantillas_informes_ie')
+@permiso_required('acceso_plantillas_informes_ie')
 def plantillas_ie(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST' and request.is_ajax():
@@ -614,8 +614,24 @@ def plantillas_ie(request):
                 id = request.POST['id']
                 variante = VariantePII.objects.get(plantilla__creador__ronda__entidad=g_e.ronda.entidad, id=id)
                 html = render_to_string('plantillas_ie_accordion_content_variante.html',
-                                        {'p_ie': variante.plantilla, 'variante': variante})
+                                        {'p_ie': variante.plantilla, 'variante': variante, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html, 'p_ie': variante.plantilla.id})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'copiar_p_ie':
+            try:
+                p_ie = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                variantes = p_ie.variantepii_set.all()
+                p_ie.pk = None
+                p_ie.asunto = p_ie.asunto + ' (Copia)'
+                p_ie.save()
+                for v in variantes:
+                    v.pk =None
+                    v.plantilla = p_ie
+                    v.save()
+                html = render_to_string('plantillas_ie_accordion.html',
+                                        {'buscadas': False, 'plantillas_ie': [p_ie], 'g_e': g_e, 'nueva': True})
+                return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'borrar_p_ie':
