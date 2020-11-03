@@ -70,6 +70,30 @@
 
 {% block final %}
     <script>
+    config = {
+            removePlugins: 'exportpdf',
+            toolbar: [
+                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
+                {
+                    name: 'basicstyles',
+                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
+                },
+                {
+                    name: 'paragraph',
+                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
+                },
+                '/',
+                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
+                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
+                {name: 'colors', items: ['TextColor', 'BGColor']},
+                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
+                {name: 'document', items: ['Source']},
+                {name: 'about', items: ['About']}
+            ],
+            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
+        }
 
         {% if g_e|has_permiso:"acceso_informes_ie" %}
             habilita(['s_plus']);
@@ -93,9 +117,20 @@
             }
         }
         function constructEditorInstances(id) {
-            CKEDITOR.replace('texto_editable' + id);
+            CKEDITOR.replace('texto_editable' + id, config);
             {#CKEDITOR.replace('destinatario' + id);#}
-            CKEDITOR.inline('destinatario' + id);
+            CKEDITOR.inline('destinatario' + id, config);
+        }
+
+        function constructInlineEditorInstances(id) {
+            {#CKEDITOR.disableAutoInline = true;#}
+            var anchura = $('#texto_editable' + id).width() + 2;
+            console.log(anchura)
+            CKEDITOR.inline('texto_editable' + id, config);
+            CKEDITOR.inline('destinatario' + id, config);
+            setTimeout(function (){
+                $('.cke_inner').css('width', anchura + 'px');
+            }, 200);
         }
 
         $(document).foundation({
@@ -113,7 +148,8 @@
                                         $('#panel' + id).html(data.html);
                                         destroyEditorInstances();
                                         {#constructEditorInstances(id);#}
-                                        CKEDITOR.inlineAll();
+                                        {#CKEDITOR.inlineAll();#}
+                                        constructInlineEditorInstances(id);
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();
@@ -138,7 +174,9 @@
                         $("#destinatario" + data.ie).html(data.destinatario);
                         $("#input_asunto" + data.ie).val(data.asunto);
                         destroyEditorInstances();
-                        CKEDITOR.inlineAll();
+                        {#constructEditorInstances(id);#}
+                        {#CKEDITOR.inlineAll();#}
+                        constructInlineEditorInstances(ie);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();

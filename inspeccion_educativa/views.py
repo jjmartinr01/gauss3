@@ -414,7 +414,7 @@ def tareas_ie(request):
 # return HttpResponse(errores)
 
 
-# @permiso_required('acceso_informes_ie')
+@permiso_required('acceso_informes_ie')
 def informes_ie(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST' and request.is_ajax():
@@ -506,7 +506,8 @@ def informes_ie(request):
                 q_texto = Q(texto__icontains=texto) | Q(asunto__icontains=texto) | Q(id__in=ids)
                 q_inicio = Q(modificado__gte=inicio)
                 q_fin = Q(modificado__lte=fin)
-                q_entidad = Q(inspector__ronda__entidad=g_e.ronda.entidad)
+                # q_entidad = Q(inspector__ronda__entidad=g_e.ronda.entidad)
+                q_entidad = Q(inspector__gauser=g_e.gauser)
                 ies_base = InformeInspeccion.objects.filter(q_entidad, q_inicio, q_fin)
                 ies = ies_base.filter(q_texto)
                 if request.POST['tipo_busqueda']:

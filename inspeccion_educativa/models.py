@@ -7,6 +7,7 @@ from django.template import Context, Template
 from autenticar.models import Gauser
 from entidades.models import Entidad, Ronda, Gauser_extra
 from django.utils.timezone import now
+from gauss.funciones import pass_generator
 
 # Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
 # def update_fichero(instance, filename):
@@ -754,3 +755,25 @@ class FirmaII(models.Model):
 #     informe = models.ForeignKey(PlantillaInformeInspeccion, on_delete=models.CASCADE)
 #     nombre=models.CharField('Nombre de la variable', blank=True, null=True, default='', max_length=300)
 #     valor = models.CharField('Valor de la variable', blank=True, null=True, default='', max_length=300)
+
+def update_fichero(instance, filename):
+    nombre = filename.rpartition('.')
+    instance.fich_name = filename
+    fichero = pass_generator(size=20) + '.' + nombre[2]
+    return '/'.join(['inspeccion', str(instance.entidad.code), fichero])
+
+class FileAttachedII(models.Model):
+    informe = models.ForeignKey(InformeInspeccion, on_delete=models.CASCADE)
+    fichero = models.FileField("Fichero adjunto a informe de inspección", upload_to=update_fichero, blank=True)
+    content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
+    fich_name = models.CharField("Nombre del archivo", max_length=200, blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = "Ficheros adjuntos a informes de inspección"
+
+    def filename(self):
+        f = os.path.basename(self.fichero.name)
+        return os.path.split(f)[1]
+
+    def __str__(self):
+        return '%s (%s)' % (self.fichero, self.informe)
