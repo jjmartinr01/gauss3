@@ -69,11 +69,47 @@
 
 {% block final %}
     <script>
+        config = {
+            removePlugins: 'exportpdf',
+            toolbar: [
+                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
+                {
+                    name: 'basicstyles',
+                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
+                },
+                {
+                    name: 'paragraph',
+                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
+                },
+                '/',
+                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
+                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
+                {name: 'colors', items: ['TextColor', 'BGColor']},
+                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
+                {name: 'document', items: ['Source']},
+                {name: 'about', items: ['About']}
+            ],
+            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
+        }
 
         function destroyEditorInstances() {
             for (var instance in CKEDITOR.instances) {
                 CKEDITOR.instances[instance].destroy();
             }
+        }
+
+        function constructInlineEditorInstances() {
+            $(".ckeditor").each(function (index) {
+                var element = $(this);
+                var id = element.attr('id');
+                CKEDITOR.inline(id, config);
+                var anchura = element.width() + 2;
+                setTimeout(function () {
+                    $('#cke_' + id).css('width', anchura + 'px'); {# Este es el id del ckeditor creado #}
+                }, 200);
+            });
         }
 
         $(document).foundation({
@@ -90,7 +126,8 @@
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
                                         destroyEditorInstances();
-                                        CKEDITOR.inlineAll();
+                                        {#CKEDITOR.inlineAll();#}
+                                        constructInlineEditorInstances(id);
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();
@@ -164,7 +201,8 @@
                     if (data.ok) {
                         $("#variantes" + data.p_ie).html(data.html);
                         destroyEditorInstances();
-                        CKEDITOR.inlineAll();
+                        constructInlineEditorInstances(id);
+                        {#CKEDITOR.inlineAll();#}
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
@@ -237,7 +275,6 @@
             });
 
         });
-
 
 
         $("body").on('click', '#busca_plantillas_ie_manual', function (e) {

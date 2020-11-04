@@ -6,8 +6,8 @@
     <div class="row">
         <div class="columns large-8">
             <div contenteditable="true" class="ckeditor update_texto destinatario" data-id="{{ p_ie.id }}"
-                 data-campo="destinatario">{% autoescape off %}{{ p_ie.destinatario }}{% endautoescape %}
-            </div>
+                 data-campo="destinatario"
+                 id="destinatario{{ p_ie.id }}">{% autoescape off %}{{ p_ie.destinatario }}{% endautoescape %}</div>
         </div>
         <div class="columns large-4">
             <ul class="button-group">

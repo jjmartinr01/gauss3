@@ -70,7 +70,7 @@
 
 {% block final %}
     <script>
-    config = {
+        config = {
             removePlugins: 'exportpdf',
             toolbar: [
                 {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
@@ -90,7 +90,7 @@
                 {name: 'colors', items: ['TextColor', 'BGColor']},
                 {name: 'tools', items: ['Maximize', 'ShowBlocks']},
                 {name: 'document', items: ['Source']},
-                {name: 'about', items: ['About']}
+                {name: 'about', items: ['About', 'generapdfbutton']}
             ],
             extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
         }
@@ -116,21 +116,34 @@
                 CKEDITOR.instances[instance].destroy();
             }
         }
+
         function constructEditorInstances(id) {
             CKEDITOR.replace('texto_editable' + id, config);
             {#CKEDITOR.replace('destinatario' + id);#}
             CKEDITOR.inline('destinatario' + id, config);
         }
 
-        function constructInlineEditorInstances(id) {
-            {#CKEDITOR.disableAutoInline = true;#}
-            var anchura = $('#texto_editable' + id).width() + 2;
-            console.log(anchura)
-            CKEDITOR.inline('texto_editable' + id, config);
-            CKEDITOR.inline('destinatario' + id, config);
-            setTimeout(function (){
-                $('.cke_inner').css('width', anchura + 'px');
-            }, 200);
+        function constructInlineEditorInstances() {
+            $(".ckeditor").each(function (index) {
+                var element = $(this);
+                var id = element.attr('id');
+                var editor = CKEDITOR.inline(id, config);
+                editor.addCommand("generapdfinforme", {
+                    exec: function (edt) {
+                        genera_pdf_informe();
+                    }
+                });
+                editor.ui.addButton('generapdfbutton', {
+                    label: "Genera PDF",
+                    command: 'generapdfinforme',
+                    toolbar: 'insert',
+                    icon: '/static/images/pdf_icon.png'
+                });
+                var anchura = element.width() + 2;
+                setTimeout(function () {
+                    $('#cke_' + id).css('width', anchura + 'px'); {# Este es el id del ckeditor creado #}
+                }, 200);
+            });
         }
 
         $(document).foundation({
@@ -150,6 +163,7 @@
                                         {#constructEditorInstances(id);#}
                                         {#CKEDITOR.inlineAll();#}
                                         constructInlineEditorInstances(id);
+                                        $('#id_ie').val(id); {# utilizado para generar pdf #}
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();
@@ -213,9 +227,9 @@
                                 if (data.html_v) {
                                     $('#variables' + data.ie).html(data.html_v);
                                 }
-                                if (data.num_v > 0){
+                                if (data.num_v > 0) {
                                     $('.variables_texto2pdf' + data.ie).show();
-                                }else{
+                                } else {
                                     $('.variables_texto2pdf' + data.ie).hide();
                                 }
                                 $("#update_ok").show().delay(1500).fadeOut();
@@ -298,15 +312,19 @@
                 });
         });
 
+        function genera_pdf_informe(){
+            $('#action').val('pdf_ie');
+            document.getElementById('{{formname}}').submit();
+        }
         $('#Contenido').on('click', '.pdf_ie', function (e) {
             e.preventDefault();
-            $('#id_ie').val($(this).data('id'));
-            $('#action').val('pdf_ie');
+            {#var id = $(this).data('id')#}
+            genera_pdf_informe();
             {#var protocol = window.location.protocol;#}
             {#var port = window.location.port;#}
             {#var domain = window.location.hostname;#}
             {#$('#protocol_domain').val( protocol + '//' + domain + ':' + port);#}
-            document.getElementById('{{formname}}').submit();
+
         });
     </script>
 
