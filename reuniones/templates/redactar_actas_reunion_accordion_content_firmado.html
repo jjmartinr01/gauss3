@@ -10,7 +10,7 @@
             <li title="Descargar el acta en PDF">
                 <a data-id="{{ acta.id }}" class="button download_pdf"><i
                         class="fa fa-file-pdf-o"></i> PDF</a></li>
-        <li title="Borrar fecha de aprobación">
+            <li title="Borrar fecha de aprobación">
                 <a data-id="{{ acta.id }}" class="button del_fecha_aprobacion"><i
                         class="fa fa-calendar-times-o"></i> Borrar</a></li>
             {% if g_e|has_permiso:"mail_actas_reunion" %}
@@ -40,7 +40,7 @@
 <div class="row">
     <div class="columns large-12">
         <label>Asistentes a la reunión:<br>
-        {{ acta.asistentes_text }}
+            {{ acta.asistentes_text }}
         </label>
     </div>
 </div>
@@ -89,8 +89,26 @@
         </div>
     </div>
 </div>
-
-
+{% if acta.fileattachedar_set.all|length > 0 %}
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Archivos adjuntos a este acta </b></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <table>
+            <tbody id="tbody_gauss_file{{ acta.id }}">
+            {% for f in acta.fileattachedar_set.all %}
+                <tr id="gauss_file{{ f.id }}">
+                    <td><a class="descarga_gauss_file" data-id="{{ f.id }}">{{ f.fich_name }}</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
 <div class="row">
     <div class="columns large-12">
         En {{ acta.convocatoria.entidad.localidad }} a {{ acta.convocatoria.fecha_hora|date:"j \d\e F \d\e Y"|lower }},

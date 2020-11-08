@@ -114,6 +114,31 @@
     </div>
 </div>
 
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Archivos adjuntos a este acta </b></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <table>
+{#            <thead>#}
+{#            <tr><th></th><th><span class="span_porcentage"></span></th></tr>#}
+{#            </thead>#}
+            <tbody id="tbody_gauss_file{{ acta.id }}">
+            {% include 'redactar_actas_reunion_accordion_content_tr_files.html' %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-8">
+        <label><input type="file" id="gauss_file{{ acta.id }}" name="gauss_file" multiple="multiple"></label>
+    </div>
+    <div class="columns large-4">
+        <a class="button tiny subir_gauss_file" data-id="{{ acta.id }}"><i class="fa fa-cloud-upload"></i> Cargar archivos</a>
+    </div>
+</div>
 
 <div class="row">
     <div class="columns large-12">
@@ -149,6 +174,7 @@
         </label>
     </div>
 </div>
+
 <div class="row">
     <div class="columns large-12">
         <label>Firmantes:</label>

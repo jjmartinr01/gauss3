@@ -115,12 +115,18 @@ def tareas_ie(request):
                 centros = Entidad.objects.filter(organization=g_e.ronda.entidad.organization)
                 cargo = Cargo.objects.get(clave_cargo='%s_ie' % g_e.ronda.entidad.code)
                 inspectores = usuarios_ronda(g_e.ronda, cargos=[cargo])
+                #Eliminación de sectores y niveles
+                # html = render_to_string('tareas_ie_accordion_content.html',
+                #                         {'instarea': itarea, 'g_e': g_e, 'localizaciones': LOCALIZACIONES,
+                #                          'objetos': OBJETOS, 'tipos': TIPOS, 'funciones': FUNCIONES, 'roles': ROLES,
+                #                          'actuaciones': ACTUACIONES, 'niveles': NIVELES, 'sectores': SECTORES,
+                #                          'centros': centros, 'inspectores': inspectores, 'permisos': PERMISOS,
+                #                          'centrosmdb': centrosmdb})
                 html = render_to_string('tareas_ie_accordion_content.html',
                                         {'instarea': itarea, 'g_e': g_e, 'localizaciones': LOCALIZACIONES,
                                          'objetos': OBJETOS, 'tipos': TIPOS, 'funciones': FUNCIONES, 'roles': ROLES,
-                                         'actuaciones': ACTUACIONES, 'niveles': NIVELES, 'sectores': SECTORES,
-                                         'centros': centros, 'inspectores': inspectores, 'permisos': PERMISOS,
-                                         'centrosmdb': centrosmdb})
+                                         'actuaciones': ACTUACIONES, 'centros': centros, 'inspectores': inspectores,
+                                         'permisos': PERMISOS, 'centrosmdb': centrosmdb})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -491,6 +497,15 @@ def informes_ie(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borrar_faii':
+            try:
+                faii = FileAttachedII.objects.get(id=request.POST['id'])
+                InformeInspeccion.objects.get(inspector__gauser=g_e.gauser, id=faii.informe.id)
+                os.remove(faii.fichero.path)
+                faii.delete()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
         elif request.POST['action'] == 'busca_informes_ie':
             try:
                 try:
@@ -541,6 +556,26 @@ def informes_ie(request):
             fich = open(dce.url_pdf, 'rb')
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(ie.asunto)
+            return response
+        elif request.POST['action'] == 'upload_archivo_xhr':
+            try:
+                n_files = int(request.POST['n_files'])
+                ie = InformeInspeccion.objects.get(inspector__gauser=g_e.gauser, id=request.POST['ie'])
+                for i in range(n_files):
+                    fichero = request.FILES['archivo_xhr' + str(i)]
+                    FileAttachedII.objects.create(informe=ie, fich_name=fichero.name,
+                                                  content_type=fichero.content_type, fichero=fichero)
+
+                html = render_to_string('informes_ie_accordion_content_tr_files.html', {'ie': ie})
+                return JsonResponse({'ok': True, 'id': ie.id, 'html': html})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
+        elif request.POST['action'] == 'descarga_gauss_file':
+            ie = InformeInspeccion.objects.get(inspector__gauser=g_e.gauser, id=request.POST['id_ie'])
+            faii = FileAttachedII.objects.get(informe=ie, id=request.POST['faii'])
+            fich = faii.fichero
+            response = HttpResponse(fich, content_type='%s' % faii.content_type)
+            response['Content-Disposition'] = 'attachment; filename=%s' % faii.fich_name
             return response
 
     informes = InformeInspeccion.objects.filter(inspector__gauser=g_e.gauser)
@@ -754,7 +789,7 @@ def carga_masiva_inspeccion(request):
                                                        clave_ex=sheet.cell(row_index, dict_names['Id']).value,
                                                        localizacion=str(
                                                            sheet.cell(row_index, dict_names['LOCALIZACIÓN']).value),
-                                                       nivel=str(sheet.cell(row_index, dict_names['NIVEL']).value),
+                                                       #nivel=str(sheet.cell(row_index, dict_names['NIVEL']).value),
                                                        actuacion=str(
                                                            sheet.cell(row_index, dict_names['ACTUACIÓN']).value),
                                                        realizada=True,
@@ -762,7 +797,7 @@ def carga_masiva_inspeccion(request):
                                                            int(sheet.cell(row_index,
                                                                           dict_names['Id INSPECTORES']).value)),
                                                        fecha=fecha,
-                                                       sector=str(sheet.cell(row_index, dict_names['SECTOR']).value),
+                                                       #sector=str(sheet.cell(row_index, dict_names['SECTOR']).value),
                                                        centro_mdb=centro,
                                                        colaboracion=str(
                                                            sheet.cell(row_index,

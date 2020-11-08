@@ -1,6 +1,6 @@
 {% load entidades_extras %}
 <div class="row">
-    <div class="columns large-12"><label><b>Informe basado en:</b></label></div>
+    <div class="columns large-12"><label><b>Informe basado en</b></label></div>
 </div>
 <div class="row">
     <div class="columns large-8">
@@ -41,7 +41,7 @@
 </div>
 <div class="row">
     <div class="columns large-12">
-        <label><b>Asunto: </b><input type="text" class="update_texto asunto" data-campo="asunto"
+        <label><b>Asunto </b><input type="text" class="update_texto asunto" data-campo="asunto"
                                      data-id="{{ ie.id }}" id="input_asunto{{ ie.id }}"
                                      value="{{ ie.asunto }}"
                                      placeholder="Introduce aquí el asunto del Informe de Inspección"></label>
@@ -51,6 +51,33 @@
 <div id="contenido_informe{{ ie.id }}">
     {% include "informes_ie_accordion_content_texto.html" %}
 </div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Archivos adjuntos al informe </b></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <table>
+{#            <thead>#}
+{#            <tr><th></th><th><span class="span_porcentage"></span></th></tr>#}
+{#            </thead>#}
+            <tbody id="tbody_gauss_file{{ ie.id }}">
+            {% include 'informes_ie_accordion_content_tr_files.html' %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-8">
+        <label><input type="file" class="gauss_file" name="gauss_file" multiple="multiple"></label>
+    </div>
+    <div class="columns large-4">
+        <a class="button tiny subir_gauss_file" data-id="{{ ie.id }}"><i class="fa fa-cloud-upload"></i> Cargar archivos</a>
+    </div>
+</div>
+
 <script>
     $('select').select2();
 </script>

@@ -20,6 +20,7 @@
         <input type="hidden" name="page" id="page" value="">
         <input type="hidden" id="id_informes_ie" name="id_informes_ie" value="">
         <input type="hidden" id="id_ie" name="id_ie" value="">
+        <input type="hidden" id="faii" name="faii" value="">
 
         <div id="div_informes_ie_seleccionados"></div>
 
@@ -141,7 +142,8 @@
                 });
                 var anchura = element.width() + 2;
                 setTimeout(function () {
-                    $('#cke_' + id).css('width', anchura + 'px'); {# Este es el id del ckeditor creado #}
+                    $('#cke_' + id).css('width', anchura + 'px');
+                    {# Este es el id del ckeditor creado #}
                 }, 200);
             });
         }
@@ -163,7 +165,8 @@
                                         {#constructEditorInstances(id);#}
                                         {#CKEDITOR.inlineAll();#}
                                         constructInlineEditorInstances(id);
-                                        $('#id_ie').val(id); {# utilizado para generar pdf #}
+                                        $('#id_ie').val(id);
+                                        {# utilizado para generar pdf #}
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();
@@ -258,7 +261,7 @@
             id = $(this).data('id');
             show_mensajes({
                 title: '<i class="fa fa-warning"></i> ¿Borrar esta informe de informe de inspección?',
-                texto: 'Si aceptas la tarea se borrará por completo de la base de datos', size: 'large', buttons: {
+                texto: 'Si aceptas el informe se borrará por completo de la base de datos', size: 'large', buttons: {
                     "Cancelar": function () {
                         hide_mensajes();
                     },
@@ -312,10 +315,11 @@
                 });
         });
 
-        function genera_pdf_informe(){
+        function genera_pdf_informe() {
             $('#action').val('pdf_ie');
             document.getElementById('{{formname}}').submit();
         }
+
         $('#Contenido').on('click', '.pdf_ie', function (e) {
             e.preventDefault();
             {#var id = $(this).data('id')#}
@@ -325,6 +329,87 @@
             {#var domain = window.location.hostname;#}
             {#$('#protocol_domain').val( protocol + '//' + domain + ':' + port);#}
 
+        });
+
+        {# ##################################################################### #}
+        {# #################### CARGA DE ARCHIVOS ############################## #}
+        {# ##################################################################### #}
+
+        function updateProgress(evt) {
+            if (evt.lengthComputable) {
+                var percentComplete = (evt.loaded / evt.total) * 100;
+                $('.span_porcentage').html(parseInt(percentComplete) + '%');
+                console.log(percentComplete);
+            } else {
+                console.log('No es posible calcular el porcentaje de carga en el servidor');
+            }
+        }
+
+        $('body').on('click', '.subir_gauss_file', function () {
+            var id = $(this).data('id');
+            var input_files = document.getElementById('gauss_file' + id).files;
+            $('#span_spin').show();
+            $('.span_porcentage').show();
+
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('archivo_xhr' + i, input_files[i]);
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'upload_archivo_xhr');
+            formData.append('ie', id);
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener("progress", updateProgress, false);
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log(xhr.responseText);
+                        var b = xhr.responseText;
+                        var data = JSON.parse(xhr.responseText);
+                        $('#tbody_gauss_file' + data.id).html(data.html);
+                        $('#span_spin').hide();
+                        $('#span_porcentage').hide();
+                    }
+                }
+            };
+            xhr.open('POST', "/informes_ie/", true);
+            xhr.send(formData);
+        });
+
+        $('#Contenido').on('click', '.descarga_gauss_file', function (e) {
+            e.preventDefault();
+            $('#action').val('descarga_gauss_file');
+            $('#faii').val($(this).data('id'));
+            document.getElementById('{{formname}}').submit();
+        });
+
+        $('body').on('click', '.borra_gauss_file', function () {
+            id = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar este archivo adjunto al informe?',
+                texto: 'Si aceptas el archivo se borrará por completo de la base de datos', size: 'large', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/informes_ie/", {action: 'borrar_faii', id: id},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#gauss_file' + id).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
         });
     </script>
 

@@ -9,6 +9,7 @@ from autenticar.models import Gauser
 from entidades.models import Subentidad, Cargo, Entidad
 from entidades.models import Gauser_extra as GE
 from gauss.rutas import RUTA_MEDIA
+from gauss.funciones import pass_generator
 
 
 def iniciales(s):  # Función para devolver las iniciales de una cadena
@@ -223,3 +224,25 @@ class PermisoReunion(models.Model):
         return '%s - (%s) edita: %s, convoca: %s, redacta: %s' % (self.plantilla, self.gauser.get_full_name(),
                                                                   self.edita_plantilla, self.puede_convocar,
                                                                   self.puede_redactar)
+
+def update_fichero_attached(instance, filename):
+    nombre = filename.rpartition('.')
+    instance.fich_name = filename
+    fichero = pass_generator(size=20) + '.' + nombre[2]
+    return '/'.join(['actas', str(instance.acta.convocatoria.entidad.code), fichero])
+
+class FileAttachedAR(models.Model):
+    acta = models.ForeignKey(ActaReunion, on_delete=models.CASCADE)
+    fichero = models.FileField("Fichero adjunto al acta de reunión", upload_to=update_fichero_attached, blank=True)
+    content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
+    fich_name = models.CharField("Nombre del archivo", max_length=200, blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = "Ficheros adjuntos a actas de reunión"
+
+    def filename(self):
+        f = os.path.basename(self.fichero.name)
+        return os.path.split(f)[1]
+
+    def __str__(self):
+        return '%s (%s)' % (self.fichero, self.acta)

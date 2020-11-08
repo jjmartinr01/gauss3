@@ -13,6 +13,8 @@
     <meta name="B-verify" content="d56bcfcd8bbd7ec711d93f32af87428f5e57e11e"/>
 </head>
 <style>
+    #logo_general {display: none;}
+    #logo_gobierno {display: none;}
     #div_alert_cookies {
         background-color: #f04124;
         border-color: #de2d0f;
@@ -68,7 +70,8 @@
     <div class="panel">
         <div class="row">
             <div class="large-6 small-6 medium-6 columns end text-right">
-                <img src="/static/images/logo_gauss_acceso.png" height="76" width="273">
+                <img id="logo_general" src="/static/images/logo_gauss_acceso.png" height="76" width="273">
+                <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.png" height="76" width="203">
             </div>
         </div>
         <div id="introduce_user_pass" style="display:{% if tipo == 'acceso' %}block{% else %}none{% endif %};">
@@ -291,13 +294,21 @@
         }
         var regex1 = /gaumentada/;
         var regex2 = /localhost/;
+        var regex3 = /larioja/;
         var url = window.location.href;
         if (regex1.test(url) || regex2.test(url)) {
             $('#top_bar').show();
             $(document).foundation();
             $(document).foundation('topbar', 'reflow');
         }
-    }, 1000);
+        if (regex3.test(url)){
+            $('#logo_general').hide();
+            $('#logo_gobierno').show();
+        }else{
+            $('#logo_general').show();
+            $('#logo_gobierno').hide();
+        }
+    }, 500);
 
 
     $('body').on('click', '#alert_cookies', function (e) {

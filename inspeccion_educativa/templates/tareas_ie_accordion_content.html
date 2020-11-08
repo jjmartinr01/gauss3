@@ -14,7 +14,7 @@
     </div>
     <div class="row">
         <div class="columns large-9">
-            <label><b>Asunto: </b><input type="text" class="update_texto" data-campo="asunto"
+            <label><b>Asunto </b><input type="text" class="update_texto" data-campo="asunto"
                                          data-id="{{ instarea.id }}"
                                          value="{{ instarea.tarea.asunto }}"
                                          placeholder="Introduce aquí el nombre de la actuación"></label>
@@ -26,7 +26,7 @@
     </div>
 
     <div class="row">
-        <div class="columns large-3">
+        <div class="columns large-4">
             <label><b>Tipo de actuación</b><select class="selector" data-campo="tipo" data-id="{{ instarea.id }}">
                 <option value="">---------</option>
                 {% for t in tipos %}
@@ -35,7 +35,7 @@
                 {% endfor %}
             </select> </label>
         </div>
-        <div class="columns large-3">
+        <div class="columns large-4">
             <label><b>Actuación</b><select class="selector" data-campo="actuacion" data-id="{{ instarea.id }}">
                 <option value="">---------</option>
                 {% for a in actuaciones %}
@@ -44,35 +44,36 @@
                 {% endfor %}
             </select></label>
         </div>
-        <div class="columns large-3">
-            <label><b>Sector</b><select class="selector" data-campo="sector" data-id="{{ instarea.id }}">
+    <div class="columns large-4">
+            <label><b>Función inspectora</b><select class="selector" data-campo="funcion" data-id="{{ instarea.id }}">
                 <option value="">---------</option>
-                {% for s in sectores %}
-                    <option value="{{ s.0 }}"
-                            {% if instarea.tarea.sector == s.0 %}selected{% endif %}>{{ s.1 }}</option>
+                {% for f in funciones %}
+                    <option value="{{ f.0 }}"
+                            {% if instarea.tarea.funcion == f.0 %}selected{% endif %}>{{ f.1 }}</option>
                 {% endfor %}
             </select></label>
         </div>
-        <div class="columns large-3">
-            <label><b>Nivel</b><select class="selector" data-campo="nivel" data-id="{{ instarea.id }}">
-                <option value="">---------</option>
-                {% for n in niveles %}
-                    <option value="{{ n.0 }}"
-                            {% if instarea.tarea.nivel == n.0 %}selected{% endif %}>{{ n.1 }}</option>
-                {% endfor %}
-            </select></label>
-        </div>
+{#        <div class="columns large-3">#}
+{#            <label><b>Sector</b><select class="selector" data-campo="sector" data-id="{{ instarea.id }}">#}
+{#                <option value="">---------</option>#}
+{#                {% for s in sectores %}#}
+{#                    <option value="{{ s.0 }}"#}
+{#                            {% if instarea.tarea.sector == s.0 %}selected{% endif %}>{{ s.1 }}</option>#}
+{#                {% endfor %}#}
+{#            </select></label>#}
+{#        </div>#}
+{#        <div class="columns large-3">#}
+{#            <label><b>Nivel</b><select class="selector" data-campo="nivel" data-id="{{ instarea.id }}">#}
+{#                <option value="">---------</option>#}
+{#                {% for n in niveles %}#}
+{#                    <option value="{{ n.0 }}"#}
+{#                            {% if instarea.tarea.nivel == n.0 %}selected{% endif %}>{{ n.1 }}</option>#}
+{#                {% endfor %}#}
+{#            </select></label>#}
+{#        </div>#}
     </div>
     <div class="row">
-        <div class="columns large-2">
-            <label><b>Objeto</b><select class="selector" data-campo="objeto" data-id="{{ instarea.id }}">
-                <option value="">---------</option>
-                {% for o in objetos %}
-                    <option value="{{ o.0 }}"
-                            {% if instarea.tarea.objeto == o.0 %}selected{% endif %}>{{ o.1 }}</option>
-                {% endfor %}
-            </select></label>
-        </div>
+
 {#        <div class="columns large-4">#}
 {#            <label><b>Centro MDB</b><select class="centro" data-id="{{ instarea.id }}" data-campo="centro_mdb">#}
 {#                <option value="">---------</option>#}
@@ -82,16 +83,16 @@
 {#                {% endfor %}#}
 {#            </select></label>#}
 {#        </div>#}
-        <div class="columns large-3">
-            <label><b>Función inspectora</b><select class="selector" data-campo="funcion" data-id="{{ instarea.id }}">
-                <option value="">---------</option>
-                {% for f in funciones %}
-                    <option value="{{ f.0 }}"
-                            {% if instarea.tarea.funcion == f.0 %}selected{% endif %}>{{ f.1 }}</option>
-                {% endfor %}
-            </select></label>
-        </div>
-        <div class="columns large-5">
+{#        <div class="columns large-3">#}
+{#            <label><b>Función inspectora</b><select class="selector" data-campo="funcion" data-id="{{ instarea.id }}">#}
+{#                <option value="">---------</option>#}
+{#                {% for f in funciones %}#}
+{#                    <option value="{{ f.0 }}"#}
+{#                            {% if instarea.tarea.funcion == f.0 %}selected{% endif %}>{{ f.1 }}</option>#}
+{#                {% endfor %}#}
+{#            </select></label>#}
+{#        </div>#}
+        <div class="columns large-6">
             <label><b>Centro</b><select class="centro" data-id="{{ instarea.id }}" data-campo="centro">
                 <option value="">---------</option>
                 {% for c in centros %}
@@ -101,8 +102,16 @@
                 {% endfor %}
             </select></label>
         </div>
-
-        <div class="columns large-2">
+<div class="columns large-3">
+            <label><b>Objeto</b><select class="selector" data-campo="objeto" data-id="{{ instarea.id }}">
+                <option value="">---------</option>
+                {% for o in objetos %}
+                    <option value="{{ o.0 }}"
+                            {% if instarea.tarea.objeto == o.0 %}selected{% endif %}>{{ o.1 }}</option>
+                {% endfor %}
+            </select></label>
+        </div>
+        <div class="columns large-3">
             <label><b>Localización</b><select class="selector" data-campo="localizacion"
                                               data-id="{{ instarea.id }}">
                 <option value="">---------</option>
@@ -167,44 +176,46 @@
         </div>
     </div>
     <div class="row">
-        <div class="columns large-9">
-            <label><b>Asunto: </b></label> {{ instarea.tarea.asunto }}
+        <div class="columns large-10">
+            <label><b>Asunto </b></label> {{ instarea.tarea.asunto }}
         </div>
-        <div class="columns large-3">
-            <label><b>Función inspectora </b></label> {{ instarea.tarea.get_funcion_display }}
+        <div class="columns large-2">
+            <label class="right"><b>Fecha</b><br> {{ instarea.tarea.fecha|date:'d-m-Y' }}</label>
         </div>
     </div>
     <hr>
     <div class="row">
-        <div class="columns large-3">
+        <div class="columns large-5">
             <label><b>Tipo de actuación</b></label> {{ instarea.tarea.get_tipo_display }}
         </div>
         <div class="columns large-3">
             <label><b>Actuación </b></label> {{ instarea.tarea.get_actuacion_display }}
         </div>
-        <div class="columns large-3">
-            <label><b>Sector </b></label> {{ instarea.tarea.get_sector_display }}
+        <div class="columns large-4">
+            <label><b>Función inspectora </b></label> {{ instarea.tarea.get_funcion_display }}
         </div>
-        <div class="columns large-3">
-            <label><b>Nivel </b></label> {{ instarea.tarea.get_nivel_display }}
-        </div>
+{#        <div class="columns large-3">#}
+{#            <label><b>Sector </b></label> {{ instarea.tarea.get_sector_display }}#}
+{#        </div>#}
+{#        <div class="columns large-3">#}
+{#            <label><b>Nivel </b></label> {{ instarea.tarea.get_nivel_display }}#}
+{#        </div>#}
     </div>
     <hr>
     <div class="row">
-        <div class="columns large-3">
-            <label><b>Objeto </b></label> {{ instarea.tarea.get_objeto_display }}
-        </div>
         {% if instarea.tarea.centro %}
-            <div class="columns large-6">
+            <div class="columns large-5">
                 <label><b>Centro </b></label> {{ instarea.tarea.centro.name }}
             </div>
         {% else %}
-            <div class="columns large-6">
+            <div class="columns large-5">
                 <label><b>Centro (MDB) </b></label> {{ instarea.tarea.centro_mdb.nombre }}
             </div>
         {% endif %}
-
         <div class="columns large-3">
+            <label><b>Objeto </b></label> {{ instarea.tarea.get_objeto_display }}
+        </div>
+        <div class="columns large-4">
             <label><b>Localización </b></label> {{ instarea.tarea.get_localizacion_display }}
         </div>
     </div>

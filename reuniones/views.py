@@ -956,6 +956,25 @@ def redactar_actas_reunion(request):
                 return response
             except:
                 crear_aviso(request, False, 'No es posible generar el pdf del acta solicitada')
+        elif request.POST['action'] == 'upload_archivo_xhr':
+            try:
+                n_files = int(request.POST['n_files'])
+                acta = ActaReunion.objects.get(id=request.POST['acta'])
+                for i in range(n_files):
+                    fichero = request.FILES['archivo_xhr' + str(i)]
+                    FileAttachedAR.objects.create(acta=acta, fich_name=fichero.name,
+                                                  content_type=fichero.content_type, fichero=fichero)
+
+                html = render_to_string('redactar_actas_reunion_accordion_content_tr_files.html', {'acta': acta})
+                return JsonResponse({'ok': True, 'id': acta.id, 'html': html})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
+        elif request.POST['action'] == 'descarga_gauss_file':
+            acta = ActaReunion.objects.get(id=request.POST['id_acta'], convocatoria__entidad=g_e.ronda.entidad)
+            faar = FileAttachedAR.objects.get(acta=acta, id=request.POST['faar'])
+            response = HttpResponse(faar.fichero, content_type='%s' % faar.content_type)
+            response['Content-Disposition'] = 'attachment; filename=%s' % faar.fich_name
+            return response
         elif request.POST['action'] == 'update_page':
             try:
                 actas = busca_actas_redactar(request)
@@ -1194,6 +1213,18 @@ def redactar_actas_reunion_ajax(request):
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 27})
+        elif request.POST['action'] == 'borrar_faar':
+            try:
+                faar = FileAttachedAR.objects.get(id=request.POST['id'])
+                acta = ActaReunion.objects.get(convocatoria__entidad=g_e.ronda.entidad, id=faar.acta.id)
+                if acta.is_redactada_por(g_e) and acta.publicada == False:
+                    os.remove(faar.fichero.path)
+                    faar.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+            except:
+                return JsonResponse({'ok': False})
         elif request.POST['action'] == 'ver_formulario_buscar':
             plantillas = ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
             try:
@@ -1403,6 +1434,13 @@ def lectura_actas_reunion(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+    elif request.method == 'POST' and not request.is_ajax():
+        if request.POST['action'] == 'descarga_gauss_file':
+            acta = ActaReunion.objects.get(id=request.POST['id_acta'], convocatoria__entidad=g_e.ronda.entidad)
+            faar = FileAttachedAR.objects.get(acta=acta, id=request.POST['faar'])
+            response = HttpResponse(faar.fichero, content_type='%s' % faar.content_type)
+            response['Content-Disposition'] = 'attachment; filename=%s' % faar.fich_name
+            return response
 
     actas = busca_actas_leer(request)
     paginator = Paginator(actas, 15)

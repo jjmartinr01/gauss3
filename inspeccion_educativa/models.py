@@ -760,7 +760,7 @@ def update_fichero(instance, filename):
     nombre = filename.rpartition('.')
     instance.fich_name = filename
     fichero = pass_generator(size=20) + '.' + nombre[2]
-    return '/'.join(['inspeccion', str(instance.entidad.code), fichero])
+    return '/'.join(['inspeccion', str(instance.informe.inspector.ronda.entidad.code), fichero])
 
 class FileAttachedII(models.Model):
     informe = models.ForeignKey(InformeInspeccion, on_delete=models.CASCADE)

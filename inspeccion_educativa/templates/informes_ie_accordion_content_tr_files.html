@@ -1,0 +1,6 @@
+{% for f in ie.fileattachedii_set.all %}
+    <tr id="gauss_file{{ f.id }}">
+        <td><a class="descarga_gauss_file" data-id="{{ f.id }}">{{ f.fich_name }}</a></td>
+        <td><a class="borra_gauss_file" data-id="{{ f.id }}"><i class="fa fa-trash"></i> Borrar</a></td>
+    </tr>
+{% endfor %}

@@ -37,7 +37,7 @@
         <input type="hidden" id="id_acta" name="id_acta" value="">
         <input type="hidden" name="page" id="page" value="">
         <input type="hidden" id="actas_buscar" value="0">
-
+        <input type="hidden" id="faar" name="faar" value="">
 
         <div>
             <h4 class="title_page" id="titulo">Lectura de actas</h4>
@@ -129,6 +129,7 @@
                                 acta: id
                             }, function (data) {
                                 if (data.ok) {
+                                    $('#id_acta').val(id);
                                     $('#panel' + id).html(data.html);
                                     $("#update_ok").show().delay(1500).fadeOut();
                                 } else {
@@ -149,6 +150,13 @@
             $('#id_acta').val($(this).data('id'));
             $('#action').val('pdf_acta');
             document.getElementById("{{ formname }}").submit();
+        });
+
+        $('#Contenido').on('click', '.descarga_gauss_file', function (e) {
+            e.preventDefault();
+            $('#action').val('descarga_gauss_file');
+            $('#faar').val($(this).data('id'));
+            document.getElementById('{{formname}}').submit();
         });
     </script>
 {% endblock %}

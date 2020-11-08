@@ -38,6 +38,7 @@
         <input type="hidden" name="page" id="page" value="">
         <input type="hidden" id="id_acta" name="id_acta" value="">
         <input type="hidden" id="actas_buscar" value="0">
+        <input type="hidden" id="faar" name="faar" value="">
 
         <div>
             <h4 class="title_page" id="titulo">Redacción de actas</h4>
@@ -133,6 +134,7 @@
                             }, function (data) {
                                 if (data.ok) {
                                     $('#panel' + id).html(data.html);
+                                    $('#id_acta').val(id);
                                     $(".fecha_aprobacion").fdatepicker({
                                         format: 'dd/mm/yyyy',
                                         weekStart: 1
@@ -483,5 +485,87 @@
                 });
             });
         {% endif %}
+
+        {# ##################################################################### #}
+        {# #################### CARGA DE ARCHIVOS ############################## #}
+        {# ##################################################################### #}
+
+        function updateProgress(evt) {
+            if (evt.lengthComputable) {
+                var percentComplete = (evt.loaded / evt.total) * 100;
+                $('.span_porcentage').html(parseInt(percentComplete) + '%');
+                console.log(percentComplete);
+            } else {
+                console.log('No es posible calcular el porcentaje de carga en el servidor');
+            }
+        }
+
+        $('body').on('click', '.subir_gauss_file', function () {
+            var id = $(this).data('id');
+            console.log(id)
+            var input_files = document.getElementById('gauss_file' + id).files;
+            $('#span_spin').show();
+            $('.span_porcentage').show();
+
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('archivo_xhr' + i, input_files[i]);
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'upload_archivo_xhr');
+            formData.append('acta', id);
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener("progress", updateProgress, false);
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log(xhr.responseText);
+                        var b = xhr.responseText;
+                        var data = JSON.parse(xhr.responseText);
+                        $('#tbody_gauss_file' + data.id).html(data.html);
+                        $('#span_spin').hide();
+                        $('#span_porcentage').hide();
+                    }
+                }
+            };
+            xhr.open('POST', "/redactar_actas_reunion/", true);
+            xhr.send(formData);
+        });
+
+        $('#Contenido').on('click', '.descarga_gauss_file', function (e) {
+            e.preventDefault();
+            $('#action').val('descarga_gauss_file');
+            $('#faar').val($(this).data('id'));
+            document.getElementById('{{formname}}').submit();
+        });
+
+        $('body').on('click', '.borra_gauss_file', function () {
+            id = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar este archivo adjunto al acta?',
+                texto: 'Si aceptas el archivo se borrará por completo de la base de datos', size: 'large', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/redactar_actas_reunion_ajax/", {action: 'borrar_faar', id: id},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#gauss_file' + id).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+        });
     </script>
 {% endblock %}

@@ -99,13 +99,6 @@ def has_permiso_on_vivienda(g_e, vivienda, permiso):
 @permiso_required('acceso_viviendas')
 def viviendas(request):
     g_e = request.session['gauser_extra']
-    # Líneas que deben ser borradas:
-    v_a_cambiar = Vivienda.objects.all()
-    for v in v_a_cambiar:
-        if not v.gpropietario:
-            v.gpropietario = v.propietarios.all()[0]
-            v.save()
-    # ttg######################
     vvs = viviendas_autorizado(g_e)
     if request.method == 'POST':
         action = request.POST['action']
@@ -182,7 +175,9 @@ def ajax_viviendas(request):
                     vivienda = Vivienda.objects.get(id=request.POST['vivienda'], propietarios__in=[g_e.gauser])
                     permiso = Permiso.objects.get(code_nombre='borra_viviendas')
                     if has_permiso_on_vivienda(g_e, vivienda, permiso):
-                        vivienda.delete()
+                        vivienda.borrada = True
+                        vivienda.save()
+                        # vivienda.delete()
                         return JsonResponse({'ok': True, 'mensaje': "La vivienda se ha borrado sin incidencias."})
                     else:
                         return JsonResponse({'ok': False, 'mensaje': "Error al tratar de borrar la vivienda."})
@@ -1811,7 +1806,9 @@ def viviendas_registradas_vut(request):
                 if vivienda.propietarios.all().count() >= 1:
                     vivienda.propietarios.remove(usuario.gauser)
                 else:
-                    vivienda.delete()
+                    vivienda.borrada = True
+                    vivienda.save()
+                    # vivienda.delete()
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})

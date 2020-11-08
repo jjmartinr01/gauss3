@@ -34,6 +34,27 @@
     {{ acta.epilogo }}
 {% endautoescape %}
 
+{% if acta.fileattachedar_set.all|length > 0 %}
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Archivos adjuntos a este acta </b></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <table>
+            <tbody id="tbody_gauss_file{{ acta.id }}">
+            {% for f in acta.fileattachedar_set.all %}
+                <tr id="gauss_file{{ f.id }}">
+                    <td><a class="descarga_gauss_file" data-id="{{ f.id }}">{{ f.fich_name }}</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
 {% for firma in acta.firmaacta_set.all %}
     <div style="width: 280px;display: inline-block;">
         {% if firma.tipo == 'VB' %}<p>VºBº</p>{% else %}<p>&nbsp;</p>{% endif %}
