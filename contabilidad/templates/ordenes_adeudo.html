@@ -34,10 +34,11 @@
         {#        </table>#}
         {#    <hr>#}
 
-{% include "ordenes_adeudo_fieldset_etadistica.html" %}
+        {% include "ordenes_adeudo_fieldset_etadistica.html" %}
         <table style="width: 100%;">
             <thead>
             <tr>
+                <th>Nº</th>
                 <th>Persona</th>
                 <th>Concepto</th>
                 <th>Fecha firma</th>
@@ -45,9 +46,10 @@
             </tr>
             </thead>
             {% for politica in politicas %}
-                <tbody>
+                <tbody style="border-bottom: 2px solid black!important;">
                 {% for d in politica.destinatarios %}
                     <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>{{ d.ge.gauser.get_full_name }}</td>
                         <td>{{ politica.concepto }}</td>
                         <td>{% if d.oa.fecha_firma %}{{ d.oa.fecha_firma }}
@@ -59,6 +61,13 @@
                         </td>
                     </tr>
                 {% endfor %}
+                {% if not forloop.last %}
+                    <tr>
+                        <td colspan="5">
+                            <hr>
+                        </td>
+                    </tr>
+                {% endif %}
                 </tbody>
             {% endfor %}
         </table>
@@ -72,7 +81,7 @@
             $('#action').val('descarga_orden');
             var orden_id = $(this).data('id');
             $('#orden_id').val(orden_id);
-            document.{{formname}}.submit();
+            document.getElementById('{{formname}}').submit();
         });
         $('body').on('click', '.fieldset_close', function (e) {
             e.preventDefault();
