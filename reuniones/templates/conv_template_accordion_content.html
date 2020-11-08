@@ -215,8 +215,31 @@
             });
     });
 
-
-    var editor_contenido_convocatoria = CKEDITOR.inline('texto_base{{ conv_template.id }}');
+    config = {
+            removePlugins: 'exportpdf',
+            toolbar: [
+                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
+                {
+                    name: 'basicstyles',
+                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
+                },
+                {
+                    name: 'paragraph',
+                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
+                },
+                '/',
+                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
+                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
+                {name: 'colors', items: ['TextColor', 'BGColor']},
+                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
+                {name: 'document', items: ['Source']},
+                {name: 'about', items: ['About', 'generapdfbutton']}
+            ],
+            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
+        }
+    var editor_contenido_convocatoria = CKEDITOR.inline('texto_base{{ conv_template.id }}', config);
     {# extraAllowedContent: entre [] los atributos, entre {} los estilos y entre () los nombres de las clases permitidas #}
     editor_contenido_convocatoria.config.extraAllowedContent = 'li ol[id, title]; span(sub_convocadas, day_name, day_num, month_name, month_num, year, datetime_date, datetime_time, place, convocante, cargo_convocante, noeditable); h1(title, noeditable);span[id, title, contenteditable]';
     editor_contenido_convocatoria.on('doubleclick', function (evt) {
