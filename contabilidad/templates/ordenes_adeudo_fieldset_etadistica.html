@@ -1,5 +1,8 @@
 <style>
-    .estadistica {font-weight: bold; color: #008CBA;}
+    .estadistica {
+        font-weight: bold;
+        color: #008CBA;
+    }
 </style>
 <fieldset id="formulario_oa_estadistica" class="fieldset_box">
     <legend>Estadística Órdenes de Adeudo</legend>
@@ -8,29 +11,29 @@
         <a class="fieldset_close"><i class="fa fa-times"></i></a>
     </span>
     </div>
-<div class="row">
-            <div class="columns large-4">
-                <span class="estadistica">Política de cuotas</span>
-            </div>
-            <div class="columns large-4">
-                <span class="estadistica">Órdenes requeridas</span>
-            </div>
-            <div class="columns large-4">
-                <span class="estadistica">Órdenes firmadas</span>
-            </div>
+    <div class="row">
+        <div class="columns large-4">
+            <span class="estadistica">Política de cuotas</span>
+        </div>
+        <div class="columns large-4">
+            <span class="estadistica">Órdenes requeridas</span>
+        </div>
+        <div class="columns large-4">
+            <span class="estadistica">Órdenes firmadas</span>
+        </div>
     </div>
     <div class="row">
         {% for politica in politicas %}
             <div class="columns large-4">
-{#                <label>Política de cuotas</label>#}
                 {{ politica.concepto }}
             </div>
             <div class="columns large-4">
-{#                <label>Órdenes requeridas</label>#}
                 {{ politica.destinatarios|length }}
             </div>
             <div class="columns large-4">
-{#                <label>Órdenes firmadas</label>#}
+                {# Puede que salgan más órdenes firmadas que destinatarios de una política, ya que #}
+                {# puede haber usuarios que hayan firmado y no se les vaya a pasar cuota, #}
+                {# por ejemplo, copropietarios vut o hermanos en cuota tipo hermanos. #}
                 {{ politica.ordenes_firmadas|length }}
             </div>
         {% endfor %}

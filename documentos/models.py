@@ -161,7 +161,15 @@ class TextoEvaluable(models.Model):
     tipo = models.CharField('Tipo de accesibilidad al documento', max_length=15, default='personal', choices=TIPOS)
     dce = models.ForeignKey(DocConfEntidad, blank=True, null=True, on_delete=models.SET_NULL)
     secret = models.CharField('clave secreta enlace', max_length=50, default=crea_clave)
+    plantilla =models.BooleanField('¿Es una plantilla?', default=False)
     borrado = models.BooleanField('¿Texto borrado?', default=False)
+
+    @property
+    def deep_enum(self):
+        if self.parent:
+            return "%s.%s" % (self.parent.deep_enum, self.enum)
+        else:
+            return "%s" % (self.enum)
 
     def get_pte(self, ge):
         if self.tipo == 'entidad':
@@ -261,6 +269,7 @@ class PermisoTextoEvaluable(models.Model):
         ('eval_reste', 'Puede evaluar las respuestas al texto evaluable'))
     textoevaluable = models.ForeignKey(TextoEvaluable, on_delete=models.CASCADE)
     ge = models.ForeignKey(GE, blank=True, null=True, on_delete=models.CASCADE)
+    cargo = models.ForeignKey(Cargo, blank=True, null=True, on_delete=models.CASCADE)
     permiso = models.CharField('Permisos', blank=True, null=True, max_length=100)
 
     def __str__(self):

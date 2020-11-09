@@ -51,7 +51,7 @@ def documentos_ge(request):
     return docs.filter(qb)
 
 
-# @permiso_required('acceso_documentos')
+@permiso_required('acceso_documentos')
 def documentos(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST' and request.is_ajax():
@@ -302,12 +302,9 @@ def documentos(request):
             try:
                 docs = documentos_ge(request)
                 d = docs.get(id=request.POST['documento'])
-                fichero = d.fichero.read()
-                response = HttpResponse(fichero, content_type=d.content_type)
-                nombre = slugify(d.fich_name.rpartition('.')[0])
-                ext = d.fich_name.rpartition('.')[2]
-                # response['Content-Disposition'] = 'attachment; filename=%s.%s' %(slugify(d.nombre), ext)
-                response['Content-Disposition'] = 'attachment; filename=%s.%s' % (nombre, ext)
+                nombre, dot, ext = d.fich_name.rpartition('.') # slugify(d.fich_name.rpartition('.')[0])
+                response = HttpResponse(d.fichero, content_type=d.content_type)
+                response['Content-Disposition'] = 'attachment; filename=%s.%s' % (slugify(nombre), ext)
                 return response
             except:
                 crear_aviso(request, False, 'Error. No se ha podido descargar el archivo.')
@@ -440,3 +437,4 @@ def presentaciones(request):
             return render(request, "no_enlace.html")
     else:
         return render(request, "no_enlace.html")
+
