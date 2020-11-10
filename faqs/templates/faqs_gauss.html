@@ -454,7 +454,7 @@
             e.preventDefault();
             $('#action').val('descargar_fichero_policia');
             $('#fichero_policia').val($(this).data('id'));
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('body').on('click', '.activar_registro', function (e) {

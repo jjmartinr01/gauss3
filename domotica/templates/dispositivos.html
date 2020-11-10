@@ -76,7 +76,7 @@
             e.preventDefault();
             $('#dispositivo').val($(this).data('disp'));
             $('#action').val('descargar_disp');
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         {% if g_e|has_permiso:'crea_dispositivos_domotica' %}

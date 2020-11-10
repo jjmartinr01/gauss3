@@ -310,7 +310,7 @@
             e.preventDefault();
             $('#id_configura_convocatoria').val($(this).data('id'));
             $('#action').val('pdf_convocatoria');
-            document.{{ formname }}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
     </script>

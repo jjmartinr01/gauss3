@@ -243,7 +243,7 @@
         $('#file-excel-o_sign').click(function (e) {
             e.preventDefault();
             $('#action').val('exportar_excel');
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('body').on('click', '#arrow-right_sign', function (e) {

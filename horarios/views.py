@@ -979,7 +979,7 @@ def xml_racima(xml_file, request):
             if 'E.S.O.' in nombre:
                 curso.etapa = 'da'
             elif 'Bachillerato' in nombre:
-                curso.etpa = 'fa'
+                curso.etapa = 'fa'
             elif 'F.P.S.E.G.M.' in nombre:
                 curso.etapa = 'ga'
             elif 'F.P.S.E.G.S.' in nombre:

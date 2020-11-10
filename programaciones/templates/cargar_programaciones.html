@@ -54,7 +54,7 @@
             e.preventDefault();
             $('#action').val('descargar_fichero_programacion');
             $('#programacion').val($(this).data('id'));
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('body').on('click', '.delete_programacion', function (e) {

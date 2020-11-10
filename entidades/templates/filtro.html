@@ -236,7 +236,7 @@
             e.preventDefault();
             $('#filtrado').val($(this).data('id'));
             $('#action').val('download_file');
-            document.{{ formname }}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
     </script>

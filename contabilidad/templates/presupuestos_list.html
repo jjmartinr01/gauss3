@@ -131,7 +131,7 @@
             $('#check_sign').click(function (event) {
                 event.preventDefault();
                 if ($('#nombre').val().length > 3) {
-                    document.{{formname}}.submit();
+                    document.getElementById("{{ formname }}").submit();
                 }
             });
 
@@ -161,7 +161,7 @@
                 var id = $(this).data('id');
                 $('#id_presupuesto').val(id);
                 $('#action').val('borrar_presupuesto');
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
             });
 
             $('.archivar').click(function (e) {
@@ -169,28 +169,28 @@
                 console.log(id);
                 $('#id_presupuesto').val(id);
                 $('#action').val('archivar_presupuesto');
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
             });
 
             $('.abrir').click(function (e) {
                 var id = $(this).data('id');
                 $('#id_presupuesto').val(id);
                 $('#action').val('abrir_presupuesto');
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
             });
 
             $('.pdf').click(function (e) {
                 var id = $(this).data('id');
                 $('#id_presupuesto').val(id);
                 $('#action').val('pdf_presupuesto');
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
             });
 
             $('.copiar').click(function (e) {
                 var id = $(this).data('id');
                 $('#id_presupuesto').val(id);
                 $('#action').val('copiar_presupuesto');
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
             });
         {% endif %}
 

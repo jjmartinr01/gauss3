@@ -227,14 +227,14 @@
         $("#envelope-o_sign").click(function (e) {
             e.preventDefault();
             $('#action').val('mail');
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $("#send-o_sign").click(function (e) {
             e.preventDefault();
             $('#action').val('telegram');
             $('#telegram').val()
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
 

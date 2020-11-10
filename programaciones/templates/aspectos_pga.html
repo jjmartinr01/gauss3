@@ -100,7 +100,7 @@
             $('#action').val('download_file');
             $('#pga').val($(this).data('pga'));
             $('#archivo').val($(this).data('id'));
-            document.{{ formname }}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('body').on('click', '.aceptar_reunion', function (e) {
@@ -150,7 +150,7 @@
             e.preventDefault();
             $('#action').val('downloadpga');
             $('#pga').val($(this).data('pga'));
-            document.{{ formname }}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
     </script>
 {% endblock %}

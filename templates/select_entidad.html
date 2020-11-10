@@ -9,6 +9,14 @@
     <link rel="stylesheet" href="/static/css/gauss.css" type="text/css">
 </head>
 <style>
+    #logo_general {
+        display: none;
+    }
+
+    #logo_gobierno {
+        display: none;
+    }
+
     .ent_select {
         max-height: 70px;
         max-width: inherit;
@@ -30,12 +38,6 @@
         color: #008CBA;
         font-weight: 800;
     }
-
-    #logo_gauss_acceso {
-        height: 76px;
-        width: 273px;
-        margin-top: 20px;
-    }
 </style>
 <form action="" method="post" id="select_entidad" name="select_entidad">
     <input type="hidden" name="action" value="selecciona_entidad">
@@ -44,7 +46,8 @@
     <div id="main_div">
         <div class="row">
             <div class="large-12 small-12 medium-12 columns text-center">
-                <img src="/static/images/logo_gauss_acceso.png" id="logo_gauss_acceso">
+                <img id="logo_general" src="/static/images/logo_gauss_acceso.png" height="76" width="273">
+                <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.png" height="76" width="203">
             </div>
         </div>
         <div>
@@ -52,7 +55,7 @@
         </div>
         <div class="row">
             {% for gauser_extra in gauser_extras %}
-                <div class="columns large-3 medium-4 small-6 div_ent_select" data-id="{{ gauser_extra.id }}">
+                <div class="columns large-3 medium-4 small-6 div_ent_select" onclick="goEntidad({{ gauser_extra.id }})">
                     <figure>
                         {% if gauser_extra.ronda.entidad.anagrama %}
                             <img src="{{ gauser_extra.ronda.entidad.anagrama.url }}" class="ent_select"
@@ -69,12 +72,26 @@
         <input type="hidden" name="gauser_extra" id="gauser_extra" value="">
     </div>
 </form>
-<script src="/static/js/jquery-1.7.2.min.js"></script>
+
 <script type="text/javascript">
-    $('#main_div').on('click', '.div_ent_select', function (e) {
-        e.preventDefault();
-        $('#gauser_extra').val($(this).data('id'));
-        document.select_entidad.submit();
-    });
+    function showImageLogo() {
+        var regex3 = /larioja/;
+        var url = window.location.href;
+        if (regex3.test(url)) {
+            document.getElementById('logo_general').style.display = 'none';
+            document.getElementById('logo_gobierno').style.display = 'inline';
+        } else {
+            document.getElementById('logo_general').style.display = 'inline';
+            document.getElementById('logo_gobierno').style.display = 'none';
+        }
+    }
+
+    window.setTimeout(showImageLogo, 0);
+
+    function goEntidad(id) {
+        document.getElementById('gauser_extra').value = id;
+        document.getElementById("select_entidad").submit();
+    }
+
 </script>
 </html>

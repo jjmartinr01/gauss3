@@ -170,14 +170,14 @@
         $('#plus_sign').click(function (e) {
             e.preventDefault();
             $('#action').val('add_enlace');
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('body').on('click', '.borrar', function (e) {
             e.preventDefault();
             $('#enlace_id').val($(this).data('id'));
             $('#action').val('borra_enlace');
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
     </script>
 {% endblock %}

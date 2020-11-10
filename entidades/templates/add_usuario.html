@@ -212,7 +212,7 @@
         $('#check_sign').click(function (event) {
             event.preventDefault();
             if (!($(this).hasClass('disabled'))) {
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
             }
         });
 

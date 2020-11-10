@@ -169,7 +169,7 @@
             e.preventDefault();
             $('#action').val('download_file');
             $('#archivo').val($(this).data('id'));
-            document.{{ formname }}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
     </script>
 {% endblock %}

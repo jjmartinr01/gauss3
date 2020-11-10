@@ -383,7 +383,7 @@
                     "Aceptar": function () {
                         $('#action').val('borrar_web');
                         hide_mensajes();
-                        document.{{formname}}.submit();
+                        document.getElementById("{{ formname }}").submit();
                     }
                 }
             });
@@ -393,7 +393,7 @@
             e.preventDefault();
             $id_nombre = Foundation.libs.abide.parse_patterns($('#id_nombre'));
             if ($id_nombre) {
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
             }
         });
     </script>

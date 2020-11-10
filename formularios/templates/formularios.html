@@ -87,7 +87,7 @@
         $('body').on('click', '.excel', function (e) {
             e.preventDefault();
             $('#action').val('excel');
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('body').on('click', '.borrar', function (e) {

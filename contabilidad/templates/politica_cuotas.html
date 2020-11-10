@@ -185,14 +185,14 @@
             e.preventDefault();
             $('#id_remesa_emitida').val($(this).data('id'));
             $('#action').val('descarga_remesa');
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('body').on('click', '.descarga_excel', function (e) {
             e.preventDefault();
             $('#id_remesa_emitida').val($(this).data('id'));
             $('#action').val('descarga_excel');
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('body').on('click', '.go_page', function (e) {

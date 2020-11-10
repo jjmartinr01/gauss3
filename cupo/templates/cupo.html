@@ -146,7 +146,6 @@
                 $('#cupo').val($(this).data('cupo'));
                 console.log('cupo', $('#cupo').val(), $(this).data('cupo'));
                 document.getElementById("{{ formname }}").submit();
-                {#window.{{ formname }}.submit();#}
             });
             $('body').on('click', '.add_filtro', function (e) {
                 e.preventDefault();

@@ -216,14 +216,14 @@
         $('#file-pdf-o_sign').click(function (e) {
             e.preventDefault();
             $('#action').val('genera_pdf');
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('body').on('click', '.descargar_informe', function (e) {
             e.preventDefault();
             $('#action').val('descargar_informe');
             $('#inf_descargar').val($(this).data('id'));
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
 

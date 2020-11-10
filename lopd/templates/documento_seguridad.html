@@ -31,7 +31,7 @@
             event.preventDefault();
             if (!($(this).hasClass('disabled'))) {
                 $('#action').val('genera_pdf')
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
             }
         });
     </script>

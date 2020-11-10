@@ -96,7 +96,7 @@
         var id = $(this).attr('id').split('___')[1];
         $('#id_evento').val(id);
         $('#action').val('pdf_evento');
-        document.{{formname}}.submit();
+        document.getElementById("{{ formname }}").submit();
     });
 
     $("#contenido_evento_cerrar").on('click', function (e) {

@@ -36,8 +36,7 @@
         $("#id_ronda").change(function (event) {
             event.preventDefault();
             $('#action').val('change_ronda');
-            document
-                .{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
     </script>
 {% endblock %}

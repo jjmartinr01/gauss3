@@ -279,7 +279,7 @@
             e.preventDefault();
             $('#id_convocatoria').val($(this).data('id'));
             $('#action').val('pdf_convocatoria');
-            document.{{ formname }}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
 

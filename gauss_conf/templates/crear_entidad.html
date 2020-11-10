@@ -56,7 +56,7 @@
             event.preventDefault();
             if (!($(this).hasClass('disabled'))) {
                 $('#action').val('aceptar');
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
             }
         });
 

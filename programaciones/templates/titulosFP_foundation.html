@@ -290,7 +290,7 @@
             var id = $(this).data('id');
             $('#id_titulo').val(id);
             $('#action').val('pdf_titulo');
-            document.{{ formname }}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('body').on('click', '.copy_titulo', function (e) {
@@ -311,7 +311,7 @@
             if ($(this).hasClass('navegar')) {
                 $('#action').val('guardar');
                 $('#id_texto').val(removeWordTags($('#id_texto').val()));
-                document.{{ formname }}.submit();
+                document.getElementById("{{ formname }}").submit();
             }
         });
 

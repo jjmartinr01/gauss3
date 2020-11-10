@@ -69,7 +69,7 @@
             event.preventDefault();
             if (!($(this).hasClass('disabled'))) {
                 $('#action').val('pdf_presupuesto');
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
             }
         });
 

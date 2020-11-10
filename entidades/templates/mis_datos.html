@@ -702,9 +702,7 @@
         });
         $('#id_foto').change(function () {
             $('#action').val('aceptar');
-            document
-        .{{formname}}.
-            submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $(".buscar_miembro").click(function (e) {
@@ -713,9 +711,7 @@
             $('#miembro_unidad').val(id);
             show_mensajes({'title': 'Cargando el usuario indicado ...'});
             $('#action').val('miembro_unidad');
-            document
-        .{{formname}}.
-            submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('#Contenido').on('click', '.mayor_edad', function (e) {

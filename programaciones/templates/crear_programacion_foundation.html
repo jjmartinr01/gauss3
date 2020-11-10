@@ -395,8 +395,7 @@
             var ud = $(this).data('ud');
             $('#unidad_didactica').val(ud);
             $('#action').val('pdf_ud');
-            document
-                .{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('body').on('click', '.delete_ud', function (e) {
@@ -650,8 +649,7 @@
         $('#file-pdf-o_sign').click(function (e) {
             e.preventDefault();
             $('#action').val('pdf');
-            document
-                .{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('#list_sign').click(function (e) {

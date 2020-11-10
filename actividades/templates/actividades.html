@@ -174,7 +174,7 @@
                 e.preventDefault();
                 $('#id_actividad').val('todas');
                 $('#action').val('pdf_actividades');
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
             });
         {% endif %}
 

@@ -115,7 +115,7 @@
         $('#action').val('mensajes_pdf');
         $('.check_mensaje').removeClass('fa-check-square-o').addClass('fa-square-o');
         $('#id_mensajes').val('{{ mensaje.id }}');
-        document.{{formname}}.submit();
+        document.getElementById("{{ formname }}").submit();
     });
 
     $("#reveal_contenido_correo_cerrar").on('click', function (e) {
@@ -130,7 +130,7 @@
         $('#action').val('adjuntos_zip');
         $('.check_mensaje').removeClass('fa-check-square-o').addClass('fa-square-o');
         $('#id_mensajes').val('{{ mensaje.id }}')
-        document.{{formname}}.submit();
+        document.getElementById("{{ formname }}").submit();
     });
 
     $("#listado_receptores_truncado").on('click', function (e) {

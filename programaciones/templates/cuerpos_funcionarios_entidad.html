@@ -170,8 +170,7 @@
             var id = $(this).data('id');
             $('#id_programacion').val(id);
             $('#action').val('download_pdf');
-            document
-                .{{ formname }}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('body').on('click', '.download_html', function (e) {
@@ -179,8 +178,7 @@
             var id = $(this).data('id');
             $('#id_programacion').val(id);
             $('#action').val('download_html');
-            document
-                .{{ formname }}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('body').on('click', '.copy_programacion', function (e) {

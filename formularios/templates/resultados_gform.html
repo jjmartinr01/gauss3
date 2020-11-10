@@ -90,7 +90,7 @@
             e.preventDefault();
             $('#action').val('descarga_gfile');
             $('#id_ginput').val($(this).data('id'));
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $('.check_respuestas').click(function (e) {

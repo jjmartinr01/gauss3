@@ -223,9 +223,7 @@
             e.preventDefault();
             $('#id_acta').val($(this).data('id'));
             $('#action').val('pdf_acta');
-            document
-            .{{ formname }}.
-            submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
 

@@ -116,7 +116,7 @@
                     "Aceptar": function () {
                         $('#action').val('borrar_soporte');
                         hide_mensajes();
-                        document.{{formname}}.submit();
+                        document.getElementById("{{ formname }}").submit();
                     }}});
             }
         });
@@ -124,7 +124,7 @@
         $('#check_sign').click(function (e) {
             e.preventDefault();
             if (!($(this).hasClass('disabled'))) {
-                document.{{formname}}.submit();
+                document.getElementById("{{ formname }}").submit();
             }
         });
 

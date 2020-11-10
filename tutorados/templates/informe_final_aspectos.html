@@ -53,7 +53,7 @@
         $("#check_sign").click(function (e) {
             e.preventDefault();
             $('#action').val('crear_aspecto');
-            document.{{formname}}.submit();
+            document.getElementById("{{ formname }}").submit();
         });
 
         $("#elegir_materia").change(function (e) {
