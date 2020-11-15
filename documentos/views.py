@@ -16,7 +16,8 @@ from autenticar.models import Gauser
 from entidades.views import decode_selectgcs
 from entidades.models import Subentidad, Cargo
 from documentos.forms import Ges_documentalForm, Contrato_gaussForm
-from documentos.models import Ges_documental, Contrato_gauss, Etiqueta_documental, Compartir_Ges_documental
+from documentos.models import Ges_documental, Contrato_gauss, Etiqueta_documental, Compartir_Ges_documental, \
+    TextoEvaluable
 from gauss.funciones import html_to_pdf, usuarios_ronda
 from gauss.rutas import MEDIA_DOCUMENTOS, MEDIA_ANAGRAMAS, RUTA_BASE
 from mensajes.models import Aviso
@@ -428,6 +429,157 @@ def contrato_gauss(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
+####################################################################################
+############################# TEXTOS EVALUABLES ####################################
+####################################################################################
+
+# @permiso_required('acceso_plantillas_te')
+def plantillas_te(request):
+    g_e = request.session["gauser_extra"]
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'crea_plantilla_te':
+            if g_e.has_permiso('crea_plantillas_te') or True:  # El permiso da igual
+                p = TextoEvaluable.objects.create(propietario=g_e, title="Nueva plantilla", plantilla=True)
+                html = render_to_string('plantillas_te_accordion.html',
+                                        {'buscadas': False, 'plantillas_te': [p], 'g_e': g_e, 'nueva': True})
+                return JsonResponse({'ok': True, 'html': html})
+            else:
+                JsonResponse({'ok': False})
+        elif request.POST['action'] == 'open_accordion':
+            try:
+                p = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad,
+                                                           id=request.POST['id'])
+                v = p.variantepii_set.all()[0]
+                html = render_to_string('plantillas_te_accordion_content.html', {'p_te': p, 'g_e': g_e, 'variante': v})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_texto':
+            try:
+                p_te = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad,
+                                                              id=request.POST['id'])
+                setattr(p_te, request.POST['campo'], request.POST['valor'])
+                p_te.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_texto_variante':
+            try:
+                id = request.POST['id']
+                vp_te = VariantePII.objects.get(plantilla__creador__ronda__entidad=g_e.ronda.entidad, id=id)
+                setattr(vp_te, request.POST['campo'], request.POST['valor'])
+                vp_te.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'copiar_variante':
+            try:
+                id = request.POST['id']
+                vp_te = VariantePII.objects.get(plantilla__creador__ronda__entidad=g_e.ronda.entidad, id=id)
+                nombre = vp_te.nombre + ' (copia)'
+                variante = VariantePII.objects.create(plantilla=vp_te.plantilla, nombre=nombre, texto=vp_te.texto)
+                html = render_to_string('plantillas_te_accordion_content_variante.html',
+                                        {'p_te': vp_te.plantilla, 'variante': variante})
+                return JsonResponse({'ok': True, 'html': html, 'p_te': vp_te.plantilla.id})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'select_variante':
+            try:
+                id = request.POST['id']
+                variante = VariantePII.objects.get(plantilla__creador__ronda__entidad=g_e.ronda.entidad, id=id)
+                html = render_to_string('plantillas_te_accordion_content_variante.html',
+                                        {'p_te': variante.plantilla, 'variante': variante, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html, 'p_te': variante.plantilla.id})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'copiar_p_te':
+            try:
+                p_te = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                variantes = p_te.variantepii_set.all()
+                p_te.pk = None
+                p_te.asunto = p_te.asunto + ' (Copia)'
+                p_te.save()
+                for v in variantes:
+                    v.pk =None
+                    v.plantilla = p_te
+                    v.save()
+                html = render_to_string('plantillas_te_accordion.html',
+                                        {'buscadas': False, 'plantillas_te': [p_te], 'g_e': g_e, 'nueva': True})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borrar_p_te':
+            try:
+                p_te = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad,
+                                                              id=request.POST['id'])
+                if g_e.has_permiso('borra_cualquier_plantilla_te') or g_e.gauser == p_te.creador.gauser:
+                    p_te.delete()  # Borrar la plantilla y todas sus variantes
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borrar_variante':
+            try:
+                id = request.POST['id']
+                variante = VariantePII.objects.get(plantilla__creador__ronda__entidad=g_e.ronda.entidad, id=id)
+                p_te = variante.plantilla
+                if g_e.has_permiso('borra_cualquier_plantilla_te') or g_e.gauser == variante.plantilla.creador.gauser:
+                    if p_te.variantepii_set.all().count() > 1:
+                        variante.delete()  # Borrar la variante
+                    else:
+                        return JsonResponse({'ok': False,
+                                             'mensaje': 'No es posible el borrado. Al menos debe haber un modelo de informe.'})
+                html = render_to_string('plantillas_te_accordion_content_variante.html',
+                                        {'p_te': p_te, 'variante': p_te.variantepii_set.all()[0]})
+                return JsonResponse({'ok': True, 'html': html, 'p_te': variante.plantilla.id})
+            except:
+                return JsonResponse(
+                    {'ok': False, 'mensaje': 'Se ha producido un error y no se ha podido hacer borrado'})
+
+        elif request.POST['action'] == 'busca_plantillas_te':
+            # try:
+            try:
+                inicio = datetime.strptime(request.POST['id_fecha_inicio'], '%d-%m-%Y')
+            except:
+                inicio = datetime.strptime('01-01-2000', '%d-%m-%Y')
+            try:
+                fin = datetime.strptime(request.POST['id_fecha_fin'], '%d-%m-%Y')
+            except:
+                fin = datetime.strptime('01-01-3000', '%d-%m-%Y')
+            texto = request.POST['texto'] if request.POST['texto'] else ''
+            q_variante = Q(nombre__icontains=texto) | Q(texto__icontains=texto)
+            ids = VariantePII.objects.filter(q_variante).distinct().values_list('plantilla__id', flat=True)
+            q_varios = Q(destinatario__icontains=texto) | Q(asunto__icontains=texto) | Q(id__in=ids)
+            q_inicio = Q(modificado__gte=inicio)
+            q_fin = Q(modificado__lte=fin)
+            q_entidad = Q(creador__ronda__entidad=g_e.ronda.entidad)
+            piis_base = PlantillaInformeInspeccion.objects.filter(q_entidad & q_inicio & q_fin)
+            piis = piis_base.filter(q_varios)
+            # if request.POST['tipo_busqueda']:
+            #     p = PlantillaInformeInspeccion.objects.get(id=request.POST['tipo_busqueda'])
+            #     ies = ies.filter(variante__plantilla=p)
+            html = render_to_string('plantillas_te_accordion.html',
+                                    {'plantillas_te': piis, 'g_e': g_e, 'buscadas': True})
+            return JsonResponse({'ok': True, 'html': html, 'ids': ids.count()})
+        # except:
+        #     return JsonResponse({'ok': False})
+
+    plantillas = PlantillaInformeInspeccion.objects.filter(creador__ronda__entidad=g_e.ronda.entidad)
+    logger.info('Entra en ' + request.META['PATH_INFO'])
+    if 'ge' in request.GET:
+        pass
+    return render(request, "plantillas_te.html", {
+        'iconos':
+            ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
+              'title': 'Crear una nueva plantilla de Texto Evaluable',
+              'permiso': 'acceso_plantillas_te'},
+             ),
+        'g_e': g_e, 'plantillas_te': plantillas,
+        'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+    })
+
+####################################################################################
+####################################################################################
+####################################################################################
 
 def presentaciones(request):
     if request.method == 'GET':

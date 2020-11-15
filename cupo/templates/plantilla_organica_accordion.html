@@ -1,0 +1,27 @@
+{% load entidades_extras %}
+{% if buscadas %}
+    {% if plantillas_o|length == 1 %}
+        <b>Se ha encontrado 1 Informe de Inspección</b>
+    {% else %}
+        <b>Se han encontrado {{ plantillas_o|length }} Informes de Inspección</b>
+    {% endif %}
+{% endif %}
+{% for po in plantillas_o %}
+    <input type="hidden" name="plantillas_o_seleccionados" value="{{ po.id }}">
+
+    <dd class="accordion-navigation" id="accordion{{ po.id }}"
+        style="border-bottom: dotted 1px black">
+        <a href="#panel{{ po.id }}">
+            <i id="circle{{ po.id }}" class="fa fa-plus-circle circle_icon"></i>
+            <b id="asunto{{ po.id }}">Plantilla Orgánica: {{ po.ronda_centro }}</b> -- <span style="color: green; padding-right: 20px;"><i
+                        class="fa fa-user"></i> {{ po.g_e.gauser.get_full_name }}</span> ({{ po.creado|date:"d-m-Y H:i" }})
+
+            {% if buscadas %}
+                <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
+            {% endif %}
+        </a>
+
+        <div id="panel{{ po.id }}" class="content accordion-po" data-id="{{ po.id }}">
+        </div>
+    </dd>
+{% endfor %}

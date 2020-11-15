@@ -6,9 +6,10 @@ from lxml import etree as ElementTree
 from difflib import get_close_matches
 from django.db.models import Q
 from django.utils.timezone import datetime
-from entidades.models import CargaMasiva, Gauser_extra, Dependencia, Subentidad
+from entidades.models import CargaMasiva, Gauser_extra, Dependencia, Subentidad, Entidad
 from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios
 from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia
+from cupo.models import PlantillaXLS, PlantillaDepartamento, PlantillaOrganica
 from programaciones.models import Especialidad_entidad, Gauser_extra_programaciones, Departamento, \
     Especialidad_funcionario, crea_departamentos
 from gauss.rutas import MEDIA_FILES
@@ -454,14 +455,14 @@ def carga_masiva_from_file():
                     gep[0].save()
             carga.cargado = True
             carga.save()
-        if carga.tipo == 'HORARIOXLS':
+        elif carga.tipo == 'HORARIOXLS':
             try:
                 horario = Horario.objects.get(entidad=carga.ronda.entidad, predeterminado=True)
                 Sesion.objects.filter(horario=horario).delete()
                 logger.info('Se han borrado las sesiones del horario predeterminado')
             except:
                 horario = Horario.objects.create(entidad=carga.ronda.entidad, ronda=carga.ronda, nombre='Horario nuevo',
-                                       predeterminado=True)
+                                                 predeterminado=True)
                 logger.info('No existe horario predeterminado. Se ha creado uno.')
             f = carga.fichero.read()
             book = xlrd.open_workbook(file_contents=f)
@@ -472,7 +473,7 @@ def carga_masiva_from_file():
                     "HORA FIN": "", "HORA INICIO CADENA": "", "HORA FIN CADENA": "", "X_ACTIVIDAD": "",
                     "ACTIVIDAD": "", "L_REQUNIDAD": "", "DOCENCIA": "", "MINUTOS": "", "X_DEPENDENCIA": "",
                     "C_CODDEP": "", "X_DEPENDENCIA2": "", "C_CODDEP2": "", "X_UNIDAD": "", "UNIDAD": "",
-                    "MATERIA": "", "X_MATERIOAOMG": "", "CURSO": "", "OMC": ""}
+                    "MATERIA": "", "X_MATERIOAOMG": "", "CURSO": "", "OMC": "", "Grupo de materias": ""}
             keys_index = {col_index: str(sheet.cell(4, col_index).value) for col_index in range(sheet.ncols)}
             for row_index in range(5, sheet.nrows):
                 for col_index in range(sheet.ncols):
@@ -505,6 +506,56 @@ def carga_masiva_from_file():
                 Sesion.objects.create(horario=horario, dia=int(keys['DÍA']), inicio=h_inicio, fin=h_fin, grupo=grupo,
                                       nombre='%s-%s' % (keys['HORA INICIO CADENA'], keys['HORA FIN CADENA']),
                                       g_e=docente, materia=materia, dependencia=dependencia, actividad=actividad)
+            carga.cargado = True
+            carga.save()
+        elif carga.tipo == 'PLANTILLAXLS':
+            try:
+                f = carga.fichero.read()
+                book = xlrd.open_workbook(file_contents=f)
+                sheet = book.sheet_by_index(0)
+                po = PlantillaOrganica.objects.create(g_e=carga.g_e)
+            except:
+                return False
+            # Get the keys from line 5 of excel file:
+            keys = {"CENTRO": "centro", "DOCENTE": "docente", "X_DOCENTE": "x_docente", "DEPARTAMENTO": "departamento",
+                    "X_DEPARTAMENTO": "x_departamento", "FECHA INICIO": "fecha_inicio", "FECHA FIN": "fecha_fin",
+                    "DÍA": "dia", "HORA INICIO": "hora_inicio", "AÑO": "year",
+                    "HORA FIN": "hora_fin", "HORA INICIO CADENA": "hora_inicio_cadena",
+                    "HORA FIN CADENA": "hora_fin_cadena", "X_ACTIVIDAD": "x_actividad",
+                    "ACTIVIDAD": "actividad", "L_REQUNIDAD": "l_requnidad", "DOCENCIA": "docencia",
+                    "MINUTOS": "minutos", "X_DEPENDENCIA": "x_dependencia",
+                    "C_CODDEP": "c_coddep", "X_DEPENDENCIA2": "x_dependencia2", "C_CODDEP2": "c_coddep2",
+                    "X_UNIDAD": "x_unidad", "UNIDAD": "unidad", "Grupo de materias": "grupo_materias",
+                    "MATERIA": "materia", "X_MATERIOAOMG": "x_materiaomg", "CURSO": "curso", "OMC": "omc"}
+            for i, row_index in enumerate(range(5, sheet.nrows)):
+                pxls = PlantillaXLS.objects.create(po=po)
+                for col_index in range(sheet.ncols):
+                    column_header = str(sheet.cell(4, col_index).value)
+                    if column_header == 'CURSO':
+                        valor = sheet.cell(row_index, col_index).value
+                        if '.G.M.' in valor:
+                            pxls.etapa = 'ga'
+                        elif '.G.S.' in valor:
+                            pxls.etapa = 'ha'
+                        elif 'E.S.O.' in valor:
+                            pxls.etapa = 'da'
+                        elif 'Básica' in valor:
+                            pxls.etapa = 'ea'
+                        elif 'Bachillerato' in valor:
+                            pxls.etapa = 'fa'
+                        else:
+                            pxls.etapa = 'za'
+                    try:
+                        setattr(pxls, keys[column_header], str(int(float(sheet.cell(row_index, col_index).value))))
+                    except:
+                        setattr(pxls, keys[column_header], sheet.cell(row_index, col_index).value)
+                if i == 0:  # Es la primera línea ejecutada del forloop. La primera fila leída del archivo XLS
+                    nombre_centro, dash, code_centro = pxls.centro.rpartition('-')
+                    po.ronda_centro = Entidad.objects.get(code=int(code_centro)).ronda
+                    po.save()
+                pxls.save()
+            # Calcular las PlantillaDepartamento:
+            po.calcula_pds
             carga.cargado = True
             carga.save()
     return True

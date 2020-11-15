@@ -560,7 +560,6 @@ class SeguimientoAlumno(models.Model):
             self.alumno.ge.gauser.get_full_name(), self.alumno.grupo, self.smartphone, self.ordenador, self.internet,
             self.clases)
 
-
 def sesion2sesion():
     from horarios.models import Sesion
     from estudios.models import Materia as EMateria
@@ -572,3 +571,4 @@ def sesion2sesion():
         # print emateria
         s.emateria = emateria
         s.save()
+

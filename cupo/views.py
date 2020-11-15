@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 import datetime
+import xlwt
+import xlrd
 
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -11,12 +13,15 @@ from autenticar.control_acceso import permiso_required
 from gauss.funciones import html_to_pdf
 from gauss.rutas import *
 from django.http import HttpResponse
+from django.db.models import Q
 
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
-from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo
-from entidades.models import Subentidad
+from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo, PlantillaXLS, \
+    PlantillaOrganica, PlantillaDepartamento
+from entidades.models import CargaMasiva
 from estudios.models import Curso, Materia
+from horarios.tasks import carga_masiva_from_file
 from django.template.loader import render_to_string
 
 from programaciones.models import Gauser_extra_programaciones, Departamento, crea_departamentos
@@ -541,3 +546,102 @@ def edit_cupo(request, cupo_id):
                                                   })
     else:
         return redirect('/cupo/')
+
+
+# @permiso_required('acceso_carga_masiva_horarios')
+def plantilla_organica(request):
+    g_e = request.session["gauser_extra"]
+    if request.method == 'POST':
+        if request.POST['action'] == 'carga_masiva_plantilla':
+            logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls'].content_type)
+            CargaMasiva.objects.create(g_e=g_e, fichero=request.FILES['file_masivo_xls'], tipo='PLANTILLAXLS')
+            carga_masiva_from_file.delay()
+            crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+        elif request.POST['action'] == 'genera_xls':
+            wboriginal = xlrd.open_workbook("/home/juanjo/Descargas/borrar/plantilla_organica.xls")
+            shsec = wboriginal.sheet_by_index(0)
+            shdiv = wboriginal.sheet_by_index(1)
+            shcon = wboriginal.sheet_by_index(2)
+            shcra = wboriginal.sheet_by_index(3)
+            wbgenerado = xlwt.Workbook()
+            shsecgen = wbgenerado.add_sheet('IES CIEPF HOJA 1', cell_overwrite_ok=True)
+            shdivgen = wbgenerado.add_sheet('A. Diversidad HOJA 2', cell_overwrite_ok=True)
+            shcongen = wbgenerado.add_sheet('CONSERVATORIOS', cell_overwrite_ok=True)
+            shcragen = wbgenerado.add_sheet('CRA', cell_overwrite_ok=True)
+            for r in range(shsec.nrows):
+                for c in range(shsec.ncols):
+                    shsecgen.write(r, c, shsec.cell(r, c).value)
+
+            logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls'].content_type)
+            CargaMasiva.objects.create(g_e=g_e, fichero=request.FILES['file_masivo_xls'], tipo='PLANTILLAXLS')
+            carga_masiva_from_file.delay()
+            crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+        elif request.POST['action'] == 'open_accordion' and request.is_ajax():
+            try:
+                po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
+                html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_pd' and request.is_ajax():
+            try:
+                pd = PlantillaDepartamento.objects.get(id=request.POST['id'], po__g_e=g_e)
+                valor = int("".join(filter(str.isdigit, request.POST['valor'])))
+                setattr(pd, request.POST['campo'], valor)
+                pd.save()
+                html = render_to_string('plantilla_organica_accordion_content_tbody_tr.html', {'pd': pd})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_tbdoy' and request.is_ajax():
+            try:
+                po = PlantillaOrganica.objects.get(id=request.POST['id'], g_e=g_e)
+                pxls = po.plantillaxls_set.filter(x_unidad=request.POST['x_unidad'])
+                valor = False if request.POST['checked'] == 'false' else True
+                for p in pxls:
+                    p.usar = valor
+                    p.save()
+                po.calcula_pds
+                html = render_to_string('plantilla_organica_accordion_content_tbody.html', {'po': po})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'copiar_po':
+            try:
+                po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
+                pxls = po.plantillaxls_set.all()
+                pds = po.plantilladepartamento_set.all()
+                po.pk = None
+                po.save()
+                for p in pxls:
+                    p.pk = None
+                    p.po = po
+                    p.save()
+                for pd in pds:
+                    pd.pk = None
+                    pd.po = po
+                    pd.save()
+                html = render_to_string('plantilla_organica_accordion.html',
+                                        {'buscadas': False, 'plantillas_o': [po], 'g_e': g_e, 'nueva': True})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borrar_po':
+            try:
+                po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
+                po.delete()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+
+    plantillas_o = PlantillaOrganica.objects.filter(g_e=g_e)
+    return render(request, "plantilla_organica.html",
+                  {
+                      'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos',
+                                  'title': 'Cargar datos a partir de archivo obtenido de Racima',
+                                  'permiso': 'libre'}, {}),
+                      'formname': 'plantilla_organica',
+                      'plantillas_o': plantillas_o,
+                      'g_e': g_e,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })

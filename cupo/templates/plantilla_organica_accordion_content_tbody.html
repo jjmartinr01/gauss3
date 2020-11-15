@@ -1,0 +1,7 @@
+{% for pd in po.plantilladepartamento_set.all %}
+    {% if pd.departamento %}
+        <tr id="tr{{ pd.id }}">
+            {% include "plantilla_organica_accordion_content_tbody_tr.html" %}
+        </tr>
+    {% endif %}
+{% endfor %}

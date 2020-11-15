@@ -932,7 +932,10 @@ class ConfigurationUpdate(models.Model):
 
 def update_fichero_carga_masiva(instance, filename):
     nombre = filename.partition('.')
-    nombre = '%s_%s.%s' % (str(instance.ronda.entidad.code), pass_generator(), nombre[2])
+    try:
+        nombre = '%s_%s.%s' % (str(instance.ronda.entidad.code), pass_generator(), nombre[2])
+    except:
+        nombre = '%s_%s.%s' % (str(instance.g_e.ronda.entidad.code), pass_generator(), nombre[2])
     return os.path.join("carga_masiva/", nombre)
 
 
@@ -940,8 +943,9 @@ class CargaMasiva(models.Model):
     TIPOS = (('EXCEL', 'Usuarios cargados desde Racima'),
              ('PENDIENTES', 'Alumnos con materias pendientes cargados desde Racima'),
              ('HORARIOXLS', 'Sesiones cargadas desde el archivo excel de Racima'),
-             ('CENTROSRACIMA', 'Consulta -> Centro -> Datos de los centros'), ('', ''),)
-    ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE)
+             ('CENTROSRACIMA', 'Consulta -> Centro -> Datos de los centros'),
+             ('PLANTILLAXLS', 'Sesiones cargadas desde el archivo excel de Racima'),)
+    ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE, blank=True, null=True)
     # Persona que ha realizado la carga masiva
     g_e = models.ForeignKey(Gauser_extra, on_delete=models.SET_NULL, blank=True, null=True)
     fichero = models.FileField("Fichero con datos", upload_to=update_fichero_carga_masiva, blank=True)
@@ -956,7 +960,10 @@ class CargaMasiva(models.Model):
         ordering = ['ronda']
 
     def __str__(self):
-        return '%s -- Cargado: %s' % (self.ronda, self.cargado)
+        if self.ronda:
+            return '%s -- Cargado: %s' % (self.ronda, self.cargado)
+        else:
+            return '%s -- Cargado: %s' % (self.g_e.ronda, self.cargado)
 
 
 # n='cosa'

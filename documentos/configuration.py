@@ -25,6 +25,14 @@ MENU_DEFAULT = [
      'tipo': 'Restringido',
      'pos': 2,
      'parent': 'acceso_gestion_documental'
+     },
+    {'code_menu': 'acceso_plantillas_te',
+     'texto_menu': 'Plantillas de textos evaluables',
+     'href': 'plantillas_te',
+     'nivel': 2,
+     'tipo': 'Restringido',
+     'pos': 2,
+     'parent': 'acceso_gestion_documental'
      }
 ]
 # Se añaden otros permisos para el usuario
@@ -76,5 +84,9 @@ PERMISOS = [{'code_nombre': 'crea_carpetas',
             {'code_nombre': 'descarga_contrato_gauss',
              'nombre': 'Tiene permiso para descargar el contrato escaneado de GAUSS',
              'menu': 'acceso_contrato_gauss'
+             },
+            {'code_nombre': 'crea_plantillas_te',
+             'nombre': 'Tiene permiso para crear plantillas de textos evaluables',
+             'menu': 'acceso_plantillas_te'
              }
             ]

@@ -1,0 +1,327 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+        }
+
+        .ckeditor {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_plantillas_te" name="id_plantillas_te" value="">
+
+        <div id="div_plantillas_te_seleccionados"></div>
+
+        <div>
+            <h4 id="title_page"><strong>Plantillas para informes de Inspección Educativa</strong></h4>
+        </div>
+        <div id="formulario_add"></div>
+        <div id="formulario_search">
+            <div class="row">
+                <div class="columns large-4">
+                    <label>Buscar entre esta fecha ...</label>
+                    <input id="id_fecha_inicio" name="fecha_inicio" type="text"
+                           value="{{ g_e.ronda.inicio|date:'d-m-Y' }}">
+                </div>
+                <div class="columns large-4">
+                    <label>... y esta otra</label>
+                    <input id="id_fecha_fin" name="fecha_fin" type="text" value="{% now "d\-m\-Y" %}">
+                </div>
+                <div class="columns large-4">
+                    <label>Buscar en ...</label>
+                    <select id="tipo_busqueda" name="tipo_busqueda">
+                        {# Se busca en negativo, por eso SAL es para entradas y ENT para salidas. Ver el views.py #}
+                        <option value="tod">Todas las plantillas</option>
+                        {% for t in tipos %}
+                            <option value="{{ t.0 }}">{{ t.1 }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-10">
+                    <input type="text" name="busca_plantillas_te" id="busca_plantillas_te"
+                           placeholder="Escribe parte del texto incluido en el actuación">
+                </div>
+                <div class="columns large-2">
+                    <a id="busca_plantillas_te_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>
+                </div>
+            </div>
+        </div>
+
+        <div id="listado_plantillas_te">
+            <br><br>
+            <dl class="accordion" data-accordion id="list_plantillas_te">
+                {% include 'plantillas_te_accordion.html' %}
+            </dl>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        config = {
+            removePlugins: 'exportpdf',
+            toolbar: [
+                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
+                {
+                    name: 'basicstyles',
+                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
+                },
+                {
+                    name: 'paragraph',
+                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
+                },
+                '/',
+                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
+                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
+                {name: 'colors', items: ['TextColor', 'BGColor']},
+                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
+                {name: 'document', items: ['Source']},
+                {name: 'about', items: ['About']}
+            ],
+            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
+        }
+
+        function destroyEditorInstances() {
+            for (var instance in CKEDITOR.instances) {
+                CKEDITOR.instances[instance].destroy();
+            }
+        }
+
+        function constructInlineEditorInstances() {
+            $(".ckeditor").each(function (index) {
+                var element = $(this);
+                var id = element.attr('id');
+                CKEDITOR.inline(id, config);
+                var anchura = element.width() + 2;
+                setTimeout(function () {
+                    $('#cke_' + id).css('width', anchura + 'px'); {# Este es el id del ckeditor creado #}
+                }, 200);
+            });
+        }
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-p_te')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/plantillas_te/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        destroyEditorInstances();
+                                        {#CKEDITOR.inlineAll();#}
+                                        constructInlineEditorInstances(id);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('body').on('keyup', '.update_texto', function () {
+            var id = $(this).data('id');
+            var campo = $(this).data('campo');
+            var valor = '';
+            if (campo === 'asunto') {
+                valor = $(this).val();
+                $('#asunto' + id).html(valor);
+            } else {
+                valor = $(this).html();
+            }
+            $.post("/plantillas_te/", {action: 'update_texto', id: id, valor: valor, campo: campo},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup', '.update_texto_variante', function () {
+            var id = $(this).data('id');
+            var campo = $(this).data('campo');
+            if ($(this).hasClass('asunto')) {
+                var valor = $(this).val();
+                $('#asunto' + id).html(valor);
+            } else {
+                var valor = $(this).html();
+            }
+            $.post("/plantillas_te/", {action: 'update_texto_variante', id: id, valor: valor, campo: campo},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.copiar_variante', function () {
+            var id = $(this).data('id');
+            $.post("/plantillas_te/", {action: 'copiar_variante', id: id},
+                function (data) {
+                    if (data.ok) {
+                        $("#variantes" + data.p_te).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.select_variante', function () {
+            var id = $(this).val();
+            $.post("/plantillas_te/", {action: 'select_variante', id: id},
+                function (data) {
+                    if (data.ok) {
+                        $("#variantes" + data.p_te).html(data.html);
+                        destroyEditorInstances();
+                        constructInlineEditorInstances(id);
+                        {#CKEDITOR.inlineAll();#}
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.copiar_p_te', function () {
+            var id = $(this).data('id');
+            $.post("/plantillas_te/", {action: 'copiar_p_te', id: id},
+                function (data) {
+                    if (data.ok) {
+                        $('#list_plantillas_te').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.borrar_p_te', function () {
+            id = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar esta plantilla de informe de inspección?',
+                texto: 'Si aceptas la tarea se borrará por completo de la base de datos', size: 'large', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/plantillas_te/", {action: 'borrar_p_te', id: id},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#accordion' + id).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+        $('body').on('click', '.borrar_variante', function () {
+            id = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar este modelo de plantilla de informe de inspección?',
+                texto: 'Si aceptas el modelo se borrará por completo de la base de datos', size: 'large', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/plantillas_te/", {action: 'borrar_variante', id: id},
+                            function (data) {
+                                if (data.ok) {
+                                    $("#variantes" + data.p_te).html(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                    show_mensajes({
+                                        title: '<i class="fa fa-warning"></i> Error en borrado',
+                                        texto: data.mensaje
+                                    })
+                                }
+                            });
+                    }
+                }
+            });
+
+        });
+
+
+        $("body").on('click', '#busca_plantillas_te_manual', function (e) {
+            var texto = $('#busca_plantillas_te').val();
+            var id_fecha_inicio = $('#id_fecha_inicio').val();
+            var id_fecha_fin = $('#id_fecha_fin').val();
+            var tipo_busqueda = $('#tipo_busqueda').val();
+            $.post("/plantillas_te/", {
+                    action: 'busca_plantillas_te', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
+                },
+                function (data) {
+                    $('#list_plantillas_te').html(data['html']);
+                    $(document).foundation();
+                });
+        });
+        $("body").on('keyup', '#busca_plantillas_te', function (e) {
+            var texto = $('#busca_plantillas_te').val();
+            var id_fecha_inicio = $('#id_fecha_inicio').val();
+            var id_fecha_fin = $('#id_fecha_fin').val();
+            var tipo_busqueda = $('#tipo_busqueda').val();
+            $.post("/plantillas_te/", {
+                    action: 'busca_plantillas_te', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
+                },
+                function (data) {
+                    $('#list_plantillas_te').html(data['html']);
+                    $(document).foundation();
+                });
+        });
+
+        {% if g_e|has_permiso:"acceso_plantillas_informes_te" %}
+            habilita(['s_plus']);
+            $('#plus_sign').click(function (event) {
+                event.preventDefault();
+                $.post("/plantillas_te/", {action: 'crea_plantilla_te'}, function (data) {
+                    if (data.ok) {
+                        $('#list_plantillas_te').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    $(document).scrollTop($('#title_page').offset().top - 150);
+                });
+            });
+        {% endif %}
+
+    </script>
+
+{% endblock %}

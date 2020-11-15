@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% load my_templatetags %}{% load cupo_extras %}
+
+{% block head %}
+    <style>
+        .verticalText {
+            writing-mode: vertical-lr;
+            transform: rotate(180deg);
+        }
+    </style>
+{% endblock %}
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Plantillas orgánicas</strong></h4>
+        </div>
+
+        <input type="hidden" name="action" id="action" value="">
+        <div class="panel callout" id="panel_carga_archivo" style="display:none;">
+            <div class="row">
+                <div class="large-12 columns">
+                    <p style="font-weight: bold;color: #008CBA">La carga de datos para las plantillas se hace a través
+                        de un archivo
+                        tipo xls (Excel) obtenido de Racima.</p>
+                    <p>Este archivo se obtiene siguiendo la siguiente ruta:</p>
+                    <p>
+                        Racima <i class="fa fa-long-arrow-right"></i> Módulo
+                        de Gestión
+                        <i class="fa fa-long-arrow-right"></i> Seguimiento
+                        <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                        <i class="fa fa-long-arrow-right"></i> <i>Elegir módulo "Empleados"</i>
+                        <i class="fa fa-long-arrow-right"></i> <i>Elegir consulta "Horario del profesorado
+                        del centro con sus materias"</i>
+                        <i class="fa fa-long-arrow-right"></i> Exportar datos (XLS)
+                    </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="large-3 columns">
+                    <b>Archivo xls (Racima):</b>
+                </div>
+                <div class="large-6 columns">
+                    <input type="file" name="file_masivo_xls" id="file_masivo_xls"/>
+                </div>
+                <div class="large-3 columns">
+                    <a class="button" id="archivo_xls">Cargar el archivo xls</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="listado_plantillas_o">
+            <br><br>
+            <dl class="accordion" data-accordion id="list_plantillas_o">
+                {% include 'plantilla_organica_accordion.html' %}
+            </dl>
+        </div>
+    </form>
+
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        habilita(['s_cloud-upload']);
+
+        $('#cloud-upload_sign').click(function (event) {
+            event.preventDefault();
+            $('#panel_carga_archivo').toggle();
+        });
+        $('#archivo_xls').click(function (e) {
+            e.preventDefault();
+            if ($('#file_masivo_xls').val()) {
+                $('#action').val('carga_masiva_plantilla');
+                document.getElementById("{{ formname }}").submit();
+            } else {
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> No has cargado un archivo!!!!', texto: 'Para ' +
+                        'subir un archivo primero debes cargarlo pulsando en "Examinar..."'
+                })
+            }
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-po')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/plantilla_organica/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+
+        $('body').on('keyup', '.tdpd', function () {
+            var element = $(this);
+            var id = element.data('id');
+            var campo = element.data('campo');
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/plantilla_organica/", {action: 'update_pd', id: id, valor: nuevo_texto, campo: campo},
+                        function (data) {
+                            if (data.ok) {
+                                $('#tr' + id).html(data.html);
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 1000);
+        });
+
+        $('body').on('click', '.grupocheck', function () {
+            var id = $(this).data('id');
+            var x_unidad = $(this).val();
+            var checked = $(this).prop('checked');
+            $.post("/plantilla_organica/", {action: 'update_tbdoy', id: id, x_unidad: x_unidad, 'checked': checked},
+                function (data) {
+                    if (data.ok) {
+                        $('#tbody' + id).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+
+        });
+
+        $('body').on('click', '.copiar_po', function () {
+            var id = $(this).data('id');
+            $.post("/plantilla_organica/", {action: 'copiar_po', id: id},
+                function (data) {
+                    if (data.ok) {
+                        $('#list_plantillas_o').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.borrar_po', function () {
+            id = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar este estudio de plantilla orgánica?',
+                texto: 'Si aceptas, el estudio se borrará por completo de la base de datos', size: 'large', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/plantilla_organica/", {action: 'borrar_po', id: id},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#accordion' + id).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+
+        });
+
+    </script>
+{% endblock %}
