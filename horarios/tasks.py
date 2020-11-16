@@ -523,10 +523,12 @@ def carga_masiva_from_file():
                     "HORA FIN": "hora_fin", "HORA INICIO CADENA": "hora_inicio_cadena",
                     "HORA FIN CADENA": "hora_fin_cadena", "X_ACTIVIDAD": "x_actividad",
                     "ACTIVIDAD": "actividad", "L_REQUNIDAD": "l_requnidad", "DOCENCIA": "docencia",
-                    "MINUTOS": "minutos", "X_DEPENDENCIA": "x_dependencia",
+                    "MINUTOS": "minutos", "X_DEPENDENCIA": "x_dependencia", "X_OFERTAMATRIG": 'x_curso',
                     "C_CODDEP": "c_coddep", "X_DEPENDENCIA2": "x_dependencia2", "C_CODDEP2": "c_coddep2",
                     "X_UNIDAD": "x_unidad", "UNIDAD": "unidad", "Grupo de materias": "grupo_materias",
-                    "MATERIA": "materia", "X_MATERIOAOMG": "x_materiaomg", "CURSO": "curso", "OMC": "omc"}
+                    "MATERIA": "materia", "X_MATERIOAOMG": "x_materiaomg", "CURSO": "curso", "OMC": "omc",
+                    "Horas Semana mínimo": "horas_semana_min", "Horas Semana máximo": "horas_semana_max"}
+
             for i, row_index in enumerate(range(5, sheet.nrows)):
                 pxls = PlantillaXLS.objects.create(po=po)
                 for col_index in range(sheet.ncols):

@@ -18,6 +18,14 @@ MENU_DEFAULT = [
      'pos': 1,
      'parent': 'acceso_cupos'
      },
+    {'code_menu': 'acceso_plantilla_organica',
+     'texto_menu': 'Plantillas Orgánicas',
+     'href': 'plantilla_organica',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 2,
+     'parent': 'acceso_cupos'
+     },
 ]
 # Se añaden otros permisos para el usuario
 
