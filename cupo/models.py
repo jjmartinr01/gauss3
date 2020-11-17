@@ -279,6 +279,7 @@ class PlantillaOrganica(models.Model):
                 libreconf = Q(grupo_materias__icontains='libre conf') & Q(x_actividad='1')
                 espec = Q(grupo_materias__icontains='espec') & Q(x_actividad='1')
                 posibles_desdobles = Q(x_actividad='539') | Q(x_actividad='400')
+                q_tutorias = Q(x_actividad='519') | Q(x_actividad='2') | Q(x_actividad='376')
                 pd.troneso = psXLS_departamento.filter(Q(etapa='da') & troncales).count()
                 pd.espeeso = psXLS_departamento.filter(Q(etapa='da') & espec).count()
                 pd.libreso = psXLS_departamento.filter(Q(etapa='da') & libreconf).count()
@@ -290,6 +291,8 @@ class PlantillaOrganica(models.Model):
                 pd.desdobeso = psXLS_departamento.filter(Q(etapa='da') & posibles_desdobles).count()
                 pd.desdobbac = psXLS_departamento.filter(Q(etapa='fa') & posibles_desdobles).count()
                 pd.mayor55 = psXLS_departamento.filter(x_actividad='176').count()
+                pd.cppaccffgs = psXLS_departamento.filter(Q(x_curso='222073')).count()
+                pd.tutorias = psXLS_departamento.filter(q_tutorias).count()
                 if departamento in orden:
                     pd.orden = orden[departamento]
                 pd.save()
@@ -344,6 +347,7 @@ class PlantillaXLS(models.Model):
         verbose_name_plural = 'Sesiones obtenidas del XLS (PlantillaXLS)'
         ordering = ['etapa', 'curso']
 
+
 class PlantillaDepartamento(models.Model):
     LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7),
               (115, 129, 8), (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13),
@@ -366,6 +370,8 @@ class PlantillaDepartamento(models.Model):
     desdobbac = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
     jefatura = models.IntegerField('Horas de jefatura de departamento', default=3)
     mayor55 = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
+    cppaccffgs = models.IntegerField('Horas curso preparación pruebas de acceso a CCFF', default=0)
+    tutorias = models.IntegerField('Horas dedicadas a tutorías y FCTs', default=0)
     orden = models.IntegerField('Desdobles autorizados Bachillerato', default=100)
     creado = models.DateTimeField("Fecha y hora de encolar el mensaje", auto_now_add=True)
     modificado = models.DateTimeField("Fecha y hora en la que se envió efectivamente el correo", auto_now=True)

@@ -4,4 +4,27 @@
             {% include "plantilla_organica_accordion_content_tbody_tr.html" %}
         </tr>
     {% endif %}
+    {% if forloop.counter == 14 %}
+        <thead>
+    <tr>
+        <th style="color: #1b75bb">Departamento</th>
+        <th><span class="verticalText">Troncales</span></th>
+        <th><span class="verticalText">Específicas</span></th>
+        <th><span class="verticalText">Libre Conf. Aut.</span></th>
+        <th><span class="verticalText">Desdobles ESO</span></th>
+        <th><span class="verticalText">Troncales</span></th>
+        <th><span class="verticalText">Específicas</span></th>
+        <th><span class="verticalText">Desdobles BACH</span></th>
+        <th><span class="verticalText">CFGM</span></th>
+        <th><span class="verticalText">CFGS</span></th>
+        <th><span class="verticalText">FPB</span></th>
+        <th><span class="verticalText">Jefatura</span></th>
+        <th><span class="verticalText">Mayor 55</span></th>
+        <th><span class="verticalText">Curso preparatorio</span></th>
+        <th><span class="verticalText">Tutorías</span></th>
+        <th style="color:#970b0e;text-align: center;">Horas básicas</th>
+        <th style="color:#970b0e;text-align: center;">Plantilla Orgánica</th>
+    </tr>
+    </thead>
+    {% endif %}
 {% endfor %}
