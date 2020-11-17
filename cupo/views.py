@@ -601,7 +601,7 @@ def plantilla_organica(request):
                 for p in pxls:
                     p.usar = valor
                     p.save()
-                po.calcula_pds
+                po.calcula_pds()
                 html = render_to_string('plantilla_organica_accordion_content_tbody.html', {'po': po})
                 return JsonResponse({'ok': True, 'html': html})
             except:

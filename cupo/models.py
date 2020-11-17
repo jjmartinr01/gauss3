@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
+import logging
 from __future__ import unicode_literals
 from django.db import models
 from django.db.models import Q
+from django.utils.timezone import now
 from entidades.models import Subentidad, Entidad, Ronda, Cargo, Gauser_extra
 from estudios.models import Materia, Curso
 from programaciones.models import Departamento, Especialidad_entidad
 from math import ceil
+
+logger = logging.getLogger('django')
 
 
 class Cupo(models.Model):
@@ -163,6 +167,59 @@ class PlantillaOrganica(models.Model):
     class Meta:
         verbose_name_plural = 'Plantillas orgánicas'
 
+    def create_curso(self, pxls):
+        try:
+            curso, c = Curso.objects.get_or_create(clave_ex=pxls.x_curso, ronda=self.ronda_centro)
+            if c:
+                curso.nombre = pxls.curso
+                curso.observaciones = 'Creado el %s por %s' % (now(), self.g_e)
+                curso.etapa = pxls.etapa
+                curso.nombre_especifico = pxls.omc
+                curso.save()
+        except:
+            cursos = Curso.objects.filter(clave_ex=pxls.x_curso, ronda=self.ronda_centro)
+            curso = cursos[0]
+            cursos.exclude(pk__in=[curso.pk]).delete()
+            curso.observaciones = 'Borrado de duplicados el %s por %s' % (now(), self.g_e)
+            curso.etapa = pxls.etapa
+            curso.nombre_especifico = pxls.omc
+            curso.save()
+        return curso
+
+    def create_cursos(self):
+        for pxls in self.plantillaxls_set.all():
+            self.create_curso(pxls)
+        return True
+
+    def create_materia(self, pxls):
+        curso = self.create_curso(pxls)
+        try:
+            materia, c = Materia.objects.get_or_create(clave_ex=pxls.x_materiaomg, curso=curso)
+            if c:
+                nombre, dash, abreviatura = pxls.materia.rpartition('-')
+                horas, sc, minutos = pxls.horas_semana_min.rpartition(':')
+                materia.nombre = nombre.strip()
+                materia.abreviatura = abreviatura.strip()
+                materia.observaciones = 'Creada el %s por %s' % (now(), self.g_e)
+                materia.horas = int(horas)
+                materia.save()
+        except:
+            materias = Materia.objects.filter(clave_ex=pxls.x_materiaomg, curso=curso)
+            materia = materias[0]
+            materias.exclude(pk__in=[materia.pk]).delete()
+            nombre, dash, abreviatura = pxls.materia.rpartition('-')
+            horas, sc, minutos = pxls.horas_semana_min.rpartition(':')
+            materia.nombre = nombre.strip()
+            materia.abreviatura = abreviatura.strip()
+            materia.observaciones += '<br>Borrado de duplicados el %s por %s' % (now(), self.g_e)
+            materia.horas = int(horas)
+            materia.save()
+        return materia
+
+    def create_materias(self):
+        for pxls in self.plantillaxls_set.all():
+            self.create_materia(pxls)
+
     @property
     def cursos(self):
         curs = {}
@@ -207,7 +264,6 @@ class PlantillaOrganica(models.Model):
                 deps.append(pxls.departamento)
         return deps
 
-    @property
     def calcula_pds(self):
         orden = {'Griego': 2, 'Orientación': 20, 'Tecnología': 14, 'Matemáticas': 6, 'Educación Física': 13,
                  'Filosofía': 1, 'Geografía e Historia': 5, 'Inglés': 11, 'Formación y Orientación Laboral': 17,
@@ -218,10 +274,11 @@ class PlantillaOrganica(models.Model):
             if departamento:
                 pd, c = PlantillaDepartamento.objects.get_or_create(po=self, departamento=departamento)
                 psXLS_departamento = psXLS.filter(departamento=departamento, usar=True)
-                troncales = Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
-                    grupo_materias__icontains='obligator')
-                libreconf = Q(grupo_materias__icontains='libre conf')
-                espec = Q(grupo_materias__icontains='espec')
+                troncales = (Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
+                    grupo_materias__icontains='obligator')) & Q(x_actividad='1')
+                libreconf = Q(grupo_materias__icontains='libre conf') & Q(x_actividad='1')
+                espec = Q(grupo_materias__icontains='espec') & Q(x_actividad='1')
+                posibles_desdobles = Q(x_actividad='539') | Q(x_actividad='400')
                 pd.troneso = psXLS_departamento.filter(Q(etapa='da') & troncales).count()
                 pd.espeeso = psXLS_departamento.filter(Q(etapa='da') & espec).count()
                 pd.libreso = psXLS_departamento.filter(Q(etapa='da') & libreconf).count()
@@ -230,6 +287,9 @@ class PlantillaOrganica(models.Model):
                 pd.gm = psXLS_departamento.filter(etapa='ga').count()
                 pd.gs = psXLS_departamento.filter(etapa='ha').count()
                 pd.fpb = psXLS_departamento.filter(etapa='ea').count()
+                pd.desdobeso = psXLS_departamento.filter(Q(etapa='da') & posibles_desdobles).count()
+                pd.desdobbac = psXLS_departamento.filter(Q(etapa='fa') & posibles_desdobles).count()
+                pd.mayor55 = psXLS_departamento.filter(x_actividad='176').count()
                 if departamento in orden:
                     pd.orden = orden[departamento]
                 pd.save()
@@ -305,6 +365,7 @@ class PlantillaDepartamento(models.Model):
     desdobeso = models.IntegerField('Desdobles autorizados ESO', default=0)
     desdobbac = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
     jefatura = models.IntegerField('Horas de jefatura de departamento', default=3)
+    mayor55 = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
     orden = models.IntegerField('Desdobles autorizados Bachillerato', default=100)
     creado = models.DateTimeField("Fecha y hora de encolar el mensaje", auto_now_add=True)
     modificado = models.DateTimeField("Fecha y hora en la que se envió efectivamente el correo", auto_now=True)
