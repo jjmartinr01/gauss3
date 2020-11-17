@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import logging
 from __future__ import unicode_literals
+import logging
 from django.db import models
 from django.db.models import Q
 from django.utils.timezone import now
