@@ -309,10 +309,10 @@ class PlantillaXLS(models.Model):
               ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'), ('za', 'Etapa no identificada'))
     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
     year = models.CharField('Año', max_length=15, blank=True, null=True)
-    centro = models.CharField('Nombre del centro', max_length=100, blank=True, null=True)
-    docente = models.CharField('Nombre del docente', max_length=100, blank=True, null=True)
+    centro = models.CharField('Nombre del centro', max_length=110, blank=True, null=True)
+    docente = models.CharField('Nombre del docente', max_length=115, blank=True, null=True)
     x_docente = models.CharField('Código del docente en Racima', max_length=11, blank=True, null=True)
-    departamento = models.CharField('Nombre del departamento', max_length=100, blank=True, null=True)
+    departamento = models.CharField('Nombre del departamento', max_length=116, blank=True, null=True)
     x_departamento = models.CharField('Código del departamento en Racima', max_length=10, blank=True, null=True)
     fecha_inicio = models.CharField('Fecha inicio contrato profesor', max_length=15, blank=True, null=True)
     fecha_fin = models.CharField('Fecha fin contrato profesor', max_length=15, blank=True, null=True)
@@ -321,7 +321,7 @@ class PlantillaXLS(models.Model):
     hora_fin = models.CharField('Hora fin periodo en minutos', max_length=15, blank=True, null=True)
     hora_inicio_cadena = models.CharField('Hora inicio periodo en formato H:i', max_length=8, blank=True, null=True)
     hora_fin_cadena = models.CharField('Hora fin periodo en formato H:i', max_length=8, blank=True, null=True)
-    actividad = models.CharField('Nombre de la actividad', max_length=100, blank=True, null=True)
+    actividad = models.CharField('Nombre de la actividad', max_length=117, blank=True, null=True)
     x_actividad = models.CharField('Código de la actividad en Racima', max_length=20, blank=True, null=True)
     l_requnidad = models.CharField('¿La actividad requiere unidad/grupo?', max_length=2, blank=True, null=True)
     docencia = models.CharField('¿Es hora de docencia?', max_length=2, blank=True, null=True)
@@ -332,10 +332,10 @@ class PlantillaXLS(models.Model):
     c_coddep2 = models.CharField('Nombre corto de la dependencia2', max_length=30, blank=True, null=True)
     unidad = models.CharField('Nombre del grupo', max_length=20, blank=True, null=True)
     x_unidad = models.CharField('Código del grupo en Racima', max_length=11, blank=True, null=True)
-    materia = models.CharField('Nombre de la materia', max_length=100, blank=True, null=True)
+    materia = models.CharField('Nombre de la materia', max_length=118, blank=True, null=True)
     x_materiaomg = models.CharField('Código de la materia en Racima', max_length=11, blank=True, null=True)
-    curso = models.CharField('Nombre largo del curso', max_length=100, blank=True, null=True)
-    x_curso = models.CharField('Código del curso en Racima', max_length=100, blank=True, null=True)
+    curso = models.CharField('Nombre largo del curso', max_length=119, blank=True, null=True)
+    x_curso = models.CharField('Código del curso en Racima', max_length=120, blank=True, null=True)
     omc = models.CharField('Nombre corto del curso', max_length=20, blank=True, null=True)
     grupo_materias = models.CharField('Tipo de materia', max_length=50, blank=True, null=True)
     etapa = models.CharField('Etapa', max_length=4, blank=True, null=True, choices=ETAPAS)
@@ -345,16 +345,16 @@ class PlantillaXLS(models.Model):
 
     class Meta:
         verbose_name_plural = 'Sesiones obtenidas del XLS (PlantillaXLS)'
-        ordering = ['etapa', 'curso']
+        ordering = ['etapa', 'curso', 'unidad']
 
 
 class PlantillaDepartamento(models.Model):
     LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7),
               (115, 129, 8), (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13),
-              (205, 219, 14))
+              (205, 219, 14), (220, 234, 15), (235, 249, 16), (250, 264, 17), (265, 279, 18), (280, 294, 19))
     RESTO = ((12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7),
              (124, 139, 8), (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13),
-             (220, 235, 14))
+             (220, 235, 14), (236, 251, 15), (252, 267, 16), (268, 283, 17), (284, 299, 18), (300, 235, 19))
     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
     departamento = models.CharField('Departamento', max_length=100, blank=True, null=True)
     x_departamento = models.CharField('Código en Racima del departamento', max_length=10, blank=True, null=True)
