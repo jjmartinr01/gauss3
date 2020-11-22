@@ -14,15 +14,18 @@ from gauss.funciones import html_to_pdf
 from gauss.rutas import *
 from django.http import HttpResponse
 from django.db.models import Q
+from django.template.loader import render_to_string
+
 
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo, PlantillaXLS, \
-    PlantillaOrganica, PlantillaDepartamento
+    PlantillaOrganica, PlantillaDepartamento, PlantillaDocente
 from entidades.models import CargaMasiva
 from estudios.models import Curso, Materia
 from horarios.tasks import carga_masiva_from_file
-from django.template.loader import render_to_string
+from cupo.templatetags.cupo_extras import plantilla_departamento
+
 
 from programaciones.models import Gauser_extra_programaciones, Departamento, crea_departamentos
 
@@ -583,17 +586,20 @@ def plantilla_organica(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'update_pd' and request.is_ajax():
+        elif request.POST['action'] == 'tdpdocente' and request.is_ajax():
             try:
-                pd = PlantillaDepartamento.objects.get(id=request.POST['id'], po__g_e=g_e)
+                pd = PlantillaDocente.objects.get(id=request.POST['id'], po__g_e=g_e)
                 valor = int("".join(filter(str.isdigit, request.POST['valor'])))
                 setattr(pd, request.POST['campo'], valor)
                 pd.save()
-                html = render_to_string('plantilla_organica_accordion_content_tbody_tr.html', {'pd': pd})
-                return JsonResponse({'ok': True, 'html': html})
+                departamento = plantilla_departamento(pd.po, pd.departamento)
+                html = render_to_string('plantilla_organica_accordion_content_tbody_departamento_tr.html',
+                                        {'departamento': departamento})
+                return JsonResponse({'ok': True, 'html': html, 'hbpd': pd.horas_basicas, 'htpd': pd.horas_totales,
+                                     'x_departamento': pd.x_departamento})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'update_tbdoy' and request.is_ajax():
+        elif request.POST['action'] == 'update_unidad' and request.is_ajax():
             try:
                 po = PlantillaOrganica.objects.get(id=request.POST['id'], g_e=g_e)
                 pxls = po.plantillaxls_set.filter(x_unidad=request.POST['x_unidad'])
@@ -601,16 +607,31 @@ def plantilla_organica(request):
                 for p in pxls:
                     p.usar = valor
                     p.save()
-                po.calcula_pds()
-                html = render_to_string('plantilla_organica_accordion_content_tbody.html', {'po': po})
-                return JsonResponse({'ok': True, 'html': html})
+                docentes, departamentos = [], []
+                for x_docente in pxls.values_list('x_docente', flat=True).distinct():
+                    pd = PlantillaDocente.objects.get(po=po, x_docente=x_docente)
+                    pxls_docente = pxls.filter(x_docente=x_docente)
+                    horas = po.calcula_horas_docente(pxls_docente)
+                    for key, num in horas.items():
+                        valor_inicial = getattr(pd, key)
+                        valor_final = (valor_inicial + num) if valor else (valor_inicial - num)
+                        setattr(pd, key, valor_final)
+                    pd.save()
+                    html = render_to_string('plantilla_organica_accordion_content_tbody_docente_tr.html', {'pd': pd})
+                    docentes.append({'id': pd.id, 'html': html})
+                    departamento = plantilla_departamento(pd.po, pd.departamento)
+                    html = render_to_string('plantilla_organica_accordion_content_tbody_departamento_tr.html',
+                                            {'departamento': departamento})
+                    departamentos.append({'id': pd.id, 'html': html, 'hbpd': pd.horas_basicas, 'htpd': pd.horas_totales,
+                                     'x_departamento': pd.x_departamento})
+                return JsonResponse({'ok': True, 'docentes': docentes, 'departamentos': departamentos})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'copiar_po':
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
                 pxls = po.plantillaxls_set.all()
-                pds = po.plantilladepartamento_set.all()
+                pds = po.plantilladocente_set.all()
                 po.pk = None
                 po.save()
                 for p in pxls:

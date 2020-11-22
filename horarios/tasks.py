@@ -557,7 +557,7 @@ def carga_masiva_from_file():
                     po.save()
                 pxls.save()
             # Calcular las PlantillaDepartamento:
-            po.calcula_pds()
+            po.calcula_pdocentes()
             carga.cargado = True
             carga.save()
     return True

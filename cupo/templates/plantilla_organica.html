@@ -111,7 +111,7 @@
         });
 
 
-        $('body').on('keyup', '.tdpd', function () {
+        $('body').on('keyup', '.tdpdocente', function () {
             var element = $(this);
             var id = element.data('id');
             var campo = element.data('campo');
@@ -119,10 +119,12 @@
             setTimeout(function () {
                 var nuevo_texto = element.html();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/plantilla_organica/", {action: 'update_pd', id: id, valor: nuevo_texto, campo: campo},
+                    $.post("/plantilla_organica/", {action: 'tdpdocente', id: id, valor: nuevo_texto, campo: campo},
                         function (data) {
                             if (data.ok) {
-                                $('#tr' + id).html(data.html);
+                                $('#departamento' + data.x_departamento).html(data.html);
+                                $('#horas_totales' + id).html(data.htpd);
+                                $('#horas_basicas' + id).html(data.hbpd);
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $('#update_error').show().delay(1500).fadeOut();
@@ -136,10 +138,19 @@
             var id = $(this).data('id');
             var x_unidad = $(this).val();
             var checked = $(this).prop('checked');
-            $.post("/plantilla_organica/", {action: 'update_tbdoy', id: id, x_unidad: x_unidad, 'checked': checked},
+            $.post("/plantilla_organica/", {action: 'update_unidad', id: id, x_unidad: x_unidad, 'checked': checked},
                 function (data) {
                     if (data.ok) {
-                        $('#tbody' + id).html(data.html);
+                        var i;
+                        for (i = 0; i < data.docentes.length; i++) {
+                            $('#plantilladocente' + data.docentes[i].id).html(data.docentes[i].html);
+                        }
+                        var j;
+                        for (j = 0; j < data.docentes.length; j++) {
+                            $('#departamento' + data.departamentos[j].x_departamento).html(data.departamentos[j].html);
+                            $('#horas_totales' + data.departamentos[j].id).html(data.departamentos[j].htpd);
+                            $('#horas_basicas' + data.departamentos[j].id).html(data.departamentos[j].hbpd);
+                        }
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();

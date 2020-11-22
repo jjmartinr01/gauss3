@@ -15,45 +15,60 @@
     </div>
 </div>
 
+{#<table style="width: 100%;position: relative;">#}
+{#    <thead>#}
+{#    <tr>#}
+{#        <th></th>#}
+{#        <th style="color: #1b75bb;text-align: center;" colspan="4">ESO</th>#}
+{#        <th style="color: #1b75bb;text-align: center;" colspan="3">Bachillerato</th>#}
+{#        <th style="color: #1b75bb;text-align: center;" colspan="3">Formación Profesional</th>#}
+{#        <th colspan="8"></th>#}
+{#        <th style="color: #1b75bb;text-align: center;" colspan="2">Horas calculadas</th>#}
+{#    </tr>#}
+{#    <tr>#}
+{#        <th style="color: #1b75bb">Departamento</th>#}
+{#        <th><span class="verticalText">Troncales</span></th>#}
+{#        <th><span class="verticalText">Específicas</span></th>#}
+{#        <th><span class="verticalText">Libre Conf. Aut.</span></th>#}
+{#        <th><span class="verticalText">Desdobles ESO</span></th>#}
+{#        <th><span class="verticalText">Troncales</span></th>#}
+{#        <th><span class="verticalText">Específicas</span></th>#}
+{#        <th><span class="verticalText">Desdobles BACH</span></th>#}
+{#        <th><span class="verticalText">CFGM</span></th>#}
+{#        <th><span class="verticalText">CFGS</span></th>#}
+{#        <th><span class="verticalText">FPB</span></th>#}
+{#        <th><span class="verticalText">Jefatura</span></th>#}
+{#        <th><span class="verticalText">Mayor 55</span></th>#}
+{#        <th><span class="verticalText">Curso preparatorio</span></th>#}
+{#        <th><span class="verticalText">Tutorías</span></th>#}
+{#        <th><span class="verticalText">PACG</span></th>#}
+{#        <th><span class="verticalText">Refuerzo 1º ESO</span></th>#}
+{#        <th><span class="verticalText">PMAR1</span></th>#}
+{#        <th><span class="verticalText">PMAR2</span></th>#}
+{#        <th style="color:#970b0e;text-align: center;">Horas básicas</th>#}
+{#        <th style="color:#970b0e;text-align: center;">Plantilla Orgánica</th>#}
+{#    </tr>#}
+{#    </thead>#}
+{#    <tbody id="tbody{{ po.id }}">#}
+{#    {% include "plantilla_organica_accordion_content_tbody.html" %}#}
+{#    </tbody>#}
+{#</table>#}
+
 <table style="width: 100%;position: relative;">
     <thead>
     <tr>
-        <th></th>
-        <th style="color: #1b75bb;text-align: center;" colspan="4">ESO</th>
+        <th style="color: #1b75bb;text-align: center;">Departamentos y Docentes</th>
+        <th style="color: #1b75bb;text-align: center;" colspan="5">ESO</th>
         <th style="color: #1b75bb;text-align: center;" colspan="3">Bachillerato</th>
         <th style="color: #1b75bb;text-align: center;" colspan="3">Formación Profesional</th>
-        <th colspan="8"></th>
-        <th style="color: #1b75bb;text-align: center;" colspan="2">Horas calculadas</th>
-    </tr>
-    <tr>
-        <th style="color: #1b75bb">Departamento</th>
-        <th><span class="verticalText">Troncales</span></th>
-        <th><span class="verticalText">Específicas</span></th>
-        <th><span class="verticalText">Libre Conf. Aut.</span></th>
-        <th><span class="verticalText">Desdobles ESO</span></th>
-        <th><span class="verticalText">Troncales</span></th>
-        <th><span class="verticalText">Específicas</span></th>
-        <th><span class="verticalText">Desdobles BACH</span></th>
-        <th><span class="verticalText">CFGM</span></th>
-        <th><span class="verticalText">CFGS</span></th>
-        <th><span class="verticalText">FPB</span></th>
-        <th><span class="verticalText">Jefatura</span></th>
-        <th><span class="verticalText">Mayor 55</span></th>
-        <th><span class="verticalText">Curso preparatorio</span></th>
-        <th><span class="verticalText">Tutorías</span></th>
-        <th><span class="verticalText">PACG</span></th>
-        <th><span class="verticalText">Refuerzo 1º ESO</span></th>
-        <th><span class="verticalText">PMAR1</span></th>
-        <th><span class="verticalText">PMAR2</span></th>
-        <th style="color:#970b0e;text-align: center;">Horas básicas</th>
-        <th style="color:#970b0e;text-align: center;">Plantilla Orgánica</th>
+        <th colspan="8" style="color: #1b75bb;text-align: center;">Atención a la diversidad y otras horas</th>
+        <th style="color: #1b75bb;text-align: center;" colspan="3">Horas calculadas</th>
     </tr>
     </thead>
-    <tbody id="tbody{{ po.id }}">
-    {% include "plantilla_organica_accordion_content_tbody.html" %}
+    <tbody id="tbody_docente{{ po.id }}">
+    {% include "plantilla_organica_accordion_content_tbody_docente.html" %}
     </tbody>
 </table>
-
 
 <label>Grupos tenidos en cuenta para el cálculo:</label>
 <table style="width: 100%">
@@ -70,27 +85,6 @@
             {% endfor %}
         </tr>
         </tbody>
-
-        {#        {% if dato.0 %}#}
-        {#            {% ifchanged dato.2 %}#}
-        {#                {% if not forloop.first %}#}
-        {#                    <hr>#}
-        {#                {% endif %}#}
-        {#            {% endifchanged %}#}
-        {#            <label>{{ dato.0 }}</label>#}
-        {#            <div class="row">#}
-        {#                {% for g in dato.1 %}#}
-        {#                    {% if forloop.last %}#}
-        {#                        <div class="columns large-2 end">#}
-        {#                            <input type="checkbox" value="{{ g }}"> {{ g }}#}
-        {#                        </div>#}
-        {#                    {% else %}#}
-        {#                        <div class="columns large-2">#}
-        {#                            <input type="checkbox" value="{{ g }}"> {{ g }}#}
-        {#                        </div>#}
-        {#                    {% endif %}#}
-        {#                {% endfor %}#}
-        {#            </div>#}
-        {#        {% endif %}#}
     {% endfor %}
 </table>
+
