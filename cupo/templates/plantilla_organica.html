@@ -7,6 +7,9 @@
             writing-mode: vertical-lr;
             transform: rotate(180deg);
         }
+        .materias_docente{
+            color: grey;
+        }
     </style>
 {% endblock %}
 {% block contenido %}
@@ -57,6 +60,7 @@
                 {% include 'plantilla_organica_accordion.html' %}
             </dl>
         </div>
+    <div id="docentes_container"></div>
     </form>
 
 {% endblock %}
@@ -194,8 +198,55 @@
                     }
                 }
             });
-
         });
 
+        $('body').on('mouseenter', '.docente', function (e) {
+            var x_docente=$(this).data('x_docente');
+            var po=$(this).data('po');
+            var element = $('#materias_docente' + x_docente);
+            element.show();
+            var materias = element.html();
+            if (!materias){
+                $.post("/plantilla_organica/", {action: 'materias_docente', po: po, x_docente: x_docente},
+                            function (data) {
+                                if (data.ok) {
+                                    for (i = 0; i < data.materias.length; i++) {
+                            let div = document.createElement('div');
+                            let text = document.createTextNode(data.materias[i]);
+                            div.appendChild(text);
+                            element.append(div);
+                        }
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+            }
+            {#if (document.getElementById('docente_container' + x_docente)){#}
+            {#    var left  = e.clientX  + "px";#}
+            {#    var top  = e.clientY  + "px";#}
+            {##}
+            {#    var div = document.getElementById('docente_container' + x_docente);#}
+            {##}
+            {#    div.style.left = left;#}
+            {#    div.style.top = top;#}
+            {##}
+            {#    $("#"+'docente_container' + x_docente).toggle();#}
+            {#    return false;#}
+            {# }else{#}
+            {#    let div = document.createElement('div');#}
+            {#    div.setAttribute("id", "docente_container" + x_docente);#}
+            {#    div.classList.add('mouse_over_div');#}
+            {#    let text = document.createTextNode('Test ' + x_docente);#}
+            {#    div.appendChild(text);#}
+                {#document.body.appendChild(div);#}
+            {#    $('#docentes_container').append(div);#}
+            {# }#}
+        });
+
+        $('body').on('mouseleave', '.docente', function (e) {
+            var x_docente = $(this).data('x_docente');
+            $('#materias_docente' + x_docente).hide();
+        });
     </script>
 {% endblock %}

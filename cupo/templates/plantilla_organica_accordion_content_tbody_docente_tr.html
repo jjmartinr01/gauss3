@@ -1,4 +1,5 @@
-<td>{{ pd.docente }}</td>
+<td><div class="docente" data-po="{{ pd.po.id }}" data-x_docente="{{ pd.x_docente }}">{{ pd.docente }}</div>
+<div class="materias_docente" id="materias_docente{{ pd.x_docente }}"></div></td>
 <td contenteditable="true" class="tdpdocente" data-id="{{ pd.id }}" data-campo="troneso">{{ pd.troneso }}</td>
 <td contenteditable="true" class="tdpdocente" data-id="{{ pd.id }}" data-campo="espeeso">{{ pd.espeeso }}</td>
 <td contenteditable="true" class="tdpdocente" data-id="{{ pd.id }}" data-campo="libreso">{{ pd.libreso }}</td>
