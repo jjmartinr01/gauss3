@@ -150,10 +150,8 @@
                             $('#plantilladocente' + data.docentes[i].id).html(data.docentes[i].html);
                         }
                         var j;
-                        for (j = 0; j < data.docentes.length; j++) {
+                        for (j = 0; j < data.departamentos.length; j++) {
                             $('#departamento' + data.departamentos[j].x_departamento).html(data.departamentos[j].html);
-                            $('#horas_totales' + data.departamentos[j].id).html(data.departamentos[j].htpd);
-                            $('#horas_basicas' + data.departamentos[j].id).html(data.departamentos[j].hbpd);
                         }
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {

@@ -607,23 +607,18 @@ def plantilla_organica(request):
                 for p in pxls:
                     p.usar = valor
                     p.save()
-                docentes, departamentos = [], []
-                for x_docente in pxls.values_list('x_docente', flat=True).distinct():
-                    pd = PlantillaDocente.objects.get(po=po, x_docente=x_docente)
-                    pxls_docente = pxls.filter(x_docente=x_docente)
-                    horas = po.calcula_horas_docente(pxls_docente)
-                    for key, num in horas.items():
-                        valor_inicial = getattr(pd, key)
-                        valor_final = (valor_inicial + num) if valor else (valor_inicial - num)
-                        setattr(pd, key, valor_final)
-                    pd.save()
+                pds, docentes, departamentos, array_departamentos = [], [], [], []
+                tuple_docentes = pxls.values_list('departamento', 'x_departamento', 'docente', 'x_docente').distinct()
+                for docente in tuple_docentes:
+                    pd = po.calcula_pdocente(docente)
                     html = render_to_string('plantilla_organica_accordion_content_tbody_docente_tr.html', {'pd': pd})
                     docentes.append({'id': pd.id, 'html': html})
-                    departamento = plantilla_departamento(pd.po, pd.departamento)
+                    if (pd.departamento, pd.x_departamento) not in array_departamentos:
+                        array_departamentos.append((pd.departamento, pd.x_departamento))
+                for departamento, x_departamento in array_departamentos:
                     html = render_to_string('plantilla_organica_accordion_content_tbody_departamento_tr.html',
-                                            {'departamento': departamento})
-                    departamentos.append({'id': pd.id, 'html': html, 'hbpd': pd.horas_basicas, 'htpd': pd.horas_totales,
-                                     'x_departamento': pd.x_departamento})
+                                            {'departamento': plantilla_departamento(po, departamento)})
+                    departamentos.append({'x_departamento': x_departamento, 'html': html})
                 return JsonResponse({'ok': True, 'docentes': docentes, 'departamentos': departamentos})
             except:
                 return JsonResponse({'ok': False})
@@ -655,6 +650,12 @@ def plantilla_organica(request):
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'materias_docente':
+            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
+            psxls = po.plantillaxls_set.filter(x_docente=request.POST['x_docente'])
+            materias = []
+            for m in po.calcula_materias_docente(psxls):
+                materias.append('%s %s %sh' % (m[0], m[1], m[2]))
+            return JsonResponse({'ok': True, 'materias': materias})
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
                 psxls = po.plantillaxls_set.filter(x_docente=request.POST['x_docente'])

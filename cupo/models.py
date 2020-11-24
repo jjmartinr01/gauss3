@@ -333,13 +333,17 @@ class PlantillaOrganica(models.Model):
     #             pd.save()
 
     def calcula_materias_docente(self, psxls):
-        # def transforma(psxlsm):
-        #     return [psxlsm[0].split('-')[1].strip(), psxlsm[1], int(psxlsm[2].split(':')[0]), psxlsm[3], psxlsm(4)]
         psxls_materias = psxls.filter(x_actividad='1').values_list('materia', 'omc', 'horas_semana_min', 'dia', 'hora_fin')
         m = psxls_materias[0]
-        materias = [[m[0].split('-')[1].strip(), m[1], int(m[2].split(':')[0]), m[3], m[4], 0]]
+        try:
+            materias = [[m[0].split('-')[1].strip(), m[1], int(m[2].split(':')[0]), m[3], m[4], 0]]
+        except:
+            materias = [[m[0], m[1], 0, m[3], m[4], 0]]
         for m in psxls_materias:
-            m_trans = [m[0].split('-')[1].strip(), m[1], int(m[2].split(':')[0]), m[3], m[4]]
+            try:
+                m_trans = [m[0].split('-')[1].strip(), m[1], int(m[2].split(':')[0]), m[3], m[4]]
+            except:
+                m_trans = [m[0], m[1], 0, m[3], m[4]]
             incluida = False
             for materia in materias:
                 if m_trans[3] == materia[3] and m_trans[4] == materia[4]:
@@ -348,19 +352,6 @@ class PlantillaOrganica(models.Model):
                         materia[1] = '%s/%s' % (materia[1], m_trans[1])
             if not incluida:
                 materias.append(m_trans)
-        # materias_unicas = [materias[0]]
-        # for m in materias:
-        #     incluida = False
-        #     for mu in materias_unicas:
-        #         if m[0] == mu[0] and m[1] == mu[1] and m[2] == mu[2] and m[5] < mu[2]:
-        #             mu[2] = mu[2] + 1
-        #             incluida = True
-        #             if m_trans[1] not in materia[1]:
-        #                 materia[1] = '%s/%s' % (materia[1], m_trans[1])
-        #                 m_trans[1] = materia[1]
-        #     if not incluida:
-        #         materias.append(m_trans)
-        # return materias
         sin_repetir = []
         todas = []
         for materia in materias:
@@ -368,13 +359,11 @@ class PlantillaOrganica(models.Model):
             todas.append(m)
             if m not in sin_repetir:
                 sin_repetir.append(m)
-
-        # return sin_repetir
         analizadas = []
         for d in sin_repetir:
-            # analizadas.append((d, int(len([m for m in materias if m == d])/d[2])))
-            for i in range(int(len([m for m in todas if m == d])/d[2])):
-                analizadas.append(d)
+            if d[2] != 0:
+                for i in range(int(len([m for m in todas if m == d])/d[2])):
+                    analizadas.append(d)
         return analizadas
 
 
@@ -440,6 +429,7 @@ class PlantillaOrganica(models.Model):
         if docente[0] in orden:
             pd.orden = orden[docente[0]]
         pd.save()
+        return pd
 
     def calcula_pdocentes(self):
         for docente in self.docentes:
