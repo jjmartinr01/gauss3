@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
 
-from django.conf.urls import url
+from django.urls import path
 from . import views
 
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
-    url(r'^accounts/login/$', views.no_login, name='no_login'),
-    url(r'^enlazar/$', views.enlazar, name='enlazar'),
-    url(r'^$', views.index, name='index'),
-    url(r'^perfiles_permisos/$', views.perfiles_permisos, name='perfiles_permisos'),
-    url(r'^politica_privacidad/$', views.politica_privacidad, name='politica_privacidad'),
-    url(r'^aviso_legal/$', views.aviso_legal, name='aviso_legal'),
-    url(r'^carga_masiva/$', views.carga_masiva, name='carga_masiva'),
-    url(r'^del_entidad_gausers/$', views.del_entidad_gausers, name='del_entidad_gausers'),
-    url(r'^recupera_password/$', views.recupera_password, name='recupera_password'),
-    url(r'^recarga_captcha/$', views.recarga_captcha, name='recarga_captcha'),
-    url(r'^asignar_menus_entidad/$', views.asignar_menus_entidad, name='asignar_menus_entidad'),
-    url(r'^actualizar_menus_permisos/$', views.actualizar_menus_permisos, name='actualizar_menus_permisos'),
-    url(r'^borrar_entidades/$', views.borrar_entidades, name='borrar_entidades'),
-    url(r'^execute_migrations/$', views.execute_migrations, name='execute_migrations'),
-    url(r'^ejecutar_query/$', views.ejecutar_query, name='ejecutar_query'),
-    # url(r'^gestionar_candidatos/$', views.gestionar_candidatos, name='gestionar_candidatos'),
+    path('', views.index),
+    path('accounts/login/', views.no_login),
+    path('enlazar/', views.enlazar),
+    path('perfiles_permisos/', views.perfiles_permisos),
+    path('politica_privacidad/', views.politica_privacidad),
+    path('aviso_legal/', views.aviso_legal),
+    path('carga_masiva/', views.carga_masiva),
+    path('del_entidad_gausers/', views.del_entidad_gausers),
+    path('recupera_password/', views.recupera_password),
+    path('recarga_captcha/', views.recarga_captcha),
+    path('asignar_menus_entidad/', views.asignar_menus_entidad),
+    path('actualizar_menus_permisos/', views.actualizar_menus_permisos),
+    path('borrar_entidades/', views.borrar_entidades),
+    path('execute_migrations/', views.execute_migrations),
+    path('ejecutar_query/', views.ejecutar_query),
+    path('acceso_from_racima/<str:token>/', views.acceso_from_racima),
 ]

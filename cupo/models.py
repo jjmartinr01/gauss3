@@ -274,63 +274,6 @@ class PlantillaOrganica(models.Model):
     def docentes(self):
         return self.plantillaxls_set.all().values_list('departamento', 'x_departamento','docente', 'x_docente').distinct()
 
-    # def calcula_pds(self):
-    #     orden = {'Griego': 2, 'Orientación': 20, 'Tecnología': 14, 'Matemáticas': 6, 'Educación Física': 13,
-    #              'Filosofía': 1, 'Geografía e Historia': 5, 'Inglés': 11, 'Formación y Orientación Laboral': 17,
-    #              'Lengua Castellana y Literatura': 4, 'Ciencias Naturales': 8, 'Latín': 3, 'Artes Plásticas': 9,
-    #              'Física y Química': 7, 'Música': 12, 'Economía': 15, 'Cultura Clásica': 16, 'Francés': 10}
-    #     psXLS = self.plantillaxls_set.all()
-    #     for dep in self.departamentos:
-    #         if dep:
-    #             pd, c = PlantillaDepartamento.objects.get_or_create(po=self, departamento=dep[2], x_departamento=dep[1])
-    #             psXLS_departamento = psXLS.filter(x_departamento=dep[1], usar=True)
-    #             '222074 -> 1º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
-    #             '222075 -> 2º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
-    #             '101324 -> 2º E.S.O.'
-    #             '101325 -> 3º E.S.O.'
-    #             pacg = psXLS_departamento.filter(x_curso__in=['222074', '222075'], x_actividad='1')
-    #             pmar1 = psXLS_departamento.filter(materia__icontains='mbito', x_curso='101324', x_actividad='1')
-    #             pmar2 = psXLS_departamento.filter(materia__icontains='mbito', x_curso='101325', x_actividad='1')
-    #             refuerzo1 = psXLS_departamento.filter(materia__icontains='mbito', x_curso='170506', x_actividad='1')
-    #             troncales = (Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
-    #                         grupo_materias__icontains='obligator')) & Q(x_actividad='1')
-    #             troneso = psXLS_departamento.filter(Q(etapa='da') & troncales).exclude(x_curso__in=['222074', '222075'],
-    #                                                                                    materia__icontains='mbito')
-    #             espeeso = psXLS_departamento.filter(etapa='da', grupo_materias__icontains='espec', x_actividad='1')
-    #             excluir = Q(x_curso__in=['222074', '222075']) | Q(materia__icontains='mbito')
-    #             libreso = psXLS_departamento.filter(etapa='da', grupo_materias__icontains='libre conf',
-    #                                                 x_actividad='1').exclude(excluir)
-    #             tronbac = psXLS_departamento.filter(Q(etapa='fa') & troncales)
-    #             espebac = psXLS_departamento.filter(etapa='fa', grupo_materias__icontains='espec', x_actividad='1')
-    #             gm = psXLS_departamento.filter(etapa='ga', x_actividad='1')
-    #             gs = psXLS_departamento.filter(etapa='ha', x_actividad='1')
-    #             fpb = psXLS_departamento.filter(etapa='ea', x_actividad='1')
-    #             posibles_desdobles = (Q(x_actividad='539') | Q(x_actividad='400')) & Q(x_actividad='1')
-    #             desdobeso = psXLS_departamento.filter(Q(etapa='da') & posibles_desdobles)
-    #             desdobbac = psXLS_departamento.filter(Q(etapa='fa') & posibles_desdobles)
-    #             mayor55 = psXLS_departamento.filter(x_actividad='176')
-    #             cppaccffgs = psXLS_departamento.filter(x_curso='222073', x_actividad='1')
-    #             tutorias = psXLS_departamento.filter(Q(x_actividad='519') | Q(x_actividad='2') | Q(x_actividad='376'))
-    #
-    #             pd.troneso = troneso.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.espeeso = espeeso.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.libreso = libreso.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.pacg = pacg.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.pmar1 = pmar1.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.pmar2 = pmar2.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.refuerzo1 = refuerzo1.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.tronbac = tronbac.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.espebac = espebac.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.gm = gm.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.gs = gs.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.fpb = fpb.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.desdobeso = desdobeso.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.desdobbac = desdobbac.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.mayor55 = mayor55.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.cppaccffgs =cppaccffgs.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.tutorias = tutorias.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #             pd.orden = dep[0]
-    #             pd.save()
 
     def calcula_materias_docente(self, psxls):
         psxls_materias = psxls.filter(x_actividad='1').values_list('materia', 'omc', 'horas_semana_min', 'dia', 'hora_fin')

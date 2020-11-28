@@ -677,6 +677,7 @@ class PlantillaInformeInspeccion(models.Model):
 
     class Meta:
         verbose_name_plural = 'Plantillas de Informes de Inspección'
+        ordering = ['-modificado']
 
     def __str__(self):
         return '%s - %s' % (self.asunto, self.creador)
@@ -725,6 +726,7 @@ class InformeInspeccion(models.Model):
 
     class Meta:
         verbose_name_plural = 'Informes de Inspección'
+        ordering = ['-modificado', '-id']
 
     def __str__(self):
         return '%s - %s' % (self.inspector, self.asunto)
@@ -757,9 +759,9 @@ class FirmaII(models.Model):
 #     valor = models.CharField('Valor de la variable', blank=True, null=True, default='', max_length=300)
 
 def update_fichero(instance, filename):
-    nombre = filename.rpartition('.')
+    nombre, dot, ext = filename.rpartition('.')
     instance.fich_name = filename
-    fichero = pass_generator(size=20) + '.' + nombre[2]
+    fichero = pass_generator(size=20) + '.' + ext
     return '/'.join(['inspeccion', str(instance.informe.inspector.ronda.entidad.code), fichero])
 
 class FileAttachedII(models.Model):

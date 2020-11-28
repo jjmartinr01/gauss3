@@ -10,8 +10,13 @@ import time
 import subprocess
 # from urllib import unquote
 from difflib import get_close_matches
+try:
+    from cryptography.fernet import Fernet
+    from gauss.settings import RACIMA_KEY
+except:
+    pass
 import simplejson as json
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from time import sleep
 from django.shortcuts import render, redirect
 from django.core import serializers
@@ -988,6 +993,21 @@ def recupera_password(request):
         mensaje = 'Se ha producido un error y este enlace no es correcto.'
 
     return render(request, "cambia_password.html", {'formulario': False, 'mensaje': mensaje})
+
+
+def acceso_from_racima(request, token):
+    acceso_encriptado = token.encode('utf-8')
+    try:
+        f = Fernet(RACIMA_KEY)
+        utc_token_timestamp = f.extract_timestamp(acceso_encriptado) # timestamp UTC del momento en que fue creado
+        now = datetime.now()
+        # utc_now_timestamp = now.replace(tzinfo=timezone.utc).timestamp()
+        utc_now_timestamp = now.timestamp()
+        segundos_retraso = utc_now_timestamp - utc_token_timestamp
+        acceso = f.decrypt(acceso_encriptado).decode()
+        return HttpResponse("Diferencia en segundos: %s<br><br>Acceso: %s" %(segundos_retraso, acceso))
+    except:
+        return HttpResponse("No está instalado el paquete cryptography")
 
 
 # ##############################################################################

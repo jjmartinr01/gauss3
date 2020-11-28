@@ -1,6 +1,12 @@
-<th style="color: #1b75bb">{{ departamento.departamento }}
+{% if dep.2 %}
+<th style="color: #1b75bb" class="dep_th" data-x_dep="{{ dep.1 }}">{{ departamento.departamento }}
     <span style="font-size: small; font-weight: normal; color: gray;"
           title="Número de docentes">({{ departamento.num_docentes }} docentes)</span></th>
+{% else %}
+    <th style="color: #1b75bb" class="dep_th" data-x_dep="{{ dep.1 }}">Docentes sin departamento
+    <span style="font-size: small; font-weight: normal; color: gray;"
+          title="Número de docentes">({{ departamento.num_docentes }} docentes)</span></th>
+{% endif %}
 <th data-campo="troneso">{{ departamento.troneso__sum }}</th>
 <th data-campo="espeeso">{{ departamento.espeeso__sum }}</th>
 <th data-campo="libreso">{{ departamento.libreso__sum }}</th>
