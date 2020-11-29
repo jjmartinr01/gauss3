@@ -1,0 +1,50 @@
+{% load entidades_extras %}
+<div class="row">
+    <div class="columns large-12">
+        <ul class="button-group right">
+            <li><a class="button alert borrar_po tiny" data-id="{{ po.id }}"
+                   title="Borrar completamente este estudio de plantilla orgánica"><i class="fa fa-trash-o"></i>
+                Borrar</a></li>
+            <li><a class="button copiar_po tiny" data-id="{{ po.id }}"
+                   title="Hacer una copia (un duplicado) de este estudio"><i class="fa fa-copy"></i> Copiar</a>
+            </li>
+{#            <li><a class="button pdf_po tiny" data-id="{{ po.id }}"#}
+{#                   title="Crear un EXCEL de este estudio"><i class="fa fa-file-excel-o"></i> EXCEL</a>#}
+{#            </li>#}
+        </ul>
+    </div>
+</div>
+
+<table style="width: 100%;position: relative;">
+    <thead>
+    <tr>
+        <th style="color: #1b75bb;text-align: center;">Departamentos y Docentes</th>
+        <th style="color: #1b75bb;text-align: center;" colspan="4">Enseñanzas iniciales y Educación Secundaria</th>
+        <th style="color: #1b75bb;text-align: center;" colspan="7">Educación de adultos</th>
+        <th style="color: #1b75bb;text-align: center;" colspan="3">Otras horas</th>
+        <th style="color: #1b75bb;text-align: center;" colspan="3">Horas calculadas</th>
+    </tr>
+    </thead>
+    <tbody id="tbody_docente{{ po.id }}">
+    {% include "plantilla_organica_accordion_cepa_content_tbody_docente.html" %}
+    </tbody>
+</table>
+
+<label>Grupos tenidos en cuenta para el cálculo:</label>
+<table style="width: 100%">
+    {% for curso, grupos in po.cursos.items %}
+        <thead>
+        <tr>
+            <th colspan="8">{{ curso }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            {% for grupo in grupos %}
+                <td><input type="checkbox" class="grupocheck" data-id="{{ po.id }}" value="{{ grupo.2 }}" {% if grupo.1 %}checked{% endif %}> {{ grupo.0 }}</td>
+            {% endfor %}
+        </tr>
+        </tbody>
+    {% endfor %}
+</table>
+

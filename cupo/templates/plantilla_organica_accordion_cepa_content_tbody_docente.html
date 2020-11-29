@@ -1,0 +1,43 @@
+{% load cupo_extras %}
+{% for dep in po.departamentos %}
+    {% if forloop.first %}
+        <thead>
+        {% else %}
+        <thead class="docentes_dep{{ dep.1 }}" style="display: none;">
+    {% endif %}
+    <tr>
+        <th style="color: #1b75bb">&nbsp;</th>
+        <th><span class="verticalText">Ens. Iniciales</span></th>
+        <th><span class="verticalText">Ed. Secundaria</span></th>
+        <th><span class="verticalText">Ed. Sec. Semipresencial</span></th>
+        <th><span class="verticalText">Ed. Sec. Distancia</span></th>
+        <th><span class="verticalText">Inglés</span></th>
+        <th><span class="verticalText">Ofimática</span></th>
+        <th><span class="verticalText">Informática</span></th>
+        <th><span class="verticalText">Mecanografía</span></th>
+        <th><span class="verticalText">Competencias N-2</span></th>
+        <th><span class="verticalText">Alfab. Inmigrantes</span></th>
+        <th><span class="verticalText">Cursos de preparación</span></th>
+        <th><span class="verticalText">Jefatura</span></th>
+        <th><span class="verticalText">Mayor 55</span></th>
+        <th><span class="verticalText">Tutorías</span></th>
+        <th class="verticalText" style="color:#970b0e;text-align: center;">Horas totales</th>
+        <th class="verticalText" style="color:#970b0e;text-align: center;">Horas básicas</th>
+        <th style="color:#970b0e;text-align: center;">Plantilla Orgánica</th>
+    </tr>
+    </thead>
+
+    <thead>
+    <tr id="departamento{{ dep.1 }}">
+        {% with departamento=po|plantilla_departamento_cepa:dep.2 %}
+            {% include "plantilla_organica_accordion_cepa_content_tbody_departamento_tr.html" %}
+        {% endwith %}
+    </tr>
+    </thead>
+    {% for pd in po|docentes_departamento:dep.1 %}
+        <tr id="plantilladocente{{ pd.id }}" class="docentes_dep{{ dep.1 }}" style="display: none;">
+            {% include "plantilla_organica_accordion_cepa_content_tbody_docente_tr.html" %}
+        </tr>
+    {% endfor %}
+
+{% endfor %}

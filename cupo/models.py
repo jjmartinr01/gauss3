@@ -324,8 +324,18 @@ class PlantillaOrganica(models.Model):
         troncales = (Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
             grupo_materias__icontains='obligator')) & Q(x_actividad='1')
         troneso = troncales & Q(etapa='da') & ~Q(x_curso__in=['222074', '222075']) & ~Q(materia__icontains='mbito')
-        # sesiones['troneso'] = psxls.filter(Q(etapa='da') & troncales).exclude(Q(x_curso__in=['222074', '222075']) |
-        #                                                                   Q(materia__icontains='mbito'))
+
+        sesiones['iniciales'] = psxls.filter(etapa='ia')
+        sesiones['espa'] = psxls.filter(etapa='ja')
+        sesiones['espads'] = psxls.filter(etapa='ka')
+        sesiones['espad'] = psxls.filter(etapa='la')
+        sesiones['epaofi'] = psxls.filter(etapa='ma', curso__icontains='ofim')
+        sesiones['epainf'] = psxls.filter(etapa='ma', curso__icontains='inform')
+        sesiones['epaing'] = psxls.filter(etapa='ma', curso__icontains='ingl')
+        sesiones['epamec'] = psxls.filter(etapa='ma', curso__icontains='mecanog')
+        sesiones['epan2'] = psxls.filter(etapa='ma', curso__icontains='N-2')
+        sesiones['epainm'] = psxls.filter(etapa='ma', curso__icontains='nmigrantes')
+        sesiones['epamay'] = psxls.filter(etapa='ma', curso__icontains='mayores de')
         sesiones['troneso'] = psxls.filter(troneso)
         sesiones['espeeso'] = psxls.filter(etapa='da', grupo_materias__icontains='espec', x_actividad='1')
         excluir = Q(x_curso__in=['222074', '222075']) | Q(materia__icontains='mbito')
@@ -387,7 +397,11 @@ class PlantillaOrganica(models.Model):
 
 class PlantillaXLS(models.Model):
     ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', 'FP Básica'), ('fa', 'Bachillerato'),
-              ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'), ('za', 'Etapa no identificada'))
+              ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'), ('ia', 'Enseñanzas Iniciales de Personas Adultas'),
+              ('ja', 'Educación Secundaria de Personas Adultas'),
+              ('ka', 'Educación Secundaria de Personas Adultas a Distancia Semipresencial'),
+              ('la', 'Educación Secundaria de Personas Adultas a Distancia'), ('ma', 'Educación para Personas Adultas'),
+              ('na', 'Preparación Pruebas de Acceso a CCFF'), ('za', 'Etapa no identificada'))
     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
     year = models.CharField('Año', max_length=15, blank=True, null=True)
     centro = models.CharField('Nombre del centro', max_length=110, blank=True, null=True)
@@ -457,7 +471,18 @@ class PlantillaDepartamento(models.Model):
     pacg = models.IntegerField('Horas de PACG', default=0)
     pmar1 = models.IntegerField('Horas de 1º de PMAR (2º ESO)', default=0)
     pmar2 = models.IntegerField('Horas de 2º de PMAR (3º ESO)', default=0)
-    orden = models.IntegerField('Desdobles autorizados Bachillerato', default=100)
+    iniciales = models.IntegerField('Horas de Enseñanzas Iniciales', default=0)
+    espa = models.IntegerField('Horas de Educación Secundaria para adultos', default=0)
+    espads = models.IntegerField('Horas de Educación Secundaria para adultos a distancia semipresencial', default=0)
+    espad = models.IntegerField('Horas de Educación Secundaria para adultos a distancia', default=0)
+    epaofi = models.IntegerField('Horas de enseñanzas de adultos ofimática', default=0)
+    epainf = models.IntegerField('Horas de enseñanzas de adultos informática', default=0)
+    epaing = models.IntegerField('Horas de enseñanzas de adultos inglés', default=0)
+    epamec = models.IntegerField('Horas de enseñanzas de adultos mecanografía', default=0)
+    epan2 = models.IntegerField('Horas de preparación competencias N-2', default=0)
+    epainm = models.IntegerField('Horas de alfabetización para inmigrantes', default=0)
+    epamay = models.IntegerField('Horas de cursos de preparación para mayores de 18 y 25 años', default=0)
+    orden = models.IntegerField('Orden de presentación', default=100)
     creado = models.DateTimeField("Fecha y hora de encolar el mensaje", auto_now_add=True)
     modificado = models.DateTimeField("Fecha y hora en la que se envió efectivamente el correo", auto_now=True)
 
@@ -516,17 +541,32 @@ class PlantillaDocente(models.Model):
     pmar1 = models.IntegerField('Horas de 1º de PMAR (2º ESO)', default=0)
     pmar2 = models.IntegerField('Horas de 2º de PMAR (3º ESO)', default=0)
     relve = models.IntegerField('Religión y Valores', default=0)
+    iniciales = models.IntegerField('Horas de Enseñanzas Iniciales', default=0)
+    espa = models.IntegerField('Horas de Educación Secundaria para adultos', default=0)
+    espads = models.IntegerField('Horas de Educación Secundaria para adultos a distancia semipresencial', default=0)
+    espad = models.IntegerField('Horas de Educación Secundaria para adultos a distancia', default=0)
+    epaofi = models.IntegerField('Horas de enseñanzas de adultos ofimática', default=0)
+    epainf = models.IntegerField('Horas de enseñanzas de adultos informática', default=0)
+    epaing = models.IntegerField('Horas de enseñanzas de adultos inglés', default=0)
+    epamec = models.IntegerField('Horas de enseñanzas de adultos mecanografía', default=0)
+    epan2 = models.IntegerField('Horas de preparación competencias N-2', default=0)
+    epainm = models.IntegerField('Horas de alfabetización para inmigrantes', default=0)
+    epamay = models.IntegerField('Horas de cursos de preparación para mayores de 18 y 25 años', default=0)
     orden = models.IntegerField('Desdobles autorizados Bachillerato', default=100)
     creado = models.DateTimeField("Fecha y hora de encolar el mensaje", auto_now_add=True)
     modificado = models.DateTimeField("Fecha y hora en la que se envió efectivamente el correo", auto_now=True)
 
     @property
     def horas_basicas(self):
-        return self.troneso + self.espeeso + self.libreso + self.tronbac + self.espebac + self.gm + self.gs + self.fpb + self.desdobeso + self.desdobbac + self.jefatura + self.relve
+        hs1 = self.troneso + self.espeeso + self.libreso + self.tronbac + self.espebac + self.gm + self.gs + self.fpb + self.desdobeso + self.desdobbac + self.jefatura + self.relve
+        hs2 = self.iniciales + self.espa + self.espads + self.espad
+        return hs1 + hs2
 
     @property
     def horas_totales(self):
-        return self.horas_basicas + self.mayor55 + self.cppaccffgs + self.tutorias + self.refuerzo1 + self.pacg + self.pmar1 + self.pmar2
+        hs1 = self.cppaccffgs + self.refuerzo1 + self.pacg + self.pmar1 + self.pmar2
+        hs2 = self.epaofi + self.epainf + self.epaing + self.epamec + self.epan2 + self.epainm + self.epamay
+        return self.horas_basicas + self.mayor55 + self.tutorias + hs1 + hs2
 
     # @property
     # def plantilla_departamento(self):

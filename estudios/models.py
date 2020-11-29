@@ -6,8 +6,14 @@ from entidades.models import Entidad, Ronda, Subentidad, Gauser_extra, Dependenc
 
 # Create your models here.
 
+# ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', 'FP Básica'), ('fa', 'Bachillerato'),
+#           ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'))
 ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', 'FP Básica'), ('fa', 'Bachillerato'),
-          ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'))
+              ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'), ('ia', 'Enseñanzas Iniciales de Personas Adultas'),
+              ('ja', 'Educación Secundaria de Personas Adultas'),
+              ('ka', 'Educación Secundaria de Personas Adultas a Distancia Semipresencial'),
+              ('la', 'Educación Secundaria de Personas Adultas a Distancia'), ('ma', 'Educación para Personas Adultas'),
+              ('na', 'Preparación Pruebas de Acceso a CCFF'), ('za', 'Etapa no identificada'))
 
 class Curso(models.Model):
     # entidad = models.ForeignKey(Entidad, blank=True, null=True, related_name='estudios', on_delete=models.CASCADE)

@@ -535,6 +535,13 @@ def carga_masiva_from_file():
                     column_header = str(sheet.cell(4, col_index).value)
                     if column_header == 'CURSO':
                         valor = sheet.cell(row_index, col_index).value
+                        # No detectadas en educación de adultos:
+                        #   Iniciación a la Ofimática
+                        #   Iniciación a la Informática
+                        #   Inglés
+                        #   Preparación competencias N-2
+                        #   Mecanografía
+                        q = 'Ofim' in valor or 'Inform' in valor or 'Ingl' in valor or 'N-2' in valor or 'Meca' in valor
                         if '.G.M.' in valor:
                             pxls.etapa = 'ga'
                         elif '.G.S.' in valor:
@@ -545,6 +552,14 @@ def carga_masiva_from_file():
                             pxls.etapa = 'ea'
                         elif 'Bachillerato' in valor:
                             pxls.etapa = 'fa'
+                        elif 'niciales I' in valor:
+                            pxls.etapa = 'ia'
+                        elif 'ivel I Pr' in valor or 'ivel II Pr' in valor:
+                            pxls.etapa = 'ja'
+                        elif 'ivel I a Di' in valor or 'ivel II a Di' in valor:
+                            pxls.etapa = 'ka'
+                        elif 'nmigrantes' in valor or 'mayores de' in valor or q:
+                            pxls.etapa = 'ma'
                         else:
                             pxls.etapa = 'za'
                     try:

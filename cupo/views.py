@@ -24,8 +24,7 @@ from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, Especia
 from entidades.models import CargaMasiva
 from estudios.models import Curso, Materia
 from horarios.tasks import carga_masiva_from_file
-from cupo.templatetags.cupo_extras import plantilla_departamento
-
+from cupo.templatetags.cupo_extras import plantilla_departamento, plantilla_departamento_cepa
 
 from programaciones.models import Gauser_extra_programaciones, Departamento, crea_departamentos
 
@@ -582,7 +581,10 @@ def plantilla_organica(request):
         elif request.POST['action'] == 'open_accordion' and request.is_ajax():
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
-                html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
+                if 'C.E.P.A' in po.ronda_centro.entidad.name:
+                    html = render_to_string('plantilla_organica_accordion_cepa_content.html', {'po': po, 'g_e': g_e})
+                else:
+                    html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
@@ -592,9 +594,14 @@ def plantilla_organica(request):
                 valor = int("".join(filter(str.isdigit, request.POST['valor'])))
                 setattr(pd, request.POST['campo'], valor)
                 pd.save()
-                departamento = plantilla_departamento(pd.po, pd.departamento)
-                html = render_to_string('plantilla_organica_accordion_content_tbody_departamento_tr.html',
+                if 'C.E.P.A' in pd.po.ronda_centro.entidad.name:
+                    departamento = plantilla_departamento_cepa(pd.po, pd.departamento)
+                    html = render_to_string('plantilla_organica_accordion_cepa_content_tbody_departamento_tr.html',
                                         {'departamento': departamento})
+                else:
+                    departamento = plantilla_departamento(pd.po, pd.departamento)
+                    html = render_to_string('plantilla_organica_accordion_content_tbody_departamento_tr.html',
+                                            {'departamento': departamento})
                 return JsonResponse({'ok': True, 'html': html, 'hbpd': pd.horas_basicas, 'htpd': pd.horas_totales,
                                      'x_departamento': pd.x_departamento})
             except:
@@ -611,13 +618,22 @@ def plantilla_organica(request):
                 tuple_docentes = pxls.values_list('departamento', 'x_departamento', 'docente', 'x_docente').distinct()
                 for docente in tuple_docentes:
                     pd = po.calcula_pdocente(docente)
-                    html = render_to_string('plantilla_organica_accordion_content_tbody_docente_tr.html', {'pd': pd})
+                    if 'C.E.P.A' in po.ronda_centro.entidad.name:
+                        html = render_to_string('plantilla_organica_accordion_cepa_content_tbody_docente_tr.html',
+                                                {'pd': pd})
+                    else:
+                        html = render_to_string('plantilla_organica_accordion_content_tbody_docente_tr.html',
+                                                {'pd': pd})
                     docentes.append({'id': pd.id, 'html': html})
                     if (pd.departamento, pd.x_departamento) not in array_departamentos:
                         array_departamentos.append((pd.departamento, pd.x_departamento))
                 for departamento, x_departamento in array_departamentos:
-                    html = render_to_string('plantilla_organica_accordion_content_tbody_departamento_tr.html',
+                    if 'C.E.P.A' in po.ronda_centro.entidad.name:
+                        html = render_to_string('plantilla_organica_accordion_cepa_content_tbody_departamento_tr.html',
                                             {'departamento': plantilla_departamento(po, departamento)})
+                    else:
+                        html = render_to_string('plantilla_organica_accordion_content_tbody_departamento_tr.html',
+                                                {'departamento': plantilla_departamento(po, departamento)})
                     departamentos.append({'x_departamento': x_departamento, 'html': html})
                 return JsonResponse({'ok': True, 'docentes': docentes, 'departamentos': departamentos})
             except:
@@ -650,12 +666,6 @@ def plantilla_organica(request):
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'materias_docente':
-            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
-            psxls = po.plantillaxls_set.filter(x_docente=request.POST['x_docente'])
-            materias = []
-            for m in po.calcula_materias_docente(psxls):
-                materias.append('%s %s %sh' % (m[0], m[1], m[2]))
-            return JsonResponse({'ok': True, 'materias': materias})
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
                 psxls = po.plantillaxls_set.filter(x_docente=request.POST['x_docente'])
