@@ -8,6 +8,7 @@ import io
 import os
 import time
 import subprocess
+import requests
 # from urllib import unquote
 from difflib import get_close_matches
 try:
@@ -1107,6 +1108,27 @@ def acceso_from_racima(request, token):
 #             c.save()
 #             return JsonResponse({'ok': True})
 #     return render(request, "gestionar_candidatos.html", {'candidatos': candidatos})
+
+# ------------------------------------------------------------------#
+# Login en GAUSS a través del servidor CAS del Gobierno de La Rioja
+# ------------------------------------------------------------------#
+def logincas(request):
+    if request.method == 'GET':
+        if 'ticket' in request.GET:
+            ticket = request.GET['ticket']
+            url = 'https://ias1.larioja.org/eduCas/serviceValidate?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F&ticket=' + ticket
+            a = requests.get(url)
+
+            # return HttpResponse('Ticket: %s' % a)
+            response = HttpResponse(status=302)
+            response['Location'] = url
+            return response
+        else:
+            response = HttpResponse(status=302)
+            #response['Location'] = 'https://ias1.larioja.org/eduCas/login?service=https%3A%2F%2Fgauss.larioja.org%2Fcalendario%2F'
+            response[
+                'Location'] = 'https://ias1.larioja.org/eduCas/login?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F'
+            return response
 
 
 # ------------------------------------------------------------------#
