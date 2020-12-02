@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.urls import path
-import django_cas_ng.views
+# import django_cas_ng.views
 from . import views
 
 urlpatterns = [
