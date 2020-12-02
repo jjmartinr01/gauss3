@@ -167,6 +167,34 @@ class PlantillaOrganica(models.Model):
     class Meta:
         verbose_name_plural = 'Plantillas orgánicas'
 
+    def crea_sesiones_docentes(self):
+        campos_sd = ['po', 'docente', 'x_docente', 'departamento', 'x_departamento', 'dia', 'hora_inicio', 'hora_fin',
+                     'hora_inicio_cadena', 'hora_fin_cadena', 'actividad', 'x_actividad', 'l_requnidad', 'docencia',
+                     'minutos', 'x_dependencia', 'c_coddep', 'x_dependencia2', 'c_coddep2']
+        campos_usd = ['unidad', 'x_unidad', 'materia', 'x_materiaomg', 'curso', 'x_curso', 'omc', 'grupo_materias',
+                      'etapa', 'horas_semana_min', 'horas_semana_max']
+        psxls = self.plantillaxls_set.all()
+        for p in psxls:
+            sd, c = SesionDocente.objects.get_or_create(po=self, x_docente=p.x_docente, dia=p.dia,
+                                                        hora_inicio=p.hora_inicio)
+            if c:
+                for c_sd in campos_sd:
+                    valor = getattr(p, c_sd)
+                    setattr(sd, c_sd, valor)
+                sd.save()
+                usd = UnidadSesionDocente.objects.create(sd=sd)
+                for c_usd in campos_usd:
+                    valor = getattr(p, c_usd)
+                    setattr(usd, c_usd, valor)
+                usd.save()
+            else:
+                usd, c = UnidadSesionDocente.objects.get_or_create(sd=sd, x_unidad=p.x_unidad)
+                if c:
+                    for c_usd in campos_usd:
+                        valor = getattr(p, c_usd)
+                        setattr(usd, c_usd, valor)
+                    usd.save()
+
     def create_curso(self, pxls):
         try:
             curso, c = Curso.objects.get_or_create(clave_ex=pxls.x_curso, ronda=self.ronda_centro)
@@ -272,11 +300,43 @@ class PlantillaOrganica(models.Model):
 
     @property
     def docentes(self):
-        return self.plantillaxls_set.all().values_list('departamento', 'x_departamento','docente', 'x_docente').distinct()
+        return self.plantillaxls_set.all().values_list('departamento', 'x_departamento', 'docente',
+                                                       'x_docente').distinct()
 
+    @property
+    def get_tramos_centro(self):
+        return self.plantillaxls_set.all().order_by('dia', 'hora_inicio').values('dia', 'hora_inicio', 'hora_fin',
+                                                                                 'hora_inicio_cadena',
+                                                                                 'hora_fin_cadena').distinct()
+
+    @property
+    def get_tramos_docencia_centro(self):
+        return self.plantillaxls_set.filter(x_actividad='1').order_by('dia', 'hora_inicio').values('dia', 'hora_inicio',
+                                                                                                   'hora_fin',
+                                                                                                   'hora_inicio_cadena',
+                                                                                                   'hora_fin_cadena').distinct()
+
+    def get_sesiones_docente(self, x_docente):
+        return self.sesiondocente_set.filter(x_docente=x_docente).order_by('dia', 'hora_inicio')
+
+    def get_sesiones_docencia_docente(self, x_docente):
+        return self.sesiondocente_set.filter(x_docente=x_docente, x_actividad='1').order_by('dia', 'hora_inicio')
+
+    # def get_periodos_docencia(self, x_docente):
+    #     sds = self.sesiondocente_set.filter(x_docente=x_docente, x_actividad='1')
+    #     for sd in sds:
+    #         pass
+
+    def get_materias_docente(self, x_docente):
+        sds = self.sesiondocente_set.filter(x_docente=x_docente)
+        materias = set()
+        for sd in sds:
+            materias = materias.union(sd.s_materia())
+        return materias
 
     def calcula_materias_docente(self, psxls):
-        psxls_materias = psxls.filter(x_actividad='1').values_list('materia', 'omc', 'horas_semana_min', 'dia', 'hora_fin')
+        psxls_materias = psxls.filter(x_actividad='1').values_list('materia', 'omc', 'horas_semana_min', 'dia',
+                                                                   'hora_fin')
         m = psxls_materias[0]
         try:
             materias = [[m[0].split('-')[1].strip(), m[1], int(m[2].split(':')[0]), m[3], m[4], 0]]
@@ -305,11 +365,9 @@ class PlantillaOrganica(models.Model):
         analizadas = []
         for d in sin_repetir:
             if d[2] != 0:
-                for i in range(int(len([m for m in todas if m == d])/d[2])):
+                for i in range(int(len([m for m in todas if m == d]) / d[2])):
                     analizadas.append(d)
         return analizadas
-
-
 
     def calcula_sesiones_docente(self, psxls):
         # '222074 -> 1º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
@@ -324,23 +382,31 @@ class PlantillaOrganica(models.Model):
         troncales = (Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
             grupo_materias__icontains='obligator')) & Q(x_actividad='1')
         troneso = troncales & Q(etapa='da') & ~Q(x_curso__in=['222074', '222075']) & ~Q(materia__icontains='mbito')
-
-        sesiones['iniciales'] = psxls.filter(etapa='ia')
-        sesiones['espa'] = psxls.filter(etapa='ja')
-        sesiones['espads'] = psxls.filter(etapa='ka')
-        sesiones['espad'] = psxls.filter(etapa='la')
+        espads1 = Q(etapa='ka') & Q(x_actividad='1') & (Q(x_curso='222080') | Q(x_curso='222081'))
+        espads2 = Q(etapa='ka') & Q(x_actividad='1') & (Q(x_curso='222082') | Q(x_curso='222083'))
+        espa1 = Q(etapa='ja') & Q(x_actividad='1') & (Q(x_curso='222076') | Q(x_curso='222077'))
+        espa2 = Q(etapa='ja') & Q(x_actividad='1') & (Q(x_curso='222078') | Q(x_curso='222079'))
+        epan2 = Q(etapa='ma') & Q(x_actividad='1') & Q(x_curso='222071')
+        # sesiones['iniciales'] = psxls.filter(etapa='ia')
+        sesiones['iniciales1'] = psxls.filter(etapa='ia', x_actividad='1', x_curso='121469')
+        sesiones['iniciales2'] = psxls.filter(etapa='ia', x_actividad='1', x_curso='121470')
+        sesiones['espa1'] = psxls.filter(espa1)
+        sesiones['espa2'] = psxls.filter(espa2)
+        sesiones['espads1'] = psxls.filter(espads1)
+        sesiones['espads2'] = psxls.filter(espads2)
+        # sesiones['espad'] = psxls.filter(etapa='la')
         sesiones['epaofi'] = psxls.filter(etapa='ma', curso__icontains='ofim')
         sesiones['epainf'] = psxls.filter(etapa='ma', curso__icontains='inform')
         sesiones['epaing'] = psxls.filter(etapa='ma', curso__icontains='ingl')
         sesiones['epamec'] = psxls.filter(etapa='ma', curso__icontains='mecanog')
-        sesiones['epan2'] = psxls.filter(etapa='ma', curso__icontains='N-2')
+        sesiones['epan2'] = psxls.filter(epan2)
         sesiones['epainm'] = psxls.filter(etapa='ma', curso__icontains='nmigrantes')
         sesiones['epamay'] = psxls.filter(etapa='ma', curso__icontains='mayores de')
         sesiones['troneso'] = psxls.filter(troneso)
         sesiones['espeeso'] = psxls.filter(etapa='da', grupo_materias__icontains='espec', x_actividad='1')
         excluir = Q(x_curso__in=['222074', '222075']) | Q(materia__icontains='mbito')
         sesiones['libreso'] = psxls.filter(etapa='da', grupo_materias__icontains='libre conf',
-                                       x_actividad='1').exclude(excluir)
+                                           x_actividad='1').exclude(excluir)
         sesiones['tronbac'] = psxls.filter(Q(etapa='fa') & troncales)
         sesiones['espebac'] = psxls.filter(etapa='fa', grupo_materias__icontains='espec', x_actividad='1')
         sesiones['gm'] = psxls.filter(etapa='ga', x_actividad='1')
@@ -542,9 +608,16 @@ class PlantillaDocente(models.Model):
     pmar2 = models.IntegerField('Horas de 2º de PMAR (3º ESO)', default=0)
     relve = models.IntegerField('Religión y Valores', default=0)
     iniciales = models.IntegerField('Horas de Enseñanzas Iniciales', default=0)
+    iniciales1 = models.IntegerField('Horas de Enseñanzas Iniciales I', default=0)
+    iniciales2 = models.IntegerField('Horas de Enseñanzas Iniciales II', default=0)
     espa = models.IntegerField('Horas de Educación Secundaria para adultos', default=0)
+    espa1 = models.IntegerField('Horas de Educación Secundaria para adultos nivel I', default=0)
+    espa2 = models.IntegerField('Horas de Educación Secundaria para adultos nivel II', default=0)
     espads = models.IntegerField('Horas de Educación Secundaria para adultos a distancia semipresencial', default=0)
-    espad = models.IntegerField('Horas de Educación Secundaria para adultos a distancia', default=0)
+    espads1 = models.IntegerField('Horas de Educ. Secund. para adultos a distancia semipresencial nivel I', default=0)
+    espads2 = models.IntegerField('Horas de Educ. Secund. para adultos a distancia semipresencial nivel II', default=0)
+    espad1 = models.IntegerField('Horas de Educación Secundaria para adultos a distancia nivel I', default=0)
+    espad2 = models.IntegerField('Horas de Educación Secundaria para adultos a distancia nivel II', default=0)
     epaofi = models.IntegerField('Horas de enseñanzas de adultos ofimática', default=0)
     epainf = models.IntegerField('Horas de enseñanzas de adultos informática', default=0)
     epaing = models.IntegerField('Horas de enseñanzas de adultos inglés', default=0)
@@ -552,21 +625,20 @@ class PlantillaDocente(models.Model):
     epan2 = models.IntegerField('Horas de preparación competencias N-2', default=0)
     epainm = models.IntegerField('Horas de alfabetización para inmigrantes', default=0)
     epamay = models.IntegerField('Horas de cursos de preparación para mayores de 18 y 25 años', default=0)
-    orden = models.IntegerField('Desdobles autorizados Bachillerato', default=100)
+    orden = models.IntegerField('Orden de presentación', default=100)
     creado = models.DateTimeField("Fecha y hora de encolar el mensaje", auto_now_add=True)
     modificado = models.DateTimeField("Fecha y hora en la que se envió efectivamente el correo", auto_now=True)
 
     @property
     def horas_basicas(self):
         hs1 = self.troneso + self.espeeso + self.libreso + self.tronbac + self.espebac + self.gm + self.gs + self.fpb + self.desdobeso + self.desdobbac + self.jefatura + self.relve
-        hs2 = self.iniciales + self.espa + self.espads + self.espad
+        hs2 = self.iniciales1 + self.iniciales2 + self.espa1 + self.espa2 + self.espads1 + self.espads2 + self.epaofi + self.epainf + self.epaing + self.epamec + self.epan2 + self.epainm + self.epamay
         return hs1 + hs2
 
     @property
     def horas_totales(self):
         hs1 = self.cppaccffgs + self.refuerzo1 + self.pacg + self.pmar1 + self.pmar2
-        hs2 = self.epaofi + self.epainf + self.epaing + self.epamec + self.epan2 + self.epainm + self.epamay
-        return self.horas_basicas + self.mayor55 + self.tutorias + hs1 + hs2
+        return self.horas_basicas + self.mayor55 + self.tutorias + hs1
 
     # @property
     # def plantilla_departamento(self):
@@ -582,3 +654,83 @@ class PlantillaDocente(models.Model):
             if horas_basicas >= plantilla[0] and horas_basicas <= plantilla[1]:
                 po = plantilla[2]
         return po
+
+
+class SesionDocente(models.Model):
+    po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
+    docente = models.CharField('Nombre del docente', max_length=115, blank=True, null=True)
+    x_docente = models.CharField('Código del docente en Racima', max_length=11, blank=True, null=True)
+    departamento = models.CharField('Nombre del departamento', max_length=116, blank=True, null=True)
+    x_departamento = models.CharField('Código del departamento en Racima', max_length=10, blank=True, null=True)
+    dia = models.CharField('Día de la semana expresado en número', max_length=3, blank=True, null=True)
+    hora_inicio = models.CharField('Hora inicio periodo en minutos', max_length=15, blank=True, null=True)
+    hora_fin = models.CharField('Hora fin periodo en minutos', max_length=15, blank=True, null=True)
+    hora_inicio_cadena = models.CharField('Hora inicio periodo en formato H:i', max_length=8, blank=True, null=True)
+    hora_fin_cadena = models.CharField('Hora fin periodo en formato H:i', max_length=8, blank=True, null=True)
+    actividad = models.CharField('Nombre de la actividad', max_length=117, blank=True, null=True)
+    x_actividad = models.CharField('Código de la actividad en Racima', max_length=20, blank=True, null=True)
+    l_requnidad = models.CharField('¿La actividad requiere unidad/grupo?', max_length=2, blank=True, null=True)
+    docencia = models.CharField('¿Es hora de docencia?', max_length=2, blank=True, null=True)
+    minutos = models.CharField('Duración del periodo en minutos', max_length=15, blank=True, null=True)
+    x_dependencia = models.CharField('Código de la dependencia en Racima', max_length=10, blank=True, null=True)
+    c_coddep = models.CharField('Nombre corto de la dependencia', max_length=30, blank=True, null=True)
+    x_dependencia2 = models.CharField('Código de la dependencia2 en Racima', max_length=10, blank=True, null=True)
+    c_coddep2 = models.CharField('Nombre corto de la dependencia2', max_length=30, blank=True, null=True)
+    usar = models.BooleanField('¿Usar este grupo para la calcular la plantilla orgánica', default=True)
+
+    class Meta:
+        verbose_name_plural = 'Sesiones de Docentes'
+        ordering = ['po', 'x_actividad']
+
+    @property
+    def unidades(self):
+        us = []
+        if self.x_actividad == '1':
+            for usd in self.unidadsesiondocente_set.all():
+                if not usd.unidad in us:
+                    us.append(usd.unidad)
+        return '/'.join(us)
+
+    @property
+    def s_unidades(self):
+        us = []
+        if self.x_actividad == '1':
+            for usd in self.unidadsesiondocente_set.all():
+                if not usd.unidad in us:
+                    us.append(usd.unidad)
+        return '/'.join(us)
+
+    def s_materia(self):  # String Materia
+        if self.x_actividad == '1':
+            m = []
+            for usd in self.unidadsesiondocente_set.all():
+                abv, horas = usd.materia.split('-')[1].strip(), usd.horas_semana_min.split(':')[0]
+                m.append('%s %s %sh' % (abv, self.s_unidades, horas))
+            return set(m)
+        else:
+            return set()
+
+
+class UnidadSesionDocente(models.Model):
+    ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', 'FP Básica'), ('fa', 'Bachillerato'),
+              ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'), ('ia', 'Enseñanzas Iniciales de Personas Adultas'),
+              ('ja', 'Educación Secundaria de Personas Adultas'),
+              ('ka', 'Educación Secundaria de Personas Adultas a Distancia Semipresencial'),
+              ('la', 'Educación Secundaria de Personas Adultas a Distancia'), ('ma', 'Educación para Personas Adultas'),
+              ('na', 'Preparación Pruebas de Acceso a CCFF'), ('za', 'Etapa no identificada'))
+    sd = models.ForeignKey(SesionDocente, on_delete=models.CASCADE, blank=True, null=True)
+    unidad = models.CharField('Nombre del grupo', max_length=20, blank=True, null=True)
+    x_unidad = models.CharField('Código del grupo en Racima', max_length=11, blank=True, null=True)
+    materia = models.CharField('Nombre de la materia', max_length=118, blank=True, null=True)
+    x_materiaomg = models.CharField('Código de la materia en Racima', max_length=11, blank=True, null=True)
+    curso = models.CharField('Nombre largo del curso', max_length=119, blank=True, null=True)
+    x_curso = models.CharField('Código del curso en Racima', max_length=120, blank=True, null=True)
+    omc = models.CharField('Nombre corto del curso', max_length=20, blank=True, null=True)
+    grupo_materias = models.CharField('Tipo de materia', max_length=50, blank=True, null=True)
+    etapa = models.CharField('Etapa', max_length=4, blank=True, null=True, choices=ETAPAS)
+    horas_semana_min = models.CharField('Horas mínimas de la materia por semana', max_length=10, blank=True, null=True)
+    horas_semana_max = models.CharField('Horas máximas de la materia por semana', max_length=10, blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = 'Unidades asociadas a una Sesión Docente'
+        ordering = ['sd', 'x_unidad']

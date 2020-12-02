@@ -106,12 +106,14 @@ def plantilla_departamento_cepa(po, departamento):
     pds = po.plantilladocente_set.filter(departamento=departamento)
     sumas = pds.aggregate(
         Sum('tutorias'),
-        Sum('iniciales'),
+        Sum('iniciales1'),
+        Sum('iniciales2'),
         Sum('mayor55'),
         Sum('jefatura'),
-        Sum('espa'),
-        Sum('espads'),
-        Sum('espad'),
+        Sum('espa1'),
+        Sum('espa2'),
+        Sum('espads1'),
+        Sum('espads2'),
         Sum('epaofi'),
         Sum('epainf'),
         Sum('epaing'),
@@ -123,11 +125,12 @@ def plantilla_departamento_cepa(po, departamento):
     sumas['num_docentes'] = pds.count()
     sumas['departamento'] = departamento
     sumas['x_departamento'] = pds[0].x_departamento
-    sumas['horas_basicas'] = sumas['iniciales__sum'] + sumas['espa__sum'] + sumas['espads__sum'] + sumas[
-        'espad__sum'] + sumas['jefatura__sum']
-    sumas['horas_totales'] = sumas['horas_basicas'] + sumas['mayor55__sum'] + sumas['epainm__sum'] + sumas[
-        'epamay__sum'] + sumas['tutorias__sum'] + sumas['epaofi__sum'] + sumas['epainf__sum'] + sumas[
+    sumas['horas_basicas'] = sumas['iniciales1__sum'] + sumas['iniciales2__sum'] + sumas['espa1__sum'] + sumas[
+        'espa2__sum'] + sumas['espads1__sum'] + sumas['espads2__sum'] + sumas[
+                                 'jefatura__sum'] + sumas['epainm__sum'] + sumas['epamay__sum'] + sumas[
+                                 'epaofi__sum'] + sumas['epainf__sum'] + sumas[
                                  'epaing__sum'] + sumas['epamec__sum'] + sumas['epan2__sum']
+    sumas['horas_totales'] = sumas['horas_basicas'] + sumas['mayor55__sum'] + sumas['tutorias__sum']
 
     LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7),
               (115, 129, 8), (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13),

@@ -571,8 +571,12 @@ def carga_masiva_from_file():
                     po.ronda_centro = Entidad.objects.get(code=int(code_centro)).ronda
                     po.save()
                 pxls.save()
-            # Calcular las PlantillaDepartamento:
             po.calcula_pdocentes()
+            po.crea_sesiones_docentes()
             carga.cargado = True
             carga.save()
+            pos = PlantillaOrganica.objects.all()
+            for po in pos:
+                if po.sesiondocente_set.all().count() == 0:
+                    po.crea_sesiones_docentes()
     return True

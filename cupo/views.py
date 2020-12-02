@@ -668,11 +668,13 @@ def plantilla_organica(request):
         elif request.POST['action'] == 'materias_docente':
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
-                psxls = po.plantillaxls_set.filter(x_docente=request.POST['x_docente'])
-                materias = []
-                for m in po.calcula_materias_docente(psxls):
-                    materias.append('%s %s %sh' % (m[0], m[1], m[2]))
-                return JsonResponse({'ok': True, 'materias': materias})
+                materias = po.get_materias_docente(request.POST['x_docente'])
+                return JsonResponse({'ok': True, 'materias': list(materias)})
+                # psxls = po.plantillaxls_set.filter(x_docente=request.POST['x_docente'])
+                # materias = []
+                # for m in po.calcula_materias_docente(psxls):
+                #     materias.append('%s %s %sh' % (m[0], m[1], m[2]))
+                # return JsonResponse({'ok': True, 'materias': materias})
             except:
                 return JsonResponse({'ok': False})
 
