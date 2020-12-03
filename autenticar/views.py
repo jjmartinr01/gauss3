@@ -1113,13 +1113,16 @@ def acceso_from_racima(request, token):
 # Login en GAUSS a través del servidor CAS del Gobierno de La Rioja
 # ------------------------------------------------------------------#
 def logincas(request):
-    service = 'https%3A%2F%2Fgauss-dev.larioja.org%2Flogincas%2F'
+    return HttpResponse('%s, %s, %s' % (request.META['HTTP_HOST'], request.META['REMOTE_HOST'], request.META['SERVER_NAME']))
+    # service = 'https%3A%2F%2Fgauss-dev.larioja.org%2Flogincas%2F'
     cas = 'https://ias1.larioja.org/eduCas/'
     if request.method == 'GET':
-        if 'ticket' in request.GET:
+        if 'hostname' in request.GET:
+            request.session['service'] = 'https%3A%2F%2F' + request.GET['hostname'] + '%2Flogincas%2F'
+        elif 'ticket' in request.GET:
             ticket = request.GET['ticket']
             # url = 'https://ias1.larioja.org/eduCas/serviceValidate?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F&ticket=' + ticket
-            url = cas + 'serviceValidate?service=' + service + '&ticket=' + ticket
+            url = cas + 'serviceValidate?service=' + request.session['service'] + '&ticket=' + ticket
             s = requests.Session()
             s.verify = False
             r = s.get(url, verify=False)
@@ -1130,7 +1133,7 @@ def logincas(request):
             return HttpResponse(r.text)
         else:
             response = HttpResponse(status=302)
-            response['Location'] = cas + 'login?service=' + service
+            response['Location'] = cas + 'login?service=' + request.session['service']
             # response[
             #     'Location'] = 'https://ias1.larioja.org/eduCas/login?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F&anonimo=true'
             return response

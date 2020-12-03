@@ -221,6 +221,11 @@
 <script>
     var csrftoken = $.cookie('csrftoken');
 
+    {#var h = window.location.hostname;#}
+    {#if (h.includes('larioja.org')){#}
+    {#    window.location.replace(url_base + '/logincas/?hostname=' + h);#}
+    {# }#}
+
     function getUrlVars() {
         var vars = {};
         var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
