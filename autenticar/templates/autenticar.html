@@ -64,7 +64,9 @@
         <input type="hidden" name="link" id="link" value="">
         <input type="hidden" name="r" id="r" value="">
     {% endif %}
-    <input type="hidden" id="protocol_domain" value="" name="protocol_domain">
+    <input type="hidden" id="protocol" value="" name="protocol">
+    <input type="hidden" id="hostname" value="" name="hostname">
+    <input type="hidden" id="port" value="" name="port">
 
     <div class="row">&nbsp;</div>
     <div class="panel">
@@ -254,12 +256,20 @@
         $('#introduce_user_pass').hide('slow');
         $('#introduce_mail').show('slow');
         $('#action').val('solicita_pass');
-        var protocol = window.location.protocol;
-        var port = window.location.port;
-        var domain = window.location.hostname;
-        var protocol_domain = protocol + '//' + domain + ':' + port
-        $('#protocol_domain').val(protocol_domain);
+        {#var protocol = window.location.protocol.replace(':', '');#}
+        {#var port = window.location.port;#}
+        {#var domain = window.location.hostname;#}
+        $('#protocol').val(window.location.protocol.replace(':', ''));
+        $('#hostname').val(window.location.hostname);
+        $('#port').val(window.location.port);
+        {#if (port){#}
+        {#    var protocol_domain = protocol + '://' + domain + ':' + port#}
+        {# }else{#}
+        {#    var protocol_domain = protocol + '://' + domain#}
+        {# }#}
+        {#$('#protocol_domain').val(protocol_domain);#}
     });
+
     $('#recarga_captcha').click(function (e) {
         e.preventDefault();
         $.post("/recarga_captcha/", {action: 'recarga_captcha'}, function (data) {

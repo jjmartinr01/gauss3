@@ -419,67 +419,67 @@ def index(request):
         ip = x_forwarded_for.split(',')[-1].strip()
     else:
         ip = request.META.get('REMOTE_ADDR')
-    dominio = request.META['HTTP_HOST'].split('.')[0]
-    entidad = Entidad.objects.filter(dominio=dominio)
+    # dominio = request.META['HTTP_HOST'].split('.')[0]
+    # entidad = Entidad.objects.filter(dominio=dominio)
 
     #############################################################################
     # Las siguientes líneas son para entrar en nuevo gauss a través de gauss_educa:
-    if request.method == 'GET':
-        if 'p' in request.GET and 'u' in request.GET:
-            p = request.GET['p']
-            u = request.GET['u']
-            gauss = authenticate(username='gauss', password=p)
-            if gauss is not None:
-                logger.info('Se ha conectado con la contraseña de Gauss')
-                try:
-                    user = Gauser.objects.get(username=u)
-                    logger.info('Se ha conectado con el usuario %s' % user)
-                except:
-                    user = None
-                    logger.info('No hay usuario con username %s' % u)
-            else:
-                user = authenticate(username=u, password=p)
-                logger.info('Se ha conectado con el usuario %s con su contraseña' % user)
-            if user is not None:
-                if user.is_active:
-                    login(request, user)
-                    request.session["hoy"] = datetime.today()
-                    request.session[translation.LANGUAGE_SESSION_KEY] = user_language
-                    # Identificación de la entidad en el que está el usuario:
-                    gauser_extras = Gauser_extra.objects.filter(Q(gauser=user) & Q(activo=True))
-                    g_cs = gauser_extras
-                    entidades_disponibles = 0
-                    for gauser_extra in g_cs:
-                        if gauser_extra.ronda == gauser_extra.ronda.entidad.ronda:
-                            entidades_disponibles += 1
-                        else:
-                            gauser_extras = gauser_extras.exclude(pk=gauser_extra.id)
-                    if entidades_disponibles > 1:
-                        logger.info('Gauser con acceso a múltiples entidades.')
-                        return render(request, "select_entidad.html", {'gauser_extras': gauser_extras, })
-                    elif entidades_disponibles == 1:
-                        request.session["gauser_extra"] = gauser_extras[0]
-                        request.session["ronda"] = request.session["gauser_extra"].ronda
-                        request.session['num_items_page'] = 15
-                        # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
-                        gauss = Gauser.objects.get(username='gauss')
-                        Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
-                        logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
-                        usernombre = request.session['gauser_extra'].gauser.username
-                        # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
-                        #     return render(request, "enlace_gauss_larioja_org.html")
-                        return redirect(url_destino)
-                    else:
-                        logger.info('Gauser activo, pero no tiene asociada ninguna entidad.')
-                        return render(request, "no_cuenta.html", {'usuario': user, })
-                else:
-                    return render(request, "no_cuenta.html", {'usuario': user, })
-            else:
-                sleep(3)
-                logger.info('Usuario: %s, no reconocido. Intenta acceso desde %s' % (u, ip))
-                logout(request)
-                form = CaptchaForm()
-                return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso'})
+    # if request.method == 'GET':
+    #     if 'p' in request.GET and 'u' in request.GET:
+    #         p = request.GET['p']
+    #         u = request.GET['u']
+    #         gauss = authenticate(username='gauss', password=p)
+    #         if gauss is not None:
+    #             logger.info('Se ha conectado con la contraseña de Gauss')
+    #             try:
+    #                 user = Gauser.objects.get(username=u)
+    #                 logger.info('Se ha conectado con el usuario %s' % user)
+    #             except:
+    #                 user = None
+    #                 logger.info('No hay usuario con username %s' % u)
+    #         else:
+    #             user = authenticate(username=u, password=p)
+    #             logger.info('Se ha conectado con el usuario %s con su contraseña' % user)
+    #         if user is not None:
+    #             if user.is_active:
+    #                 login(request, user)
+    #                 request.session["hoy"] = datetime.today()
+    #                 request.session[translation.LANGUAGE_SESSION_KEY] = user_language
+    #                 # Identificación de la entidad en el que está el usuario:
+    #                 gauser_extras = Gauser_extra.objects.filter(Q(gauser=user) & Q(activo=True))
+    #                 g_cs = gauser_extras
+    #                 entidades_disponibles = 0
+    #                 for gauser_extra in g_cs:
+    #                     if gauser_extra.ronda == gauser_extra.ronda.entidad.ronda:
+    #                         entidades_disponibles += 1
+    #                     else:
+    #                         gauser_extras = gauser_extras.exclude(pk=gauser_extra.id)
+    #                 if entidades_disponibles > 1:
+    #                     logger.info('Gauser con acceso a múltiples entidades.')
+    #                     return render(request, "select_entidad.html", {'gauser_extras': gauser_extras, })
+    #                 elif entidades_disponibles == 1:
+    #                     request.session["gauser_extra"] = gauser_extras[0]
+    #                     request.session["ronda"] = request.session["gauser_extra"].ronda
+    #                     request.session['num_items_page'] = 15
+    #                     # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
+    #                     gauss = Gauser.objects.get(username='gauss')
+    #                     Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
+    #                     logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+    #                     usernombre = request.session['gauser_extra'].gauser.username
+    #                     # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
+    #                     #     return render(request, "enlace_gauss_larioja_org.html")
+    #                     return redirect(url_destino)
+    #                 else:
+    #                     logger.info('Gauser activo, pero no tiene asociada ninguna entidad.')
+    #                     return render(request, "no_cuenta.html", {'usuario': user, })
+    #             else:
+    #                 return render(request, "no_cuenta.html", {'usuario': user, })
+    #         else:
+    #             sleep(3)
+    #             logger.info('Usuario: %s, no reconocido. Intenta acceso desde %s' % (u, ip))
+    #             logout(request)
+    #             form = CaptchaForm()
+    #             return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso'})
     #############################################################################
     #############################################################################
 
@@ -500,7 +500,6 @@ def index(request):
             else:
                 user = authenticate(username=usuario, password=passusuario)
                 logger.info('Se ha conectado con el usuario %s con su contraseña' % user)
-            # user = authenticate(username=usuario, password=passusuario)
             if user is not None:
                 if user.is_active:
                     login(request, user)
@@ -530,9 +529,6 @@ def index(request):
                         gauss = Gauser.objects.get(username='gauss')
                         Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
                         logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
-                        usernombre = request.session['gauser_extra'].gauser.username
-                        # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
-                        #     return render(request, "enlace_gauss_larioja_org.html")
                         return redirect(url_destino)
                     else:
                         logger.info('Gauser activo, pero no tiene asociada ninguna entidad.')
@@ -562,7 +558,10 @@ def index(request):
                             g_s.append(g_e.gauser)
 
                     emisor = Gauser_extra.objects.filter(gauser__email='gauss@gaumentada.es')[0]
-                    h = request.POST['protocol_domain']
+                    if request.POST['port']:
+                        h = request.POST['protocol'] + '://' + request.POST['hostname'] + ':' + request.POST['port']
+                    else:
+                        h = request.POST['protocol'] + '://' + request.POST['hostname']
                     texto_mail = render_to_string("mail_recupera_password.html", {'enlaces': enlaces, 'h': h})
                     mensaje = Mensaje.objects.create(emisor=emisor, fecha=datetime.now(), tipo='mail',
                                                      asunto="Acceso a GAUSS", mensaje=texto_mail)
@@ -585,25 +584,7 @@ def index(request):
             gauss = Gauser.objects.get(username='gauss')
             Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
             logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
-            usernombre = request.session['gauser_extra'].gauser.username
-            # if request.session['gauser_extra'].ronda.entidad.id in [14, 16] and usernombre != 'jjmartinr01':
-            #     return render(request, "enlace_gauss_larioja_org.html")
             return redirect(url_destino)
-
-            # elif len(entidad) > 0:
-            # tw = Template_web.objects.filter(entidad=entidad, home=True)[0]
-            # template_webs = Template_web.objects.filter(entidad=entidad)
-            # if hasattr(tw, 't_blog'):
-            # pag = tw.t_blog
-            # categorias = Cate_Blog.objects.filter(entidad=entidad)
-            # data = render_to_string('blog.html',
-            #                        {'pag': pag, 'template_webs': template_webs, 'categorias': categorias
-            #                        }, request=request)
-            #     elif hasattr(tw, 't_banded'):
-            #         pag = tw.t_banded
-            #         data = render_to_string('banded.html', {'pag': pag, 'template_webs': template_webs},
-            #                                 request=request)
-            #     return HttpResponse(data)
     else:
         logout(request)
         form = CaptchaForm()
@@ -996,147 +977,84 @@ def recupera_password(request):
     return render(request, "cambia_password.html", {'formulario': False, 'mensaje': mensaje})
 
 
-def acceso_from_racima(request, token):
-    acceso_encriptado = token.encode('utf-8')
-    try:
-        f = Fernet(RACIMA_KEY)
-        utc_token_timestamp = f.extract_timestamp(acceso_encriptado) # timestamp UTC del momento en que fue creado
-        now = datetime.now()
-        # utc_now_timestamp = now.replace(tzinfo=timezone.utc).timestamp()
-        utc_now_timestamp = now.timestamp()
-        segundos_retraso = utc_now_timestamp - utc_token_timestamp
-        acceso = f.decrypt(acceso_encriptado).decode()
-        return HttpResponse("Diferencia en segundos: %s<br><br>Acceso: %s" %(segundos_retraso, acceso))
-    except:
-        return HttpResponse("No está instalado el paquete cryptography")
-
-
-# ##############################################################################
-# ##############################################################################
-# Funciones a borrar tras la migración a gauss_asocia
-# ##############################################################################
-# ##############################################################################
-
-# def load_gauser_educa(request):
-#     # for k in request.GET.keys():
-#     #     logger.info('%s valor: %s' % (k, request.GET[k]))
-#
-#     params = ['sexo', 'dni', 'address', 'postalcode', 'localidad', 'provincia', 'nacimiento', 'telfij', 'telmov',
-#               'familia', 'username', 'email', 'password', 'first_name', 'last_name']
-#     data = {}
-#     for p in params:
-#         try:
-#             data[p] = request.GET[p]
-#         except:
-#             logger.info("Error al leer el %s del gauser\n" % p)
-#
+# def acceso_from_racima(request, token):
+#     acceso_encriptado = token.encode('utf-8')
 #     try:
-#         nacimiento = datetime.strptime(data['nacimiento'], '%d/%m/%Y')
+#         f = Fernet(RACIMA_KEY)
+#         utc_token_timestamp = f.extract_timestamp(acceso_encriptado) # timestamp UTC del momento en que fue creado
+#         now = datetime.now()
+#         # utc_now_timestamp = now.replace(tzinfo=timezone.utc).timestamp()
+#         utc_now_timestamp = now.timestamp()
+#         segundos_retraso = utc_now_timestamp - utc_token_timestamp
+#         acceso = f.decrypt(acceso_encriptado).decode()
+#         return HttpResponse("Diferencia en segundos: %s<br><br>Acceso: %s" %(segundos_retraso, acceso))
 #     except:
-#         nacimiento = date.today()
-#     sexo = 'H' if data['sexo'] == 'H' else 'M'
-#     try:
-#         Gauser.objects.get(dni=data['dni'])
-#         logger.info("Existe usuario con dni %s: %s %s %s\n" % (
-#             data['dni'], data['username'], data['first_name'], data['last_name']))
-#     except:
-#         try:
-#             g = Gauser.objects.get(username=data['username'])
-#             logger.info("Intengo grabar usuario  %s con dni %s\n" % (
-#                 data['username'], data['dni']))
-#             logger.info("Existe username %s con dni %s \n" % (g.username, g.dni))
-#             Candidato.objects.create(gauser=g, email=data['email'], username=data['username'],
-#                                      password=data['password'],
-#                                      sexo=sexo, dni=data['dni'], telmov=data['telmov'],
-#                                      address=data['address'].encode('utf-8'), postalcode=data['postalcode'],
-#                                      last_name=data['last_name'].encode('utf-8'),
-#                                      localidad=data['localidad'], provincia=data['provincia'], telfij=data['telfij'],
-#                                      nacimiento=nacimiento, familia=data['familia'],
-#                                      first_name=data['first_name'].encode('utf-8'))
-#         except:
-#             logger.info("No existe usuario con username %s ni dni %s \n" % (data['username'], data['dni']))
-#             # try:
-#
-#             Gauser.objects.create(email=data['email'], username=data['username'], password=data['password'],
-#                                   last_login='2017-10-01', sexo=sexo, dni=data['dni'],
-#                                   telmov=data['telmov'],
-#                                   address=data['address'].encode('utf-8'), postalcode=data['postalcode'],
-#                                   last_name=data['last_name'].encode('utf-8'),
-#                                   localidad=data['localidad'], provincia=data['provincia'], telfij=data['telfij'],
-#                                   nacimiento=nacimiento, familia=data['familia'],
-#                                   first_name=data['first_name'].encode('utf-8'))
-#             logger.info("Creado usuario: %s %s %s\n" % (data['username'], data['first_name'], data['last_name']))
-#             # except:
-#             #     logger.info(
-#             #         "Imposible crear usuario: %s %s %s\n" % (data['username'], data['first_name'], data['last_name']))
-#     return HttpResponse('<h1>Trabajo terminado</h1>')
-
-
-# def gestionar_candidatos(request):
-#     candidatos = Candidato.objects.filter(arreglado=False)[:10]
-#     if request.method == 'POST':
-#         if request.POST['action'] == 'atributo':
-#             atributo = request.POST['atributo']
-#             candidato = Candidato.objects.get(id=request.POST['candidato'])
-#             gauser = candidato.gauser
-#             valor = getattr(candidato, atributo)
-#             setattr(gauser, atributo, valor)
-#             gauser.save()
-#             return JsonResponse({'ok': True, 'atributo': atributo, 'valor': valor, 'candidato': candidato.id})
-#         elif request.POST['action'] == 'arreglado':
-#             candidato = Candidato.objects.get(id=request.POST['candidato'])
-#             candidato.arreglado = True
-#             candidato.save()
-#             return JsonResponse({'ok': True})
-#         elif request.POST['action'] == 'nuevo':
-#             c = Candidato.objects.get(id=request.POST['candidato'])
-#             nacimiento = c.nacimiento if c.nacimiento else date.today()
-#             sexo = 'H' if c.sexo == 'H' else 'M'
-#             p = pass_generator(2, chars=string.digits)
-#             try:
-#                 Gauser.objects.get(dni=c.dni)
-#             except:
-#                 Gauser.objects.create(email=c.email, username=c.username + p, password=c.password,
-#                                       last_login='2017-10-01', sexo=sexo, dni=c.dni,
-#                                       telmov=c.telmov,
-#                                       address=c.address, postalcode=c.postalcode,
-#                                       last_name=c.last_name.encode('utf-8'),
-#                                       localidad=c.localidad, provincia=c.provincia, telfij=c.telfij,
-#                                       nacimiento=nacimiento, familia=c.familia,
-#                                       first_name=c.first_name.encode('utf-8'))
-#             c.arreglado = True
-#             c.save()
-#             return JsonResponse({'ok': True})
-#     return render(request, "gestionar_candidatos.html", {'candidatos': candidatos})
+#         return HttpResponse("No está instalado el paquete cryptography")
 
 # ------------------------------------------------------------------#
 # Login en GAUSS a través del servidor CAS del Gobierno de La Rioja
 # ------------------------------------------------------------------#
 def logincas(request):
-    return HttpResponse('%s' % request.META['HTTP_HOST'])
+    # return HttpResponse('%s' % request.META['HTTP_HOST'])
     # service = 'https%3A%2F%2Fgauss-dev.larioja.org%2Flogincas%2F'
     cas = 'https://ias1.larioja.org/eduCas/'
     if request.method == 'GET':
-        if 'hostname' in request.GET:
-            request.session['service'] = 'https%3A%2F%2F' + request.GET['hostname'] + '%2Flogincas%2F'
-        elif 'ticket' in request.GET:
+        request.session['service'] = 'https%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F'
+        if 'ticket' in request.GET:
             ticket = request.GET['ticket']
             # url = 'https://ias1.larioja.org/eduCas/serviceValidate?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F&ticket=' + ticket
             url = cas + 'serviceValidate?service=' + request.session['service'] + '&ticket=' + ticket
             s = requests.Session()
             s.verify = False
             r = s.get(url, verify=False)
-
-            # return HttpResponse('Ticket: %s' % a)
-            # response = HttpResponse(status=302)
-            # response['Location'] = url
-            return HttpResponse(r.text)
+            try:
+                user = Gauser.objects.get(username=r.text.strip())
+            except:
+                return HttpResponse('Tu usuario en Gauss debe coincidir con el de Racima')
+            if user.is_active:
+                login(request, user)
+                request.session["hoy"] = datetime.today()
+                request.session[translation.LANGUAGE_SESSION_KEY] = user_language
+                gauser_extras = Gauser_extra.objects.filter(Q(gauser=user) & Q(activo=True))
+                g_cs = gauser_extras
+                entidades_disponibles = 0
+                for gauser_extra in g_cs:
+                    if gauser_extra.ronda == gauser_extra.ronda.entidad.ronda:
+                        entidades_disponibles += 1
+                    else:
+                        gauser_extras = gauser_extras.exclude(pk=gauser_extra.id)
+                if entidades_disponibles > 1:
+                    logger.info('Gauser con acceso a múltiples entidades.')
+                    return render(request, "select_entidad.html", {'gauser_extras': gauser_extras, })
+                elif entidades_disponibles == 1:
+                    request.session["gauser_extra"] = gauser_extras[0]
+                    request.session["ronda"] = request.session["gauser_extra"].ronda
+                    request.session['num_items_page'] = 15
+                    # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
+                    gauss = Gauser.objects.get(username='gauss')
+                    Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
+                    logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+                    return redirect('/calendario/')
+                else:
+                    logger.info('Gauser activo, pero no tiene asociada ninguna entidad.')
+                    return render(request, "no_cuenta.html", {'usuario': user, })
+            else:
+                return render(request, "no_cuenta.html", {'usuario': user, })
         else:
             response = HttpResponse(status=302)
             response['Location'] = cas + 'login?service=' + request.session['service']
-            # response[
-            #     'Location'] = 'https://ias1.larioja.org/eduCas/login?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F&anonimo=true'
             return response
+    elif request.method == 'POST':
+        if request.POST['action'] == 'selecciona_entidad':
+            request.session["gauser_extra"] = Gauser_extra.objects.get(pk=request.POST['gauser_extra'])
+            request.session["ronda"] = request.session["gauser_extra"].ronda
+            request.session['num_items_page'] = 15
+            # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
+            gauss = Gauser.objects.get(username='gauss')
+            Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
+            logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+            return redirect('/calendario/')
+
 
 
 # ------------------------------------------------------------------#
