@@ -1125,9 +1125,9 @@ def logincas(request):
             return response
         else:
             response = HttpResponse(status=302)
-            #response['Location'] = 'https://ias1.larioja.org/eduCas/login?service=https%3A%2F%2Fgauss.larioja.org%2Fcalendario%2F'
-            response[
-                'Location'] = 'https://ias1.larioja.org/eduCas/login?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F'
+            response['Location'] = 'https://ias1.larioja.org/eduCas/login?service=https%3A%2F%2Fgauss.larioja.org%2Fcalendario%2F'
+            # response[
+            #     'Location'] = 'https://ias1.larioja.org/eduCas/login?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F&anonimo=true'
             return response
 
 
