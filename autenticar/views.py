@@ -1116,7 +1116,8 @@ def logincas(request):
     if request.method == 'GET':
         if 'ticket' in request.GET:
             ticket = request.GET['ticket']
-            url = 'https://ias1.larioja.org/eduCas/serviceValidate?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F&ticket=' + ticket
+            # url = 'https://ias1.larioja.org/eduCas/serviceValidate?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F&ticket=' + ticket
+            url = 'https://ias1.larioja.org/eduCas/serviceValidate?service=https%3A%2F%2Fgauss-dev.larioja.org%2Flogincas%2F&ticket=' + ticket
             a = requests.get(url)
 
             # return HttpResponse('Ticket: %s' % a)
@@ -1125,7 +1126,7 @@ def logincas(request):
             return response
         else:
             response = HttpResponse(status=302)
-            response['Location'] = 'https://ias1.larioja.org/eduCas/login?service=https%3A%2F%2Fgauss.larioja.org%2Flogincas%2F&anonimo=true'
+            response['Location'] = 'https://ias1.larioja.org/eduCas/login?service=https%3A%2F%2Fgauss-dev.larioja.org%2Flogincas%2F&anonimo=true'
             # response[
             #     'Location'] = 'https://ias1.larioja.org/eduCas/login?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F&anonimo=true'
             return response
