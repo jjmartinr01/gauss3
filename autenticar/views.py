@@ -1120,7 +1120,9 @@ def logincas(request):
             ticket = request.GET['ticket']
             # url = 'https://ias1.larioja.org/eduCas/serviceValidate?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F&ticket=' + ticket
             url = cas + 'serviceValidate?service=' + service + '&ticket=' + ticket
-            r = requests.get(url, verify=False)
+            s = requests.Session()
+            s.verify = False
+            r = s.get(url, verify=False)
 
             # return HttpResponse('Ticket: %s' % a)
             # response = HttpResponse(status=302)
