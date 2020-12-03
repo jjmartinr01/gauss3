@@ -1014,7 +1014,8 @@ def logincas(request):
                 try:
                     user = Gauser.objects.get(dni=id)
                 except:
-                    return HttpResponse('Tu usuario en Gauss debe coincidir con el de Racima')
+                    return HttpResponse(id)
+                    # return HttpResponse('Tu usuario en Gauss debe coincidir con el de Racima')
             if user.is_active:
                 login(request, user)
                 request.session["hoy"] = datetime.today()
