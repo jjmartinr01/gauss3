@@ -1113,11 +1113,13 @@ def acceso_from_racima(request, token):
 # Login en GAUSS a través del servidor CAS del Gobierno de La Rioja
 # ------------------------------------------------------------------#
 def logincas(request):
+    service = 'https%3A%2F%2Fgauss-dev.larioja.org%2Flogincas%2F'
+    cas = 'https://ias1.larioja.org/eduCas/'
     if request.method == 'GET':
         if 'ticket' in request.GET:
             ticket = request.GET['ticket']
             # url = 'https://ias1.larioja.org/eduCas/serviceValidate?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F&ticket=' + ticket
-            url = 'https://ias1.larioja.org/eduCas/serviceValidate?service=https%3A%2F%2Fgauss-dev.larioja.org%2Flogincas%2F&ticket=' + ticket
+            url = cas + 'serviceValidate?service=' + service + '&ticket=' + ticket
             r = requests.get(url)
 
             # return HttpResponse('Ticket: %s' % a)
@@ -1126,7 +1128,7 @@ def logincas(request):
             return HttpResponse(r.text)
         else:
             response = HttpResponse(status=302)
-            response['Location'] = 'https://ias1.larioja.org/eduCas/login?service=https%3A%2F%2Fgauss-dev.larioja.org%2Flogincas%2F&anonimo=true'
+            response['Location'] = cas + 'login?service=' + service
             # response[
             #     'Location'] = 'https://ias1.larioja.org/eduCas/login?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F&anonimo=true'
             return response
