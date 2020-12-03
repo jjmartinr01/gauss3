@@ -1113,7 +1113,7 @@ def acceso_from_racima(request, token):
 # Login en GAUSS a través del servidor CAS del Gobierno de La Rioja
 # ------------------------------------------------------------------#
 def logincas(request):
-    return HttpResponse('%s, %s, %s' % (request.META['HTTP_HOST'], request.META['REMOTE_HOST'], request.META['SERVER_NAME']))
+    return HttpResponse('%s' % request.META['HTTP_HOST'])
     # service = 'https%3A%2F%2Fgauss-dev.larioja.org%2Flogincas%2F'
     cas = 'https://ias1.larioja.org/eduCas/'
     if request.method == 'GET':
