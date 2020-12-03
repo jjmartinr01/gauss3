@@ -1007,11 +1007,12 @@ def logincas(request):
             s = requests.Session()
             s.verify = False
             r = s.get(url, verify=False)
+            id = r.text.split('<cas:user>')[1].split('</cas:user>')[0]
             try:
-                user = Gauser.objects.get(username=r.text.strip())
+                user = Gauser.objects.get(username=id)
             except:
                 try:
-                    user = Gauser.objects.get(dni=r.text.strip())
+                    user = Gauser.objects.get(dni=id)
                 except:
                     return HttpResponse('Tu usuario en Gauss debe coincidir con el de Racima')
             if user.is_active:
