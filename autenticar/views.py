@@ -46,6 +46,10 @@ from mensajes.models import Aviso, Mensaje
 from bancos.views import asocia_banco_ge
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required
 from captcha.fields import CaptchaField
+try:
+    from gauss.settings import CAS_URL
+except:
+    CAS_URL = 'https://ias1.larioja.org/eduCas/'
 
 # La línea "from django.utils import translation, timezone" y las siguientes 2 líneas, así como la nº 234 (o alrededor)
 # que contiene la variable "user_language" son para establecer el español como idioma por defecto a través de una
@@ -586,9 +590,15 @@ def index(request):
             logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
             return redirect(url_destino)
     else:
-        logout(request)
-        form = CaptchaForm()
-        return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso', 'ip': ip})
+        if 'service' in request.session:
+            logout(request)
+            response = HttpResponse(status=302)
+            response['Location'] = CAS_URL + 'logout'
+            return response
+        else:
+            logout(request)
+            form = CaptchaForm()
+            return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso', 'ip': ip})
 
 
 def no_login(request):
@@ -995,18 +1005,20 @@ def recupera_password(request):
 # Login en GAUSS a través del servidor CAS del Gobierno de La Rioja
 # ------------------------------------------------------------------#
 def logincas(request):
-    # return HttpResponse('%s' % request.META['HTTP_HOST'])
-    # service = 'https%3A%2F%2Fgauss-dev.larioja.org%2Flogincas%2F'
-    cas = 'https://ias1.larioja.org/eduCas/'
+    # CAS_URL = 'https://ias1.larioja.org/eduCas/'
     if request.method == 'GET':
         request.session['service'] = 'https%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F'
         if 'ticket' in request.GET:
             ticket = request.GET['ticket']
-            # url = 'https://ias1.larioja.org/eduCas/serviceValidate?service=http%3A%2F%2Flocalhost%3A8000%2Flogincas%2F&ticket=' + ticket
-            url = cas + 'serviceValidate?service=' + request.session['service'] + '&ticket=' + ticket
+            url = CAS_URL + 'serviceValidate?service=' + request.session['service'] + '&ticket=' + ticket
+            # xml = render_to_string('samlcas.xml', {'request_id': pass_generator(15), 'ticket': ticket,
+            #                                        'datetime_iso': datetime.utcnow().isoformat()})
+            # url = CAS_URL + 'samlValidate?service=' + request.session['service'] + '&ticket=' + ticket
             s = requests.Session()
+            # headers = {'Content-Type': 'application/xml'}
             s.verify = False
             r = s.get(url, verify=False)
+            # r = s.post(url, verify=False, data=xml, headers=headers)
             id = r.text.split('<cas:user>')[1].split('</cas:user>')[0]
             try:
                 user = Gauser.objects.get(username=id)
@@ -1047,7 +1059,7 @@ def logincas(request):
                 return render(request, "no_cuenta.html", {'usuario': user, })
         else:
             response = HttpResponse(status=302)
-            response['Location'] = cas + 'login?service=' + request.session['service']
+            response['Location'] = CAS_URL + 'login?service=' + request.session['service']
             return response
     elif request.method == 'POST':
         if request.POST['action'] == 'selecciona_entidad':
