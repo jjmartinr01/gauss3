@@ -4,8 +4,8 @@ import logging
 from django.db import models
 from django.db.models import Q
 from django.utils.timezone import now
-from entidades.models import Subentidad, Entidad, Ronda, Cargo, Gauser_extra
-from estudios.models import Materia, Curso
+from entidades.models import Subentidad, Entidad, Ronda, Cargo, Gauser_extra, Dependencia
+from estudios.models import Materia, Curso, Grupo
 from programaciones.models import Departamento, Especialidad_entidad
 from math import ceil
 
@@ -175,6 +175,10 @@ class PlantillaOrganica(models.Model):
                       'etapa', 'horas_semana_min', 'horas_semana_max']
         psxls = self.plantillaxls_set.all()
         for p in psxls:
+            self.create_dependencia(p)
+            self.create_curso(p)
+            materia = self.create_materia(p)
+            grupo = self.create_grupo(p)
             sd, c = SesionDocente.objects.get_or_create(po=self, x_docente=p.x_docente, dia=p.dia,
                                                         hora_inicio=p.hora_inicio)
             if c:
@@ -194,6 +198,35 @@ class PlantillaOrganica(models.Model):
                         valor = getattr(p, c_usd)
                         setattr(usd, c_usd, valor)
                     usd.save()
+
+    def create_dependencia(self, pxls):
+        if pxls.x_dependencia == '-1':
+            return Dependencia.objects.none()
+        else:
+            try:
+                dependencia, c = Dependencia.objects.get_or_create(clave_ex=pxls.x_dependencia,
+                                                                   entidad=self.ronda_centro.entidad)
+                if c:
+                    dependencia.nombre = pxls.c_coddep
+                    dependencia.abrev = pxls.c_coddep
+                    dependencia.observaciones = 'Creada el %s por %s' % (now(), self.g_e)
+                    dependencia.es_aula = True
+                    dependencia.save()
+            except:
+                dependencias = Dependencia.objects.filter(clave_ex=pxls.x_dependencia,
+                                                          entidad=self.ronda_centro.entidad)
+                dependencia = dependencias[0]
+                dependencias.exclude(pk__in=[dependencia.pk]).delete()
+                dependencia.nombre = pxls.c_coddep
+                dependencia.abrev = pxls.c_coddep
+                dependencia.observaciones = 'Creada el %s por %s' % (now(), self.g_e)
+                dependencia.es_aula = True
+                dependencia.save()
+            return dependencia
+
+    def create_dependencias(self):
+        for pxls in self.plantillaxls_set.filter(~Q(x_dependencia='-1')):
+            self.create_dependencia(pxls)
 
     def create_curso(self, pxls):
         try:
@@ -230,6 +263,9 @@ class PlantillaOrganica(models.Model):
                 materia.abreviatura = abreviatura.strip()
                 materia.observaciones = 'Creada el %s por %s' % (now(), self.g_e)
                 materia.horas = int(horas)
+                materia.grupo_materias = pxls.grupo_materias
+                materia.horas_semana_min = pxls.horas_semana_min
+                materia.horas_semana_max = pxls.horas_semana_max
                 materia.save()
         except:
             materias = Materia.objects.filter(clave_ex=pxls.x_materiaomg, curso=curso)
@@ -241,12 +277,41 @@ class PlantillaOrganica(models.Model):
             materia.abreviatura = abreviatura.strip()
             materia.observaciones += '<br>Borrado de duplicados el %s por %s' % (now(), self.g_e)
             materia.horas = int(horas)
+            materia.grupo_materias = pxls.grupo_materias
+            materia.horas_semana_min = pxls.horas_semana_min
+            materia.horas_semana_max = pxls.horas_semana_max
             materia.save()
         return materia
 
     def create_materias(self):
         for pxls in self.plantillaxls_set.all():
             self.create_materia(pxls)
+
+    def create_grupo(self, pxls):
+        try:
+            grupo, c = Grupo.objects.get_or_create(clave_ex=pxls.x_unidad, ronda=self.ronda_centro)
+            curso = self.create_curso(pxls)
+            grupo.cursos.add(curso)
+            if c:
+                grupo.nombre = pxls.unidad
+                grupo.observaciones = 'Creado el %s por %s' % (now(), self.g_e)
+                grupo.aula = self.create_dependencia(pxls)
+                grupo.save()
+        except:
+            grupos = Grupo.objects.filter(clave_ex=pxls.x_unidad, ronda=self.ronda_centro)
+            grupo = grupos[0]
+            grupos.exclude(pk__in=[grupo.pk]).delete()
+            grupo.nombre = pxls.unidad
+            grupo.observaciones = 'Creado el %s por %s' % (now(), self.g_e)
+            grupo.aula = self.create_dependencia(pxls)
+            curso = self.create_curso(pxls)
+            grupo.cursos.add(curso)
+            grupo.save()
+        return grupo
+
+    def create_grupos(self):
+        for pxls in self.plantillaxls_set.all():
+            self.create_grupo(pxls)
 
     @property
     def cursos(self):
@@ -329,9 +394,10 @@ class PlantillaOrganica(models.Model):
 
     def get_materias_docente(self, x_docente):
         sds = self.sesiondocente_set.filter(x_docente=x_docente)
-        materias = set()
+        materias = []
         for sd in sds:
-            materias = materias.union(sd.s_materia())
+            if sd.materia not in materias:
+                materias.append(sd.materia)
         return materias
 
     def calcula_materias_docente(self, psxls):
@@ -672,10 +738,12 @@ class SesionDocente(models.Model):
     l_requnidad = models.CharField('¿La actividad requiere unidad/grupo?', max_length=2, blank=True, null=True)
     docencia = models.CharField('¿Es hora de docencia?', max_length=2, blank=True, null=True)
     minutos = models.CharField('Duración del periodo en minutos', max_length=15, blank=True, null=True)
-    x_dependencia = models.CharField('Código de la dependencia en Racima', max_length=10, blank=True, null=True)
-    c_coddep = models.CharField('Nombre corto de la dependencia', max_length=30, blank=True, null=True)
-    x_dependencia2 = models.CharField('Código de la dependencia2 en Racima', max_length=10, blank=True, null=True)
-    c_coddep2 = models.CharField('Nombre corto de la dependencia2', max_length=30, blank=True, null=True)
+    dependencia = models.ForeignKey(Dependencia, blank=True, null=True, on_delete=models.CASCADE)
+    materia = models.ForeignKey(Materia, blank=True, null=True, on_delete=models.CASCADE)
+    # x_dependencia = models.CharField('Código de la dependencia en Racima', max_length=10, blank=True, null=True)
+    # c_coddep = models.CharField('Nombre corto de la dependencia', max_length=30, blank=True, null=True)
+    # x_dependencia2 = models.CharField('Código de la dependencia2 en Racima', max_length=10, blank=True, null=True)
+    # c_coddep2 = models.CharField('Nombre corto de la dependencia2', max_length=30, blank=True, null=True)
     usar = models.BooleanField('¿Usar este grupo para la calcular la plantilla orgánica', default=True)
 
     class Meta:
@@ -687,17 +755,13 @@ class SesionDocente(models.Model):
         us = []
         if self.x_actividad == '1':
             for usd in self.unidadsesiondocente_set.all():
-                if not usd.unidad in us:
-                    us.append(usd.unidad)
-        return '/'.join(us)
+                if not usd.grupo in us:
+                    us.append(usd.grupo)
+        return us
 
     @property
     def s_unidades(self):
-        us = []
-        if self.x_actividad == '1':
-            for usd in self.unidadsesiondocente_set.all():
-                if not usd.unidad in us:
-                    us.append(usd.unidad)
+        us = [grupo.nombre for grupo in self.unidades]
         return '/'.join(us)
 
     def s_materia(self):  # String Materia
@@ -719,18 +783,19 @@ class UnidadSesionDocente(models.Model):
               ('la', 'Educación Secundaria de Personas Adultas a Distancia'), ('ma', 'Educación para Personas Adultas'),
               ('na', 'Preparación Pruebas de Acceso a CCFF'), ('za', 'Etapa no identificada'))
     sd = models.ForeignKey(SesionDocente, on_delete=models.CASCADE, blank=True, null=True)
-    unidad = models.CharField('Nombre del grupo', max_length=20, blank=True, null=True)
-    x_unidad = models.CharField('Código del grupo en Racima', max_length=11, blank=True, null=True)
-    materia = models.CharField('Nombre de la materia', max_length=118, blank=True, null=True)
-    x_materiaomg = models.CharField('Código de la materia en Racima', max_length=11, blank=True, null=True)
-    curso = models.CharField('Nombre largo del curso', max_length=119, blank=True, null=True)
-    x_curso = models.CharField('Código del curso en Racima', max_length=120, blank=True, null=True)
-    omc = models.CharField('Nombre corto del curso', max_length=20, blank=True, null=True)
-    grupo_materias = models.CharField('Tipo de materia', max_length=50, blank=True, null=True)
-    etapa = models.CharField('Etapa', max_length=4, blank=True, null=True, choices=ETAPAS)
-    horas_semana_min = models.CharField('Horas mínimas de la materia por semana', max_length=10, blank=True, null=True)
-    horas_semana_max = models.CharField('Horas máximas de la materia por semana', max_length=10, blank=True, null=True)
+    grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE)
+    # unidad = models.CharField('Nombre del grupo', max_length=20, blank=True, null=True)
+    # x_unidad = models.CharField('Código del grupo en Racima', max_length=11, blank=True, null=True)
+    # materia = models.CharField('Nombre de la materia', max_length=118, blank=True, null=True)
+    # x_materiaomg = models.CharField('Código de la materia en Racima', max_length=11, blank=True, null=True)
+    # curso = models.CharField('Nombre largo del curso', max_length=119, blank=True, null=True)
+    # x_curso = models.CharField('Código del curso en Racima', max_length=120, blank=True, null=True)
+    # omc = models.CharField('Nombre corto del curso', max_length=20, blank=True, null=True)
+    # grupo_materias = models.CharField('Tipo de materia', max_length=50, blank=True, null=True)
+    # etapa = models.CharField('Etapa', max_length=4, blank=True, null=True, choices=ETAPAS)
+    # horas_semana_min = models.CharField('Horas mínimas de la materia por semana', max_length=10, blank=True, null=True)
+    # horas_semana_max = models.CharField('Horas máximas de la materia por semana', max_length=10, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'Unidades asociadas a una Sesión Docente'
-        ordering = ['sd', 'x_unidad']
+        ordering = ['sd', 'grupo']

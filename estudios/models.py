@@ -81,6 +81,9 @@ class Materia(models.Model):
     horas = models.IntegerField("Número de horas a impartir por semana", null=True, blank=True)
     duracion = models.IntegerField('Horas totales previstas para impartir toda la materia', blank=True, null=True)
     observaciones = models.TextField("Observaciones", null=True, blank=True)
+    grupo_materias = models.CharField('Tipo de materia', max_length=50, blank=True, null=True)
+    horas_semana_min = models.CharField('Horas mínimas de la materia por semana', max_length=10, blank=True, null=True)
+    horas_semana_max = models.CharField('Horas máximas de la materia por semana', max_length=10, blank=True, null=True)
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
 
     @property
@@ -96,8 +99,8 @@ class Materia(models.Model):
 
 
 class Gauser_extra_estudios(models.Model):
-    ge = models.OneToOneField(Gauser_extra, on_delete=models.CASCADE)
-    grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE)
+    ge = models.OneToOneField(Gauser_extra, on_delete=models.CASCADE) # Alumno
+    grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE) # Grupo del alumno
     tutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='estudios_tutor', on_delete=models.CASCADE)
     cotutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='estudios_cotutor', on_delete=models.CASCADE)
 
