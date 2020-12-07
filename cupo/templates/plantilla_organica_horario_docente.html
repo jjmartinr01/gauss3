@@ -1,0 +1,32 @@
+{% load entidades_extras %}
+<table style="width: 100%">
+    <thead>
+    <tr>
+        <th colspan="6" style="text-align: center">{{ docente }}</th>
+    </tr>
+    <tr>
+        <th></th>
+        <th>Lunes</th>
+        <th>Martes</th>
+        <th>Miércoles</th>
+        <th>Jueves</th>
+        <th>Viernes</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for tramo, sesiones_en_tramo in horario.items %}
+        <tr>
+            <td>{{ tramo }}</td>
+            {% for dia, sesion in sesiones_en_tramo.items %}
+                {% if sesion.0.x_actividad == '1' %}
+                    <td>{{ sesion.0.materia.nombre }}<br><span style="color:darkorange">{{ sesion.0.s_unidades }}</span><br><span
+                            style="color:lightseagreen">{{ sesion.0.dependencia.nombre }}</span></td>
+                {% else %}
+                    <td style="color:mediumvioletred">{{ sesion.0.actividad }}</td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+

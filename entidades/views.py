@@ -847,8 +847,7 @@ def configura_rondas(request):
                                                                alias=g__e.alias, activo=True,
                                                                observaciones=g__e.observaciones,
                                                                foto=g__e.foto,
-                                                               ocupacion=g__e.ocupacion, banco=g__e.banco,
-                                                               entidad_bancaria=g__e.entidad_bancaria,
+                                                               ocupacion=g__e.ocupacion,
                                                                num_cuenta_bancaria=g__e.num_cuenta_bancaria)
                         new_user.subentidades.add(*g__e.subentidades.all())
                         new_user.subsubentidades.add(*g__e.subsubentidades.all())
@@ -877,8 +876,7 @@ def configura_rondas(request):
                                                                observaciones=g__e.observaciones,
                                                                foto=g__e.foto,
                                                                tutor1=tutor1, tutor2=tutor2,
-                                                               ocupacion=g__e.ocupacion, banco=g__e.banco,
-                                                               entidad_bancaria=g__e.entidad_bancaria,
+                                                               ocupacion=g__e.ocupacion,
                                                                num_cuenta_bancaria=g__e.num_cuenta_bancaria)
                         new_user.subentidades.add(*g__e.subentidades.all())
                         new_user.subsubentidades.add(*g__e.subsubentidades.all())

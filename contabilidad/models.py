@@ -8,7 +8,6 @@ from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
 from autenticar.models import Gauser
-from bancos.views import num_cuenta2iban, asocia_banco_ge
 from entidades.models import Entidad, Subentidad, Ronda, Cargo, Gauser_extra
 
 from bancos.models import Banco
@@ -302,20 +301,19 @@ class Remesa(models.Model):
         importes = self.emitida.politica.array_cuotas
         return sum(importes[:num_pagos])
 
-    @property
-    def deudores_str(self):
-        if self.emitida.politica.tipo == 'hermanos':
-            familiares = self.ge.unidad_familiar
-            deudores = familiares.filter(id__in=usuarios)
-            usuarios_id += list(deudores.values_list('id', flat=True))
-            n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
-            deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
-
-        return True
+    # @property
+    # def deudores_str(self):
+    #     if self.emitida.politica.tipo == 'hermanos':
+    #         familiares = self.ge.unidad_familiar
+    #         deudores = familiares.filter(id__in=usuarios)
+    #         usuarios_id += list(deudores.values_list('id', flat=True))
+    #         n_cs = familiares.values_list('num_cuenta_bancaria', flat=True)
+    #         deudores_str = ', '.join(deudores.values_list('gauser__first_name', flat=True))
+    #     return True
 
     @property
     def rmtinf(self):
-        nombres = ', '.join(deudores.values_list('gauser__first_name', flat=True))
+        nombres = ', '.join(self.deudores.values_list('gauser__first_name', flat=True))
         return 'Pago de cuota: %s - %s (%s)' % (self.emitida.politica.concepto,
                                                 self.emitida.politica.get_tipo_cobro_display(),
                                                 datetime.today().strftime('%d-%m-%Y'))

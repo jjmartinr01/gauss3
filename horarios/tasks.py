@@ -562,6 +562,16 @@ def carga_masiva_from_file():
                             pxls.etapa = 'ma'
                         else:
                             pxls.etapa = 'za'
+                    elif column_header == 'HORA INICIO':
+                        try:
+                            pxls.inicio = int(float(sheet.cell(row_index, col_index).value))
+                        except:
+                            pass
+                    elif column_header == 'HORA FIN':
+                        try:
+                            pxls.fin = int(float(sheet.cell(row_index, col_index).value))
+                        except:
+                            pass
                     try:
                         setattr(pxls, keys[column_header], str(int(float(sheet.cell(row_index, col_index).value))))
                     except:
@@ -575,8 +585,17 @@ def carga_masiva_from_file():
             po.crea_sesiones_docentes()
             carga.cargado = True
             carga.save()
+            # Las siguientes líneas hay que borrarlas.
             pos = PlantillaOrganica.objects.all()
             for po in pos:
-                if po.sesiondocente_set.all().count() == 0:
+                psxls = po.plantillaxls_set.all()
+                if psxls[0].inicio == 0:
+                    for p in psxls:
+                        try:
+                            p.inicio = int(float(p.hora_inicio))
+                            p.fin = int(float(p.fin))
+                        except:
+                            pass
+                    po.calcula_pdocentes()
                     po.crea_sesiones_docentes()
     return True

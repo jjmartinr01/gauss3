@@ -11,6 +11,8 @@ from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import os
+
+from bancos.views import get_banco_from_num_cuenta_bancaria
 from gauss.constantes import *
 from gauss.rutas import *
 from bancos.models import Banco
@@ -525,8 +527,8 @@ class Gauser_extra(models.Model):
                                related_name='segundo_tutor_entidades')
     hermanos = models.ManyToManyField('self', blank=True, related_name='hermanos_entidades')
     ocupacion = models.CharField("Ocupación/Profesión del socio", max_length=300, blank=True, null=True)
-    banco = models.ForeignKey(Banco, null=True, blank=True, related_name='entidades', on_delete=models.CASCADE)
-    entidad_bancaria = models.CharField("Entidad bancaria", max_length=50, blank=True, null=True)
+    # banco = models.ForeignKey(Banco, null=True, blank=True, related_name='entidades', on_delete=models.CASCADE)
+    # entidad_bancaria = models.CharField("Entidad bancaria", max_length=50, blank=True, null=True)
     num_cuenta_bancaria = models.CharField("Número de IBAN", max_length=50, blank=True, null=True)
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
     educa_pk = models.CharField("pk en gauss_educa", max_length=12, blank=True, null=True)
@@ -539,6 +541,10 @@ class Gauser_extra(models.Model):
     #                                    related_name='tutor_entidad')
     # tutor_entidad2 = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
     #                                    related_name='cotutor')
+
+    @property
+    def banco(self):
+        return get_banco_from_num_cuenta_bancaria(self.num_cuenta_bancaria)
 
     def dar_baja(self, autor):
         try:

@@ -13,10 +13,12 @@
             display: none;
             cursor: n-resize;
         }
-        .docente:hover{
+
+        .docente:hover {
             cursor: s-resize;
         }
-        .dep_th:hover{
+
+        .dep_th:hover {
             cursor: help;
         }
     </style>
@@ -71,7 +73,13 @@
         </div>
         <div id="docentes_container"></div>
     </form>
-
+    <div id="horarioModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true"
+         role="dialog">
+        <div id="horario_docente" style="position: relative;">
+            <div style="position: absolute; top:100px; right: 20px;border: solid 1px black;">hola</div>
+        </div>
+        <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
 {% endblock %}
 
 
@@ -213,7 +221,7 @@
         });
 
         $('body').on('click', '.docente', function (e) {
-            var x_docente = $(this).data('x_docente');
+            var x_docente = $(this).parent().data('x_docente');
             $('#materias_docente' + x_docente).toggle();
         });
 
@@ -223,8 +231,8 @@
 
 
         $('body').on('mouseenter', '.docente', function (e) {
-            var x_docente = $(this).data('x_docente');
-            var po = $(this).data('po');
+            var x_docente = $(this).parent().data('x_docente');
+            var po = $(this).parent().data('po');
             var element = $('#materias_docente' + x_docente);
             var materias = element.html();
             if (!materias) {
@@ -233,7 +241,12 @@
                         if (data.ok) {
                             for (i = 0; i < data.materias.length; i++) {
                                 let div = document.createElement('div');
-                                let text = document.createTextNode(data.materias[i]);
+                                if (data.materias[i].horas_min == data.materias[i].horas_max) {
+                                    div.setAttribute('title', data.materias[i].materia + ' (' + data.materias[i].horas_min + ') ' + data.materias[i].curso)
+                                } else {
+                                    div.setAttribute('title', data.materias[i].materia + ' (entre ' + data.materias[i].horas_min + ' y ' + data.materias[i].horas_max + ')')
+                                }
+                                let text = document.createTextNode(data.materias[i].abreviatura + ', ' + data.materias[i].grupos + ', ' + data.materias[i].horas + ' periodos');
                                 div.appendChild(text);
                                 element.append(div);
                             }
@@ -245,9 +258,20 @@
             }
         });
 
-        $('body').on('mouseleave', '.docente4444444', function (e) {
-            var x_docente = $(this).data('x_docente');
-            $('#materias_docente' + x_docente).hide();
+        $('body').on('click', '.get_horario', function (e) {
+            var x_docente = $(this).parent().parent().data('x_docente');
+            var po = $(this).parent().parent().data('po');
+            $.post("/plantilla_organica/", {action: 'get_horario', po: po, x_docente: x_docente},
+                function (data) {
+                    if (data.ok) {
+                        $('#horario_docente').html(data.tabla);
+                        $('#horarioModal').foundation('reveal', 'open');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
         });
+
     </script>
 {% endblock %}

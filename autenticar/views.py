@@ -117,8 +117,8 @@ def borrar_entidades(request):
                             usuario.subsubentidades.clear()
                             usuario.hermanos.clear()
                             campos = {'id_organizacion': None, 'id_entidad': None, 'alias': None, 'observaciones': None,
-                                      'foto': None, 'tutor1': None, 'tutor2': None, 'ocupacion': None, 'banco': None,
-                                      'entidad_bancaria': None, 'num_cuenta_bancaria': None, 'clave_ex': None,
+                                      'foto': None, 'tutor1': None, 'tutor2': None, 'ocupacion': None,
+                                      'num_cuenta_bancaria': None, 'clave_ex': None,
                                       'educa_pk': None, 'fecha_consentimiento': None, 'activo': False}
                             usuario.gauser = gauser_comodin
                             for key, value in campos.items():
@@ -150,8 +150,8 @@ def borrar_entidades(request):
                             usuario.subsubentidades.clear()
                             usuario.hermanos.clear()
                             campos = {'id_organizacion': None, 'id_entidad': None, 'alias': None, 'observaciones': None,
-                                      'foto': None, 'tutor1': None, 'tutor2': None, 'ocupacion': None, 'banco': None,
-                                      'entidad_bancaria': None, 'num_cuenta_bancaria': None, 'clave_ex': None,
+                                      'foto': None, 'tutor1': None, 'tutor2': None, 'ocupacion': None,
+                                      'num_cuenta_bancaria': None, 'clave_ex': None,
                                       'educa_pk': None, 'fecha_consentimiento': None, 'activo': False}
                             usuario.gauser = gauser_comodin
                             for key, value in campos.items():

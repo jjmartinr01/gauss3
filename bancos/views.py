@@ -1,17 +1,12 @@
 # -*- coding: utf-8 -*-
+import logging
+import csv
+import re
+# import operator
+# import os
 from bancos.models import Banco
 
-# from autenticar.models import Gauser_extra
-from entidades.models import Gauser_extra
-
-import csv
-import operator
-
-from gauss.funciones import usuarios_ronda
-from mensajes.views import crear_aviso
-import re
-import os
-
+logger = logging.getLogger('django')
 
 def crea_bancos(request):
     # csv_file  = open('/home/juanjo/django/gauss_scout/bancos_bic.csv', "rb")
@@ -44,50 +39,50 @@ def crea_bancos(request):
 
 
 # http://bandir.infotelefonica.es/3191 página que me permite ver los datos y evolución de las entidades el 3191 es el código de entidad
-def asocia_bancos(request):
-    g_es = usuarios_ronda(request.session['gauser_extra'].ronda)
-    codes = ''
-    for g_e in g_es:
-        num_cuenta_bancaria = re.sub("[^0-9a-zA-Z]", "", str(g_e.num_cuenta_bancaria))
-        if len(num_cuenta_bancaria) > 18:
-            if num_cuenta_bancaria[0:2] != 'ES':
-                banco_code = re.sub("[^0-9]", "", num_cuenta_bancaria)[0:4]
-            else:
-                banco_code = re.sub("[^0-9a-zA-Z]", "", num_cuenta_bancaria)[4:8]
+# def asocia_bancos(request):
+#     g_es = usuarios_ronda(request.session['gauser_extra'].ronda)
+#     codes = ''
+#     for g_e in g_es:
+#         num_cuenta_bancaria = re.sub("[^0-9a-zA-Z]", "", str(g_e.num_cuenta_bancaria))
+#         if len(num_cuenta_bancaria) > 18:
+#             if num_cuenta_bancaria[0:2] != 'ES':
+#                 banco_code = re.sub("[^0-9]", "", num_cuenta_bancaria)[0:4]
+#             else:
+#                 banco_code = re.sub("[^0-9a-zA-Z]", "", num_cuenta_bancaria)[4:8]
             # try:
             # crear_aviso(request,False,banco_code+' '+num_cuenta_bancaria+' '+g_e.gauser.get_full_name())
-            codes = codes + ' ' + banco_code
-            if banco_code == '2097':
-                g_e.banco = Banco.objects.get(
-                    codigo='2095')  # 2097 era Vital kutxa, le asignamos bankia que es el 2095 kutxabank
+            # codes = codes + ' ' + banco_code
+            # if banco_code == '2097':
+            #     g_e.banco = Banco.objects.get(
+            #         codigo='2095')  # 2097 era Vital kutxa, le asignamos bankia que es el 2095 kutxabank
             # crear_aviso(request,False,'Entra en 2097')
-            elif banco_code == '2037':
-                g_e.banco = Banco.objects.get(codigo='2038')  # 2037 era cajarioja, le asignamos bankia que es el 2038
+            # elif banco_code == '2037':
+            #     g_e.banco = Banco.objects.get(codigo='2038')  # 2037 era cajarioja, le asignamos bankia que es el 2038
             # crear_aviso(request,False,'Entra en 2037')
-            elif banco_code == '2054' or banco_code == '0142':
-                g_e.banco = Banco.objects.get(
-                    codigo='2100')  # 0142 banco pequeña empresa,2054 era la CAN, le asignamos Caixabank que es el 2100
-
-            elif banco_code == '2096' or banco_code == '0208':
-                g_e.banco = Banco.objects.get(
-                    codigo='2108')  # 2096 era la caja duero, le asignamos Banco inversiones  que es el 2108
-
-            elif banco_code == '3021':
-                g_e.banco = Banco.objects.get(codigo='3191')  # de cajalon a nueva caja rural de aragón
-
-            elif banco_code == '0030':
-                g_e.banco = Banco.objects.get(codigo='0049')  # banco español de crédito a banco santander
-
-            elif banco_code == '0104':
-                g_e.banco = Banco.objects.get(codigo='0182')  # argentaria a bbva
-
-            elif banco_code == '0008':
-                g_e.banco = Banco.objects.get(codigo='0081')  # argentaria a bbva
-
-            else:
-                g_e.banco = Banco.objects.get(codigo=banco_code)
+            # elif banco_code == '2054' or banco_code == '0142':
+            #     g_e.banco = Banco.objects.get(
+            #         codigo='2100')  # 0142 banco pequeña empresa,2054 era la CAN, le asignamos Caixabank que es el 2100
+            #
+            # elif banco_code == '2096' or banco_code == '0208':
+            #     g_e.banco = Banco.objects.get(
+            #         codigo='2108')  # 2096 era la caja duero, le asignamos Banco inversiones  que es el 2108
+            #
+            # elif banco_code == '3021':
+            #     g_e.banco = Banco.objects.get(codigo='3191')  # de cajalon a nueva caja rural de aragón
+            #
+            # elif banco_code == '0030':
+            #     g_e.banco = Banco.objects.get(codigo='0049')  # banco español de crédito a banco santander
+            #
+            # elif banco_code == '0104':
+            #     g_e.banco = Banco.objects.get(codigo='0182')  # argentaria a bbva
+            #
+            # elif banco_code == '0008':
+            #     g_e.banco = Banco.objects.get(codigo='0081')  # argentaria a bbva
+            #
+            # else:
+            #     g_e.banco = Banco.objects.get(codigo=banco_code)
             # crear_aviso(request,False,'Graba %s'%g_e.banco.nombre)
-            g_e.save()
+            # g_e.save()
             # crear_aviso(request,False,'Graba %s'%g_e.banco.nombre)
             # except:
         # pass
@@ -153,24 +148,56 @@ def asocia_banco_ge(g_e):
             g_e.banco = Banco.objects.get(codigo=banco_code)
         g_e.save()
 
+def get_banco_from_num_cuenta_bancaria(num_cuenta_bancaria):
+    num_cuenta_bancaria = re.sub("[^0-9a-zA-Z]", "", str(num_cuenta_bancaria))
+    if len(num_cuenta_bancaria) > 18:
+        if num_cuenta_bancaria[0:2] != 'ES':
+            banco_code = re.sub("[^0-9]", "", num_cuenta_bancaria)[0:4]
+        else:
+            banco_code = re.sub("[^0-9a-zA-Z]", "", num_cuenta_bancaria)[4:8]
+        if banco_code == '2097':  # 2097 era Vital kutxa,
+            banco = Banco.objects.get(codigo='2095')  # le asignamos bankia que es el 2095 kutxabank
+        elif banco_code == '2037':
+            banco = Banco.objects.get(codigo='2038')  # 2037 era cajarioja, le asignamos bankia que es el 2038
+        elif banco_code == '2054' or banco_code == '0142':  # 0142 banco pequeña empresa,2054 era la CAN
+            banco = Banco.objects.get(codigo='2100')  # le asignamos Caixabank que es el 2100
+        elif banco_code == '2096' or banco_code == '0208':  # 2096 era la caja duero
+            banco = Banco.objects.get(codigo='2108')  # le asignamos Banco inversiones  que es el 2108
+        elif banco_code == '3021':
+            banco = Banco.objects.get(codigo='3191')  # de cajalon a nueva caja rural de aragón
+        elif banco_code == '0030':
+            banco = Banco.objects.get(codigo='0049')  # banco español de crédito a banco santander
+        elif banco_code == '0104':
+            banco = Banco.objects.get(codigo='0182')  # argentaria a bbva
+        elif banco_code == '0008':
+            banco = Banco.objects.get(codigo='0081')  # argentaria a bbva
+        elif banco_code == '0103':  # Este era el banco zaragozano. Absorvido por Barclays Bank
+            banco = Banco.objects.get(codigo='0065')  # BARCLAYS BANK
+        else:
+            try:
+                banco = Banco.objects.get(codigo=banco_code)
+            except:
+                banco = Banco.objects.none()
+        return banco
 
-def calc_iban(request):
-    g_es = Gauser_extra.objects.all()
-    tabla = {'A': '10', 'G': '16', 'M': '22', 'S': '28', 'Y': '34', 'B': '11', 'H': '17', 'N': '23', 'T': '29',
-             'Z': '35', 'C': '12', 'I': '18', 'O': '24', 'U': '30', 'D': '13', 'J': '19', 'P': '25', 'V': '31',
-             'E': '14', 'K': '20', 'Q': '26', 'W': '32', 'F': '15', 'L': '21', 'R': '27', 'X': '33', '0': '0', '1': '1',
-             '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9'}
-    for g_e in g_es:
-        num_cuenta_bancaria = re.sub("[^0-9a-zA-Z]", "", str(g_e.num_cuenta_bancaria))
-        if len(num_cuenta_bancaria) > 18 and num_cuenta_bancaria[0:2] != 'ES':
-            cad = num_cuenta_bancaria + 'ES00'
-            for k, v in tabla.items():
-                cad = cad.replace(k, v)
-            cad = str(98 - int(cad) % 97)
-            cad = cad if len(cad) > 1 else '0' + cad
-            num_cuenta_bancaria = 'ES' + cad + num_cuenta_bancaria
-            g_e.num_cuenta_bancaria = num_cuenta_bancaria
-            g_e.save()
+
+# def calc_iban(request):
+#     g_es = Gauser_extra.objects.all()
+#     tabla = {'A': '10', 'G': '16', 'M': '22', 'S': '28', 'Y': '34', 'B': '11', 'H': '17', 'N': '23', 'T': '29',
+#              'Z': '35', 'C': '12', 'I': '18', 'O': '24', 'U': '30', 'D': '13', 'J': '19', 'P': '25', 'V': '31',
+#              'E': '14', 'K': '20', 'Q': '26', 'W': '32', 'F': '15', 'L': '21', 'R': '27', 'X': '33', '0': '0', '1': '1',
+#              '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9'}
+#     for g_e in g_es:
+#         num_cuenta_bancaria = re.sub("[^0-9a-zA-Z]", "", str(g_e.num_cuenta_bancaria))
+#         if len(num_cuenta_bancaria) > 18 and num_cuenta_bancaria[0:2] != 'ES':
+#             cad = num_cuenta_bancaria + 'ES00'
+#             for k, v in tabla.items():
+#                 cad = cad.replace(k, v)
+#             cad = str(98 - int(cad) % 97)
+#             cad = cad if len(cad) > 1 else '0' + cad
+#             num_cuenta_bancaria = 'ES' + cad + num_cuenta_bancaria
+#             g_e.num_cuenta_bancaria = num_cuenta_bancaria
+#             g_e.save()
 
 
 def num_cuenta2iban(num_cuenta_bancaria):
@@ -194,7 +221,7 @@ def bancos_sin_bic(request):
     bancos = Banco.objects.all()
     for banco in bancos:
         if not banco.bic:
-            crear_aviso(request, False, 'Banco %s sin BIC' % (banco.codigo))
+            logger.info('Banco %s sin BIC' % banco.codigo)
 
 
 from html.parser import HTMLParser

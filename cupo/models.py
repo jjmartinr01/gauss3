@@ -168,11 +168,13 @@ class PlantillaOrganica(models.Model):
         verbose_name_plural = 'Plantillas orgánicas'
 
     def crea_sesiones_docentes(self):
-        campos_sd = ['po', 'docente', 'x_docente', 'departamento', 'x_departamento', 'dia', 'hora_inicio', 'hora_fin',
-                     'hora_inicio_cadena', 'hora_fin_cadena', 'actividad', 'x_actividad', 'l_requnidad', 'docencia',
-                     'minutos', 'x_dependencia', 'c_coddep', 'x_dependencia2', 'c_coddep2']
-        campos_usd = ['unidad', 'x_unidad', 'materia', 'x_materiaomg', 'curso', 'x_curso', 'omc', 'grupo_materias',
-                      'etapa', 'horas_semana_min', 'horas_semana_max']
+        campos_sd = ['docente', 'departamento', 'x_departamento', 'hora_fin', 'hora_inicio_cadena', 'hora_fin_cadena',
+                     'actividad', 'x_actividad', 'l_requnidad', 'docencia', 'minutos']
+        # campos_sd = ['po', 'docente', 'x_docente', 'departamento', 'x_departamento', 'dia', 'hora_inicio', 'hora_fin',
+        #              'hora_inicio_cadena', 'hora_fin_cadena', 'actividad', 'x_actividad', 'l_requnidad', 'docencia',
+        #              'minutos']
+        # campos_usd = ['unidad', 'x_unidad', 'materia', 'x_materiaomg', 'curso', 'x_curso', 'omc', 'grupo_materias',
+        #               'etapa', 'horas_semana_min', 'horas_semana_max']
         psxls = self.plantillaxls_set.all()
         for p in psxls:
             self.create_dependencia(p)
@@ -181,23 +183,25 @@ class PlantillaOrganica(models.Model):
             grupo = self.create_grupo(p)
             sd, c = SesionDocente.objects.get_or_create(po=self, x_docente=p.x_docente, dia=p.dia,
                                                         hora_inicio=p.hora_inicio)
+            sd.grupos.add(grupo)
             if c:
+                sd.materia = materia
                 for c_sd in campos_sd:
                     valor = getattr(p, c_sd)
                     setattr(sd, c_sd, valor)
                 sd.save()
-                usd = UnidadSesionDocente.objects.create(sd=sd)
-                for c_usd in campos_usd:
-                    valor = getattr(p, c_usd)
-                    setattr(usd, c_usd, valor)
-                usd.save()
-            else:
-                usd, c = UnidadSesionDocente.objects.get_or_create(sd=sd, x_unidad=p.x_unidad)
-                if c:
-                    for c_usd in campos_usd:
-                        valor = getattr(p, c_usd)
-                        setattr(usd, c_usd, valor)
-                    usd.save()
+                # usd = UnidadSesionDocente.objects.create(sd=sd)
+                # for c_usd in campos_usd:
+                #     valor = getattr(p, c_usd)
+                #     setattr(usd, c_usd, valor)
+                # usd.save()
+            # else:
+            #     usd, c = UnidadSesionDocente.objects.get_or_create(sd=sd, x_unidad=p.x_unidad)
+            #     if c:
+            #         for c_usd in campos_usd:
+            #             valor = getattr(p, c_usd)
+            #             setattr(usd, c_usd, valor)
+            #         usd.save()
 
     def create_dependencia(self, pxls):
         if pxls.x_dependencia == '-1':
@@ -209,7 +213,7 @@ class PlantillaOrganica(models.Model):
                 if c:
                     dependencia.nombre = pxls.c_coddep
                     dependencia.abrev = pxls.c_coddep
-                    dependencia.observaciones = 'Creada el %s por %s' % (now(), self.g_e)
+                    # dependencia.observaciones = 'Creada el %s por %s' % (now(), self.g_e)
                     dependencia.es_aula = True
                     dependencia.save()
             except:
@@ -219,7 +223,7 @@ class PlantillaOrganica(models.Model):
                 dependencias.exclude(pk__in=[dependencia.pk]).delete()
                 dependencia.nombre = pxls.c_coddep
                 dependencia.abrev = pxls.c_coddep
-                dependencia.observaciones = 'Creada el %s por %s' % (now(), self.g_e)
+                # dependencia.observaciones = 'Creada el %s por %s' % (now(), self.g_e)
                 dependencia.es_aula = True
                 dependencia.save()
             return dependencia
@@ -231,17 +235,17 @@ class PlantillaOrganica(models.Model):
     def create_curso(self, pxls):
         try:
             curso, c = Curso.objects.get_or_create(clave_ex=pxls.x_curso, ronda=self.ronda_centro)
-            if c:
-                curso.nombre = pxls.curso
-                curso.observaciones = 'Creado el %s por %s' % (now(), self.g_e)
-                curso.etapa = pxls.etapa
-                curso.nombre_especifico = pxls.omc
-                curso.save()
+            # if c:
+            curso.nombre = pxls.curso
+            # curso.observaciones = 'Creado el %s por %s' % (now(), self.g_e)
+            curso.etapa = pxls.etapa
+            curso.nombre_especifico = pxls.omc
+            curso.save()
         except:
             cursos = Curso.objects.filter(clave_ex=pxls.x_curso, ronda=self.ronda_centro)
             curso = cursos[0]
             cursos.exclude(pk__in=[curso.pk]).delete()
-            curso.observaciones = 'Borrado de duplicados el %s por %s' % (now(), self.g_e)
+            # curso.observaciones = 'Borrado de duplicados el %s por %s' % (now(), self.g_e)
             curso.etapa = pxls.etapa
             curso.nombre_especifico = pxls.omc
             curso.save()
@@ -261,8 +265,11 @@ class PlantillaOrganica(models.Model):
                 horas, sc, minutos = pxls.horas_semana_min.rpartition(':')
                 materia.nombre = nombre.strip()
                 materia.abreviatura = abreviatura.strip()
-                materia.observaciones = 'Creada el %s por %s' % (now(), self.g_e)
-                materia.horas = int(horas)
+                # materia.observaciones = 'Creada el %s por %s' % (now(), self.g_e)
+                try:
+                    materia.horas = int(horas)
+                except:
+                    pass
                 materia.grupo_materias = pxls.grupo_materias
                 materia.horas_semana_min = pxls.horas_semana_min
                 materia.horas_semana_max = pxls.horas_semana_max
@@ -275,8 +282,11 @@ class PlantillaOrganica(models.Model):
             horas, sc, minutos = pxls.horas_semana_min.rpartition(':')
             materia.nombre = nombre.strip()
             materia.abreviatura = abreviatura.strip()
-            materia.observaciones += '<br>Borrado de duplicados el %s por %s' % (now(), self.g_e)
-            materia.horas = int(horas)
+            # materia.observaciones += '<br>Borrado de duplicados el %s por %s' % (now(), self.g_e)
+            try:
+                materia.horas = int(horas)
+            except:
+                pass
             materia.grupo_materias = pxls.grupo_materias
             materia.horas_semana_min = pxls.horas_semana_min
             materia.horas_semana_max = pxls.horas_semana_max
@@ -294,16 +304,24 @@ class PlantillaOrganica(models.Model):
             grupo.cursos.add(curso)
             if c:
                 grupo.nombre = pxls.unidad
-                grupo.observaciones = 'Creado el %s por %s' % (now(), self.g_e)
-                grupo.aula = self.create_dependencia(pxls)
+                # grupo.observaciones = 'Creado el %s por %s' % (now(), self.g_e)
+                try:
+                    grupo.aula = self.create_dependencia(pxls)
+                except:
+                    pass
+                    # grupo.aula = Dependencia.objects.none()
                 grupo.save()
         except:
             grupos = Grupo.objects.filter(clave_ex=pxls.x_unidad, ronda=self.ronda_centro)
             grupo = grupos[0]
             grupos.exclude(pk__in=[grupo.pk]).delete()
             grupo.nombre = pxls.unidad
-            grupo.observaciones = 'Creado el %s por %s' % (now(), self.g_e)
-            grupo.aula = self.create_dependencia(pxls)
+            # grupo.observaciones = 'Creado el %s por %s' % (now(), self.g_e)
+            try:
+                grupo.aula = self.create_dependencia(pxls)
+            except:
+                pass
+                # grupo.aula = Dependencia.objects.none()
             curso = self.create_curso(pxls)
             grupo.cursos.add(curso)
             grupo.save()
@@ -325,29 +343,29 @@ class PlantillaOrganica(models.Model):
                     curs[pxls.curso].append((pxls.unidad, pxls.usar, pxls.x_unidad))
         return curs
 
-    @property
-    def unidades(self):
-        grupos = []
-        for pxls in self.plantillaxls_set.all():
-            if not pxls.unidad in grupos:
-                grupos.append((pxls.unidad, pxls.usar))
-        return grupos
+    # @property
+    # def unidades(self):
+    #     grupos = []
+    #     for pxls in self.plantillaxls_set.all():
+    #         if not pxls.unidad in grupos:
+    #             grupos.append((pxls.unidad, pxls.usar))
+    #     return grupos
 
-    @property
-    def unidades_sin_usar(self):
-        grupos = []
-        for pxls in self.plantillaxls_set.all():
-            if not pxls.unidad in grupos and not pxls.usar:
-                grupos.append(pxls.unidad)
-        return grupos
+    # @property
+    # def unidades_sin_usar(self):
+    #     grupos = []
+    #     for pxls in self.plantillaxls_set.all():
+    #         if not pxls.unidad in grupos and not pxls.usar:
+    #             grupos.append(pxls.unidad)
+    #     return grupos
 
-    @property
-    def unidades_usadas(self):
-        grupos = []
-        for pxls in self.plantillaxls_set.all():
-            if not pxls.unidad in grupos and pxls.usar:
-                grupos.append(pxls.unidad)
-        return grupos
+    # @property
+    # def unidades_usadas(self):
+    #     grupos = []
+    #     for pxls in self.plantillaxls_set.all():
+    #         if not pxls.unidad in grupos and pxls.usar:
+    #             grupos.append(pxls.unidad)
+    #     return grupos
 
     @property
     def departamentos(self):
@@ -370,7 +388,7 @@ class PlantillaOrganica(models.Model):
 
     @property
     def get_tramos_centro(self):
-        return self.plantillaxls_set.all().order_by('dia', 'hora_inicio').values('dia', 'hora_inicio', 'hora_fin',
+        return self.plantillaxls_set.all().order_by('inicio', 'dia').values('dia', 'inicio', 'fin',
                                                                                  'hora_inicio_cadena',
                                                                                  'hora_fin_cadena').distinct()
 
@@ -393,47 +411,50 @@ class PlantillaOrganica(models.Model):
     #         pass
 
     def get_materias_docente(self, x_docente):
-        sds = self.sesiondocente_set.filter(x_docente=x_docente)
+        sds = self.sesiondocente_set.filter(x_docente=x_docente, x_actividad='1')
         materias = []
-        for sd in sds:
-            if sd.materia not in materias:
-                materias.append(sd.materia)
+        for s in sds:
+            sesiones_mat = sds.filter(materia=s.materia, grupos__in=list(s.grupos.all().values_list('id', flat=True)))
+            t = (s.materia, s.s_unidades, int(sesiones_mat.count() / s.grupos.all().count()))
+            # t = (s.materia, s.grupos.all().values_list('id', flat=True), int(sesiones_mat.count() / s.grupos.all().count()))
+            if t not in materias:
+                materias.append(t)
         return materias
 
-    def calcula_materias_docente(self, psxls):
-        psxls_materias = psxls.filter(x_actividad='1').values_list('materia', 'omc', 'horas_semana_min', 'dia',
-                                                                   'hora_fin')
-        m = psxls_materias[0]
-        try:
-            materias = [[m[0].split('-')[1].strip(), m[1], int(m[2].split(':')[0]), m[3], m[4], 0]]
-        except:
-            materias = [[m[0], m[1], 0, m[3], m[4], 0]]
-        for m in psxls_materias:
-            try:
-                m_trans = [m[0].split('-')[1].strip(), m[1], int(m[2].split(':')[0]), m[3], m[4]]
-            except:
-                m_trans = [m[0], m[1], 0, m[3], m[4]]
-            incluida = False
-            for materia in materias:
-                if m_trans[3] == materia[3] and m_trans[4] == materia[4]:
-                    incluida = True
-                    if m_trans[1] not in materia[1]:
-                        materia[1] = '%s/%s' % (materia[1], m_trans[1])
-            if not incluida:
-                materias.append(m_trans)
-        sin_repetir = []
-        todas = []
-        for materia in materias:
-            m = (materia[0], materia[1], materia[2])
-            todas.append(m)
-            if m not in sin_repetir:
-                sin_repetir.append(m)
-        analizadas = []
-        for d in sin_repetir:
-            if d[2] != 0:
-                for i in range(int(len([m for m in todas if m == d]) / d[2])):
-                    analizadas.append(d)
-        return analizadas
+    # def calcula_materias_docente(self, psxls):
+    #     psxls_materias = psxls.filter(x_actividad='1').values_list('materia', 'omc', 'horas_semana_min', 'dia',
+    #                                                                'hora_fin')
+    #     m = psxls_materias[0]
+    #     try:
+    #         materias = [[m[0].split('-')[1].strip(), m[1], int(m[2].split(':')[0]), m[3], m[4], 0]]
+    #     except:
+    #         materias = [[m[0], m[1], 0, m[3], m[4], 0]]
+    #     for m in psxls_materias:
+    #         try:
+    #             m_trans = [m[0].split('-')[1].strip(), m[1], int(m[2].split(':')[0]), m[3], m[4]]
+    #         except:
+    #             m_trans = [m[0], m[1], 0, m[3], m[4]]
+    #         incluida = False
+    #         for materia in materias:
+    #             if m_trans[3] == materia[3] and m_trans[4] == materia[4]:
+    #                 incluida = True
+    #                 if m_trans[1] not in materia[1]:
+    #                     materia[1] = '%s/%s' % (materia[1], m_trans[1])
+    #         if not incluida:
+    #             materias.append(m_trans)
+    #     sin_repetir = []
+    #     todas = []
+    #     for materia in materias:
+    #         m = (materia[0], materia[1], materia[2])
+    #         todas.append(m)
+    #         if m not in sin_repetir:
+    #             sin_repetir.append(m)
+    #     analizadas = []
+    #     for d in sin_repetir:
+    #         if d[2] != 0:
+    #             for i in range(int(len([m for m in todas if m == d]) / d[2])):
+    #                 analizadas.append(d)
+    #     return analizadas
 
     def calcula_sesiones_docente(self, psxls):
         # '222074 -> 1º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
@@ -545,7 +566,9 @@ class PlantillaXLS(models.Model):
     fecha_fin = models.CharField('Fecha fin contrato profesor', max_length=15, blank=True, null=True)
     dia = models.CharField('Día de la semana expresado en número', max_length=3, blank=True, null=True)
     hora_inicio = models.CharField('Hora inicio periodo en minutos', max_length=15, blank=True, null=True)
+    inicio = models.IntegerField('Hora inicio periodo en minutos', default=0)
     hora_fin = models.CharField('Hora fin periodo en minutos', max_length=15, blank=True, null=True)
+    fin = models.IntegerField('Hora inicio periodo en minutos', default=0)
     hora_inicio_cadena = models.CharField('Hora inicio periodo en formato H:i', max_length=8, blank=True, null=True)
     hora_fin_cadena = models.CharField('Hora fin periodo en formato H:i', max_length=8, blank=True, null=True)
     actividad = models.CharField('Nombre de la actividad', max_length=117, blank=True, null=True)
@@ -740,6 +763,7 @@ class SesionDocente(models.Model):
     minutos = models.CharField('Duración del periodo en minutos', max_length=15, blank=True, null=True)
     dependencia = models.ForeignKey(Dependencia, blank=True, null=True, on_delete=models.CASCADE)
     materia = models.ForeignKey(Materia, blank=True, null=True, on_delete=models.CASCADE)
+    grupos = models.ManyToManyField(Grupo, blank=True)
     # x_dependencia = models.CharField('Código de la dependencia en Racima', max_length=10, blank=True, null=True)
     # c_coddep = models.CharField('Nombre corto de la dependencia', max_length=30, blank=True, null=True)
     # x_dependencia2 = models.CharField('Código de la dependencia2 en Racima', max_length=10, blank=True, null=True)
@@ -761,7 +785,7 @@ class SesionDocente(models.Model):
 
     @property
     def s_unidades(self):
-        us = [grupo.nombre for grupo in self.unidades]
+        us = [grupo.nombre for grupo in self.grupos.all().order_by('nombre')]
         return '/'.join(us)
 
     def s_materia(self):  # String Materia

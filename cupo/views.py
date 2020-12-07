@@ -16,7 +16,6 @@ from django.http import HttpResponse
 from django.db.models import Q
 from django.template.loader import render_to_string
 
-
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo, PlantillaXLS, \
@@ -66,6 +65,7 @@ def cupo_especialidad(cupo, especialidad):
     profesores_cupo.save()
     return profesores_cupo
 
+
 def crear_profesores_cupo(cupo):
     p_cs = Profesores_cupo.objects.filter(cupo=cupo)
     for p_c in p_cs:
@@ -75,6 +75,7 @@ def crear_profesores_cupo(cupo):
         for gep in geps:
             Profesor_cupo.objects.create(profesorado=p_c, nombre=gep.ge.gauser.get_full_name())
     return True
+
 
 def ajax_cupo(request):
     if request.is_ajax():
@@ -490,7 +491,8 @@ def ajax_cupo(request):
             try:
                 campo = request.POST['campo']
                 valor = request.POST['valor']
-                p_c = Profesor_cupo.objects.get(id=request.POST['id'], profesorado__cupo__ronda__entidad=g_e.ronda.entidad)
+                p_c = Profesor_cupo.objects.get(id=request.POST['id'],
+                                                profesorado__cupo__ronda__entidad=g_e.ronda.entidad)
                 if campo == 'bilingue':
                     valores = {'true': True, 'false': False}
                     valor = valores[valor]
@@ -597,7 +599,7 @@ def plantilla_organica(request):
                 if 'C.E.P.A' in pd.po.ronda_centro.entidad.name:
                     departamento = plantilla_departamento_cepa(pd.po, pd.departamento)
                     html = render_to_string('plantilla_organica_accordion_cepa_content_tbody_departamento_tr.html',
-                                        {'departamento': departamento})
+                                            {'departamento': departamento})
                 else:
                     departamento = plantilla_departamento(pd.po, pd.departamento)
                     html = render_to_string('plantilla_organica_accordion_content_tbody_departamento_tr.html',
@@ -630,7 +632,7 @@ def plantilla_organica(request):
                 for departamento, x_departamento in array_departamentos:
                     if 'C.E.P.A' in po.ronda_centro.entidad.name:
                         html = render_to_string('plantilla_organica_accordion_cepa_content_tbody_departamento_tr.html',
-                                            {'departamento': plantilla_departamento(po, departamento)})
+                                                {'departamento': plantilla_departamento(po, departamento)})
                     else:
                         html = render_to_string('plantilla_organica_accordion_content_tbody_departamento_tr.html',
                                                 {'departamento': plantilla_departamento(po, departamento)})
@@ -666,18 +668,28 @@ def plantilla_organica(request):
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'materias_docente':
-            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
-            materias = po.get_materias_docente(request.POST['x_docente'])
-            return JsonResponse({'ok': True, 'materias': [m.nombre for m in materias]})
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
                 materias = po.get_materias_docente(request.POST['x_docente'])
-                return JsonResponse({'ok': True, 'materias': [m.nombre for m in materias]})
-                # psxls = po.plantillaxls_set.filter(x_docente=request.POST['x_docente'])
-                # materias = []
-                # for m in po.calcula_materias_docente(psxls):
-                #     materias.append('%s %s %sh' % (m[0], m[1], m[2]))
-                # return JsonResponse({'ok': True, 'materias': materias})
+                dict_materias = [{'curso': m.curso.nombre, 'materia': m.nombre, 'abreviatura': m.abreviatura,
+                                  'horas_min': m.horas_semana_min, 'horas_max': m.horas_semana_max, 'horas': hs,
+                                  'grupos': us} for m, us, hs in materias]
+                return JsonResponse({'ok': True, 'materias': dict_materias})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'get_horario':
+            try:
+                po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
+                ss = po.sesiondocente_set.filter(x_docente=request.POST['x_docente'])
+                tramos = po.plantillaxls_set.filter(x_docente=request.POST['x_docente']).order_by('inicio').values_list(
+                    'inicio', 'hora_inicio_cadena', 'hora_fin_cadena').distinct()
+                horario = {}
+                for inicio, s_inicio, s_fin in tramos:
+                    tramo = '%s-%s' % (s_inicio, s_fin)
+                    horario[tramo] = {d: ss.filter(hora_inicio=str(inicio), dia=d) for d in ['1', '2', '3', '4', '5']}
+                tabla = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario,
+                                                                                     'docente': ss[0].docente})
+                return JsonResponse({'ok': True, 'tabla': tabla})
             except:
                 return JsonResponse({'ok': False})
 
