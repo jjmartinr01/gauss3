@@ -19,10 +19,13 @@
             <td>{{ tramo }}</td>
             {% for dia, sesion in sesiones_en_tramo.items %}
                 {% if sesion.0.x_actividad == '1' %}
-                    <td>{{ sesion.0.materia.nombre }}<br><span style="color:darkorange">{{ sesion.0.s_unidades }}</span><br><span
+                    <td title="{{ sesion.0.materia.curso.nombre }}" class="{{ sesion.0.clase_horario }} mwx198"
+                    data-m="{{ sesion.0.clase_horario }}">{{ sesion.0.materia.nombre }}<br><span
+                            style="color:darkorange">{{ sesion.0.s_unidades }}</span><br><span
                             style="color:lightseagreen">{{ sesion.0.dependencia.nombre }}</span></td>
                 {% else %}
-                    <td style="color:mediumvioletred">{{ sesion.0.actividad }}</td>
+                    <td class="{{ sesion.0.clase_horario }} mwx198" data-m="{{ sesion.0.clase_horario }}"
+                        style="color:mediumvioletred">{{ sesion.0.actividad }}</td>
                 {% endif %}
             {% endfor %}
         </tr>
@@ -30,3 +33,13 @@
     </tbody>
 </table>
 
+<script>
+    $('body').on('mouseover', '.mwx198', function(){
+        var mId = $(this).data('m');
+        $('.' + mId).css('background-color', 'lightgoldenrodyellow');
+    });
+    $('body').on('mouseout', '.mwx198', function(){
+        var mId = $(this).data('m');
+        $('.' + mId).css('background-color', '');
+    });
+</script>

@@ -678,6 +678,16 @@ def plantilla_organica(request):
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'get_horario':
+            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
+            ss = po.sesiondocente_set.filter(x_docente=request.POST['x_docente'])
+            tramos = po.plantillaxls_set.filter(x_docente=request.POST['x_docente']).order_by('inicio').values_list(
+                'inicio', 'hora_inicio_cadena', 'hora_fin_cadena').distinct()
+            horario = {}
+            for inicio, s_inicio, s_fin in tramos:
+                tramo = '%s-%s' % (s_inicio, s_fin)
+                horario[tramo] = {d: ss.filter(hora_inicio=str(inicio), dia=d) for d in ['1', '2', '3', '4', '5']}
+            tabla = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario,
+                                                                                 'docente': ss[0].docente})
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
                 ss = po.sesiondocente_set.filter(x_docente=request.POST['x_docente'])

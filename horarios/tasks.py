@@ -586,16 +586,16 @@ def carga_masiva_from_file():
             carga.cargado = True
             carga.save()
             # Las siguientes líneas hay que borrarlas.
-            pos = PlantillaOrganica.objects.all()
-            for po in pos:
-                psxls = po.plantillaxls_set.all()
-                if psxls[0].inicio == 0:
-                    for p in psxls:
-                        try:
-                            p.inicio = int(float(p.hora_inicio))
-                            p.fin = int(float(p.fin))
-                        except:
-                            pass
-                    po.calcula_pdocentes()
-                    po.crea_sesiones_docentes()
+            # pos = PlantillaOrganica.objects.all()
+            # for po in pos:
+            #     psxls = po.plantillaxls_set.all()
+            #     if psxls[0].inicio == 0:
+            #         for p in psxls:
+            #             try:
+            #                 p.inicio = int(float(p.hora_inicio))
+            #                 p.fin = int(float(p.fin))
+            #             except:
+            #                 pass
+            #         po.calcula_pdocentes()
+            #         po.crea_sesiones_docentes()
     return True

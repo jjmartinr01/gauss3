@@ -788,6 +788,19 @@ class SesionDocente(models.Model):
         us = [grupo.nombre for grupo in self.grupos.all().order_by('nombre')]
         return '/'.join(us)
 
+    @property
+    def clase_horario(self):
+        try:
+            if self.x_actividad == '1':
+                ch = [str(self.materia.id)]
+                for grupo in self.grupos.all():
+                    ch.append(str(grupo.id))
+                return '_'.join(ch)
+            else:
+                return self.x_actividad
+        except:
+            return self.x_actividad
+
     def s_materia(self):  # String Materia
         if self.x_actividad == '1':
             m = []

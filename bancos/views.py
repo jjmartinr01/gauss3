@@ -8,6 +8,12 @@ from bancos.models import Banco
 
 logger = logging.getLogger('django')
 
+# https://www.bde.es/webbde/es/estadis/ifm/if_es.html
+# https://www.iban.es/codigos-bic.html
+# https://www.iban.es/bic/espana.html
+
+
+
 def crea_bancos(request):
     # csv_file  = open('/home/juanjo/django/gauss_scout/bancos_bic.csv', "rb")
     # fichero = csv.reader(csv_file, delimiter=';')

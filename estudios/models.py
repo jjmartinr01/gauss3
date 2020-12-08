@@ -32,10 +32,7 @@ class Curso(models.Model):
         ordering = ['etapa', 'tipo', 'nombre']
 
     def __str__(self):
-        try:
-            return u'%s (%s)' % (self.nombre, self.ronda.entidad.name)
-        except:
-            return u'%s (%s)' % (self.nombre, self.entidad.name)
+        return '%s (%s)' % (self.nombre, self.ronda.entidad.name)
 
 
 # Ligar un Grupo a un curso es problemático porque alumnos de un grupo pueden pertenecer a varios cursos. Por ejemplo
