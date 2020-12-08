@@ -1,14 +1,14 @@
 {% load my_templatetags %}
 {% load documentos_extras %}
-<td colspan="5">
+{#<td colspan="5">#}
     <fieldset class="fieldset_archivo_editar{{ d.id }}" >
         <legend>Edición de archivo</legend>
-        <div style="position:relative;">
-            <span style="position: absolute; top:-1.25rem; right: -0.25rem;font-size: large;font-weight: bold;">
-                <a class="fieldset_archivo_editar_close" data-doc="{{ d.id }}"><i class="fa fa-times"></i></a>
-            </span>
-        </div>
-        <table class="tabla_editar_archivo">
+{#        <div style="position:relative;">#}
+{#            <span style="position: absolute; top:-1.25rem; right: -0.25rem;font-size: large;font-weight: bold;">#}
+{#                <a class="fieldset_archivo_editar_close" data-doc="{{ d.id }}"><i class="fa fa-times"></i></a>#}
+{#            </span>#}
+{#        </div>#}
+        <table class="tabla_editar_archivo" width="100%">
             <tbody>
             <tr>
                 <td colspan="4"><label>Nombre</label>
@@ -41,7 +41,15 @@
             </tbody>
         </table>
     </fieldset>
-</td>
+{#</td>#}
+
+{#<div class="row">#}
+{#    <div class="columns large-12">#}
+{#        <a class="fieldset_archivo_editar_close button" data-doc="{{ d.id }}">Cerrar</a>#}
+{#    </div>#}
+{#</div>#}
 <script>
-    $("#select_gcs_archivo{{ d.id }}").select2(conf_select2({'gcs': 'gcs', 'format_g': '{0}, {1}'}));
+    setTimeout(function (){
+        $("#select_gcs_archivo{{ d.id }}").select2(conf_select2({'gcs': 'gcs', 'format_g': '{0}, {1}'}));
+    }, 200);
 </script>

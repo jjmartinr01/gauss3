@@ -1,18 +1,43 @@
+{% load documentos_extras %}
 {% for c in d.compartir_ges_documental_set.all %}
     <tr id="fila_permiso{{ c.id }}">
         <td colspan="7">{{ c.cargo.cargo }}{{ c.subentidad.nombre }}{{ c.gauser.get_full_name }}</td>
         <td colspan="3">
-            <select class="edit_archivo" data-id="{{ c.id }}" data-campo="permiso"
-                    data-modelo="Compartir_Ges_documental">
-                <option value="r" {% if c.permiso == 'r' %}selected{% endif %}>Puede ver</option>
-                <option value="rw" {% if c.permiso == 'rw' %}selected{% endif %}>Puede ver y modificar
-                </option>
-                <option value="rwx" {% if c.permiso == 'rwx' %}selected{% endif %}>Puede ver, modificar y
-                    borrar
-                </option>
-            </select>
+            {% if d|permiso_x:g_e %}
+                <select class="edit_archivo" data-id="{{ c.id }}" data-campo="permiso"
+                        data-modelo="Compartir_Ges_documental">
+                    <option value="r" {% if c.permiso == 'r' %}selected{% endif %}>Puede ver</option>
+                    <option value="rw" {% if c.permiso == 'rw' %}selected{% endif %}>Puede ver y modificar
+                    </option>
+                    <option value="rwx" {% if c.permiso == 'rwx' %}selected{% endif %}>Puede ver, modificar y
+                        borrar
+                    </option>
+                </select>
+            {% elif d|permiso_w:g_e %}
+                {% if c.permiso == 'rwx' %}
+                    <select>
+                        <option value="rwx" selected>Puede ver, modificar y borrar</option>
+                    </select>
+                {% else %}
+                    <select class="edit_archivo" data-id="{{ c.id }}" data-campo="permiso"
+                            data-modelo="Compartir_Ges_documental">
+                        <option value="r" {% if c.permiso == 'r' %}selected{% endif %}>Puede ver</option>
+                        <option value="rw" {% if c.permiso == 'rw' %}selected{% endif %}>Puede ver y modificar
+                        </option>
+                    </select>
+                {% endif %}
+            {% endif %}
         </td>
-        <td colspan="2"><a class="borrar_permiso_archivo" data-cgd="{{ c.id }}"><i class="fa fa-trash"></i>
-            Borrar</a></td>
+        {% if d|permiso_x:g_e %}
+            <td colspan="2"><a class="borrar_permiso_archivo" data-cgd="{{ c.id }}"><i class="fa fa-trash"></i>
+                Borrar</a></td>
+        {% elif d|permiso_w:g_e %}
+            {% if c.permiso == 'rwx' %}
+                <td colspan="2"><span style="color: lightgrey;"><i class="fa fa-trash"></i> Borrar</span></td>
+            {% else %}
+                <td colspan="2"><a class="borrar_permiso_archivo" data-cgd="{{ c.id }}"><i class="fa fa-trash"></i>
+                    Borrar</a></td>
+            {% endif %}
+        {% endif %}
     </tr>
 {% endfor %}

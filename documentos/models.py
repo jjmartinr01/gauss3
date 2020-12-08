@@ -80,9 +80,8 @@ class Ges_documental(models.Model):
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 
     def permisos(self, g_e):
-        q1 = Q(subentidad__in=g_e.subentidades.all()) | Q(cargo__in=g_e.cargos.all()) | Q(gauser=g_e.gauser)
-        q2 = Q(documento=self)
-        return ''.join(Compartir_Ges_documental.objects.filter(q1, q2).values_list('permiso', flat=True))
+        q = Q(subentidad__in=g_e.subentidades.all()) | Q(cargo__in=g_e.cargos.all()) | Q(gauser=g_e.gauser)
+        return ''.join(self.compartir_ges_documental_set.filter(q).values_list('permiso', flat=True))
 
     class Meta:
         ordering = ['-creado']

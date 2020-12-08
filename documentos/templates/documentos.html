@@ -46,7 +46,14 @@
         <div id="div_documentos">
             {% include 'documentos_table.html' %}
         </div>
+        <div id="editarModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true"
+             role="dialog">
+            <div id="editar_archivo" style="position: relative;">
+            </div>
+            <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+        </div>
     </form>
+
 {% endblock %}
 
 {% block final %}
@@ -99,10 +106,10 @@
             $('#buscar').val(0);
             $('#page').val(1);
             $('#id_fecha_inicio').val(''),
-            $('#id_fecha_fin').val(''),
-            $('#busca_texto_doc').val(''),
-            $('#etiqueta_busqueda').val(''),
-            buscar_documentos();
+                $('#id_fecha_fin').val(''),
+                $('#busca_texto_doc').val(''),
+                $('#etiqueta_busqueda').val(''),
+                buscar_documentos();
             $('.fieldset_box').remove();
         });
 
@@ -124,7 +131,9 @@
             e.preventDefault();
             $('#documento').val($(this).data('doc'));
             $('#action').val('descargar_doc');
-            document.{{formname}}.submit();
+            document
+        .{{formname}}.
+            submit();
         });
 
         {% if g_e|has_permiso:'sube_archivos' %}
@@ -317,7 +326,10 @@
                 },
                 function (data) {
                     if (data.ok) {
-                        $('#fila' + doc).html(data.html);
+                        $('#documento').val(doc);
+                        $('#editar_archivo').html(data.html);
+                        $('#editarModal').foundation('reveal', 'open');
+                        {#$('#fila' + doc).html(data.html);#}
                         $('#action').val(doc);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
@@ -325,6 +337,35 @@
                     }
                 });
         });
+
+        $(document).on('closed.fndtn.reveal', '#editarModal', function () {
+            $.post("/documentos/", {action: 'fieldset_archivo_editar_close', doc: $('#documento').val()},
+                function (data) {
+                    if (data.ok) {
+                        $('#fila' + data.doc).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        {#$('body').on('click', '.fieldset_archivo_editar_close', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var doc = $(this).data('doc');#}
+        {#    $.post("/documentos/", {#}
+        {#            action: 'fieldset_archivo_editar_close',#}
+        {#            doc: $(this).data('doc')#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $('#fila' + data.doc).html(data.html);#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $("#update_error").show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
 
         {% if g_e|has_permiso:'edita_carpetas' %}
             $('body').on('click', '.editar_carpeta', function (e) {
@@ -366,23 +407,6 @@
                     });
             });
         {% endif %}
-
-        $('body').on('click', '.fieldset_archivo_editar_close', function (e) {
-            e.preventDefault();
-            var doc = $(this).data('doc');
-            $.post("/documentos/", {
-                    action: 'fieldset_archivo_editar_close',
-                    doc: $(this).data('doc')
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#fila' + data.doc).html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
 
         $('body').on('keyup change', '.edit_archivo', function (e) {
             e.preventDefault();

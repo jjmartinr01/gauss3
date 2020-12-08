@@ -19,16 +19,16 @@
             <li><a class="borrar_doc_completamente" data-doc="{{ d.id }}"><i
                     class="fa fa-trash fa-fw"></i> Borrar para todos los usuarios</a>
             </li>
-        {% elif d|permiso_w:g_e %}
-            <li><a class="editar_doc" data-doc="{{ d.id }}"><i
-                    class="fa fa-pencil fa-fw"></i> Editar</a>
-            </li>
         {% elif d|permiso_x:g_e %}
             <li><a class="editar_doc" data-doc="{{ d.id }}"><i
                     class="fa fa-pencil fa-fw"></i> Editar</a>
             </li>
             <li><a class="borrar_doc" data-doc="{{ d.id }}"><i
                     class="fa fa-trash-o fa-fw"></i> Borrar</a>
+            </li>
+        {% elif d|permiso_w:g_e %}
+            <li><a class="editar_doc" data-doc="{{ d.id }}"><i
+                    class="fa fa-pencil fa-fw"></i> Editar</a>
             </li>
         {% endif %}
     </ul>
