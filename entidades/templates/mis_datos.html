@@ -31,45 +31,50 @@
             </div>
         </div>
 
-        <div class="row">
-            <div class="large-3 columns">
-                <label>Nombre de usuario
-                    <input type="text" value="{{ miembro_unidad.gauser.username }}" data-id="{{ miembro_unidad.id }}"
-                           data-campo="username" class="campo_gauser" maxlength="50">
-                </label>
-            </div>
+        {% if not logincas %}
+            <div class="row">
+                <div class="large-3 columns">
+                    <label>Usuario del sistema
+                        <input type="text" value="{{ miembro_unidad.gauser.username }}"
+                               data-id="{{ miembro_unidad.id }}"
+                               data-campo="username" class="campo_gauser" maxlength="50">
+                    </label>
+                </div>
 
 
-            <div class="large-4 columns">
-                <label>Escribe contraseña
-                    <input type="password" id="dialog_password1" name="password1"
-                           placeholder="Sólo si deseas cambiarla" class="change_password"/>
-                </label>
+                <div class="large-4 columns">
+                    <label>Escribe contraseña
+                        <input type="password" id="dialog_password1" name="password1"
+                               placeholder="Sólo si deseas cambiarla" class="change_password"/>
+                    </label>
+                </div>
+                <div class="large-4 columns">
+                    <label style="font-weight: 800;">Repite contraseña <span id="pass_warning"
+                                                                             style="color:red;display: none;"><i
+                            class="fa fa-warning"></i></span>
+                        <span id="pass_ok" style="color:green;display: none;"><i class="fa fa-check"></i></span>
+                        <input type="password" id="dialog_password2" class="change_password" name="password2"
+                               placeholder="Igual que anterior si deseas cambiarla"/>
+                        <ul style="color:red">
+                            <li id="no_coinciden" class="warnings" style="display: none;">Las contraseñas no coinciden
+                            </li>
+                            <li id="no_length" class="warnings" style="display: none;">Deben tener más de 6 caracteres
+                            </li>
+                            <li id="no_upper" class="warnings" style="display: none;">Deben tener alguna maýuscula</li>
+                            <li id="no_lower" class="warnings" style="display: none;">Deben tener alguna minúscula</li>
+                            <li id="no_digit" class="warnings" style="display: none;">Deben tener algún número</li>
+                        </ul>
+                    </label>
+                </div>
+                <div class="large-1 columns">
+                    <label>&nbsp;
+                        <a class="button tiny radius disabled secondary" id="boton_password"
+                           data-id="{{ miembro_unidad.id }}"
+                           title="Cambiar la contraseña">Cambiar</a>
+                    </label>
+                </div>
             </div>
-            <div class="large-4 columns">
-                <label style="font-weight: 800;">Repite contraseña <span id="pass_warning"
-                                                                         style="color:red;display: none;"><i
-                        class="fa fa-warning"></i></span>
-                    <span id="pass_ok" style="color:green;display: none;"><i class="fa fa-check"></i></span>
-                    <input type="password" id="dialog_password2" class="change_password" name="password2"
-                           placeholder="Igual que anterior si deseas cambiarla"/>
-                    <ul style="color:red">
-                        <li id="no_coinciden" class="warnings" style="display: none;">Las contraseñas no coinciden</li>
-                        <li id="no_length" class="warnings" style="display: none;">Deben tener más de 6 caracteres</li>
-                        <li id="no_upper" class="warnings" style="display: none;">Deben tener alguna maýuscula</li>
-                        <li id="no_lower" class="warnings" style="display: none;">Deben tener alguna minúscula</li>
-                        <li id="no_digit" class="warnings" style="display: none;">Deben tener algún número</li>
-                    </ul>
-                </label>
-            </div>
-            <div class="large-1 columns">
-                <label>&nbsp;
-                    <a class="button tiny radius disabled secondary" id="boton_password"
-                       data-id="{{ miembro_unidad.id }}"
-                       title="Cambiar la contraseña">Cambiar</a>
-                </label>
-            </div>
-        </div>
+        {% endif %}
 
         <div class="row">
             <div class="large-5 columns">

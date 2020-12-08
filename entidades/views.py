@@ -74,7 +74,8 @@ def mis_datos(request):
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
         'miembro_unidad': miembro_unidad,
         'usuarios_tutorados': usuarios_tutorados.order_by('grupo'),
-        'provincias': PROVINCIAS
+        'provincias': PROVINCIAS,
+        'logincas': True if 'service' in request.session else False,
     }
     return render(request, "mis_datos.html", respuesta)
 
@@ -259,12 +260,13 @@ def usuarios_entidad_ajax(request):
                 subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad,
                                                          fecha_expira__gt=datetime.now().date()).order_by('edad_min')
                 # 'entidad_users_id': entidad_users_id
+                logincas = True if 'service' in request.session else False
                 html = render_to_string("usuarios_entidad_formulario.html", {'gauser_extra_selected': g_e_selected,
                                                                              'cargos': cargos,
                                                                              'subentidades': subentidades,
                                                                              'prev_g_e_selected': prev,
                                                                              'prox_g_e_selected': prox,
-                                                                             'g_e': g_e
+                                                                             'g_e': g_e, 'logincas': logincas
                                                                              })
                 return JsonResponse({'ok': True, 'html': html})
             elif request.POST['action'] == 'baja_socio':
