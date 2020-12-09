@@ -5,7 +5,7 @@ from datetime import datetime
 from django.db import models
 from django.template import Context, Template
 from autenticar.models import Gauser
-from entidades.models import Entidad, Ronda, Gauser_extra
+from entidades.models import Entidad, Ronda, Gauser_extra, Subentidad
 from django.utils.timezone import now
 from gauss.funciones import pass_generator
 
@@ -779,3 +779,32 @@ class FileAttachedII(models.Model):
 
     def __str__(self):
         return '%s (%s)' % (self.fichero, self.informe)
+
+
+def code_grupo():
+    return pass_generator(10)
+
+def get_grupos_cis(ronda): #get grupos de centros inspeccionados
+    centros = CentroInspeccionado.objects.filter(ronda=ronda)
+    grupos = {g:[] for g in centros.values_list('grupo', flat=True).distinct()}
+    for c in centros:
+        grupos[c.grupo].append(c)
+    return grupos
+
+class CentroInspeccionado(models.Model):
+    TIPOS = (('PU', 'Público'), ('PR', 'Privado'))
+    ETAPAS = (('INF', 'Infantil'), ('PRI', 'Primaria'), ('SEC', 'Secundaria'), ('IP', 'Infantil y Primaria'),
+              ('IPS', 'Infantil, Primaria y Secundaria'), ('PS', 'Primaria y Secundaria'))
+    CL = (('A', 'Tipo A'), ('B', 'Tipo B'), ('C', 'Tipo C'), ('D', 'Tipo D'), ('E', 'Tipo E'))
+    centro = models.OneToOneField(Entidad, blank=True, null=True, on_delete=models.CASCADE)
+    ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE) #Ronda de la entidad inspectora
+    tipo = models.CharField('Tipo de centro', max_length=5, choices=TIPOS, blank=True, null=True, default='PU')
+    zona = models.ForeignKey(Subentidad, blank=True, null=True, on_delete=models.SET_NULL)
+    etapas = models.CharField('Etapas en el centro', max_length=5, choices=ETAPAS, blank=True, null=True, default='IP')
+    clasificado = models.CharField('Clasificación', max_length=5, choices=CL, blank=True, null=True, default='IP')
+    puntos = models.IntegerField('Puntos asignados', default=1)
+    grupo = models.CharField('Grupo de centros al que pertenece', max_length=12, default=code_grupo)
+    inspector = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return '%s (%s)' % (self.centro, self.inspector)
