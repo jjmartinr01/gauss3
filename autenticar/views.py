@@ -593,7 +593,7 @@ def index(request):
         if 'service' in request.session:
             logout(request)
             response = HttpResponse(status=302)
-            response['Location'] = CAS_URL + 'logout'
+            response['Location'] = CAS_URL + 'logout?url=https%3A%2F%2Fgauss.larioja.org%2Flogincas'
             return response
         else:
             logout(request)

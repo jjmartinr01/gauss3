@@ -1,5 +1,8 @@
 <td>
-    <div class="docente" data-po="{{ pd.po.id }}" data-x_docente="{{ pd.x_docente }}">{{ pd.docente }}</div>
+    <div class="nombre_horario" data-po="{{ pd.po.id }}" data-x_docente="{{ pd.x_docente }}">
+        <div class="docente">{{ pd.docente }}</div>
+        <div class="div_get_horario"><a class="get_horario"><i class="fa fa-calendar"></i></a></div>
+    </div>
     <div class="materias_docente" id="materias_docente{{ pd.x_docente }}"></div>
 </td>
 <td contenteditable="true" class="tdpdocente" data-id="{{ pd.id }}" data-campo="troneso">{{ pd.troneso }}</td>

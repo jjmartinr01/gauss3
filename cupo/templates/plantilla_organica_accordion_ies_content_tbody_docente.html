@@ -34,19 +34,14 @@
 
     <thead>
     <tr id="departamento{{ dep.1 }}">
-        {#        {% if dep.2 %}#}
         {% with departamento=po|plantilla_departamento:dep.2 %}
-            {% include "plantilla_organica_accordion_content_tbody_departamento_tr.html" %}
+            {% include "plantilla_organica_accordion_ies_content_tbody_departamento_tr.html" %}
         {% endwith %}
-        {#        {% else %}#}
-        {#            <th colspan="23" style="color: #1b75bb">Profesores sin departamento</th>#}
-        {#        {% endif %}#}
     </tr>
     </thead>
     {% for pd in po|docentes_departamento:dep.1 %}
         <tr id="plantilladocente{{ pd.id }}" class="docentes_dep{{ dep.1 }}" style="display: none;">
-            {% include "plantilla_organica_accordion_content_tbody_docente_tr.html" %}
+            {% include "plantilla_organica_accordion_ies_content_tbody_docente_tr.html" %}
         </tr>
     {% endfor %}
-
 {% endfor %}

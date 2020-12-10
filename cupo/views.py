@@ -586,7 +586,7 @@ def plantilla_organica(request):
                 if 'C.E.P.A' in po.ronda_centro.entidad.name:
                     html = render_to_string('plantilla_organica_accordion_cepa_content.html', {'po': po, 'g_e': g_e})
                 else:
-                    html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
+                    html = render_to_string('plantilla_organica_accordion_ies_content.html', {'po': po, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
@@ -602,7 +602,7 @@ def plantilla_organica(request):
                                             {'departamento': departamento})
                 else:
                     departamento = plantilla_departamento(pd.po, pd.departamento)
-                    html = render_to_string('plantilla_organica_accordion_content_tbody_departamento_tr.html',
+                    html = render_to_string('plantilla_organica_accordion_ies_content_tbody_departamento_tr.html',
                                             {'departamento': departamento})
                 return JsonResponse({'ok': True, 'html': html, 'hbpd': pd.horas_basicas, 'htpd': pd.horas_totales,
                                      'x_departamento': pd.x_departamento})
@@ -624,7 +624,7 @@ def plantilla_organica(request):
                         html = render_to_string('plantilla_organica_accordion_cepa_content_tbody_docente_tr.html',
                                                 {'pd': pd})
                     else:
-                        html = render_to_string('plantilla_organica_accordion_content_tbody_docente_tr.html',
+                        html = render_to_string('plantilla_organica_accordion_ies_content_tbody_docente_tr.html',
                                                 {'pd': pd})
                     docentes.append({'id': pd.id, 'html': html})
                     if (pd.departamento, pd.x_departamento) not in array_departamentos:
@@ -634,7 +634,7 @@ def plantilla_organica(request):
                         html = render_to_string('plantilla_organica_accordion_cepa_content_tbody_departamento_tr.html',
                                                 {'departamento': plantilla_departamento(po, departamento)})
                     else:
-                        html = render_to_string('plantilla_organica_accordion_content_tbody_departamento_tr.html',
+                        html = render_to_string('plantilla_organica_accordion_ies_content_tbody_departamento_tr.html',
                                                 {'departamento': plantilla_departamento(po, departamento)})
                     departamentos.append({'x_departamento': x_departamento, 'html': html})
                 return JsonResponse({'ok': True, 'docentes': docentes, 'departamentos': departamentos})
