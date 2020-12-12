@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import logging
+import pdfkit
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.utils.text import slugify
 from entidades.models import Gauser_extra, Subentidad
-from gauss.funciones import html_to_pdf, usuarios_de_gauss
+from gauss.funciones import html_to_pdf, usuarios_de_gauss, get_dce
 from gauss.rutas import *
 from absentismo.models import Actuacion, ExpedienteAbsentismo
 from django.http import HttpResponse
@@ -20,23 +21,32 @@ from mensajes.models import Aviso
 logger = logging.getLogger('django')
 
 
-@permiso_required('acceso_absentismo')
+# @permiso_required('acceso_absentismo')
 def gestionar_absentismo(request):
     g_e = request.session['gauser_extra']
     expedientes = ExpedienteAbsentismo.objects.filter(expedientado__ronda=g_e.ronda)[:10]
 
     if request.method == 'POST':
         if request.POST['action'] == 'pdf_absentismo' and g_e.has_permiso('crea_informe_absentismo'):
+            doc_abs = 'Configuración de informes de absentismo'
+            dce = get_dce(g_e.ronda.entidad, doc_abs)
             expediente = ExpedienteAbsentismo.objects.get(expedientado__ronda=g_e.ronda,
                                                           id=request.POST['expediente_id'])
-            fichero = 'expediente_absentismo_%s_%s' % (g_e.ronda.entidad.code, expediente.id)
+            # fichero = 'expediente_absentismo_%s_%s' % (g_e.ronda.entidad.code, expediente.id)
             c = render_to_string('absentismo2pdf.html', {'expediente': expediente, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
-            fich = html_to_pdf(request, c, media=MEDIA_ABSENTISMO, fichero=fichero, title=u'Expediente de absentismo')
-            logger.info(u'%s, pdf_absentismo %s' % (g_e, expediente.id))
+            fich = pdfkit.from_string(c, False, dce.get_opciones)
+            logger.info('%s, pdf_absentismo %s' % (g_e, expediente.id))
             response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=expediente_absentismo_%s.pdf' % (
-                slugify(expediente.expedientado.gauser.get_full_name()))
+            alumno = slugify(expediente.expedientado.gauser.get_full_name())
+            response['Content-Disposition'] = 'attachment; filename=expediente_absentismo_%s.pdf' % alumno
             return response
+
+            # fich = html_to_pdf(request, c, media=MEDIA_ABSENTISMO, fichero=fichero, title='Expediente de absentismo')
+            # logger.info('%s, pdf_absentismo %s' % (g_e, expediente.id))
+            # response = HttpResponse(fich, content_type='application/pdf')
+            # response['Content-Disposition'] = 'attachment; filename=expediente_absentismo_%s.pdf' % (
+            #     slugify(expediente.expedientado.gauser.get_full_name()))
+            # return response
 
     return render(request, "absentismo.html",
                   {
@@ -51,7 +61,7 @@ def gestionar_absentismo(request):
 def ajax_absentismo(request):
     g_e = request.session['gauser_extra']
     if request.is_ajax():
-        logger.info(u'%s, %s' % (g_e, request.POST['action']))
+        logger.info('%s, %s' % (g_e, request.POST['action']))
         if request.POST['action'] == 'buscar_actuado':
             texto = request.POST['q']
             sub_alumnos = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='alumnos')
@@ -205,7 +215,7 @@ def ajax_absentismo(request):
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
         else:
-            logger.info(u'%s, acción no permitida' % (g_e))
+            logger.info('%s, acción no permitida' % (g_e))
             return HttpResponse(False)
 
     else:

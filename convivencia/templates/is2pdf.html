@@ -1,4 +1,27 @@
 {% load convivencia_extras %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Comunicación de conductas contrarias y sanciones</title>
+    <style type="text/css">
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: justify;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+        .pagebreak {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
 <h2 style="text-align:center;"> COMUNICACIÓN DE CONDUCTAS CONTRARIAS Y SANCIONES</h2>
 
 Alumno: <strong> {{ informe.sancionado.gauser.get_full_name }}</strong>
@@ -89,11 +112,12 @@ Tutor: <strong> {{ informe.sancionado.gauser_extra_estudios.tutor.gauser.get_ful
         <ul>
             {% for expulsion in expulsiones %}
                 <li>El {{ expulsion.fecha_incidente|date:"j" }} de {{ expulsion.fecha_incidente|date:"F" }}
-                    de {{ expulsion.fecha_incidente|date:"Y" }}. {% if expulsion.fechaexpulsion_set.all|length > 0 %} Días:
-                    {% for fecha in expulsion.fechaexpulsion_set.all %}{% if forloop.revcounter0 == 1 %}
-                        {{ fecha.fecha|date:"d/m/Y" }} y
-                        {% elif forloop.revcounter0 > 1 %}{{ fecha.fecha|date:"d/m/Y" }}, {% else %}
-                        {{ fecha.fecha|date:"d/m/Y" }}{% endif %}{% endfor %}{% endif %}</li>
+                    de {{ expulsion.fecha_incidente|date:"Y" }}. {% if expulsion.fechaexpulsion_set.all|length > 0 %}
+                        Días:
+                        {% for fecha in expulsion.fechaexpulsion_set.all %}{% if forloop.revcounter0 == 1 %}
+                            {{ fecha.fecha|date:"d/m/Y" }} y
+                            {% elif forloop.revcounter0 > 1 %}{{ fecha.fecha|date:"d/m/Y" }}, {% else %}
+                            {{ fecha.fecha|date:"d/m/Y" }}{% endif %}{% endfor %}{% endif %}</li>
             {% endfor %}
         </ul>
     {% endif %}
@@ -158,5 +182,6 @@ Tutor: <strong> {{ informe.sancionado.gauser_extra_estudios.tutor.gauser.get_ful
     el {{ informe.fecha_incidente|date:"j" }} de {{ informe.fecha_incidente|date:"F"|lower }}
     de {{ informe.fecha_incidente|date:"Y" }}.</p>
 <p> Nombre del receptor, fecha y firma:</p>
-
+</body>
+</html>
  

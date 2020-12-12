@@ -319,3 +319,20 @@ def nombre_usuario(g_e, alias=False):
         return g_e.alias if g_e.alias else nombre(g_e)
     else:
         return nombre(g_e)
+
+def get_dce(entidad, nombre):
+    try:
+        dce = DocConfEntidad.objects.get(entidad=entidad, nombre=nombre)
+    except:
+        try:
+            dce = DocConfEntidad.objects.get(entidad=entidad, predeterminado=True)
+        except:
+            dce = DocConfEntidad.objects.filter(entidad=entidad)[0]
+            dce.predeterminado = True
+            dce.save()
+        dce.pk = None
+        dce.nombre = nombre
+        dce.predeterminado = False
+        dce.editable = False
+        dce.save()
+    return dce

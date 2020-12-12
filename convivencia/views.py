@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import pdfkit
 from datetime import date
 import os
 from os.path import normpath, basename
@@ -14,10 +15,10 @@ from django.core.files.base import ContentFile
 import base64
 
 from autenticar.control_acceso import permiso_required
-from gauss.funciones import usuarios_de_gauss, html_to_pdf
+from gauss.funciones import usuarios_de_gauss, html_to_pdf, get_dce
 from gauss.rutas import RUTA_BASE, MEDIA_ANAGRAMAS, MEDIA_CONVIVENCIA
 from convivencia.models import *
-from entidades.models import Subentidad
+from entidades.models import Subentidad, DocConfEntidad
 from mensajes.models import Aviso, Mensaje, Mensaje_cola, Borrado
 from mensajes.views import crear_aviso, encolar_mensaje
 
@@ -221,8 +222,9 @@ def sancionar_conductas(request):
     inf_actual = None
     if request.method == 'POST' and not request.is_ajax():
         if request.POST['action'] == 'genera_pdf':
-            informe = Informe_sancionador.objects.get(sancionado__ronda=g_e.ronda,
-                                                      id=request.POST['inf_actual'])
+            doc_ie = 'Configuración de informes sancionadores de alumnos'
+            dce = get_dce(entidad=g_e.ronda.entidad, nombre=doc_ie)
+            informe = Informe_sancionador.objects.get(sancionado__ronda=g_e.ronda, id=request.POST['inf_actual'])
             coherente, mensaje = informe.is_coherente
             if coherente:
                 if informe.fichero:
@@ -259,18 +261,22 @@ def sancionar_conductas(request):
                 texto_html = render_to_string('is2pdf.html', {'informe': informe, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS,
                                                               'listar_conductas': listar_conductas,
                                                               'expulsiones': expulsiones, 'informes': informes})
-                ruta = MEDIA_CONVIVENCIA + '%s/' % g_e.ronda.entidad.code
-                fich = html_to_pdf(request, texto_html, fichero='IS', media=ruta, title=u'Informe sancionador')
-                informe.texto_html = texto_html
-                nombre = 'convivencia/%s/%s_%s.pdf' % (
-                    g_e.ronda.entidad.code, slugify(informe.sancionado.gauser.get_full_name()),
+                # ruta = MEDIA_CONVIVENCIA + '%s/' % g_e.ronda.entidad.code
+                # fich = html_to_pdf(request, texto_html, fichero='IS', media=ruta, title=u'Informe sancionador')
+                nombre = '%s_%s.pdf' % (slugify(informe.sancionado.gauser.get_full_name()),
                     timezone.localtime(informe.created).strftime('%d-%m-%Y_%H%M'))
-                informe.fichero.save(nombre, File(fich))
+                url_pdf = MEDIA_CONVIVENCIA + '%s/%s' % (g_e.ronda.entidad.code, nombre)
+                pdfkit.from_string(texto_html, url_pdf, dce.get_opciones)
+                fich = open(url_pdf, 'rb')
+                informe.texto_html = texto_html
+                nombre_fichero = 'convivencia/%s/%s' % (g_e.ronda.entidad.code, nombre)
+                # informe.fichero.save(nombre, File(fich))
+                informe.fichero.save(nombre_fichero, File(fich))
                 fich.close()
                 informe.save()
-                filename = informe.fichero.name.split('/')[-1]
+                # filename = informe.fichero.name.split('/')[-1]
                 response = HttpResponse(informe.fichero, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=%s' % filename
+                response['Content-Disposition'] = 'attachment; filename=%s' % nombre
                 return response
             else:
                 inf_actual = informe

@@ -2542,8 +2542,9 @@ def doc_configuration(request):
             c = render_to_string('docconf_pruebas_template.html', {'g_e': g_e})
             # if not os.path.exists(os.path.dirname(dce.url_pdf)):
             #     os.makedirs(os.path.dirname(dce.url_pdf))
-            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
-            fich = open(dce.url_pdf, 'rb')
+            # pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            # fich = open(dce.url_pdf, 'rb')
+            fich = pdfkit.from_string(c, False, dce.get_opciones)
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=doc_conf%s.pdf'% dce.id
             return response

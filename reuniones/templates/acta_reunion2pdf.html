@@ -1,9 +1,9 @@
-<h1>{{ acta.nombre }}</h1>
+{% if not pdf %}<h1>{{ acta.nombre }}</h1>
 
-{% with ntotal=acta.asistentes.all|length %}
-    {% if ntotal > 0 %}
-        Asistentes:<br>
-        <span style="font-size: 8pt;font-weight: bold;">
+    {% with ntotal=acta.asistentes.all|length %}
+        {% if ntotal > 0 %}
+            Asistentes:<br>
+            <span style="font-size: 8pt;font-weight: bold;">
     {% for asistente in acta.asistentes.all %}
         {% if forloop.counter|add:"1" == ntotal %}
             {{ asistente.gauser.get_full_name }}
@@ -16,53 +16,148 @@
         {% endif %}
     {% endfor %}
 </span>
-    {% endif %}
-{% endwith %}
-<hr>
-{% autoescape off %}
-    {{ acta.preambulo }}
-{% endautoescape %}
-
-{% for p in acta.convocatoria.punto.all %}
-    {% autoescape off %}
-        <b>{{ p.orden }}.- {{ p.punto }}</b>
-        <p>{{ p.texto_acta }}</p>
-    {% endautoescape %}
-{% endfor %}
-<p>&nbsp;</p>
-{% autoescape off %}
-    {{ acta.epilogo }}
-{% endautoescape %}
-
-{% if acta.fileattachedar_set.all|length > 0 %}
-<div class="row">
-    <div class="columns large-12">
-        <label><b>Archivos adjuntos a este acta </b></label>
-    </div>
-</div>
-<div class="row">
-    <div class="columns large-12">
-        <table>
-            <tbody id="tbody_gauss_file{{ acta.id }}">
-            {% for f in acta.fileattachedar_set.all %}
-                <tr id="gauss_file{{ f.id }}">
-                    <td><a class="descarga_gauss_file" data-id="{{ f.id }}">{{ f.fich_name }}</a></td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-{% endif %}
-
-{% for firma in acta.firmaacta_set.all %}
-    <div style="width: 280px;display: inline-block;">
-        {% if firma.tipo == 'VB' %}<p>VºBº</p>{% else %}<p>&nbsp;</p>{% endif %}
-        {% if firma.firma %}
-            <p><img src="{{ ruta_base }}{{ firma.firma.url }}" width="100px" alt="xxx"></p>
-        {% else %}
-            <p title="Falta la firma" style="color:red;">&nbsp;xxx</p>
         {% endif %}
-        <p>{{ firma.firmante }}<br>{{ firma.cargo }}</p>
-    </div>
-{% endfor %}
+    {% endwith %}
+    <hr>
+    {% autoescape off %}
+        {{ acta.preambulo }}
+    {% endautoescape %}
+
+    {% for p in acta.convocatoria.punto.all %}
+        {% autoescape off %}
+            <b>{{ p.orden }}.- {{ p.punto }}</b>
+            <p>{{ p.texto_acta }}</p>
+        {% endautoescape %}
+    {% endfor %}
+    <p>&nbsp;</p>
+    {% autoescape off %}
+        {{ acta.epilogo }}
+    {% endautoescape %}
+
+    {% if acta.fileattachedar_set.all|length > 0 %}
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Archivos adjuntos a este acta </b></label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <table>
+                    <tbody id="tbody_gauss_file{{ acta.id }}">
+                    {% for f in acta.fileattachedar_set.all %}
+                        <tr id="gauss_file{{ f.id }}">
+                            <td><a class="descarga_gauss_file" data-id="{{ f.id }}">{{ f.fich_name }}</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    {% for firma in acta.firmaacta_set.all %}
+        <div style="width: 280px;display: inline-block;">
+            {% if firma.tipo == 'VB' %}<p>VºBº</p>{% else %}<p>&nbsp;</p>{% endif %}
+            {% if firma.firma %}
+                <p><img src="{{ firma.firma.url }}" width="100px" alt="xxx"></p>
+            {% else %}
+                <p title="Falta la firma" style="color:red;">&nbsp;xxx</p>
+            {% endif %}
+            <p>{{ firma.firmante }}<br>{{ firma.cargo }}</p>
+        </div>
+    {% endfor %}
+{% else %}
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>Convocatoria de reunión</title>
+        <style type="text/css">
+            html {
+                font-family: Arial, Helvetica, sans-serif;
+                text-align: justify;
+            }
+
+            table {
+                margin-left: auto;
+                margin-right: auto;
+                width: 100%;
+            }
+
+            .pagebreak {
+                page-break-before: always;
+            }
+        </style>
+    </head>
+    <body>
+    <h1>{{ acta.nombre }}</h1>
+
+    {% with ntotal=acta.asistentes.all|length %}
+        {% if ntotal > 0 %}
+            Asistentes:<br>
+            <span style="font-size: 8pt;font-weight: bold;">
+    {% for asistente in acta.asistentes.all %}
+        {% if forloop.counter|add:"1" == ntotal %}
+            {{ asistente.gauser.get_full_name }}
+        {% elif forloop.first and forloop.last %}
+            {{ asistente.gauser.get_full_name }}
+        {% elif forloop.last %}
+            y {{ asistente.gauser.get_full_name }}.
+        {% else %}
+            {{ asistente.gauser.get_full_name }},
+        {% endif %}
+    {% endfor %}
+</span>
+        {% endif %}
+    {% endwith %}
+    <hr>
+    {% autoescape off %}
+        {{ acta.preambulo }}
+    {% endautoescape %}
+
+    {% for p in acta.convocatoria.punto.all %}
+        {% autoescape off %}
+            <b>{{ p.orden }}.- {{ p.punto }}</b>
+            <p>{{ p.texto_acta }}</p>
+        {% endautoescape %}
+    {% endfor %}
+    <p>&nbsp;</p>
+    {% autoescape off %}
+        {{ acta.epilogo }}
+    {% endautoescape %}
+
+    {% if acta.fileattachedar_set.all|length > 0 %}
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Archivos adjuntos a este acta </b></label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <table>
+                    <tbody id="tbody_gauss_file{{ acta.id }}">
+                    {% for f in acta.fileattachedar_set.all %}
+                        <tr id="gauss_file{{ f.id }}">
+                            <td><a class="descarga_gauss_file" data-id="{{ f.id }}">{{ f.fich_name }}</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    {% for firma in acta.firmaacta_set.all %}
+        <div style="width: 280px;display: inline-block;">
+            {% if firma.tipo == 'VB' %}<p>VºBº</p>{% else %}<p>&nbsp;</p>{% endif %}
+            {% if firma.firma %}
+                <p><img src="{{ firma.firma.url }}" width="100px" alt="xxx"></p>
+            {% else %}
+                <p title="Falta la firma" style="color:red;">&nbsp;xxx</p>
+            {% endif %}
+            <p>{{ firma.firmante }}<br>{{ firma.cargo }}</p>
+        </div>
+    {% endfor %}
+    </body>
+    </html>
+{% endif %}
