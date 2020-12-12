@@ -753,6 +753,7 @@ class FirmaII(models.Model):
     nombre = models.CharField('Nombre del firmante', blank=True, null=True, max_length=150)
     visible = models.BooleanField('Firma visible?', default=False)
 
+
 # class IIVariable(models.Model):
 #     informe = models.ForeignKey(PlantillaInformeInspeccion, on_delete=models.CASCADE)
 #     nombre=models.CharField('Nombre de la variable', blank=True, null=True, default='', max_length=300)
@@ -763,6 +764,7 @@ def update_fichero(instance, filename):
     instance.fich_name = filename
     fichero = pass_generator(size=20) + '.' + ext
     return '/'.join(['inspeccion', str(instance.informe.inspector.ronda.entidad.code), fichero])
+
 
 class FileAttachedII(models.Model):
     informe = models.ForeignKey(InformeInspeccion, on_delete=models.CASCADE)
@@ -781,30 +783,50 @@ class FileAttachedII(models.Model):
         return '%s (%s)' % (self.fichero, self.informe)
 
 
+#######################################################################################
+#######################################################################################
+
+
 def code_grupo():
     return pass_generator(10)
 
-def get_grupos_cis(ronda): #get grupos de centros inspeccionados
+
+def get_grupos_cis(ronda):  # get grupos de centros inspeccionados
     centros = CentroInspeccionado.objects.filter(ronda=ronda)
-    grupos = {g:[] for g in centros.values_list('grupo', flat=True).distinct()}
+    grupos = {g: [] for g in centros.values_list('grupo', flat=True).distinct()}
     for c in centros:
         grupos[c.grupo].append(c)
     return grupos
+
 
 class CentroInspeccionado(models.Model):
     TIPOS = (('PU', 'Público'), ('PR', 'Privado'))
     ETAPAS = (('INF', 'Infantil'), ('PRI', 'Primaria'), ('SEC', 'Secundaria'), ('IP', 'Infantil y Primaria'),
               ('IPS', 'Infantil, Primaria y Secundaria'), ('PS', 'Primaria y Secundaria'))
     CL = (('A', 'Tipo A'), ('B', 'Tipo B'), ('C', 'Tipo C'), ('D', 'Tipo D'), ('E', 'Tipo E'))
+    ZONAS = (('RB', 'Logroño - Rioja Baja'), ('RM', 'Logroño - Rioja Media'), ('RA', 'Logroño - Rioja Alta'))
+    PUNTOS = ((1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8), (9, 9), (10, 10), (11, 11), (12, 12))
     centro = models.OneToOneField(Entidad, blank=True, null=True, on_delete=models.CASCADE)
-    ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE) #Ronda de la entidad inspectora
+    ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE)  # Ronda de la entidad inspectora
     tipo = models.CharField('Tipo de centro', max_length=5, choices=TIPOS, blank=True, null=True, default='PU')
     zona = models.ForeignKey(Subentidad, blank=True, null=True, on_delete=models.SET_NULL)
+    zonai = models.CharField('Zona de inspección', max_length=5, choices=ZONAS, default='RM')
     etapas = models.CharField('Etapas en el centro', max_length=5, choices=ETAPAS, blank=True, null=True, default='IP')
-    clasificado = models.CharField('Clasificación', max_length=5, choices=CL, blank=True, null=True, default='IP')
+    clasificado = models.CharField('Clasificación', max_length=5, choices=CL, blank=True, null=True, default='C')
     puntos = models.IntegerField('Puntos asignados', default=1)
     grupo = models.CharField('Grupo de centros al que pertenece', max_length=12, default=code_grupo)
     inspector = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        verbose_name_plural = 'Centros Inspeccionados'
+        ordering = ['id']
+
+    def centros_grupo(self):
+        return CentroInspeccionado.objects.filter(grupo=self.grupo)
+
+    def s_centros_grupo(self):
+        cs = self.centros_grupo().values_list('centro__name', flat=True)
+        return ', '.join(cs)
 
     def __str__(self):
         return '%s (%s)' % (self.centro, self.inspector)

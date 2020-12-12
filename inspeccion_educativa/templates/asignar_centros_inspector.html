@@ -1,0 +1,228 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+        }
+
+        .ckeditor {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="q" id="q" value="">
+        <input type="hidden" name="page" id="page" value="">
+        <input type="hidden" id="id_ci" name="id_ci" value="">
+
+        <div id="div_ci_seleccionados"></div>
+
+        <div>
+            <h4 id="title_page"><strong>Asignación de centros a inspectores</strong></h4>
+        </div>
+{#        <div id="formulario_add"></div>#}
+{#        <div id="formulario_search">#}
+{#            <div class="row">#}
+{#                <div class="columns large-4">#}
+{#                    <label>Buscar entre esta fecha ...</label>#}
+{#                    <input id="id_fecha_inicio" name="fecha_inicio" type="text"#}
+{#                           value="{{ g_e.ronda.inicio|date:'d-m-Y' }}">#}
+{#                </div>#}
+{#                <div class="columns large-4">#}
+{#                    <label>... y esta otra</label>#}
+{#                    <input id="id_fecha_fin" name="fecha_fin" type="text" value="{% now "d\-m\-Y" %}">#}
+{#                </div>#}
+{#                <div class="columns large-4">#}
+{#                    <label>Buscar en ...</label>#}
+{#                    <select id="tipo_busqueda" name="tipo_busqueda">#}
+                        {# Se busca en negativo, por eso SAL es para entradas y ENT para salidas. Ver el views.py #}
+{#                        <option value="tod">Todas las plantillas</option>#}
+{#                        {% for t in tipos %}#}
+{#                            <option value="{{ t.0 }}">{{ t.1 }}</option>{% endfor %}#}
+{#                    </select>#}
+{#                </div>#}
+{#            </div>#}
+{#            <div class="row">#}
+{#                <div class="columns large-10">#}
+{#                    <input type="text" name="busca_ci" id="busca_ci"#}
+{#                           placeholder="Escribe parte del texto incluido en el actuación">#}
+{#                </div>#}
+{#                <div class="columns large-2">#}
+{#                    <a id="busca_ci_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+
+
+        <table id="tabla_cis">
+            <thead>
+            <tr>
+                <th style="width: 18%">Centro</th>
+                <th style="width: 10%">Tipo</th>
+                <th style="width: 12%">Zona</th>
+                <th style="width: 12%">Etapas</th>
+                <th style="width: 10%">Clasif.</th>
+                <th style="width: 5%">Puntos</th>
+                <th style="width: 18%">Grupo</th>
+                <th style="width: 15%">Inspector</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for ci in cis %}
+                <tr>
+                    <td>{{ ci.centro.name }}</td>
+                    <td>
+                        <a data-dropdown="tipo{{ ci.id }}" id="texto_tipo{{ ci.id }}"
+                           data-options="is_hover:true;">{{ ci.get_tipo_display }}</a>
+                        <ul id="tipo{{ ci.id }}" class="f-dropdown" data-dropdown-content>
+                            {% for n in oci.TIPOS %}
+                            <li><a class="campo" data-campo="tipo" data-valor="{{ n.0 }}" data-ci="{{ ci.id }}">{{ n.1 }}</a></li>
+                                {% endfor %}
+                        </ul>
+                    </td>
+                    <td>
+                        <a data-dropdown="zona{{ ci.id }}" id="texto_zonai{{ ci.id }}"
+                           data-options="is_hover:true;">{{ ci.get_zonai_display }}</a>
+                        <ul id="zona{{ ci.id }}" class="f-dropdown" data-dropdown-content>
+                            {% for n in oci.ZONAS %}
+                                <li><a class="campo" data-campo="zonai" data-ci="{{ ci.id }}" data-valor="{{ n.0 }}">{{ n.1 }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>
+                        <a data-dropdown="etapas{{ ci.id }}" id="texto_etapas{{ ci.id }}"
+                           data-options="is_hover:true;">{{ ci.get_etapas_display }}</a>
+                        <ul id="etapas{{ ci.id }}" class="f-dropdown" data-dropdown-content>
+                            {% for n in oci.ETAPAS %}
+                                <li><a class="campo" data-campo="etapas" data-ci="{{ ci.id }}" data-valor="{{ n.0 }}">{{ n.1 }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>
+                        <a data-dropdown="clasificado{{ ci.id }}" id="texto_clasificado{{ ci.id }}"
+                           data-options="is_hover:true;">{{ ci.get_clasificado_display }}</a>
+                        <ul id="clasificado{{ ci.id }}" class="f-dropdown" data-dropdown-content>
+                            {% for n in oci.CL %}
+                                <li><a class="campo" data-campo="clasificado" data-ci="{{ ci.id }}" data-valor="{{ n.0 }}">{{ n.1 }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>
+                        <a data-dropdown="puntos{{ ci.id }}" id="texto_puntos{{ ci.id }}"
+                           data-options="is_hover:true;">{{ ci.puntos }}</a>
+                        <ul id="puntos{{ ci.id }}" class="f-dropdown" data-dropdown-content>
+                            {% for n in oci.PUNTOS %}
+                                <li><a class="campo" data-campo="puntos" data-ci="{{ ci.id }}" data-valor="{{ n.0 }}">{{ n.1 }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>
+                        <select class="select_grupo" data-ci="{{ ci.id }}">
+                            <option value="{{ ci.grupo }}">{{ ci.s_centros_grupo }}</option>
+                        </select>
+                    </td>
+                    <td>
+                        <a data-dropdown="inspector{{ ci.id }}" id="texto_inspector{{ ci.id }}"
+                           data-options="is_hover:true;">
+                            {% if ci.inspector %}{{ ci.inspector.gauser.get_full_name }}{% else %}Sin
+                                asignar{% endif %}</a>
+                        <ul id="inspector{{ ci.id }}" class="f-dropdown" data-dropdown-content>
+                            {% for i in inspectores %}
+                                <li><a class="campo" data-campo="inspector" data-ci="{{ ci.id }}"
+                                       data-valor="{{ i.id }}">{{ i.gauser.get_full_name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        {#$('.select_grupo').select2();#}
+        $('.select_grupo').select2({
+            placeholder: "Para buscar un grupo, escribe parte de su nombre",
+            allowClear: true,
+            ajax: {
+                url: "/asignar_centros_inspector/",
+                type: 'POST',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        action: 'buscar_grupos',
+                        q: params.term, //search term
+                        page: params.page // page number
+                    };
+                },
+                processResults: function (data, page) {
+                    return {
+                        results: $.map(data.grupos, function (item) {
+                            return {
+                                text: item.text,
+                                id: item.id
+                            }
+                        })
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup;
+            }, // let our custom formatter work
+            minimumInputLength: 3,
+            language: {
+                inputTooShort: function () {
+                    return "Introduce al menos 3 caracteres para iniciar búsqueda";
+                }
+            }
+        });
+
+        $(".select_grupo").change(function () {
+            var ci = $(this).data('ci');
+            var grupo = $(this).val();
+            $.post("/asignar_centros_inspector/", {
+                    action: 'update_grupo',
+                    ci: ci,
+                    grupo: grupo
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#texto_inspector' + ci).html(data.inspector);
+                        if (data.msg) {
+                            setTimeout(function () {
+                                show_mensajes({title: 'Inspector asignado', texto: data.msg})
+                            }, 200);
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.campo', function () {
+            var ci = $(this).data('ci');
+            var campo = $(this).data('campo');
+            var valor = $(this).data('valor');
+            $.post("/asignar_centros_inspector/", {action: 'update_campo', ci: ci, valor: valor, campo: campo},
+                function (data) {
+                    if (data.ok) {
+                        $('#texto_' + campo + ci).html(data.texto);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+    </script>
+
+{% endblock %}

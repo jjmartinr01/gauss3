@@ -73,20 +73,30 @@ def todos_lunes(ronda):
     return fechas_lunes
 
 
-# @permiso_required('acceso_tareas_ie')
-def tareas_ie(request):
+def get_inspectores(request):
     g_e = request.session["gauser_extra"]
     try:
-        cargo = Cargo.objects.get(clave_cargo='%s_ie' % g_e.ronda.entidad.code)
+        try:
+            cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='%s_ie' % g_e.ronda.entidad.code)
+            cargo.clave_cargo = 'g_inspector_educacion'
+            cargo.save()
+        except:
+            cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_inspector_educacion')
         inspectores = usuarios_ronda(g_e.ronda, cargos=[cargo])
     except:
-        cargo = Cargo.objects.create(entidad=g_e.ronda.entidad, cargo='Inspector de Educación',
-                                     borrable=False, clave_cargo='%s_ie' % g_e.ronda.entidad.code)
+        Cargo.objects.create(entidad=g_e.ronda.entidad, cargo='Inspector de Educación',
+                             borrable=False, clave_cargo='%s_ie' % g_e.ronda.entidad.code)
         inspectores = Gauser_extra.objects.none()
         msg = '''Se ha creado el cargo "Inspector de Educación" al que se deben añadir miembros para que
         se pueda asignar una actuación de Inspección a una persona.'''
         crear_aviso(request, False, msg)
+    return inspectores
 
+
+# @permiso_required('acceso_tareas_ie')
+def tareas_ie(request):
+    g_e = request.session["gauser_extra"]
+    inspectores = get_inspectores(request)
     # inf_informe = 'Configuración informes emitidos por Inspección'
     # try:
     #     DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=inf_informe)
@@ -113,9 +123,8 @@ def tareas_ie(request):
                 itarea = InspectorTarea.objects.get(id=request.POST['id'])
                 centrosmdb = CentroMDB.objects.all()
                 centros = Entidad.objects.filter(organization=g_e.ronda.entidad.organization)
-                cargo = Cargo.objects.get(clave_cargo='%s_ie' % g_e.ronda.entidad.code)
-                inspectores = usuarios_ronda(g_e.ronda, cargos=[cargo])
-                #Eliminación de sectores y niveles
+                inspectores = get_inspectores(request)
+                # Eliminación de sectores y niveles
                 # html = render_to_string('tareas_ie_accordion_content.html',
                 #                         {'instarea': itarea, 'g_e': g_e, 'localizaciones': LOCALIZACIONES,
                 #                          'objetos': OBJETOS, 'tipos': TIPOS, 'funciones': FUNCIONES, 'roles': ROLES,
@@ -201,7 +210,7 @@ def tareas_ie(request):
             try:
                 tarea = TareaInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad, id=request.POST['tarea'])
                 instarea = InspectorTarea.objects.create(tarea=tarea)
-                inspectores = usuarios_ronda(g_e.ronda, cargos=[cargo])
+                inspectores = get_inspectores(request)
                 html = render_to_string('tareas_ie_accordion_content_tr.html',
                                         {'instarea': instarea, 'inspectores': inspectores, 'roles': ROLES,
                                          'permisos': PERMISOS, 'g_e': g_e})
@@ -249,7 +258,10 @@ def tareas_ie(request):
                 q_inicio = Q(tarea__fecha__gte=inicio)
                 q_fin = Q(tarea__fecha__lte=fin)
                 q_tipo = Q(tarea__tipo__in=tipo)
-                q_entidad = Q(inspector__ronda__entidad=g_e.ronda.entidad)
+                if g_e.has_permiso('ve_cualquier_tarea_ie'):
+                    q_entidad = Q(inspector__ronda__entidad=g_e.ronda.entidad)
+                else:
+                    q_entidad = Q(inspector__gauser=g_e.gauser)
                 its = InspectorTarea.objects.filter(q_entidad, q_texto, q_inicio, q_fin, q_tipo)
                 num_act = its.count()
                 max = 100  # Número máximo de actuaciones a mostrar en una búsqueda
@@ -655,13 +667,14 @@ def plantillas_ie(request):
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'copiar_p_ie':
             try:
-                p_ie = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                p_ie = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad,
+                                                              id=request.POST['id'])
                 variantes = p_ie.variantepii_set.all()
                 p_ie.pk = None
                 p_ie.asunto = p_ie.asunto + ' (Copia)'
                 p_ie.save()
                 for v in variantes:
-                    v.pk =None
+                    v.pk = None
                     v.plantilla = p_ie
                     v.save()
                 html = render_to_string('plantillas_ie_accordion.html',
@@ -739,6 +752,81 @@ def plantillas_ie(request):
     })
 
 
+# @permiso_required('acceso_asignar_centros_inspeccion')
+def asignar_centros_inspector(request):
+    g_e = request.session["gauser_extra"]
+    inspectores = get_inspectores(request)
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'buscar_grupos':
+            try:
+                cis = CentroInspeccionado.objects.filter(ronda=g_e.ronda, centro__name__icontains=request.POST['q'])
+                grupos = [{'id': ci.grupo, 'text': ci.s_centros_grupo()} for ci in cis]
+                return JsonResponse({'ok': True, 'grupos': grupos})
+            except:
+                JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_grupo':
+            try:
+                cis = CentroInspeccionado.objects.filter(ronda=g_e.ronda)
+                inspector = cis.filter(grupo=request.POST['grupo'])[0].inspector
+                ci = cis.get(id=request.POST['ci'])
+                if ci.inspector != inspector and inspector:
+                    nombre_inspector = inspector.gauser.get_full_name()
+                    msg = 'El inspector de este grupo de centros es %s' % nombre_inspector
+                else:
+                    msg, nombre_inspector = None, 'Sin asignar'
+                ci.grupo = request.POST['grupo']
+                ci.inspector = inspector
+                ci.save()
+                return JsonResponse({'ok': True, 'msg': msg, 'inspector': nombre_inspector})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_campo':
+            try:
+                ci = CentroInspeccionado.objects.get(ronda=g_e.ronda, id=request.POST['ci'])
+                if request.POST['campo'] == 'inspector':
+                    ci.inspector = inspectores.get(id=request.POST['valor'])
+                    texto = ci.inspector.gauser.get_full_name()
+                elif request.POST['campo'] == 'tipo':
+                    ci.tipo = request.POST['valor']
+                    texto = ci.get_tipo_display()
+                elif request.POST['campo'] == 'zonai':
+                    ci.zonai = request.POST['valor']
+                    texto = ci.get_zonai_display()
+                elif request.POST['campo'] == 'etapas':
+                    ci.etapas = request.POST['valor']
+                    texto = ci.get_etapas_display()
+                elif request.POST['campo'] == 'clasificado':
+                    ci.clasificado = request.POST['valor']
+                    texto = ci.get_clasificado_display()
+                elif request.POST['campo'] == 'puntos':
+                    ci.puntos = request.POST['valor']
+                    texto = ci.puntos
+                ci.save()
+                return JsonResponse({'ok': True, 'texto': texto})
+            except:
+                return JsonResponse({'ok': False})
+
+
+    organization = g_e.ronda.entidad.organization
+    centros_inspeccionados = CentroInspeccionado.objects.filter(ronda__entidad__organization=organization)
+    for e in Entidad.objects.filter(organization=g_e.ronda.entidad.organization):
+        CentroInspeccionado.objects.get_or_create(centro=e, ronda=g_e.ronda)
+    centros_inspeccionados = CentroInspeccionado.objects.filter(ronda=g_e.ronda)
+    logger.info('Entra en ' + request.META['PATH_INFO'])
+    if 'ge' in request.GET:
+        pass
+    return render(request, "asignar_centros_inspector.html", {
+        'iconos':
+            ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
+              'title': 'Crear una nueva plantilla de Informe de Inspección',
+              'permiso': 'acceso_plantillas_informes_ie'},
+             ),
+        'g_e': g_e, 'cis': centros_inspeccionados, 'oci': CentroInspeccionado,
+        'inspectores': inspectores,
+        'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+    })
+
+
 @permiso_required('acceso_carga_masiva_inspeccion')
 def carga_masiva_inspeccion(request):
     g_e = request.session["gauser_extra"]
@@ -789,7 +877,7 @@ def carga_masiva_inspeccion(request):
                                                        clave_ex=sheet.cell(row_index, dict_names['Id']).value,
                                                        localizacion=str(
                                                            sheet.cell(row_index, dict_names['LOCALIZACIÓN']).value),
-                                                       #nivel=str(sheet.cell(row_index, dict_names['NIVEL']).value),
+                                                       # nivel=str(sheet.cell(row_index, dict_names['NIVEL']).value),
                                                        actuacion=str(
                                                            sheet.cell(row_index, dict_names['ACTUACIÓN']).value),
                                                        realizada=True,
@@ -797,7 +885,7 @@ def carga_masiva_inspeccion(request):
                                                            int(sheet.cell(row_index,
                                                                           dict_names['Id INSPECTORES']).value)),
                                                        fecha=fecha,
-                                                       #sector=str(sheet.cell(row_index, dict_names['SECTOR']).value),
+                                                       # sector=str(sheet.cell(row_index, dict_names['SECTOR']).value),
                                                        centro_mdb=centro,
                                                        colaboracion=str(
                                                            sheet.cell(row_index,

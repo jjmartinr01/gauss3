@@ -33,12 +33,20 @@ MENU_DEFAULT = [
      'pos': 3,
      'parent': 'acceso_inspeccion_educativa'
      },
+{'code_menu': 'acceso_asignar_centros_inspeccion',
+     'texto_menu': 'Asignación de centros',
+     'href': 'asignar_centros_inspeccion',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 4,
+     'parent': 'acceso_inspeccion_educativa'
+     },
     {'code_menu': 'acceso_carga_masiva_inspeccion',
      'texto_menu': 'Carga masiva de archivos',
      'href': 'carga_masiva_inspeccion',
      'nivel': 2,
      'tipo': 'Accesible',
-     'pos': 4,
+     'pos': 5,
      'parent': 'acceso_inspeccion_educativa'
      },
 ]
