@@ -9,8 +9,9 @@ import xlwt
 from xlwt import Formula
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
-from django.http import HttpResponse
+from django.http import JsonResponse, HttpResponse
 from django.db.models import Q
+from django.core.paginator import Paginator
 import html2text
 from django import forms
 from django.forms import ModelForm
@@ -43,16 +44,414 @@ class formularioForm(ModelForm):
         # }
 
 
-@permiso_required('acceso_formularios')
+# @permiso_required('acceso_formularios')
+# def formularios(request):
+#     g_e = request.session["gauser_extra"]
+#     if 'gform' in request.GET:
+#         id_gform = int(request.GET['gform'])
+#     else:
+#         id_gform = None
+#     gforms = Gform.objects.filter(propietario__ronda__entidad=g_e.ronda.entidad)
+#     if request.method == 'POST':
+#         if request.POST['action'] == 'excel':
+#             gform = Gform.objects.get(id=request.POST['gform'], propietario__entidad=g_e.ronda.entidad)
+#             original_ginputs = gform.ginput_set.filter(ginput__isnull=True).order_by('row', 'col')
+#             ginputs = gform.ginput_set.filter(ginput__isnull=False).order_by('rellenador__gauser__last_name',
+#                                                                              'rellenador__gauser__first_name',
+#                                                                              'rellenador__id',
+#                                                                              'ginput__row', 'ginput__col')
+#             ruta = MEDIA_FORMULARIOS + str(g_e.ronda.entidad.code) + '/'
+#             if not os.path.exists(ruta):
+#                 os.makedirs(ruta)
+#             fichero_xls = 'Formulario_GAUSS%s.xls' % (gform.id)
+#             wb = xlwt.Workbook()
+#             wf = wb.add_sheet('Cuestionario')
+#             wa = wb.add_sheet('Avisos')
+#             fila_excel_cuestionario = 0
+#             fila_excel_avisos = 0
+#             estilo = xlwt.XFStyle()
+#             font = xlwt.Font()
+#             font.bold = True
+#             estilo.font = font
+#             wf.write(fila_excel_cuestionario, 0, 'Nombre', style=estilo)
+#             wf.col(0).width = 8000  # Ancho de la columna para el nombre
+#             col = 1
+#             for gi in original_ginputs:
+#                 wf.write(fila_excel_cuestionario, col, gi.label, style=estilo)
+#                 if gi.tipo == 'gdate':
+#                     wf.col(col).width = max(len(gi.label) * 278, 2800)
+#                 elif gi.tipo == 'gdatetime':
+#                     wf.col(col).width = max(len(gi.label) * 278, 16 * 278)
+#                 else:
+#                     wf.col(col).width = len(gi.label) * 278  # Dejamos 278 de ancho por cada caracter
+#                 col += 1
+#
+#             rellenador = None
+#             for ginput in ginputs:
+#                 if ginput.rellenador != rellenador:
+#                     rellenador = ginput.rellenador
+#                     col = 0
+#                     fila_excel_cuestionario += 1
+#                     wf.write(fila_excel_cuestionario, col, ginput.rellenador.gauser.get_full_name(), style=estilo)
+#                 col += 1
+#                 if ginput.tipo == 'gselect':
+#                     goptions_selected = ginput.goption_set.filter(selected=True).values_list('value', flat=True)
+#                     celda = ', '.join(goptions_selected)
+#                 elif ginput.tipo == 'gfile':
+#                     celda = ginput.fich_name if ginput.archivo else ''
+#                 elif ginput.tipo == 'gtext':
+#                     celda = ginput.gtext if ginput.gtext[:100] else ''
+#                 elif ginput.tipo == 'gdate':
+#                     try:
+#                         celda = ginput.gdate.strftime('%d/%m/%Y')
+#                     except:
+#                         celda = ''
+#                 elif ginput.tipo == 'gdatetime':
+#                     try:
+#                         celda = ginput.gdatetime.strftime('%d/%m/%Y %H:%M')
+#                     except:
+#                         celda = ''
+#                 elif ginput.tipo == 'gchar':
+#                     celda = ginput.gchar if ginput.gchar else ''
+#                 elif ginput.tipo == 'gint':
+#                     celda = ginput.gint if ginput.gint else ''
+#                 elif ginput.tipo == 'gfloat':
+#                     celda = ginput.gfloat if ginput.gfloat else ''
+#                 elif ginput.tipo == 'gbool':
+#                     celda = u'Sí' if ginput.gbool else u'No'
+#                 wf.write(fila_excel_cuestionario, col, celda)
+#
+#             # wf.write(fila_excel_cuestionario, 3, Formula("SUM(D2:D%s)" % (fila_excel_cuestionario)), style=estilo)
+#
+#             wb.save(ruta + fichero_xls)
+#
+#             xlsfile = open(ruta + '/' + fichero_xls, 'rb')
+#             response = HttpResponse(xlsfile, content_type='application/vnd.ms-excel')
+#             response['Content-Disposition'] = 'attachment; filename=%s' % (fichero_xls)
+#             return response
+#
+#     return render(request, "formularios.html",
+#                               {
+#                                   'iconos':
+#                                       ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
+#                                         'permiso': 'crea_formularios', 'title': 'Crear un nuevo formulario'},
+#                                        ),
+#                                   'formname': 'formularios',
+#                                   'gforms': gforms,
+#                                   'id_gform': id_gform,
+#                                   'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+#                               })
+def gfsi_id_orden(gform):
+    gfsis = GformSectionInput.objects.filter(gformsection__gform=gform)
+    return [{'id': gfsi.id, 'orden': gfsi.orden} for gfsi in gfsis], gfsis.count()
+
+def gfs_id_orden(gform):
+    gfss = GformSection.objects.filter(gform=gform)
+    return [{'id': gfs.id, 'orden': gfs.orden} for gfs in gfss], gfss.count()
+
+
 def formularios(request):
     g_e = request.session["gauser_extra"]
-    if 'gform' in request.GET:
-        id_gform = int(request.GET['gform'])
-    else:
-        id_gform = None
-    gforms = Gform.objects.filter(propietario__entidad=g_e.ronda.entidad)
+    # if 'gform' in request.GET:
+    #     id_gform = int(request.GET['gform'])
+    # else:
+    #     id_gform = None
+    gforms = Gform.objects.filter(propietario__ronda__entidad=g_e.ronda.entidad)
+    paginator = Paginator(gforms, 15)
+    formularios = paginator.page(1)
     if request.method == 'POST':
-        if request.POST['action'] == 'excel':
+        if request.POST['action'] == 'crea_formulario':
+            if g_e.has_permiso('crea_formularios'):
+                gform = Gform.objects.create(propietario=g_e)
+                gfs = GformSection.objects.create(gform=gform, orden=1, description='Descripción')
+                gfsi = GformSectionInput.objects.create(gformsection=gfs, orden=1, pregunta='Texto de la pregunta')
+                html = render_to_string('formularios_accordion.html',
+                                        {'buscadas': False, 'formularios': [gform], 'g_e': g_e, 'nueva': True})
+                return JsonResponse({'ok': True, 'html': html})
+            else:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'open_accordion':
+            try:
+                gform = Gform.objects.get(id=request.POST['id'])
+                html = render_to_string('formularios_accordion_content.html', {'gform': gform, 'g_e': g_e, 'tipos': TIPOS, 'grupos': GRUPOS})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'copy_gform':
+            try:
+                gform = Gform.objects.get(id=request.POST['gform'])
+                gform_copiado = Gform.objects.get(id=request.POST['gform'])
+                gform_copiado.pk = None
+                gform_copiado.save()
+                for gfs_id in gform.gformsection_set.all().values_list('id', flat=True):
+                    gfs = GformSection.objects.get(id=gfs_id)
+                    gfs_copiado = GformSection.objects.get(id=gfs_id)
+                    gfs_copiado.pk = None
+                    gfs_copiado.gform = gform_copiado
+                    gfs_copiado.save()
+                    for gfsi_id in gfs.gformsectioninput_set.all().values_list('id', flat=True):
+                        gfsi = GformSectionInput.objects.get(id=gfsi_id)
+                        gfsi_copiado = GformSectionInput.objects.get(id=gfsi_id)
+                        gfsi_copiado.pk = None
+                        gfsi_copiado.gformsection = gfs_copiado
+                        gfsi_copiado.save()
+                        for gfsio_id in gfsi.gformsectioninputops_set.all().values_list('id', flat=True):
+                            gfsio_copiado = GformSectionInputOps.objects.get(id=gfsio_id)
+                            gfsio_copiado.pk = None
+                            gfsio_copiado.gformsectioninput = gfsi_copiado
+                            gfsio_copiado.save()
+                html = render_to_string('formularios_accordion.html',
+                                        {'buscadas': False, 'formularios': [gform_copiado], 'g_e': g_e, 'nueva': True})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'del_gform':
+            try:
+                gform = Gform.objects.get(id=request.POST['gform'])
+                if g_e.has_permiso('borra_formularios') or gform.propietario.gauser == g_e.gauser:
+                    gform.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permiso para borrar el formulario'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_nombre':
+            try:
+                gform = Gform.objects.get(id=request.POST['gform'])
+                gform.nombre = request.POST['texto']
+                gform.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_fecha_limite':
+            try:
+                gform = Gform.objects.get(id=request.POST['gform'])
+                gform.fecha_max_rellenado = datetime.strptime(request.POST['fecha'], '%Y-%m-%d')
+                gform.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+
+        # Posibles operaciones en una sección:
+        # update_texto_gfs, add_gfsi_after_gfs, copy_gfs, add_gfs_after_gfs, del_gfs
+        elif request.POST['action'] == 'update_texto_gfs': #actualiza title y description
+            try:
+                gfs = GformSection.objects.get(id=request.POST['gfs'])
+                setattr(gfs, request.POST['campo'], request.POST['texto'])
+                gfs.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'add_gfsi_after_gfs':
+            try:
+                gfs = GformSection.objects.get(id=request.POST['gfs'])
+                try:
+                    gfs_anterior = gfs.gform.gformsection_set.get(orden=gfs.orden - 1)
+                    gfsi = gfs_anterior.gformsectioninput_set.all().last()
+                    orden = gfsi.orden + 1 #Orden de la nueva gfsi
+                except:
+                    # Si no no hay gfs_anterior es porque es el primer gfs y por tanto será la primera pregunta:
+                    orden = 1 #Orden de la nueva gfsi
+                gfsis = GformSectionInput.objects.filter(gformsection__gform=gfs.gform, orden__gte=orden)
+                for g in gfsis:
+                    g.orden += 1
+                    g.save()
+                gfsi = GformSectionInput.objects.create(gformsection=gfs, orden=orden)
+                html = render_to_string('formularios_accordion_content_ginputs_gi.html', {'gfsi': gfsi})
+                return JsonResponse({'ok': True, 'html': html, 'gfsi_id_orden': gfsi_id_orden(gfsi.gformsection.gform)})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'copy_gfs':
+            try:
+                gfs = GformSection.objects.get(id=request.POST['gfs'])
+                orden = gfs.orden + 1 #El orden del nuevo GformSectionInput
+                gfss = GformSection.objects.filter(gform=gfs.gform, orden__gte=orden)
+                for g in gfss:
+                    g.orden += 1
+                    g.save()
+                gfs_nuevo = GformSection.objects.create(gform=gfs.gform, orden=orden, title=gfs.title,
+                                                        description=gfs.description)
+                for g in gfs.gformsectioninput_set.all():
+                    g.gformsection = gfs_nuevo
+                    g.save()
+                html = render_to_string('formularios_accordion_content_gfs.html', {'gfs': gfs_nuevo})
+                return JsonResponse({'ok': True, 'html': html, 'gfs_id_orden': gfs_id_orden(gfs.gform)})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'add_gfs_after_gfs':
+            try:
+                gfs = GformSection.objects.get(id=request.POST['gfs'])
+                orden = gfs.orden + 1 #El orden del nuevo GformSectionInput
+                gfss = GformSection.objects.filter(gform=gfs.gform, orden__gte=orden)
+                for g in gfss:
+                    g.orden += 1
+                    g.save()
+                gfs_nuevo = GformSection.objects.create(gform=gfs.gform, orden=orden)
+                for g in gfs.gformsectioninput_set.all():
+                    g.gformsection = gfs_nuevo
+                    g.save()
+                html = render_to_string('formularios_accordion_content_gfs.html', {'gfs': gfs_nuevo})
+                return JsonResponse({'ok': True, 'html': html, 'gfs_id_orden': gfs_id_orden(gfs.gform)})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'del_gfs':
+            try:
+                gfs = GformSection.objects.get(id=request.POST['gfs'])
+                gform = gfs.gform
+                if gfs.orden > 1:
+                    gfs_anterior = GformSection.objects.get(gform=gfs.gform, orden=(gfs.orden - 1))
+                    gfsis = gfs.gformsectioninput_set.all()
+                    for g in gfsis:
+                        g.gformsection = gfs_anterior
+                        g.save()
+                    gfs.delete()
+                    gfss_posteriores = gform.gformsection_set.filter(orden__gt=gfs_anterior.orden)
+                    for gfs in gfss_posteriores:
+                        gfs.orden -= 1
+                        gfs.save()
+                    return JsonResponse({'ok': True, 'gfs_id_orden': gfs_id_orden(gform)})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No es posible borrar la primera sección'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+
+        # Posibles operaciones en una pregunta:
+        # update_gfsi_el, update_gfsi_label, update_gfsio_opcion, update_gfsi_pregunta, add_gfsio, del_gfsio,
+        # add_gfsi_after_gfsi, add_gfsi_after_gfsi, copy_gfsi, add_gfs_after_gfsi, del_gfsi
+
+        elif request.POST['action'] == 'update_gfsi_el':  # actualiza el texto de la opción
+            try:
+                gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
+                valor = int(''.join(c for c in request.POST['texto'] if c.isdigit()))
+                setattr(gfsi, request.POST['campo'], valor)
+                gfsi.save()
+                html = render_to_string('formularios_accordion_content_ginputs_gi_EL.html', {'gfsi': gfsi})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_gfsi_label':  # actualiza el texto de la opción
+            try:
+                gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
+                setattr(gfsi, request.POST['campo'], request.POST['texto'])
+                gfsi.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_gfsio_opcion':  # actualiza el texto de la opción
+            try:
+                gfsio = GformSectionInputOps.objects.get(id=request.POST['gfsio'])
+                gfsio.opcion = request.POST['texto']
+                gfsio.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_gfsi_pregunta':  # actualiza el texto de la pregunta
+            try:
+                gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
+                gfsi.pregunta = request.POST['texto']
+                gfsi.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'add_gfsio':
+            try:
+                gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
+                orden = gfsi.gformsectioninputops_set.all().count() + 1
+                gfsio = GformSectionInputOps.objects.create(gformsectioninput=gfsi, orden=orden)
+                template = 'formularios_accordion_content_ginputs_gi_%s_op.html' % gfsi.tipo
+                html = render_to_string(template, {'gfsio': gfsio})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'del_gfsio':
+            try:
+                gfsio = GformSectionInputOps.objects.get(id=request.POST['gfsio'])
+                orden = gfsio.orden
+                gfsio.delete()
+                for g in gfsio.gformsectioninput.gformsectioninputops_set.filter(orden__gt=orden):
+                    g.orden = orden
+                    g.save()
+                    orden += 1
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'select_tipo_gfsi':  # actualiza title y description
+            try:
+                gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
+                gfsi.tipo = request.POST['tipo']
+                gfsi.save()
+                if gfsi.tipo in ['EM', 'SC', 'SO']:
+                    GformSectionInputOps.objects.get_or_create(gformsectioninput=gfsi, orden=1)
+                template = 'formularios_accordion_content_ginputs_gi_%s.html' % gfsi.tipo
+                html = render_to_string(template, {'gfsi': gfsi})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'add_gfsi_after_gfsi':
+            try:
+                gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
+                orden = gfsi.orden + 1 #El orden del nuevo GformSectionInput
+                gfsis = GformSectionInput.objects.filter(gformsection__gform=gfsi.gformsection.gform, orden__gte=orden)
+                for g in gfsis:
+                    g.orden += 1
+                    g.save()
+                gfsi = GformSectionInput.objects.create(gformsection=gfsi.gformsection, orden=orden)
+                html = render_to_string('formularios_accordion_content_ginputs_gi.html', {'gfsi': gfsi})
+                return JsonResponse({'ok': True, 'html': html, 'gfsi_id_orden': gfsi_id_orden(gfsi.gformsection.gform)})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'copy_gfsi':
+            try:
+                gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
+                orden = gfsi.orden + 1 #El orden del nuevo GformSectionInput
+                gfsis = GformSectionInput.objects.filter(gformsection__gform=gfsi.gformsection.gform, orden__gte=orden)
+                for g in gfsis:
+                    g.orden += 1
+                    g.save()
+                gfsi.pk = None
+                gfsi.orden = orden
+                gfsi.save()
+                html = render_to_string('formularios_accordion_content_ginputs_gi.html', {'gfsi': gfsi})
+                return JsonResponse({'ok': True, 'html': html, 'gfsi_id_orden': gfsi_id_orden(gfsi.gformsection.gform)})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+
+        elif request.POST['action'] == 'add_gfs_after_gfsi':
+            try:
+                gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
+                gform = gfsi.gformsection.gform
+                orden = gfsi.gformsection.orden + 1 #El orden del nuevo GformSection
+                gfss = gform.gformsection_set.filter(orden__gte=orden)
+                for g in gfss:
+                    g.orden += 1
+                    g.save()
+                gfs = GformSection.objects.create(gform=gform, orden=orden)
+                gfsis = GformSectionInput.objects.filter(gformsection__gform=gform, orden__gt=gfsi.orden)
+                for g in gfsis:
+                    g.gformsection = gfs
+                    g.save()
+                html = render_to_string('formularios_accordion_content_gfs.html', {'gfs': gfs})
+                return JsonResponse({'ok': True, 'html': html, 'gfs_id_orden': gfs_id_orden(gform)})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'del_gfsi':
+            try:
+                gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
+                gform = gfsi.gformsection.gform
+                if gfsi.orden > 1:
+                    gfsis = GformSectionInput.objects.filter(gformsection__gform=gform, orden__gt=gfsi.orden)
+                    for g in gfsis:
+                        g.orden -= 1
+                        g.save()
+                    gfsi.delete()
+                    return JsonResponse({'ok': True, 'gfsi_id_orden': gfsi_id_orden(gform)})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No es posible borrar la primera pregunta'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+
+
+        elif request.POST['action'] == 'excel':
             gform = Gform.objects.get(id=request.POST['gform'], propietario__entidad=g_e.ronda.entidad)
             original_ginputs = gform.ginput_set.filter(ginput__isnull=True).order_by('row', 'col')
             ginputs = gform.ginput_set.filter(ginput__isnull=False).order_by('rellenador__gauser__last_name',
@@ -133,16 +532,16 @@ def formularios(request):
                               {
                                   'iconos':
                                       ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
-                                        'permiso': 'm67i10', 'title': 'Crear un nuevo formulario'},
+                                        'permiso': 'crea_formularios', 'title': 'Crear un nuevo formulario'},
                                        ),
                                   'formname': 'formularios',
-                                  'gforms': gforms,
-                                  'id_gform': id_gform,
+                                  'formularios': formularios,
+                                  # 'id_gform': id_gform,
                                   'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                               })
 
 
-@login_required()
+# @login_required()
 def resultados_gform(request):
     g_e = request.session["gauser_extra"]
     try:
@@ -177,7 +576,7 @@ def resultados_gform(request):
                               })
 
 
-@login_required()
+# @login_required()
 def ver_gform(request):
     g_e = request.session["gauser_extra"]
     try:
@@ -212,7 +611,7 @@ def crea_ginputs_para_rellenador(gform, g_e):
     return True
 
 
-@login_required()
+# @login_required()
 def rellena_gform(request):
     g_e = request.session["gauser_extra"]
     try:
@@ -263,7 +662,7 @@ def rellena_gform(request):
                               })
 
 
-@login_required()
+# @login_required()
 def edita_gform(request):
     g_e = request.session["gauser_extra"]
     try:
@@ -337,7 +736,7 @@ def edita_gform(request):
                               })
 
 
-@login_required()
+# @login_required()
 def edita_ginput(request):
     g_e = request.session["gauser_extra"]
     try:
@@ -371,7 +770,7 @@ def edita_ginput(request):
                               })
 
 
-@login_required()
+# @login_required()
 def formulario_ajax(request):
     if request.is_ajax():
         g_e = request.session['gauser_extra']
@@ -381,7 +780,7 @@ def formulario_ajax(request):
             if gform.activo == False:
                 gform.delete()
             gforms = Gform.objects.filter(propietario__entidad=g_e.ronda.entidad)
-            data = render_to_string('formularios_accordion.html', {'gforms': gforms})
+            data = render_to_string('formularios_accordion_antiguo.html', {'gforms': gforms})
             return HttpResponse(data)
         elif request.POST['action'] == 'add_gform':
             subentidades = Subentidad.objects.filter(entidad=g_e.ronda.entidad, fecha_expira__gt=datetime.today())
@@ -390,7 +789,7 @@ def formulario_ajax(request):
             gform.subentidades_destino.add(*subentidades)
             gform.cargos_destino.add(*cargos)
             gforms = Gform.objects.filter(propietario__entidad=g_e.ronda.entidad)
-            data = render_to_string('formularios_accordion.html', {'gforms': gforms})
+            data = render_to_string('formularios_accordion_antiguo.html', {'gforms': gforms})
             return HttpResponse(data)
         elif request.POST['action'] == 'mod_gform_nombre':
             gform = Gform.objects.get(id=request.POST['id'], propietario__entidad=g_e.ronda.entidad)

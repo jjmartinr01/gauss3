@@ -1,0 +1,37 @@
+{% load formularios_extras %}
+<div class="row">
+    <div class="columns large-12" style="color: lightgrey;"><p>Se utiliza para hacer una encuesta de
+        valoración. Permite puntuar un aspecto.</p>
+        <p>Puedes cambiar el valor de las etiquetas o de los valores máximo y mínimo.</p></div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <table>
+            <tr>
+                <td>&nbsp;</td>
+                {% for i in gfsi|elvalues %}
+                    {% if forloop.first %}
+                        <td contenteditable="true" data-gfsi="{{ gfsi.id }}" data-campo="elmin"
+                            class="update_gfsi_el">{{ i }}</td>
+                    {% elif forloop.last %}
+                        <td contenteditable="true" data-gfsi="{{ gfsi.id }}" data-campo="elmax"
+                            class="update_gfsi_el">{{ i }}</td>
+                    {% else %}
+                        <td style="color: lightgrey;">{{ i }}</td>
+                    {% endif %}
+                {% endfor %}
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td contenteditable="true" data-gfsi="{{ gfsi.id }}" data-campo="labelmin"
+                    class="update_gfsi_label">{% autoescape off %}{{ gfsi.labelmin }}{% endautoescape %}</td>
+                {% for i in gfsi|elvalues %}
+                    <td style="color:lightgrey;"><i class="fa fa-circle-o"></i></td>
+                {% endfor %}
+                <td contenteditable="true" data-gfsi="{{ gfsi.id }}" data-campo="labelmax"
+                    class="update_gfsi_label">{% autoescape off %}{{ gfsi.labelmax }}{% endautoescape %}</td>
+            </tr>
+        </table>
+    </div>
+</div>

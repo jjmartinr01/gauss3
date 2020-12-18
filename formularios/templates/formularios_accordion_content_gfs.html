@@ -1,0 +1,43 @@
+<fieldset id="gfs{{ gfs.id }}">
+    <legend id="legendgfs{{ gfs.id }}">Sección {{ gfs.orden }} de {{ gfs.gform.gformsection_set.all|length }}</legend>
+    <div class="row">
+        <div class="columns large-12">
+            <h3 contenteditable="true" class="gfs update_texto_gfs" data-campo="title"
+                data-gfs="{{ gfs.id }}">{% autoescape off %}{{ gfs.title }}{% endautoescape %}</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <div contenteditable="true" class="gfs update_texto_gfs" data-campo="description"
+                 data-gfs="{{ gfs.id }}">{% autoescape off %}{{ gfs.description }}{% endautoescape %}</div>
+        </div>
+    </div>
+
+    <hr>
+    <div class="row">
+        <div class="columns large-12 right">
+            <ul class="button-group right">
+                <li title="Añadir una pregunta a continuación">
+                    <a class="button tiny add_gfsi_after_gfs" data-gfs="{{ gfs.id }}"><i
+                            class="fa fa-plus-circle fa-lg"></i> </a>
+                </li>
+                <li title="Duplicar sección">
+                    <a class="button tiny copy_gfs" data-gfs="{{ gfs.id }}"><i
+                            class="fa fa-copy fa-lg"></i> </a>
+                </li>
+                <li title="Añadir una nueva sección a continuación">
+                    <a class="button tiny add_gfs_after_gfs" data-gfs="{{ gfs.id }}"><i
+                            class="fa fa-th-list fa-lg"></i> </a>
+                </li>
+                <li title="Borrar sección">
+                    <a class="button tiny del_gfs alert" data-gfs="{{ gfs.id }}"><i
+                            class="fa fa-trash fa-lg"></i> </a>
+                </li>
+                {#                        <li title="Otras opciones">#}
+                {#                            <a class="button tiny otras_opciones_section" data-gfs="{{ gfs.id }}"><i#}
+                {#                                    class="fa fa-ellipsis-v fa-lg"></i></a>#}
+                {#                        </li>#}
+            </ul>
+        </div>
+    </div>
+</fieldset>

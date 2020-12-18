@@ -24,5 +24,13 @@ MENU_DEFAULT = [
 PERMISOS = [{'code_nombre': 'crea_formularios',
              'nombre': 'Tiene permiso para crear formularios para la entidad',
              'menu': 'acceso_formularios'
-             }
+             },
+{'code_nombre': 'copia_formularios',
+             'nombre': 'Tiene permiso para copiar otros formularios para la entidad',
+             'menu': 'acceso_formularios'
+             },
+{'code_nombre': 'borra_formularios',
+             'nombre': 'Tiene permiso para borrar formularios de la entidad',
+             'menu': 'acceso_formularios'
+             },
             ]

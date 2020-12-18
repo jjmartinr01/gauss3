@@ -365,5 +365,5 @@ def gtelegram_ajax(request):
                     # if gform.activo == False:
                     #     gform.delete()
                     # gforms = Gform.objects.filter(propietario__entidad=g_e.ronda.entidad)
-                    # data = render_to_string('formularios_accordion.html', {'gforms': gforms})
+                    # data = render_to_string('formularios_accordion_antiguo.html', {'gforms': gforms})
                     # return HttpResponse(data)

@@ -1,0 +1,4 @@
+{% load formularios_extras %}
+{% for gfsi in gfs.gformsectioninput_set.all %}
+    {% include "formularios_accordion_content_ginputs_gi.html" %}
+{% endfor %}

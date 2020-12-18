@@ -1,4 +1,4 @@
-{% load inspeccion_educativa_extras %}
+{% load formularios_extras %}
 {% if instarea|permiso_instarea_w:g_e %}
     {% for it in instarea.tarea.inspectortarea_set.all %}
         <tr id="fila_permiso{{ it.id }}">

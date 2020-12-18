@@ -7,9 +7,11 @@ from entidades.models import Cargo, Subentidad
 from entidades.models import Gauser_extra as GE
 from gauss.funciones import pass_generator
 
-
+def genera_identificador():
+    return pass_generator(20)
 class Gform(models.Model):
     propietario = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
+    identificador = models.CharField('Código identificador del Gform', max_length=21, default=genera_identificador)
     cargos_destino = models.ManyToManyField(Cargo, blank=True)
     subentidades_destino = models.ManyToManyField(Subentidad, blank=True)
     nombre = models.CharField('Nombre del formulario', max_length=150)
@@ -17,6 +19,9 @@ class Gform(models.Model):
     anonimo = models.BooleanField('Las respuestas son anónimas?', default=False)
     fecha_max_rellenado = models.DateTimeField('Fecha máxima para el rellenado', max_length=50, blank=True, null=True)
     creado = models.DateTimeField('Fecha de creación', auto_now_add=True)
+
+    class Meta:
+        ordering = ['propietario__ronda', 'id']
 
     @property
     def contestados2(self):
@@ -35,14 +40,197 @@ class Gform(models.Model):
     def __str__(self):
         n = self.ginput_set.all().count()
         activo = 'Formulario activo' if self.activo else 'Formulario desactivado'
-        return u'%s - %s (%s con %s campos).' % (self.propietario.entidad.name, self.nombre, activo, n)
+        return '%s - %s (%s con %s campos)' % (self.propietario.ronda.entidad.name, self.nombre, activo, n)
 
 
 def guarda_archivo(instance, filename):
     nombre = filename.rpartition('.')
     instance.fich_name = filename.rpartition('/')[2]
     fichero = pass_generator(size=20) + '.' + nombre[2]
-    return '/'.join(['formularios', str(instance.gform.propietario.entidad.code), fichero])
+    return '/'.join(['formularios', str(instance.gform.propietario.ronda.entidad.code), fichero])
+
+
+class GformSection(models.Model):
+    gform = models.ForeignKey(Gform, on_delete=models.CASCADE)
+    title = models.CharField('Título de la sección', max_length=150, blank=True, default="Título de la sección")
+    description = models.TextField('Descripción', blank=True, null=True)
+    orden = models.IntegerField('Orden en el formulario')
+
+    class Meta:
+        ordering = ['gform__id', 'orden']
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.orden, self.title, self.gform)
+
+
+
+def sube_archivo(instance, filename):
+    nombre = filename.rpartition('.')
+    instance.fich_name = filename.rpartition('/')[2]
+    fichero = pass_generator(size=20) + '.' + nombre[2]
+    return '/'.join(['formularios', str(instance.gform.propietario.ronda.entidad.code), fichero])
+
+# GSITIPOS=(('RC', 'Respuesta corta'), ('RL', 'Respuesta larga'), ('EM', 'Elección múltiple'),
+#           ('SC', 'Seleccionar casillas'), ('SO', 'Seleccionar opción'), ('SA', 'Subir archivo'),
+#           ('EL', 'Escala lineal'), ('FE', 'Fecha'), ('HO', 'Hora'))
+
+GSITIPOS = (('RC', 'Respuesta corta'), ('RL', 'Respuesta larga'), ('EM', 'Elección múltiple'),
+            ('SC', 'Seleccionar casillas'), ('SO', 'Seleccionar opción'), ('SA', 'Subir archivo'),
+            ('EL', 'Escala lineal'))
+
+
+class GformSectionInput(models.Model):
+    gformsection = models.ForeignKey(GformSection, blank=True, null=True, on_delete=models.CASCADE)
+    orden = models.IntegerField("Orden dentro de la sección", blank=True, null=True)
+    rellenador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
+    tipo = models.CharField('Tipo de entrada', max_length=3, choices=GSITIPOS, default='RC')
+    pregunta = models.TextField('Pregunta', default='Texto de la pregunta')
+    elmin = models.IntegerField('Valor mínimo en la escal lineal', default=1)
+    labelmin = models.CharField('Etiqueta min valor', max_length=30, default='Poco')
+    elmax = models.IntegerField('Valor máximo en la escal lineal', default=5)
+    labelmax = models.CharField('Etiqueta max valor', max_length=30, default='Mucho')
+
+    # respuesta = models.TextField('Respuesta de texto', blank=True, null=True)
+    # archivo = models.FileField('Respuesta tipo archivo', blank=True, null=True, upload_to=sube_archivo)
+    # feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
+    # puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
+
+    class Meta:
+        ordering = ['gformsection__gform__id', 'orden']
+
+    def __str__(self):
+        return '%s - %s... - %s' % (self.tipo, self.pregunta[:15], self.gformsection)
+
+
+
+class GformSectionInputOps(models.Model):
+    gformsectioninput = models.ForeignKey(GformSectionInput, on_delete=models.CASCADE)
+    orden = models.IntegerField("Orden dentro de las posibles opciones", blank=True, null=True)
+    opcion = models.CharField('Opción', blank=True, null=True, max_length=150, default='Esta es una opción')
+    # opcion_elegida = models.BooleanField('¿Es la opción elegida?', default=False)
+    puntuacion = models.IntegerField('Puntuación si esta es la opción elegida', default=0)
+
+    class Meta:
+        ordering = ['gformsectioninput__id', 'orden']
+
+    def __str__(self):
+        return '%s - %s...' % (self.gformsectioninput, self.opcion[:15])
+
+class GformSectionInputRespuesta(models.Model):
+    gformsectioninput = models.ForeignKey(GformSectionInput, on_delete=models.CASCADE)
+    rellenador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
+    respuesta = models.TextField('Respuesta de texto', blank=True, null=True)
+    archivo = models.FileField('Respuesta tipo archivo', blank=True, null=True, upload_to=sube_archivo)
+    feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
+    puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
+
+    class Meta:
+        ordering = ['gformsectioninput__gformsection__gform']
+
+    def __str__(self):
+        return '%s - %s...' % (self.gformsectioninput, self.respuesta[:15])
+
+# class GformSectionInputRC(models.Model):
+#     gformsectioninput = models.OneToOneField(GformSectionInput, on_delete=models.CASCADE)
+#     respuesta = models.CharField('Respuesta corta', max_length=150, blank=True, null=True)
+#     feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
+#     puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
+#
+#     def __str__(self):
+#         return '%s - %s...' % (self.gformsectioninput, self.respuesta[:15])
+
+
+# class GformSectionInputRL(models.Model):
+#     gformsectioninput = models.OneToOneField(GformSectionInput, on_delete=models.CASCADE)
+#     respuesta = models.TextField('Respuesta Larga', blank=True, null=True)
+#     feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
+#     puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
+#
+#     def __str__(self):
+#         return '%s - %s...' % (self.gformsectioninput, self.respuesta[:15])
+
+
+# class GformSectionInputEM(models.Model):
+#     gformsectioninput = models.OneToOneField(GformSectionInput, on_delete=models.CASCADE)
+#     respuesta = models.TextField('Respuesta Larga', blank=True, null=True)
+    # feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
+    # puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
+    #
+    # def __str__(self):
+    #     return '%s - %s...' % (self.gformsectioninput, self.respuesta[:15])
+
+
+# class GformSectionInputEMO(models.Model):
+#     gformsectioninputem = models.ForeignKey(GformSectionInputEM, on_delete=models.CASCADE)
+#     orden = models.IntegerField("Orden dentro de las posibles opciones", blank=True, null=True)
+#     opcion = models.CharField('Opción', blank=True, null=True, max_length=150)
+#     opcion_elegida = models.BooleanField('¿Es la opción elegida?', default=False)
+#     puntuacion = models.IntegerField('Puntuación si esta es la opción elegida', default=0)
+#
+#     def __str__(self):
+#         return '%s - %s...' % (self.gformsectioninputem, self.opcion[:15])
+
+
+# class GformSectionInputSC(models.Model):
+#     gformsectioninput = models.OneToOneField(GformSectionInput, on_delete=models.CASCADE)
+#     feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
+#     puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
+#
+#     def __str__(self):
+#         return '%s - %s...' % (self.gformsectioninput, self.respuesta[:15])
+#
+#
+# class GformSectionInputSCO(models.Model):
+#     gformsectioninputsc = models.ForeignKey(GformSectionInputSC, on_delete=models.CASCADE)
+#     orden = models.IntegerField("Orden dentro de las posibles opciones", blank=True, null=True)
+#     opcion = models.CharField('Opción', blank=True, null=True, max_length=150)
+#     opcion_elegida = models.BooleanField('¿Es la opción elegida?', default=False)
+#     puntuacion = models.IntegerField('Puntuación si esta es la opción elegida', default=0)
+#
+#     def __str__(self):
+#         return '%s - %s...' % (self.gformsectioninputsc, self.opcion[:15])
+#
+
+# class GformSectionInputSO(models.Model):
+#     gformsectioninput = models.OneToOneField(GformSectionInput, on_delete=models.CASCADE)
+#     feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
+#     puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
+#
+#     def __str__(self):
+#         return '%s - %s...' % (self.gformsectioninput, self.respuesta[:15])
+#
+#
+# class GformSectionInputSOO(models.Model):
+#     gformsectioninputso = models.ForeignKey(GformSectionInputSO, on_delete=models.CASCADE)
+#     orden = models.IntegerField("Orden dentro de las posibles opciones", blank=True, null=True)
+#     opcion = models.CharField('Opción', blank=True, null=True, max_length=150)
+#     opcion_elegida = models.BooleanField('¿Es la opción elegida?', default=False)
+#     puntuacion = models.IntegerField('Puntuación si esta es la opción elegida', default=0)
+#
+#     def __str__(self):
+#         return '%s - %s...' % (self.gformsectioninputso, self.opcion[:15])
+#
+#
+#
+#
+# class GformSectionInputSA(models.Model):
+#     gformsectioninput = models.OneToOneField(GformSectionInput, on_delete=models.CASCADE)
+#     respuesta = models.FileField('Respuesta Larga', blank=True, null=True, upload_to=sube_archivo)
+#     feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
+#     puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
+#
+#     def __str__(self):
+#         return '%s - %s...' % (self.gformsectioninput, self.respuesta[:15])
+#
+#
+# class GformSectionInputEL(models.Model):
+#     gformsectioninput = models.OneToOneField(GformSectionInput, on_delete=models.CASCADE)
+#     valor_min = models.IntegerField('Valor mínimo de la escala', default=1)
+#     valor_max = models.IntegerField('Valor máximo de la escala', default=5)
+#     respuesta = models.IntegerField('Respuesta', blank=True, null=True)
+#
+#     def __str__(self):
+#         return '%s - %s...' % (self.gformsectioninput, self.respuesta[:15])
 
 
 TIPOS = (('gchar', 'Texto con un máximo de 150 caracteres'), ('gselect', 'Seleccionar uno o varios valores'),
@@ -50,9 +238,18 @@ TIPOS = (('gchar', 'Texto con un máximo de 150 caracteres'), ('gselect', 'Selec
          ('gdatetime', 'Fecha y hora (dd/mm/yyyy HH:mm)'), ('gdate', 'Fecha (dd/mm/yyyy)'),
          ('gtext', 'Texto de longitud ilimitada'), ('gfile', 'Archivo'))
 
+GRUPOS = (
+    (1, 'Grupo de preguntas 1'), (2, 'Grupo de preguntas 2'), (3, 'Grupo de preguntas 3'), (4, 'Grupo de preguntas 4'),
+    (5, 'Grupo de preguntas 5'), (6, 'Grupo de preguntas 6'), (7, 'Grupo de preguntas 7'), (8, 'Grupo de preguntas 8'),
+    (9, 'Grupo de preguntas 9'), (10, 'Grupo de preguntas 10'), (11, 'Grupo de preguntas 11'),
+    (12, 'Grupo de preguntas 12'), (13, 'Grupo de preguntas 13'), (14, 'Grupo de preguntas 14'),
+    (15, 'Grupo de preguntas 15'), (16, 'Grupo de preguntas 16'), (17, 'Grupo de preguntas 17'),
+    (18, 'Grupo de preguntas 18'), (19, 'Grupo de preguntas 19'), (20, 'Grupo de preguntas 20'))
+
 
 class Ginput(models.Model):
     gform = models.ForeignKey(Gform, blank=True, null=True, on_delete=models.CASCADE)
+    grupo = models.IntegerField('Grupo de preguntas al que pertenece', choices=GRUPOS, default=1)
     cargos_permitidos = models.ManyToManyField(Cargo, blank=True)  # Cargos que tienen acceso a esta Ginput
     row = models.IntegerField("Número de fila", blank=True, null=True)
     col = models.IntegerField("Número de columna", blank=True, null=True)
@@ -72,10 +269,11 @@ class Ginput(models.Model):
     content_type_archivo = models.CharField('Tipo de archivo', max_length=200, blank=True, null=True)
     fich_name = models.CharField("Nombre del archivo", max_length=200, blank=True, null=True)
     ginput = models.ForeignKey('self', related_name='copia', blank=True, null=True, on_delete=models.CASCADE)
+    evaluable = models.BooleanField('Este Ginput es evaluable', default=False)
 
     def __str__(self):
         comentario = 'Original' if not self.ginput else self.rellenador.gauser.get_full_name()
-        return u'%s, %s (Tipo: %s) - %s' % (self.gform.nombre, self.label, self.tipo, comentario)
+        return '%s, %s (Tipo: %s) - %s' % (self.gform.nombre, self.label, self.tipo, comentario)
 
 
 class Goption(models.Model):
@@ -85,4 +283,40 @@ class Goption(models.Model):
     selected = models.BooleanField('Selected', default=False)
 
     def __str__(self):
-        return u'%s (%s) - Seleccionada: %s' % (self.text, self.value, self.selected)
+        return '%s (%s) - Seleccionada: %s' % (self.text, self.value, self.selected)
+
+
+class IrGrupoSi(models.Model):
+    # Si la goption es "selected" (es True) entonces ir al grupo indicado
+    goption = models.ForeignKey(Goption, blank=True, null=True, on_delete=models.CASCADE)
+    grupo_siguiente = models.IntegerField('Grupo de preguntas al que pertenece', choices=GRUPOS, default=1)
+
+    @property
+    def cumple_condicion(self):
+        return self.goption.selected
+
+    @property
+    def grupo_actual(self):
+        return self.goption.ginput.grupo
+
+    # @property
+    def get_grupo_actual_display(self):
+        return self.goption.ginput.get_grupo_display()
+
+    @property
+    def grupo_anterior(self):
+        try:
+            return IrGrupoSi.objects.get(goption__ginput__gform=self.goption.ginput.gform, goption__selected=True,
+                                         grupo_siguiente=self.goption.ginput.grupo).grupo_actual
+        except:
+            return IrGrupoSi.objects.none()
+
+
+class EvalGinput(models.Model):
+    ginput = models.ForeignKey(Ginput, blank=True, null=True, on_delete=models.CASCADE)
+    evaluador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
+    feedback = models.TextField('Evaluación de la respuesta a este Ginput', blank=True, null=True)
+    puntos = models.IntegerField('Valor numérico de la evaluación', blank=True, null=True)
+
+    def __str__(self):
+        return '%s (%s) - Seleccionada: %s' % (self.ginput, self.evaluador, self.puntos)

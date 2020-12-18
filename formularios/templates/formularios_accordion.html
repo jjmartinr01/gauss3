@@ -1,59 +1,76 @@
-<dl class="accordion" data-accordion>
-    {% for gform in gforms %}
-        <dd class="accordion-navigation"
-            style="border-top: 1px dashed #ccc;{% if forloop.last %}border-bottom: 1px dashed #ccc;{% endif %}">
-            <a href="#panel___{{ gform.id }}">
+{% load entidades_extras %}
+{% load my_templatetags %}
+{% if buscadas %}
+    {% if exc_max %}
+        <b>Se han encontrado <span style="color:red;">{{ num_act }}</span> actuaciones que coinciden con la
+            búsqueda.</b> <b style="color:red;">Solo
+        se muestran resultados con un número de coincidencias inferior a {{ max }}.</b>
+    {% else %}
+        {% if num_act == 1 %}
+            <b>Se ha encontrado {{ num_act }} actuación que coincide con la búsqueda</b>
+        {% else %}
+            <b>Se han encontrado {{ num_act }} actuaciones que coinciden con la búsqueda</b>
+        {% endif %}
+        <a class="listado_normal right"><span class="label rounded">Volver al listado normal</span></a>
+    {% endif %}
+{% endif %}
+<dl class="accordion" data-accordion id="list_formularios">
+    {% for gform in formularios %}
+        <input type="hidden" name="formularios_seleccionados" value="{{ gform.id }}">
+
+        <dd class="accordion-navigation" id="accordion{{ gform.id }}"
+            style="border-bottom: dotted 1px black">
+            <a href="#panel{{ gform.id }}">
                 <i id="circle{{ gform.id }}" class="fa fa-plus-circle circle_icon"></i>
-                {{ gform.nombre }}
-                {% if not gform.activo %} <span class="info radius label">(desactivado)</span>
+                <b id="nombre{{ gform.id }}">{% if not gform.nombre %}
+                    <span style="color:red">Nuevo formulario</span>
+                {% else %}{{ gform.nombre }}{% endif %}</b> -- <span
+                    id="fecha_max_rellenado{{ gform.id }}">Accesible hasta: {{ gform.fecha_max_rellenado|date:"d-m-Y" }}
+            </span> (<span id="fecha{{ gform.id }}">Creado: {{ gform.creado|date:"d-m-Y" }}</span>)
+                {% if buscadas %}
+                    <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
                 {% endif %}
             </a>
 
-            <div id="panel___{{ gform.id }}" class="content {% if id_gform == gform.id %}active{% endif %}">
-                <ul class="button-group radius">
-                    <li><a data-id="{{ gform.id }}" class="button editar"><i class="fa fa-pencil"></i>
-                        Editar</a></li>
-                    <li><a data-id="{{ gform.id }}" class="button ver"><i class="fa fa-th"></i>
-                        Ejemplo</a></li>
-                    {% if gform.contestados %}
-                        <li><a data-id="{{ gform.id }}" href="#" class="button excel"><i
-                                class="fa fa-file-excel-o"></i> Excel</a></li>
-                        <li><a data-id="{{ gform.id }}" href="#" class="button resultados"><i
-                                class="fa fa-line-chart"></i> Resultados</a></li>
-                    {% endif %}
-                    {% if not gform.activo %}
-                        <li><a data-id="{{ gform.id }}" href="#" class="button borrar"><i
-                                class="fa fa-trash-o"></i> Borrar</a></li>
-                    {% endif %}
-                </ul>
-                <p><b>Fecha de creación:</b> {{ gform.creado|date:"d \d\e F \d\e Y" }}</p>
-                <p><b>Fecha máxima para ser rellenado:</b> {{ gform.fecha_max_rellenado|date:"d \d\e F \d\e Y" }}</p>
-
-                <p>Este formulario consta de <b>{{ gform.num_preguntas }}</b> preguntas.</p>
-                {% if gform.num_preguntas > 0 %}
-                    <p>Hasta el momento, {% if gform.contestados == 0 %}no lo ha rellenado nadie.
-                    {% elif gform.contestados == 1 %} lo ha rellenado una única persona.
-                    {% else %} lo han rellenado {{ gform.contestados }} personas.{% endif %}</p>
-                    <hr>
-                    {% if gform.activo %}
-                        <p>Este formulario está activo. Esto quiere decir que aquellos a los que va destinado
-                            pueden rellenarlo. Mientras esté activo no puede ser borrado.</p>
-                        <p>Puedes desactivarlo a través del menú editar
-                            (Pulsando el botón que tiene este símbolo: <i class="fa fa-pencil"></i>).</p>
-                    {% else %}
-                        <p>Este formulario está desactivado. Esto quiere decir que nadie
-                            puede rellenarlo. Mientras esté desactivado puede ser borrado.</p>
-                        <p>Puedes activarlo a través del menú editar
-                            (Pulsando el botón que tiene este símbolo: <i class="fa fa-pencil"></i>).</p>
-                    {% endif %}
-                {% else %}
-                    <p>Este formulario todavía no está en funcionamiento. Es necesario
-                        crear con las preguntas que los usuarios deberán rellenar.</p>
-                    <p>Para hacer esto debes editar el formulario
-                        (Pulsando el botón que tiene este símbolo: <i class="fa fa-pencil"></i>) y después hacer las
-                        configuraciones oportunas.</p>
-                {% endif %}
+            <div id="panel{{ gform.id }}" class="content accordion-gform" data-id="{{ gform.id }}">
             </div>
         </dd>
     {% endfor %}
 </dl>
+
+{% if pag %}
+    {% if formularios.paginator.num_pages > 1 %}
+        <br>
+        <div class="row">
+            <div class="columns large-12">
+                <ul class="pagination" role="menubar" aria-label="Pagination">
+                    {% if formularios.has_previous %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ formularios.previous_page_number }}">&laquo; Anterior</a>
+                        </li>
+                    {% else %}
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">&laquo; Anterior</a>
+                        </li>
+                    {% endif %}
+                    {% for page in formularios.paginator.num_pages|number_range %}
+                        {% if page == formularios.number %}
+                            <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
+                        {% else %}
+                            <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if formularios.has_next %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ formularios.next_page_number }}">Siguiente &raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">Siguiente &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}

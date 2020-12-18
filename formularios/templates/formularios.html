@@ -1,38 +1,36 @@
 {% extends "base.html" %}
+{% load my_templatetags %}
 
+{% block head %}
+    <style>
+        .respuesta_booleana {
+            font-weight: bold;
+        }
+
+        .gtext {
+            min-height: 100px;
+        }
+    </style>
+{% endblock %}
 
 {% block contenido %}
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}"
           xmlns="http://www.w3.org/1999/html">
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
-        <input type="hidden" name="gform" id="gform" value="{{ id_gform }}">
+        {#        <input type="hidden" name="gform" id="gform" value="{{ id_gform }}">#}
+        <input type="hidden" name="gform" id="gform" value="">
+        <input type="hidden" name="gfs" id="gfs" value="">
+        <input type="hidden" name="gfsi" id="gfsi" value="">
 
         <div class="">
-            <h4 style="text-align: center;color: #008CBA;"><strong>
+            <h4 id="title_page" style="text-align: center;color: #008CBA;"><strong>
                 Formularios {{ request.session.gauser_extra.ronda.entidad.name }}</strong></h4>
         </div>
 
-        <div id="lista_gforms">
-            {% include "formularios_accordion.html" %}
+        <div id="listado_formularios">
+            {% include 'formularios_accordion.html' %}
         </div>
-        <div id="add_gform" style="display: none;">
-            <div class="row">
-                <div class="columns large-12">
-                    <label>Nombre del gform
-                        <input type="text" name="nombre" id="nombre" value="">
-                    </label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="columns large-12">
-                    <label>Describción general
-                        <textarea name="describir" id="describir"></textarea>
-                    </label>
-                </div>
-            </div>
-        </div>
-
     </form>
 
 {% endblock %}
@@ -40,28 +38,542 @@
 
 {% block final %}
     <script>
-        habilita(['s_plus']);
-        {% if id_gform %}
-            $(document).scrollTop( $('#panel___' + {{ id_gform }}).offset().top - 150 );
-            $('#circle' + {{ id_gform }}).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+        {# ########################################################################################### #}
+        {# Operaciones directas sobre el modelo Gform: #}
+        {# crea_formulario, open_accordion, del_gform, copy_gform, update_nombre  #}
+        {# ########################################################################################### #}
+
+        {% if request.session.gauser_extra|has_permiso:'crea_formularios' %}
+            habilita(['s_plus']);
+            $('#plus_sign').click(function (event) {
+                event.preventDefault();
+                $.post("/formularios/", {action: 'crea_formulario'}, function (data) {
+                    if (data.ok) {
+                        $('#listado_formularios').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    $(document).scrollTop($('#title_page').offset().top - 150);
+                });
+            });
         {% endif %}
 
         $(document).foundation({
             accordion: {
                 callback: function (accordion) {
-                    var id = accordion.attr('id').split('___')[1];
-                    if ($('#circle' + id).hasClass('fa-plus-circle')) {
-                        $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
-                        $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
-                        $('#gform').val(id);
-                    } else {
-                        $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
-                        $('#gform').val('');
+                    if (accordion.hasClass('accordion-gform')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/formularios/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        {#destroyEditorInstances();#}
+                                        {#constructEditorInstances();#}
+                                        {#CKEDITOR.inlineAll();#}
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
                     }
-                    console.log(accordion.attr('id'));
                 }
             }
         });
+
+        $('body').on('click', '.del_gform', function (e) {
+            e.preventDefault();
+            $('#gform').val($(this).data('gform'));
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar el formulario?',
+                texto: 'Si eliminas el formulario, también se borrarán todas las respuestas de los usuarios.',
+                buttons: {
+                    "Eliminar": function () {
+                        hide_mensajes();
+                        var gform = $('#gform').val();
+                        $.post("/formularios/", {action: 'del_gform', gform: gform}, function (data) {
+                            if (data.ok) {
+                                $('#accordion' + gform).remove();
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                            }
+                        });
+                    },
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    }
+                }
+            });
+        });
+
+        $('body').on('click', '.copy_gform', function (){
+            var gform = $(this).data('gform');
+            $.post("/formularios/", {action: 'copy_gform', gform: gform},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                                $('#listado_formularios').prepend(data.html);
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+        });
+
+        $('body').on('keyup', '.update_nombre', function () {
+            var element = $(this);
+            var gform = element.data('gform');
+            var antiguo_texto = element.val();
+            $('#nombre' + gform).html(antiguo_texto);
+            setTimeout(function () {
+                var nuevo_texto = element.val();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/formularios/", {action: 'update_nombre', gform: gform, texto: nuevo_texto},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+        {# ########################################################################################### #}
+        {# Funciones para reordenar las secciones y las preguntas: #}
+        {# gfsi_id_orden, gfs_id_orden  #}
+        {# ########################################################################################### #}
+
+        function gfsi_id_orden(datos) {
+            var gfsi_nos = datos[0];
+            var gfsi_count = datos[1];
+            for (var i = 0; i < gfsi_nos.length; i++) {
+                let legend = 'Pregunta ' + gfsi_nos[i].orden + ' de ' + gfsi_count;
+                $('#legendgfsi' + gfsi_nos[i].id).html(legend);
+            }
+        }
+
+        function gfs_id_orden(datos) {
+            var gfs_nos = datos[0];
+            var gfs_count = datos[1];
+            for (var i = 0; i < gfs_nos.length; i++) {
+                let legend = 'Sección ' + gfs_nos[i].orden + ' de ' + gfs_count;
+                $('#legendgfs' + gfs_nos[i].id).html(legend);
+            }
+        }
+
+        {# ########################################################################################### #}
+        {# Posibles operaciones en una sección: #}
+        {# update_texto_gfs, add_gfsi_after_gfs, copy_gfs, add_gfs_after_gfs, del_gfs  #}
+        {# ########################################################################################### #}
+
+        $('body').on('keyup', '.update_texto_gfs', function () {
+            var element = $(this);
+            var gfs = element.data('gfs');
+            var campo = element.data('campo');
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/formularios/", {action: 'update_texto_gfs', gfs: gfs, texto: nuevo_texto, campo: campo},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
+        $('body').on('change', '.update_fecha_limite', function (e) {
+            e.preventDefault();
+            console.log('fecha')
+            var gform = $(this).data('gform');
+            var fecha = $(this).val();
+            $.post("/formularios/", {action: 'update_fecha_limite', gform: gform, fecha: fecha},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.add_gfsi_after_gfs', function (e) {
+            e.preventDefault();
+            var gfs = $(this).data('gfs');
+            $.post("/formularios/", {action: 'add_gfsi_after_gfs', gfs: gfs},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $("#gfs" + gfs).after(data.html);
+                        gfsi_id_orden(data.gfsi_id_orden);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.copy_gfs', function (e) {
+            e.preventDefault();
+            var gfs = $(this).data('gfs');
+            $.post("/formularios/", {action: 'copy_gfs', gfs: gfs},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $("#gfs" + gfs).after(data.html);
+                        gfs_id_orden(data.gfs_id_orden);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.add_gfs_after_gfs', function (e) {
+            e.preventDefault();
+            var gfs = $(this).data('gfs');
+            $.post("/formularios/", {action: 'add_gfs_after_gfs', gfs: gfs},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $("#gfs" + gfs).after(data.html);
+                        gfs_id_orden(data.gfs_id_orden);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.del_gfs', function (e) {
+            e.preventDefault();
+            $('#gfs').val($(this).data('gfs'));
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar la sección del cuestionario?',
+                texto: 'Las preguntas de esta sección pasarán a formar parte de la sección anterior.',
+                buttons: {
+                    "Eliminar": function () {
+                        hide_mensajes();
+                        var gfs = $('#gfs').val();
+                        $.post("/formularios/", {action: 'del_gfs', gfs: gfs},
+                            function (data) {
+                                if (data.ok) {
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                    $("#gfs" + gfs).remove();
+                                    gfs_id_orden(data.gfs_id_orden);
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    },
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    }
+                }
+            });
+        });
+
+        {# ########################################################################################### #}
+        {# Posibles operaciones en una pregunta: #}
+        {# update_gfsi_pregunta, select_tipo_gfsi, add_gfsio, del_gfsio, add_gfsi_after_gfsi, copy_gfsi, #}
+        {# add_gfs_after_gfsi, del_gfsi  #}
+        {# ########################################################################################### #}
+
+        $('body').on('keyup', '.update_gfsi_label', function () {
+            var element = $(this);
+            var gfsi = element.data('gfsi');
+            var campo = element.data('campo');
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/formularios/", {
+                            action: 'update_gfsi_label',
+                            gfsi: gfsi,
+                            texto: nuevo_texto,
+                            campo: campo
+                        },
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
+        var se_ha_avisado_valores_maximo_minimo = false;
+        $('body').on('keyup', '.update_gfsi_el', function () {
+            var element = $(this);
+            var gfsi = element.data('gfsi');
+            var campo = element.data('campo');
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                var correcto = true;
+                if (antiguo_texto === nuevo_texto) {
+                    if (campo == 'elmin') {
+                        if (!(parseInt(nuevo_texto) > -1 && parseInt(nuevo_texto) < 2)) {
+                            correcto = false;
+                        } else {
+                            nuevo_texto = parseInt(nuevo_texto);
+                        }
+                    }
+                    if (campo == 'elmax') {
+                        if (!(parseInt(nuevo_texto) > 1 && parseInt(nuevo_texto) < 11)) {
+                            correcto = false;
+                        } else {
+                            nuevo_texto = parseInt(nuevo_texto);
+                        }
+                    }
+                    if (correcto) {
+                        $.post("/formularios/", {
+                                action: 'update_gfsi_el',
+                                gfsi: gfsi,
+                                texto: nuevo_texto,
+                                campo: campo
+                            },
+                            function (data) {
+                                if (data.ok) {
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                    $('#respuesta' + gfsi).html(data.html);
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    } else {
+                        if (!se_ha_avisado_valores_maximo_minimo) {
+                            var texto = 'El valor mínimo debe estar entre 0 y 1. El valor máximo entre 2 y 10';
+                            show_mensajes({title: 'Error en los valores', texto: texto})
+                            se_ha_avisado_valores_maximo_minimo = true;
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+
+                    }
+                }
+            }, 750);
+        });
+
+        $('body').on('keyup', '.update_gfsio_opcion', function () {
+            var element = $(this);
+            var gfsio = element.data('gfsio');
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/formularios/", {action: 'update_gfsio_opcion', gfsio: gfsio, texto: nuevo_texto},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
+        $('body').on('keyup', '.update_gfsi_pregunta', function () {
+            var element = $(this);
+            var gfsi = element.data('gfsi');
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/formularios/", {action: 'update_gfsi_pregunta', gfsi: gfsi, texto: nuevo_texto},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
+        $('body').on('change', '.select_tipo_gfsi', function () {
+            var gfsi = $(this).data('gfsi');
+            var tipo = $(this).val();
+            $.post("/formularios/", {action: 'select_tipo_gfsi', gfsi: gfsi, tipo: tipo},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $("#respuesta" + gfsi).html(data.html);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.add_gfsio', function () {
+            var gfsi = $(this).data('gfsi');
+            $.post("/formularios/", {action: 'add_gfsio', gfsi: gfsi},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $("#opciones" + gfsi).append(data.html);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.del_gfsio', function () {
+            var gfsio = $(this).data('gfsio');
+            $.post("/formularios/", {action: 'del_gfsio', gfsio: gfsio},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $("#gfsio" + gfsio).remove();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.add_gfsi_after_gfsi', function (e) {
+            e.preventDefault();
+            var gfsi = $(this).data('gfsi');
+            $.post("/formularios/", {action: 'add_gfsi_after_gfsi', gfsi: gfsi},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $("#gfsi" + gfsi).after(data.html);
+                        gfsi_id_orden(data.gfsi_id_orden);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.copy_gfsi', function (e) {
+            e.preventDefault();
+            var gfsi = $(this).data('gfsi');
+            $.post("/formularios/", {action: 'copy_gfsi', gfsi: gfsi},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $("#gfsi" + gfsi).after(data.html);
+                        gfsi_id_orden(data.gfsi_id_orden);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.add_gfs_after_gfsi', function (e) {
+            e.preventDefault();
+            var gfsi = $(this).data('gfsi');
+            $.post("/formularios/", {action: 'add_gfs_after_gfsi', gfsi: gfsi},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $("#gfsi" + gfsi).after(data.html);
+                        gfs_id_orden(data.gfs_id_orden);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.del_gfsi', function (e) {
+            e.preventDefault();
+            $('#gfsi').val($(this).data('gfsi'));
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar la pregunta del cuestionario?',
+                texto: 'Si eliminas la cuestión, se borrará por completo de la base de datos.',
+                buttons: {
+                    "Eliminar": function () {
+                        hide_mensajes();
+                        var gfsi = $('#gfsi').val();
+                        $.post("/formularios/", {action: 'del_gfsi', gfsi: gfsi}, function (data) {
+                            if (data.ok) {
+                                $('#gfsi' + gfsi).remove();
+                                gfsi_id_orden(data.gfsi_id_orden);
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                            }
+                        });
+                    },
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    }
+                }
+            });
+        });
+
+
+        {#$('body').on('mouseover', '.facgi', function (){#}
+        {#    var gfsi = $(this).data('gfsi');#}
+        {#    $('#facgichild' + gfsi).show();#}
+        {# });#}
+        {##}
+        {#$('body').on('mouseout', '.facgi', function (){#}
+        {#    var gfsi = $(this).data('gfsi');#}
+        {#    $('#facgichild' + gfsi).hide();#}
+        {# });#}
+        {##}
+        {#$('body').on('mouseover', '.gfsection', function (){#}
+        {#    var gfs = $(this).data('gfs');#}
+        {#    $('#gfsectionchild' + gfs).show();#}
+        {# });#}
+        {##}
+        {#$('body').on('mouseout', '.gfsection', function (){#}
+        {#    var gfs = $(this).data('gfs');#}
+        {#    $('#gfsectionchild' + gfs).hide();#}
+        {# });#}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        {% if id_gform %}
+            $(document).scrollTop($('#panel___' + {{ id_gform }}).offset().top - 150);
+            $('#circle' + {{ id_gform }}).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+        {% endif %}
+
+        {#$(document).foundation({#}
+        {#    accordion: {#}
+        {#        callback: function (accordion) {#}
+        {#            var id = accordion.attr('id').split('___')[1];#}
+        {#            if ($('#circle' + id).hasClass('fa-plus-circle')) {#}
+        {#                $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');#}
+        {#                $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');#}
+        {#                $('#gform').val(id);#}
+        {#            } else {#}
+        {#                $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');#}
+        {#                $('#gform').val('');#}
+        {#            }#}
+        {#            console.log(accordion.attr('id'));#}
+        {#        }#}
+        {#    }#}
+        {# });#}
 
         $('body').on('click', '.editar', function (e) {
             e.preventDefault();
@@ -90,35 +602,13 @@
             document.getElementById("{{ formname }}").submit();
         });
 
-        $('body').on('click', '.borrar', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar el formulario?',
-                texto: 'Si eliminas el formulario, también se borrarán todas las respuestas de los usuarios.',
-                buttons: {
-                    "Eliminar": function () {
-                        hide_mensajes();
-                        var id = $('#gform').val();
-                        console.log(id);
-                        $.post("/formulario_ajax/", {action: 'del_gform', id: id}, function (data) {
-                            $('#lista_gforms').html(data);
-                        });
-                    },
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    }
-                }
-            });
-        });
 
-
-        $('#plus_sign').on('click', function (e) {
-            e.preventDefault();
-            $.post("/formulario_ajax/", {action: 'add_gform'}, function (data) {
-                $('#lista_gforms').html(data);
-            });
-        })
+        {#$('#plus_sign').on('click', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    $.post("/formulario_ajax/", {action: 'add_gform'}, function (data) {#}
+        {#        $('#lista_gforms').html(data);#}
+        {#    });#}
+        {# })#}
 
 
     </script>

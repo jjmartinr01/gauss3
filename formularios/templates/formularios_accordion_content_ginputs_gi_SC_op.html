@@ -1,0 +1,12 @@
+<div class="row" style="border-bottom: 1px dashed lightgrey;" id="gfsio{{ gfsio.id }}">
+    <div class="columns large-9">
+        <p><span style="color: lightgrey"><i class="fa fa-square-o"></i></span>
+            <span contenteditable="true" data-gfsio="{{ gfsio.id }}" class="update_gfsio_opcion">
+        {% autoescape off %}{{ gfsio.opcion }}{% endautoescape %}</span>
+        </p>
+    </div>
+    <div class="columns large-3">
+        <a class="del_gfsio" data-gfsio="{{ gfsio.id }}"
+           title="Eliminar opción de esta pregunta"><i class="fa fa-times"></i> Eliminar</a>
+    </div>
+</div>

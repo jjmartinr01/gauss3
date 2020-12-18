@@ -1,0 +1,69 @@
+{% load formularios_extras %}
+<fieldset id="gfsi{{ gfsi.id }}">
+    <legend id="legendgfsi{{ gfsi.id }}" style="color:gray;">Pregunta {{ gfsi.orden }} de {{ gfsi|totalgfsis }}</legend>
+    <div class="row">
+        <div class="columns large-9">
+            <div contenteditable="true" class="update_gfsi_pregunta" data-gfsi="{{ gfsi.id }}"
+            >{% autoescape off %}{{ gfsi.pregunta }}{% endautoescape %}</div>
+        </div>
+        <div class="columns large-3">
+            <select class="select_tipo_gfsi" data-gfsi="{{ gfsi.id }}">
+                {% for t in gfsi|gsitipos %}
+                    <option value="{{ t.0 }}" {% if gfsi.tipo == t.0 %}selected{% endif %}>{{ t.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12" id="respuesta{{ gfsi.id }}">
+            {% if gfsi.tipo == 'RC' %}
+                {% include "formularios_accordion_content_ginputs_gi_RC.html" %}
+            {% elif gfsi.tipo == 'RL' %}
+                {% include "formularios_accordion_content_ginputs_gi_RL.html" %}
+            {% elif gfsi.tipo == 'EM' %}
+                {% include "formularios_accordion_content_ginputs_gi_EM.html" %}
+            {% elif gfsi.tipo == 'SC' %}
+                {% include "formularios_accordion_content_ginputs_gi_SC.html" %}
+            {% elif gfsi.tipo == 'SO' %}
+                {% include "formularios_accordion_content_ginputs_gi_SO.html" %}
+            {% elif gfsi.tipo == 'SA' %}
+                {% include "formularios_accordion_content_ginputs_gi_SA.html" %}
+            {% elif gfsi.tipo == 'EL' %}
+                {% include "formularios_accordion_content_ginputs_gi_EL.html" %}
+            {% endif %}
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+{#        <div class="columns large-1">#}
+{#            <input id="gfsi_orden{{ gfsi.id }}" type="number" min="1" value="{{ gfsi.orden }}" data-gfsi="{{ gfsi.id }}">#}
+{#        </div>#}
+{#        <div class="columns large-1">#}
+{#            <label for="gfsi_orden{{ gfsi.id }}" class="right">&nbsp;</label>#}
+{#        </div>#}
+        <div class="columns large-12 right">
+            <ul class="button-group right">
+                <li title="Añadir una pregunta a continuación">
+                    <a class="button tiny add_gfsi_after_gfsi" data-gfsi="{{ gfsi.id }}"><i
+                            class="fa fa-plus-circle fa-lg"></i> </a>
+                </li>
+                <li title="Duplicar pregunta">
+                    <a class="button tiny copy_gfsi" data-gfsi="{{ gfsi.id }}"><i
+                            class="fa fa-copy fa-lg"></i> </a>
+                </li>
+                <li title="Marcar si la pregunta es requerida">
+                    <a class="button tiny requerida" data-gfsi="{{ gfsi.id }}"
+                       id="requerida{{ gfsi.id }}">Requerida: No</a>
+                </li>
+                <li title="Añadir una nueva sección a continuación">
+                    <a class="button tiny add_gfs_after_gfsi" data-gfsi="{{ gfsi.id }}"><i
+                            class="fa fa-th-list fa-lg"></i> </a>
+                </li>
+                <li title="Borrar pregunta">
+                    <a class="button tiny del_gfsi alert" data-gfsi="{{ gfsi.id }}"><i
+                            class="fa fa-trash fa-lg"></i> </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</fieldset>

@@ -1,0 +1,17 @@
+<div class="row">
+    <div class="columns large-12" style="color: lightgrey;">Se mostrarán varias opciones
+        y se podrán seleccionar varias:
+    </div>
+</div>
+<div id="opciones{{ gfsi.id }}">
+    {% for gfsio in gfsi.gformsectioninputops_set.all %}
+        {% include "formularios_accordion_content_ginputs_gi_SC_op.html" %}
+    {% endfor %}
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <a class="button tiny add_gfsio" data-gfsi="{{ gfsi.id }}">
+            <i class="fa fa-plus"></i> Añadir opción
+        </a>
+    </div>
+</div>

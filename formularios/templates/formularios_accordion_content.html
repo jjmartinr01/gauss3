@@ -1,0 +1,112 @@
+{% load entidades_extras %}
+{% load formularios_extras %}
+{#{% load inspeccion_educativa_extras %}#}
+{#{% if gform|permiso_gform_w:g_e %}#}
+
+<div class="row">
+    <div class="columns large-12">
+        <ul class="button-group right">
+            {% if gform.propietario.gauser == g_e.gauser or g_e|has_permiso:'borra_formularios' %}
+                <li><a class="button alert del_gform" data-gform="{{ gform.id }}">
+                    <i class="fa fa-trash-o"></i> Borrar</a></li>
+            {% else %}
+                <li><a class="button secondary" title="No tienes permisos para borrar el formulario">
+                    <i class="fa fa-trash-o"></i> Borrar</a></li>
+            {% endif %}
+            <li><a class="button copy_gform" data-gform="{{ gform.id }}"
+                   title="Hacer una copia (un duplicado) de este cuestionario"><i class="fa fa-copy"></i> Copiar</a>
+            </li>
+            {#                <li><a class="button pdf_ie tiny" data-id="{{ ie.id }}"#}
+            {#                       title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>#}
+            {#                </li>#}
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Nombre </b><input type="text" class="update_nombre" data-campo="nombre"
+                                    data-gform="{{ gform.id }}" value="{{ gform.nombre }}"
+                                    placeholder="Introduce aquí el nombre del formulario"></label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-6">
+        <label><b>Fecha límite para rellenar</b><input value="{{ gform.fecha_max_rellenado|date:'Y-m-d' }}"
+                                                       type="date" name="fecha_max_rellenado"
+                                                       class="update_fecha_limite" data-gform={{ gform.id }}></label>
+    </div>
+    <div class="columns large-3">
+        <label><b>¿Activo?</b><br>
+            {% if gform.activo %}
+                <a class="respuesta_booleana" id="activo" data-campo="activo" data-id="{{ gform.id }}">Sí</a>
+            {% else %}
+                <a class="respuesta_booleana" id="activo" data-campo="activo" data-id="{{ gform.id }}">No</a>
+            {% endif %}
+        </label>
+    </div>
+    <div class="columns large-3">
+        <label><b>¿Anónimo?</b><br>
+            {% if gform.anonimo %}
+                <a class="respuesta_booleana" id="anonimo" data-campo="anonimo" data-id="{{ gform.id }}">Sí</a>
+            {% else %}
+                <a class="respuesta_booleana" id="anonimo" data-campo="anonimo" data-id="{{ gform.id }}">No</a>
+            {% endif %}
+        </label>
+    </div>
+</div>
+<div id="gformsections{{ gform.id }}">
+    {% for gfs in gform.gformsection_set.all %}
+        {% include "formularios_accordion_content_gfs.html" %}
+        {% include "formularios_accordion_content_ginputs.html" %}
+    {% endfor %}
+</div>
+
+{#<fieldset>#}
+{#    <legend>Añadir una nueva cuestión al formulario</legend>#}
+{#    <div class="row">#}
+{#        <div class="columns large-4">#}
+{#            <label>Tipo#}
+{#                <select id="tipo_cuestion{{ gform.id }}">#}
+{#                    {% for tipo in tipos %}#}
+{#                        <option value="{{ tipo.0 }}">{{ tipo.1 }}</option>#}
+{#                    {% endfor %}#}
+{#                </select>#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="columns large-4">#}
+{#            <label>Grupo#}
+{#                <select id="grupo_cuestion{{ gform.id }}">#}
+{#                    {% for grupo in grupos %}#}
+{#                        <option value="{{ grupo.0 }}">{{ grupo.1 }}</option>#}
+{#                    {% endfor %}#}
+{#                </select>#}
+{#            </label>#}
+{#        </div>#}
+{##}
+{#        <div class="columns large-2">#}
+{#            <label>&nbsp;Posición#}
+{#                <input title="Posición en la que se mostrará la cuestión dentro del grupo"#}
+{#                       id="pos_cuestion{{ gform.id }}" type="number" value="1">#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="columns large-2">#}
+{#            <label>&nbsp;&nbsp;</label><a data-gform="{{ gform.id }}" class="add_ginput button tiny"><i#}
+{#                class="fa fa-plus"></i> Añadir</a>#}
+{#        </div>#}
+{#    </div>#}
+{#</fieldset>#}
+
+
+{#<div class="row">#}
+{#    <div class="columns large-12">#}
+{#        <label><b contenteditable="true">Observaciones</b>#}
+{#            <div contenteditable="true" class="ckeditor update_texto observaciones"#}
+{#                 data-id="{{ gform.id }}" data-campo="observaciones">fasf a#}
+{#                asdf#}
+{#                a sf#}
+{##}
+{#            </div>#}
+{#        </label>#}
+{#    </div>#}
+{#</div>#}
