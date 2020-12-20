@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 import zipfile
+import pdfkit
 import simplejson as json
 import pexpect
 import os
@@ -8,7 +9,6 @@ import logging
 import xlwt
 from xlwt import Formula
 from django.contrib.auth.decorators import login_required
-from django.template import RequestContext
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -17,6 +17,7 @@ from django import forms
 from django.forms import ModelForm
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
+from django.utils.text import slugify
 
 from autenticar.control_acceso import permiso_required
 from mensajes.models import Aviso
@@ -26,7 +27,7 @@ from gauss.rutas import *
 
 # from entidades.models import Subentidad, Cargo
 # from autenticar.models import Gauser_extra, Gauser
-from entidades.models import Subentidad, Cargo, Gauser_extra
+from entidades.models import Subentidad, Cargo, Gauser_extra, DocConfEntidad
 from autenticar.models import Gauser
 
 from gauss.funciones import usuarios_de_gauss, pass_generator, html_to_pdf, paginar
@@ -145,21 +146,18 @@ def gfsi_id_orden(gform):
     gfsis = GformSectionInput.objects.filter(gformsection__gform=gform)
     return [{'id': gfsi.id, 'orden': gfsi.orden} for gfsi in gfsis], gfsis.count()
 
+
 def gfs_id_orden(gform):
     gfss = GformSection.objects.filter(gform=gform)
     return [{'id': gfs.id, 'orden': gfs.orden} for gfs in gfss], gfss.count()
 
-
+# @login_required()
 def formularios(request):
     g_e = request.session["gauser_extra"]
-    # if 'gform' in request.GET:
-    #     id_gform = int(request.GET['gform'])
-    # else:
-    #     id_gform = None
     gforms = Gform.objects.filter(propietario__ronda__entidad=g_e.ronda.entidad)
     paginator = Paginator(gforms, 15)
     formularios = paginator.page(1)
-    if request.method == 'POST':
+    if request.method == 'POST' and request.is_ajax():
         if request.POST['action'] == 'crea_formulario':
             if g_e.has_permiso('crea_formularios'):
                 gform = Gform.objects.create(propietario=g_e)
@@ -173,7 +171,8 @@ def formularios(request):
         elif request.POST['action'] == 'open_accordion':
             try:
                 gform = Gform.objects.get(id=request.POST['id'])
-                html = render_to_string('formularios_accordion_content.html', {'gform': gform, 'g_e': g_e, 'tipos': TIPOS, 'grupos': GRUPOS})
+                html = render_to_string('formularios_accordion_content.html',
+                                        {'gform': gform, 'g_e': g_e, 'tipos': TIPOS, 'grupos': GRUPOS})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -231,10 +230,44 @@ def formularios(request):
                 return JsonResponse({'ok': True})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_template':
+            try:
+                gform = Gform.objects.get(id=request.POST['gform'])
+                gform.template = request.POST['texto']
+                gform.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_destinatarios':
+            try:
+                gform = Gform.objects.get(id=request.POST['gform'])
+                usuario = Gauser_extra.objects.get(id=int(request.POST['ge'][1:]), ronda=g_e.ronda)
+                try:
+                    GformResponde.objects.get(gform=gform, g_e=usuario)
+                    html_span = ''
+                except:
+                    gformresponde = GformResponde.objects.create(gform=gform, g_e=usuario)
+                    html_span = render_to_string('formularios_accordion_content_destinatario.html',
+                                                 {'gform': gform, 'gformresponde': gformresponde})
+
+                return JsonResponse({'ok': True, 'gform': gform.id, 'html_span': html_span,
+                                     'num_destinatarios': gform.gformresponde_set.all().count()})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'del_gformresponde':
+            try:
+                gform = Gform.objects.get(id=request.POST['gform'])
+                gformresponde = gform.gformresponde_set.get(id=request.POST['gformresponde'])
+                gformresponde_id = gformresponde.id
+                gformresponde.delete()
+                return JsonResponse({'ok': True, 'gform': gform.id, 'gformresponde': gformresponde_id,
+                                     'num_destinatarios': gform.gformresponde_set.all().count()})
+            except:
+                return JsonResponse({'ok': False})
 
         # Posibles operaciones en una sección:
         # update_texto_gfs, add_gfsi_after_gfs, copy_gfs, add_gfs_after_gfs, del_gfs
-        elif request.POST['action'] == 'update_texto_gfs': #actualiza title y description
+        elif request.POST['action'] == 'update_texto_gfs':  # actualiza title y description
             try:
                 gfs = GformSection.objects.get(id=request.POST['gfs'])
                 setattr(gfs, request.POST['campo'], request.POST['texto'])
@@ -248,10 +281,10 @@ def formularios(request):
                 try:
                     gfs_anterior = gfs.gform.gformsection_set.get(orden=gfs.orden - 1)
                     gfsi = gfs_anterior.gformsectioninput_set.all().last()
-                    orden = gfsi.orden + 1 #Orden de la nueva gfsi
+                    orden = gfsi.orden + 1  # Orden de la nueva gfsi
                 except:
                     # Si no no hay gfs_anterior es porque es el primer gfs y por tanto será la primera pregunta:
-                    orden = 1 #Orden de la nueva gfsi
+                    orden = 1  # Orden de la nueva gfsi
                 gfsis = GformSectionInput.objects.filter(gformsection__gform=gfs.gform, orden__gte=orden)
                 for g in gfsis:
                     g.orden += 1
@@ -264,7 +297,7 @@ def formularios(request):
         elif request.POST['action'] == 'copy_gfs':
             try:
                 gfs = GformSection.objects.get(id=request.POST['gfs'])
-                orden = gfs.orden + 1 #El orden del nuevo GformSectionInput
+                orden = gfs.orden + 1  # El orden del nuevo GformSectionInput
                 gfss = GformSection.objects.filter(gform=gfs.gform, orden__gte=orden)
                 for g in gfss:
                     g.orden += 1
@@ -281,7 +314,7 @@ def formularios(request):
         elif request.POST['action'] == 'add_gfs_after_gfs':
             try:
                 gfs = GformSection.objects.get(id=request.POST['gfs'])
-                orden = gfs.orden + 1 #El orden del nuevo GformSectionInput
+                orden = gfs.orden + 1  # El orden del nuevo GformSectionInput
                 gfss = GformSection.objects.filter(gform=gfs.gform, orden__gte=orden)
                 for g in gfss:
                     g.orden += 1
@@ -390,7 +423,7 @@ def formularios(request):
         elif request.POST['action'] == 'add_gfsi_after_gfsi':
             try:
                 gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
-                orden = gfsi.orden + 1 #El orden del nuevo GformSectionInput
+                orden = gfsi.orden + 1  # El orden del nuevo GformSectionInput
                 gfsis = GformSectionInput.objects.filter(gformsection__gform=gfsi.gformsection.gform, orden__gte=orden)
                 for g in gfsis:
                     g.orden += 1
@@ -403,7 +436,7 @@ def formularios(request):
         elif request.POST['action'] == 'copy_gfsi':
             try:
                 gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
-                orden = gfsi.orden + 1 #El orden del nuevo GformSectionInput
+                orden = gfsi.orden + 1  # El orden del nuevo GformSectionInput
                 gfsis = GformSectionInput.objects.filter(gformsection__gform=gfsi.gformsection.gform, orden__gte=orden)
                 for g in gfsis:
                     g.orden += 1
@@ -420,7 +453,7 @@ def formularios(request):
             try:
                 gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
                 gform = gfsi.gformsection.gform
-                orden = gfsi.gformsection.orden + 1 #El orden del nuevo GformSection
+                orden = gfsi.gformsection.orden + 1  # El orden del nuevo GformSection
                 gfss = gform.gformsection_set.filter(orden__gte=orden)
                 for g in gfss:
                     g.orden += 1
@@ -529,16 +562,17 @@ def formularios(request):
             return response
 
     return render(request, "formularios.html",
-                              {
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
-                                        'permiso': 'crea_formularios', 'title': 'Crear un nuevo formulario'},
-                                       ),
-                                  'formname': 'formularios',
-                                  'formularios': formularios,
-                                  # 'id_gform': id_gform,
-                                  'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                              })
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
+                            'permiso': 'crea_formularios', 'title': 'Crear un nuevo formulario'},
+                           ),
+                      'formname': 'formularios',
+                      'formularios': formularios,
+                      # 'id_gform': id_gform,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
 
 
 # @login_required()
@@ -561,105 +595,218 @@ def resultados_gform(request):
             response['Content-Disposition'] = 'attachment; filename=%s' % ginput.fich_name
             return response
     return render(request, "resultados_gform.html",
-                              {
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Volver',
-                                        'permiso': 'm67i10', 'title': 'Volver a la lista de formularios'},
-                                       {'tipo': 'button', 'nombre': 'trash-o', 'texto': 'Borrar',
-                                        'permiso': 'm67i10', 'title': 'Borrar las respuestas seleccionadas'},
-                                       ),
-                                  'formname': 'resultados_gform',
-                                  'original_ginputs': original_ginputs,
-                                  'ginputs': ginputs,
-                                  'gform': gform,
-                                  'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                              })
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Volver',
+                            'permiso': 'm67i10', 'title': 'Volver a la lista de formularios'},
+                           {'tipo': 'button', 'nombre': 'trash-o', 'texto': 'Borrar',
+                            'permiso': 'm67i10', 'title': 'Borrar las respuestas seleccionadas'},
+                           ),
+                      'formname': 'resultados_gform',
+                      'original_ginputs': original_ginputs,
+                      'ginputs': ginputs,
+                      'gform': gform,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+
+@login_required()
+def ver_gform(request, id, identificador):
+    g_e = request.session["gauser_extra"]
+    try:
+        if request.is_ajax():
+            return JsonResponse({'ok': True, 'msg': 'No se realiza ninguna operación.'})
+        elif request.method == 'POST':
+            if request.POST['action'] == 'genera_pdf':
+                doc_gform = 'Configuración para cuestionarios'
+                try:
+                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_gform)
+                except:
+                    try:
+                        dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+                    except:
+                        dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
+                        dce.predeterminado = True
+                        dce.save()
+                    dce.pk = None
+                    dce.nombre = doc_gform
+                    dce.predeterminado = False
+                    dce.editable = False
+                    dce.save()
+                gform = Gform.objects.get(id=request.POST['gform'])
+                c = render_to_string('gform2pdf.html', {'template': gform.template_procesado(None)})
+                fich = pdfkit.from_string(c, False, dce.get_opciones)
+                response = HttpResponse(fich, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
+                return response
+        elif request.method == 'GET':
+            gform = Gform.objects.get(id=id, identificador=identificador)
+            return render(request, "ver_gform.html", {'gform': gform})
+    except:
+        return HttpResponse('Error')
+
+
+def mis_formularios(request):
+    g_e = request.session["gauser_extra"]
+    grs = GformResponde.objects.filter(g_e__gauser=g_e.gauser, g_e__ronda__entidad=g_e.ronda.entidad)
+    paginator = Paginator(grs, 15)
+    gformrespondes = paginator.page(1)
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'open_accordion':
+            try:
+                gformresponde = GformResponde.objects.get(id=request.POST['id'])
+                html = render_to_string('mis_formularios_accordion_content.html', {'gformresponde': gformresponde})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+
+    return render(request, "mis_formularios.html",
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
+                            'permiso': 'crea_formularios', 'title': 'Crear un nuevo formulario'},
+                           ),
+                      'formname': 'mis_formularios',
+                      'gformrespondes': gformrespondes,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
 
 
 # @login_required()
-def ver_gform(request):
+def rellena_gform(request, id, identificador):
     g_e = request.session["gauser_extra"]
-    try:
-        gform = Gform.objects.get(id=request.GET['gform'], propietario=g_e)
-    except:
-        crear_aviso(request, False, "No tienes permiso para ver el formulario/cuestionario solicitado")
-        return redirect('/calendario/')
-    ginputs = gform.ginput_set.filter(gform=gform, ginput__isnull=True).order_by('row', 'col')
-    return render(request, "ver_gform.html",
-                              {
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Volver',
-                                        'permiso': 'm67i10', 'title': 'Volver a la lista de formularios'},
-                                       ),
-                                  'ginputs': ginputs,
-                                  'gform': gform,
-                                  'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                              })
-
-
-def crea_ginputs_para_rellenador(gform, g_e):
-    originales = gform.ginput_set.filter(ginput__isnull=True)
-    creados = gform.ginput_set.filter(rellenador=g_e, ginput__in=originales).values_list('ginput__id', flat=True)
-    for original in originales:
-        if not original.id in creados:
-            nueva = Ginput.objects.create(gform=original.gform, rellenador=g_e, tipo=original.tipo, ginput=original)
-            nueva.cargos_permitidos.add(*original.cargos_permitidos.all())
-            if original.tipo == 'gselect':
-                goptions = original.goption_set.all()
-                for goption in goptions:
-                    Goption.objects.create(ginput=nueva, text=goption.text, value=goption.value)
-    return True
-
-
-# @login_required()
-def rellena_gform(request):
-    g_e = request.session["gauser_extra"]
-    try:
-        gforms = Gform.objects.filter(Q(propietario__entidad=g_e.ronda.entidad), Q(activo=True),
-                                      Q(subentidades_destino__in=g_e.subentidades.all()) | Q(
-                                              cargos_destino__in=g_e.cargos.all())).distinct()
-        # Al poner el query set en un get se generan muchos resultados y da error. Por esto se ha separado:
-        gform = gforms.get(id=request.GET['gform'])
-        ge = Gauser_extra.objects.get(id=request.GET['ge'])
-        if not (ge.edad < 18 and ge in g_e.unidad_familiar or ge == g_e):
-            crear_aviso(request, False, "No tienes permiso para rellenar el cuestionario solicitado")
-            return redirect('/calendario/')
-    except:
-        crear_aviso(request, False, "No tienes permiso para rellenar el cuestionario solicitado")
-        return redirect('/calendario/')
-    crea_ginputs_para_rellenador(gform, ge)
-    # originales = gform.ginput_set.filter(ginput__isnull=True)
-    # creados = gform.ginput_set.filter(rellenador=g_e, ginput__in=originales).values_list('ginput__id', flat=True)
-    # for original in originales:
-    #     if not original.id in creados:
-    #         nueva = Ginput.objects.create(gform=original.gform, rellenador=g_e, tipo=original.tipo, ginput=original)
-    #         nueva.cargos_permitidos.add(*original.cargos_permitidos.all())
-    #         if original.tipo == 'gselect':
-    #             goptions = original.goption_set.all()
-    #             for goption in goptions:
-    #                 Goption.objects.create(ginput=nueva, text=goption.text, value=goption.value)
-
-    # if request.method == 'POST':
-    #     if request.POST['action'] == 'bajar_adjunto':
-    #         adjunto = Adjunto.objects.get(id=request.POST['id_adjunto'])
-    #         fichero = adjunto.fichero.read()
-    #         response = HttpResponse(fichero, content_type=adjunto.content_type)
-    #         # response.set_cookie('fileDownload', value='true')  # Creo cookie para controlar la descarga (fileDownload.js)
-    #         response['Content-Disposition'] = 'attachment; filename=' + adjunto.filename()
-    #         return response
+    # try:
+    gformresponde = GformResponde.objects.get(id=id, identificador=identificador)
+    gfsis = GformSectionInput.objects.filter(gformsection__gform=gformresponde.gform)
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'update_gfr_rtexto':
+            try:
+                gfsi = gfsis.get(id=request.POST['gfsi'])
+                gfri, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
+                gfri.rtexto = request.POST['rtexto']
+                gfri.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_gfr_op':
+            try:
+                gfsi = gfsis.get(id=request.POST['gfsi'])
+                gfsio = gfsi.gformsectioninputops_set.get(id=request.POST['gfsio'])
+                gfri, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
+                gfri.ropciones.clear()
+                gfri.ropciones.add(gfsio)
+                gfri.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_gfr_el':
+            try:
+                gfsi = gfsis.get(id=request.POST['gfsi'])
+                gfri, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
+                gfri.rentero = int(request.POST['valor'])
+                gfri.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_gfr_sc':
+            try:
+                gfsi = gfsis.get(id=request.POST['gfsi'])
+                gfsio = gfsi.gformsectioninputops_set.get(id=request.POST['gfsio'])
+                gfri, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
+                if request.POST['checked'] == 'false':
+                    gfri.ropciones.remove(gfsio)
+                else:
+                    gfri.ropciones.add(gfsio)
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_firma':
+            try:
+                gfsi = gfsis.get(id=request.POST['gfsi'])
+                gfri, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
+                gfri.rfirma = request.POST['firma']
+                gfri.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'borra_gauss_file':
+            try:
+                gfsi = gfsis.get(id=request.POST['gfsi'])
+                gfri = GformRespondeInput.objects.get(gformresponde=gformresponde, gfsi=gfsi)
+                if gfri.rarchivo:
+                    os.remove(gfri.rarchivo.path)
+                    gfri.rarchivo = None
+                    gfri.content_type = ''
+                    gfri.save()
+                return JsonResponse({'ok': True, 'gfsi': gfsi.id})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
+        elif request.POST['action'] == 'terminar_gform':
+            try:
+                gformresponde.respondido = True
+                gformresponde.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
+    elif request.method == 'POST' and not request.is_ajax():
+        if request.POST['action'] == 'genera_pdf':
+            doc_gform = 'Configuración para cuestionarios'
+            try:
+                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_gform)
+            except:
+                try:
+                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+                except:
+                    dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
+                    dce.predeterminado = True
+                    dce.save()
+                dce.pk = None
+                dce.nombre = doc_gform
+                dce.predeterminado = False
+                dce.editable = False
+                dce.save()
+            gform = Gform.objects.get(id=request.POST['gform'])
+            c = render_to_string('gform2pdf.html', {'template': gform.template_procesado(gformresponde.identificador)})
+            fich = pdfkit.from_string(c, False, dce.get_opciones)
+            response = HttpResponse(fich, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
+            return response
+        elif request.POST['action'] == 'upload_archivo_xhr':
+            try:
+                n_files = int(request.POST['n_files'])
+                gfsi = gfsis.get(id=request.POST['gfsi'])
+                gfri, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
+                if gfri.rarchivo:
+                    os.remove(gfri.rarchivo.path)
+                for i in range(n_files):
+                    fichero = request.FILES['archivo_xhr' + str(i)]
+                    gfri.rarchivo = fichero
+                    gfri.content_type = fichero.content_type
+                    gfri.save()
+                html = render_to_string('rellena_gform_gfsi_SA_tr_files.html',
+                                        {'gfsi': gfsi, 'gformresponde': gformresponde})
+                return JsonResponse({'ok': True, 'id': gfsi.id, 'html': html})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
+        elif request.POST['action'] == 'descarga_gauss_file':
+            gfsi = gfsis.get(id=request.POST['gfsi'])
+            gfri = GformRespondeInput.objects.get(gformresponde=gformresponde, gfsi=gfsi)
+            fich = gfri.rarchivo
+            response = HttpResponse(fich, content_type='%s' % gfri.content_type)
+            filename = GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).rarchivo.name
+            response['Content-Disposition'] = 'attachment; filename=%s' % filename.rpartition('/')[2]
+            return response
+    # except:
+    #     crear_aviso(request, False, "No tienes permiso para rellenar el cuestionario solicitado")
+    #     return redirect('/calendario/')
 
     return render(request, "rellena_gform.html",
-                              {
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
-                                        'permiso': 'm30i05', 'title': 'Enviar las respuestas'},
-                                       ),  # El permiso m30i05 lo tienen todos los usuarios
-                                  'ginputs': gform.ginput_set.filter(rellenador=ge).order_by('ginput__row',
-                                                                                             'ginput__col'),
-                                  'gform': gform,
-                                  'ge': ge,
-                                  'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                              })
+                  {
+                      'formname': 'rellena_gform',
+                      'gformresponde': gformresponde,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
 
 
 # @login_required()
@@ -720,20 +867,21 @@ def edita_gform(request):
     for ginput in ginputs:
         gis += render_to_string('insert_ginput.html', {'ginput': ginput})
     return render(request, "edita_gform.html",
-                              {
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'thumbs-o-up', 'texto': 'Hecho',
-                                        'permiso': 'm67i10', 'title': 'Volver a la lista de formularios'},
-                                       ),
-                                  'cargos': Cargo.objects.filter(entidad=g_e.ronda.entidad),
-                                  'subentidades': Subentidad.objects.filter(entidad=g_e.ronda.entidad, fecha_expira__gt=datetime.today()),
-                                  'formname': 'edita_formulario',
-                                  'form': formularioForm(),
-                                  'tipos': TIPOS,
-                                  'gis': gis,
-                                  'gform': gform,
-                                  'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                              })
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'thumbs-o-up', 'texto': 'Hecho',
+                            'permiso': 'm67i10', 'title': 'Volver a la lista de formularios'},
+                           ),
+                      'cargos': Cargo.objects.filter(entidad=g_e.ronda.entidad),
+                      'subentidades': Subentidad.objects.filter(entidad=g_e.ronda.entidad,
+                                                                fecha_expira__gt=datetime.today()),
+                      'formname': 'edita_formulario',
+                      'form': formularioForm(),
+                      'tipos': TIPOS,
+                      'gis': gis,
+                      'gform': gform,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
 
 
 # @login_required()
@@ -754,20 +902,21 @@ def edita_ginput(request):
             return response
 
     return render(request, "edita_ginput.html",
-                              {
-                                  'iconos':
-                                      ({'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Volver',
-                                        'permiso': 'm67i10', 'title': 'Volver al formulario'},
-                                       {'tipo': 'button', 'nombre': 'trash-o', 'texto': 'Eliminar',
-                                        'permiso': 'm67i10', 'title': 'Borrar este campo del formulario'},
-                                       ),
-                                  'cargos': Cargo.objects.filter(entidad=g_e.ronda.entidad),
-                                  'subentidades': Subentidad.objects.filter(entidad=g_e.ronda.entidad, fecha_expira__gt=datetime.today()),
-                                  'formname': 'edita_formulario',
-                                  'ginput': ginput,
-                                  'tipos': TIPOS,
-                                  'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                              })
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Volver',
+                            'permiso': 'm67i10', 'title': 'Volver al formulario'},
+                           {'tipo': 'button', 'nombre': 'trash-o', 'texto': 'Eliminar',
+                            'permiso': 'm67i10', 'title': 'Borrar este campo del formulario'},
+                           ),
+                      'cargos': Cargo.objects.filter(entidad=g_e.ronda.entidad),
+                      'subentidades': Subentidad.objects.filter(entidad=g_e.ronda.entidad,
+                                                                fecha_expira__gt=datetime.today()),
+                      'formname': 'edita_formulario',
+                      'ginput': ginput,
+                      'tipos': TIPOS,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
 
 
 # @login_required()
@@ -813,7 +962,7 @@ def formulario_ajax(request):
             if not gform.fecha_max_rellenado:
                 gform.fecha_max_rellenado = datetime.now() + timedelta(days=30)
                 gform.save()
-                data = json.dumps({'ok': False, 'fecha':gform.fecha_max_rellenado.strftime('%d/%m/%Y %H:%M')})
+                data = json.dumps({'ok': False, 'fecha': gform.fecha_max_rellenado.strftime('%d/%m/%Y %H:%M')})
             else:
                 data = json.dumps({'ok': True})
             return HttpResponse(data)
@@ -833,7 +982,8 @@ def formulario_ajax(request):
             gform = Gform.objects.get(id=request.POST['id'], propietario__entidad=g_e.ronda.entidad)
             gform.subentidades_destino.clear()
             subentidades = json.loads(request.POST['seleccionadas'])
-            gform.subentidades_destino.add(*Subentidad.objects.filter(entidad=g_e.ronda.entidad, id__in=subentidades, fecha_expira__gt=datetime.today()))
+            gform.subentidades_destino.add(*Subentidad.objects.filter(entidad=g_e.ronda.entidad, id__in=subentidades,
+                                                                      fecha_expira__gt=datetime.today()))
             return HttpResponse(True)
         elif request.POST['action'] == 'update_gform':
             ginputs = json.loads(request.POST['ginputs'])
@@ -898,7 +1048,8 @@ def formulario_ajax(request):
             return HttpResponse(True)
         elif request.POST['action'] == 'save_gfile':
             ge = Gauser_extra.objects.get(id=request.POST['ge'])
-            if not ((ge.edad < 18 and ge in g_e.unidad_familiar) or (ge == g_e)): return HttpResponse('No tienes permiso')
+            if not ((ge.edad < 18 and ge in g_e.unidad_familiar) or (ge == g_e)): return HttpResponse(
+                'No tienes permiso')
             id_ginput = request.POST['id_ginput']
             ginput = Ginput.objects.get(id=id_ginput, gform__propietario__entidad=g_e.ronda.entidad)
             try:

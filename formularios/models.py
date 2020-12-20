@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.template import Context, Template
+from django.utils.text import slugify
 
-# from autenticar.models import Gauser_extra
-from entidades.models import Cargo, Subentidad
-# from entidades.models import Cargo, Subentidad, Gauser_extra
+from entidades.models import Cargo, Subentidad, Entidad
 from entidades.models import Gauser_extra as GE
 from gauss.funciones import pass_generator
 
+
 def genera_identificador():
     return pass_generator(20)
+
+
 class Gform(models.Model):
     propietario = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
     identificador = models.CharField('Código identificador del Gform', max_length=21, default=genera_identificador)
@@ -18,29 +21,48 @@ class Gform(models.Model):
     activo = models.BooleanField('El formulario esta activo', default=False)
     anonimo = models.BooleanField('Las respuestas son anónimas?', default=False)
     fecha_max_rellenado = models.DateTimeField('Fecha máxima para el rellenado', max_length=50, blank=True, null=True)
+    template = models.TextField('Plantilla para crear PDF', blank=True, null=True, default='')
     creado = models.DateTimeField('Fecha de creación', auto_now_add=True)
 
     class Meta:
         ordering = ['propietario__ronda', 'id']
 
-    @property
-    def contestados2(self):
-        num_preguntas = self.ginput_set.filter(ginput__isnull=True).count()
-        # Resto 1 para no contar el "original" :
-        return 0 if num_preguntas == 0 else self.ginput_set.all().count() / num_preguntas - 1
+    def template_procesado(self, identificador):
+        template = Template(self.template)
+        pregunta = {}
+        respuesta = {}
+        for gfsi in GformSectionInput.objects.filter(gformsection__gform=self):
+            t = Template(gfsi.pregunta).render(Context())
+            pregunta[gfsi.orden] = t
+        if identificador:
+            gformresponde = self.gformresponde_set.get(identificador=identificador)
+            for r in gformresponde.gformrespondeinput_set.all():
+                if r.gfsi.tipo == 'EL':
+                    respuesta[r.gfsi.orden] = r.rentero
+                elif r.gfsi.tipo == 'FI':
+                    respuesta[r.gfsi.orden] = r.render_firma
+                else:
+                    respuesta[r.gfsi.orden] = Template(r.rtexto).render(Context())
+        context = Context({'respuesta': respuesta, 'gform': self, 'pregunta': pregunta})
+        return template.render(context)
 
-    @property
-    def contestados(self):
-        return self.ginput_set.filter(ginput__isnull=False).values_list('rellenador__id', flat=True).distinct().count()
-
-    @property
-    def num_preguntas(self):
-        return self.ginput_set.filter(ginput__isnull=True).count()
+    # @property
+    # def contestados2(self):
+    #     num_preguntas = self.ginput_set.filter(ginput__isnull=True).count()
+    # Resto 1 para no contar el "original" :
+    # return 0 if num_preguntas == 0 else self.ginput_set.all().count() / num_preguntas - 1
+    #
+    # @property
+    # def contestados(self):
+    #     return self.ginput_set.filter(ginput__isnull=False).values_list('rellenador__id', flat=True).distinct().count()
+    #
+    # @property
+    # def num_preguntas(self):
+    #     return self.ginput_set.filter(ginput__isnull=True).count()
 
     def __str__(self):
-        n = self.ginput_set.all().count()
         activo = 'Formulario activo' if self.activo else 'Formulario desactivado'
-        return '%s - %s (%s con %s campos)' % (self.propietario.ronda.entidad.name, self.nombre, activo, n)
+        return '%s - %s (%s)' % (self.propietario.ronda.entidad.name, self.nombre, activo)
 
 
 def guarda_archivo(instance, filename):
@@ -52,9 +74,16 @@ def guarda_archivo(instance, filename):
 
 class GformSection(models.Model):
     gform = models.ForeignKey(Gform, on_delete=models.CASCADE)
-    title = models.CharField('Título de la sección', max_length=150, blank=True, default="Título de la sección")
-    description = models.TextField('Descripción', blank=True, null=True)
+    title = models.CharField('Título de la sección', max_length=150, blank=True, default='Título de la sección')
+    description = models.TextField('Descripción', blank=True, null=True, default='Descripción')
     orden = models.IntegerField('Orden en el formulario')
+
+    @property
+    def render_gfs(self):
+        template = """{% autoescape off %}
+                       <h3>{{title}}</h3>
+                       <span style='color:grey;'>{{description}}</span>{% endautoescape %}"""
+        return Template(template).render(Context({'title': self.title, 'description': self.description}))
 
     class Meta:
         ordering = ['gform__id', 'orden']
@@ -63,20 +92,9 @@ class GformSection(models.Model):
         return '%s - %s (%s)' % (self.orden, self.title, self.gform)
 
 
-
-def sube_archivo(instance, filename):
-    nombre = filename.rpartition('.')
-    instance.fich_name = filename.rpartition('/')[2]
-    fichero = pass_generator(size=20) + '.' + nombre[2]
-    return '/'.join(['formularios', str(instance.gform.propietario.ronda.entidad.code), fichero])
-
-# GSITIPOS=(('RC', 'Respuesta corta'), ('RL', 'Respuesta larga'), ('EM', 'Elección múltiple'),
-#           ('SC', 'Seleccionar casillas'), ('SO', 'Seleccionar opción'), ('SA', 'Subir archivo'),
-#           ('EL', 'Escala lineal'), ('FE', 'Fecha'), ('HO', 'Hora'))
-
 GSITIPOS = (('RC', 'Respuesta corta'), ('RL', 'Respuesta larga'), ('EM', 'Elección múltiple'),
             ('SC', 'Seleccionar casillas'), ('SO', 'Seleccionar opción'), ('SA', 'Subir archivo'),
-            ('EL', 'Escala lineal'))
+            ('EL', 'Escala lineal'), ('FI', 'Firma del usuario'))
 
 
 class GformSectionInput(models.Model):
@@ -90,10 +108,7 @@ class GformSectionInput(models.Model):
     elmax = models.IntegerField('Valor máximo en la escal lineal', default=5)
     labelmax = models.CharField('Etiqueta max valor', max_length=30, default='Mucho')
 
-    # respuesta = models.TextField('Respuesta de texto', blank=True, null=True)
-    # archivo = models.FileField('Respuesta tipo archivo', blank=True, null=True, upload_to=sube_archivo)
-    # feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
-    # puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
+    # firma = models.TextField('Firma requerida', null=True, blank=True)
 
     class Meta:
         ordering = ['gformsection__gform__id', 'orden']
@@ -102,12 +117,10 @@ class GformSectionInput(models.Model):
         return '%s - %s... - %s' % (self.tipo, self.pregunta[:15], self.gformsection)
 
 
-
 class GformSectionInputOps(models.Model):
     gformsectioninput = models.ForeignKey(GformSectionInput, on_delete=models.CASCADE)
     orden = models.IntegerField("Orden dentro de las posibles opciones", blank=True, null=True)
     opcion = models.CharField('Opción', blank=True, null=True, max_length=150, default='Esta es una opción')
-    # opcion_elegida = models.BooleanField('¿Es la opción elegida?', default=False)
     puntuacion = models.IntegerField('Puntuación si esta es la opción elegida', default=0)
 
     class Meta:
@@ -116,19 +129,65 @@ class GformSectionInputOps(models.Model):
     def __str__(self):
         return '%s - %s...' % (self.gformsectioninput, self.opcion[:15])
 
-class GformSectionInputRespuesta(models.Model):
-    gformsectioninput = models.ForeignKey(GformSectionInput, on_delete=models.CASCADE)
-    rellenador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
-    respuesta = models.TextField('Respuesta de texto', blank=True, null=True)
-    archivo = models.FileField('Respuesta tipo archivo', blank=True, null=True, upload_to=sube_archivo)
-    feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
-    puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
 
-    class Meta:
-        ordering = ['gformsectioninput__gformsection__gform']
+class GformResponde(models.Model):
+    gform = models.ForeignKey(Gform, on_delete=models.CASCADE)
+    g_e = models.ForeignKey(GE, on_delete=models.CASCADE)
+    identificador = models.CharField('Identificador del destinatario', max_length=21, default=genera_identificador)
+    respondido = models.BooleanField('¿Este cuestionario está respondido?', default=False)
 
     def __str__(self):
-        return '%s - %s...' % (self.gformsectioninput, self.respuesta[:15])
+        return '%s - %s' % (self.gform, self.g_e.gauser.get_full_name())
+
+def sube_archivo(instance, filename):
+    nombre = filename.rpartition('.')
+    fichero = slugify(nombre[0]) + '.' + nombre[2]
+    entidad_code = str(instance.gformresponde.gform.propietario.ronda.entidad.code)
+    gform = str(instance.gformresponde.gform.id)
+    return '/'.join(['formularios', entidad_code, gform, fichero])
+
+class GformRespondeInput(models.Model):
+    gformresponde = models.ForeignKey(GformResponde, on_delete=models.CASCADE)
+    gfsi = models.ForeignKey(GformSectionInput, on_delete=models.CASCADE)
+    rtexto = models.TextField('Respuesta de texto', blank=True, null=True)
+    ropciones = models.ManyToManyField(GformSectionInputOps, blank=True)
+    rfirma = models.TextField('Firma en base64', blank=True, null=True)
+    rentero = models.IntegerField('Respuesta número entero', blank=True, null=True)
+    rarchivo = models.FileField('Respuesta tipo archivo', blank=True, null=True, upload_to=sube_archivo)
+    content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
+    feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
+    puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
+    creado = models.DateField("Fecha de creación", auto_now_add=True)
+    modificado = models.DateField("Fecha de modificación", auto_now=True)
+
+    class Meta:
+        ordering = ['gformresponde__identificador', 'id']
+
+    @property
+    def render_firma(self):
+        template = """{% autoescape off %}
+                       <table><tr><td><img src='{{ rfirma }}' style='width:200px;'></td></tr>
+                       <tr><td><p>{{ rtexto }}</p></td></tr></table>{% endautoescape %}"""
+        return Template(template).render(Context({'rfirma': self.rfirma, 'rtexto': self.rtexto}))
+
+    def __str__(self):
+        return '%s - %s' % (self.gformresponde, self.gfsi)
+
+
+# class GformSectionInputRespuesta(models.Model):
+#     gformsectioninput = models.ForeignKey(GformSectionInput, on_delete=models.CASCADE)
+#     rellenador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
+#     respuesta = models.TextField('Respuesta de texto', blank=True, null=True)
+#     archivo = models.FileField('Respuesta tipo archivo', blank=True, null=True, upload_to=sube_archivo)
+#     feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
+#     puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
+#
+#     class Meta:
+#         ordering = ['gformsectioninput__gformsection__gform']
+#
+#     def __str__(self):
+#         return '%s - %s...' % (self.gformsectioninput, self.respuesta[:15])
+
 
 # class GformSectionInputRC(models.Model):
 #     gformsectioninput = models.OneToOneField(GformSectionInput, on_delete=models.CASCADE)
@@ -153,11 +212,11 @@ class GformSectionInputRespuesta(models.Model):
 # class GformSectionInputEM(models.Model):
 #     gformsectioninput = models.OneToOneField(GformSectionInput, on_delete=models.CASCADE)
 #     respuesta = models.TextField('Respuesta Larga', blank=True, null=True)
-    # feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
-    # puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
-    #
-    # def __str__(self):
-    #     return '%s - %s...' % (self.gformsectioninput, self.respuesta[:15])
+# feedback = models.TextField('Feedback sobre la evaluación de la respuesta proporcionada', blank=True, null=True)
+# puntuacion = models.IntegerField('Puntuación a la respuesta dada', default=5)
+#
+# def __str__(self):
+#     return '%s - %s...' % (self.gformsectioninput, self.respuesta[:15])
 
 
 # class GformSectionInputEMO(models.Model):

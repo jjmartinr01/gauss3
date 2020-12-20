@@ -3,8 +3,8 @@
     <legend id="legendgfsi{{ gfsi.id }}" style="color:gray;">Pregunta {{ gfsi.orden }} de {{ gfsi|totalgfsis }}</legend>
     <div class="row">
         <div class="columns large-9">
-            <div contenteditable="true" class="update_gfsi_pregunta" data-gfsi="{{ gfsi.id }}"
-            >{% autoescape off %}{{ gfsi.pregunta }}{% endautoescape %}</div>
+            <div contenteditable="true" class="ckeditor update_gfsi_pregunta ckeditorpregunta" data-gfsi="{{ gfsi.id }}"
+                 id="preguntagfsi{{ gfsi.id }}">{% autoescape off %}{{ gfsi.pregunta }}{% endautoescape %}</div>
         </div>
         <div class="columns large-3">
             <select class="select_tipo_gfsi" data-gfsi="{{ gfsi.id }}">
@@ -30,17 +30,19 @@
                 {% include "formularios_accordion_content_ginputs_gi_SA.html" %}
             {% elif gfsi.tipo == 'EL' %}
                 {% include "formularios_accordion_content_ginputs_gi_EL.html" %}
+            {% elif gfsi.tipo == 'FI' %}
+                {% include "formularios_accordion_content_ginputs_gi_FI.html" %}
             {% endif %}
         </div>
     </div>
     <hr>
     <div class="row">
-{#        <div class="columns large-1">#}
-{#            <input id="gfsi_orden{{ gfsi.id }}" type="number" min="1" value="{{ gfsi.orden }}" data-gfsi="{{ gfsi.id }}">#}
-{#        </div>#}
-{#        <div class="columns large-1">#}
-{#            <label for="gfsi_orden{{ gfsi.id }}" class="right">&nbsp;</label>#}
-{#        </div>#}
+        {#        <div class="columns large-1">#}
+        {#            <input id="gfsi_orden{{ gfsi.id }}" type="number" min="1" value="{{ gfsi.orden }}" data-gfsi="{{ gfsi.id }}">#}
+        {#        </div>#}
+        {#        <div class="columns large-1">#}
+        {#            <label for="gfsi_orden{{ gfsi.id }}" class="right">&nbsp;</label>#}
+        {#        </div>#}
         <div class="columns large-12 right">
             <ul class="button-group right">
                 <li title="Añadir una pregunta a continuación">

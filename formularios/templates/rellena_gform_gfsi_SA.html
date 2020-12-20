@@ -1,0 +1,19 @@
+{% load formularios_extras %}
+<div class="row" id="afdadsfafsdafdfdf">
+    <div class="columns large-12">
+        <table>
+            <tbody id="tbody_gauss_file{{ gfsi.id }}">
+            {% include 'rellena_gform_gfsi_SA_tr_files.html' %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-8">
+        <label><input type="file" id="input_gauss_file{{ gfsi.id }}"></label>
+    </div>
+    <div class="columns large-4">
+        <a class="button tiny subir_gauss_file" data-gfsi="{{ gfsi.id }}"><i class="fa fa-cloud-upload"></i>
+            Cargar archivo</a>
+    </div>
+</div>

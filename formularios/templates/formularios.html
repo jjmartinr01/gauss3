@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base_select2-4.html" %}
 {% load my_templatetags %}
 
 {% block head %}
@@ -9,6 +9,15 @@
 
         .gtext {
             min-height: 100px;
+        }
+
+        .ckeditor {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+        .ckeditorpregunta {
+            border: none!important;
+            min-height: 10px!important;
         }
     </style>
 {% endblock %}
@@ -38,6 +47,80 @@
 
 {% block final %}
     <script>
+        {# ########################################################################################### #}
+        {# Operaciones relacionadas con la plantilla del PDF a generar con las respuestas: #}
+        {# constructInlineEditorInstances,   #}
+        {# ########################################################################################### #}
+
+        config = {
+            removePlugins: 'exportpdf',
+            toolbar: [
+                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
+                {
+                    name: 'basicstyles',
+                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
+                },
+                {
+                    name: 'paragraph',
+                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
+                },
+                '/',
+                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
+                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
+                {name: 'colors', items: ['TextColor', 'BGColor']},
+                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
+                {name: 'document', items: ['Source']},
+                {name: 'about', items: ['About', 'generapdfbutton']}
+            ],
+            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
+        }
+
+        function constructInlineEditorInstances() {
+            $(".ckeditor").each(function (index) {
+                var element = $(this);
+                var id = element.attr('id');
+                var editor = CKEDITOR.inline(id, config);
+                editor.addCommand("generapdfinforme", {
+                    exec: function (edt) {
+                        genera_pdf_informe();
+                    }
+                });
+                editor.ui.addButton('generapdfbutton', {
+                    label: "Genera PDF",
+                    command: 'generapdfinforme',
+                    toolbar: 'insert',
+                    icon: '/static/images/pdf_icon.png'
+                });
+                var anchura = element.width() + 2;
+                setTimeout(function () {
+                    $('#cke_' + id).css('width', anchura + 'px');
+                    {# Este es el id del ckeditor creado #}
+                }, 200);
+            });
+        }
+
+        $('body').on('keyup', '.update_template', function () {
+            var element = $(this);
+            var gform = element.data('gform');
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/formularios/", {action: 'update_template', gform: gform, texto: nuevo_texto},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
+
         {# ########################################################################################### #}
         {# Operaciones directas sobre el modelo Gform: #}
         {# crea_formulario, open_accordion, del_gform, copy_gform, update_nombre  #}
@@ -72,9 +155,14 @@
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
-                                        {#destroyEditorInstances();#}
-                                        {#constructEditorInstances();#}
-                                        {#CKEDITOR.inlineAll();#}
+                                        constructInlineEditorInstances();
+                                        $(".destinatarios").select2(
+                                        conf_select2({
+                                            'gcs': 'g',
+                                            'format_g': '{0}, {1}',
+                                            'placeholder': 'Escribe parte del nombre del destinatario para buscarlo'
+                                        })
+                                    );
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();
@@ -146,6 +234,45 @@
                         });
                 }
             }, 750);
+        });
+
+        $('body').on('change.select2', '.destinatarios', function (e) {
+            var gform = $(this).data('gform');
+            var ge = $(this).val();
+            $.post("/formularios/", {
+                    action: 'update_destinatarios',
+                    gform: gform,
+                    ge: ge
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#div_destinatarios" + data.gform).append(data.html_span);
+                        $("#num_destinatarios" + data.gform).html(data.num_destinatarios);
+                        $(".destinatarios").empty();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.del_gformresponde', function (e) {
+            var gform = $(this).data('gform');
+            var gformresponde = $(this).data('gformresponde');
+            $.post("/formularios/", {
+                    action: 'del_gformresponde',
+                    gform: gform,
+                    gformresponde: gformresponde
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#gformresponde" + data.gform + '_' + data.gformresponde).remove();
+                        $("#num_destinatarios" + data.gform).html(data.num_destinatarios);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
         });
         {# ########################################################################################### #}
         {# Funciones para reordenar las secciones y las preguntas: #}
@@ -553,10 +680,10 @@
 
 
 
-        {% if id_gform %}
-            $(document).scrollTop($('#panel___' + {{ id_gform }}).offset().top - 150);
-            $('#circle' + {{ id_gform }}).removeClass('fa-plus-circle').addClass('fa-minus-circle');
-        {% endif %}
+{#        {% if id_gform %}#}
+{#            $(document).scrollTop($('#panel___' + {{ id_gform }}).offset().top - 150);#}
+{#            $('#circle' + {{ id_gform }}).removeClass('fa-plus-circle').addClass('fa-minus-circle');#}
+{#        {% endif %}#}
 
         {#$(document).foundation({#}
         {#    accordion: {#}
@@ -575,32 +702,32 @@
         {#    }#}
         {# });#}
 
-        $('body').on('click', '.editar', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var gform = $(this).data('id');
-            window.location.href = "/edita_gform/?gform=" + gform;
-        });
-
-        $('body').on('click', '.ver', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var gform = $(this).data('id');
-            window.location.href = "/ver_gform/?gform=" + gform;
-        });
-
-        $('body').on('click', '.resultados', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var gform = $(this).data('id');
-            window.location.href = "/resultados_gform/?gform=" + gform;
-        });
-
-        $('body').on('click', '.excel', function (e) {
-            e.preventDefault();
-            $('#action').val('excel');
-            document.getElementById("{{ formname }}").submit();
-        });
+        {#$('body').on('click', '.editar', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    e.stopPropagation();#}
+        {#    var gform = $(this).data('id');#}
+        {#    window.location.href = "/edita_gform/?gform=" + gform;#}
+        {# });#}
+        {##}
+        {#$('body').on('click', '.ver', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    e.stopPropagation();#}
+        {#    var gform = $(this).data('id');#}
+        {#    window.location.href = "/ver_gform/?gform=" + gform;#}
+        {# });#}
+        {##}
+        {#$('body').on('click', '.resultados', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    e.stopPropagation();#}
+        {#    var gform = $(this).data('id');#}
+        {#    window.location.href = "/resultados_gform/?gform=" + gform;#}
+        {# });#}
+        {##}
+        {#$('body').on('click', '.excel', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    $('#action').val('excel');#}
+        {#    document.getElementById("{{ formname }}").submit();#}
+        {# });#}
 
 
         {#$('#plus_sign').on('click', function (e) {#}

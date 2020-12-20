@@ -1,0 +1,41 @@
+{% load entidades_extras %}
+{% load formularios_extras %}
+
+{#<div class="row">#}
+{#    <div class="columns large-12">#}
+{#        <ul class="button-group right">#}
+{#            {% if gformresponde.propietario.gauser == g_e.gauser or g_e|has_permiso:'borra_formularios' %}#}
+{#                <li><a class="button alert del_gform" data-gform="{{ gformresponde.id }}">#}
+{#                    <i class="fa fa-trash-o"></i> Borrar</a></li>#}
+{#            {% else %}#}
+{#                <li><a class="button secondary" title="No tienes permisos para borrar el formulario">#}
+{#                    <i class="fa fa-trash-o"></i> Borrar</a></li>#}
+{#            {% endif %}#}
+{#        </ul>#}
+{#    </div>#}
+{#</div>#}
+<div class="row">
+    <div class="columns large-12">
+        <p>&nbsp;</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-3">
+        <label><b>¿Anónimo?</b><br>
+            {% if gformresponde.anonimo %}
+                <b>Sí</b>
+            {% else %}
+                <b>No</b>
+            {% endif %}
+        </label>
+    </div>
+    <div class="columns large-9">
+        <label><b>Haz click en el siguiente enlace para rellenarlo</b><br>
+            <a href="/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/" target="_blank">
+                <i class="fa fa-pencil-square-o"></i>
+                /rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/
+            </a>
+        </label>
+    </div>
+</div>

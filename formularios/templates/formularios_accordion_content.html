@@ -1,7 +1,5 @@
 {% load entidades_extras %}
 {% load formularios_extras %}
-{#{% load inspeccion_educativa_extras %}#}
-{#{% if gform|permiso_gform_w:g_e %}#}
 
 <div class="row">
     <div class="columns large-12">
@@ -31,12 +29,12 @@
 </div>
 
 <div class="row">
-    <div class="columns large-6">
-        <label><b>Fecha límite para rellenar</b><input value="{{ gform.fecha_max_rellenado|date:'Y-m-d' }}"
-                                                       type="date" name="fecha_max_rellenado"
-                                                       class="update_fecha_limite" data-gform={{ gform.id }}></label>
+    <div class="columns large-2">
+        <label title="Fecha límite para rellenar el formulario"><b>Fecha límite</b>
+            <input value="{{ gform.fecha_max_rellenado|date:'Y-m-d' }}" type="date" name="fecha_max_rellenado"
+                   class="update_fecha_limite" data-gform={{ gform.id }}></label>
     </div>
-    <div class="columns large-3">
+    <div class="columns large-2">
         <label><b>¿Activo?</b><br>
             {% if gform.activo %}
                 <a class="respuesta_booleana" id="activo" data-campo="activo" data-id="{{ gform.id }}">Sí</a>
@@ -45,7 +43,7 @@
             {% endif %}
         </label>
     </div>
-    <div class="columns large-3">
+    <div class="columns large-2">
         <label><b>¿Anónimo?</b><br>
             {% if gform.anonimo %}
                 <a class="respuesta_booleana" id="anonimo" data-campo="anonimo" data-id="{{ gform.id }}">Sí</a>
@@ -54,59 +52,50 @@
             {% endif %}
         </label>
     </div>
+    <div class="columns large-2">
+        <label><b>Ver</b><br>
+            <a href="/ver_gform/{{ gform.id }}/{{ gform.identificador }}/" target="_blank"
+            ><i class="fa fa-eye fa-2x"></i></a>
+        </label>
+    </div>
 </div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Plantilla del documento PDF generado con las respuestas:</b></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <div contenteditable="true" class="ckeditor update_template" data-gform="{{ gform.id }}" data-campo="template"
+             id="template{{ gform.id }}">{% autoescape off %}{{ gform.template }}{% endautoescape %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label>Personas que pueden rellenar el formulario
+            (<span id="num_destinatarios{{ gform.id }}">{{ gform.gformresponde_set.all|length }}</span>):
+        </label>
+    </div>
+</div>
+<div class="row" style="padding-bottom: 2px;">
+    <div class="columns large-12" id="div_destinatarios{{ gform.id }}">
+        {% for gformresponde in gform.gformresponde_set.all %}
+            {% include "formularios_accordion_content_destinatario.html" %}
+        {% endfor %}
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <select name="destinatarios{{ gform.id }}" class="destinatarios" data-gform="{{ gform.id }}"></select>
+    </div>
+</div>
+
 <div id="gformsections{{ gform.id }}">
     {% for gfs in gform.gformsection_set.all %}
         {% include "formularios_accordion_content_gfs.html" %}
         {% include "formularios_accordion_content_ginputs.html" %}
     {% endfor %}
 </div>
-
-{#<fieldset>#}
-{#    <legend>Añadir una nueva cuestión al formulario</legend>#}
-{#    <div class="row">#}
-{#        <div class="columns large-4">#}
-{#            <label>Tipo#}
-{#                <select id="tipo_cuestion{{ gform.id }}">#}
-{#                    {% for tipo in tipos %}#}
-{#                        <option value="{{ tipo.0 }}">{{ tipo.1 }}</option>#}
-{#                    {% endfor %}#}
-{#                </select>#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="columns large-4">#}
-{#            <label>Grupo#}
-{#                <select id="grupo_cuestion{{ gform.id }}">#}
-{#                    {% for grupo in grupos %}#}
-{#                        <option value="{{ grupo.0 }}">{{ grupo.1 }}</option>#}
-{#                    {% endfor %}#}
-{#                </select>#}
-{#            </label>#}
-{#        </div>#}
-{##}
-{#        <div class="columns large-2">#}
-{#            <label>&nbsp;Posición#}
-{#                <input title="Posición en la que se mostrará la cuestión dentro del grupo"#}
-{#                       id="pos_cuestion{{ gform.id }}" type="number" value="1">#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="columns large-2">#}
-{#            <label>&nbsp;&nbsp;</label><a data-gform="{{ gform.id }}" class="add_ginput button tiny"><i#}
-{#                class="fa fa-plus"></i> Añadir</a>#}
-{#        </div>#}
-{#    </div>#}
-{#</fieldset>#}
-
-
-{#<div class="row">#}
-{#    <div class="columns large-12">#}
-{#        <label><b contenteditable="true">Observaciones</b>#}
-{#            <div contenteditable="true" class="ckeditor update_texto observaciones"#}
-{#                 data-id="{{ gform.id }}" data-campo="observaciones">fasf a#}
-{#                asdf#}
-{#                a sf#}
-{##}
-{#            </div>#}
-{#        </label>#}
-{#    </div>#}
-{#</div>#}

@@ -1,0 +1,150 @@
+{% load formularios_extras %}
+<div id="sketchpadapp{{ gfsi.id }}" class="sketchpadapp">
+    <label class="text-center">Firma dentro del recuadro:</label>
+    <canvas class="sketchpad" id="sketchpad{{ gfsi.id }}" height="300" width="400"></canvas>
+</div>
+<div class="row">
+    <div class="columns large-12 medium-12 text-center">
+        <ul class="button-group">
+            <li><a class="button alert" id="clearbutton{{ gfsi.id }}">Borrar firma</a>
+            </li>
+        </ul>
+    </div>
+</div>
+<script>
+
+    var last_gfsi, last_time;
+    var canvas{{gfsi.id}}, ctx{{gfsi.id}};
+    var mouseX{{gfsi.id}}, mouseY{{gfsi.id}}, mouseDown{{gfsi.id}} = 0;
+    var touchX{{gfsi.id}}, touchY{{gfsi.id}};
+    var lastX{{gfsi.id}}, lastY{{gfsi.id}} = -1;
+    var lw = 5;
+
+    function drawLine{{gfsi.id}}(ctx{{gfsi.id}}, x, y, size) {
+        if (lastX{{gfsi.id}} == -1) {
+            lastX{{gfsi.id}} = x;
+            lastY{{gfsi.id}} = y;
+        }
+        r = 0;
+        g = 0;
+        b = 0;
+        a = 255;
+        ctx{{gfsi.id}}.strokeStyle = "rgba(" + r + "," + g + "," + b + "," + (a / 255) + ")";
+        ctx{{gfsi.id}}.lineCap = "round";
+        ctx{{gfsi.id}}.beginPath();
+        ctx{{gfsi.id}}.moveTo(lastX{{gfsi.id}}, lastY{{gfsi.id}});
+        ctx{{gfsi.id}}.lineTo(x, y);
+        ctx{{gfsi.id}}.lineWidth = size;
+        ctx{{gfsi.id}}.stroke();
+        ctx{{gfsi.id}}.closePath();
+        lastX{{gfsi.id}} = x;
+        lastY{{gfsi.id}} = y;
+        last_gfsi = '{{ gfsi.id }}';
+        last_time = new Date();
+    }
+
+    function clearcanvas{{gfsi.id}}(canvas{{gfsi.id}}, ctx{{gfsi.id}}) {
+        ctx{{gfsi.id}}.clearRect(0, 0, canvas{{gfsi.id}}.width, canvas{{gfsi.id}}.height);
+    }
+
+    function sketchpad_mouseDown{{gfsi.id}}() {
+        mouseDown{{gfsi.id}} = 1;
+        drawLine{{gfsi.id}}(ctx{{gfsi.id}}, mouseX{{gfsi.id}}, mouseY{{gfsi.id}}, lw);
+    }
+
+    function sketchpad_mouseUp{{gfsi.id}}() {
+        mouseDown{{gfsi.id}} = 0;
+        lastX{{gfsi.id}} = -1;
+        lastY{{gfsi.id}} = -1;
+        var ahora = new Date();
+        if (last_gfsi == '{{ gfsi.id }}'){
+            if (ahora - last_time < 1000){
+                update_firma('{{ gfsi.id }}');
+            }
+        }
+    }
+
+    function sketchpad_mouseMove{{gfsi.id}}(e) {
+        getMousePos{{gfsi.id}}(e);
+        if (mouseDown{{gfsi.id}} == 1) {
+            drawLine{{gfsi.id}}(ctx{{gfsi.id}}, mouseX{{gfsi.id}}, mouseY{{gfsi.id}}, lw);
+        }
+    }
+
+    function getMousePos{{gfsi.id}}(e) {
+        if (!e)
+            var e = event;
+
+        if (e.offsetX) {
+            mouseX{{gfsi.id}} = e.offsetX;
+            mouseY{{gfsi.id}} = e.offsetY;
+        } else if (e.layerX) {
+            mouseX{{gfsi.id}} = e.layerX;
+            mouseY{{gfsi.id}} = e.layerY;
+        }
+    }
+
+    function sketchpad_touchStart{{gfsi.id}}() {
+        getTouchPos{{gfsi.id}}();
+        drawLine{{gfsi.id}}(ctx{{gfsi.id}}, touchX{{gfsi.id}}, touchY{{gfsi.id}}, lw);
+        event.preventDefault();
+    }
+
+    function sketchpad_touchEnd{{gfsi.id}}() {
+        lastX{{gfsi.id}} = -1;
+        lastY{{gfsi.id}} = -1;
+        if (last_gfsi == '{{ gfsi.id }}'){
+            if (ahora - last_time < 1000){
+                update_firma('{{ gfsi.id }}');
+            }
+        }
+    }
+
+    function sketchpad_touchMove{{gfsi.id}}(e) {
+        getTouchPos{{gfsi.id}}(e);
+        drawLine{{gfsi.id}}(ctx{{gfsi.id}}, touchX{{gfsi.id}}, touchY{{gfsi.id}}, lw);
+        event.preventDefault();
+    }
+
+    function getTouchPos{{gfsi.id}}(e) {
+        if (!e)
+            var e = event;
+
+        if (e.touches) {
+            if (e.touches.length == 1) { // Only deal with one finger
+                var touch = e.touches[0]; // Get the information for finger #1
+                touchX{{gfsi.id}} = touch.pageX - touch.target.offsetLeft;
+                touchY{{gfsi.id}} = touch.pageY - touch.target.offsetTop;
+            }
+        }
+    }
+
+
+    setTimeout(function () {
+        canvas{{gfsi.id}} = document.getElementById('sketchpad{{ gfsi.id }}');
+        if (canvas{{gfsi.id}}.getContext)
+            ctx{{gfsi.id}} = canvas{{gfsi.id}}.getContext('2d');
+            var image = new Image();
+            image.onload = function() {
+              ctx{{gfsi.id}}.drawImage(image, 0, 0);
+            };
+            image.src = '{{ gfsi|get_rfirma:gformresponde }}'
+
+        if (ctx{{gfsi.id}}) {
+            canvas{{gfsi.id}}.addEventListener('mousedown', sketchpad_mouseDown{{gfsi.id}}, false);
+            canvas{{gfsi.id}}.addEventListener('mousemove', sketchpad_mouseMove{{gfsi.id}}, false);
+            window.addEventListener('mouseup', sketchpad_mouseUp{{gfsi.id}}, false);
+            canvas{{gfsi.id}}.addEventListener('touchstart', sketchpad_touchStart{{gfsi.id}}, false);
+            canvas{{gfsi.id}}.addEventListener('touchend', sketchpad_touchEnd{{gfsi.id}}, false);
+            canvas{{gfsi.id}}.addEventListener('touchmove', sketchpad_touchMove{{gfsi.id}}, false);
+        }
+    }, 300);
+
+    setTimeout(function () {
+        $('#clearbutton{{ gfsi.id }}').on('click', function (e) {
+            e.preventDefault();
+            clearcanvas{{ gfsi.id }}(canvas{{ gfsi.id }}, ctx{{ gfsi.id }});
+        });
+    }, 350);
+
+</script>

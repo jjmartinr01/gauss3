@@ -1,0 +1,11 @@
+{% load formularios_extras %}
+{#{% for f in ie.fileattachedii_set.all %}#}
+{% if gfsi|get_fich_name:gformresponde %}
+    <tr id="gauss_file{{ gfsi.id }}">
+        <td>
+            <a class="descarga_gauss_file" data-gfsi="{{ gfsi.id }}">Archivo: {{ gfsi|get_fich_name:gformresponde }}</a>
+        </td>
+        <td><a class="borra_gauss_file" data-gfsi="{{ gfsi.id }}"><i class="fa fa-trash"></i> Borrar</a></td>
+    </tr>
+{% endif %}
+{#{% endfor %}#}

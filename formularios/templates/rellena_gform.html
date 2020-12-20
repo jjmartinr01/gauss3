@@ -1,11 +1,41 @@
-{% extends "base.html" %}
-{% load my_templatetags %}
-{% load tz %}
+{% extends "base_formularios.html" %}
+{% load formularios_extras %}
 {% block head %}
     <style>
-        .check_w {
-            color: red;
-            display: none;
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+            font-weight: 800;
+        }
+
+        .ckeditor {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+
+        /* Some CSS styling */
+        .sketchpadapp {
+            /* Prevent nearby text being highlighted when accidentally dragging mouse outside confines of the canvas */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .sketchpad {
+            margin: auto;
+            display: block;
+            width: 400px;
+            height: 300px;
+            position: relative;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border: 2px solid #888;
+            margin-bottom: 10px;
         }
     </style>
 {% endblock %}
@@ -14,210 +44,445 @@
           xmlns="http://www.w3.org/1999/html">
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
-        <input type="hidden" name="ge" id="ge" value="{{ ge.id }}">
-        <input type="hidden" name="id_gform" id="id_gform" value="{{ gform.id }}">
-        <input type="hidden" name="id_ginput" id="id_ginput" value="">
-
+        <input type="hidden" name="gform" id="gform" value="{{ gformresponde.gform.id }}">
+        <input type="hidden" name="gformresponde" id="gformresponde" value="{{ gformresponde.id }}">
+        <input type="hidden" name="gfsi" id="gfsi" value="">
         <div class="">
-            <h4 style="text-align: center;color: #008CBA;"><strong>{{ ginputs.0.gform.nombre }}</strong>
-                {% if ge != request.session.gauser_extra %}
-                    ({{ ge.gauser.get_full_name }}){% endif %}</h4>
+            <h4 id="title_page"><strong>{{ gformresponde.gform.nombre }}</strong></h4>
         </div>
-        {% if request.session.aviso_rellenar_gform != 1 %}
-            <div data-alert class="alert-box success radius">
-                GAUSS grabará las respuestas a medida que las vayas escribiendo. Podrás ver un símbolo,
-                <i style="color: red;" class="fa fa-check"></i> cada vez que se haga una grabación automática.
-                <a href="#" class="close">&times;</a>
-            </div>
-        {% endif %}
-        {% for ginput in ginputs %}
-            {% ifchanged ginput.ginput.row %}
-                {% if not forloop.first %}
+        <div id="rellenagformsections{{ gformresponde.gform.id }}">
+            {% for gfs in gformresponde.gform.gformsection_set.all %}
+                <div id="gfsorden{{ gfs.orden }}"
+                     {% if forloop.first %}style="display:block"{% else %}style="display: none;"{% endif %}>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <div class="row">
+                                <div class="columns large-12">
+                                    <h3>{% autoescape off %}{{ gfs.title }}{% endautoescape %}</h3>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="columns large-12">
+                                    {% autoescape off %}{{ gfs.description }}{% endautoescape %}
+                                </div>
+                            </div>
+
+                            {% for gfsi in gfs.gformsectioninput_set.all %}
+                                <hr>
+                                <fieldset style="border: none;">
+                                    <legend style="color:gray;">Pregunta {{ gfsi.orden }}
+                                        de {{ gfsi|totalgfsis }}</legend>
+                                    <div class="row">
+                                        <div class="columns large-12">
+                                            <p>{% autoescape off %}{{ gfsi.pregunta }}{% endautoescape %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="columns large-12" id="respuesta{{ gfsi.id }}">
+                                            {% if gfsi.tipo == 'RC' %}
+                                                <div class="row">
+                                                    <div class="columns large-12">
+                                                        <input data-gfsi="{{ gfsi.id }}" class="gfr_rc"
+                                                               value="{{ gfsi|get_rtexto:gformresponde }}"
+                                                               placeholder="Escribe aquí tu respuesta">
+                                                    </div>
+                                                </div>
+                                            {% elif gfsi.tipo == 'RL' %}
+                                                <div class="row">
+                                                    <div class="columns large-12">
+                                                        <div class="ckeditor gfr_rl" id="ckeditorgfsi{{ gfsi.id }}"
+                                                             contenteditable="true" data-gfsi="{{ gfsi.id }}"
+                                                        >{% autoescape off %}
+                                                            {{ gfsi|get_rtexto:gformresponde }}{% endautoescape %}</div>
+                                                    </div>
+                                                </div>
+                                            {% elif gfsi.tipo == 'EM' %}
+                                                {% for gfsio in gfsi.gformsectioninputops_set.all %}
+                                                    <p><input type="radio" name="radio{{ gfsi.id }}" class="gfr_op"
+                                                              value="{{ gfsio.id }}" data-gfsi="{{ gfsi.id }}"
+                                                            {{ gfsio|get_ifchecked:gformresponde }}>
+                                                        {% autoescape off %}{{ gfsio.opcion }}{% endautoescape %}
+                                                    </p>
+                                                {% endfor %}
+                                            {% elif gfsi.tipo == 'SC' %}
+                                                {% for gfsio in gfsi.gformsectioninputops_set.all %}
+                                                    <p><input type="checkbox" value="{{ gfsio.id }}" class="gfr_sc"
+                                                              name="checkbox{{ gfsi.id }}" data-gfsi="{{ gfsi.id }}"
+                                                            {{ gfsio|get_ifchecked:gformresponde }}>
+                                                        {% autoescape off %}{{ gfsio.opcion }}{% endautoescape %}
+                                                    </p>
+                                                {% endfor %}
+                                            {% elif gfsi.tipo == 'SO' %}
+                                                <select data-gfsi="{{ gfsi.id }}" class="gfr_op">
+                                                    {% for gfsio in gfsi.gformsectioninputops_set.all %}
+                                                        <option value="{{ gfsio.id }}">
+                                                            {% autoescape off %}{{ gfsio.opcion }}{% endautoescape %}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            {% elif gfsi.tipo == 'SA' %}
+                                                {% include "rellena_gform_gfsi_SA.html" %}
+                                            {% elif gfsi.tipo == 'EL' %}
+                                                {% include "rellena_gform_gfsi_EL.html" %}
+                                            {% elif gfsi.tipo == 'FI' %}
+                                                {% include "rellena_gform_gfsi_FI.html" %}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            {% endfor %}
+                        </div>
                     </div>
-                {% endif %}
-                <div class="row">
-                <div class="columns large-{{ ginput.ginput.ancho }}">
-            {% else %}
-                <div class="columns large-{{ ginput.ginput.ancho }}">
-            {% endifchanged %}
-        {% if ginput.tipo == 'gselect' %}
-            <span>{{ ginput.ginput.label }} <i id="check{{ ginput.id }}" class="fa fa-check check_w"></i></span>
-            <select name="ginput{{ ginput.id }}" id="ginput{{ ginput.id }}" data-id="{{ ginput.id }}"
-                    {% if ginput.ginput.select %}multiple{% endif %} class="gselect">
-                {% for goption in ginput.goption_set.all reversed %}
-                    <option value="{{ goption.id }}" {# El valor es el id, para identificar el goption #}
-                            {% if goption.selected %}selected{% endif %}>{{ goption.text }}
-                    </option>
-                {% endfor %}
-            </select>
-        {% elif ginput.tipo == 'gbool' %}
-            <span>{{ ginput.ginput.label }} <i id="check{{ ginput.id }}" class="fa fa-check check_w"></i></span>
-            <br><input type="checkbox" data-id="{{ ginput.id }}" class="gbool" id="ginput{{ ginput.id }}"
-                       {% if ginput.gbool %}checked{% endif %}>
-        {% elif ginput.tipo == 'gtext' %}
-            <span>{{ ginput.ginput.label }} <i id="check{{ ginput.id }}" class="fa fa-check check_w"></i></span>
-            <textarea rows="4" class="ginput" data-tipo="{{ ginput.tipo }}" data-id="{{ ginput.id }}"
-            >{% if ginput.gtext %}{{ ginput.gtext }}{% endif %}</textarea>
-        {% elif ginput.tipo == 'gfile' %}
-            <span>{{ ginput.ginput.label }}  <i id="check{{ ginput.id }}" class="fa fa-check check_w"></i></span><br>
-            <a class="a_gfile" data-id="{{ ginput.id }}" id="a_ginput{{ ginput.id }}">
-                {% if ginput.archivo %}
-                    {{ ginput.fich_name }}
-                {% else %}
-                    Click aquí para cargar un archivo
-                {% endif %}</a>
-            <a class="t_gfile button tiny round" id="t_ginput{{ ginput.id }}" data-id="{{ ginput.id }}"
-               style="display: {% if ginput.archivo %}inline;{% else %}none;{% endif %}"> <i
-                    class="fa fa-trash-o fa-2x"></i></a>
-            <input type="file" class="gfile" id="ginput{{ ginput.id }}" style="position: fixed; top: -3000px;"
-                   data-id="{{ ginput.id }}" name="ginput{{ ginput.id }}">
-        {% elif ginput.tipo == 'gdatetime' %}
-            <span>{{ ginput.ginput.label }} <i id="check{{ ginput.id }}" class="fa fa-check check_w"></i></span>
-            <input type="text" class="ginput" data-tipo="{{ ginput.tipo }}" data-id="{{ ginput.id }}"
-                   placeholder="{{ ginput.get_tipo_display }}"
-                   value="{% if ginput.gdatetime %}{{ ginput.gdatetime|date:'d/m/Y H:i' }}{% endif %}">
-        {% elif ginput.tipo == 'gdate' %}
-            <span>{{ ginput.ginput.label }} <i id="check{{ ginput.id }}" class="fa fa-check check_w"></i></span>
-            <input type="text" class="ginput" data-tipo="{{ ginput.tipo }}" data-id="{{ ginput.id }}"
-                   placeholder="{{ ginput.get_tipo_display }}"
-                   value="{% if ginput.gdate %}{{ ginput.gdate|date:'d/m/Y' }}{% endif %}">
-        {% else %}
-            <span>{{ ginput.ginput.label }} <i id="check{{ ginput.id }}" class="fa fa-check check_w"></i></span>
-            <input type="text" class="ginput" data-tipo="{{ ginput.tipo }}" data-id="{{ ginput.id }}"
-                   placeholder="{{ ginput.get_tipo_display }}" value="{{ ginput|gvalor }}">
-        {% endif %}
+                    <div class="row">
+                        <div class="columns large-6">
+                            {% if not forloop.first %}
+                                <a class="button secondary go_seccion_anterior" data-ordengfs="{{ gfs.orden }}">
+                                    <i class="fa fa-caret-left"></i> Sección anterior
+                                </a>
+                            {% else %}&nbsp;{% endif %}
+                        </div>
+                        <div class="columns large-6">
+                            {% if not forloop.last %}
+                                <a class="button secondary right go_seccion_siguiente" data-ordengfs="{{ gfs.orden }}">
+                                    Sección siguiente <i class="fa fa-caret-right"></i>
+                                </a>
+                            {% else %}&nbsp;{% endif %}
+                        </div>
+                    </div>
+                    {% if forloop.last %}
+                        <div class="row">
+                            <div class="columns large-12 medium-12 text-center">
+                                <ul class="button-group">
+                                    <li>
+                                        <a class="button genera_pdf" data-gform="{{ gformresponde.gform.id }}">
+                                            <i class="fa fa-file-pdf-o"></i> PDF</a>
+                                    </li>
+                                    <li>
+                                        <a href="/" class="button alert terminar_gform">
+                                            <i class="fa fa-sign-out"></i> Terminar</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
         </div>
-        {% if forloop.last %}
-            </div>
-        {% endif %}
-        {% endfor %}
-
-
     </form>
-
-
 {% endblock %}
 
-
 {% block final %}
-
     <script type="text/javascript">
-        {#        habilita(['s_check']);#}
-        $('.gselect').select2();
+        {# ########################################################################################### #}
+        {# Operaciones relacionadas con responder a las preguntas cortas: tipo RC #}
+        {# #}
+        {# ########################################################################################### #}
 
-        $(document).on('close.fndtn.alert', function (event) {
-            $.post("/formulario_ajax/", {action: 'del_alert'}, function (data) {
-                console.log(data);
-            });
-        });
-
-        {# Grabar los ginputs rellenados en el momento de ser rellenados #}
-        function isFloat(n) {
-            return n === +n && n !== (n | 0);
-        }
-
-        function isInteger(n) {
-            return n === +n && n === (n | 0);
-        }
-
-        $('.a_gfile').on('click', function (e) {
-            e.preventDefault();
-            var id = $(this).data('id');
-            $('#ginput' + id).trigger('click');
-        });
-
-        $('.gfile').change(function (e) {
-            var id = $(this).attr('id');
-            var a_id = 'a_' + id;
-            var t_id = 't_' + id;
-            {#            var input_file = document.getElementById(id).value;#}
-            var input_file = $('#' + id).val();
-            $('#' + a_id).html(input_file);
-            $('#' + t_id).show();
-
-            $('#action').val('save_gfile');
-            $('#id_ginput').val($(this).data('id'));
-            var form = $('form')[0]; // You need to use standart javascript object here
-            var formData = new FormData(form);
-            $.ajax({
-                url: '/formulario_ajax/',
-                data: formData,
-                type: 'post',
-                // THIS MUST BE DONE FOR FILE UPLOADING
-                contentType: false,
-                processData: false
-                // ... Other options like success and etc
-            });
-            $("#check" + $(this).data('id')).show().delay(1500).fadeOut();
-        });
-
-        $('body').on('click', '.t_gfile', function (e) {
-            e.preventDefault();
-            var id = $(this).data('id');
-            $.post("/formulario_ajax/", {action: 'delete_gfile', id: id, ge: $('#ge').val()}, function (data) {
-                if (data != 'True') {
-                    show_mensajes({title: "<i class='fa fa-warning'></i> Error", texto: data});
-                } else {
-                    console.log(data);
-                    $('#' + 'a_ginput' + id).html('Click aquí para cargar un archivo');
-                    $('#' + 't_ginput' + id).hide();
-                    $("#check" + id).show().delay(1500).fadeOut();
+        $('body').on('keyup', '.gfr_rc', function () {
+            var element = $(this);
+            var gfsi = element.data('gfsi');
+            var antiguo_texto = element.val();
+            setTimeout(function () {
+                var nuevo_texto = element.val();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+                        {action: 'update_gfr_rtexto', gfsi: gfsi, rtexto: nuevo_texto},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
                 }
-            });
+            }, 750);
         });
 
-        $('.ginput').on('input', function (e) {
-            var id = $(this).data('id');
-            var valor = $(this).val();
-            var tipo = $(this).data('tipo');
-            console.log(tipo);
-            if ((tipo != 'gdate' && tipo != 'gdatetime') || (valor.length > 9 && tipo != 'gdatetime') || (tipo != 'gdate' && valor.length > 15)) {
-                $.post("/formulario_ajax/", {
-                    action: 'save_' + tipo,
-                    valor: valor,
-                    id: id,
-                    ge: $('#ge').val()
-                }, function (data) {
-                    if (data != 'True') {
-                        show_mensajes({title: "<i class='fa fa-warning'></i> Error", texto: data});
+        {# ########################################################################################### #}
+        {# Operaciones relacionadas con responder a las preguntas largas: tipo RL #}
+        {# constructInlineEditorInstances,   #}
+        {# ########################################################################################### #}
+
+        config = {
+            removePlugins: 'exportpdf',
+            toolbar: [
+                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
+                {
+                    name: 'basicstyles',
+                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
+                },
+                {
+                    name: 'paragraph',
+                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
+                },
+                '/',
+                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
+                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
+                {name: 'colors', items: ['TextColor', 'BGColor']},
+                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
+                {name: 'document', items: ['Source']},
+                {name: 'about', items: ['About', 'generapdfbutton']}
+            ],
+            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
+        }
+
+        function constructInlineEditorInstances() {
+            $(".ckeditor").each(function (index) {
+                var element = $(this);
+                var id = element.attr('id');
+                var editor = CKEDITOR.inline(id, config);
+                var anchura = element.width() + 2;
+                setTimeout(function () {
+                    $('#cke_' + id).css('width', anchura + 'px');
+                    {# Este es el id del ckeditor creado #}
+                }, 200);
+            });
+        }
+
+        setTimeout(function () {
+            constructInlineEditorInstances();
+        }, 300);
+
+        $('body').on('keyup', '.gfr_rl', function () {
+            var element = $(this);
+            var gfsi = element.data('gfsi');
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+                        {action: 'update_gfr_rtexto', gfsi: gfsi, rtexto: nuevo_texto},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
+        {# ########################################################################################### #}
+        {# Operaciones relacionadas con responder a las preguntas de elección: tipo EM y SO #}
+        {# #}
+        {# ########################################################################################### #}
+
+        $('body').on('change', '.gfr_op', function () {
+            var element = $(this);
+            var gfsi = element.data('gfsi');
+            var gfsio = element.val();
+            $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+                {action: 'update_gfr_op', gfsi: gfsi, gfsio: gfsio},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
                     } else {
-                        console.log(data);
-                        $("#check" + id).show().delay(1500).fadeOut();
+                        $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
+        });
+
+        {# ########################################################################################### #}
+        {# Operaciones relacionadas con responder a las preguntas de selección: tipo SC #}
+        {# #}
+        {# ########################################################################################### #}
+
+        $('body').on('change', '.gfr_sc', function () {
+            var element = $(this);
+            var gfsi = element.data('gfsi');
+            var gfsio = element.val();
+            var checked = element.prop('checked');
+            $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+                {action: 'update_gfr_sc', gfsi: gfsi, gfsio: gfsio, checked: checked},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        {# ########################################################################################### #}
+        {# Operaciones relacionadas con responder a las preguntas de escala lineal: tipo EL #}
+        {# #}
+        {# ########################################################################################### #}
+
+        $('body').on('change', '.gfr_el', function () {
+            var element = $(this);
+            var gfsi = element.data('gfsi');
+            var valor = element.val();
+            $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+                {action: 'update_gfr_el', gfsi: gfsi, valor: valor},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        {# ########################################################################################### #}
+        {# Operaciones relacionadas con responder a las preguntas de subir archivo: tipo SA #}
+        {# #}
+        {# ########################################################################################### #}
+
+        function updateProgress(evt) {
+            if (evt.lengthComputable) {
+                var percentComplete = (evt.loaded / evt.total) * 100;
+                $('.span_porcentage').html(parseInt(percentComplete) + '%');
+                console.log(percentComplete);
+            } else {
+                console.log('No es posible calcular el porcentaje de carga en el servidor');
             }
+        }
+
+        $('body').on('click', '.subir_gauss_file', function () {
+            var id = $(this).data('gfsi');
+            var input_files = document.getElementById('input_gauss_file' + id).files;
+            $('#span_spin').show();
+            $('.span_porcentage').show();
+            if (input_files.length == 0) {
+                show_mensajes({
+                    'title': '<i class="fa fa-warning"></i> No hay archivo que subir',
+                    'texto': 'Debes seleccionar primero un archivo antes de poder subirlo.'
+                })
+            }
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('archivo_xhr' + i, input_files[i]);
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'upload_archivo_xhr');
+            formData.append('gfsi', id);
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener("progress", updateProgress, false);
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log(xhr.responseText);
+                        var b = xhr.responseText;
+                        var data = JSON.parse(xhr.responseText);
+                        $('#tbody_gauss_file' + data.id).html(data.html);
+                        $('#span_spin').hide();
+                        $('#span_porcentage').hide();
+                        $('#input_gauss_file' + data.id).val('');
+                    }
+                }
+            };
+            xhr.open('POST', "/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/", true);
+            xhr.send(formData);
         });
 
-        $('.gbool').on('change', function (e) {
-            var id = $(this).data('id');
-            $.post("/formulario_ajax/", {action: 'save_gbool', id: id, ge: $('#ge').val()}, function (data) {
-                if (data != 'True') {
-                    $('#ginput' + id).html(data);
-                } else {
-                    console.log(data);
-                    $("#check" + id).show().delay(1500).fadeOut();
+        $('#Contenido').on('click', '.descarga_gauss_file', function (e) {
+            e.preventDefault();
+            $('#action').val('descarga_gauss_file');
+            $('#gfsi').val($(this).data('gfsi'));
+            document.getElementById('{{formname}}').submit();
+        });
+
+        $('body').on('click', '.borra_gauss_file', function () {
+            gfsi = $(this).data('gfsi');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar este archivo adjunto al informe?',
+                texto: 'Si aceptas el archivo se borrará por completo de la base de datos', size: 'large', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+                            {action: 'borra_gauss_file', gfsi: gfsi},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#gauss_file' + gfsi).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
                 }
             });
         });
+        {# ########################################################################################### #}
+        {# Código necesario para utilizar la respuesta de tipo firma #}
+        {#    #}
+        {# ########################################################################################### #}
 
-        $('.gselect').on('change', function (e) {
-            var id = $(this).data('id');
-            var val = $("#myOptions option:selected").data('id');
-            var selected = JSON.stringify(e.val);
-            console.log(selected);
-            $.post("/formulario_ajax/", {
-                action: 'save_goption',
-                selected: selected,
-                id: id,
-                ge: $('#ge').val()
-            }, function (data) {
-                if (data != 'True') {
-                    show_mensajes({title: "<i class='fa fa-warning'></i> Error", texto: data});
-                } else {
-                    console.log(data);
-                    $("#check" + id).show().delay(1500).fadeOut();
+
+        function update_firma(gfsi) {
+            var element = document.getElementById('sketchpad' + gfsi);
+            var antigua_firma = element.toDataURL();
+            setTimeout(function () {
+                var nueva_firma = element.toDataURL();
+                if (antigua_firma === nueva_firma) {
+                    $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+                        {action: 'update_firma', gfsi: gfsi, firma: nueva_firma},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
                 }
-            });
+            }, 750);
+        }
+
+        {# ########################################################################################### #}
+        {# Código necesario para utilizar la respuesta de tipo firma #}
+        {#  go_seccion_anterior, go_seccion_siguiente  #}
+        {# ########################################################################################### #}
+
+        $('body').on('click', '.go_seccion_anterior', function (e) {
+            e.preventDefault();
+            var ordengfs = parseInt($(this).data('ordengfs'));
+            $('#gfsorden' + ordengfs).hide();
+            var orden_gfs_nueva = ordengfs - 1;
+            $('#gfsorden' + orden_gfs_nueva).show();
+            $(document).scrollTop($('#title_page').offset().top - 150);
+        });
+        $('body').on('click', '.go_seccion_siguiente', function (e) {
+            e.preventDefault();
+            var ordengfs = parseInt($(this).data('ordengfs'));
+            $('#gfsorden' + ordengfs).hide();
+            var orden_gfs_nueva = ordengfs + 1;
+            $('#gfsorden' + orden_gfs_nueva).show();
+            $(document).scrollTop($('#title_page').offset().top - 150);
+        });
+
+        {# ########################################################################################### #}
+        {# Código necesario para generar PDF y salir #}
+        {#  go_seccion_anterior, go_seccion_siguiente  #}
+        {# ########################################################################################### #}
+
+        $('body').on('click', '.genera_pdf', function (e) {
+            e.preventDefault();
+            $('#action').val('genera_pdf');
+            document.getElementById('{{ formname }}').submit();
+        });
+
+        $('body').on('click', '.terminar_gform', function (e) {
+            e.preventDefault();
+            $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+                {action: 'terminar_gform'},
+                function (data) {
+                    if (data.ok) {
+                        location.href = '/mis_formularios/'
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
         });
 
     </script>

@@ -9,8 +9,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from calendario.models import Vevent
-from formularios.models import Gform, Ginput
-from formularios.views import crea_ginputs_para_rellenador
+from formularios.models import Gform
 from gtelegram.models import Update, Message, User, Chat, Genera_code
 
 # from entidades.models import Subentidad, Cargo
@@ -226,7 +225,7 @@ def telegram_webhook(request):
             # Un botón de cuestionario coincidirá con la regex del 'if' anterior
             gform = Gform.objects.get(id=int(re.search(r'^.*\(([0-9]+)\)$', message['text']).group(1)))
             g_e = g_es.filter(entidad=gform.propietario.entidad)[0]
-            crea_ginputs_para_rellenador(gform, g_e)
+            # crea_ginputs_para_rellenador(gform, g_e)
             ginput = gform.ginput_set.filter(ginput__isnull=False,
                                              rellenador=g_e).order_by('ginput__row', 'ginput__col')[0]
             user.answering_gform = True
