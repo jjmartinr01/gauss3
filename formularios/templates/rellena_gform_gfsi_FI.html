@@ -1,4 +1,14 @@
 {% load formularios_extras %}
+<div class="row">
+    <div class="columns large-12 medium-12">
+        <label>Nombre de la persona que firma
+{#            <div contenteditable="true" id="nombre_persona_firma{{ gfsi.id }}" class="gfr_rc" data-gfsi="{{ gfsi.id }}" placeholder="adsfa"#}
+{#            rows="2">{{ gfsi|get_rtexto:gformresponde }}</div>#}
+            <input type="text" id="nombre_persona_firma{{ gfsi.id }}" class="gfr_rc" data-gfsi="{{ gfsi.id }}"
+                  placeholder="Nombre de la persona que firma" value="{{ gfsi|get_rtexto:gformresponde }}">
+        </label>
+    </div>
+</div>
 <div id="sketchpadapp{{ gfsi.id }}" class="sketchpadapp">
     <label class="text-center">Firma dentro del recuadro:</label>
     <canvas class="sketchpad" id="sketchpad{{ gfsi.id }}" height="300" width="400"></canvas>
@@ -57,8 +67,8 @@
         lastX{{gfsi.id}} = -1;
         lastY{{gfsi.id}} = -1;
         var ahora = new Date();
-        if (last_gfsi == '{{ gfsi.id }}'){
-            if (ahora - last_time < 1000){
+        if (last_gfsi == '{{ gfsi.id }}') {
+            if (ahora - last_time < 1000) {
                 update_firma('{{ gfsi.id }}');
             }
         }
@@ -93,8 +103,8 @@
     function sketchpad_touchEnd{{gfsi.id}}() {
         lastX{{gfsi.id}} = -1;
         lastY{{gfsi.id}} = -1;
-        if (last_gfsi == '{{ gfsi.id }}'){
-            if (ahora - last_time < 1000){
+        if (last_gfsi == '{{ gfsi.id }}') {
+            if (ahora - last_time < 1000) {
                 update_firma('{{ gfsi.id }}');
             }
         }
@@ -124,11 +134,11 @@
         canvas{{gfsi.id}} = document.getElementById('sketchpad{{ gfsi.id }}');
         if (canvas{{gfsi.id}}.getContext)
             ctx{{gfsi.id}} = canvas{{gfsi.id}}.getContext('2d');
-            var image = new Image();
-            image.onload = function() {
-              ctx{{gfsi.id}}.drawImage(image, 0, 0);
-            };
-            image.src = '{{ gfsi|get_rfirma:gformresponde }}'
+        var image = new Image();
+        image.onload = function () {
+            ctx{{gfsi.id}}.drawImage(image, 0, 0);
+        };
+        image.src = '{{ gfsi|get_rfirma:gformresponde }}'
 
         if (ctx{{gfsi.id}}) {
             canvas{{gfsi.id}}.addEventListener('mousedown', sketchpad_mouseDown{{gfsi.id}}, false);

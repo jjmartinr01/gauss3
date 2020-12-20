@@ -149,7 +149,7 @@ def sube_archivo(instance, filename):
 class GformRespondeInput(models.Model):
     gformresponde = models.ForeignKey(GformResponde, on_delete=models.CASCADE)
     gfsi = models.ForeignKey(GformSectionInput, on_delete=models.CASCADE)
-    rtexto = models.TextField('Respuesta de texto', blank=True, null=True)
+    rtexto = models.TextField('Respuesta de texto', blank=True, null=True, default='')
     ropciones = models.ManyToManyField(GformSectionInputOps, blank=True)
     rfirma = models.TextField('Firma en base64', blank=True, null=True)
     rentero = models.IntegerField('Respuesta número entero', blank=True, null=True)
@@ -166,7 +166,7 @@ class GformRespondeInput(models.Model):
     @property
     def render_firma(self):
         template = """{% autoescape off %}
-                       <table><tr><td><img src='{{ rfirma }}' style='width:200px;'></td></tr>
+                       <table><tr><td><img src='{{ rfirma }}' style='width:120px;'></td></tr>
                        <tr><td><p>{{ rtexto }}</p></td></tr></table>{% endautoescape %}"""
         return Template(template).render(Context({'rfirma': self.rfirma, 'rtexto': self.rtexto}))
 
