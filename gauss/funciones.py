@@ -5,13 +5,12 @@ import string
 import random
 import os
 import pdfkit
-from datetime import date
 from django.db.models import Q
 from django.template import Context, Template
 from django.template.loader import render_to_string
 from gauss.rutas import MEDIA_DOCUMENTOS, MEDIA_ANAGRAMAS
 from entidades.models import Alta_Baja, Gauser_extra, DocConfEntidad
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 logger = logging.getLogger('django')
 
 
@@ -227,6 +226,27 @@ def html_to_pdf_dce(html, docconf, media, filename=''):
 def pass_generator(size=6, chars=string.ascii_letters + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
+# Obtención de los usuarios de la entidad que no están de baja:
+def usuarios_organization(ronda, subentidades=False, cargos=False, edad_min=-1, edad_max=120):
+    bajas = Alta_Baja.objects.filter(entidad__organization=ronda.entidad.organization,
+                                     fecha_baja__isnull=False).values_list('gauser__id', flat=True)
+    nacimiento_early = date(date.today().year - edad_max, 1, 1)
+    nacimiento_last = date(date.today().year - edad_min, 12, 31)
+    if edad_min == -1 and edad_max == 120:
+        filtro = ~Q(gauser__id__in=bajas) & ~Q(gauser__username='gauss') & Q(
+            ronda__entidad__organization=ronda.entidad.organization) & Q(ronda__fin__gt=datetime.now()) & (Q(
+            gauser__nacimiento__gte=nacimiento_early) & Q(gauser__nacimiento__lte=nacimiento_last) | Q(
+            gauser__nacimiento__isnull=True))
+    else:
+        filtro = ~Q(gauser__id__in=bajas) & ~Q(gauser__username='gauss') & Q(
+            ronda__entidad__organization=ronda.entidad.organization) & Q(ronda__fin__gt=datetime.now()) & Q(
+            gauser__nacimiento__gte=nacimiento_early) & Q(gauser__nacimiento__lte=nacimiento_last)
+    if cargos:
+        filtro = filtro & Q(cargos__in=cargos)
+    if subentidades:
+        filtro = filtro & Q(subentidades__in=subentidades)
+
+    return Gauser_extra.objects.filter(filtro).order_by('gauser__last_name', 'gauser__first_name')
 
 # Obtención de los usuarios de la entidad que no están de baja:
 def usuarios_ronda(ronda, subentidades=False, cargos=False, edad_min=-1, edad_max=120):

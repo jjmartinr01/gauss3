@@ -583,15 +583,18 @@
                     params.page = params.page || 1;
                     return {
                         results: $.map(data, function (item) {
+                            if (item.entidad) {
+                                entidad = ' (' + item.entidad + ')';
+                            }else{entidad = ''}
                             if (item.tipo === 'g') {
                                 return  {
-                                    text: format_g.format(item.last_name, item.first_name, item.grupo, item.tutor),
+                                    text: format_g.format(item.last_name, item.first_name, item.grupo, item.tutor) + entidad,
                                     id: item.tipo + item.id
                                 }
                             } else if (item.tipo === 'c') {
-                                return  {text: item.cargo, id: item.tipo + item.id}
+                                return  {text: item.cargo + entidad, id: item.tipo + item.id}
                             } else if (item.tipo === 's') {
-                                return  {text: item.subentidad, id: item.tipo + item.id}
+                                return  {text: item.subentidad + entidad, id: item.tipo + item.id}
                             }
                         })
                     };

@@ -33,5 +33,6 @@ urlpatterns = [
     path('linkge/<str:code>/', views.linkge),
     path('crealinkge/', views.crealinkge),
     path('selectgcs/', views.selectgcs),
+    path('selectgcs_organization/', views.selectgcs_organization),
     path('doc_configuration/', views.doc_configuration),
 ]
