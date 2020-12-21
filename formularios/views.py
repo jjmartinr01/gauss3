@@ -729,6 +729,15 @@ def rellena_gform(request, id, identificador):
                 return JsonResponse({'ok': True})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_gfr_fi':
+            try:
+                gfsi = gfsis.get(id=request.POST['gfsi'])
+                gfri, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
+                setattr(gfri, request.POST['campo'], request.POST['firmante'])
+                gfri.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'borra_gauss_file':
             try:
                 gfsi = gfsis.get(id=request.POST['gfsi'])
@@ -743,11 +752,31 @@ def rellena_gform(request, id, identificador):
                 return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
         elif request.POST['action'] == 'terminar_gform':
             try:
-                gformresponde.respondido = True
-                gformresponde.save()
-                return JsonResponse({'ok': True})
+                requeridas = gfsis.filter(requerida=True)
+                no_respondidas = []
+                for gfsi in requeridas:
+                    gfri, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
+                    cond1 = gfri.gfsi.tipo == 'RC' and len(gfri.rtexto) < 2
+                    cond2 = gfri.gfsi.tipo == 'RL' and len(gfri.rtexto) < 5
+                    cond3 = gfri.gfsi.tipo in ['EM', 'SC', 'SO'] and gfri.ropciones.all().count() == 0
+                    cond4 = gfri.gfsi.tipo == 'EL' and not str(gfri.rentero).isdigit()
+                    cond5 = gfri.gfsi.tipo == 'FI' and (len(gfri.rfirma_nombre) < 5 or len(gfri.rfirma) < 1000)
+                    cond6 = gfri.gfsi.tipo == 'SA' and not gfri.rarchivo
+                    if cond1 or cond2 or cond3 or cond4 or cond5 or cond6:
+                        no_respondidas.append(str(gfri.gfsi.orden))
+                if len(no_respondidas) == 0:
+                    gformresponde.respondido = True
+                    gformresponde.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    if len(no_respondidas) == 1:
+                        return JsonResponse(
+                            {'ok': False, 'msg': 'falta por responder la pregunta %s' % no_respondidas[0]})
+                    else:
+                        return JsonResponse(
+                            {'ok': False, 'msg': 'faltan por responder las preguntas %s' % ', '.join(no_respondidas)})
             except:
-                return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
+                return JsonResponse({'ok': False, 'msg': 'Se ha producido un error'})
     elif request.method == 'POST' and not request.is_ajax():
         if request.POST['action'] == 'genera_pdf':
             doc_gform = 'Configuración para cuestionarios'

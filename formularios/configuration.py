@@ -17,6 +17,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 1,
      'parent': 'acceso_cuestionarios'
+     },
+    {'code_menu': 'acceso_mis_formularios',
+     'texto_menu': 'Mis Formularios',
+     'href': 'mis_formularios',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 2,
+     'parent': 'acceso_cuestionarios'
      }
 ]
 # Se añaden otros permisos para el usuario

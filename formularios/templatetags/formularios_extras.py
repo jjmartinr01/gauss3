@@ -68,7 +68,24 @@ def get_el_value(gfsi, gformresponde):
 
 @register.filter
 def checked_if_igual_a(a, b):
-    if int(a) == int(b):
-        return 'true'
-    else:
+    try:
+        if int(a) == int(b):
+            return 'true'
+        else:
+            return 'false'
+    except:
         return 'false'
+
+@register.filter
+def get_fin(gfsi, gformresponde):
+    try:
+        return GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).rfirma_nombre
+    except:
+        return ''
+
+@register.filter
+def get_fic(gfsi, gformresponde):
+    try:
+        return GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).rfirma_cargo
+    except:
+        return ''

@@ -50,6 +50,11 @@
         <div class="">
             <h4 id="title_page"><strong>{{ gformresponde.gform.nombre }}</strong></h4>
         </div>
+        <div class="row">
+            <div class="columns large-12 text-right">
+                <a class="button info close_gform"><i class="fa fa-times"></i> Cerrar este formulario</a>
+            </div>
+        </div>
         <div id="rellenagformsections{{ gformresponde.gform.id }}">
             {% for gfs in gformresponde.gform.gformsection_set.all %}
                 <div id="gfsorden{{ gfs.orden }}"
@@ -114,6 +119,7 @@
                                                 {% endfor %}
                                             {% elif gfsi.tipo == 'SO' %}
                                                 <select data-gfsi="{{ gfsi.id }}" class="gfr_op">
+                                                <option value="">Selecciona una de las siguiente opciones</option>
                                                     {% for gfsio in gfsi.gformsectioninputops_set.all %}
                                                         <option value="{{ gfsio.id }}">
                                                             {% autoescape off %}{{ gfsio.opcion }}{% endautoescape %}
@@ -439,6 +445,28 @@
             }, 750);
         }
 
+        $('body').on('keyup', '.gfr_fi', function () {
+            var element = $(this);
+            var gfsi = element.data('gfsi');
+            var firmante = element.val();
+            var campo = element.data('campo');
+            var antiguo_texto = element.val();
+            setTimeout(function () {
+                var nuevo_texto = element.val();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+                        {action: 'update_gfr_fi', gfsi: gfsi, firmante: firmante, campo:campo},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
         {# ########################################################################################### #}
         {# Código necesario para utilizar la respuesta de tipo firma #}
         {#  go_seccion_anterior, go_seccion_siguiente  #}
@@ -462,9 +490,15 @@
         });
 
         {# ########################################################################################### #}
-        {# Código necesario para generar PDF y salir #}
+        {# Código necesario para generar Cerrar el formulario, generar PDF y salir #}
         {#  go_seccion_anterior, go_seccion_siguiente  #}
         {# ########################################################################################### #}
+
+        $('body').on('click', '.close_gform', function (e) {
+            e.preventDefault();
+            $('body').css('opacity', 0.3);
+            location.href = '/mis_formularios/'
+        });
 
         $('body').on('click', '.genera_pdf', function (e) {
             e.preventDefault();
@@ -480,6 +514,10 @@
                     if (data.ok) {
                         location.href = '/mis_formularios/'
                     } else {
+                        var texto1 = 'Tus respuestas se han guardado, pero no es posible terminar el formulario ';
+                        var texto2 = 'porque todavía ' + data.msg;
+                        show_mensajes({'title': '<i class="fa fa-warning"></i> No es posible terminar',
+                            'texto': texto1 + texto2});
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });

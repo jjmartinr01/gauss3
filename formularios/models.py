@@ -107,6 +107,7 @@ class GformSectionInput(models.Model):
     labelmin = models.CharField('Etiqueta min valor', max_length=30, default='Poco')
     elmax = models.IntegerField('Valor máximo en la escal lineal', default=5)
     labelmax = models.CharField('Etiqueta max valor', max_length=30, default='Mucho')
+    requerida = models.BooleanField('¿Es obligatorio responder a esta pregunta?', default=True)
 
     # firma = models.TextField('Firma requerida', null=True, blank=True)
 
@@ -139,6 +140,7 @@ class GformResponde(models.Model):
     def __str__(self):
         return '%s - %s' % (self.gform, self.g_e.gauser.get_full_name())
 
+
 def sube_archivo(instance, filename):
     nombre = filename.rpartition('.')
     fichero = slugify(nombre[0]) + '.' + nombre[2]
@@ -146,12 +148,15 @@ def sube_archivo(instance, filename):
     gform = str(instance.gformresponde.gform.id)
     return '/'.join(['formularios', entidad_code, gform, fichero])
 
+
 class GformRespondeInput(models.Model):
     gformresponde = models.ForeignKey(GformResponde, on_delete=models.CASCADE)
     gfsi = models.ForeignKey(GformSectionInput, on_delete=models.CASCADE)
     rtexto = models.TextField('Respuesta de texto', blank=True, null=True, default='')
     ropciones = models.ManyToManyField(GformSectionInputOps, blank=True)
-    rfirma = models.TextField('Firma en base64', blank=True, null=True)
+    rfirma = models.TextField('Firma en base64', blank=True, null=True, default='')
+    rfirma_nombre = models.CharField('Nombre del firmante', blank=True, null=True, default='', max_length=100)
+    rfirma_cargo = models.CharField('Cargo del firmante', blank=True, null=True, default='', max_length=100)
     rentero = models.IntegerField('Respuesta número entero', blank=True, null=True)
     rarchivo = models.FileField('Respuesta tipo archivo', blank=True, null=True, upload_to=sube_archivo)
     content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
@@ -167,8 +172,9 @@ class GformRespondeInput(models.Model):
     def render_firma(self):
         template = """{% autoescape off %}
                        <table><tr><td><img src='{{ rfirma }}' style='width:120px;'></td></tr>
-                       <tr><td><p>{{ rtexto }}</p></td></tr></table>{% endautoescape %}"""
-        return Template(template).render(Context({'rfirma': self.rfirma, 'rtexto': self.rtexto}))
+                       <tr><td><p>{{ rfirma_nombre }}<br>{{ rfirma_cargo }}</p></td></tr></table>{% endautoescape %}"""
+        ctx = Context({'rfirma': self.rfirma, 'rfirma_nombre': self.rfirma_nombre, 'rfirma_cargo': self.rfirma_cargo})
+        return Template(template).render(ctx)
 
     def __str__(self):
         return '%s - %s' % (self.gformresponde, self.gfsi)

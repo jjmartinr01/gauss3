@@ -1,11 +1,17 @@
 {% load formularios_extras %}
 <div class="row">
-    <div class="columns large-12 medium-12">
-        <label>Nombre de la persona que firma
-{#            <div contenteditable="true" id="nombre_persona_firma{{ gfsi.id }}" class="gfr_rc" data-gfsi="{{ gfsi.id }}" placeholder="adsfa"#}
-{#            rows="2">{{ gfsi|get_rtexto:gformresponde }}</div>#}
-            <input type="text" id="nombre_persona_firma{{ gfsi.id }}" class="gfr_rc" data-gfsi="{{ gfsi.id }}"
-                  placeholder="Nombre de la persona que firma" value="{{ gfsi|get_rtexto:gformresponde }}">
+    <div class="columns large-6 medium-12">
+        <label>Nombre del firmante
+            <input type="text" id="nombre_persona_firma{{ gfsi.id }}" class="gfr_fi" data-gfsi="{{ gfsi.id }}"
+                   data-campo="rfirma_nombre"
+                  placeholder="Nombre de la persona que firma" value="{{ gfsi|get_fin:gformresponde }}">
+        </label>
+    </div>
+    <div class="columns large-6 medium-12">
+        <label>Cargo del firmante (si procede)
+            <input type="text" id="cargo_persona_firma{{ gfsi.id }}" class="gfr_fi" data-gfsi="{{ gfsi.id }}"
+                   data-campo="rfirma_cargo"
+                  placeholder="Nombre de la persona que firma" value="{{ gfsi|get_fic:gformresponde }}">
         </label>
     </div>
 </div>
@@ -154,6 +160,7 @@
         $('#clearbutton{{ gfsi.id }}').on('click', function (e) {
             e.preventDefault();
             clearcanvas{{ gfsi.id }}(canvas{{ gfsi.id }}, ctx{{ gfsi.id }});
+            update_firma('{{ gfsi.id }}');
         });
     }, 350);
 
