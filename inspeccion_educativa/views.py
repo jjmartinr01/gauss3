@@ -124,13 +124,6 @@ def tareas_ie(request):
                 centrosmdb = CentroMDB.objects.all()
                 centros = Entidad.objects.filter(organization=g_e.ronda.entidad.organization)
                 inspectores = get_inspectores(request)
-                # Eliminación de sectores y niveles
-                # html = render_to_string('tareas_ie_accordion_content.html',
-                #                         {'instarea': itarea, 'g_e': g_e, 'localizaciones': LOCALIZACIONES,
-                #                          'objetos': OBJETOS, 'tipos': TIPOS, 'funciones': FUNCIONES, 'roles': ROLES,
-                #                          'actuaciones': ACTUACIONES, 'niveles': NIVELES, 'sectores': SECTORES,
-                #                          'centros': centros, 'inspectores': inspectores, 'permisos': PERMISOS,
-                #                          'centrosmdb': centrosmdb})
                 html = render_to_string('tareas_ie_accordion_content.html',
                                         {'instarea': itarea, 'g_e': g_e, 'localizaciones': LOCALIZACIONES,
                                          'objetos': OBJETOS, 'tipos': TIPOS, 'funciones': FUNCIONES, 'roles': ROLES,
@@ -488,8 +481,8 @@ def informes_ie(request):
                 html = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie})
                 num_v = ie.get_variables.count()
                 return JsonResponse({'ok': True, 'html': html, 'ie': ie.id, 'html_v': html_v, 'num_v': num_v})
-            except:
-                return JsonResponse({'ok': False})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'copiar_ie':
             try:
                 ie = InformeInspeccion.objects.get(inspector__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
