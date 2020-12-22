@@ -39,9 +39,19 @@
     </style>
 </head>
 <body>
-{% autoescape off %}
-{{ template }}
-{% endautoescape %}
+{% for gfr in gfrs %}
+    {% autoescape off %}
+        {{ gfr.template_procesado }}
+    {% endautoescape %}
+    {% if not forloop.last %}
+        <div class="pagebreak"></div>
+    {% endif %}
+{% endfor %}
+{% if template %}
+    {% autoescape off %}
+        {{ template }}
+    {% endautoescape %}
+{% endif %}
 </body>
 </html>
 

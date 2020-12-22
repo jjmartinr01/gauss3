@@ -13,6 +13,8 @@ from django.http import JsonResponse, HttpResponse
 from django.db.models import Q
 from django.core.paginator import Paginator
 import html2text
+from bs4 import BeautifulSoup
+
 from django import forms
 from django.forms import ModelForm
 from django.shortcuts import render, redirect
@@ -448,7 +450,15 @@ def formularios(request):
                 return JsonResponse({'ok': True, 'html': html, 'gfsi_id_orden': gfsi_id_orden(gfsi.gformsection.gform)})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
-
+        elif request.POST['action'] == 'update_gfsi_requerida':
+            try:
+                gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
+                gfsi.requerida = not gfsi.requerida
+                gfsi.save()
+                texto = ['Requerida: No', 'Requerida: Sí'][gfsi.requerida]
+                return JsonResponse({'ok': True, 'texto': texto})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'add_gfs_after_gfsi':
             try:
                 gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
@@ -483,18 +493,15 @@ def formularios(request):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
 
-
-        elif request.POST['action'] == 'excel':
-            gform = Gform.objects.get(id=request.POST['gform'], propietario__entidad=g_e.ronda.entidad)
-            original_ginputs = gform.ginput_set.filter(ginput__isnull=True).order_by('row', 'col')
-            ginputs = gform.ginput_set.filter(ginput__isnull=False).order_by('rellenador__gauser__last_name',
-                                                                             'rellenador__gauser__first_name',
-                                                                             'rellenador__id',
-                                                                             'ginput__row', 'ginput__col')
-            ruta = MEDIA_FORMULARIOS + str(g_e.ronda.entidad.code) + '/'
+    elif request.method == 'POST':
+        if request.POST['action'] == 'excel_gform':
+            gform = Gform.objects.get(id=request.POST['gform'], propietario__ronda__entidad=g_e.ronda.entidad)
+            gfsis = GformSectionInput.objects.filter(gformsection__gform=gform)
+            gfrs = gform.gformresponde_set.filter(respondido=True)
+            ruta = MEDIA_FORMULARIOS + str(g_e.ronda.entidad.code) + '/' + str(gform.id) + '/'
             if not os.path.exists(ruta):
                 os.makedirs(ruta)
-            fichero_xls = 'Formulario_GAUSS%s.xls' % (gform.id)
+            fichero_xls = '%s.xls' % slugify(gform.nombre)
             wb = xlwt.Workbook()
             wf = wb.add_sheet('Cuestionario')
             wa = wb.add_sheet('Avisos')
@@ -504,53 +511,33 @@ def formularios(request):
             font = xlwt.Font()
             font.bold = True
             estilo.font = font
-            wf.write(fila_excel_cuestionario, 0, 'Nombre', style=estilo)
+            wf.write(fila_excel_cuestionario, 0, 'Hora de entrega', style=estilo)
             wf.col(0).width = 8000  # Ancho de la columna para el nombre
-            col = 1
-            for gi in original_ginputs:
-                wf.write(fila_excel_cuestionario, col, gi.label, style=estilo)
-                if gi.tipo == 'gdate':
-                    wf.col(col).width = max(len(gi.label) * 278, 2800)
-                elif gi.tipo == 'gdatetime':
-                    wf.col(col).width = max(len(gi.label) * 278, 16 * 278)
-                else:
-                    wf.col(col).width = len(gi.label) * 278  # Dejamos 278 de ancho por cada caracter
+            wf.write(fila_excel_cuestionario, 1, 'Nombre usuario', style=estilo)
+            wf.col(1).width = 9000  # Ancho de la columna para el nombre
+            col = 2
+            h = html2text.HTML2Text()
+            for gfsi in gfsis:
+                # pregunta = h.handle(gfsi.pregunta)
+                pregunta = BeautifulSoup(gfsi.pregunta, features='lxml').get_text()
+                wf.write(fila_excel_cuestionario, col, pregunta, style=estilo)
+                wf.col(col).width = min(len(pregunta) * 278, 14000)  # Dejamos 278 de ancho por cada caracter
                 col += 1
 
-            rellenador = None
-            for ginput in ginputs:
-                if ginput.rellenador != rellenador:
-                    rellenador = ginput.rellenador
-                    col = 0
-                    fila_excel_cuestionario += 1
-                    wf.write(fila_excel_cuestionario, col, ginput.rellenador.gauser.get_full_name(), style=estilo)
-                col += 1
-                if ginput.tipo == 'gselect':
-                    goptions_selected = ginput.goption_set.filter(selected=True).values_list('value', flat=True)
-                    celda = ', '.join(goptions_selected)
-                elif ginput.tipo == 'gfile':
-                    celda = ginput.fich_name if ginput.archivo else ''
-                elif ginput.tipo == 'gtext':
-                    celda = ginput.gtext if ginput.gtext[:100] else ''
-                elif ginput.tipo == 'gdate':
-                    try:
-                        celda = ginput.gdate.strftime('%d/%m/%Y')
-                    except:
-                        celda = ''
-                elif ginput.tipo == 'gdatetime':
-                    try:
-                        celda = ginput.gdatetime.strftime('%d/%m/%Y %H:%M')
-                    except:
-                        celda = ''
-                elif ginput.tipo == 'gchar':
-                    celda = ginput.gchar if ginput.gchar else ''
-                elif ginput.tipo == 'gint':
-                    celda = ginput.gint if ginput.gint else ''
-                elif ginput.tipo == 'gfloat':
-                    celda = ginput.gfloat if ginput.gfloat else ''
-                elif ginput.tipo == 'gbool':
-                    celda = u'Sí' if ginput.gbool else u'No'
-                wf.write(fila_excel_cuestionario, col, celda)
+            for gfr in gfrs:
+                fila_excel_cuestionario += 1
+                wf.write(fila_excel_cuestionario, 0, 'Hora')
+                wf.write(fila_excel_cuestionario, 1, gfr.g_e.gauser.get_full_name())
+                col = 2
+                for gfri in gfr.gformrespondeinput_set.all():
+                    if gfri.gfsi.tipo == 'EL':
+                        respuesta = gfri.respuesta
+                    elif gfri.gfsi.tipo == 'FI':
+                        respuesta = '; '.join([gfri.rfirma_nombre, gfri.rfirma_cargo])
+                    else:
+                        respuesta = BeautifulSoup(gfri.respuesta, features='lxml').get_text().strip().replace('\n','')
+                    wf.write(fila_excel_cuestionario, col, respuesta)
+                    col += 1
 
             # wf.write(fila_excel_cuestionario, 3, Formula("SUM(D2:D%s)" % (fila_excel_cuestionario)), style=estilo)
 
@@ -559,6 +546,28 @@ def formularios(request):
             xlsfile = open(ruta + '/' + fichero_xls, 'rb')
             response = HttpResponse(xlsfile, content_type='application/vnd.ms-excel')
             response['Content-Disposition'] = 'attachment; filename=%s' % (fichero_xls)
+            return response
+        if request.POST['action'] == 'pdf_gform':
+            doc_gform = 'Configuración para cuestionarios'
+            try:
+                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_gform)
+            except:
+                try:
+                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+                except:
+                    dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
+                    dce.predeterminado = True
+                    dce.save()
+                dce.pk = None
+                dce.nombre = doc_gform
+                dce.predeterminado = False
+                dce.editable = False
+                dce.save()
+            gform = Gform.objects.get(id=request.POST['gform'])
+            c = render_to_string('gform2pdf.html', {'gfrs': gform.gformresponde_set.filter(respondido=True)})
+            fich = pdfkit.from_string(c, False, dce.get_opciones)
+            response = HttpResponse(fich, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
             return response
 
     return render(request, "formularios.html",
@@ -634,7 +643,7 @@ def ver_gform(request, id, identificador):
                     dce.editable = False
                     dce.save()
                 gform = Gform.objects.get(id=request.POST['gform'])
-                c = render_to_string('gform2pdf.html', {'template': gform.template_procesado(None)})
+                c = render_to_string('gform2pdf.html', {'template': gform.template_procesado})
                 fich = pdfkit.from_string(c, False, dce.get_opciones)
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
@@ -794,11 +803,11 @@ def rellena_gform(request, id, identificador):
                 dce.predeterminado = False
                 dce.editable = False
                 dce.save()
-            gform = Gform.objects.get(id=request.POST['gform'])
-            c = render_to_string('gform2pdf.html', {'template': gform.template_procesado(gformresponde.identificador)})
+            gfr = GformResponde.objects.get(id=request.POST['gformresponde'], g_e__gauser=g_e.gauser)
+            c = render_to_string('gform2pdf.html', {'gfrs': [gfr]})
             fich = pdfkit.from_string(c, False, dce.get_opciones)
             response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
+            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gfr.gform.nombre)
             return response
         elif request.POST['action'] == 'upload_archivo_xhr':
             try:

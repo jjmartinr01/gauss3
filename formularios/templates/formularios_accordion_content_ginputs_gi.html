@@ -54,8 +54,8 @@
                             class="fa fa-copy fa-lg"></i> </a>
                 </li>
                 <li title="Marcar si la pregunta es requerida">
-                    <a class="button tiny requerida" data-gfsi="{{ gfsi.id }}"
-                       id="requerida{{ gfsi.id }}">Requerida: No</a>
+                    <a class="button tiny gfsi_requerida" data-gfsi="{{ gfsi.id }}" style="font-weight: bold;"
+                       id="gfsi_requerida{{ gfsi.id }}">Requerida: {% if gfsi.requerida %}Sí{% else %}No{% endif %}</a>
                 </li>
                 <li title="Añadir una nueva sección a continuación">
                     <a class="button tiny add_gfs_after_gfsi" data-gfsi="{{ gfsi.id }}"><i

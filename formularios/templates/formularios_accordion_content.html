@@ -14,9 +14,12 @@
             <li><a class="button copy_gform" data-gform="{{ gform.id }}"
                    title="Hacer una copia (un duplicado) de este cuestionario"><i class="fa fa-copy"></i> Copiar</a>
             </li>
-            {#                <li><a class="button pdf_ie tiny" data-id="{{ ie.id }}"#}
-            {#                       title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>#}
-            {#                </li>#}
+            <li><a class="button excel_gform" data-id="{{ gform.id }}"
+                   title="EXCEL con los datos enviados por los usuarios"><i class="fa fa-file-excel-o"></i> Excel</a>
+            </li>
+            <li><a class="button pdf_gform" data-id="{{ gform.id }}"
+                   title="PDF con los datos enviados por los usuarios"><i class="fa fa-file-pdf-o"></i> PDF</a>
+            </li>
         </ul>
     </div>
 </div>

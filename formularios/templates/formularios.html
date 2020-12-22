@@ -27,7 +27,6 @@
           xmlns="http://www.w3.org/1999/html">
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
-        {#        <input type="hidden" name="gform" id="gform" value="{{ id_gform }}">#}
         <input type="hidden" name="gform" id="gform" value="">
         <input type="hidden" name="gfs" id="gfs" value="">
         <input type="hidden" name="gfsi" id="gfsi" value="">
@@ -155,6 +154,7 @@
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
+                                        $('#gform').val(id);
                                         constructInlineEditorInstances();
                                         $(".destinatarios").select2(
                                         conf_select2({
@@ -216,6 +216,18 @@
                             }
                         });
         });
+
+        $('body').on('click', '.excel_gform', function (e) {
+            e.preventDefault();
+            $('#action').val('excel_gform');
+            document.getElementById("{{ formname }}").submit();
+         });
+
+        $('body').on('click', '.pdf_gform', function (e) {
+            e.preventDefault();
+            $('#action').val('pdf_gform');
+            document.getElementById("{{ formname }}").submit();
+         });
 
         $('body').on('keyup', '.update_nombre', function () {
             var element = $(this);
@@ -377,6 +389,20 @@
                         $("#update_ok").show().delay(1500).fadeOut();
                         $("#gfs" + gfs).after(data.html);
                         gfs_id_orden(data.gfs_id_orden);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.gfsi_requerida', function (e) {
+            e.preventDefault();
+            var gfsi = $(this).data('gfsi');
+            $.post("/formularios/", {action: 'update_gfsi_requerida', gfsi: gfsi},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $("#gfsi_requerida" + gfsi).text(data.texto);
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
@@ -724,11 +750,7 @@
         {#    window.location.href = "/resultados_gform/?gform=" + gform;#}
         {# });#}
         {##}
-        {#$('body').on('click', '.excel', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    $('#action').val('excel');#}
-        {#    document.getElementById("{{ formname }}").submit();#}
-        {# });#}
+
 
 
         {#$('#plus_sign').on('click', function (e) {#}

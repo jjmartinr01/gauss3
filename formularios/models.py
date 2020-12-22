@@ -27,38 +27,36 @@ class Gform(models.Model):
     class Meta:
         ordering = ['propietario__ronda', 'id']
 
-    def template_procesado(self, identificador):
+    @property
+    def num_respuestas(self):
+        return self.gformresponde_set.filter(respondido=True).count()
+
+    @property
+    def template_procesado(self):
         template = Template(self.template)
         pregunta = {}
         respuesta = {}
         for gfsi in GformSectionInput.objects.filter(gformsection__gform=self):
             t = Template(gfsi.pregunta).render(Context())
             pregunta[gfsi.orden] = t
-        if identificador:
-            gformresponde = self.gformresponde_set.get(identificador=identificador)
-            for r in gformresponde.gformrespondeinput_set.all():
-                if r.gfsi.tipo == 'EL':
-                    respuesta[r.gfsi.orden] = r.rentero
-                elif r.gfsi.tipo == 'FI':
-                    respuesta[r.gfsi.orden] = r.render_firma
-                else:
-                    respuesta[r.gfsi.orden] = Template(r.rtexto).render(Context())
+            if gfsi.tipo in ['RC', 'RL']:
+                respuesta[gfsi.orden] = 'Lorem ipsum ' * 10
+            elif gfsi.tipo in ['EM', 'SC', 'SO']:
+                respuesta[gfsi.orden] = gfsi.gformsectioninputops_set.all()[0].opcion
+            elif gfsi.tipo == 'SA':
+                respuesta[gfsi.orden] = 'nombre_de_archivo_inventado.pdf'
+            elif gfsi.tipo == 'EL':
+                respuesta[gfsi.orden] = 2
+            elif gfsi.tipo == 'FI':
+                table = """{% autoescape off %}
+                               <table><tr><td><img src="" style="height:140px;width:160px;" alt="Firma"></td></tr>
+                               <tr><td><p>Nombre del firmante<br>Cargo</p></td></tr></table>{% endautoescape %}
+                           """
+                ctx = Context()
+                respuesta[gfsi.orden] = Template(table).render(ctx)
+
         context = Context({'respuesta': respuesta, 'gform': self, 'pregunta': pregunta})
         return template.render(context)
-
-    # @property
-    # def contestados2(self):
-    #     num_preguntas = self.ginput_set.filter(ginput__isnull=True).count()
-    # Resto 1 para no contar el "original" :
-    # return 0 if num_preguntas == 0 else self.ginput_set.all().count() / num_preguntas - 1
-    #
-    # @property
-    # def contestados(self):
-    #     return self.ginput_set.filter(ginput__isnull=False).values_list('rellenador__id', flat=True).distinct().count()
-    #
-    # @property
-    # def num_preguntas(self):
-    #     return self.ginput_set.filter(ginput__isnull=True).count()
 
     def __str__(self):
         activo = 'Formulario activo' if self.activo else 'Formulario desactivado'
@@ -136,6 +134,21 @@ class GformResponde(models.Model):
     g_e = models.ForeignKey(GE, on_delete=models.CASCADE)
     identificador = models.CharField('Identificador del destinatario', max_length=21, default=genera_identificador)
     respondido = models.BooleanField('¿Este cuestionario está respondido?', default=False)
+    modificado = models.DateField("Fecha de modificación", auto_now=True)
+
+    @property
+    def template_procesado(self):
+        template = Template(self.gform.template)
+        pregunta = {}
+        respuesta = {}
+        for gfsi in GformSectionInput.objects.filter(gformsection__gform=self.gform):
+            t = Template(gfsi.pregunta).render(Context())
+            pregunta[gfsi.orden] = t
+
+        for r in self.gformrespondeinput_set.all():
+            respuesta[r.gfsi.orden] = r.respuesta
+        context = Context({'respuesta': respuesta, 'gform': self.gform, 'pregunta': pregunta})
+        return template.render(context)
 
     def __str__(self):
         return '%s - %s' % (self.gform, self.g_e.gauser.get_full_name())
@@ -166,15 +179,27 @@ class GformRespondeInput(models.Model):
     modificado = models.DateField("Fecha de modificación", auto_now=True)
 
     class Meta:
-        ordering = ['gformresponde__identificador', 'id']
+        ordering = ['gformresponde__identificador', 'gfsi__orden']
 
     @property
-    def render_firma(self):
-        template = """{% autoescape off %}
-                       <table><tr><td><img src='{{ rfirma }}' style='width:120px;'></td></tr>
-                       <tr><td><p>{{ rfirma_nombre }}<br>{{ rfirma_cargo }}</p></td></tr></table>{% endautoescape %}"""
-        ctx = Context({'rfirma': self.rfirma, 'rfirma_nombre': self.rfirma_nombre, 'rfirma_cargo': self.rfirma_cargo})
-        return Template(template).render(ctx)
+    def respuesta(self):
+        if self.gfsi.tipo in ['RC', 'RL']:
+            return Template(self.rtexto).render(Context())
+        elif self.gfsi.tipo in ['EM', 'SC', 'SO']:
+            texto = '; '.join([o.opcion for o in self.ropciones.all()])
+            return Template(texto).render(Context())
+        elif self.gfsi.tipo == 'SA':
+            return self.rarchivo.name.rpartition('/')[2]
+        elif self.gfsi.tipo == 'EL':
+            return self.rentero
+        elif self.gfsi.tipo == 'FI':
+            template = """{% autoescape off %}
+                           <table><tr><td><img src='{{ rfirma }}' style='width:120px;'></td></tr>
+                           <tr><td><p>{{ rfirma_nombre }}<br>{{ rfirma_cargo }}</p></td></tr></table>{% endautoescape %}
+                       """
+            ctx = Context(
+                {'rfirma': self.rfirma, 'rfirma_nombre': self.rfirma_nombre, 'rfirma_cargo': self.rfirma_cargo})
+            return Template(template).render(ctx)
 
     def __str__(self):
         return '%s - %s' % (self.gformresponde, self.gfsi)

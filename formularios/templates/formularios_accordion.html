@@ -27,6 +27,11 @@
                 {% else %}{{ gform.nombre }}{% endif %}</b> -- <span
                     id="fecha_max_rellenado{{ gform.id }}">Accesible hasta: {{ gform.fecha_max_rellenado|date:"d-m-Y" }}
             </span> (<span id="fecha{{ gform.id }}">Creado: {{ gform.creado|date:"d-m-Y" }}</span>)
+                {% if gform.num_respuestas == 1 %}
+                    -- <span id="respuestas{{ gform.id }}">1 respuesta recibida</span>
+                {% else %}
+                    -- <span id="respuestas{{ gform.id }}">{{ gform.num_respuestas }} respuestas recibidas</span>
+                {% endif %}
                 {% if buscadas %}
                     <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
                 {% endif %}
