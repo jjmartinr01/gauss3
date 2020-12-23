@@ -15,9 +15,14 @@
             border: lightgrey 1px solid;
             min-height: 100px;
         }
+
         .ckeditorpregunta {
-            border: none!important;
-            min-height: 10px!important;
+            border: none !important;
+            min-height: 10px !important;
+        }
+
+        .disabled {
+            opacity: 0.4;
         }
     </style>
 {% endblock %}
@@ -157,13 +162,13 @@
                                         $('#gform').val(id);
                                         constructInlineEditorInstances();
                                         $(".destinatarios").select2(
-                                        conf_select2({
-                                            'url': '/selectgcs_organization/',
-                                            'gcs': 'gcs',
-                                            'format_g': '{0}, {1}',
-                                            'placeholder': 'Escribe parte del nombre del destinatario para buscarlo'
-                                        })
-                                    );
+                                            conf_select2({
+                                                'url': '/selectgcs_organization/',
+                                                'gcs': 'gcs',
+                                                'format_g': '{0}, {1}',
+                                                'placeholder': 'Escribe parte del nombre del destinatario para buscarlo'
+                                            })
+                                        );
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();
@@ -204,30 +209,30 @@
             });
         });
 
-        $('body').on('click', '.copy_gform', function (){
+        $('body').on('click', '.copy_gform', function () {
             var gform = $(this).data('gform');
             $.post("/formularios/", {action: 'copy_gform', gform: gform},
-                        function (data) {
-                            if (data.ok) {
-                                $("#update_ok").show().delay(1500).fadeOut();
-                                $('#listado_formularios').prepend(data.html);
-                            } else {
-                                $('#update_error').show().delay(1500).fadeOut();
-                            }
-                        });
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#listado_formularios').prepend(data.html);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
         });
 
         $('body').on('click', '.excel_gform', function (e) {
             e.preventDefault();
             $('#action').val('excel_gform');
             document.getElementById("{{ formname }}").submit();
-         });
+        });
 
         $('body').on('click', '.pdf_gform', function (e) {
             e.preventDefault();
             $('#action').val('pdf_gform');
             document.getElementById("{{ formname }}").submit();
-         });
+        });
 
         $('body').on('keyup', '.update_nombre', function () {
             var element = $(this);
@@ -671,94 +676,24 @@
             });
         });
 
+        {# ########################################################################################### #}
+        {# Respuesta al hacer click sobre "disabled" #}
+        {#   #}
+        {# ########################################################################################### #}
 
-        {#$('body').on('mouseover', '.facgi', function (){#}
-        {#    var gfsi = $(this).data('gfsi');#}
-        {#    $('#facgichild' + gfsi).show();#}
-        {# });#}
-        {##}
-        {#$('body').on('mouseout', '.facgi', function (){#}
-        {#    var gfsi = $(this).data('gfsi');#}
-        {#    $('#facgichild' + gfsi).hide();#}
-        {# });#}
-        {##}
-        {#$('body').on('mouseover', '.gfsection', function (){#}
-        {#    var gfs = $(this).data('gfs');#}
-        {#    $('#gfsectionchild' + gfs).show();#}
-        {# });#}
-        {##}
-        {#$('body').on('mouseout', '.gfsection', function (){#}
-        {#    var gfs = $(this).data('gfs');#}
-        {#    $('#gfsectionchild' + gfs).hide();#}
-        {# });#}
+        $('body').on('click', '.disabled', function (e){
+            e.preventDefault();
+            show_mensajes({title: 'Pregunta deshabilitada',
+            texto: '<p>Solo es posible modificar las preguntas que hayas creado tú.</p><p>Las creadas por otros usuarios solo pueden ser copiadas.</p>'})
+        });
+
+        $('body').on('click', '.primer_gfs', function (e){
+            e.preventDefault();
+            show_mensajes({title: 'Borrado no permitido',
+            texto: '<p>La primera sección de un formulario no puede ser borrada.</p>'})
+        });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-{#        {% if id_gform %}#}
-{#            $(document).scrollTop($('#panel___' + {{ id_gform }}).offset().top - 150);#}
-{#            $('#circle' + {{ id_gform }}).removeClass('fa-plus-circle').addClass('fa-minus-circle');#}
-{#        {% endif %}#}
-
-        {#$(document).foundation({#}
-        {#    accordion: {#}
-        {#        callback: function (accordion) {#}
-        {#            var id = accordion.attr('id').split('___')[1];#}
-        {#            if ($('#circle' + id).hasClass('fa-plus-circle')) {#}
-        {#                $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');#}
-        {#                $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');#}
-        {#                $('#gform').val(id);#}
-        {#            } else {#}
-        {#                $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');#}
-        {#                $('#gform').val('');#}
-        {#            }#}
-        {#            console.log(accordion.attr('id'));#}
-        {#        }#}
-        {#    }#}
-        {# });#}
-
-        {#$('body').on('click', '.editar', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    e.stopPropagation();#}
-        {#    var gform = $(this).data('id');#}
-        {#    window.location.href = "/edita_gform/?gform=" + gform;#}
-        {# });#}
-        {##}
-        {#$('body').on('click', '.ver', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    e.stopPropagation();#}
-        {#    var gform = $(this).data('id');#}
-        {#    window.location.href = "/ver_gform/?gform=" + gform;#}
-        {# });#}
-        {##}
-        {#$('body').on('click', '.resultados', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    e.stopPropagation();#}
-        {#    var gform = $(this).data('id');#}
-        {#    window.location.href = "/resultados_gform/?gform=" + gform;#}
-        {# });#}
-        {##}
-
-
-
-        {#$('#plus_sign').on('click', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    $.post("/formulario_ajax/", {action: 'add_gform'}, function (data) {#}
-        {#        $('#lista_gforms').html(data);#}
-        {#    });#}
-        {# })#}
 
 
     </script>

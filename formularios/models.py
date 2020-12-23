@@ -14,6 +14,7 @@ def genera_identificador():
 
 class Gform(models.Model):
     propietario = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
+    colaboradores = models.ManyToManyField(GE, blank=True, related_name='gform_colaboradores') #Crean preguntas. No pueden modificar las de otros.
     identificador = models.CharField('Código identificador del Gform', max_length=21, default=genera_identificador)
     cargos_destino = models.ManyToManyField(Cargo, blank=True)
     subentidades_destino = models.ManyToManyField(Subentidad, blank=True)
@@ -62,7 +63,6 @@ class Gform(models.Model):
         activo = 'Formulario activo' if self.activo else 'Formulario desactivado'
         return '%s - %s (%s)' % (self.propietario.ronda.entidad.name, self.nombre, activo)
 
-
 def guarda_archivo(instance, filename):
     nombre = filename.rpartition('.')
     instance.fich_name = filename.rpartition('/')[2]
@@ -98,7 +98,8 @@ GSITIPOS = (('RC', 'Respuesta corta'), ('RL', 'Respuesta larga'), ('EM', 'Elecci
 class GformSectionInput(models.Model):
     gformsection = models.ForeignKey(GformSection, blank=True, null=True, on_delete=models.CASCADE)
     orden = models.IntegerField("Orden dentro de la sección", blank=True, null=True)
-    rellenador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
+    rellenador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True, related_name='rellenador')
+    creador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
     tipo = models.CharField('Tipo de entrada', max_length=3, choices=GSITIPOS, default='RC')
     pregunta = models.TextField('Pregunta', default='Texto de la pregunta')
     elmin = models.IntegerField('Valor mínimo en la escal lineal', default=1)
@@ -134,7 +135,10 @@ class GformResponde(models.Model):
     g_e = models.ForeignKey(GE, on_delete=models.CASCADE)
     identificador = models.CharField('Identificador del destinatario', max_length=21, default=genera_identificador)
     respondido = models.BooleanField('¿Este cuestionario está respondido?', default=False)
-    modificado = models.DateField("Fecha de modificación", auto_now=True)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    class Meta:
+        ordering = ['gform', 'g_e']
 
     @property
     def template_procesado(self):

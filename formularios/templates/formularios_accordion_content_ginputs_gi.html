@@ -1,71 +1,281 @@
 {% load formularios_extras %}
 <fieldset id="gfsi{{ gfsi.id }}">
     <legend id="legendgfsi{{ gfsi.id }}" style="color:gray;">Pregunta {{ gfsi.orden }} de {{ gfsi|totalgfsis }}</legend>
-    <div class="row">
-        <div class="columns large-9">
-            <div contenteditable="true" class="ckeditor update_gfsi_pregunta ckeditorpregunta" data-gfsi="{{ gfsi.id }}"
-                 id="preguntagfsi{{ gfsi.id }}">{% autoescape off %}{{ gfsi.pregunta }}{% endautoescape %}</div>
+    {% if gfsi.creador == g_e %}
+        <div class="row">
+            <div class="columns large-9">
+                <div contenteditable="true" class="ckeditor update_gfsi_pregunta ckeditorpregunta"
+                     data-gfsi="{{ gfsi.id }}"
+                     id="preguntagfsi{{ gfsi.id }}">{% autoescape off %}{{ gfsi.pregunta }}{% endautoescape %}</div>
+            </div>
+            <div class="columns large-3">
+                <select class="select_tipo_gfsi" data-gfsi="{{ gfsi.id }}">
+                    {% for t in gfsi|gsitipos %}
+                        <option value="{{ t.0 }}" {% if gfsi.tipo == t.0 %}selected{% endif %}>{{ t.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-        <div class="columns large-3">
-            <select class="select_tipo_gfsi" data-gfsi="{{ gfsi.id }}">
-                {% for t in gfsi|gsitipos %}
-                    <option value="{{ t.0 }}" {% if gfsi.tipo == t.0 %}selected{% endif %}>{{ t.1 }}</option>
-                {% endfor %}
-            </select>
+        <div class="row">
+            <div class="columns large-12" id="respuesta{{ gfsi.id }}">
+                {% if gfsi.tipo == 'RC' %}
+                    {% include "formularios_accordion_content_ginputs_gi_RC.html" %}
+                {% elif gfsi.tipo == 'RL' %}
+                    {% include "formularios_accordion_content_ginputs_gi_RL.html" %}
+                {% elif gfsi.tipo == 'EM' %}
+                    {% include "formularios_accordion_content_ginputs_gi_EM.html" %}
+                {% elif gfsi.tipo == 'SC' %}
+                    {% include "formularios_accordion_content_ginputs_gi_SC.html" %}
+                {% elif gfsi.tipo == 'SO' %}
+                    {% include "formularios_accordion_content_ginputs_gi_SO.html" %}
+                {% elif gfsi.tipo == 'SA' %}
+                    {% include "formularios_accordion_content_ginputs_gi_SA.html" %}
+                {% elif gfsi.tipo == 'EL' %}
+                    {% include "formularios_accordion_content_ginputs_gi_EL.html" %}
+                {% elif gfsi.tipo == 'FI' %}
+                    {% include "formularios_accordion_content_ginputs_gi_FI.html" %}
+                {% endif %}
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="columns large-12" id="respuesta{{ gfsi.id }}">
-            {% if gfsi.tipo == 'RC' %}
-                {% include "formularios_accordion_content_ginputs_gi_RC.html" %}
-            {% elif gfsi.tipo == 'RL' %}
-                {% include "formularios_accordion_content_ginputs_gi_RL.html" %}
-            {% elif gfsi.tipo == 'EM' %}
-                {% include "formularios_accordion_content_ginputs_gi_EM.html" %}
-            {% elif gfsi.tipo == 'SC' %}
-                {% include "formularios_accordion_content_ginputs_gi_SC.html" %}
-            {% elif gfsi.tipo == 'SO' %}
-                {% include "formularios_accordion_content_ginputs_gi_SO.html" %}
-            {% elif gfsi.tipo == 'SA' %}
-                {% include "formularios_accordion_content_ginputs_gi_SA.html" %}
-            {% elif gfsi.tipo == 'EL' %}
-                {% include "formularios_accordion_content_ginputs_gi_EL.html" %}
-            {% elif gfsi.tipo == 'FI' %}
-                {% include "formularios_accordion_content_ginputs_gi_FI.html" %}
-            {% endif %}
+        <hr>
+
+        <div class="row">
+            {#        <div class="columns large-1">#}
+            {#            <input id="gfsi_orden{{ gfsi.id }}" type="number" min="1" value="{{ gfsi.orden }}" data-gfsi="{{ gfsi.id }}">#}
+            {#        </div>#}
+            {#        <div class="columns large-1">#}
+            {#            <label for="gfsi_orden{{ gfsi.id }}" class="right">&nbsp;</label>#}
+            {#        </div>#}
+            <div class="columns large-12 right">
+                <ul class="button-group right">
+                    <li title="Añadir una pregunta a continuación">
+                        <a class="button tiny add_gfsi_after_gfsi" data-gfsi="{{ gfsi.id }}"><i
+                                class="fa fa-plus-circle fa-lg"></i> </a>
+                    </li>
+                    <li title="Duplicar pregunta">
+                        <a class="button tiny copy_gfsi" data-gfsi="{{ gfsi.id }}"><i
+                                class="fa fa-copy fa-lg"></i> </a>
+                    </li>
+                    <li title="Marcar si la pregunta es requerida">
+                        <a class="button tiny gfsi_requerida" data-gfsi="{{ gfsi.id }}" style="font-weight: bold;"
+                           id="gfsi_requerida{{ gfsi.id }}">Requerida: {% if gfsi.requerida %}Sí{% else %}
+                            No{% endif %}</a>
+                    </li>
+                    <li title="Añadir una nueva sección a continuación">
+                        <a class="button tiny add_gfs_after_gfsi" data-gfsi="{{ gfsi.id }}"><i
+                                class="fa fa-th-list fa-lg"></i> </a>
+                    </li>
+                    <li title="Borrar pregunta">
+                        <a class="button tiny del_gfsi alert" data-gfsi="{{ gfsi.id }}"><i
+                                class="fa fa-trash fa-lg"></i> </a>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
-    <hr>
-    <div class="row">
-        {#        <div class="columns large-1">#}
-        {#            <input id="gfsi_orden{{ gfsi.id }}" type="number" min="1" value="{{ gfsi.orden }}" data-gfsi="{{ gfsi.id }}">#}
-        {#        </div>#}
-        {#        <div class="columns large-1">#}
-        {#            <label for="gfsi_orden{{ gfsi.id }}" class="right">&nbsp;</label>#}
-        {#        </div>#}
-        <div class="columns large-12 right">
-            <ul class="button-group right">
-                <li title="Añadir una pregunta a continuación">
-                    <a class="button tiny add_gfsi_after_gfsi" data-gfsi="{{ gfsi.id }}"><i
-                            class="fa fa-plus-circle fa-lg"></i> </a>
-                </li>
-                <li title="Duplicar pregunta">
-                    <a class="button tiny copy_gfsi" data-gfsi="{{ gfsi.id }}"><i
-                            class="fa fa-copy fa-lg"></i> </a>
-                </li>
-                <li title="Marcar si la pregunta es requerida">
-                    <a class="button tiny gfsi_requerida" data-gfsi="{{ gfsi.id }}" style="font-weight: bold;"
-                       id="gfsi_requerida{{ gfsi.id }}">Requerida: {% if gfsi.requerida %}Sí{% else %}No{% endif %}</a>
-                </li>
-                <li title="Añadir una nueva sección a continuación">
-                    <a class="button tiny add_gfs_after_gfsi" data-gfsi="{{ gfsi.id }}"><i
-                            class="fa fa-th-list fa-lg"></i> </a>
-                </li>
-                <li title="Borrar pregunta">
-                    <a class="button tiny del_gfsi alert" data-gfsi="{{ gfsi.id }}"><i
-                            class="fa fa-trash fa-lg"></i> </a>
-                </li>
-            </ul>
+    {% else %}
+        <div class="row disabled">
+            <div class="columns large-9">
+                <div id="preguntagfsi{{ gfsi.id }}">{% autoescape off %}{{ gfsi.pregunta }}{% endautoescape %}</div>
+            </div>
+            <div class="columns large-3">
+                <select disabled>
+                    {% for t in gfsi|gsitipos %}
+                        <option value="{{ t.0 }}" {% if gfsi.tipo == t.0 %}selected{% endif %}>{{ t.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-    </div>
+        <div class="row disabled">
+            <div class="columns large-12" id="respuesta{{ gfsi.id }}">
+                {% if gfsi.tipo == 'RC' %}
+                    <div class="row">
+                        <div class="columns large-7" style="color: lightgrey; border-bottom: 1px lightgrey dotted;">
+                            Respuesta corta
+                        </div>
+                    </div>
+                {% elif gfsi.tipo == 'RL' %}
+                    <div class="row">
+                        <div class="columns large-12" style="color: lightgrey; border-bottom: 1px lightgrey dotted;">
+                            Respuesta larga
+                        </div>
+                        <div class="columns large-12" style="color: lightgrey; border-bottom: 1px lightgrey dotted;">
+                            &nbsp;
+                        </div>
+                    </div>
+                {% elif gfsi.tipo == 'EM' %}
+                    <div class="row">
+                        <div class="columns large-12" style="color: lightgrey;">Se mostrarán varias opciones y
+                            solo se podrá elegir una de ellas:
+                        </div>
+                    </div>
+                    <div id="opciones{{ gfsi.id }}">
+                        {% for gfsio in gfsi.gformsectioninputops_set.all %}
+                            <div class="row" style="border-bottom: 1px dashed lightgrey;" id="gfsio{{ gfsio.id }}">
+                                <div class="columns large-9">
+                                    <p><span style="color: lightgrey"><i class="fa fa-circle-o"></i></span>
+                                        <span>{% autoescape off %}{{ gfsio.opcion }}{% endautoescape %}</span>
+                                    </p>
+                                </div>
+                                <div class="columns large-3">
+                                    <a title="Eliminar opción de esta pregunta"><i class="fa fa-times"></i> Eliminar</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <a class="button tiny">
+                                <i class="fa fa-plus"></i> Añadir opción
+                            </a>
+                        </div>
+                    </div>
+                {% elif gfsi.tipo == 'SC' %}
+                    <div class="row">
+                        <div class="columns large-12" style="color: lightgrey;">Se mostrarán varias opciones
+                            y se podrán seleccionar varias:
+                        </div>
+                    </div>
+                    <div id="opciones{{ gfsi.id }}">
+                        {% for gfsio in gfsi.gformsectioninputops_set.all %}
+                            <div class="row" style="border-bottom: 1px dashed lightgrey;" id="gfsio{{ gfsio.id }}">
+                                <div class="columns large-9">
+                                    <p><span style="color: lightgrey"><i class="fa fa-square-o"></i></span>
+                                        <span>{% autoescape off %}{{ gfsio.opcion }}{% endautoescape %}</span>
+                                    </p>
+                                </div>
+                                <div class="columns large-3">
+                                    <a title="Eliminar opción de esta pregunta"><i class="fa fa-times"></i> Eliminar</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <a class="button tiny">
+                                <i class="fa fa-plus"></i> Añadir opción
+                            </a>
+                        </div>
+                    </div>
+                {% elif gfsi.tipo == 'SO' %}
+                    <div class="row">
+                        <div class="columns large-12" style="color: lightgrey;">Se mostrará un desplegable para elegir
+                            una de las siguientes opciones:
+                        </div>
+                    </div>
+                    <div id="opciones{{ gfsi.id }}">
+                        {% for gfsio in gfsi.gformsectioninputops_set.all %}
+                            <div class="row" style="border-bottom: 1px dashed lightgrey;" id="gfsio{{ gfsio.id }}">
+                                <div class="columns large-9">
+                                    <p>
+                                        <span style="color: lightgrey;">{{ gfsio.orden }}.- </span>
+                                        <span>{% autoescape off %}{{ gfsio.opcion }}{% endautoescape %}</span>
+                                    </p>
+                                </div>
+                                <div class="columns large-3">
+                                    <a title="Eliminar opción de esta pregunta"><i class="fa fa-times"></i> Eliminar</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <a class="button tiny">
+                                <i class="fa fa-plus"></i> Añadir opción
+                            </a>
+                        </div>
+                    </div>
+                {% elif gfsi.tipo == 'SA' %}
+                    <div class="row">
+                        <div class="columns large-12" style="color: lightgrey;"><p>Permite seleccionar un archivo y
+                            subirlo al cuestionario.</p>
+                            <p>Observa que esta opción es peligrosa ya que un usuario podría cargar archivos
+                                maliciosos.</p>
+                            <p>Elige este tipo de pregunta, solo si confias en el usuario que vaya a rellenar el
+                                cuestionario.</p></div>
+                    </div>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <input type="file" disabled>
+                        </div>
+                    </div>
+                {% elif gfsi.tipo == 'EL' %}
+                    <div class="row">
+                        <div class="columns large-12" style="color: lightgrey;"><p>Se utiliza para hacer una encuesta de
+                            valoración. Permite puntuar un aspecto.</p>
+                            <p>Puedes cambiar el valor de las etiquetas o de los valores máximo y mínimo.</p></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="columns large-12">
+                            <table>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                    {% for i in gfsi|elvalues %}
+                                        <td style="color: lightgrey;">{{ i }}</td>
+                                    {% endfor %}
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td>{% autoescape off %}{{ gfsi.labelmin }}{% endautoescape %}</td>
+                                    {% for i in gfsi|elvalues %}
+                                        <td style="color:lightgrey;"><i class="fa fa-circle-o"></i></td>
+                                    {% endfor %}
+                                    <td>{% autoescape off %}{{ gfsi.labelmax }}{% endautoescape %}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                {% elif gfsi.tipo == 'FI' %}
+                    <div class="row">
+                        <div class="columns large-12" style="color: lightgrey;"><p>Pide al usuario que firme el
+                            formulario. Es necesaria una
+                            pantalla táctil para firmar.</p>
+                            <p>Muestra un recuadro en el que el usuario puede estampar su firma.</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="columns large-12" style="border: solid 1px lightgrey; width: 250px; height: 150px;">
+                            <img src="/static/images/firma_manuscrita.png" style="height:140px">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <span class="label secondary">Borrar firma</span>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <hr>
+
+        <div class="row">
+            <div class="columns large-4 disabled">
+                <span style="color:red;"><i class="fa fa-lock"></i> {{ gfsi.creador }}</span>
+            </div>
+            <div class="columns large-8 right">
+                <ul class="button-group right">
+                    <li title="Añadir una pregunta a continuación">
+                        <a class="button tiny add_gfsi_after_gfsi" data-gfsi="{{ gfsi.id }}"><i
+                                class="fa fa-plus-circle fa-lg"></i> </a>
+                    </li>
+                    <li title="Duplicar pregunta">
+                        <a class="button tiny copy_gfsi" data-gfsi="{{ gfsi.id }}"><i
+                                class="fa fa-copy fa-lg"></i> </a>
+                    </li>
+                    <li title="Marcar si la pregunta es requerida" class="disabled">
+                        <a class="button tiny" style="font-weight: bold;"
+                           id="gfsi_requerida{{ gfsi.id }}">Requerida: {% if gfsi.requerida %}Sí{% else %}
+                            No{% endif %}</a>
+                    </li>
+                    <li title="Añadir una nueva sección a continuación">
+                        <a class="button tiny add_gfs_after_gfsi" data-gfsi="{{ gfsi.id }}"><i
+                                class="fa fa-th-list fa-lg"></i> </a>
+                    </li>
+                    <li title="Borrar pregunta" class="disabled">
+                        <a class="button tiny alert"><i class="fa fa-trash fa-lg"></i></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    {% endif %}
 </fieldset>

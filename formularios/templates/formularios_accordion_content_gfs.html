@@ -29,10 +29,16 @@
                     <a class="button tiny add_gfs_after_gfs" data-gfs="{{ gfs.id }}"><i
                             class="fa fa-th-list fa-lg"></i> </a>
                 </li>
+                {% if gfs.orden == 1 %}
+                    <li title="La primera sección de un formulario no puede ser borrada." style="opacity: 0.4;">
+                    <a class="button tiny alert primer_gfs"><i class="fa fa-trash fa-lg"></i></a>
+                </li>
+                {% else %}
                 <li title="Borrar sección">
                     <a class="button tiny del_gfs alert" data-gfs="{{ gfs.id }}"><i
-                            class="fa fa-trash fa-lg"></i> </a>
+                            class="fa fa-trash fa-lg"></i></a>
                 </li>
+                {% endif %}
                 {#                        <li title="Otras opciones">#}
                 {#                            <a class="button tiny otras_opciones_section" data-gfs="{{ gfs.id }}"><i#}
                 {#                                    class="fa fa-ellipsis-v fa-lg"></i></a>#}

@@ -164,7 +164,7 @@ def formularios(request):
             if g_e.has_permiso('crea_formularios'):
                 gform = Gform.objects.create(propietario=g_e)
                 gfs = GformSection.objects.create(gform=gform, orden=1, description='Descripción')
-                gfsi = GformSectionInput.objects.create(gformsection=gfs, orden=1, pregunta='Texto de la pregunta')
+                GformSectionInput.objects.create(gformsection=gfs, orden=1, pregunta='Texto pregunta ...', creador=g_e)
                 html = render_to_string('formularios_accordion.html',
                                         {'buscadas': False, 'formularios': [gform], 'g_e': g_e, 'nueva': True})
                 return JsonResponse({'ok': True, 'html': html})
@@ -194,6 +194,7 @@ def formularios(request):
                         gfsi = GformSectionInput.objects.get(id=gfsi_id)
                         gfsi_copiado = GformSectionInput.objects.get(id=gfsi_id)
                         gfsi_copiado.pk = None
+                        gfsi_copiado.creador = g_e
                         gfsi_copiado.gformsection = gfs_copiado
                         gfsi_copiado.save()
                         for gfsio_id in gfsi.gformsectioninputops_set.all().values_list('id', flat=True):
@@ -291,7 +292,7 @@ def formularios(request):
                 for g in gfsis:
                     g.orden += 1
                     g.save()
-                gfsi = GformSectionInput.objects.create(gformsection=gfs, orden=orden)
+                gfsi = GformSectionInput.objects.create(gformsection=gfs, orden=orden, creador=g_e)
                 html = render_to_string('formularios_accordion_content_ginputs_gi.html', {'gfsi': gfsi})
                 return JsonResponse({'ok': True, 'html': html, 'gfsi_id_orden': gfsi_id_orden(gfsi.gformsection.gform)})
             except Exception as msg:
@@ -430,23 +431,29 @@ def formularios(request):
                 for g in gfsis:
                     g.orden += 1
                     g.save()
-                gfsi = GformSectionInput.objects.create(gformsection=gfsi.gformsection, orden=orden)
-                html = render_to_string('formularios_accordion_content_ginputs_gi.html', {'gfsi': gfsi})
+                gfsi = GformSectionInput.objects.create(gformsection=gfsi.gformsection, orden=orden, creador=g_e)
+                html = render_to_string('formularios_accordion_content_ginputs_gi.html', {'gfsi': gfsi, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html, 'gfsi_id_orden': gfsi_id_orden(gfsi.gformsection.gform)})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'copy_gfsi':
             try:
                 gfsi = GformSectionInput.objects.get(id=request.POST['gfsi'])
+                gfsios = gfsi.gformsectioninputops_set.all()
                 orden = gfsi.orden + 1  # El orden del nuevo GformSectionInput
                 gfsis = GformSectionInput.objects.filter(gformsection__gform=gfsi.gformsection.gform, orden__gte=orden)
                 for g in gfsis:
                     g.orden += 1
                     g.save()
                 gfsi.pk = None
+                gfsi.creador = g_e
                 gfsi.orden = orden
                 gfsi.save()
-                html = render_to_string('formularios_accordion_content_ginputs_gi.html', {'gfsi': gfsi})
+                for gfsio in gfsios:
+                    gfsio.pk = None
+                    gfsio.gformsectioninput = gfsi
+                    gfsio.save()
+                html = render_to_string('formularios_accordion_content_ginputs_gi.html', {'gfsi': gfsi, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html, 'gfsi_id_orden': gfsi_id_orden(gfsi.gformsection.gform)})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
