@@ -25,35 +25,35 @@
 </div>
 <div class="row">
     <div class="columns large-12">
-        <label><b>Nombre </b><input type="text" class="update_nombre" data-campo="nombre"
-                                    data-gform="{{ gform.id }}" value="{{ gform.nombre }}"
-                                    placeholder="Introduce aquí el nombre del formulario"></label>
+        <label><b>Nombre/Título del formulario:</b>
+            <input type="text" class="update_nombre" data-campo="nombre"
+                   data-gform="{{ gform.id }}" value="{{ gform.nombre }}"
+                   placeholder="Introduce aquí el nombre del formulario"></label>
     </div>
 </div>
 
 <div class="row">
     <div class="columns large-2">
-        <label title="Fecha límite para rellenar el formulario"><b>Fecha límite</b>
+        <label title="Fecha límite para rellenar el formulario"><b>Fecha límite:</b>
             <input value="{{ gform.fecha_max_rellenado|date:'Y-m-d' }}" type="date" name="fecha_max_rellenado"
                    class="update_fecha_limite" data-gform={{ gform.id }}></label>
     </div>
     <div class="columns large-2">
-        <label><b>¿Activo?</b><br>
+        <label><b>¿Activo?</b></label>
             {% if gform.activo %}
-                <a class="respuesta_booleana" id="activo" data-campo="activo" data-id="{{ gform.id }}">Sí</a>
+                <a class="respuesta_booleana" id="activo{{ gform.id }}" data-campo="activo" data-gform="{{ gform.id }}">Sí</a>
             {% else %}
-                <a class="respuesta_booleana" id="activo" data-campo="activo" data-id="{{ gform.id }}">No</a>
+                <a class="respuesta_booleana" id="activo{{ gform.id }}" data-campo="activo" data-gform="{{ gform.id }}">No</a>
             {% endif %}
-        </label>
+
     </div>
     <div class="columns large-2">
-        <label><b>¿Anónimo?</b><br>
-            {% if gform.anonimo %}
-                <a class="respuesta_booleana" id="anonimo" data-campo="anonimo" data-id="{{ gform.id }}">Sí</a>
+        <label title="¿Admite múltiples respuestas por un mismo usuario?"><b>¿Múltiple?</b></label>
+            {% if gform.multiple %}
+                <a class="respuesta_booleana" id="multiple{{ gform.id }}" data-campo="multiple" data-gform="{{ gform.id }}">Sí</a>
             {% else %}
-                <a class="respuesta_booleana" id="anonimo" data-campo="anonimo" data-id="{{ gform.id }}">No</a>
+                <a class="respuesta_booleana" id="multiple{{ gform.id }}" data-campo="multiple" data-gform="{{ gform.id }}">No</a>
             {% endif %}
-        </label>
     </div>
     <div class="columns large-2">
         <label><b>Ver</b><br>
@@ -61,8 +61,36 @@
             ><i class="fa fa-eye fa-2x"></i></a>
         </label>
     </div>
+<div class="columns large-4">
+        <label><b>Copiar enlace</b><br>
+            <a class="button tiny copy_url_gform" data-url="/rellena_gform/{{ gform.id }}/{{ gform.identificador }}/"
+            title="Haz click sobre el botón para copiar el enlace al formulario" style="font-weight: bold;">
+                Haz click sobre este botón
+            </a>
+        </label>
+    </div>
 </div>
 
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Personas que colaboran en el desarrollo este formulario:</b> <a class="ayuda_colaboradores">
+            <i class="fa fa-question-circle"></i></a>
+        </label>
+    </div>
+</div>
+<div class="row" style="padding-bottom: 2px;">
+    <div class="columns large-12" id="div_colaboradores{{ gform.id }}">
+        {% for colaborador in gform.colaboradores.all %}
+            {% include "formularios_accordion_content_colaborador.html" %}
+        {% endfor %}
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <select name="colaboradores{{ gform.id }}" class="colaboradores" data-gform="{{ gform.id }}"></select>
+    </div>
+</div>
+<p>&nbsp;</p>
 <div class="row">
     <div class="columns large-12">
         <label><b>Plantilla del documento PDF generado con las respuestas:</b></label>
@@ -73,26 +101,6 @@
         <div contenteditable="true" class="ckeditor update_template" data-gform="{{ gform.id }}" data-campo="template"
              id="template{{ gform.id }}">{% autoescape off %}{{ gform.template }}{% endautoescape %}
         </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="columns large-12">
-        <label>Personas que pueden rellenar el formulario
-            (<span id="num_destinatarios{{ gform.id }}">{{ gform.gformresponde_set.all|length }}</span>):
-        </label>
-    </div>
-</div>
-<div class="row" style="padding-bottom: 2px;">
-    <div class="columns large-12" id="div_destinatarios{{ gform.id }}">
-        {% for gformresponde in gform.gformresponde_set.all %}
-            {% include "formularios_accordion_content_destinatario.html" %}
-        {% endfor %}
-    </div>
-</div>
-<div class="row">
-    <div class="columns large-12">
-        <select name="destinatarios{{ gform.id }}" class="destinatarios" data-gform="{{ gform.id }}"></select>
     </div>
 </div>
 

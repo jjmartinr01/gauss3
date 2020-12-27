@@ -3,7 +3,13 @@
 
 {% block head %}
     <style>
-
+.del_gformresponde {
+    background-color: #008CBA; text-align: center; cursor: pointer;
+    color: white!important;
+}
+.del_gformresponde:hover {
+    background-color: #007095;
+}
     </style>
 {% endblock %}
 
@@ -12,6 +18,7 @@
           xmlns="http://www.w3.org/1999/html">
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="gformresponde" id="gformresponde" value="">
 
         <div class="">
             <h4 id="title_page" style="text-align: center;color: #008CBA;">
@@ -36,7 +43,7 @@
         $(document).foundation({
             accordion: {
                 callback: function (accordion) {
-                    if (accordion.hasClass('accordion-gformresponde')) {
+                    if (accordion.hasClass('accordion-gform')) {
                         var id = accordion.data('id');
                         if ($('#circle' + id).hasClass('fa-plus-circle')) {
                             $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
@@ -60,6 +67,32 @@
             }
         });
 
+        $('body').on('click', '.del_gformresponde', function (e) {
+            e.preventDefault();
+            $('#gformresponde').val($(this).data('gformresponde'));
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar tus respuestas del formulario?',
+                texto: 'Podrás volver a rellenar de nuevo el formulario, pero todas tus respuestas se borrarán.',
+                buttons: {
+                    "Eliminar": function () {
+                        hide_mensajes();
+                        var gformresponde = $('#gformresponde').val();
+                        $.post("/mis_formularios/", {action: 'del_gformresponde', gformresponde: gformresponde},
+                            function (data) {
+                            if (data.ok) {
+                                $('#tr' + gformresponde).remove();
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                            }
+                        });
+                    },
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    }
+                }
+            });
+        });
 
     </script>
 

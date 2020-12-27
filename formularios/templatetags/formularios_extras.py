@@ -89,3 +89,7 @@ def get_fic(gfsi, gformresponde):
         return GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).rfirma_cargo
     except:
         return ''
+
+@register.filter
+def get_gfrs(gfrs, gform):
+    return gfrs.filter(gform=gform)

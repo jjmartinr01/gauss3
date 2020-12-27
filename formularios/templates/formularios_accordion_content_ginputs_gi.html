@@ -1,7 +1,7 @@
 {% load formularios_extras %}
 <fieldset id="gfsi{{ gfsi.id }}">
     <legend id="legendgfsi{{ gfsi.id }}" style="color:gray;">Pregunta {{ gfsi.orden }} de {{ gfsi|totalgfsis }}</legend>
-    {% if gfsi.creador == g_e %}
+    {% if gfsi.creador == g_e or gfsi.gformsection.gform.propietario == g_e %}
         <div class="row">
             <div class="columns large-9">
                 <div contenteditable="true" class="ckeditor update_gfsi_pregunta ckeditorpregunta"
@@ -46,7 +46,12 @@
             {#        <div class="columns large-1">#}
             {#            <label for="gfsi_orden{{ gfsi.id }}" class="right">&nbsp;</label>#}
             {#        </div>#}
-            <div class="columns large-12 right">
+            {% if gfsi.gfs.gform.propietario == g_e and gfsi.creador != g_e %}
+                <div class="columns large-4" style="opacity: 0.4;">
+                    <span style="color:green;"><i class="fa fa-unlock"></i> {{ gfsi.creador }}</span>
+                </div>
+            {% endif %}
+            <div class="columns large-8 right">
                 <ul class="button-group right">
                     <li title="Añadir una pregunta a continuación">
                         <a class="button tiny add_gfsi_after_gfsi" data-gfsi="{{ gfsi.id }}"><i

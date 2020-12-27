@@ -46,6 +46,22 @@
         </div>
     </form>
 
+    <div id="info_colaboradores" style="display: none;">
+        <p>Un colaborador contribuye al desarrollo del formulario añadiendo nuevas preguntas. Puede:</p>
+        <ol>
+            <li>Cambiar aspectos de la configuración: activar/desactivar el formulario, cambiar la fecha límite
+                de rellenado, ...</li>
+            <li>Modificar el título y descripción de las secciones, así como borrarlas o añadir nuevas.</li>
+            <li>Copiar preguntas ya existentes en el formulario.</li>
+            <li>Añadir preguntas en cualquier posición.</li>
+        </ol>
+        <p>Sin embargo, no puede realizar algunas operaciones que están reservadas únicamente para el propietario
+            del formulario. Por ejemplo:</p>
+        <ol>
+            <li>Cambiar el nombre del formulario.</li>
+            <li>Modificar o borrar preguntas de otros usuarios.</li>
+        </ol>
+    </div>
 {% endblock %}
 
 
@@ -161,12 +177,12 @@
                                         $('#panel' + id).html(data.html);
                                         $('#gform').val(id);
                                         constructInlineEditorInstances();
-                                        $(".destinatarios").select2(
+                                        $(".colaboradores").select2(
                                             conf_select2({
                                                 'url': '/selectgcs_organization/',
                                                 'gcs': 'gcs',
                                                 'format_g': '{0}, {1}',
-                                                'placeholder': 'Escribe parte del nombre del destinatario para buscarlo'
+                                                'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
                                             })
                                         );
                                         $("#update_ok").show().delay(1500).fadeOut();
@@ -254,19 +270,18 @@
             }, 750);
         });
 
-        $('body').on('change.select2', '.destinatarios', function (e) {
+
+        $('body').on('click', '.respuesta_booleana', function (e) {
             var gform = $(this).data('gform');
-            var ge = $(this).val();
+            var campo = $(this).data('campo');
             $.post("/formularios/", {
-                    action: 'update_destinatarios',
+                    action: 'respuesta_booleana',
                     gform: gform,
-                    ge: ge
+                    campo: campo
                 },
                 function (data) {
                     if (data.ok) {
-                        $("#div_destinatarios" + data.gform).append(data.html_span);
-                        $("#num_destinatarios" + data.gform).html(data.num_destinatarios);
-                        $(".destinatarios").empty();
+                        $('#' + campo + gform).html(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
@@ -274,18 +289,36 @@
                 });
         });
 
-        $('body').on('click', '.del_gformresponde', function (e) {
+        $('body').on('change.select2', '.colaboradores', function (e) {
             var gform = $(this).data('gform');
-            var gformresponde = $(this).data('gformresponde');
+            var ge = $(this).val();
             $.post("/formularios/", {
-                    action: 'del_gformresponde',
+                    action: 'update_colaboradores',
                     gform: gform,
-                    gformresponde: gformresponde
+                    ge: ge
                 },
                 function (data) {
                     if (data.ok) {
-                        $("#gformresponde" + data.gform + '_' + data.gformresponde).remove();
-                        $("#num_destinatarios" + data.gform).html(data.num_destinatarios);
+                        $("#div_colaboradores" + data.gform).append(data.html_span);
+                        $(".colaboradores").empty();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.del_colaborador', function (e) {
+            var gform = $(this).data('gform');
+            var colaborador = $(this).data('colaborador');
+            $.post("/formularios/", {
+                    action: 'del_colaborador',
+                    gform: gform,
+                    colaborador: colaborador
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#colaborador" + data.gform + '_' + data.colaborador).remove();
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
@@ -681,19 +714,44 @@
         {#   #}
         {# ########################################################################################### #}
 
-        $('body').on('click', '.disabled', function (e){
+        $('body').on('click', '.disabled', function (e) {
             e.preventDefault();
-            show_mensajes({title: 'Pregunta deshabilitada',
-            texto: '<p>Solo es posible modificar las preguntas que hayas creado tú.</p><p>Las creadas por otros usuarios solo pueden ser copiadas.</p>'})
+            show_mensajes({
+                title: 'Pregunta deshabilitada',
+                texto: '<p>Solo es posible modificar las preguntas que hayas creado tú.</p><p>Las creadas por otros usuarios solo pueden ser copiadas.</p>'
+            })
         });
 
-        $('body').on('click', '.primer_gfs', function (e){
+        $('body').on('click', '.primer_gfs', function (e) {
             e.preventDefault();
-            show_mensajes({title: 'Borrado no permitido',
-            texto: '<p>La primera sección de un formulario no puede ser borrada.</p>'})
+            show_mensajes({
+                title: 'Borrado no permitido',
+                texto: '<p>La primera sección de un formulario no puede ser borrada.</p>'
+            })
         });
 
+        $('body').on('click', '.ayuda_colaboradores', function (e) {
+            e.preventDefault();
+            var info_colaboradores = $('#info_colaboradores').html();
+            show_mensajes({
+                title: '<i class="fa fa-question-circle"></i> ¿Qué hace un colaborador?',
+                texto: info_colaboradores
+            })
+        });
 
+        $('body').on('click', '.copy_url_gform', function () {
+            var url = $(this).data('url');
+            var protocol = window.location.protocol; {# http: o https: #}
+            var host = window.location.host; {# Por ejemplo: gaumentada.es:5656   (proporciona dominio + puerto) #}
+            {#var c = copiar_al_portapapeles(protocol + '//' + host + '/rvpd/' + secret + '/');#}
+            var c = copiar_al_portapapeles(protocol + '//' + host + '/logincas/?nexturl=' + url)
+            if (c) {
+                show_mensajes({
+                    title: 'Enlace copiado',
+                    texto: 'Se ha copiado en el portapapeles el enlace para rellenar el formulario'
+                });
+            }
+        });
 
 
     </script>

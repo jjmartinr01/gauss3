@@ -13,17 +13,33 @@ def genera_identificador():
 
 
 class Gform(models.Model):
+    DESTINATARIOS = (('ENT', 'Personas de mi entidad'), ('ORG', 'Personas de mi organización'))
     propietario = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
-    colaboradores = models.ManyToManyField(GE, blank=True, related_name='gform_colaboradores') #Crean preguntas. No pueden modificar las de otros.
+    colaboradores = models.ManyToManyField(GE, blank=True, related_name='gform_colaboradores')
     identificador = models.CharField('Código identificador del Gform', max_length=21, default=genera_identificador)
+    destinatarios = models.CharField('Destinatarios del formulario', max_length=5, choices=DESTINATARIOS, default='ENT')
     cargos_destino = models.ManyToManyField(Cargo, blank=True)
     subentidades_destino = models.ManyToManyField(Subentidad, blank=True)
     nombre = models.CharField('Nombre del formulario', max_length=150)
     activo = models.BooleanField('El formulario esta activo', default=False)
     anonimo = models.BooleanField('Las respuestas son anónimas?', default=False)
+    multiple = models.BooleanField('Se puede rellenar varias veces?', default=False)
     fecha_max_rellenado = models.DateTimeField('Fecha máxima para el rellenado', max_length=50, blank=True, null=True)
     template = models.TextField('Plantilla para crear PDF', blank=True, null=True, default='')
     creado = models.DateTimeField('Fecha de creación', auto_now_add=True)
+
+    def get_rol(self, g_e):
+        if g_e.gauser == self.propietario.gauser:
+            return 'propietario' if g_e.gauser.sexo == 'H' else 'propietaria'
+        elif self.colaboradores.filter(gauser=g_e.gauser).count() > 0:
+            return 'colaborador' if g_e.gauser.sexo == 'H' else 'colaboradora'
+        else:
+            return 'Sin acceso'
+
+    def is_propietario_o_colaborador(self, g_e):
+        con1 = g_e.gauser == self.propietario.gauser
+        con2 = self.colaboradores.filter(gauser=g_e.gauser).count() > 0
+        return True if (con1 or con2) else False
 
     class Meta:
         ordering = ['propietario__ronda', 'id']
@@ -62,6 +78,7 @@ class Gform(models.Model):
     def __str__(self):
         activo = 'Formulario activo' if self.activo else 'Formulario desactivado'
         return '%s - %s (%s)' % (self.propietario.ronda.entidad.name, self.nombre, activo)
+
 
 def guarda_archivo(instance, filename):
     nombre = filename.rpartition('.')
@@ -108,7 +125,9 @@ class GformSectionInput(models.Model):
     labelmax = models.CharField('Etiqueta max valor', max_length=30, default='Mucho')
     requerida = models.BooleanField('¿Es obligatorio responder a esta pregunta?', default=True)
 
-    # firma = models.TextField('Firma requerida', null=True, blank=True)
+    @property
+    def gfs(self):
+        return self.gformsection
 
     class Meta:
         ordering = ['gformsection__gform__id', 'orden']
@@ -123,6 +142,10 @@ class GformSectionInputOps(models.Model):
     opcion = models.CharField('Opción', blank=True, null=True, max_length=150, default='Esta es una opción')
     puntuacion = models.IntegerField('Puntuación si esta es la opción elegida', default=0)
 
+    @property
+    def gfsi(self):
+        return self.gformsectioninput
+
     class Meta:
         ordering = ['gformsectioninput__id', 'orden']
 
@@ -135,6 +158,7 @@ class GformResponde(models.Model):
     g_e = models.ForeignKey(GE, on_delete=models.CASCADE)
     identificador = models.CharField('Identificador del destinatario', max_length=21, default=genera_identificador)
     respondido = models.BooleanField('¿Este cuestionario está respondido?', default=False)
+    # borrado = models.BooleanField('¿Este cuestionario está borrado?', default=False)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
     class Meta:

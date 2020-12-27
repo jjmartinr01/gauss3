@@ -37,6 +37,22 @@
             border: 2px solid #888;
             margin-bottom: 10px;
         }
+
+        #logo_general {
+            display: none;
+            width: 100px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+
+        #logo_gobierno {
+            display: none;
+            width: 100px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
     </style>
 {% endblock %}
 {% block contenido %}
@@ -47,7 +63,9 @@
         <input type="hidden" name="gform" id="gform" value="{{ gformresponde.gform.id }}">
         <input type="hidden" name="gformresponde" id="gformresponde" value="{{ gformresponde.id }}">
         <input type="hidden" name="gfsi" id="gfsi" value="">
-        <img src="/static/images/logo_gauss_gobierno.png" style="width: 100px; position: fixed; top:20px; right: 20px;">
+        <img id="logo_general" src="/static/images/logo_gauss_acceso.png">
+        <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.png">
+
         <div class="">
             <h4 id="title_page"><strong>{{ gformresponde.gform.nombre }}</strong></h4>
         </div>
@@ -120,7 +138,7 @@
                                                 {% endfor %}
                                             {% elif gfsi.tipo == 'SO' %}
                                                 <select data-gfsi="{{ gfsi.id }}" class="gfr_op">
-                                                <option value="">Selecciona una de las siguiente opciones</option>
+                                                    <option value="">Selecciona una de las siguiente opciones</option>
                                                     {% for gfsio in gfsi.gformsectioninputops_set.all %}
                                                         <option value="{{ gfsio.id }}">
                                                             {% autoescape off %}{{ gfsio.opcion }}{% endautoescape %}
@@ -192,7 +210,7 @@
             setTimeout(function () {
                 var nuevo_texto = element.val();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+                    $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
                         {action: 'update_gfr_rtexto', gfsi: gfsi, rtexto: nuevo_texto},
                         function (data) {
                             if (data.ok) {
@@ -259,7 +277,7 @@
             setTimeout(function () {
                 var nuevo_texto = element.html();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+                    $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
                         {action: 'update_gfr_rtexto', gfsi: gfsi, rtexto: nuevo_texto},
                         function (data) {
                             if (data.ok) {
@@ -281,7 +299,7 @@
             var element = $(this);
             var gfsi = element.data('gfsi');
             var gfsio = element.val();
-            $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+            $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
                 {action: 'update_gfr_op', gfsi: gfsi, gfsio: gfsio},
                 function (data) {
                     if (data.ok) {
@@ -302,7 +320,7 @@
             var gfsi = element.data('gfsi');
             var gfsio = element.val();
             var checked = element.prop('checked');
-            $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+            $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
                 {action: 'update_gfr_sc', gfsi: gfsi, gfsio: gfsio, checked: checked},
                 function (data) {
                     if (data.ok) {
@@ -322,7 +340,7 @@
             var element = $(this);
             var gfsi = element.data('gfsi');
             var valor = element.val();
-            $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+            $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
                 {action: 'update_gfr_el', gfsi: gfsi, valor: valor},
                 function (data) {
                     if (data.ok) {
@@ -386,7 +404,7 @@
                     }
                 }
             };
-            xhr.open('POST', "/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/", true);
+            xhr.open('POST', "/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/", true);
             xhr.send(formData);
         });
 
@@ -407,7 +425,7 @@
                     },
                     "Borrar": function () {
                         hide_mensajes();
-                        $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+                        $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
                             {action: 'borra_gauss_file', gfsi: gfsi},
                             function (data) {
                                 if (data.ok) {
@@ -433,7 +451,7 @@
             setTimeout(function () {
                 var nueva_firma = element.toDataURL();
                 if (antigua_firma === nueva_firma) {
-                    $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+                    $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
                         {action: 'update_firma', gfsi: gfsi, firma: nueva_firma},
                         function (data) {
                             if (data.ok) {
@@ -455,8 +473,8 @@
             setTimeout(function () {
                 var nuevo_texto = element.val();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
-                        {action: 'update_gfr_fi', gfsi: gfsi, firmante: firmante, campo:campo},
+                    $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
+                        {action: 'update_gfr_fi', gfsi: gfsi, firmante: firmante, campo: campo},
                         function (data) {
                             if (data.ok) {
                                 $("#update_ok").show().delay(1500).fadeOut();
@@ -509,7 +527,7 @@
 
         $('body').on('click', '.terminar_gform', function (e) {
             e.preventDefault();
-            $.post("/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/",
+            $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
                 {action: 'terminar_gform'},
                 function (data) {
                     if (data.ok) {
@@ -517,13 +535,31 @@
                     } else {
                         var texto1 = 'Tus respuestas se han guardado, pero no es posible terminar el formulario ';
                         var texto2 = 'porque todavía ' + data.msg;
-                        show_mensajes({'title': '<i class="fa fa-warning"></i> No es posible terminar',
-                            'texto': texto1 + texto2});
+                        show_mensajes({
+                            'title': '<i class="fa fa-warning"></i> No es posible terminar',
+                            'texto': texto1 + texto2
+                        });
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
         });
 
+        {# ########################################################################################### #}
+        {# Código necesario para ver el logo de Gobierno o el general de forma fija en el formulario #}
+        {#    #}
+        {# ########################################################################################### #}
+
+        setTimeout(function () {
+            var regex3 = /larioja/;
+            var url = window.location.href;
+            if (regex3.test(url)) {
+                $('#logo_general').hide();
+                $('#logo_gobierno').show();
+            } else {
+                $('#logo_general').show();
+                $('#logo_gobierno').hide();
+            }
+        }, 50);
     </script>
 
 {% endblock %}

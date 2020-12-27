@@ -1,6 +1,10 @@
 {% load entidades_extras %}
 {% load formularios_extras %}
-
+<style>
+    th, td {
+        text-align: center;
+    }
+</style>
 {#<div class="row">#}
 {#    <div class="columns large-12">#}
 {#        <ul class="button-group right">#}
@@ -20,22 +24,43 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="columns large-3">
-        <label><b>¿Anónimo?</b><br>
-            {% if gformresponde.anonimo %}
-                <b>Sí</b>
+{% if gform.multiple %}
+    <div class="row">
+        <div class="columns large-10">
+            <p style="color: grey;">Este formulario admite ser rellenado varias veces. A continuación se muestra un
+                listado con las
+                distintas respuestas que has ido rellenando.</p>
+        </div>
+        <div class="columns large-2" title="Haz click aquí si quieres rellenar otra vez este formulario.">
+            <a class="button"><i class="fa fa-plus"></i> Nuevo</a>
+        </div>
+    </div>
+{% endif %}
+
+<table style="width: 100%;">
+    <thead>
+    <tr>
+        <th>Respondido</th>
+        <th>Última modificación</th>
+        <th>Enlace al formulario/Ver tus respuestas</th>
+        <th>Borrar</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for gformresponde in gfrs|get_gfrs:gform %}
+        <tr id="tr{{ gformresponde.id }}">
+            <td>{% if gformresponde.respondido %}
+                <b>Sí</b> <span style="color:green;"><i class="fa fa-thumbs-up"></i></span>
             {% else %}
                 <b>No</b>
-            {% endif %}
-        </label>
-    </div>
-    <div class="columns large-9">
-        <label><b>Haz click en el siguiente enlace para rellenarlo</b><br>
-            <a href="/rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/">
+            {% endif %}</td>
+            <td>{{ gformresponde.modificado|date }}</td>
+            <td><a href="/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/{{ gformresponde.identificador }}/">
                 <i class="fa fa-pencil-square-o"></i>
-                /rellena_gform/{{ gformresponde.id }}/{{ gformresponde.identificador }}/
-            </a>
-        </label>
-    </div>
-</div>
+                Haz click para abrir el formulario
+            </a></td>
+            <td class="del_gformresponde" data-gformresponde="{{ gformresponde.id }}"><i class="fa fa-trash"></i></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
