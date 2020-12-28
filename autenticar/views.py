@@ -1000,7 +1000,7 @@ def logincas(request):
                     gauss = Gauser.objects.get(username='gauss')
                     Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
                     logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
-                    redirect(request.session['nexturl'])
+                    return redirect(request.session['nexturl'])
                     # if request.session['nexturl']:
                     #     response = HttpResponse(status=302)
                     #     response['Location'] = request.session['nexturl']
