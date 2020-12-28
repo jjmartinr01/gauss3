@@ -743,8 +743,8 @@
             var url = $(this).data('url');
             var protocol = window.location.protocol; {# http: o https: #}
             var host = window.location.host; {# Por ejemplo: gaumentada.es:5656   (proporciona dominio + puerto) #}
-            {#var c = copiar_al_portapapeles(protocol + '//' + host + '/rvpd/' + secret + '/');#}
-            var c = copiar_al_portapapeles(protocol + '//' + host + '/logincas/?nexturl=' + url)
+            {#var c = copiar_al_portapapeles(protocol + '//' + host + '/logincas/?nexturl=' + url)#}
+            var c = copiar_al_portapapeles(protocol + '//' + host + url)
             if (c) {
                 show_mensajes({
                     title: 'Enlace copiado',

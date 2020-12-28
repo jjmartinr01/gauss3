@@ -949,12 +949,13 @@ def logincas(request):
     if request.method == 'GET':
         if 'nexturl' in request.GET:
             nexturl = '?nexturl=' + request.GET['nexturl']
+            request.session['nexturl'] = request.GET['nexturl']
         else:
             nexturl = '?nexturl=%2Fcalendario%2F' # Por defecto irá a /calendario/
+            request.session['nexturl'] = '/calendario/'
         request.session['service'] = 'https%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F' + nexturl
         if 'ticket' in request.GET:
             ticket = request.GET['ticket']
-            request.session['nexturl'] = request.GET['nexturl']
             url = CAS_URL + 'serviceValidate?service=' + request.session['service'] + '&ticket=' + ticket
             # xml = render_to_string('samlcas.xml', {'request_id': pass_generator(15), 'ticket': ticket,
             #                                        'datetime_iso': datetime.utcnow().isoformat()})
@@ -999,11 +1000,12 @@ def logincas(request):
                     gauss = Gauser.objects.get(username='gauss')
                     Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
                     logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
-                    if request.session['nexturl']:
-                        response = HttpResponse(status=302)
-                        response['Location'] = request.session['nexturl']
-                    else:
-                        return redirect(request.session['nexturl'])
+                    redirect(request.session['nexturl'])
+                    # if request.session['nexturl']:
+                    #     response = HttpResponse(status=302)
+                    #     response['Location'] = request.session['nexturl']
+                    # else:
+                    #     return redirect(request.session['nexturl'])
                 else:
                     logger.info('Gauser activo, pero no tiene asociada ninguna entidad.')
                     return render(request, "no_cuenta.html", {'usuario': user, })
