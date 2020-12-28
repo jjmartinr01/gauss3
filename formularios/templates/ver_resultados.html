@@ -1,0 +1,356 @@
+{% extends "base_formularios.html" %}
+{% load formularios_extras %}
+{% block head %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+            font-weight: 800;
+        }
+
+        .ckeditor {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+
+        /* Some CSS styling */
+        .sketchpadapp {
+            /* Prevent nearby text being highlighted when accidentally dragging mouse outside confines of the canvas */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .sketchpad {
+            margin: auto;
+            display: block;
+            width: 400px;
+            height: 300px;
+            position: relative;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border: 2px solid #888;
+            margin-bottom: 10px;
+        }
+    </style>
+{% endblock %}
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="ver_gform" name="ver_gform"
+          xmlns="http://www.w3.org/1999/html">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="gform" id="gform" value="{{ gform.id }}">
+        <div class="">
+            <h4 id="title_page"><strong>{{ gform.nombre }}</strong></h4>
+        </div>
+        <div id="rellenagformsections{{ gform.id }}">
+            {% for gfs in gform.gformsection_set.all %}
+                <div id="gfsorden{{ gfs.orden }}"
+                     {% if forloop.first %}style="display:block"{% else %}style="display: none;"{% endif %}>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <div class="row">
+                                <div class="columns large-12">
+                                    <h3>{% autoescape off %}{{ gfs.title }}{% endautoescape %}</h3>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="columns large-12">
+                                    {% autoescape off %}{{ gfs.description }}{% endautoescape %}
+                                </div>
+                            </div>
+
+                            {% for gfsi in gfs.gformsectioninput_set.all %}
+                                <hr>
+                                <fieldset style="border: none;">
+                                    <legend id="legendgfsi{{ gfsi.id }}" style="color:gray;">Pregunta {{ gfsi.orden }}
+                                        de {{ gfsi|totalgfsis }}</legend>
+                                    <div class="row">
+                                        <div class="columns large-12">
+                                            <p>{% autoescape off %}{{ gfsi.pregunta }}{% endautoescape %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="columns large-12" id="respuesta{{ gfsi.id }}">
+                                            {% if gfsi.tipo in 'RC RL' %}
+                                                <div class="row">
+                                                    <div class="columns large-12">
+                                                        <table style="width: 100%">
+                                                            {% for gfri in gfsi.gformrespondeinput_set.all %}
+                                                                <tr>
+                                                                    <td>{% autoescape off %}{{ gfri.rtexto }}{% endautoescape %}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            {% elif gfsi.tipo in 'EM SO' %}
+                                                <canvas id="pieChart{{ gfsi.id }}" width="100"></canvas>
+                                                <script>
+                                                    setTimeout(function () {
+                                                        var ctx = document.getElementById('pieChart{{ gfsi.id }}').getContext('2d');
+                                                        var pieChart = new Chart(ctx, {
+                                                            type: 'pie',
+                                                            data: {{ gfsi|get_chartdata|safe }},
+                                                            options: {
+                                                                scales: {
+                                                                    yAxes: [{
+                                                                        ticks: {
+                                                                            beginAtZero: true
+                                                                        }
+                                                                    }]
+                                                                }
+                                                            }
+                                                        });
+                                                    }, 300);
+                                                </script>
+                                            {% elif gfsi.tipo == 'SC' %}
+                                                <canvas id="barChart{{ gfsi.id }}" width="400"></canvas>
+                                                <script>
+                                                    setTimeout(function () {
+                                                        var ctx = document.getElementById('barChart{{ gfsi.id }}').getContext('2d');
+                                                        var barChart = new Chart(ctx, {
+                                                            type: 'horizontalBar',
+                                                            data: {{ gfsi|get_chartdata|safe }},
+                                                            options: {
+                                                                scales: {
+                                                                    yAxes: [{
+                                                                        ticks: {
+                                                                            beginAtZero: true
+                                                                        }
+                                                                    }]
+                                                                }
+                                                            }
+                                                        });
+                                                    }, 300);
+                                                </script>
+                                            {% elif gfsi.tipo == 'SA' %}
+                                                <div class="row">
+                                                    <div class="columns large-12">
+                                                        <table style="width: 100%">
+                                                            <thead>
+                                                            <tr>
+                                                                <td>Nombre</td>
+                                                                <td>Tipo</td>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            {% for gfri in gfsi.gformrespondeinput_set.all %}
+                                                                <tr>
+                                                                    <td>{{ gfri.rarchivo.name }}</td>
+                                                                    <td>{{ gfri.content_type }}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            {% elif gfsi.tipo == 'EL' %}
+                                                <canvas id="barChart{{ gfsi.id }}" width="400"></canvas>
+                                                <script>
+                                                    setTimeout(function () {
+                                                        var ctx = document.getElementById('barChart{{ gfsi.id }}').getContext('2d');
+                                                        var barChart = new Chart(ctx, {
+                                                            type: 'bar',
+                                                            data: {{ gfsi|get_chartdatalinear|safe }},
+                                                            options: {
+                                                                scales: {
+                                                                    yAxes: [{
+                                                                        ticks: {
+                                                                            beginAtZero: true
+                                                                        }
+                                                                    }]
+                                                                }
+                                                            }
+                                                        });
+                                                    }, 300);
+                                                </script>
+                                            {% elif gfsi.tipo == 'FI' %}
+                                                <table style="width: 100%">
+                                                    <thead>
+                                                    <tr>
+                                                        <td>Nombre</td>
+                                                        <td>Cargo</td>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {% for gfri in gfsi.gformrespondeinput_set.all %}
+                                                        <tr>
+                                                            <td>{{ gfri.rfirma_nombre }}</td>
+                                                            <td>{{ gfri.rfirma_cargo }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="columns large-6">
+                            {% if not forloop.first %}
+                                <a class="button secondary go_seccion_anterior" data-ordengfs="{{ gfs.orden }}">
+                                    <i class="fa fa-caret-left"></i> Sección anterior
+                                </a>
+                            {% else %}&nbsp;{% endif %}
+                        </div>
+                        <div class="columns large-6">
+                            {% if not forloop.last %}
+                                <a class="button secondary right go_seccion_siguiente" data-ordengfs="{{ gfs.orden }}">
+                                    Sección siguiente <i class="fa fa-caret-right"></i>
+                                </a>
+                            {% else %}&nbsp;{% endif %}
+                        </div>
+                    </div>
+                    {% if forloop.last %}
+{#                        <div class="row">#}
+{#                            <div class="columns large-12 medium-12 text-center">#}
+{#                                <ul class="button-group">#}
+{#                                    <li>#}
+{#                                        <a class="button genera_pdf" data-gform="{{ gform.id }}">#}
+{#                                            <i class="fa fa-file-pdf-o"></i> PDF</a>#}
+{#                                    </li>#}
+{#                                    <li>#}
+{#                                        <a href="#" class="button alert"><i class="fa fa-sign-out"></i> Terminar</a>#}
+{#                                    </li>#}
+{#                                </ul>#}
+{#                            </div>#}
+{#                        </div>#}
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script type="text/javascript">
+        {# ########################################################################################### #}
+        {# Operaciones relacionadas con responder a las preguntas largas: tipo RL #}
+        {# constructInlineEditorInstances,   #}
+        {# ########################################################################################### #}
+
+        config = {
+            removePlugins: 'exportpdf',
+            toolbar: [
+                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
+                {
+                    name: 'basicstyles',
+                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
+                },
+                {
+                    name: 'paragraph',
+                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
+                },
+                '/',
+                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
+                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
+                {name: 'colors', items: ['TextColor', 'BGColor']},
+                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
+                {name: 'document', items: ['Source']},
+                {name: 'about', items: ['About', 'generapdfbutton']}
+            ],
+            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
+        }
+
+        function constructInlineEditorInstances() {
+            $(".ckeditor").each(function (index) {
+                var element = $(this);
+                var id = element.attr('id');
+                var editor = CKEDITOR.inline(id, config);
+                var anchura = element.width() + 2;
+                setTimeout(function () {
+                    $('#cke_' + id).css('width', anchura + 'px');
+                    {# Este es el id del ckeditor creado #}
+                }, 200);
+            });
+        }
+
+        setTimeout(function () {
+            constructInlineEditorInstances();
+        }, 300);
+
+        $('body').on('keyup', '.update_RL', function () {
+            var element = $(this);
+            var gfsi = element.data('gfsi');
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/ver_gform/", {action: 'update_RL', gfsi: gfsi, texto: nuevo_texto},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
+
+        {# ########################################################################################### #}
+        {# Código necesario para utilizar la respuesta de tipo firma #}
+        {#  update_firma  #}
+        {# ########################################################################################### #}
+
+
+        function update_firma(gfsi) {
+            var element = document.getElementById('sketchpad' + gfsi);
+            var antigua_firma = element.toDataURL();
+            setTimeout(function () {
+                var nueva_firma = element.toDataURL();
+                if (antigua_firma === nueva_firma) {
+                    console.log('Se enviarían estos datos:')
+                    console.log(nueva_firma);
+                }
+            }, 750);
+        }
+
+
+        {# ########################################################################################### #}
+        {# Código necesario para utilizar la respuesta de tipo firma #}
+        {#  go_seccion_anterior, go_seccion_siguiente  #}
+        {# ########################################################################################### #}
+
+        $('body').on('click', '.go_seccion_anterior', function (e) {
+            e.preventDefault();
+            var ordengfs = parseInt($(this).data('ordengfs'));
+            $('#gfsorden' + ordengfs).hide();
+            var orden_gfs_nueva = ordengfs - 1;
+            $('#gfsorden' + orden_gfs_nueva).show();
+            $(document).scrollTop($('#title_page').offset().top - 150);
+        });
+        $('body').on('click', '.go_seccion_siguiente', function (e) {
+            e.preventDefault();
+            var ordengfs = parseInt($(this).data('ordengfs'));
+            $('#gfsorden' + ordengfs).hide();
+            var orden_gfs_nueva = ordengfs + 1;
+            $('#gfsorden' + orden_gfs_nueva).show();
+            $(document).scrollTop($('#title_page').offset().top - 150);
+        });
+
+        {# ########################################################################################### #}
+        {# Código necesario para generar PDF #}
+        {#  go_seccion_anterior, go_seccion_siguiente  #}
+        {# ########################################################################################### #}
+
+        {#$('body').on('click', '.genera_pdf', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    $('#action').val('genera_pdf');#}
+        {#    document.getElementById('ver_gform').submit();#}
+        {# });#}
+    </script>
+
+{% endblock %}

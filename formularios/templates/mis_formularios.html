@@ -94,6 +94,21 @@
             });
         });
 
+        $('body').on('click', '.get_another_gform', function (e) {
+            e.preventDefault();
+            var gform = $(this).data('gform');
+            $.post("/mis_formularios/", {action: 'get_another_gform', gform: gform},
+                            function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                                window.location.href = data.url;
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                            }
+                        });
+
+        });
+
     </script>
 
 {% endblock %}

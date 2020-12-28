@@ -213,7 +213,8 @@ def formularios(request):
                         g.save()
                     gfsi = GformSectionInput.objects.create(gformsection=gfs, orden=orden, creador=g_e)
                     html = render_to_string('formularios_accordion_content_ginputs_gi.html', {'gfsi': gfsi})
-                    return JsonResponse({'ok': True, 'html': html, 'gfsi_id_orden': gfsi_id_orden(gfsi.gformsection.gform)})
+                    return JsonResponse(
+                        {'ok': True, 'html': html, 'gfsi_id_orden': gfsi_id_orden(gfsi.gformsection.gform)})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tienes permiso para hacer el cambio'})
             except Exception as msg:
@@ -627,11 +628,47 @@ def ver_gform(request, id, identificador):
         return HttpResponse('Error')
 
 
+@login_required()
+def ver_resultados(request, id, identificador):
+    g_e = request.session["gauser_extra"]
+    try:
+        if request.is_ajax():
+            return JsonResponse({'ok': True, 'msg': 'No se realiza ninguna operación.'})
+        elif request.method == 'POST':
+            if request.POST['action'] == 'genera_pdf':
+                doc_gform = 'Configuración para cuestionarios'
+                try:
+                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_gform)
+                except:
+                    try:
+                        dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+                    except:
+                        dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
+                        dce.predeterminado = True
+                        dce.save()
+                    dce.pk = None
+                    dce.nombre = doc_gform
+                    dce.predeterminado = False
+                    dce.editable = False
+                    dce.save()
+                gform = Gform.objects.get(id=request.POST['gform'])
+                c = render_to_string('gform2pdf.html', {'template': gform.template_procesado})
+                fich = pdfkit.from_string(c, False, dce.get_opciones)
+                response = HttpResponse(fich, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
+                return response
+        elif request.method == 'GET':
+            gform = Gform.objects.get(id=id, identificador=identificador)
+            return render(request, "ver_resultados.html", {'gform': gform})
+    except:
+        return HttpResponse('Error')
+
+
 def mis_formularios(request):
     g_e = request.session["gauser_extra"]
     organization = g_e.ronda.entidad.organization
     gfrs = GformResponde.objects.filter(g_e__gauser=g_e.gauser, g_e__ronda__entidad__organization=organization)
-    gfs = Gform.objects.filter(id__in = gfrs.values_list('gform__id')).distinct()
+    gfs = Gform.objects.filter(id__in=gfrs.values_list('gform__id')).distinct()
     paginator = Paginator(gfs, 15)
     gforms = paginator.page(1)
     if request.method == 'POST' and request.is_ajax():
@@ -648,6 +685,15 @@ def mis_formularios(request):
                 return JsonResponse({'ok': True})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'get_another_gform':
+            try:
+                gform = Gform.objects.get(id=request.POST['gform'])
+                gfr = GformResponde.objects.create(gform=gform, g_e=g_e)
+                url = '/rellena_gform/%s/%s/%s/' % (gform.id, gform.identificador, gfr.identificador)
+                return JsonResponse({'ok': True , 'url': url})
+                # return redirect('/rellena_gform/%s/%s/%s/' % (gform.id, gform.identificador, gfr.identificador))
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
 
     return render(request, "mis_formularios.html",
                   {
@@ -659,6 +705,7 @@ def mis_formularios(request):
                       'gforms': gforms,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
+
 
 def get_ges(gauser):
     q1 = Q(ronda__inicio__lt=datetime.now())
@@ -684,8 +731,8 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
             return render(request, "gform_no_existe.html")
     elif gform.multiple:
         try:
-            gformresponde = GformResponde.objects.get(gform=gform, g_e=g_e, respondido=False,
-                                                      identificador=request.session['gformresponde'])
+            gformresponde = GformResponde.objects.filter(gform=gform, g_e=g_e, respondido=False,
+                                                         identificador=request.session['gformresponde'])[0]
         except:
             gformresponde = GformResponde.objects.create(gform=gform, g_e=g_e)
             request.session['gformresponde'] = gformresponde.identificador

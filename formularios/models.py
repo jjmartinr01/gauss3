@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+
 from django.db import models
 from django.template import Context, Template
 from django.utils.text import slugify
+from django.utils.timezone import now
 
 from entidades.models import Cargo, Subentidad, Entidad
 from entidades.models import Gauser_extra as GE
@@ -43,6 +45,10 @@ class Gform(models.Model):
 
     class Meta:
         ordering = ['propietario__ronda', 'id']
+
+    @property
+    def accesible(self):
+        return True if (self.fecha_max_rellenado > now() and self.activo) else False
 
     @property
     def num_respuestas(self):
