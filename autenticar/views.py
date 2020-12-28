@@ -964,8 +964,10 @@ def logincas(request):
             s.verify = False
             r = s.get(url, verify=False)
             # r = s.post(url, verify=False, data=xml, headers=headers)
-            respuesta = r.text
-            id = respuesta.split('<cas:user>')[1].split('</cas:user>')[0]
+            try:
+                id = r.text.split('<cas:user>')[1].split('</cas:user>')[0]
+            except:
+                return HttpResponse(r.text)
             try:
                 user = Gauser.objects.get(username=id)
             except:
