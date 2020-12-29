@@ -29,6 +29,7 @@ from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from formularios.models import *
 from gauss.rutas import *
+from gauss.funciones import get_dce
 
 # from entidades.models import Subentidad, Cargo
 # from autenticar.models import Gauser_extra, Gauser
@@ -489,7 +490,9 @@ def formularios(request):
             wf.col(0).width = 8000  # Ancho de la columna para el nombre
             wf.write(fila_excel_cuestionario, 1, 'Nombre usuario', style=estilo)
             wf.col(1).width = 9000  # Ancho de la columna para el nombre
-            col = 2
+            wf.write(fila_excel_cuestionario, 2, 'Nombre entidad', style=estilo)
+            wf.col(2).width = 9000  # Ancho de la columna para el nombre
+            col = 3
             h = html2text.HTML2Text()
             for gfsi in gfsis:
                 # pregunta = h.handle(gfsi.pregunta)
@@ -500,9 +503,10 @@ def formularios(request):
 
             for gfr in gfrs:
                 fila_excel_cuestionario += 1
-                wf.write(fila_excel_cuestionario, 0, 'Hora')
+                wf.write(fila_excel_cuestionario, 0, str(gfr.modificado))
                 wf.write(fila_excel_cuestionario, 1, gfr.g_e.gauser.get_full_name())
-                col = 2
+                wf.write(fila_excel_cuestionario, 2, gfr.g_e.ronda.entidad.name)
+                col = 3
                 for gfri in gfr.gformrespondeinput_set.all():
                     if gfri.gfsi.tipo == 'EL':
                         respuesta = gfri.respuesta
@@ -522,27 +526,17 @@ def formularios(request):
             response['Content-Disposition'] = 'attachment; filename=%s' % (fichero_xls)
             return response
         if request.POST['action'] == 'pdf_gform':
-            doc_gform = 'Configuración para cuestionarios'
+            dce = get_dce(g_e.entidad, 'Configuración para cuestionarios')
             try:
-                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_gform)
-            except:
-                try:
-                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
-                except:
-                    dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
-                    dce.predeterminado = True
-                    dce.save()
-                dce.pk = None
-                dce.nombre = doc_gform
-                dce.predeterminado = False
-                dce.editable = False
-                dce.save()
-            gform = Gform.objects.get(id=request.POST['gform'])
-            c = render_to_string('gform2pdf.html', {'gfrs': gform.gformresponde_set.filter(respondido=True)})
-            fich = pdfkit.from_string(c, False, dce.get_opciones)
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
-            return response
+                gform = Gform.objects.get(id=request.POST['gform'])
+                c = render_to_string('gform2pdf.html', {'gfrs': gform.gformresponde_set.filter(respondido=True)})
+                fich = pdfkit.from_string(c, False, dce.get_opciones)
+                response = HttpResponse(fich, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
+                return response
+            except Exception as msg:
+                aviso = 'Se ha producido un error en el procesamiento de la platilla que debes corregir: %s' % str(msg)
+                crear_aviso(request, False, aviso)
 
     return render(request, "formularios.html",
                   {
@@ -600,21 +594,7 @@ def ver_gform(request, id, identificador):
             return JsonResponse({'ok': True, 'msg': 'No se realiza ninguna operación.'})
         elif request.method == 'POST':
             if request.POST['action'] == 'genera_pdf':
-                doc_gform = 'Configuración para cuestionarios'
-                try:
-                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_gform)
-                except:
-                    try:
-                        dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
-                    except:
-                        dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
-                        dce.predeterminado = True
-                        dce.save()
-                    dce.pk = None
-                    dce.nombre = doc_gform
-                    dce.predeterminado = False
-                    dce.editable = False
-                    dce.save()
+                dce = get_dce(g_e.entidad, 'Configuración para cuestionarios')
                 gform = Gform.objects.get(id=request.POST['gform'])
                 c = render_to_string('gform2pdf.html', {'template': gform.template_procesado})
                 fich = pdfkit.from_string(c, False, dce.get_opciones)
@@ -636,21 +616,7 @@ def ver_resultados(request, id, identificador):
             return JsonResponse({'ok': True, 'msg': 'No se realiza ninguna operación.'})
         elif request.method == 'POST':
             if request.POST['action'] == 'genera_pdf':
-                doc_gform = 'Configuración para cuestionarios'
-                try:
-                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_gform)
-                except:
-                    try:
-                        dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
-                    except:
-                        dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
-                        dce.predeterminado = True
-                        dce.save()
-                    dce.pk = None
-                    dce.nombre = doc_gform
-                    dce.predeterminado = False
-                    dce.editable = False
-                    dce.save()
+                dce = get_dce(g_e.entidad, 'Configuración para cuestionarios')
                 gform = Gform.objects.get(id=request.POST['gform'])
                 c = render_to_string('gform2pdf.html', {'template': gform.template_procesado})
                 fich = pdfkit.from_string(c, False, dce.get_opciones)
@@ -737,10 +703,16 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
             gformresponde = GformResponde.objects.create(gform=gform, g_e=g_e)
             request.session['gformresponde'] = gformresponde.identificador
     else:
-        gformresponde, c = GformResponde.objects.get_or_create(gform=gform, g_e=g_e)
+        try:
+            gformresponde, c = GformResponde.objects.get_or_create(gform=gform, g_e=g_e)
+        except Exception as msg:
+            sleep(3)
+            return render(request, "gform_no_existe.html", {'error': True})
     gfsis = GformSectionInput.objects.filter(gformsection__gform=gformresponde.gform)
     if request.method == 'POST' and request.is_ajax():
-        if request.POST['action'] == 'update_gfr_rtexto':
+        if gformresponde.respondido:
+            return JsonResponse({'ok': False, 'msg': 'Este formulario ya está respondido. No se admiten cambios.'})
+        elif request.POST['action'] == 'update_gfr_rtexto':
             try:
                 gfsi = gfsis.get(id=request.POST['gfsi'])
                 gfri, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
@@ -840,21 +812,7 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
                 return JsonResponse({'ok': False, 'msg': 'Se ha producido un error'})
     elif request.method == 'POST' and not request.is_ajax():
         if request.POST['action'] == 'genera_pdf':
-            doc_gform = 'Configuración para cuestionarios'
-            try:
-                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_gform)
-            except:
-                try:
-                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
-                except:
-                    dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
-                    dce.predeterminado = True
-                    dce.save()
-                dce.pk = None
-                dce.nombre = doc_gform
-                dce.predeterminado = False
-                dce.editable = False
-                dce.save()
+            dce = get_dce(g_e.entidad, 'Configuración para cuestionarios')
             gfr = GformResponde.objects.get(id=request.POST['gformresponde'], g_e__gauser=g_e.gauser)
             c = render_to_string('gform2pdf.html', {'gfrs': [gfr]})
             fich = pdfkit.from_string(c, False, dce.get_opciones)

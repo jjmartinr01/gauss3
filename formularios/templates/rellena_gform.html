@@ -69,6 +69,18 @@
         <div class="">
             <h4 id="title_page"><strong>{{ gformresponde.gform.nombre }}</strong></h4>
         </div>
+        {% if gformresponde.respondido %}
+            <div class="row">
+                <div class="columns large-12">
+                    <div data-alert class="alert-box alert radius">
+                        <h3 style="color: white;font-weight: bold;"><i class="fa fa-warning"></i> No se pueden cambiar
+                            las respuestas</h3>
+                        <p>Este formulario ya está respondido y no se admiten cambios en las respuestas.</p>
+                        <a href="#" class="close">&times;</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
         <div class="row">
             <div class="columns large-12 text-right">
                 <a class="button info close_gform"><i class="fa fa-times"></i> Cerrar este formulario</a>
@@ -198,11 +210,25 @@
 
 {% block final %}
     <script type="text/javascript">
+
+        {# ########################################################################################### #}
+        {# Función en el caso de que se produzca un error #}
+        {# #}
+        {# ########################################################################################### #}
+
+        function show_error(data) {
+            show_mensajes({
+                'title': '<i class="fa fa-warning"></i> Se ha producido un error',
+                'texto': data.msg
+            });
+        }
+
         {# ########################################################################################### #}
         {# Operaciones relacionadas con responder a las preguntas cortas: tipo RC #}
         {# #}
         {# ########################################################################################### #}
 
+        rellena_gform_url = "/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/{{ gformresponde.identificador }}/"
         $('body').on('keyup', '.gfr_rc', function () {
             var element = $(this);
             var gfsi = element.data('gfsi');
@@ -210,13 +236,14 @@
             setTimeout(function () {
                 var nuevo_texto = element.val();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
+                    $.post(rellena_gform_url,
                         {action: 'update_gfr_rtexto', gfsi: gfsi, rtexto: nuevo_texto},
                         function (data) {
                             if (data.ok) {
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $('#update_error').show().delay(1500).fadeOut();
+                                show_error(data);
                             }
                         });
                 }
@@ -277,13 +304,14 @@
             setTimeout(function () {
                 var nuevo_texto = element.html();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
+                    $.post(rellena_gform_url,
                         {action: 'update_gfr_rtexto', gfsi: gfsi, rtexto: nuevo_texto},
                         function (data) {
                             if (data.ok) {
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $('#update_error').show().delay(1500).fadeOut();
+                                show_error(data);
                             }
                         });
                 }
@@ -299,13 +327,14 @@
             var element = $(this);
             var gfsi = element.data('gfsi');
             var gfsio = element.val();
-            $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
+            $.post(rellena_gform_url,
                 {action: 'update_gfr_op', gfsi: gfsi, gfsio: gfsio},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
+                        show_error(data);
                     }
                 });
         });
@@ -320,13 +349,14 @@
             var gfsi = element.data('gfsi');
             var gfsio = element.val();
             var checked = element.prop('checked');
-            $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
+            $.post(rellena_gform_url,
                 {action: 'update_gfr_sc', gfsi: gfsi, gfsio: gfsio, checked: checked},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
+                        show_error(data);
                     }
                 });
         });
@@ -340,13 +370,14 @@
             var element = $(this);
             var gfsi = element.data('gfsi');
             var valor = element.val();
-            $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
+            $.post(rellena_gform_url,
                 {action: 'update_gfr_el', gfsi: gfsi, valor: valor},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
+                        show_error(data);
                     }
                 });
         });
@@ -404,7 +435,7 @@
                     }
                 }
             };
-            xhr.open('POST', "/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/", true);
+            xhr.open('POST', rellena_gform_url, true);
             xhr.send(formData);
         });
 
@@ -425,7 +456,7 @@
                     },
                     "Borrar": function () {
                         hide_mensajes();
-                        $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
+                        $.post(rellena_gform_url,
                             {action: 'borra_gauss_file', gfsi: gfsi},
                             function (data) {
                                 if (data.ok) {
@@ -433,6 +464,7 @@
                                     $("#update_ok").show().delay(1500).fadeOut();
                                 } else {
                                     $('#update_error').show().delay(1500).fadeOut();
+                                    show_error(data);
                                 }
                             });
                     }
@@ -451,13 +483,14 @@
             setTimeout(function () {
                 var nueva_firma = element.toDataURL();
                 if (antigua_firma === nueva_firma) {
-                    $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
+                    $.post(rellena_gform_url,
                         {action: 'update_firma', gfsi: gfsi, firma: nueva_firma},
                         function (data) {
                             if (data.ok) {
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $('#update_error').show().delay(1500).fadeOut();
+                                show_error(data);
                             }
                         });
                 }
@@ -473,13 +506,14 @@
             setTimeout(function () {
                 var nuevo_texto = element.val();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
+                    $.post(rellena_gform_url,
                         {action: 'update_gfr_fi', gfsi: gfsi, firmante: firmante, campo: campo},
                         function (data) {
                             if (data.ok) {
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $('#update_error').show().delay(1500).fadeOut();
+                                show_error(data);
                             }
                         });
                 }
@@ -527,7 +561,7 @@
 
         $('body').on('click', '.terminar_gform', function (e) {
             e.preventDefault();
-            $.post("/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/",
+            $.post(rellena_gform_url,
                 {action: 'terminar_gform'},
                 function (data) {
                     if (data.ok) {
@@ -540,6 +574,7 @@
                             'texto': texto1 + texto2
                         });
                         $('#update_error').show().delay(1500).fadeOut();
+                        show_error(data);
                     }
                 });
         });

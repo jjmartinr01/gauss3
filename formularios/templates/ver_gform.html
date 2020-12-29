@@ -37,6 +37,22 @@
             border: 2px solid #888;
             margin-bottom: 10px;
         }
+
+        #logo_general {
+            display: none;
+            width: 100px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+
+        #logo_gobierno {
+            display: none;
+            width: 100px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
     </style>
 {% endblock %}
 {% block contenido %}
@@ -45,6 +61,9 @@
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
         <input type="hidden" name="gform" id="gform" value="{{ gform.id }}">
+
+        <img id="logo_general" src="/static/images/logo_gauss_acceso.png">
+        <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.png">
         <div class="">
             <h4 id="title_page"><strong>{{ gform.nombre }}</strong></h4>
         </div>
@@ -288,6 +307,24 @@
             $('#action').val('genera_pdf');
             document.getElementById('ver_gform').submit();
         });
+
+        {# ########################################################################################### #}
+        {# Código necesario para ver el logo de Gobierno o el general de forma fija en el formulario #}
+        {#    #}
+        {# ########################################################################################### #}
+
+        setTimeout(function () {
+            var regex3 = /larioja/;
+            var url = window.location.href;
+            if (regex3.test(url)) {
+                $('#logo_general').hide();
+                $('#logo_gobierno').show();
+            } else {
+                $('#logo_general').show();
+                $('#logo_gobierno').hide();
+            }
+        }, 50);
+
     </script>
 
 {% endblock %}

@@ -8,34 +8,20 @@
             font-weight: 800;
         }
 
-        .ckeditor {
-            border: lightgrey 1px solid;
-            min-height: 100px;
+        #logo_general {
+            display: none;
+            width: 100px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
         }
 
-        /* Some CSS styling */
-        .sketchpadapp {
-            /* Prevent nearby text being highlighted when accidentally dragging mouse outside confines of the canvas */
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-
-        .sketchpad {
-            margin: auto;
-            display: block;
-            width: 400px;
-            height: 300px;
-            position: relative;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            border: 2px solid #888;
-            margin-bottom: 10px;
+        #logo_gobierno {
+            display: none;
+            width: 100px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
         }
     </style>
 {% endblock %}
@@ -45,10 +31,14 @@
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
         <input type="hidden" name="gform" id="gform" value="{{ gform.id }}">
+
+        <img id="logo_general" src="/static/images/logo_gauss_acceso.png">
+        <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.png">
+
         <div class="">
             <h4 id="title_page"><strong>{{ gform.nombre }}</strong></h4>
         </div>
-        <div id="rellenagformsections{{ gform.id }}">
+        <div id="div_cont_resultados">
             {% for gfs in gform.gformsection_set.all %}
                 <div id="gfsorden{{ gfs.orden }}"
                      {% if forloop.first %}style="display:block"{% else %}style="display: none;"{% endif %}>
@@ -233,91 +223,6 @@
 
 {% block final %}
     <script type="text/javascript">
-        {# ########################################################################################### #}
-        {# Operaciones relacionadas con responder a las preguntas largas: tipo RL #}
-        {# constructInlineEditorInstances,   #}
-        {# ########################################################################################### #}
-
-        config = {
-            removePlugins: 'exportpdf',
-            toolbar: [
-                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
-                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
-                {
-                    name: 'basicstyles',
-                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
-                },
-                {
-                    name: 'paragraph',
-                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
-                },
-                '/',
-                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
-                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
-                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
-                {name: 'colors', items: ['TextColor', 'BGColor']},
-                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
-                {name: 'document', items: ['Source']},
-                {name: 'about', items: ['About', 'generapdfbutton']}
-            ],
-            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
-        }
-
-        function constructInlineEditorInstances() {
-            $(".ckeditor").each(function (index) {
-                var element = $(this);
-                var id = element.attr('id');
-                var editor = CKEDITOR.inline(id, config);
-                var anchura = element.width() + 2;
-                setTimeout(function () {
-                    $('#cke_' + id).css('width', anchura + 'px');
-                    {# Este es el id del ckeditor creado #}
-                }, 200);
-            });
-        }
-
-        setTimeout(function () {
-            constructInlineEditorInstances();
-        }, 300);
-
-        $('body').on('keyup', '.update_RL', function () {
-            var element = $(this);
-            var gfsi = element.data('gfsi');
-            var antiguo_texto = element.html();
-            setTimeout(function () {
-                var nuevo_texto = element.html();
-                if (antiguo_texto === nuevo_texto) {
-                    $.post("/ver_gform/", {action: 'update_RL', gfsi: gfsi, texto: nuevo_texto},
-                        function (data) {
-                            if (data.ok) {
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $('#update_error').show().delay(1500).fadeOut();
-                            }
-                        });
-                }
-            }, 750);
-        });
-
-
-        {# ########################################################################################### #}
-        {# Código necesario para utilizar la respuesta de tipo firma #}
-        {#  update_firma  #}
-        {# ########################################################################################### #}
-
-
-        function update_firma(gfsi) {
-            var element = document.getElementById('sketchpad' + gfsi);
-            var antigua_firma = element.toDataURL();
-            setTimeout(function () {
-                var nueva_firma = element.toDataURL();
-                if (antigua_firma === nueva_firma) {
-                    console.log('Se enviarían estos datos:')
-                    console.log(nueva_firma);
-                }
-            }, 750);
-        }
-
 
         {# ########################################################################################### #}
         {# Código necesario para utilizar la respuesta de tipo firma #}
@@ -351,6 +256,23 @@
         {#    $('#action').val('genera_pdf');#}
         {#    document.getElementById('ver_gform').submit();#}
         {# });#}
+
+        {# ########################################################################################### #}
+        {# Código necesario para ver el logo de Gobierno o el general de forma fija en el formulario #}
+        {#    #}
+        {# ########################################################################################### #}
+
+        setTimeout(function () {
+            var regex3 = /larioja/;
+            var url = window.location.href;
+            if (regex3.test(url)) {
+                $('#logo_general').hide();
+                $('#logo_gobierno').show();
+            } else {
+                $('#logo_general').show();
+                $('#logo_gobierno').hide();
+            }
+        }, 50);
     </script>
 
 {% endblock %}
