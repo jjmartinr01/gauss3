@@ -689,6 +689,9 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
         g_e = request.session["gauser_extra"]
     except:
         return redirect('/logincas/?nexturl=/rellena_gform/' + '/'.join([str(id), identificador, gfr_identificador]))
+    if not gform.accesible:
+        sleep(3)
+        return render(request, "gform_no_existe.html", {'error': True})
     if gfr_identificador:
         try:
             gformresponde = GformResponde.objects.get(gform=gform, g_e=g_e, identificador=gfr_identificador)
@@ -712,6 +715,8 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
     if request.method == 'POST' and request.is_ajax():
         if gformresponde.respondido:
             return JsonResponse({'ok': False, 'msg': 'Este formulario ya está respondido. No se admiten cambios.'})
+        elif not gformresponde.gform.accesible:
+            return JsonResponse({'ok': False, 'msg': 'Este formulario no es accesible.'})
         elif request.POST['action'] == 'update_gfr_rtexto':
             try:
                 gfsi = gfsis.get(id=request.POST['gfsi'])
@@ -849,5 +854,20 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
                   {
                       'formname': 'rellena_gform',
                       'gformresponde': gformresponde,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+def formularios_disponibles(request):
+    g_e = request.session["gauser_extra"]
+    DESTINATARIOS = (('ENT', 'Personas de mi entidad'), ('ORG', 'Personas de mi organización'))
+    q1 = Q(destinatarios='ENT', propietario__ronda__entidad=g_e.ronda.entidad)
+    q2 = Q(destinatarios='ORG', propietario__ronda__entidad__organization=g_e.ronda.entidad.organization)
+    gforms = Gform.objects.filter(q1 | q2)
+    gforms_accesibles = [gform for gform in gforms if gform.accesible]
+
+    return render(request, "formularios_disponibles.html",
+                  {
+                      'formname': 'gforms_accesibles',
+                      'gforms_accesibles': gforms_accesibles,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })

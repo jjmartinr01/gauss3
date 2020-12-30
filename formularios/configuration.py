@@ -11,7 +11,7 @@ MENU_DEFAULT = [
      'pos': 1
      },
     {'code_menu': 'acceso_formularios',
-     'texto_menu': 'Formularios',
+     'texto_menu': 'Diseñar y Crear',
      'href': 'formularios',
      'nivel': 2,
      'tipo': 'Accesible',
@@ -21,6 +21,14 @@ MENU_DEFAULT = [
     {'code_menu': 'acceso_mis_formularios',
      'texto_menu': 'Mis Formularios',
      'href': 'mis_formularios',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 2,
+     'parent': 'acceso_cuestionarios'
+     },
+    {'code_menu': 'acceso_formularios_disponibles',
+     'texto_menu': 'Formularios Disponibles',
+     'href': 'formularios_disponibles',
      'nivel': 2,
      'tipo': 'Accesible',
      'pos': 2,

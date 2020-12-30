@@ -1,0 +1,103 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block head %}
+    <style>
+
+    </style>
+{% endblock %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}"
+          xmlns="http://www.w3.org/1999/html">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+
+        <div class="">
+            <h4 id="title_page" style="text-align: center;color: #008CBA;"><strong>
+                Formularios disponibles para rellena</strong></h4>
+        </div>
+
+        <div id="listado_formularios">
+            {% include 'formularios_disponibles_accordion.html' %}
+        </div>
+    </form>
+{% endblock %}
+
+
+{% block final %}
+    <script>
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-gform')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/formularios/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('body').on('click', '.copy_gform', function () {
+            var gform = $(this).data('gform');
+            $.post("/formularios/", {action: 'copy_gform', gform: gform},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#listado_formularios').prepend(data.html);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+        {# ########################################################################################### #}
+        {# Respuesta al hacer click sobre "disabled" #}
+        {#   #}
+        {# ########################################################################################### #}
+
+        $('body').on('click', '.disabled', function (e) {
+            e.preventDefault();
+            show_mensajes({
+                title: 'Pregunta deshabilitada',
+                texto: '<p>Solo es posible modificar las preguntas que hayas creado tú.</p><p>Las creadas por otros usuarios solo pueden ser copiadas.</p>'
+            })
+        });
+
+
+        $('body').on('click', '.copy_url_gform', function () {
+            var url = $(this).data('url');
+            var protocol = window.location.protocol; {# http: o https: #}
+            var host = window.location.host; {# Por ejemplo: gaumentada.es:5656   (proporciona dominio + puerto) #}
+            {#var c = copiar_al_portapapeles(protocol + '//' + host + '/logincas/?nexturl=' + url)#}
+            var c = copiar_al_portapapeles(protocol + '//' + host + url)
+            if (c) {
+                show_mensajes({
+                    title: 'Enlace copiado',
+                    texto: 'Se ha copiado en el portapapeles el enlace para rellenar el formulario'
+                });
+            }
+        });
+
+
+    </script>
+
+{% endblock %}

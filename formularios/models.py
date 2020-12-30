@@ -48,7 +48,10 @@ class Gform(models.Model):
 
     @property
     def accesible(self):
-        return True if (self.fecha_max_rellenado > now() and self.activo) else False
+        if self.fecha_max_rellenado:
+            return True if (self.fecha_max_rellenado > now() and self.activo) else False
+        else:
+            return True if self.activo else False
 
     @property
     def num_respuestas(self):
