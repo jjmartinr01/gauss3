@@ -526,7 +526,7 @@ def formularios(request):
             response['Content-Disposition'] = 'attachment; filename=%s' % (fichero_xls)
             return response
         if request.POST['action'] == 'pdf_gform':
-            dce = get_dce(g_e.entidad, 'Configuración para cuestionarios')
+            dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
             try:
                 gform = Gform.objects.get(id=request.POST['gform'])
                 c = render_to_string('gform2pdf.html', {'gfrs': gform.gformresponde_set.filter(respondido=True)})
@@ -594,7 +594,7 @@ def ver_gform(request, id, identificador):
             return JsonResponse({'ok': True, 'msg': 'No se realiza ninguna operación.'})
         elif request.method == 'POST':
             if request.POST['action'] == 'genera_pdf':
-                dce = get_dce(g_e.entidad, 'Configuración para cuestionarios')
+                dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
                 gform = Gform.objects.get(id=request.POST['gform'])
                 c = render_to_string('gform2pdf.html', {'template': gform.template_procesado})
                 fich = pdfkit.from_string(c, False, dce.get_opciones)
@@ -616,7 +616,7 @@ def ver_resultados(request, id, identificador):
             return JsonResponse({'ok': True, 'msg': 'No se realiza ninguna operación.'})
         elif request.method == 'POST':
             if request.POST['action'] == 'genera_pdf':
-                dce = get_dce(g_e.entidad, 'Configuración para cuestionarios')
+                dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
                 gform = Gform.objects.get(id=request.POST['gform'])
                 c = render_to_string('gform2pdf.html', {'template': gform.template_procesado})
                 fich = pdfkit.from_string(c, False, dce.get_opciones)
@@ -812,7 +812,7 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
                 return JsonResponse({'ok': False, 'msg': 'Se ha producido un error'})
     elif request.method == 'POST' and not request.is_ajax():
         if request.POST['action'] == 'genera_pdf':
-            dce = get_dce(g_e.entidad, 'Configuración para cuestionarios')
+            dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
             gfr = GformResponde.objects.get(id=request.POST['gformresponde'], g_e__gauser=g_e.gauser)
             c = render_to_string('gform2pdf.html', {'gfrs': [gfr]})
             fich = pdfkit.from_string(c, False, dce.get_opciones)
