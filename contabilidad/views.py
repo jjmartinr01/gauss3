@@ -29,7 +29,7 @@ from entidades.models import Subentidad, Cargo, Gauser_extra, DocConfEntidad
 
 from bancos.views import asocia_banco_ge, num_cuenta2iban
 from gauss.rutas import *
-from gauss.funciones import usuarios_de_gauss, pass_generator, usuarios_ronda
+from gauss.funciones import usuarios_de_gauss, pass_generator, usuarios_ronda, get_dce
 from contabilidad.models import Presupuesto, Partida, Asiento, Politica_cuotas, Remesa, File_contabilidad, \
     Remesa_emitida, OrdenAdeudo
 from autenticar.control_acceso import permiso_required
@@ -794,29 +794,12 @@ def comprueba_ordenes_adeudo(g_e):
     else:
         return OrdenAdeudo.objects.none()
 
-def get_dce(entidad):
-    doc_adeudo = 'Configuración para órdenes de adeudo'
-    try:
-        dce = DocConfEntidad.objects.get(entidad=entidad, nombre=doc_adeudo)
-    except:
-        try:
-            dce = DocConfEntidad.objects.get(entidad=entidad, predeterminado=True)
-        except:
-            dce = DocConfEntidad.objects.filter(entidad=entidad)[0]
-            dce.predeterminado = True
-            dce.save()
-        dce.pk = None
-        dce.nombre = doc_adeudo
-        dce.predeterminado = False
-        dce.editable = False
-        dce.save()
-    return dce
 
 @permiso_required('acceso_ordenes_adeudo')
 def ordenes_adeudo(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
-        dce = get_dce(g_e.ronda.entidad)
+        dce = get_dce(g_e.ronda.entidad, 'Configuración para órdenes de adeudo')
         orden = OrdenAdeudo.objects.get(id=request.POST['orden_id'], politica__entidad=g_e.ronda.entidad,
                                         firma__isnull=False, gauser=g_e.gauser)
         c = orden.texto_firmado
@@ -885,7 +868,7 @@ def firmar_orden_adeudo(request, id_oa):
 def mis_ordenes_adeudo(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST':
-        dce = get_dce(g_e.ronda.entidad)
+        dce = get_dce(g_e.ronda.entidad, 'Configuración para órdenes de adeudo')
         # doc_adeudo = 'Configuración para órdenes de adeudo'
         # try:
         #     dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_adeudo)

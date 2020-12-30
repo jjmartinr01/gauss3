@@ -406,7 +406,7 @@ def conv_reunion(request):
     if request.method == 'POST':
         if request.POST['action'] == 'pdf_convocatoria':
             try:
-                dce = get_dce(g_e.entidad, 'Configuración para convocatorias de reunión')
+                dce = get_dce(g_e.ronda.entidad, 'Configuración para convocatorias de reunión')
                 convocatoria = ConvReunion.objects.get(id=request.POST['id_conv_reunion'], entidad=g_e.ronda.entidad)
                 fichero = 'convocatoria_%s_%s' % (g_e.ronda.entidad.code, convocatoria.id)
                 c = render_to_string('convreunion2pdf.html', {'convocatoria': convocatoria, 'pdf': True})
@@ -939,7 +939,7 @@ def redactar_actas_reunion(request):
     if request.method == 'POST':
         if request.POST['action'] == 'pdf_acta':
             try:
-                dce = get_dce(g_e.entidad, 'Configuración para actas de reunión')
+                dce = get_dce(g_e.ronda.entidad, 'Configuración para actas de reunión')
                 acta = ActaReunion.objects.get(id=request.POST['id_acta'], convocatoria__entidad=g_e.ronda.entidad)
                 fecha = acta.convocatoria.fecha_hora.strftime('%Y%m%d')
                 nombre_fichero = slugify('%s-%s' % (acta.nombre, fecha)) + '.pdf'
