@@ -15,7 +15,7 @@
 
         <div class="">
             <h4 id="title_page" style="text-align: center;color: #008CBA;"><strong>
-                Formularios disponibles para rellena</strong></h4>
+                Formularios disponibles para rellenar</strong></h4>
         </div>
 
         <div id="listado_formularios">
@@ -37,7 +37,7 @@
                             $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
                             window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post("/formularios/", {action: 'open_accordion', id: id},
+                            $.post("/formularios_disponibles/", {action: 'open_accordion', id: id},
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
@@ -61,32 +61,22 @@
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
-                        $('#listado_formularios').prepend(data.html);
+                        show_mensajes({
+                            'title': '<i class="fa fa-check"></i> Copia realizada correctamente',
+                            'texto': 'Puedes ir al menú de diseño de formularios para ver la copia realizada en tu espacio de trabajo.'
+                        })
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
         });
 
-
-        {# ########################################################################################### #}
-        {# Respuesta al hacer click sobre "disabled" #}
-        {#   #}
-        {# ########################################################################################### #}
-
-        $('body').on('click', '.disabled', function (e) {
-            e.preventDefault();
-            show_mensajes({
-                title: 'Pregunta deshabilitada',
-                texto: '<p>Solo es posible modificar las preguntas que hayas creado tú.</p><p>Las creadas por otros usuarios solo pueden ser copiadas.</p>'
-            })
-        });
-
-
         $('body').on('click', '.copy_url_gform', function () {
             var url = $(this).data('url');
-            var protocol = window.location.protocol; {# http: o https: #}
-            var host = window.location.host; {# Por ejemplo: gaumentada.es:5656   (proporciona dominio + puerto) #}
+            var protocol = window.location.protocol;
+            {# http: o https: #}
+            var host = window.location.host;
+            {# Por ejemplo: gaumentada.es:5656   (proporciona dominio + puerto) #}
             {#var c = copiar_al_portapapeles(protocol + '//' + host + '/logincas/?nexturl=' + url)#}
             var c = copiar_al_portapapeles(protocol + '//' + host + url)
             if (c) {

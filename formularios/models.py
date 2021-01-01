@@ -28,6 +28,7 @@ class Gform(models.Model):
     multiple = models.BooleanField('Se puede rellenar varias veces?', default=False)
     fecha_max_rellenado = models.DateTimeField('Fecha máxima para el rellenado', max_length=50, blank=True, null=True)
     template = models.TextField('Plantilla para crear PDF', blank=True, null=True, default='')
+    observaciones = models.TextField('Notas aclaratorias para el formulario', blank=True, null=True, default='')
     creado = models.DateTimeField('Fecha de creación', auto_now_add=True)
 
     def get_rol(self, g_e):

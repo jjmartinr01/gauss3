@@ -20,8 +20,9 @@
             <li><a class="button pdf_gform" data-id="{{ gform.id }}"
                    title="PDF con los datos enviados por los usuarios"><i class="fa fa-file-pdf-o"></i> PDF</a>
             </li>
-        <li><a class="button" data-id="{{ gform.id }}" href="/ver_resultados/{{ gform.id }}/{{ gform.identificador }}/"
-               target="_blank" title="Resumen de las respuestas"><i class="fa fa-bar-chart"></i> Respuestas</a>
+            <li><a class="button" data-id="{{ gform.id }}"
+                   href="/ver_resultados/{{ gform.id }}/{{ gform.identificador }}/"
+                   target="_blank" title="Resumen de las respuestas"><i class="fa fa-bar-chart"></i> Respuestas</a>
             </li>
         </ul>
     </div>
@@ -36,38 +37,61 @@
 </div>
 
 <div class="row">
+    <div class="columns large-12">
+        <label><b>Notas aclaratorias acerca de este formulario:</b></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <div contenteditable="true" class="ckeditor update_observaciones" data-gform="{{ gform.id }}"
+             data-campo="observaciones" id="observaciones{{ gform.id }}"
+        >{% autoescape off %}{{ gform.observaciones }}{% endautoescape %}</div>
+    </div>
+</div>
+
+<br>
+<div class="row">
     <div class="columns large-2">
         <label title="Fecha límite para rellenar el formulario"><b>Fecha límite:</b>
             <input value="{{ gform.fecha_max_rellenado|date:'Y-m-d' }}" type="date" name="fecha_max_rellenado"
                    class="update_fecha_limite" data-gform={{ gform.id }}></label>
     </div>
-    <div class="columns large-2">
+    <div class="columns large-1">
         <label><b>¿Activo?</b></label>
-            {% if gform.activo %}
-                <a class="respuesta_booleana" id="activo{{ gform.id }}" data-campo="activo" data-gform="{{ gform.id }}">Sí</a>
-            {% else %}
-                <a class="respuesta_booleana" id="activo{{ gform.id }}" data-campo="activo" data-gform="{{ gform.id }}">No</a>
-            {% endif %}
-
+        {% if gform.activo %}
+            <a class="respuesta_booleana" id="activo{{ gform.id }}" data-campo="activo"
+               data-gform="{{ gform.id }}">Sí</a>
+        {% else %}
+            <a class="respuesta_booleana" id="activo{{ gform.id }}" data-campo="activo"
+               data-gform="{{ gform.id }}">No</a>
+        {% endif %}
     </div>
-    <div class="columns large-2">
+    <div class="columns large-1">
         <label title="¿Admite múltiples respuestas por un mismo usuario?"><b>¿Múltiple?</b></label>
-            {% if gform.multiple %}
-                <a class="respuesta_booleana" id="multiple{{ gform.id }}" data-campo="multiple" data-gform="{{ gform.id }}">Sí</a>
-            {% else %}
-                <a class="respuesta_booleana" id="multiple{{ gform.id }}" data-campo="multiple" data-gform="{{ gform.id }}">No</a>
-            {% endif %}
+        {% if gform.multiple %}
+            <a class="respuesta_booleana" id="multiple{{ gform.id }}" data-campo="multiple" data-gform="{{ gform.id }}">Sí</a>
+        {% else %}
+            <a class="respuesta_booleana" id="multiple{{ gform.id }}" data-campo="multiple" data-gform="{{ gform.id }}">No</a>
+        {% endif %}
     </div>
-    <div class="columns large-2">
+    <div class="columns large-3">
+        <label title="Elegir si este formulario puede ser rellenado por los usuarios de {{ gform.propietario.ronda.entidad.name }} o por todos los usuarios de {{ gform.propietario.ronda.entidad.organization.organization }}"><b>Rellenable
+            por usuarios de:</b>
+            <select class="destinatarios" data-gform="{{ gform.id }}">
+                <option value="ENT" {% if gform.destinatarios == 'ENT' %}selected{% endif %}>{{ gform.propietario.ronda.entidad.name }}</option>
+                <option value="ORG" {% if gform.destinatarios == 'ORG' %}selected{% endif %}>{{ gform.propietario.ronda.entidad.organization.organization }}</option>
+            </select> </label>
+    </div>
+    <div class="columns large-1">
         <label><b>Ver</b><br>
             <a href="/ver_gform/{{ gform.id }}/{{ gform.identificador }}/" target="_blank"
             ><i class="fa fa-eye fa-2x"></i></a>
         </label>
     </div>
-<div class="columns large-4">
+    <div class="columns large-4">
         <label><b>Copiar enlace</b><br>
             <a class="button tiny copy_url_gform" data-url="/rellena_gform/{{ gform.id }}/{{ gform.identificador }}/"
-            title="Haz click sobre el botón para copiar el enlace al formulario" style="font-weight: bold;">
+               title="Haz click sobre el botón para copiar el enlace al formulario" style="font-weight: bold;">
                 Haz click sobre este botón
             </a>
         </label>

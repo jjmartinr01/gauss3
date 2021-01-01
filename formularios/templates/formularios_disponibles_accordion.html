@@ -2,14 +2,14 @@
 {% load my_templatetags %}
 {% if buscadas %}
     {% if exc_max %}
-        <b>Se han encontrado <span style="color:red;">{{ num_act }}</span> actuaciones que coinciden con la
+        <b>Se han encontrado <span style="color:red;">{{ num_act }}</span> formularios que coinciden con la
             búsqueda.</b> <b style="color:red;">Solo
         se muestran resultados con un número de coincidencias inferior a {{ max }}.</b>
     {% else %}
         {% if num_act == 1 %}
-            <b>Se ha encontrado {{ num_act }} actuación que coincide con la búsqueda</b>
+            <b>Se ha encontrado 1 formulario que coincide con la búsqueda</b>
         {% else %}
-            <b>Se han encontrado {{ num_act }} actuaciones que coinciden con la búsqueda</b>
+            <b>Se han encontrado {{ num_act }} formularios que coinciden con la búsqueda</b>
         {% endif %}
         <a class="listado_normal right"><span class="label rounded">Volver al listado normal</span></a>
     {% endif %}
@@ -22,16 +22,9 @@
             style="border-bottom: dotted 1px black">
             <a href="#panel{{ gform.id }}">
                 <i id="circle{{ gform.id }}" class="fa fa-plus-circle circle_icon"></i>
-                <b id="nombre{{ gform.id }}">{% if not gform.nombre %}
-                    <span style="color:red">Nuevo formulario</span>
-                {% else %}{{ gform.nombre }}{% endif %}</b> -- <span
+                <b id="nombre{{ gform.id }}">{{ gform.nombre }}</b> -- <span
                     id="fecha_max_rellenado{{ gform.id }}">Accesible hasta: {{ gform.fecha_max_rellenado|date:"d-m-Y" }}
-            </span> (<span id="fecha{{ gform.id }}">Creado: {{ gform.creado|date:"d-m-Y" }}</span>)
-                {% if gform.num_respuestas == 1 %}
-                    -- <span id="respuestas{{ gform.id }}">1 respuesta recibida</span>
-                {% else %}
-                    -- <span id="respuestas{{ gform.id }}">{{ gform.num_respuestas }} respuestas recibidas</span>
-                {% endif %}
+            </span>
                 {% if buscadas %}
                     <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
                 {% endif %}

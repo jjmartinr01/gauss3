@@ -1,0 +1,59 @@
+{% load entidades_extras %}
+{% load formularios_extras %}
+
+<style>
+    .button {
+        font-weight: bold;
+    }
+</style>
+<div class="row">
+    <div class="columns large-12">
+        {% autoescape off %}{{ gform.observaciones }}{% endautoescape %}
+    </div>
+</div>
+{% if g_e|has_permiso:'crea_formularios' %}
+    <div class="row">
+        <div class="columns large-12">
+            <ul class="button-group center" style="text-align: center;">
+                <li>
+                    <a class="button copy_gform" data-gform="{{ gform.id }}"
+                       title="Hacer una copia (un duplicado) de este cuestionario"><i class="fa fa-copy"></i> Copiar</a>
+                </li>
+                <li>
+                    <a class="button" title="Ir a la página de rellenado del formulario"
+                       href="/rellena_gform/{{ gform.id }}/{{ gform.identificador }}/" target="_blank">
+                        <i class="fa fa-pencil-square-o"></i> Rellenar este formulario
+                    </a>
+                </li>
+                <li>
+                    <a class="button copy_url_gform" data-url="/rellena_gform/{{ gform.id }}/{{ gform.identificador }}/"
+                       title="Copiar el enlace al formulario para reenviarlo a otros">
+                        <i class="fa fa-link"></i> Haz click sobre este botón para copiar enlace
+                    </a>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+{% else %}
+    <div class="row">
+        <div class="columns large-12">
+            <ul class="button-group center" style="text-align: center;">
+                <li>
+                    <a class="button" title="Ir a la página de rellenado del formulario"
+                       href="/rellena_gform/{{ gform.id }}/{{ gform.identificador }}/" target="_blank">
+                        <i class="fa fa-pencil-square-o"></i> Rellenar este formulario
+                    </a>
+                </li>
+                <li>
+                    <a class="button copy_url_gform" data-url="/rellena_gform/{{ gform.id }}/{{ gform.identificador }}/"
+                       title="Copiar el enlace al formulario para reenviarlo a otros">
+                        <i class="fa fa-link"></i> Haz click sobre este botón para copiar enlace
+                    </a>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+{% endif %}
+

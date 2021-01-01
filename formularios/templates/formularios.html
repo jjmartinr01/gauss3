@@ -102,17 +102,6 @@
                 var element = $(this);
                 var id = element.attr('id');
                 var editor = CKEDITOR.inline(id, config);
-                editor.addCommand("generapdfinforme", {
-                    exec: function (edt) {
-                        genera_pdf_informe();
-                    }
-                });
-                editor.ui.addButton('generapdfbutton', {
-                    label: "Genera PDF",
-                    command: 'generapdfinforme',
-                    toolbar: 'insert',
-                    icon: '/static/images/pdf_icon.png'
-                });
                 var anchura = element.width() + 2;
                 setTimeout(function () {
                     $('#cke_' + id).css('width', anchura + 'px');
@@ -120,6 +109,25 @@
                 }, 200);
             });
         }
+
+        $('body').on('keyup', '.update_observaciones', function () {
+            var element = $(this);
+            var gform = element.data('gform');
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/formularios/", {action: 'update_observaciones', gform: gform, texto: nuevo_texto},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
 
         $('body').on('keyup', '.update_template', function () {
             var element = $(this);
@@ -285,6 +293,19 @@
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.destinatarios', function () {
+            var gform = $(this).data('gform');
+            var valor = $(this).val();
+            $.post("/formularios/", {action: 'update_destinatarios', gform: gform, valor: valor},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
         });

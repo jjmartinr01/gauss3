@@ -124,6 +124,17 @@ def formularios(request):
                     return JsonResponse({'ok': False, 'msg': 'El nombre solo puede ser cambiado por el propietario'})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_destinatarios':
+            try:
+                gform = Gform.objects.get(id=request.POST['gform'])
+                if gform.is_propietario_o_colaborador(g_e):
+                    gform.destinatarios = request.POST['valor']
+                    gform.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permiso para hacer el cambio'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'update_fecha_limite':
             try:
                 gform = Gform.objects.get(id=request.POST['gform'])
@@ -143,6 +154,17 @@ def formularios(request):
                     setattr(gform, request.POST['campo'], nuevo_valor)
                     gform.save()
                     return JsonResponse({'ok': True, 'html': ['No', 'Sí'][nuevo_valor]})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permiso para hacer el cambio'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_observaciones':
+            try:
+                gform = Gform.objects.get(id=request.POST['gform'])
+                if gform.is_propietario_o_colaborador(g_e):
+                    gform.observaciones = request.POST['texto']
+                    gform.save()
+                    return JsonResponse({'ok': True})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tienes permiso para hacer el cambio'})
             except Exception as msg:
@@ -864,10 +886,21 @@ def formularios_disponibles(request):
     q2 = Q(destinatarios='ORG', propietario__ronda__entidad__organization=g_e.ronda.entidad.organization)
     gforms = Gform.objects.filter(q1 | q2)
     gforms_accesibles = [gform for gform in gforms if gform.accesible]
+    paginator = Paginator(gforms_accesibles, 15)
+    formularios = paginator.page(1)
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'open_accordion':
+            try:
+                gform = Gform.objects.get(id=request.POST['id'])
+                html = render_to_string('formularios_disponibles_accordion_content.html',
+                                        {'gform': gform, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
 
     return render(request, "formularios_disponibles.html",
                   {
                       'formname': 'gforms_accesibles',
-                      'gforms_accesibles': gforms_accesibles,
+                      'formularios': formularios,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
