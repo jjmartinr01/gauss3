@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
-import zipfile
+from datetime import datetime
 import pdfkit
-import requests
 from django.contrib.auth import login
 import simplejson as json
 import pexpect
@@ -18,8 +16,6 @@ from django.core.paginator import Paginator
 import html2text
 from bs4 import BeautifulSoup
 
-from django import forms
-from django.forms import ModelForm
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils.text import slugify
@@ -30,13 +26,7 @@ from mensajes.views import crear_aviso
 from formularios.models import *
 from gauss.rutas import *
 from gauss.funciones import get_dce
-
-# from entidades.models import Subentidad, Cargo
-# from autenticar.models import Gauser_extra, Gauser
-from entidades.models import Subentidad, Cargo, Gauser_extra, DocConfEntidad
-from autenticar.models import Gauser
-
-from gauss.funciones import usuarios_de_gauss, pass_generator, html_to_pdf, paginar
+from entidades.models import Gauser_extra
 
 
 def gfsi_id_orden(gform):

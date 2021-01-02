@@ -1,6 +1,7 @@
 # coding=utf-8
 # Create your views here.
 import os
+import pdfkit
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -14,11 +15,11 @@ from django.db.models import Q
 from autenticar.control_acceso import permiso_required
 from autenticar.models import Gauser
 from entidades.views import decode_selectgcs
-from entidades.models import Subentidad, Cargo
+from entidades.models import Subentidad, Cargo, DocConfEntidad
 from documentos.forms import Ges_documentalForm, Contrato_gaussForm
 from documentos.models import Ges_documental, Contrato_gauss, Etiqueta_documental, Compartir_Ges_documental, \
     TextoEvaluable
-from gauss.funciones import html_to_pdf, usuarios_ronda
+from gauss.funciones import usuarios_ronda
 from gauss.rutas import MEDIA_DOCUMENTOS, MEDIA_ANAGRAMAS, RUTA_BASE
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso, enviar_correo
@@ -398,12 +399,12 @@ def contrato_gauss(request):
                 crear_aviso(request, False, u'Todavía no se ha subido un archivo con el contrato escaneado.')
 
         if request.POST['action'] == 'obtener_pdf':
+            dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
             contrato = Contrato_gauss.objects.get(entidad=g_e.ronda.entidad)
-
             fichero = 'Contrato_GAUSS_sin_firmar'
             c = render_to_string('contrato_gauss2pdf.html', {'contrato': contrato, 'MA': MEDIA_ANAGRAMAS},
                                  request=request)
-            fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_DOCUMENTOS, title=u'Contrato GAUSS')
+            fich = pdfkit.from_string(c, False, dce.get_opciones)
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
             return response

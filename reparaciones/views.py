@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import pdfkit
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 # from django.template import RequestContext
@@ -9,7 +10,6 @@ from django import forms
 from django.forms import ModelForm
 from entidades.models import Gauser_extra, Cargo
 from autenticar.control_acceso import permiso_required
-from gauss.funciones import html_to_pdf
 from reparaciones.models import Reparacion
 from datetime import datetime, date
 from django.core.mail import EmailMessage
@@ -19,6 +19,7 @@ from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 import simplejson as json
 from gauss.rutas import *
+from gauss.funciones import get_dce
 from mensajes.views import encolar_mensaje
 
 logger = logging.getLogger('django')
@@ -29,6 +30,8 @@ def gestionar_reparaciones(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':
         if request.POST['action'] == 'genera_informe' and g_e.has_permiso('genera_informe_reparaciones'):
+            doc_rep = 'Configuración de informes de reparaciones'
+            dce = get_dce(g_e.ronda.entidad, doc_rep)
             try:
                 inicio = datetime.strptime(request.POST['id_fecha_inicio'], '%d-%m-%Y')
             except:
@@ -49,9 +52,9 @@ def gestionar_reparaciones(request):
 
             fichero = 'Reparaciones%s_%s_%s' % (
                 str(g_e.ronda.entidad.code), request.POST['tipo_busqueda'], g_e.gauser.username)
-            c = render_to_string('reparaciones2pdf.html', {'reparaciones': reparaciones, 'MA': MEDIA_ANAGRAMAS, },
-                                 request=request)
-            fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REPARACIONES, title=u'Lista de reparaciones')
+            c = render_to_string('reparaciones2pdf.html', {'reparaciones': reparaciones, 'MA': MEDIA_ANAGRAMAS, })
+            fich = pdfkit.from_string(c, False, dce.get_opciones)
+            logger.info('%s, pdf_reparaciones' % g_e)
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
             return response

@@ -15,7 +15,7 @@ from django.core.files.base import ContentFile
 import base64
 
 from autenticar.control_acceso import permiso_required
-from gauss.funciones import usuarios_de_gauss, html_to_pdf, get_dce
+from gauss.funciones import usuarios_de_gauss, get_dce
 from gauss.rutas import RUTA_BASE, MEDIA_ANAGRAMAS, MEDIA_CONVIVENCIA
 from convivencia.models import *
 from entidades.models import Subentidad, DocConfEntidad
@@ -261,8 +261,6 @@ def sancionar_conductas(request):
                 texto_html = render_to_string('is2pdf.html', {'informe': informe, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS,
                                                               'listar_conductas': listar_conductas,
                                                               'expulsiones': expulsiones, 'informes': informes})
-                # ruta = MEDIA_CONVIVENCIA + '%s/' % g_e.ronda.entidad.code
-                # fich = html_to_pdf(request, texto_html, fichero='IS', media=ruta, title=u'Informe sancionador')
                 nombre = '%s_%s.pdf' % (slugify(informe.sancionado.gauser.get_full_name()),
                     timezone.localtime(informe.created).strftime('%d-%m-%Y_%H%M'))
                 url_pdf = MEDIA_CONVIVENCIA + '%s/%s' % (g_e.ronda.entidad.code, nombre)
@@ -270,11 +268,9 @@ def sancionar_conductas(request):
                 fich = open(url_pdf, 'rb')
                 informe.texto_html = texto_html
                 nombre_fichero = 'convivencia/%s/%s' % (g_e.ronda.entidad.code, nombre)
-                # informe.fichero.save(nombre, File(fich))
                 informe.fichero.save(nombre_fichero, File(fich))
                 fich.close()
                 informe.save()
-                # filename = informe.fichero.name.split('/')[-1]
                 response = HttpResponse(informe.fichero, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=%s' % nombre
                 return response

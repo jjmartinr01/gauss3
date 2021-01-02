@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
+import pdfkit
+import logging
 from datetime import datetime, date, timedelta
 from django.core import serializers
 from django.shortcuts import render
@@ -15,13 +17,14 @@ from horarios.models import Tramo_horario
 from estudios.models import  Grupo, Gauser_extra_estudios
 from entidades.models import Entidad, Gauser_extra, Subentidad
 # from autenticar.models import Gauser_extra, Perfil
-from gauss.funciones import html_to_pdf, pass_generator, usuarios_de_gauss
+from gauss.funciones import pass_generator, usuarios_de_gauss, get_dce
 from actividades.models import Actividad, File_actividad
 from gauss.rutas import *
 from mensajes.views import crear_aviso
 from mensajes.models import Aviso
 from calendario.models import Vevent
 
+logger = logging.getLogger('django')
 
 def actividades2slides(request):
     entidad = Entidad.objects.get(id=request.GET['c'])
@@ -100,6 +103,8 @@ def gestionar_actividades(request):
         return actividades
 
     def pdf_actividades(actividad):
+        doc_act = 'Configuración de documentos para actividades'
+        dce = get_dce(g_e.ronda.entidad, doc_act)
         if actividad == 'todas' and g_e.has_permiso('crea_informe_actividades'):
             fecha_inicio = datetime.strptime(request.POST['search_fecha_inicio'], '%d-%m-%Y')
             fecha_fin = datetime.strptime(request.POST['search_fecha_fin'], '%d-%m-%Y')
@@ -127,8 +132,8 @@ def gestionar_actividades(request):
             profesores = []
         c = render_to_string('actividades2pdf.html', {'actividades': actividades, 'profesores': profesores},
                              request=request)
-        fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_DOCUMENTOS,
-                           title=u'Listado de actividades actividades')
+        fich = pdfkit.from_string(c, False, dce.get_opciones)
+        logger.info('%s, pdf_informe_actividades' % g_e)
         response = HttpResponse(fich, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename=' + fichero
         return response

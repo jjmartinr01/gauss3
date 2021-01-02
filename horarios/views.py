@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import xlrd
 import logging
+import pdfkit
 import simplejson as json
 from difflib import get_close_matches
 
@@ -22,7 +23,7 @@ from django.utils.text import slugify, normalize_newlines
 from django.utils.html import strip_tags
 
 from autenticar.control_acceso import permiso_required
-from gauss.funciones import usuarios_de_gauss, html_to_pdf, usuarios_ronda
+from gauss.funciones import usuarios_de_gauss, usuarios_ronda, get_dce
 from gauss.rutas import MEDIA_ACTILLAS
 from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios
 from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia, SeguimientoAlumno, \
@@ -42,10 +43,13 @@ logger = logging.getLogger('django')
 def actillas(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':
+        doc_actillas = 'Configuración de documentos de actillas'
+        dce = get_dce(g_e.ronda.entidad, doc_actillas)
         grupos = Grupo.objects.filter(id__in=request.POST.getlist('grupo'))
         fichero = 'actillaS_' + str(g_e.ronda.entidad.code) + '_' + slugify(datetime.now())
         c = render_to_string('actillas2pdf.html', {'grupos': grupos, })
-        fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_ACTILLAS, title='Actilla de evaluación')
+        fich = pdfkit.from_string(c, False, dce.get_opciones)
+        logger.info('%s, pdf_actillas' % g_e)
         response = HttpResponse(fich, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename=' + fichero
         return response

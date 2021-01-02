@@ -1,13 +1,49 @@
 {% load competencias_clave_extras %}
-<style>
-    h1 {
-        text-align: center;
-        font-size: 30px;
-        line-height: 150px;
-    }
-</style>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Valoración de las competencias clave</title>
+    <style type="text/css">
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 30px;
+            line-height: 150px;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+        .pagebreak {
+            page-break-before: always;
+        }
+
+        {# Las siguientes tres líneas de estilo son para conseguir que la cabecera de la tabla no se solape #}
+        {# con el texto de la primera fila de cada página. Esta información ha sido obtenida de: #}
+        {# https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2367 #}
+        thead {
+            display: table-header-group
+        }
+
+        tfoot {
+            display: table-row-group
+        }
+
+        tr {
+            page-break-inside: avoid
+        }
+    </style>
+</head>
+<body>
+
 <h1>VALORACIONES COMPETENCIAS CLAVE</h1>
-<table width="100%">
+<table style="width: 100%">
     {% for a in alumnos %}
         {% ifchanged a.gauser_extra_estudios.grupo %}
             <tr>
@@ -43,7 +79,7 @@
 {% if profesores %}
     <div class="pagebreak"></div>
     <h2>Número de capacidades evaluadas</h2>
-    <table width="100%">
+    <table style="width: 100%">
         <tr>
             <th>Profesor</th>
             <th>CCL</th>
@@ -105,5 +141,5 @@
         {% endfor %}
     </table>
 {% endif %}
-
-
+</body>
+</html>

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os
+import pdfkit
 import logging
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -8,11 +9,11 @@ from django.db.models import Q
 from django import forms
 from django.forms import ModelForm
 from entidades.models import Gauser_extra, Subentidad
-from gauss.funciones import html_to_pdf, usuarios_de_gauss
+from gauss.funciones import usuarios_de_gauss, get_dce
 from gauss.rutas import *
 from tutorados.models import Pregunta, Informe_seguimiento, Respuesta, Fichero_tarea, Informe_tareas, Tarea_propuesta
 from autenticar.control_acceso import permiso_required
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from datetime import datetime, date, timedelta
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
@@ -44,18 +45,17 @@ def informes_seguimiento(request):
         if request.POST['action'] == 'pdf_informe_seguimiento':
             informe = Informe_seguimiento.objects.get(usuario__ronda=g_e.ronda, id=request.POST['informe_id'])
             if informe.solicitante == g_e or g_e.has_permiso('ve_informes_seguimiento'):
-                fichero = 'informe_informe_seguimiento_%s_%s' % (g_e.ronda.entidad.code, informe.id)
+                doc_seg = 'Configuración de informes de seguimiento'
+                dce = get_dce(g_e.ronda.entidad, doc_seg)
                 c = render_to_string('informe_seguimiento2pdf.html', {
                     'informe': informe,
                     'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS,
-                }, request=request)
-                ruta = MEDIA_INFORMES + '%s/' % g_e.ronda.entidad.code
-                fich = html_to_pdf(request, c, media=ruta, fichero=fichero,
-                                   title=u'Expediente de informe_seguimiento')
-                logger.info(u'%s, pdf_informe_seguimiento %s' % (g_e, informe.id))
+                })
+                fich = pdfkit.from_string(c, False, dce.get_opciones)
+                logger.info('%s, pdf_informe_seguimiento %s' % (g_e, informe.id))
                 response = HttpResponse(fich, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=informe_informe_seguimiento_%s_%s.pdf' % (
-                    slugify(informe.usuario.gauser.get_full_name()), str(informe.id))
+                usuario = slugify(informe.usuario.gauser.get_full_name())
+                response['Content-Disposition'] = 'attachment; filename=Informe_Seguimiento_%s.pdf' % usuario
                 return response
 
     return render(request, "informes_seguimiento.html",
@@ -120,9 +120,10 @@ def ajax_informe_seguimiento(request):
             for i in informes:
                 if g_e in i.usuarios_destino.all() or g_e.has_permiso('ve_informes_seguimiento'):
                     ge_informes.append(i)
-            if (g_e in usuario.gauser_extra_estudios.grupo.tutores) or (
-                        g_e in usuario.gauser_extra_estudios.grupo.cotutores) or g_e.has_permiso(
-                'solicita_informes_seguimiento'):
+            con_crea_informe1 = g_e in usuario.gauser_extra_estudios.grupo.tutores
+            con_crea_informe2 = g_e in usuario.gauser_extra_estudios.grupo.cotutores
+            con_crea_informe3 = g_e.has_permiso('solicita_informes_seguimiento')
+            if con_crea_informe1 or con_crea_informe2 or con_crea_informe3:
                 crea_informe = True
             if len(ge_informes) > 0:
                 data = render_to_string('informes_seguimiento_accordion.html', {'informes': ge_informes, 'g_e': g_e})
@@ -277,41 +278,35 @@ def informes_tareas(request):
 
     if request.method == 'POST':
         if request.POST['action'] == 'pdf_informe_tareas':
+            doc_tar = 'Configuración de informes con tareas'
+            dce = get_dce(g_e.ronda.entidad, doc_tar)
             informe = Informe_tareas.objects.get(usuario__ronda=g_e.ronda, id=request.POST['informe_id'])
             ficheros_list = Fichero_tarea.objects.filter(tarea__informe=informe)
             if informe.solicitante == g_e or g_e.has_permiso('ve_informes_tareas'):
-                fichero = 'informe_informe_tareas_%s_%s' % (g_e.ronda.entidad.code, informe.id)
+                fichero = 'informe_informe_tareas_%s_%s.pdf' % (g_e.ronda.entidad.code, informe.id)
                 c = render_to_string('informe_tareas2pdf.html', {
                     'informe': informe,
                     'ficheros_list': ficheros_list,
-                    'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS,
-                }, request=request)
-
+                })
                 ruta = MEDIA_INFORMES + '%s/' % g_e.ronda.entidad.code
-                # attach = ''
-                # for archivo in ficheros_list:
-                #     attach += RUTA_BASE + archivo.fichero.url + ' '
-                # logger.info(attach)
-                # fich = html_to_pdf(request, c, media=ruta, fichero=fichero,
-                #                    title=u'Expediente de informe_tareas', attach=attach)
-                fich = html_to_pdf(request, c, media=ruta, fichero=fichero, title=u'Expediente de informe_tareas')
+                informe_pdf = ruta + '%s' % fichero
+                pdfkit.from_string(c, informe_pdf, dce.get_opciones)
                 if ficheros_list.count() > 0:
                     ruta_zip = ruta + 'informe_informe_tareas_%s_%s.zip' % (g_e.ronda.entidad.code, informe.id)
                     with ZipFile(ruta_zip, 'w') as zipObj:
-                        # Add multiple files to the zip
-                        informe_pdf = ruta + fichero + '.pdf'
+                        # Añadir varios archivos en un ZIP
+                        # Primero incluimos el pdf y después los archivos adjuntos
                         zipObj.write(informe_pdf, os.path.basename(informe_pdf))
                         for f in ficheros_list:
                             zipObj.write(f.fichero.path, os.path.basename(f.fichero.path))
-                    fich = open(ruta_zip, 'rb')
-                    logger.info(u'%s, pdf_informe_tareas %s' % (g_e, informe.id))
-                    response = HttpResponse(fich, content_type='application/zip')
+                    logger.info('%s, pdf_informe_tareas %s' % (g_e, informe.id))
+                    response = FileResponse(open(ruta_zip, 'rb'))
                     response['Content-Disposition'] = 'attachment; filename=informe_informe_tareas_%s_%s.zip' % (
                         slugify(informe.usuario.gauser.get_full_name()), str(informe.id))
                     return response
                 else:
                     logger.info('%s, pdf_informe_tareas %s' % (g_e, informe.id))
-                    response = HttpResponse(fich, content_type='application/pdf')
+                    response = FileResponse(open(informe_pdf, 'rb'))
                     response['Content-Disposition'] = 'attachment; filename=informe_informe_tareas_%s_%s.pdf' % (
                         slugify(informe.usuario.gauser.get_full_name()), str(informe.id))
                     return response

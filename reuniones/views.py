@@ -24,7 +24,7 @@ from autenticar.control_acceso import permiso_required
 from calendario.models import Vevent
 from entidades.models import Subentidad, Gauser_extra
 from entidades.views import decode_selectgcs
-from gauss.funciones import html_to_pdf, human_readable_list, usuarios_ronda, get_dce
+from gauss.funciones import human_readable_list, usuarios_ronda, get_dce
 from gauss.rutas import MEDIA_ANAGRAMAS, MEDIA_REUNIONES, RUTA_BASE
 from gauss.constantes import DIAS, MESES
 from mensajes.models import Aviso, Mensaje, Etiqueta
@@ -410,7 +410,6 @@ def conv_reunion(request):
                 convocatoria = ConvReunion.objects.get(id=request.POST['id_conv_reunion'], entidad=g_e.ronda.entidad)
                 fichero = 'convocatoria_%s_%s' % (g_e.ronda.entidad.code, convocatoria.id)
                 c = render_to_string('convreunion2pdf.html', {'convocatoria': convocatoria, 'pdf': True})
-                # fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REUNIONES, title='Convocatoria de reunión')
                 fich = pdfkit.from_string(c, False, dce.get_opciones)
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
@@ -943,9 +942,7 @@ def redactar_actas_reunion(request):
                 acta = ActaReunion.objects.get(id=request.POST['id_acta'], convocatoria__entidad=g_e.ronda.entidad)
                 fecha = acta.convocatoria.fecha_hora.strftime('%Y%m%d')
                 nombre_fichero = slugify('%s-%s' % (acta.nombre, fecha)) + '.pdf'
-                # fichero = '%s/borradores/acta' % (g_e.ronda.entidad.code)
                 c = render_to_string('acta_reunion2pdf.html', {'acta': acta, 'pdf': True})
-                # fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_REUNIONES, title='Acta de reunión')
                 fich = pdfkit.from_string(c, False, dce.get_opciones)
                 logger.info('Creado pdf: %s' % nombre_fichero)
                 response = HttpResponse(fich, content_type='application/pdf')

@@ -1,5 +1,30 @@
 {% load my_templatetags %}
 {% load contabilidad_extras %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Informe de políticas de cuotas</title>
+    <style type="text/css">
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10pt;
+            text-align: justify;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        p {
+            font-size: 10pt;
+            margin-top: 1px;
+            margin-bottom: 1px;
+        }
+    </style>
+</head>
+<body>
 <h2 style="text-align:center;"> Política de cuotas de la entidad {{ politicas.0.entidad.name }}</h2>
 
 <strong> {{ politicas.0.entidad.ronda.nombre }}</strong>
@@ -24,16 +49,18 @@
             <td>&nbsp;</td>
             <td style="text-align:center;" colspan="6">{{ politica.cuota|primera_cuota }}€&nbsp;&nbsp;</td>
             <td style="text-align:right;" colspan="10">{% autoescape off %}
-                {{ politica.cuota|desglosar_descuentos }} {% endautoescape %}&nbsp;&nbsp;</td>
+                {{ politica.cuota|desglosar_descuentos }} {% endautoescape %}&nbsp;&nbsp;
+            </td>
         </tr>
         {% if politica.exentos.all|length > 0 %}
             {% if politica.exentos.all|length > 1 %}
                 <tr>
                     <td colspan="2">&nbsp;</td>
                     <td colspan="32"><span
-                            style="color:gray;"><strong>Exentos:</strong>&nbsp;&nbsp;{% for exento in politica.exentos.all %}
-                        {% if forloop.first %} {% elif forloop.last %} y {% else %}, {% endif %}
-                        {{ exento.get_full_name }}{% endfor %}</span></td>
+                            style="color:gray;"><strong>Exentos:</strong>&nbsp;&nbsp;
+                        {% for exento in politica.exentos.all %}
+                            {% if forloop.first %} {% elif forloop.last %} y {% else %}, {% endif %}
+                            {{ exento.get_full_name }}{% endfor %}</span></td>
                 </tr>
             {% else %}
                 <tr>
@@ -47,3 +74,5 @@
     {% endfor %}
 
 </table>
+</body>
+</html>

@@ -6,27 +6,46 @@
 {#          content="Documento requerido en virtud de la Ley Orgánica 4/2015 de Protección de la Seguridad Ciudadana"/>#}
 {#    <title>Anexo </title>#}
 {#</head>#}
-<style>
-    .center {
-        text-align: center
-    }
-    .interlineado{
-        line-height: 50%;
-    }
-    p{
-        font-size: 10pt;
-    }
-    h1{
-        font-size: 14pt;
-    }
-    h2{
-        font-size: 13pt;
-    }
-</style>
-{#<body>#}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Anexo registro viajeros</title>
+    <style type="text/css">
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10pt;
+            text-align: justify;
+        }
+
+        .center {
+            text-align: center
+        }
+
+        .interlineado {
+            line-height: 50%;
+        }
+
+        p {
+            font-size: 10pt;
+        }
+
+        h1 {
+            font-size: 14pt;
+        }
+
+        h2 {
+            font-size: 13pt;
+        }
+        .pagebreak {
+            page-break-after:always;
+        }
+    </style>
+</head>
+<body>
 
 {% for viajero in viajeros reversed %}
-    <h1 class="pagebreak center"><u>ANEXO</u></h1>
+    <h1 class="center"><u>ANEXO</u></h1>
     <h2 class="center interlineado">Modelo de parte de entrada de viajeros.</h2>
     <h2 class="center interlineado">Hoja-registro (mayores de 16 años)</h2>
     <p class="center interlineado">(Rellenar con mayúsculas) </p>
@@ -50,28 +69,41 @@
     Fecha de nacimiento(3): {{ viajero.nacimiento|date:'Ymd' }}<br>
     País de nacionalidad(4): {{ viajero.get_pais_display|upper }}<br>
     Fecha de entrada(5): {{ viajero.reserva.entrada|date:'Ymd' }}<br>
-    <p class="center">{{ vivienda.municipio }}, a {{ viajero.reserva.entrada|date:'j' }} de {{ viajero.reserva.entrada|date:'F'|lower }}
+    <p class="center">{{ vivienda.municipio }}, a {{ viajero.reserva.entrada|date:'j' }}
+        de {{ viajero.reserva.entrada|date:'F'|lower }}
         de {{ viajero.reserva.entrada|date:'Y' }}</p>
-    <table><tr><td>Firma del viajero</td><td><img src="{{ p_d }}{{ viajero.firma.url }}" width="120px" alt="firma del viajero"></td></tr></table>
+    <table>
+        <tr>
+            <td>Firma del viajero</td>
+            <td><img src="{{ p_d }}{{ viajero.firma.url }}" width="120px" alt="firma del viajero"></td>
+        </tr>
+    </table>
     <div style="font-size: small">
-    <p>La recogida y tratamiento se hará de acuerdo con la Ley Orgánica 15/1999, de 13 de diciembre, de Protección de
-        Datos de Carácter Personal y al amparo de lo dispuesto en el artículo 12.1 de la Ley Orgánica 1/1992, de 21 de
-        febrero, sobre Protección de la Seguridad Ciudadana.<br>
-        Instrucciones de confección del impreso.</p>
-    (1) Se admiten:<br>
-    - <u>Para españoles</u>: D.N.I., pasaporte o permiso de conducir.<br>
-    - <u>Para extranjeros</u>: pasaporte, carta o documento de identidad (para ciudadanos de la Unión Europea, Andorra,
-    Islandia, Suiza, Noruega, Malta, Mónaco y San Marino). Permiso de residencia español en vigor para los extranjeros
-    residentes en España.<br>
-    Se cumplimentará: D = DNI, P = pasaporte, C = permiso de conducir, I = carta o documento de identidad, N = Permiso
-    de residencia español, X = Permiso de residencia de otro Estado Miembro de la Unión Europea.<br>
-    (2) F = sexo femenino, y M = sexo masculino.<br>
-    (3) En el formato AAAAMMDD, al menos se cumplimentará el año de nacimiento. El mes y el día, si se desconocen, irán
-    como 0000.<br>
-    (4) Nombre del país de nacionalidad.<br>
-    (5) En el formato AAAAMMDD.
+        <p>La recogida y tratamiento se hará de acuerdo con la Ley Orgánica 15/1999, de 13 de diciembre, de Protección
+            de
+            Datos de Carácter Personal y al amparo de lo dispuesto en el artículo 12.1 de la Ley Orgánica 1/1992, de 21
+            de
+            febrero, sobre Protección de la Seguridad Ciudadana.<br>
+            Instrucciones de confección del impreso.</p>
+        (1) Se admiten:<br>
+        - <u>Para españoles</u>: D.N.I., pasaporte o permiso de conducir.<br>
+        - <u>Para extranjeros</u>: pasaporte, carta o documento de identidad (para ciudadanos de la Unión Europea,
+        Andorra,
+        Islandia, Suiza, Noruega, Malta, Mónaco y San Marino). Permiso de residencia español en vigor para los
+        extranjeros
+        residentes en España.<br>
+        Se cumplimentará: D = DNI, P = pasaporte, C = permiso de conducir, I = carta o documento de identidad, N =
+        Permiso
+        de residencia español, X = Permiso de residencia de otro Estado Miembro de la Unión Europea.<br>
+        (2) F = sexo femenino, y M = sexo masculino.<br>
+        (3) En el formato AAAAMMDD, al menos se cumplimentará el año de nacimiento. El mes y el día, si se desconocen,
+        irán
+        como 0000.<br>
+        (4) Nombre del país de nacionalidad.<br>
+        (5) En el formato AAAAMMDD.
     </div>
+    <div class="pagebreak"></div>
 
 {% endfor %}
-{#</body>#}
-{#</html>#}
+</body>
+</html>

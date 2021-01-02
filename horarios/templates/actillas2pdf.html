@@ -1,66 +1,73 @@
 {% load horarios_extras %}
-<style>
-    html {
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: 12pt;
-        text-align: justify;
-    }
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Actillas de evaluación</title>
+    <style type="text/css">
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12pt;
+            text-align: justify;
+        }
 
-    table {
-        margin-left: auto;
-        margin-right: auto;
-    }
+        table {
+            margin-left: auto;
+            margin-right: auto;
+        }
 
-    p, pre {
-        font-size: 12pt;
-        margin-top: 1em;
-        margin-bottom: 1em;
-    }
+        p, pre {
+            font-size: 12pt;
+            margin-top: 1em;
+            margin-bottom: 1em;
+        }
 
-    p.tabla {
-        margin-top: 5px;
-        margin-bottom: 5px;
-    }
+        p.tabla {
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
 
-    p.cargo {
-        margin-top: 0em;
-        margin-bottom: 0em;
-    }
+        p.cargo {
+            margin-top: 0em;
+            margin-bottom: 0em;
+        }
 
-    p.tipo {
-        font-weight: bold;
-        background: #eee;
-    }
+        p.tipo {
+            font-weight: bold;
+            background: #eee;
+        }
 
-    pre {
-        background: #eee;
-    }
+        pre {
+            background: #eee;
+        }
 
-    .title {
-        font-size: 300%;
-        font-weight: bold;
-        margin-top: 20pt;
-        margin-bottom: 20pt;
-    }
+        .title {
+            font-size: 300%;
+            font-weight: bold;
+            margin-top: 20pt;
+            margin-bottom: 20pt;
+        }
 
-    .subtitle {
-        font-size: 150%;
-        font-weight: bold;
-        margin-top: 20pt;
-        margin-bottom: 20pt;
-        text-align: center;
-    }
+        .subtitle {
+            font-size: 150%;
+            font-weight: bold;
+            margin-top: 20pt;
+            margin-bottom: 20pt;
+            text-align: center;
+        }
 
-    i, em {
-        font-style: normal;
-        color: #990000;
-        font-weight: bold;
-    }
+        i, em {
+            font-style: normal;
+            color: #990000;
+            font-weight: bold;
+        }
 
-    a {
-        color: #000066;
-    }
-</style>
+        a {
+            color: #000066;
+        }
+    </style>
+</head>
+<body>
 
 {% for grupo in grupos %}
     <p>Curso escolar: {{ grupo.ronda.entidad.ronda.nombre }}</p>
@@ -74,8 +81,8 @@
     {% if grupo.cotutores|length > 0 %}
         <br>{% if grupo.cotutores|length > 1 %}Co-Tutores:
         {% else %}{% if t.gauser.sexo == 'H' %}Co-Tutor:{% else %}Co-Tutora:{% endif %}{% endif %}
-    <strong>{% for t in grupo.cotutores %}{{ t.gauser.get_full_name }}{% if not forloop.last %},&nbsp;
-    {% endif %}{% endfor %}</strong>
+        <strong>{% for t in grupo.cotutores %}{{ t.gauser.get_full_name }}{% if not forloop.last %},&nbsp;
+        {% endif %}{% endfor %}</strong>
     {% endif %}
 
     <p>DATOS ESTADÍSTICOS:</p>
@@ -122,9 +129,10 @@
         <li><strong>Casos particulares analizados y medidas adoptadas:</strong> ...</li>
         <ol>
 
-{#            {% for alumno in grupo.gauser_extra_estudios_set.all %}#}
+            {#            {% for alumno in grupo.gauser_extra_estudios_set.all %}#}
             {% for alumno in grupo|alumnos %}
-                <li style="margin-bottom: 7em;"><strong> {{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }} </strong>
+                <li style="margin-bottom: 7em;">
+                    <strong> {{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }} </strong>
                     ({{ alumno.ge.gauser.nacimiento }})
                     </br> &nbsp;&nbsp;&nbsp; Repite:&#10066;&nbsp;&nbsp;&nbsp; Refuerzo:&#10066;&nbsp;&nbsp;&nbsp;
                     ACNEE:&#10066; &nbsp;&nbsp;&nbsp; Pendientes:..................
@@ -135,7 +143,7 @@
     <div style="text-align:center;padding-top:20px;">
         <table>
             <tr>{% now "F" as mes %}
-                <td colspan="{{ grupo.tutores|length }}">{{ grupo.ronda.entidad.localidad }}, a {% now "d" %}
+                <td colspan="{{ grupo.tutores|length }}">{{ grupo.ronda.entidad.localidad }}, a {% now "j" %}
                     de {{ mes|lower }} de {% now "Y" %} </td>
             </tr>
             <tr></tr>
@@ -178,7 +186,7 @@
     <div style="text-align:center;padding-top:20px;">
         <table>
             <tr>{% now "F" as mes %}
-                <td colspan="{{ grupo.tutores|length }}">{{ grupo.ronda.entidad.localidad }}, a {% now "d" %}
+                <td colspan="{{ grupo.tutores|length }}">{{ grupo.ronda.entidad.localidad }}, a {% now "j" %}
                     de {{ mes|lower }} de {% now "Y" %} </td>
             </tr>
             <tr></tr>
@@ -197,5 +205,5 @@
         <p class="pagebreak">&nbsp;</p>
     {% endif %}
 {% endfor %}
-
- 
+</body>
+</html>

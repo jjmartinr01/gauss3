@@ -22,7 +22,7 @@ from django.core.files.base import File
 from autenticar.control_acceso import permiso_required
 from autenticar.models import Gauser
 # from autenticar.control_acceso import access_required
-from gauss.funciones import html_to_pdf, usuarios_ronda, usuarios_de_gauss
+from gauss.funciones import html_to_pdf, usuarios_ronda, usuarios_de_gauss, get_dce
 from programaciones.models import *
 from gauss.rutas import RUTA_BASE, MEDIA_PROGRAMACIONES
 from mensajes.views import crear_aviso
@@ -89,6 +89,8 @@ def cargar_programaciones(request):
             else:
                 crear_aviso(request, False, 'No tienes permiso para descargar programaciones cargadas por otros')
         elif action == 'generar_zip_pga' and g_e.has_permiso('descarga_pga'):
+            doc_pga = 'Configuración de documentos de la PGA'
+            dce = get_dce(g_e.ronda.entidad, doc_pga)
             pga = PGA.objects.get(ronda=g_e.ronda)
             # try:
             # Procesado del archivo de aspectos de la PGA

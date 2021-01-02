@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.utils.text import slugify
 from entidades.models import Gauser_extra, Subentidad
-from gauss.funciones import html_to_pdf, usuarios_de_gauss, get_dce
+from gauss.funciones import usuarios_de_gauss, get_dce
 from gauss.rutas import *
 from absentismo.models import Actuacion, ExpedienteAbsentismo
 from django.http import HttpResponse
@@ -32,7 +32,6 @@ def gestionar_absentismo(request):
             dce = get_dce(g_e.ronda.entidad, doc_abs)
             expediente = ExpedienteAbsentismo.objects.get(expedientado__ronda=g_e.ronda,
                                                           id=request.POST['expediente_id'])
-            # fichero = 'expediente_absentismo_%s_%s' % (g_e.ronda.entidad.code, expediente.id)
             c = render_to_string('absentismo2pdf.html', {'expediente': expediente, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
             fich = pdfkit.from_string(c, False, dce.get_opciones)
             logger.info('%s, pdf_absentismo %s' % (g_e, expediente.id))
@@ -40,13 +39,6 @@ def gestionar_absentismo(request):
             alumno = slugify(expediente.expedientado.gauser.get_full_name())
             response['Content-Disposition'] = 'attachment; filename=expediente_absentismo_%s.pdf' % alumno
             return response
-
-            # fich = html_to_pdf(request, c, media=MEDIA_ABSENTISMO, fichero=fichero, title='Expediente de absentismo')
-            # logger.info('%s, pdf_absentismo %s' % (g_e, expediente.id))
-            # response = HttpResponse(fich, content_type='application/pdf')
-            # response['Content-Disposition'] = 'attachment; filename=expediente_absentismo_%s.pdf' % (
-            #     slugify(expediente.expedientado.gauser.get_full_name()))
-            # return response
 
     return render(request, "absentismo.html",
                   {

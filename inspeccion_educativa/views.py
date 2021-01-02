@@ -17,7 +17,7 @@ from django.core.paginator import Paginator
 import sys
 from django.core import serializers
 
-from gauss.funciones import html_to_pdf, html_to_pdf_options, usuarios_ronda, html_to_pdf_dce
+from gauss.funciones import html_to_pdf_options, usuarios_ronda, html_to_pdf_dce
 from gauss.rutas import MEDIA_INSPECCION
 from gauss.constantes import CODE_CONTENEDOR
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required

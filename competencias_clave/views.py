@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import pdfkit
+import logging
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 from django.shortcuts import render
 
 # Create your views here.
 from django.template.loader import render_to_string
 
 from entidades.models import Gauser_extra
-from gauss.funciones import html_to_pdf
+from gauss.funciones import get_dce
 from horarios.models import Sesion, Horario
 from estudios.models import Grupo, Gauser_extra_estudios, Materia, Curso
 from competencias_clave.models import CompetenciasMateria, CompetenciasMateriaAlumno
@@ -17,6 +19,7 @@ from mensajes.models import Aviso
 from gauss.rutas import MEDIA_CC
 from autenticar.control_acceso import permiso_required
 
+logger = logging.getLogger('django')
 
 @permiso_required('cc_valorar_mis_alumnos')
 def cc_valorar_mis_alumnos(request):
@@ -89,15 +92,18 @@ def cc_valorar_mis_alumnos(request):
                 return JsonResponse({'ok': False})
     elif request.method == 'POST':
         if request.POST['action'] == 'informe_pdf' and g_e.has_permiso('genera_informe_ccs'):
+            doc_cc = 'Configuración de informes Competencias Clave'
+            dce = get_dce(g_e.ronda.entidad, doc_cc)
             cmas = CompetenciasMateriaAlumno.objects.filter(profesor__ronda=g_e.ronda,
                                                             materia__materia__curso__etapa__in=etapas)
             ids = cmas.values_list('alumno', flat=True).distinct()
             alumnos = Gauser_extra.objects.filter(id__in=ids).order_by('gauser_extra_estudios__grupo')
             fichero = 'valoracionesCC_%s.pdf' % str(g_e.ronda.entidad.code)
-            c = render_to_string('valoracionescc2pdf.html', {'alumnos': alumnos, })
-            fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_CC, title=u'Valoración competencias clave')
+            c = render_to_string('valoracionescc2pdf.html', {'alumnos': alumnos,})
+            fich = pdfkit.from_string(c, False, dce.get_opciones)
+            logger.info('%s, pdf_cc_valorar_mis_alumnos' % g_e)
             response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + fichero
+            response['Content-Disposition'] = 'attachment; filename=%s' % fichero
             return response
 
     return render(request, "cc_valorar_mis_alumnos.html",
@@ -199,13 +205,16 @@ def cc_valorar_cualquier_alumno(request):
                 return JsonResponse({'ok': False})
     elif request.method == 'POST':
         if request.POST['action'] == 'informe_pdf' and g_e.has_permiso('genera_informe_ccs'):
+            doc_cc = 'Configuración de informes Competencias Clave'
+            dce = get_dce(g_e.ronda.entidad, doc_cc)
             cmas = CompetenciasMateriaAlumno.objects.filter(profesor__ronda=g_e.ronda,
                                                             materia__materia__curso__etapa__in=etapas)
             ids = cmas.values_list('alumno', flat=True).distinct()
             alumnos = Gauser_extra.objects.filter(id__in=ids).order_by('gauser_extra_estudios__grupo')
             fichero = 'valoracionesCC_%s.pdf' % str(g_e.ronda.entidad.code)
             c = render_to_string('valoracionescc2pdf.html', {'alumnos': alumnos, 'profesores': profesores})
-            fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_CC, title=u'Valoración competencias clave')
+            fich = pdfkit.from_string(c, False, dce.get_opciones)
+            logger.info('%s, pdf_cc_valorar_cualquier_alumno' % g_e)
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=' + fichero
             return response
@@ -288,13 +297,15 @@ def cc_configuracion(request):
                 return JsonResponse({'ok': False})
     elif request.method == 'POST':
         if request.POST['action'] == 'informe_pdf' and g_e.has_permiso('genera_informe_ccs'):
+            doc_cc = 'Configuración de informes Competencias Clave'
+            dce = get_dce(g_e.ronda.entidad, doc_cc)
             cmas = CompetenciasMateriaAlumno.objects.filter(profesor__ronda=g_e.ronda,
                                                             materia__materia__curso__etapa__in=etapas)
             ids = cmas.values_list('alumno', flat=True).distinct()
             alumnos = Gauser_extra.objects.filter(id__in=ids).order_by('gauser_extra_estudios__grupo')
             fichero = 'valoracionesCC_%s.pdf' % str(g_e.ronda.entidad.code)
             c = render_to_string('valoracionescc2pdf.html', {'alumnos': alumnos, })
-            fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_CC, title=u'Valoración competencias clave')
+            fich = pdfkit.from_string(c, False, dce.get_opciones)
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=' + fichero
             return response

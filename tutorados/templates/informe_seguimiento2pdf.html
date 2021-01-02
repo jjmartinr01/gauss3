@@ -1,18 +1,59 @@
 {% load informes_extras %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Informe de Seguimiento ({{ informe.usuario.gauser.get_full_name }})</title>
+    <style type="text/css">
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+        .pagebreak {
+            page-break-before: always;
+        }
+
+        {# Las siguientes tres líneas de estilo son para conseguir que la cabecera de la tabla no se solape #}
+        {# con el texto de la primera fila de cada página. Esta información ha sido obtenida de: #}
+        {# https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2367 #}
+        thead {
+            display: table-header-group
+        }
+
+        tfoot {
+            display: table-row-group
+        }
+
+        tr {
+            page-break-inside: avoid
+        }
+    </style>
+</head>
+<body>
 <h2 style="text-align:center;"> INFORME DE SEGUIMIENTO ({% now 'd/m/Y' %})</h2>
 
-Alumno: <strong> {{informe.usuario.gauser.get_full_name}}</strong>
+Alumno: <strong> {{ informe.usuario.gauser.get_full_name }}</strong>
 <br/>
-Grupo: <strong> {{informe.usuario.gauser_extra_estudios.grupo.nombre}}</strong>
+Grupo: <strong> {{ informe.usuario.gauser_extra_estudios.grupo.nombre }}</strong>
 <br/>
-Tutor: <strong> {{informe.usuario.gauser_extra_estudios.tutor.gauser.get_full_name}}</strong>
+Tutor: <strong> {{ informe.usuario.gauser_extra_estudios.tutor.gauser.get_full_name }}</strong>
 <br/>
-Fecha de solicitud: <strong> {{informe.fecha}}</strong>
+Fecha de solicitud: <strong> {{ informe.fecha }}</strong>
 
 
 {% for pregunta in informe.pregunta_set.all %}
     <p style="font-weight:bold;padding-top:10px;"> {{ pregunta.pregunta }} </p>
     {% for respuesta in pregunta.respuestas %}
-        <p><span style="color:gray;"> {{ respuesta.usuario.gauser.get_full_name }} {{ respuesta.usuario|materia:respuesta.usuario.gauser_extra_estudios.grupo }}:</span> {{ respuesta.respuesta }}</p>
-        {% endfor %}
+        <p><span
+                style="color:gray;"> {{ respuesta.usuario.gauser.get_full_name }} {{ respuesta.usuario|materia:respuesta.usuario.gauser_extra_estudios.grupo }}:</span> {{ respuesta.respuesta }}
+        </p>
+    {% endfor %}
 {% endfor %}
+</body>
+</html>

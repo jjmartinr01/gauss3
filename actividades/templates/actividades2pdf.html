@@ -1,86 +1,120 @@
 {% load my_templatetags %}
-<style>
-    html {
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: 10pt;
-        text-align: justify;
-    }
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Informe de Actividades</title>
+    <style type="text/css">
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11pt;
+            text-align: justify;
+        }
 
-    table {
-        margin-left: auto;
-        margin-right: auto;
-    }
+        p {
+            font-size: 12pt;
+            margin-top: 1em;
+            margin-bottom: 1em;
+        }
 
-    p {
-        font-size: 12pt;
-        margin-top: 1em;
-        margin-bottom: 1em;
-    }
-</style>
+        h1 {
+            text-align: center;
+            font-size: 30px;
+            line-height: 150px;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+        .pagebreak {
+            page-break-before: always;
+        }
+
+        {# Las siguientes tres líneas de estilo son para conseguir que la cabecera de la tabla no se solape #}
+        {# con el texto de la primera fila de cada página. Esta información ha sido obtenida de: #}
+        {# https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2367 #}
+        thead {
+            display: table-header-group
+        }
+
+        tfoot {
+            display: table-row-group
+        }
+
+        tr {
+            page-break-inside: avoid
+        }
+    </style>
+</head>
+<body>
 
 {% if actividades|length > 4 %}
-<h1 style="text-align: center; padding-top: 150px;">INFORME DE LAS ACTIVIDADES EXTRAESCOLARES REALIZADAS DURANTE EL
-    CURSO {{ request.session.gauser_extra.ronda.nombre }}</h1>
-<h4 style="padding-top: 200px;">Número de actividades realizadas: {{ actividades|length }}</h4>
+    <h1 style="text-align: center; padding-top: 150px;">INFORME DE LAS ACTIVIDADES EXTRAESCOLARES REALIZADAS DURANTE EL
+        CURSO {{ request.session.gauser_extra.ronda.nombre }}</h1>
+    <h4 style="padding-top: 200px;">Número de actividades realizadas: {{ actividades|length }}</h4>
 
-<h2 class="pagebreak" style="text-align:center;"> Estadística por profesores</h2>
-<table style="width:100%;" border="1">
-    <tr>
-        <th>Nombre</th>
-        <th>Organizador</th>
-        <th>Colaborador</th>
-        <th> >1día</th>
-    </tr>
-    {% for p in profesores %}
+    <h2 class="pagebreak" style="text-align:center;"> Estadística por profesores</h2>
+    <table style="width:100%;" border="1">
         <tr>
-            <td>{{ p.docente }}</td>
-            <td>{{ p.organizaciones_actividad|length }}</td>
-            <td>{{ p.colaboraciones_actividad|length }}</td>
-            <td>{{ p.duracion_mayor_un_dia|length }}</td>
+            <th>Nombre</th>
+            <th>Organizador</th>
+            <th>Colaborador</th>
+            <th> >1día</th>
         </tr>
-    {% endfor %}
-</table>
-
-<h2 class="pagebreak" style="text-align:center;"> Estadística por profesor</h2>
-<table>
-    {% for p in profesores %}
-        {% if p.organizaciones_actividad or p.colaboraciones_actividad %}
+        {% for p in profesores %}
             <tr>
-                <td colspan="3" style="border-top:solid 1px grey;"><b>{{ p.docente }}</b></td>
+                <td>{{ p.docente }}</td>
+                <td>{{ p.organizaciones_actividad|length }}</td>
+                <td>{{ p.colaboraciones_actividad|length }}</td>
+                <td>{{ p.duracion_mayor_un_dia|length }}</td>
             </tr>
-            {% if p.organizaciones_actividad %}
+        {% endfor %}
+    </table>
+
+    <h2 class="pagebreak" style="text-align:center;"> Estadística por profesor</h2>
+    <table>
+        {% for p in profesores %}
+            {% if p.organizaciones_actividad or p.colaboraciones_actividad %}
                 <tr>
-                    <td colspan="3"><i>Actividades organizadas:</i></td>
+                    <td colspan="3" style="border-top:solid 1px grey;"><b>{{ p.docente }}</b></td>
                 </tr>
-                {% for organizada in p.organizaciones_actividad %}
+                {% if p.organizaciones_actividad %}
                     <tr>
-                        <td style="color:grey">{{ organizada.actividad_title }}</td>
-                        <td style="color:grey">{{ organizada.fecha_hora_inicio|date:"d/m/Y" }}</td>
-                        <td style="color:grey">{{ organizada.fecha_hora_fin|date:"d/m/Y" }}</td>
+                        <td colspan="3"><i>Actividades organizadas:</i></td>
                     </tr>
-                {% endfor %}
-            {% endif %}
-            {% if p.colaboraciones_actividad %}
-                <td colspan="3"><i>Actividades en las que ha colaborado:</i></td>
-                </tr>
-                {% for colabora in p.colaboraciones_actividad %}
-                    <tr>
-                        <td style="color:grey">{{ colabora.actividad_title }}</td>
-                        <td style="color:grey">{{ colabora.fecha_hora_inicio|date:"d/m/Y" }}</td>
-                        <td style="color:grey">{{ colabora.fecha_hora_fin|date:"d/m/Y" }}</td>
+                    {% for organizada in p.organizaciones_actividad %}
+                        <tr>
+                            <td style="color:grey">{{ organizada.actividad_title }}</td>
+                            <td style="color:grey">{{ organizada.fecha_hora_inicio|date:"d/m/Y" }}</td>
+                            <td style="color:grey">{{ organizada.fecha_hora_fin|date:"d/m/Y" }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                {% if p.colaboraciones_actividad %}
+                    <td colspan="3"><i>Actividades en las que ha colaborado:</i></td>
                     </tr>
-                {% endfor %}
+                    {% for colabora in p.colaboraciones_actividad %}
+                        <tr>
+                            <td style="color:grey">{{ colabora.actividad_title }}</td>
+                            <td style="color:grey">{{ colabora.fecha_hora_inicio|date:"d/m/Y" }}</td>
+                            <td style="color:grey">{{ colabora.fecha_hora_fin|date:"d/m/Y" }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
             {% endif %}
-        {% endif %}
-    {% endfor %}
-</table>
+        {% endfor %}
+    </table>
 {% endif %}
 
 <h2 class="pagebreak" style="text-align:center;"> Actividades Extraescolares y Complementarias</h2>
 
 {% for actividad in actividades %}
     <h4 style="text-align:center;"><strong> {{ actividad.actividad_title }}</strong></h4>
-    Comienzo: <strong> {{ actividad.fecha_hora_inicio|date:"d-m-Y" }} a las {{ actividad.fecha_hora_inicio|date:"H:i" }}</strong>, Finalización:
+    Comienzo:
+    <strong> {{ actividad.fecha_hora_inicio|date:"d-m-Y" }} a las {{ actividad.fecha_hora_inicio|date:"H:i" }}</strong>,
+    Finalización:
     <strong> {{ actividad.fecha_hora_fin|date:"d-m-Y" }} a las {{ actividad.fecha_hora_fin|date:"H:i" }}</strong>
     <br/>
     <strong>Organizador:</strong>  {{ actividad.organizador.gauser.get_full_name }}
@@ -115,7 +149,8 @@
                 {% if alumno.ge in actividad.alumnos_incluidos.all %}
                     <td>&#128505; {{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}</td>
                 {% else %}
-                    <td style="color:red;">&#9744; {{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}</td>
+                    <td style="color:red;">
+                        &#9744; {{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}</td>
                 {% endif %}
                 {% if forloop.counter|divisibleby:"2" %} </tr> {% endif %}
                 {% endfor %}
@@ -124,4 +159,6 @@
     {% endif %}
     <hr/>
 {% endfor %}
- 
+
+</body>
+</html>

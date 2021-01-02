@@ -208,7 +208,7 @@ class DocConfEntidad(models.Model):
     ORIENTATION = (('Portrait', 'Vertical'), ('Landscape', 'Horizontal'))
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     predeterminado = models.BooleanField('¿Es la configuración predeterminada?', default=False)
-    nombre = models.CharField('Nombre de la configuración', max_length=50, default='')
+    nombre = models.CharField('Nombre de la configuración', max_length=100, default='')
     header = models.TextField("Cabecera de página", blank=True, null=True)
     footer = models.TextField("Pie de página", blank=True, null=True)
     pagesize = models.CharField('Tamaño del papel', max_length=5, blank=True, null=True, default='A4')

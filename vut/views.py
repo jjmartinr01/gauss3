@@ -36,7 +36,7 @@ from django.core.paginator import Paginator
 from django.forms.models import model_to_dict
 
 from entidades.models import Gauser_extra, Entidad, DocConfEntidad
-from gauss.funciones import html_to_pdf, pass_generator, usuarios_ronda, html_to_pdf_dce
+from gauss.funciones import pass_generator, usuarios_ronda, get_dce
 from gauss.rutas import RUTA_MEDIA, MEDIA_VUT, RUTA_BASE
 from autenticar.control_acceso import permiso_required
 from mensajes.models import Aviso
@@ -103,6 +103,7 @@ def viviendas(request):
     if request.method == 'POST':
         action = request.POST['action']
         if action == 'libro_registros':
+            dce = get_dce(g_e.ronda.entidad, 'Configuración documentos VUT')
             permiso = Permiso.objects.get(code_nombre='genera_libro_registro_policia')
             vivienda = Vivienda.objects.get(id=request.POST['id_vivienda'])
             if has_permiso_on_vivienda(g_e, vivienda, permiso):
@@ -113,9 +114,7 @@ def viviendas(request):
                     p_d = request.POST['protocol_domain']
                     c = render_to_string('libro_registro_policia.html',
                                          {'vivienda': vivienda, 'viajeros': viajeros, 'p_d': p_d})
-                    ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, vivienda.entidad.code, vivienda.id)
-                    fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
-                                       title='Libro de registro de viajeros', tipo='sin_cabecera')
+                    fich = pdfkit.from_string(c, False, dce.get_opciones)
                     logger.info('Creado pdf libro de registros')
                     response = HttpResponse(fich, content_type='application/pdf')
                     logger.info('Creado pdf libro de registros 2')
@@ -1878,6 +1877,7 @@ def contabilidad_vut(request):
     if request.method == 'POST':
         action = request.POST['action']
         if action == 'libro_contabilidad_vut':
+            dce = get_dce(g_e.ronda.entidad, 'Configuración documentos VUT')
             permiso = Permiso.objects.get(code_nombre='genera_libro_registro_policia')
             vivienda = Vivienda.objects.get(id=request.POST['id_vivienda'])
             if has_permiso_on_vivienda(g_e, vivienda, permiso):
@@ -1886,9 +1886,7 @@ def contabilidad_vut(request):
                                                   reserva__entrada__gte=fecha_anterior_limite)
                 c = render_to_string('libro_registro_policia.html',
                                      {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, vivienda.entidad.code, vivienda.id)
-                fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
-                                   title=u'Libro de registro de viajeros', tipo='sin_cabecera')
+                fich = pdfkit.from_string(c, False, dce.get_opciones)
                 response = FileResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
                 return response
@@ -2889,6 +2887,7 @@ def web_vut(request):
     if request.method == 'POST':
         action = request.POST['action']
         if action == 'libro_contabilidad_vut':
+            dce = get_dce(entidad, 'Configuración documentos VUT')
             permiso = Permiso.objects.get(code_nombre='genera_libro_registro_policia')
             vivienda = Vivienda.objects.get(id=request.POST['id_vivienda'])
             if has_permiso_on_vivienda(g_e, vivienda, permiso):
@@ -2897,9 +2896,7 @@ def web_vut(request):
                                                   reserva__entrada__gte=fecha_anterior_limite)
                 c = render_to_string('libro_registro_policia.html',
                                      {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, vivienda.entidad.code, vivienda.id)
-                fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
-                                   title=u'Libro de registro de viajeros', tipo='sin_cabecera')
+                fich = pdfkit.from_string(c, False, dce.get_opciones)
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
                 return response
@@ -2932,15 +2929,14 @@ def web_vut_id(request, vivienda_id):
         if action == 'libro_contabilidad_vut':
             permiso = Permiso.objects.get(code_nombre='genera_libro_registro_policia')
             vivienda = Vivienda.objects.get(id=request.POST['id_vivienda'])
+            dce = get_dce(vivienda.entidad, 'Configuración documentos VUT')
             if has_permiso_on_vivienda(g_e, vivienda, permiso):
                 fecha_anterior_limite = datetime.today().date() - timedelta(1100)
                 viajeros = Viajero.objects.filter(reserva__vivienda=vivienda,
                                                   reserva__entrada__gte=fecha_anterior_limite)
                 c = render_to_string('libro_registro_policia.html',
                                      {'vivienda': vivienda, 'viajeros': viajeros, 'ruta_base': RUTA_BASE})
-                ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, vivienda.entidad.code, vivienda.id)
-                fich = html_to_pdf(request, c, fichero='libro_registros', media=ruta,
-                                   title=u'Libro de registro de viajeros', tipo='sin_cabecera')
+                fich = pdfkit.from_string(c, False, dce.get_opciones)
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=Libro_registro_viajeros.pdf'
                 return response
@@ -2954,15 +2950,13 @@ def web_vut_id(request, vivienda_id):
 
 def reserva_vut_crea_recibo(request, reserva_id):
     g_e = request.session['gauser_extra']
-
+    dce = get_dce(g_e.ronda.entidad, 'Configuración documentos VUT')
     viviendas = viviendas_con_permiso(g_e, 'crea_reservas')
     reserva = Reserva.objects.get(id=reserva_id)
     if reserva.vivienda in viviendas:
         if request.method == 'POST':
-            c = request.POST['recibo_html']
-            ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, reserva.vivienda.entidad.code, reserva.vivienda.id)
-            fich = html_to_pdf(request, c, fichero='recibo_viajero', media=ruta,
-                               title='Justificante de pago', tipo='sin_cabecera')
+            c = render_to_string('recibo_html_vut.html', {'recibo_html': request.POST['recibo_html']})
+            fich = pdfkit.from_string(c, False, dce.get_opciones)
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=justificante_de_pago.pdf'
             return response
@@ -2978,9 +2972,7 @@ def reserva_vut_crea_recibo(request, reserva_id):
         if reserva.vivienda in viviendas:
             if request.method == 'POST':
                 c = request.POST['html']
-                ruta = '%sentidad_%s/vivienda%s/' % (MEDIA_VUT, reserva.vivienda.entidad.code, reserva.vivienda.id)
-                fich = html_to_pdf(request, c, fichero='recibo_viajero', media=ruta,
-                                   title='Justificante de pago', tipo='sin_cabecera')
+                fich = pdfkit.from_string(c, False, dce.get_opciones)
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=justificante_de_pago.pdf'
                 return response

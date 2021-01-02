@@ -16,7 +16,7 @@ from entidades.models import Subentidad, Gauser_extra, Cargo
 
 from gauss.rutas import *
 from calendario.models import Vevent, Calendar
-from gauss.funciones import html_to_pdf, usuarios_de_gauss
+from gauss.funciones import usuarios_de_gauss
 from mensajes.views import crear_aviso, crea_mensaje_cola
 from mensajes.models import Aviso, Mensaje, Etiqueta
 from gtelegram.views import envia_telegram
@@ -110,7 +110,7 @@ def calendario(request):
             # c = render_to_string('calendario2pdf.html',
             #                      {'calendario': calendario,
             #                       'eventos': eventos, }, request=request)
-            # fich = html_to_pdf(request, c, fichero=fichero, media=MEDIA_FILES, title=u'Calendario')
+            # pdfkit ???
             # response = HttpResponse(fich, content_type='application/pdf')
             # response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
             # return response
