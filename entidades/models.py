@@ -735,54 +735,6 @@ class Entidad_auto_id(models.Model):
         return '%s -- %s -- %s-%s-%s' % (self.entidad, self.auto, self.prefijo, self.lexema, self.sufijo)
 
 
-# TIPOS = (('gchar', 'Texto con un máximo de 150 caracteres'), ('gselect', 'Seleccionar uno o varios valores'),
-#          ('gint', 'Número entero (sin decimales)'), ('gfloat', 'Número con decimales'), ('gbool', 'Respuesta Sí/No'),
-#          ('gdatetime', 'Fecha y hora (dd/mm/yyyy HH:mm)'), ('gdate', 'Fecha (dd/mm/yyyy)'),
-#          ('gtext', 'Texto de longitud ilimitada'), ('gfile', 'Archivo'))
-#
-#
-
-#
-#
-# def guarda_archivo(instance, filename):
-#     nombre = filename.rpartition('.')
-#     instance.fich_name = filename.rpartition('/')[2]
-#     fichero = pass_generator(size=20) + '.' + nombre[2]
-#     return '/'.join(['entidades', str(instance.ge.ronda.entidad.code), fichero])
-#
-#
-# class GE_extra_field(models.Model):
-#     ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
-#     ancho = models.IntegerField("Número de columnas (anchura)", blank=True, null=True)
-#     tipo = models.CharField('Tipo de entrada', max_length=30, choices=TIPOS)
-#     label = models.CharField('Label', max_length=150)
-#     select = models.BooleanField('Es un select múltiple?', default=False)
-#     gchar = models.CharField('Texto con un máximo de 150 caracteres', max_length=150, blank=True, null=True)
-#     gint = models.IntegerField('Número entero (sin decimales)', blank=True, null=True)
-#     gfloat = models.FloatField('Número con decimales', max_length=50, blank=True, null=True)
-#     gdate = models.DateField('Fecha (dd/mm/yyyy)', max_length=50, blank=True, null=True)
-#     gdatetime = models.DateTimeField('Fecha y hora (dd/mm/yyyy HH:mm)', max_length=50, blank=True, null=True)
-#     gtext = models.TextField('Texto de longitud ilimitada', blank=True, null=True)
-#     gbool = models.BooleanField('Respuesta Sí/No', default=False)
-#     archivo = models.FileField('Archivo', blank=True, null=True, upload_to=guarda_archivo)
-#     content_type_archivo = models.CharField('Tipo de archivo', max_length=200, blank=True, null=True)
-#     fich_name = models.CharField("Nombre del archivo", max_length=200, blank=True, null=True)
-#
-#     def __str__(self):
-#         comentario = 'Original' if not self.ginput else self.rellenador.gauser.get_full_name()
-#         return '%s, %s (Tipo: %s) - %s' % (self.gform.nombre, self.label, self.tipo, comentario)
-#
-#
-# class GE_extra_field_option(models.Model):
-#     ge_extra_field = models.ForeignKey(GE_extra_field, blank=True, null=True, on_delete=models.CASCADE)
-#     text = models.CharField('Text', max_length=150)
-#     value = models.CharField('Value', max_length=50)
-#     selected = models.BooleanField('Selected', default=False)
-#
-#     def __str__(self):
-#         return '%s (%s) - Seleccionada: %s' % (self.text, self.value, self.selected)
-
-
 class Menu(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     menu_default = models.ForeignKey(Menu_default, blank=True, null=True, on_delete=models.CASCADE)
