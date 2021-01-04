@@ -59,8 +59,7 @@ def formularios(request):
         elif request.POST['action'] == 'open_accordion':
             try:
                 gform = Gform.objects.get(id=request.POST['id'])
-                html = render_to_string('formularios_accordion_content.html',
-                                        {'gform': gform, 'g_e': g_e, 'tipos': TIPOS, 'grupos': GRUPOS})
+                html = render_to_string('formularios_accordion_content.html', {'gform': gform, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
