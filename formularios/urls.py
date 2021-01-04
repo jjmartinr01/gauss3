@@ -3,9 +3,6 @@
 from django.urls import path
 from . import views
 
-# from django.conf.urls import url
-# from . import views
-
 urlpatterns = [
     path('formularios/', views.formularios),
     path('mis_formularios/', views.mis_formularios),

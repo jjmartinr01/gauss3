@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from django.conf.urls import url
+from django.urls import path
 from . import views
 
 urlpatterns = [
-    url(r'^moscosos/$$', views.moscosos, name='moscosos'),
-    url(r'^ajax_moscosos/$', views.ajax_moscosos, name='ajax_moscosos'),
+    path('moscosos/', views.moscosos),
+    path('ajax_moscosos/', views.ajax_moscosos),
 ]

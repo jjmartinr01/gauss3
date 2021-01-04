@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from django.conf.urls import url
+from django.urls import path
 from . import views
 
 urlpatterns = [
-    url(r'^apariencia/$', views.apariencia, name='apariencia'),
-    url(r'^actualizar_apariencias/$', views.actualizar_apariencias, name='actualizar_apariencias'),
+    path('apariencia/', views.apariencia),
+    path('actualizar_apariencias/', views.actualizar_apariencias),
 ]

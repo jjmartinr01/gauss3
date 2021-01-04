@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from django.conf.urls import url
+from django.urls import path
 from . import views
 
 urlpatterns = [
-    url(r'^gestionar_absentismo/$', views.gestionar_absentismo, name='gestionar_absentismo'),
-    url(r'^ajax_absentismo/$', views.ajax_absentismo, name='ajax_absentismo'),
+    path('gestionar_absentismo/', views.gestionar_absentismo),
+    path('ajax_absentismo/', views.ajax_absentismo),
 ]

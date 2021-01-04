@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import url
+
+from django.urls import path
 from . import views
 
 urlpatterns = [
-    url(r'^inicioweb/$', views.inicioweb, name='inicioweb'),
-    url(r'^avisolegal/$', views.avisolegal, name='avisolegal'),
-    url(r'^privacidad/$', views.privacidad, name='privacidad'),
-    url(r'^condiciones/$', views.condiciones, name='condiciones'),
+    path('inicioweb/', views.inicioweb),
+    path('avisolegal/', views.avisolegal),
+    path('privacidad/', views.privacidad),
+    path('condiciones/', views.condiciones),
 ]
