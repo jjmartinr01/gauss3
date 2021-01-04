@@ -9,8 +9,6 @@ from django.utils import timezone
 import simplejson as json
 from datetime import datetime, timedelta
 
-from formularios.models import Gform, Ginput
-
 
 class Update(models.Model):
     id_telegram = models.CharField('Identificador del update de Telegram', max_length=40)
@@ -53,8 +51,6 @@ class User (models.Model):
     last_name = models.CharField('Last Name de Telegram', max_length=200, blank=True, null=True)
     selecting_gform = models.BooleanField('Seleccionando un formulario', default=False)
     answering_gform = models.BooleanField('Respondiendo a un formulario con Telegram', default=False)
-    #answered_ginputs = models.ManyToManyField(Ginput, blank=True)
-    last_answered_ginput = models.ForeignKey(Ginput, blank=True, null=True, on_delete=models.CASCADE)
 
     @property
     def g_es(self):

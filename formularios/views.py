@@ -563,40 +563,6 @@ def formularios(request):
                   })
 
 
-# @login_required()
-def resultados_gform(request):
-    g_e = request.session["gauser_extra"]
-    try:
-        gform = Gform.objects.get(id=request.GET['gform'], propietario=g_e)
-    except:
-        crear_aviso(request, False, "No tienes permiso para ver los resultados formulario/cuestionario solicitado")
-        return redirect('/calendario/')
-    original_ginputs = gform.ginput_set.filter(ginput__isnull=True).order_by('row', 'col')
-    ginputs = gform.ginput_set.filter(ginput__isnull=False).order_by('rellenador__gauser__last_name',
-                                                                     'rellenador__gauser__first_name', 'rellenador__id',
-                                                                     'ginput__row', 'ginput__col')
-    if request.method == 'POST':
-        if request.POST['action'] == 'descarga_gfile':
-            ginput = Ginput.objects.get(id=request.POST['id_ginput'], gform__propietario__entidad=g_e.ronda.entidad)
-            fichero = ginput.archivo.read()
-            response = HttpResponse(fichero, content_type=ginput.content_type_archivo)
-            response['Content-Disposition'] = 'attachment; filename=%s' % ginput.fich_name
-            return response
-    return render(request, "resultados_gform.html",
-                  {
-                      'iconos':
-                          ({'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Volver',
-                            'permiso': 'm67i10', 'title': 'Volver a la lista de formularios'},
-                           {'tipo': 'button', 'nombre': 'trash-o', 'texto': 'Borrar',
-                            'permiso': 'm67i10', 'title': 'Borrar las respuestas seleccionadas'},
-                           ),
-                      'formname': 'resultados_gform',
-                      'original_ginputs': original_ginputs,
-                      'ginputs': ginputs,
-                      'gform': gform,
-                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                  })
-
 
 @login_required()
 def ver_gform(request, id, identificador):

@@ -9,7 +9,6 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from calendario.models import Vevent
-from formularios.models import Gform
 from gtelegram.models import Update, Message, User, Chat, Genera_code
 
 # from entidades.models import Subentidad, Cargo
@@ -78,65 +77,6 @@ def envia_telegram_gausers(gausers=Gauser.objects.none(), texto=''):
         time.sleep(0.1)
     return True
 
-def gform_respuesta(m):
-    # Si durante el tratamiento 'texto' toma un valor implicará que se ha producido un error:
-    texto=''
-    # Guardo en la variable user el usuario de Telegram por conveniencia
-    user = m.user
-    # Tomo la última ginput almacenada en user y que por tanto es la que va a ser contestada:
-    ginput=user.last_answered_ginput
-    if ginput.tipo == 'gtext':
-        ginput.gtext == m.message
-    elif ginput.tipo == 'gdate':
-        try:
-            ginput.gdate = datetime.strptime(m.message, '%d/%m/%Y')
-        except:
-            texto = 'Error. La fecha tiene que estar en formato dd/mm/YYYY'
-    elif ginput.tipo == 'gdatetime':
-        try:
-            ginput.gdatetime = datetime.strptime(m.message, '%d/%m/%Y %H:%M')
-        except:
-            texto = 'Error. La fecha tiene que estar en formato dd/mm/YYYY HH:MM'
-    elif ginput.tipo == 'gchar':
-        ginput.gchar = m.message
-    elif ginput.tipo == 'gint':
-        try:
-            ginput.gint = int(m.message)
-        except:
-            texto = u'Error. Debes introducir un número sin decimales (número entero).'
-    elif ginput.tipo == 'gfloat':
-        try:
-            ginput.gfloat = float(m.message)
-        except:
-            texto = u'Error. Debes introducir un número.'
-    elif ginput.tipo == 'gbool':
-        if re.search(r'[sSyY].*', m.message):
-            ginput.gbool = True
-        elif re.search(r'[nN].*', m.message):
-            ginput.gbool = False
-        else:
-            texto = u'Error. Debes contestar "Sí" o "No" (S o N también es válido).'
-    if not texto:
-        ginput.save()
-        gform = ginput.gform
-        try:
-            texto = 'Intenta encontrar un gauser_extra'
-            g_e = user.g_es.filter(entidad=gform.propietario.entidad)[0]
-            ginput = gform.ginput_set.filter(ginput__isnull=False, id__gt=user.last_answered_ginput.id,
-                                             rellenador=g_e).order_by('ginput__row', 'ginput__col')[0]
-            user.last_answered_ginput = ginput
-            user.save()
-            texto = ginput.ginput.label
-        except:
-            user.answering_gform = False
-            user.last_answered_ginput = None
-            user.save()
-            texto = 'Has terminado de rellenar el cuestionario.'
-    # Si no es ok significa que la respuesta no ha sido dada en el formato adecuado y debe formularse de nuevo
-    else:
-        texto += '%0A' + '%s' % ginput.ginput.label
-    return texto
-
 
 @csrf_exempt
 def telegram_webhook(request):
@@ -191,7 +131,6 @@ def telegram_webhook(request):
         if user.selecting_gform and (m.message == 'Cancelar' or m.message == 'cancelar'):
             texto = 'Se ha cancelado el rellenado del formulario.'
             user.selecting_gform = False
-            user.last_answered_ginput = None
             user.save()
             url = url_myBot + 'sendMessage?chat_id=%s&text=%s' % (user.id_telegram, texto)
             requests.get(url)
@@ -212,27 +151,15 @@ def telegram_webhook(request):
             if m.message == 'Cancelar' or m.message == 'cancelar':
                 texto = 'Se ha cancelado el rellenado del formulario.'
                 user.answering_gform = False
-                user.last_answered_ginput = None
                 user.save()
                 url = url_myBot + 'sendMessage?chat_id=%s&text=%s' % (user.id_telegram, texto)
                 requests.get(url)
                 return HttpResponse(status=200)
-            # Envío la última ginput almacenada en user y que por tanto es la que va a ser contestada.
-            texto = gform_respuesta(m)
 
         # Si coincide la siguiente regex significa que el usuario ha seleccionado un formulario para responder
         elif re.search(r'^.*\([0-9]+\)$', message['text']) and user.selecting_gform:
             # Un botón de cuestionario coincidirá con la regex del 'if' anterior
-            gform = Gform.objects.get(id=int(re.search(r'^.*\(([0-9]+)\)$', message['text']).group(1)))
-            g_e = g_es.filter(entidad=gform.propietario.entidad)[0]
-            # crea_ginputs_para_rellenador(gform, g_e)
-            ginput = gform.ginput_set.filter(ginput__isnull=False,
-                                             rellenador=g_e).order_by('ginput__row', 'ginput__col')[0]
-            user.answering_gform = True
-            user.selecting_gform = False
-            user.last_answered_ginput = ginput
-            user.save()
-            texto = ginput.ginput.label
+            pass
 
         elif comando == 'identificador' and not user.selecting_gform:
             texto = user.id_telegram
@@ -250,26 +177,6 @@ def telegram_webhook(request):
                 s = vevent.summary if isinstance(vevent.summary, str) else vevent.summary.encode('utf-8')
                 n = vevent.entidad.name if isinstance(vevent.entidad.name, str) else vevent.entidad.name.encode('utf-8')
                 texto += f + '-' + s + ' (' + n + ')%0A---------%0A'
-
-        elif comando == 'list_cuestionarios' and user.gauser and not user.selecting_gform:
-            cargos = g_es.values_list('cargos__id', flat=True).distinct()
-            subentidades = g_es.values_list('subentidades__id', flat=True).distinct()
-            formularios = Gform.objects.filter(Q(activo=True), Q(subentidades_destino__in=subentidades) | Q(
-                    cargos_destino__in=cargos)).distinct()
-            for gform in formularios:
-                teclado['keyboard'].append(['%s (%s)' % (gform.nombre, gform.id)])
-            if formularios.count() == 0:
-                texto = 'No tienes ningún formulario/cuestionario que rellenar.'
-            elif formularios.count() == 1:
-                texto = 'Tienes un formulario/cuestionario que rellenar. Pulsa el botón para comenzar a responder.'
-                teclado['keyboard'].append(['Cancelar'])
-                user.selecting_gform = True
-            elif formularios.count() > 1:
-                texto = 'Selecciona el formulario/cuestionario que quieres empezar a responder.'
-                teclado['keyboard'].append(['Cancelar'])
-                user.selecting_gform = True
-            user.save()
-
 
 
     if teclado['keyboard']:
@@ -354,15 +261,3 @@ def gtelegram_ajax(request):
                 except:
                     texto = 'El código que has introducido no es correcto. '
                     return JsonResponse({'title': '<i class="fa fa-warning"></i> Error', 'mensaje': texto})
-
-
-                    # try:
-                    #     user = User.objects.get(gauser__isnull=True, id_telegram=id_telegram)
-                    # except:
-                    #     return JsonResponse({'estado': 'ok'})
-                    # gform = Gform.objects.get(pk=request.POST['id_telegram'], propietario__entidad=g_e.ronda.entidad)
-                    # if gform.activo == False:
-                    #     gform.delete()
-                    # gforms = Gform.objects.filter(propietario__entidad=g_e.ronda.entidad)
-                    # data = render_to_string('formularios_accordion_antiguo.html', {'gforms': gforms})
-                    # return HttpResponse(data)
