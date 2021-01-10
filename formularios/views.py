@@ -173,7 +173,8 @@ def formularios(request):
             try:
                 gform = Gform.objects.get(id=request.POST['gform'])
                 if gform.is_propietario_o_colaborador(g_e):
-                    colaborador = Gauser_extra.objects.get(id=int(request.POST['ge'][1:]), ronda=g_e.ronda)
+                    colaborador = Gauser_extra.objects.get(id=int(request.POST['ge'][1:]),
+                                                           ronda__entidad__organization=g_e.ronda.entidad.organization)
                     gform.colaboradores.add(colaborador)
                     html_span = render_to_string('formularios_accordion_content_colaborador.html',
                                                  {'gform': gform, 'colaborador': colaborador})
