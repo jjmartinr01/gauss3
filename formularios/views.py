@@ -42,7 +42,7 @@ def gfs_id_orden(gform):
 # @login_required()
 def formularios(request):
     g_e = request.session["gauser_extra"]
-    gforms = Gform.objects.filter(propietario__ronda__entidad=g_e.ronda.entidad)
+    gforms = Gform.objects.filter(Q(propietario__gauser=g_e.gauser) | Q(colaboradores__gauser__in=[g_e.gauser])).distinct()
     paginator = Paginator(gforms, 15)
     formularios = paginator.page(1)
     if request.method == 'POST' and request.is_ajax():
@@ -225,7 +225,7 @@ def formularios(request):
                         g.orden += 1
                         g.save()
                     gfsi = GformSectionInput.objects.create(gformsection=gfs, orden=orden, creador=g_e)
-                    html = render_to_string('formularios_accordion_content_ginputs_gi.html', {'gfsi': gfsi})
+                    html = render_to_string('formularios_accordion_content_ginputs_gi.html', {'gfsi': gfsi, 'g_e': g_e})
                     return JsonResponse(
                         {'ok': True, 'html': html, 'gfsi_id_orden': gfsi_id_orden(gfsi.gformsection.gform)})
                 else:
@@ -297,7 +297,7 @@ def formularios(request):
 
         # Posibles operaciones en una pregunta:
         # update_gfsi_el, update_gfsi_label, update_gfsio_opcion, update_gfsi_pregunta, add_gfsio, del_gfsio,
-        # add_gfsi_after_gfsi, add_gfsi_after_gfsi, copy_gfsi, add_gfs_after_gfsi, del_gfsi
+        # add_gfsi_after_gfsi, copy_gfsi, add_gfs_after_gfsi, del_gfsi
 
         elif request.POST['action'] == 'update_gfsi_el':  # actualiza el texto de la opción
             try:
