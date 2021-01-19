@@ -18,27 +18,58 @@
         <tr>
             <td>{{ tramo }}</td>
             {% for dia, sesion in sesiones_en_tramo.items %}
-                {% if sesion.0.x_actividad == '1' %}
-                    <td title="{{ sesion.0.materia.curso.nombre }}" class="{{ sesion.0.clase_horario }} mwx198"
-                    data-m="{{ sesion.0.clase_horario }}">{{ sesion.0.materia.nombre }}<br><span
-                            style="color:darkorange">{{ sesion.0.s_unidades }}</span><br><span
-                            style="color:lightseagreen">{{ sesion.0.dependencia.nombre }}</span></td>
+                {% if sesion.sesionextra_set.all.0.materia %}
+                    <td title="{{ sesion.sesionextra_set.all.0.materia.curso.nombre }}"
+                        class="{{ sesion.clase_horario }} mwx198" data-m="{{ sesion.clase_horario }}">
+                        {{ sesion.sesionextra_set.all.0.materia.nombre }}<br>
+                        <span style="color:darkorange">
+                    {% for sext in sesion.sesionextra_set.all %}
+                        {{ sext.grupo.nombre }}
+                    {% endfor %}
+                            <br><span
+                                style="color:lightseagreen">{{ sesion.sesionextra_set.all.0.dependencia.nombre }}</span>
+                    </span></td>
                 {% else %}
-                    <td class="{{ sesion.0.clase_horario }} mwx198" data-m="{{ sesion.0.clase_horario }}"
-                        style="color:mediumvioletred">{{ sesion.0.actividad }}</td>
+                    <td class="{{ sesion.clase_horario }} mwx198" data-m="{{ sesion.clase_horario }}"
+                        style="color:mediumvioletred">{{ sext.actividad }}</td>
                 {% endif %}
+                {#                {% if sesion.0.x_actividad == '1' %}#}
+                {#                    <td title="{{ sesion.0.materia.curso.nombre }}" class="{{ sesion.0.clase_horario }} mwx198"#}
+                {#                    data-m="{{ sesion.0.clase_horario }}">{{ sesion.0.materia.nombre }}<br><span#}
+                {#                            style="color:darkorange">{{ sesion.0.s_unidades }}</span><br><span#}
+                {#                            style="color:lightseagreen">{{ sesion.0.dependencia.nombre }}</span></td>#}
+                {#                {% else %}#}
+                {#                    <td class="{{ sesion.0.clase_horario }} mwx198" data-m="{{ sesion.0.clase_horario }}"#}
+                {#                        style="color:mediumvioletred">{{ sesion.0.actividad }}</td>#}
+                {#                {% endif %}#}
             {% endfor %}
         </tr>
     {% endfor %}
+    {#    {% for tramo, sesiones_en_tramo in horario.items %}#}
+    {#        <tr>#}
+    {#            <td>{{ tramo }}</td>#}
+    {#            {% for dia, sesion in sesiones_en_tramo.items %}#}
+    {#                {% if sesion.0.x_actividad == '1' %}#}
+    {#                    <td title="{{ sesion.0.materia.curso.nombre }}" class="{{ sesion.0.clase_horario }} mwx198"#}
+    {#                    data-m="{{ sesion.0.clase_horario }}">{{ sesion.0.materia.nombre }}<br><span#}
+    {#                            style="color:darkorange">{{ sesion.0.s_unidades }}</span><br><span#}
+    {#                            style="color:lightseagreen">{{ sesion.0.dependencia.nombre }}</span></td>#}
+    {#                {% else %}#}
+    {#                    <td class="{{ sesion.0.clase_horario }} mwx198" data-m="{{ sesion.0.clase_horario }}"#}
+    {#                        style="color:mediumvioletred">{{ sesion.0.actividad }}</td>#}
+    {#                {% endif %}#}
+    {#            {% endfor %}#}
+    {#        </tr>#}
+    {#    {% endfor %}#}
     </tbody>
 </table>
 
 <script>
-    $('body').on('mouseover', '.mwx198', function(){
+    $('body').on('mouseover', '.mwx198', function () {
         var mId = $(this).data('m');
         $('.' + mId).css('background-color', 'lightgoldenrodyellow');
     });
-    $('body').on('mouseout', '.mwx198', function(){
+    $('body').on('mouseout', '.mwx198', function () {
         var mId = $(this).data('m');
         $('.' + mId).css('background-color', '');
     });

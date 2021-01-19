@@ -16,12 +16,14 @@ from django.http import HttpResponse
 from django.db.models import Q
 from django.template.loader import render_to_string
 
+from horarios.models import SesionExtra, Horario, Sesion
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
-from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo, PlantillaXLS, \
-    PlantillaOrganica, PlantillaDepartamento, PlantillaDocente
-from entidades.models import CargaMasiva
-from estudios.models import Curso, Materia
+from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo
+from cupo.models import PlantillaOrganica, PlantillaDocente
+from entidades.models import CargaMasiva, Gauser_extra
+from entidades.models import Departamento as Depentidad
+from estudios.models import Curso, Materia, Grupo
 from horarios.tasks import carga_masiva_from_file
 from cupo.templatetags.cupo_extras import plantilla_departamento, plantilla_departamento_cepa
 
@@ -581,8 +583,13 @@ def plantilla_organica(request):
             carga_masiva_from_file.delay()
             crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
         elif request.POST['action'] == 'open_accordion' and request.is_ajax():
+            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
+            html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
+            return JsonResponse({'ok': True, 'html': html})
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
+                html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
                 if 'C.E.P.A' in po.ronda_centro.entidad.name:
                     html = render_to_string('plantilla_organica_accordion_cepa_content.html', {'po': po, 'g_e': g_e})
                 else:
@@ -667,39 +674,99 @@ def plantilla_organica(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_dep_th':
+            try:
+                po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
+                departamento = Depentidad.objects.get(id=request.POST['departamento'])
+                html = render_to_string('plantilla_organica_accordion_content_tbody_docente.html',
+                                        {'po': po, 'departamento': departamento})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
         elif request.POST['action'] == 'materias_docente':
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
-                materias = po.get_materias_docente(request.POST['x_docente'])
-                dict_materias = [{'curso': m.curso.nombre, 'materia': m.nombre, 'abreviatura': m.abreviatura,
-                                  'horas_min': m.horas_semana_min, 'horas_max': m.horas_semana_max, 'horas': hs,
-                                  'grupos': us} for m, us, hs in materias]
-                return JsonResponse({'ok': True, 'materias': dict_materias})
+                docente = Gauser_extra.objects.get(id=request.POST['docente'], ronda=po.ronda_centro)
+                horario = Horario.objects.get(ronda=docente.ronda, clave_ex=po.pk)
+                materias = []
+                for se in SesionExtra.objects.filter(sesion__horario=horario, sesion__g_e=docente):
+                    if se.materia:
+                        cadena = '%s' % se.materia.id
+                        for grupo in se.sesion.grupos():
+                            cadena += '-%s' % grupo.id
+                        materias.append(cadena)
+                # Dict para contar los periodos asociados a cada materia:
+                # https://stackoverflow.com/questions/23240969/python-count-repeated-elements-in-the-list
+                periodos = {i: materias.count(i) for i in materias}
+                materias_docente = []
+
+
+                for data, periodos in periodos.items():
+                    materia_id, grupos_id = data.split('-')[0], data.split('-')[1:]
+                    materia = Materia.objects.get(id=materia_id)
+                    grupos = Grupo.objects.filter(id__in=grupos_id)
+                    materias_docente.append({'materia': materia, 'grupos': grupos, 'periodos': periodos})
+                html = render_to_string('plantilla_organica_accordion_content_tbody_docente_materias.html',
+                                        {'materias_docente': materias_docente})
+                return JsonResponse({'ok': True, 'html': html})
+
+
+                # for data, periodos in periodos.items():
+                #     materia_id, grupos_id = data.split('-')[0], data.split('-')[1:]
+                #     materia = Materia.objects.get(id=materia_id)
+                #     grupos = Grupo.objects.filter(id__in=grupos_id)
+                #     materias_docente.append({'materia': materia.nombre, 'curso': materia.curso.nombre,
+                #                              'grupos': ', '.join(grupos.values_list('nombre', flat=True)),
+                #                              'horas': periodos, 'horas_max': materia.horas_semana_max,
+                #                              'horas_min': materia.horas_semana_min, 'abreviatura': materia.abreviatura})
+                # return JsonResponse({'ok': True, 'materias': materias_docente})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'get_horario':
             po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
-            ss = po.sesiondocente_set.filter(x_docente=request.POST['x_docente'])
-            tramos = po.plantillaxls_set.filter(x_docente=request.POST['x_docente']).order_by('inicio').values_list(
-                'inicio', 'hora_inicio_cadena', 'hora_fin_cadena').distinct()
+            docente = Gauser_extra.objects.get(id=request.POST['docente'], ronda=po.ronda_centro)
+            h = Horario.objects.get(ronda=docente.ronda, clave_ex=po.pk)
+            ss = Sesion.objects.filter(horario=h, g_e=docente)
+            tramos = ss.values_list('hora_inicio', 'hora_inicio_cadena', 'hora_fin_cadena').distinct()
             horario = {}
             for inicio, s_inicio, s_fin in tramos:
                 tramo = '%s-%s' % (s_inicio, s_fin)
-                horario[tramo] = {d: ss.filter(hora_inicio=str(inicio), dia=d) for d in ['1', '2', '3', '4', '5']}
+                sesiones_por_dia = {}
+                for d in [1, 2, 3, 4, 5]:
+                    try:
+                        sesiones_por_dia[d] = ss.get(hora_inicio=inicio, dia=d)
+                    except:
+                        sesiones_por_dia[d] = Sesion.objects.none()
+                horario[tramo] = sesiones_por_dia
+                # horario[tramo] = {d: ss.filter(hora_inicio=inicio, dia=d) for d in [1, 2, 3, 4, 5]}
             tabla = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario,
-                                                                                 'docente': ss[0].docente})
+                                                                                 'docente': docente})
+            return JsonResponse({'ok': True, 'tabla': tabla, 'h': h.id, 'd': docente.id})
+
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
-                ss = po.sesiondocente_set.filter(x_docente=request.POST['x_docente'])
-                tramos = po.plantillaxls_set.filter(x_docente=request.POST['x_docente']).order_by('inicio').values_list(
-                    'inicio', 'hora_inicio_cadena', 'hora_fin_cadena').distinct()
+                docente = Gauser_extra.objects.get(id=request.POST['docente'], ronda=po.ronda_centro)
+                h = Horario.objects.get(ronda=docente.ronda, clave_ex=po.pk)
+                ss = Sesion.objects.filter(horario=h, g_e=docente)
+                tramos = ss.values_list('hora_inicio', 'hora_inicio_cadena', 'hora_fin_cadena').distinct()
                 horario = {}
                 for inicio, s_inicio, s_fin in tramos:
                     tramo = '%s-%s' % (s_inicio, s_fin)
-                    horario[tramo] = {d: ss.filter(hora_inicio=str(inicio), dia=d) for d in ['1', '2', '3', '4', '5']}
+                    horario[tramo] = {d: ss.get(hora_inicio=inicio, dia=d) for d in [1, 2, 3, 4, 5]}
                 tabla = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario,
-                                                                                     'docente': ss[0].docente})
-                return JsonResponse({'ok': True, 'tabla': tabla})
+                                                                                     'docente': docente})
+
+
+                # ss = po.sesiondocente_set.filter(x_docente=request.POST['x_docente'])
+                # tramos = po.plantillaxls_set.filter(x_docente=request.POST['x_docente']).order_by('inicio').values_list(
+                #     'inicio', 'hora_inicio_cadena', 'hora_fin_cadena').distinct()
+                # horario = {}
+                # for inicio, s_inicio, s_fin in tramos:
+                #     tramo = '%s-%s' % (s_inicio, s_fin)
+                #     horario[tramo] = {d: ss.filter(hora_inicio=str(inicio), dia=d) for d in ['1', '2', '3', '4', '5']}
+                # tabla = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario,
+                #                                                                      'docente': ss[0].docente})
+                return JsonResponse({'ok': True, 'tabla': tabla, 'h':h.id, 'd':docente.id})
             except:
                 return JsonResponse({'ok': False})
 

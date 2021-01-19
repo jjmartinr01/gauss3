@@ -42,59 +42,59 @@ ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', '
               ('na', 'Preparación Pruebas de Acceso a CCFF'), ('za', 'Etapa no identificada'))
 
 
-class Curso(models.Model):
-    entidad = models.ForeignKey(Entidad, blank=True, null=True, on_delete=models.CASCADE)
-    ronda = models.ForeignKey(Ronda, blank=True, null=True, on_delete=models.CASCADE)
-    nombre = models.CharField("Curso", max_length=150)
-    etapa = models.CharField("Nombre de la etapa", max_length=75, null=True, blank=True, choices=ETAPAS)
-    tipo = models.CharField("Tipo de estudio", max_length=75, null=True, blank=True)
-    nombre_especifico = models.CharField("Nombre específico", max_length=150, null=True, blank=True)
-    familia = models.CharField("Departamento", max_length=150, null=True, blank=True)
-    observaciones = models.TextField("Observaciones", null=True, blank=True)
-    grupos = models.ManyToManyField(Subentidad, blank=True)
-    edad = models.IntegerField("Edad con la que puede iniciarse este curso", blank=True, null=True)
-    clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
-
-    class Meta:
-        ordering = ['etapa', 'tipo', 'nombre']
-
-    def __str__(self):
-        return '%s (%s)' % (self.nombre, self.ronda.entidad.name)
+# class Curso(models.Model):
+#     entidad = models.ForeignKey(Entidad, blank=True, null=True, on_delete=models.CASCADE)
+#     ronda = models.ForeignKey(Ronda, blank=True, null=True, on_delete=models.CASCADE)
+#     nombre = models.CharField("Curso", max_length=150)
+#     etapa = models.CharField("Nombre de la etapa", max_length=75, null=True, blank=True, choices=ETAPAS)
+#     tipo = models.CharField("Tipo de estudio", max_length=75, null=True, blank=True)
+#     nombre_especifico = models.CharField("Nombre específico", max_length=150, null=True, blank=True)
+#     familia = models.CharField("Departamento", max_length=150, null=True, blank=True)
+#     observaciones = models.TextField("Observaciones", null=True, blank=True)
+#     grupos = models.ManyToManyField(Subentidad, blank=True)
+#     edad = models.IntegerField("Edad con la que puede iniciarse este curso", blank=True, null=True)
+#     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
+#
+#     class Meta:
+#         ordering = ['etapa', 'tipo', 'nombre']
+#
+#     def __str__(self):
+#         return '%s (%s)' % (self.nombre, self.ronda.entidad.name)
 
 
 # Ligar un Grupo a un curso es problemático porque alumnos de un grupo pueden pertenecer a varios cursos. Por ejemplo
 # los alumnos del grupo 1Bach A pueden pertenecer a los cursos de Ciencias y de Artes
-class Grupo(models.Model):
-    ronda = models.ForeignKey(Ronda, blank=True, null=True, on_delete=models.CASCADE)
-    cursos = models.ManyToManyField(Curso, blank=True)
-    nombre = models.CharField("Nombre", max_length=100)
-    observaciones = models.TextField("Observaciones", null=True, blank=True)
-    clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
-
-    @property
-    def entidad(self):
-        return self.ronda.entidad
-
-    @property
-    def tutores(self):
-        tutores_id = Gauser_extra_horarios.objects.filter(grupo__id=self.id).values_list('tutor__id')
-        return Gauser_extra.objects.filter(id__in=tutores_id).distinct()
-
-    @property
-    def cotutores(self):
-        cotutores_id = Gauser_extra_horarios.objects.filter(grupo__id=self.id).values_list('cotutor__id')
-        return Gauser_extra.objects.filter(id__in=cotutores_id).distinct()
-
-    @property
-    def gausers_extra_horarios(self):
-        return Gauser_extra_horarios.objects.filter(grupo__id=self.id)
-
-    class Meta:
-        ordering = ['nombre']
-
-    def __str__(self):
-        cursos = self.cursos.all().values_list('nombre', flat=True)
-        return '%s - %s - %s' % (self.nombre, ', '.join(cursos), self.ronda)
+# class Grupo(models.Model):
+#     ronda = models.ForeignKey(Ronda, blank=True, null=True, on_delete=models.CASCADE)
+#     cursos = models.ManyToManyField(Curso, blank=True)
+#     nombre = models.CharField("Nombre", max_length=100)
+#     observaciones = models.TextField("Observaciones", null=True, blank=True)
+#     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
+#
+#     @property
+#     def entidad(self):
+#         return self.ronda.entidad
+#
+#     @property
+#     def tutores(self):
+#         tutores_id = Gauser_extra_horarios.objects.filter(grupo__id=self.id).values_list('tutor__id')
+#         return Gauser_extra.objects.filter(id__in=tutores_id).distinct()
+#
+#     @property
+#     def cotutores(self):
+#         cotutores_id = Gauser_extra_horarios.objects.filter(grupo__id=self.id).values_list('cotutor__id')
+#         return Gauser_extra.objects.filter(id__in=cotutores_id).distinct()
+#
+#     @property
+#     def gausers_extra_horarios(self):
+#         return Gauser_extra_horarios.objects.filter(grupo__id=self.id)
+#
+#     class Meta:
+#         ordering = ['nombre']
+#
+#     def __str__(self):
+#         cursos = self.cursos.all().values_list('nombre', flat=True)
+#         return '%s - %s - %s' % (self.nombre, ', '.join(cursos), self.ronda)
 
 
 # class Materia(models.Model):
@@ -131,6 +131,7 @@ class Horario(models.Model):
     sabado = models.BooleanField('Sábado?', default=False)
     domingo = models.BooleanField('Domingo?', default=False)
     predeterminado = models.BooleanField("Horario predeterminado?", default=False)
+    clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
 
     @property
     def pixels_hora(self):
@@ -333,14 +334,39 @@ class Sesion(models.Model):
     dependencia = models.ForeignKey(Dependencia, null=True, blank=True, on_delete=models.CASCADE)
     materia = models.ForeignKey(EMateria, null=True, blank=True, on_delete=models.CASCADE)
     actividad = models.ForeignKey(Actividad, null=True, blank=True, on_delete=models.CASCADE)
+    #################################
+    hora_inicio = models.IntegerField('Hora inicio periodo en minutos', default=0)
+    hora_fin = models.IntegerField('Hora fin periodo en minutos', default=0)
+    hora_inicio_cadena = models.CharField('Hora inicio periodo en formato H:i', max_length=8, blank=True, null=True)
+    hora_fin_cadena = models.CharField('Hora fin periodo en formato H:i', max_length=8, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "Sesiones"
+        ordering = ['hora_inicio']
+
+    def grupos(self):
+        gs = []
+        for se in self.sesionextra_set.all():
+            if se.grupo not in gs:
+                gs.append(se.grupo)
+        return gs
+
+    @property
+    def clase_horario(self):
+        try:
+            if self.sesionextra_set.all()[0].materia:
+                ch = [str(self.sesionextra_set.all()[0].materia.id)]
+                for sext in self.sesionextra_set.all():
+                    ch.append(str(sext.grupo.id))
+                return '_'.join(ch)
+            else:
+                return self.sesionextra_set.all()[0].actividad.clave_ex
+        except:
+            return self.sesionextra_set.all()[0].actividad.clave_ex
 
     @property
     def top(self):
         hora_inicio = self.horario.hora_inicio_ge(self.g_e)
-        # hora_inicio = self.horario.hora_inicio
         offset = self.horario.pixels_offset
         pixels_minuto = self.horario.pixels_minuto
         return (
@@ -356,100 +382,19 @@ class Sesion(models.Model):
     def __str__(self):
         return '%s - %s' % (self.dia, self.horario)
 
-        # return '%s - %s (%s)' % (self.dia, self.horario, self.g_e.gauser.get_full_name())
+class SesionExtra(models.Model):
+    sesion = models.ForeignKey(Sesion, on_delete=models.CASCADE, blank=True, null=True)
+    grupo = models.ForeignKey(EGrupo, null=True, blank=True, on_delete=models.CASCADE)
+    dependencia = models.ForeignKey(Dependencia, null=True, blank=True, on_delete=models.CASCADE)
+    materia = models.ForeignKey(EMateria, null=True, blank=True, on_delete=models.CASCADE)
+    actividad = models.ForeignKey(Actividad, null=True, blank=True, on_delete=models.CASCADE)
 
+    class Meta:
+        verbose_name_plural = "Sesiones Información Extra"
 
-# import csv
-# with open('sesiones.csv', 'wb') as csvfile:
-#     spamw = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-#     for s in ss:
-#         try:
-#             grupo = s.grupo.clave_ex
-#         except:
-#             grupo = ''
-#         try:
-#             dependencia = slugify(s.aula.clave_ex)
-#         except:
-#             dependencia = ''
-#         try:
-#             materia = s.materia.clave_ex
-#         except:
-#             materia = ''
-#         try:
-#             actividad = slugify(s.actividad_docente.clave_ex)
-#         except:
-#             actividad = ''
-#         try:
-#             tramo = slugify(s.tramo_horario.tramo)
-#         except:
-#             tramo = ''
-#         try:
-#             inicio = s.tramo_horario.inicio.strftime('%H:%M')
-#         except:
-#             inicio = ''
-#         try:
-#             fin = s.tramo_horario.fin.strftime('%H:%M')
-#         except:
-#             fin = ''
-#         try:
-#             spamw.writerow([s.dia, s.docente.gauser.dni, grupo, dependencia, materia, actividad, tramo, inicio, fin])
-#         except:
-#             print 'Error con sesion %s' % s.id
-# #
-# def migra_sesiones():
-#     d_m = {'L': 'lunes', 'M': 'martes', 'X': 'miercoles', 'J': 'jueves', 'V': 'viernes'}
-#     import csv
-#     from datetime import datetime
-#     r = Ronda.objects.get(id=26)
-#     e = Entidad.objects.get(id=14)
-#     h = Horario.objects.get(id=24)
-#     with open('sesiones.csv', 'rb') as csvfile:
-#         spamreader = csv.reader(csvfile, delimiter=';', quotechar='|')
-#         for row in spamreader:
-#             print row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]
-#             dia = d_m[row[0]]
-#             try:
-#                 docente = Gauser_extra.objects.get(gauser__dni=row[1], ronda=r)
-#             except:
-#                 docente = None
-#                 print 'Error en docente %s' % row[1]
-#             try:
-#                 grupo = Grupo.objects.get(ronda=r, clave_ex=row[2])
-#             except:
-#                 grupo = None
-#                 print 'Error en grupo %s' % row[2]
-#             try:
-#                 dependencia = Dependencia.objects.get(clave_ex=row[3])
-#             except:
-#                 dependencia = None
-#                 print 'Error en dependencia %s' % row[3]
-#             try:
-#                 materia = Materia.objects.get(curso__entidad__ronda=r, clave_ex=row[4])
-#             except:
-#                 materia = None
-#                 print 'Error en materia %s' % row[4]
-#             try:
-#                 actividad = Actividad.objects.get(clave_ex=row[5], entidad=e)
-#             except:
-#                 actividad = None
-#                 print 'Error en actividad %s' % row[5]
-#             try:
-#                 nombre = row[6]
-#             except:
-#                 nombre = ''
-#                 print 'Error en nombre %s' % row[6]
-#             try:
-#                 inicio = datetime.strptime(row[7],'%H:%M')
-#             except:
-#                 inicio = None
-#                 print 'Error en inicio %s' % row[7]
-#             try:
-#                 fin = datetime.strptime(row[8], '%H:%M')
-#             except:
-#                 fin = None
-#                 print 'Error en fin %s' % row[8]
-#             Sesion.objects.create(horario=h, dia=dia, nombre=nombre, inicio=inicio, fin=fin, g_e=docente, grupo=grupo, dependencia=dependencia, materia=materia, actividad=actividad)
-#             print 'Sesion creada'
+    def __str__(self):
+        return '%s' % (self.sesion)
+
 
 
 TIPO_FALTA = (('f', 'Falta'), ('r', 'Retraso'))
@@ -485,7 +430,7 @@ class Guardia(models.Model):
 
 class Gauser_extra_horarios(models.Model):
     ge = models.OneToOneField(Gauser_extra, on_delete=models.CASCADE)
-    grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE)
+    # grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE)
     tutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='tutor_ge', on_delete=models.CASCADE)
     cotutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='cotutor_ge',
                                 on_delete=models.CASCADE)
@@ -566,15 +511,13 @@ class SeguimientoAlumno(models.Model):
             self.alumno.ge.gauser.get_full_name(), self.alumno.grupo, self.smartphone, self.ordenador, self.internet,
             self.clases)
 
-def sesion2sesion():
-    from horarios.models import Sesion
-    from estudios.models import Materia as EMateria
-    from estudios.models import Grupo as EGrupo
-    sesiones = Sesion.objects.filter(materia__isnull=False, emateria__isnull=True)
-    for s in sesiones:
-        # print s.materia.clave_ex
-        emateria = EMateria.objects.get(clave_ex=s.materia.clave_ex, curso__ronda=s.materia.curso.ronda)
-        # print emateria
-        s.emateria = emateria
-        s.save()
+# def sesion2sesion():
+#     from horarios.models import Sesion
+#     from estudios.models import Materia as EMateria
+#     from estudios.models import Grupo as EGrupo
+#     sesiones = Sesion.objects.filter(materia__isnull=False, emateria__isnull=True)
+#     for s in sesiones:
+#         emateria = EMateria.objects.get(clave_ex=s.materia.clave_ex, curso__ronda=s.materia.curso.ronda)
+#         s.emateria = emateria
+#         s.save()
 

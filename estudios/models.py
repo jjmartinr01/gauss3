@@ -5,6 +5,16 @@ from django.db import models
 from entidades.models import Entidad, Ronda, Subentidad, Gauser_extra, Dependencia
 
 # Create your models here.
+class EtapaEscolar(models.Model):
+    nombre = models.CharField('Nombre de la etapa escolar', max_length=250)
+    clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
+
+    class Meta:
+        ordering = ['clave_ex', 'nombre']
+
+    def __str__(self):
+        return '%s (%s)' % (self.nombre, self.clave_ex)
+
 
 # ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', 'FP Básica'), ('fa', 'Bachillerato'),
 #           ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'))
@@ -20,6 +30,7 @@ class Curso(models.Model):
     ronda = models.ForeignKey(Ronda, blank=True, null=True, related_name='estudios', on_delete=models.CASCADE)
     nombre = models.CharField("Curso", max_length=150)
     etapa = models.CharField("Nombre de la etapa", max_length=75, null=True, blank=True, choices=ETAPAS)
+    etapa_escolar = models.ForeignKey(EtapaEscolar, blank=True, null=True, on_delete=models.CASCADE)
     tipo = models.CharField("Tipo de estudio", max_length=75, null=True, blank=True)
     nombre_especifico = models.CharField("Nombre específico", max_length=150, null=True, blank=True)
     familia = models.CharField("Departamento", max_length=150, null=True, blank=True)
@@ -68,7 +79,7 @@ class Grupo(models.Model):
 
     def __str__(self):
         cursos = self.cursos.all().values_list('nombre', flat=True)
-        return u'%s - %s - %s' % (self.nombre, ', '.join(cursos), self.ronda)
+        return '%s - %s - %s' % (self.nombre, ', '.join(cursos), self.ronda)
 
 
 class Materia(models.Model):
@@ -92,7 +103,7 @@ class Materia(models.Model):
 
     def __str__(self):
         curso_nombre = self.curso.nombre if self.curso else 'No asignada a un curso'
-        return u'%s - %s (%s horas)' % (self.nombre, curso_nombre, self.horas)
+        return '%s - %s (%s horas)' % (self.nombre, curso_nombre, self.horas)
 
 
 class Gauser_extra_estudios(models.Model):
@@ -106,7 +117,7 @@ class Gauser_extra_estudios(models.Model):
         return Matricula.objects.filter(ge=self.ge).values_list('materia__clave_ex', 'materia__nombre', 'estado')
 
     def __str__(self):
-        return u'%s - %s' % (self.ge, self.grupo)
+        return '%s - %s' % (self.ge, self.grupo)
 
 
 class Matricula(models.Model):
@@ -123,50 +134,4 @@ class Matricula(models.Model):
         ordering = ['ge__gauser_extra_estudios__grupo', 'ge__gauser__last_name']
 
     def __str__(self):
-        return u'%s - %s (%s)' % (self.ge, self.materia, self.estado)
-
-
-
-def cursos2cursos():
-    from horarios.models import Curso as HCurso
-    from estudios.models import Curso as ECurso
-    hcursos = HCurso.objects.all()
-    for hc in hcursos:
-        ECurso.objects.create(entidad=hc.entidad, ronda=hc.ronda, nombre=hc.nombre, etapa=hc.etapa, tipo=hc.tipo, nombre_especifico=hc.nombre_especifico,familia=hc.familia, observaciones=hc.observaciones, edad=hc.edad, clave_ex=hc.clave_ex)
-
-def grupos2grupos():
-    from horarios.models import Grupo as HGrupo
-    from estudios.models import Grupo as EGrupo
-    from estudios.models import Curso
-    hgrupos = HGrupo.objects.all()
-    for hg in hgrupos:
-        eg = EGrupo.objects.create(ronda=hg.ronda, nombre=hg.nombre, observaciones=hg.observaciones,
-                                   clave_ex=hg.clave_ex)
-        hcursos = hg.cursos.all().values_list('clave_ex', flat=True)
-        ecursos = Curso.objects.filter(clave_ex__in=hcursos, entidad=hg.entidad, ronda=hg.ronda)
-        eg.cursos.add(*ecursos)
-
-def materias2materias():
-    from horarios.models import Materia as HMateria
-    from estudios.models import Materia as EMateria
-    from estudios.models import Curso
-    hmaterias = HMateria.objects.all()
-    for hm in hmaterias:
-        try:
-            ecurso = Curso.objects.get(clave_ex=hm.curso.clave_ex, entidad=hm.curso.ronda.entidad, ronda=hm.curso.ronda)
-            EMateria.objects.create(curso=ecurso, nombre=hm.nombre, abreviatura=hm.abreviatura, horas=hm.horas,
-                                         duracion=hm.duracion, observaciones=hm.observaciones, clave_ex=hm.clave_ex)
-        except:
-            pass
-
-def Gauser_extra_horarios2Gauser_extra_estudios():
-    from horarios.models import Gauser_extra_horarios
-    from estudios.models import Gauser_extra_estudios
-    from estudios.models import Grupo
-    gehs = Gauser_extra_horarios.objects.all()
-    for geh in gehs:
-        try:
-            egrupo = Grupo.objects.get(ronda=geh.ge.ronda, clave_ex=geh.grupo.clave_ex)
-            Gauser_extra_estudios.objects.create(ge=geh.ge, grupo=egrupo, tutor=geh.tutor, cotutor=geh.cotutor)
-        except:
-            Gauser_extra_estudios.objects.create(ge=geh.ge, tutor=geh.tutor, cotutor=geh.cotutor)
+        return '%s - %s (%s)' % (self.ge, self.materia, self.estado)

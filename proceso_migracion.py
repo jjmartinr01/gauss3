@@ -36,7 +36,6 @@ acts=json.load(f)
 
 # Tenemos ahora cargado en acts las actividades de Gauss_educa. Definimos la función
 
-# from horarios.models import *
 from horarios.models import Tramo_horario
 from calendario.models import *
 from django.template.loader import render_to_string

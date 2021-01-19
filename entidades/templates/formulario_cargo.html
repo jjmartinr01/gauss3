@@ -52,7 +52,7 @@
 </div>
 <div class="row">
     <div class="large-7 columns">
-        {% if g_e|has_permiso:'edita_perfiles' %}
+        {% if g_e|has_permiso:'edita_perfiles' and cargo.borrable %}
             <label>Define el cargo
                 <input id="id_cargo" maxlength="200" name="cargo" value="{{ cargo.cargo }}" type="text"
                        data-cargo="{{ cargo.id }}">
@@ -60,7 +60,7 @@
         {% else %}
             <label>Define el cargo
             </label>
-            {{ cargo.cargo }}
+            <strong>{{ cargo.cargo }}</strong>
         {% endif %}
     </div>
     <div class="large-4 columns">

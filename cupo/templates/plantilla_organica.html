@@ -222,41 +222,17 @@
             });
         });
 
-        $('body').on('click', '.dep_th', function (e) {
-            var x_dep = $(this).data('x_dep');
-            $('.docentes_dep' + x_dep).toggle();
-        });
-
-        $('body').on('click', '.docente', function (e) {
-            var x_docente = $(this).parent().data('x_docente');
-            $('#materias_docente' + x_docente).toggle();
-        });
-
-        $('body').on('click', '.materias_docente', function (e) {
-            $(this).hide();
-        });
-
-
-        $('body').on('mouseenter', '.docente', function (e) {
-            var x_docente = $(this).parent().data('x_docente');
-            var po = $(this).parent().data('po');
-            var element = $('#materias_docente' + x_docente);
-            var materias = element.html();
-            if (!materias) {
-                $.post("/plantilla_organica/", {action: 'materias_docente', po: po, x_docente: x_docente},
+        {# ############################################################## #}
+        $('body').on('mouseenter', '.dep_th', function (e) {
+            var departamento = $(this).data('departamento');
+            var po = $(this).data('po');
+            var element = $('#tbody_departamento' + departamento);
+            var contenido = element.html();
+            if (!contenido) {
+                $.post("/plantilla_organica/", {action: 'update_dep_th', departamento: departamento, po: po},
                     function (data) {
                         if (data.ok) {
-                            for (i = 0; i < data.materias.length; i++) {
-                                let div = document.createElement('div');
-                                if (data.materias[i].horas_min == data.materias[i].horas_max) {
-                                    div.setAttribute('title', data.materias[i].materia + ' (' + data.materias[i].horas_min + ') ' + data.materias[i].curso)
-                                } else {
-                                    div.setAttribute('title', data.materias[i].materia + ' (entre ' + data.materias[i].horas_min + ' y ' + data.materias[i].horas_max + ')')
-                                }
-                                let text = document.createTextNode(data.materias[i].abreviatura + ', ' + data.materias[i].grupos + ', ' + data.materias[i].horas + ' periodos');
-                                div.appendChild(text);
-                                element.append(div);
-                            }
+                            $('#tbody_departamento' + departamento).html(data.html);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
@@ -265,10 +241,51 @@
             }
         });
 
+        $('body').on('click', '.dep_th', function (e) {
+            {#var h = $('#cabecera_tabla_po').height();#}
+            {#var top = $(this).offset().top;#}
+            {#window.console.log(top);#}
+            var element = $(this);
+            var departamento = $(this).data('departamento');
+            $('.docentes_dep' + departamento).toggle();
+            {#element.scrollTop(h);#}
+            {#window.scrollTo(0, 50);#}
+        });
+
+        {# ############################################################## #}
+        $('body').on('mouseenter', '.docente', function (e) {
+            var docente = $(this).parent().data('docente');
+            var po = $(this).parent().data('po');
+            var element = $('#materias_docente' + docente);
+            var materias = element.html();
+            if (!materias) {
+                $.post("/plantilla_organica/", {action: 'materias_docente', po: po, docente: docente},
+                    function (data) {
+                        if (data.ok) {
+                            element.append(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        });
+
+        $('body').on('click', '.docente', function (e) {
+            var docente = $(this).parent().data('docente');
+            $('#materias_docente' + docente).toggle();
+        });
+
+        {# ############################################################## #}
+        $('body').on('click', '.materias_docente', function (e) {
+            $(this).hide();
+        });
+
+        {# ############################################################## #}
         $('body').on('click', '.get_horario', function (e) {
-            var x_docente = $(this).parent().parent().data('x_docente');
+            var docente = $(this).parent().parent().data('docente');
             var po = $(this).parent().parent().data('po');
-            $.post("/plantilla_organica/", {action: 'get_horario', po: po, x_docente: x_docente},
+            $.post("/plantilla_organica/", {action: 'get_horario', po: po, docente: docente},
                 function (data) {
                     if (data.ok) {
                         $('#horario_docente').html(data.tabla);

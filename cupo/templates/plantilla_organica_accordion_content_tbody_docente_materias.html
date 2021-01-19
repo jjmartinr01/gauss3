@@ -1,0 +1,33 @@
+{#<table>#}
+{#    <thead>#}
+{#    <tr>#}
+{#        <th>Materia</th>#}
+{#        <th>Grupos</th>#}
+{#        <th>Periodos</th>#}
+{#    </tr>#}
+{#    </thead>#}
+{#    {% for data in materias_docente %}#}
+{#        <tr title="{% if data.materia.horas_semana_min == data.materia.horas_semana_max %}{{ data.materia.nombre }}#}
+{#        ({{ data.materia.horas_semana_min }}) - {{ data.materia.curso.nombre }}{% else %}{{ data.materia.nombre }}#}
+{#        (entre {{ data.materia.horas_semana_min }} y {{ data.materia.horas_semana_max }} horas) - {{ data.materia.curso.nombre }}{% endif %}">#}
+{#            <td>{{ data.materia.abreviatura }}</td>#}
+{#            <td>{% for grupo in data.grupos %}{{ grupo.nombre }} {% endfor %}</td>#}
+{#            <td>{{ data.periodos }}</td>#}
+{#        </tr>#}
+{#    {% endfor %}#}
+{#</table>#}
+<hr>
+<div>
+    <span style="color:grey;font-weight: bold;">Materia</span>
+    <span style="color:red">|</span>
+    <span style="color:grey;font-weight: bold;">Grupos</span>
+    <span style="color:red">|</span>
+    <span style="color:grey;font-weight: bold;">Periodos</span>
+</div>
+{% for data in materias_docente %}
+    <div title="{% if data.materia.horas_semana_min == data.materia.horas_semana_max %}{{ data.materia.nombre }} ({{ data.materia.horas_semana_min }}) - {{ data.materia.curso.nombre }}{% else %}{{ data.materia.nombre }} (entre {{ data.materia.horas_semana_min }} y {{ data.materia.horas_semana_max }} horas) - {{ data.materia.curso.nombre }}{% endif %}">
+        <span style="color:grey">{{ data.materia.abreviatura }}</span> <span style="color:red">|</span>
+        <span style="color:grey">{% for grupo in data.grupos %}{% if not forloop.first %}<span style="color:green">-</span>{% endif %} {{ grupo.nombre }} {% endfor %}</span>
+        <span style="color:red">|</span> <span style="color:grey">{{ data.periodos }}</span>
+    </div>
+{% endfor %}

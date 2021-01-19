@@ -5,6 +5,7 @@ import random
 import string
 import logging
 from datetime import date, timedelta, datetime
+from difflib import get_close_matches
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -380,7 +381,8 @@ NIVELES = ((1, 'Cargo/Perfil de primer nivel'), (2, 'Cargo/Perfil de segundo niv
            (3, 'Cargo/Perfil de tercer nivel'), (4, 'Cargo/Perfil de cuarto nivel'),
            (5, 'Cargo/Perfil de quinto nivel'), (6, 'Cargo/Perfil de sexto nivel'))
 
-
+# clave_cargo:  'g_inspector_educacion', 'g_docente', 'g_madre_padre', 'g_alumno', 'g_director_general'
+#
 class Cargo(models.Model):
     entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE)
     cargo = models.CharField("Cargo", max_length=200, null=True, blank=True)
@@ -390,11 +392,15 @@ class Cargo(models.Model):
     borrable = models.BooleanField('¿Este cargo se puede borrar?', default=True)
     clave_cargo = models.CharField('Clave asociada al cargo', max_length=30, default='')
 
+    def export_data(self):
+        return {'clave_cargo': self.clave_cargo, 'cargo': self.cargo,
+                'permisos': [p.code_nombre for p in self.permisos.all()]}
+
     class Meta:
-        ordering = ['nivel', 'cargo']
+        ordering = ['entidad', 'clave_cargo', 'nivel', 'cargo']
 
     def __str__(self):
-        return '%s' % (self.cargo)
+        return '%s - %s' % (self.cargo, self.entidad)
 
 
 CAMPOS_RESERVA = (('first_name', 'Nombre'), ('last_name', 'Apellidos'), ('address', 'Dirección'), ('sexo', 'Sexo'),
@@ -947,6 +953,12 @@ class EnlaceGE(models.Model):
 ###############################################################################
 ###############################################################################
 
+# class PuestoRacima(models.Model):
+#     code = models.CharField('Código del cuerpo', max_length=10)
+#     nombre = models.CharField('Nombre del cuerpo', max_length=100)
+#
+#     def __str__(self):
+#         return '%s - %s' % (self.code, self.nombre)
 
 class Cuerpo_funcionario(models.Model):
     code = models.CharField('Código del cuerpo', max_length=10)
@@ -1303,21 +1315,41 @@ class Departamento(models.Model):
     fp = models.BooleanField("Es una familia profesional", default=False)
     horas_coordinador = models.IntegerField("Número de horas de coordinación para el jefe de departamento", default=3)
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
+    orden = models.IntegerField("Orden en el listado de departamentos", default=100)
     # miembros = models.ManyToManyField(Gauser_extra, blank=True)
+
+    def save(self, *args, **kwargs):
+        posiciones = {'Griego': 2, 'Orientación': 20, 'Tecnología': 14, 'Matemáticas': 6, 'Educación Física': 13,
+                      'Filosofía': 1, 'Geografía e Historia': 5, 'Inglés': 11, 'Formación y Orientación Laboral': 17,
+                      'Lengua Castellana y Literatura': 4, 'Ciencias Naturales': 8, 'Latín': 3, 'Artes Plásticas': 9,
+                      'Física y Química': 7, 'Música': 12, 'Economía': 15, 'Cultura Clásica': 16, 'Francés': 10}
+        nombre_departamento = get_close_matches(self.nombre, posiciones, 1)
+        if len(nombre_departamento) > 0:
+            self.orden = posiciones[nombre_departamento[0]]
+        else:
+            self.orden = 100
+        super(Departamento, self).save(*args, **kwargs)
 
     @property
     def entidad(self):
         return self.ronda.entidad
 
+    class Meta:
+        verbose_name_plural = "Departamentos"
+        ordering = ['orden', 'nombre']
+
     def __str__(self):
-        return '%s (%s)' % (self.nombre, self.ronda)
+        return '%s - %s - %s' % (self.clave_ex, self.nombre, self.ronda)
 
 class MiembroDepartamento(models.Model):
     PUESTOS = (('M', 'Maestro'), ('S', 'Profesor de Secundaria'), ('C', 'Catedrático'), ('T', 'Profesor Técnico'))
     departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE)
     g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
     especialidad = models.ForeignKey(Especialidad_funcionario, on_delete=models.CASCADE, blank=True, null=True)
-    puesto = models.CharField('Puesto según Racima', blank=True, null=True, max_length=250)
+    puesto = models.CharField('Contiene el campo clave_cargo de la clase Cargo', blank=True, null=True, max_length=250)
+
+    def get_puesto(self):
+        return Cargo.objects.get(entidad=self.departamento.ronda.entidad, clave_cargo=self.puesto)
 
     def __str__(self):
-        return '%s (%s)' % (self.g_e, self.especialidad)
+        return '%s - dep: %s - puesto: %s' % (self.g_e, self.departamento.nombre, self.get_puesto())

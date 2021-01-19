@@ -4,8 +4,14 @@ import logging
 from django.db import models
 from django.db.models import Q
 from django.utils.timezone import now
-from entidades.models import Subentidad, Entidad, Ronda, Cargo, Gauser_extra, Dependencia
-from estudios.models import Materia, Curso, Grupo
+
+from entidades.views import get_entidad_general
+from gauss.funciones import pass_generator
+from autenticar.models import Gauser, Permiso
+from entidades.models import Subentidad, Entidad, Ronda, Cargo, Gauser_extra, Dependencia, MiembroDepartamento
+from entidades.models import Departamento as DepEntidad
+from estudios.models import Materia, Curso, Grupo, EtapaEscolar
+from horarios.models import Actividad, Horario, Sesion, SesionExtra
 from programaciones.models import Departamento, Especialidad_entidad
 from math import ceil
 
@@ -159,51 +165,282 @@ class Profesor_cupo(models.Model):
             self.profesorado.cupo.nombre, self.profesorado.especialidad.nombre, self.nombre, self.get_jornada_display())
 
 
+############################################################################################
+####################### Plantilla Orgánica #################################################
+############################################################################################
+TC = {
+    'I.E.S. - Instituto de Educación Secundaria': {
+        'Educación Secundaria Obligatoria': {
+            'Troncales': {
+                # 'q': (Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
+                #     grupo_materias__icontains='obligator')) & Q(x_actividad='1') & Q(x_etapa_escolar='24') & ~Q(
+                #     x_curso__in=['222074', '222075']) & ~Q(materia__icontains='mbito'),
+                'q': (Q(materia__grupo_materias__icontains='tronca') | Q(
+                    materia__grupo_materias__icontains='extranj') | Q(
+                    materia__grupo_materias__icontains='obligator')) & Q(
+                    materia__curso__etapa_escolar__clave_ex='24') & ~Q(
+                    materia__curso__clave_ex__in=['222074', '222075']) & ~Q(materia__nombre__icontains='mbito'),
+                'horas_base': True,
+                'codecol': 10005
+            },
+            'Específicas': {
+                # 'q': Q(x_etapa_escolar='24') & Q(grupo_materias__icontains='espec') & Q(x_actividad='1'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(materia__grupo_materias__icontains='espec'),
+                'horas_base': True,
+                'codecol': 10010
+            },
+            'Libre Conf. Aut.': {
+                # 'q': Q(x_etapa_escolar='24') & Q(grupo_materias__icontains='libre conf') & Q(x_actividad='1'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
+                    materia__grupo_materias__icontains='libre conf') & ~Q(
+                    materia__curso__clave_ex__in=['222074', '222075']) & ~Q(materia__nombre__icontains='mbito'),
+                'horas_base': True,
+                'codecol': 10015
+            },
+            'Rel./Val. Éticos': {
+                # 'q': Q(x_etapa_escolar='24') & Q(x_actividad='1') & Q(grupo_materias__icontains='Rel. y Aten.'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
+                    materia__grupo_materias__icontains='Rel. y Aten.'),
+                'horas_base': True,
+                'codecol': 10020
+            },
+            'Desdobles ESO': {
+                # 'q': (Q(x_actividad='539') | Q(x_actividad='400')) & Q(x_actividad='1') & Q(x_actividad='522') & Q(
+                #     x_etapa_escolar='24'),
+                'q': (Q(actividad__clave_ex='539') | Q(actividad__clave_ex='400') | Q(actividad__clave_ex='522')) & Q(
+                    materia__curso__etapa_escolar__clave_ex='24'),
+                'horas_base': True,
+                'codecol': 10025
+            },
+        },
+        'Bachillerato': {
+            'Troncales': {
+                # 'q': (Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
+                #     grupo_materias__icontains='obligator')) & Q(x_actividad='1') & Q(x_etapa_escolar='31'),
+                'q': (Q(materia__grupo_materias__icontains='tronca') | Q(
+                    materia__grupo_materias__icontains='extranj') | Q(
+                    materia__grupo_materias__icontains='obligator')) & Q(
+                    materia__curso__etapa_escolar__clave_ex='31'),
+                'horas_base': True,
+                'codecol': 10030
+            },
+            'Específicas': {
+                # 'q': Q(x_etapa_escolar='31') & Q(grupo_materias__icontains='espec') & Q(x_actividad='1'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='31') & Q(materia__grupo_materias__icontains='espec'),
+                'horas_base': True,
+                'codecol': 10035
+            },
+            'Desdobles BACH': {
+                # 'q': (Q(x_actividad='539') | Q(x_actividad='400')) & Q(x_actividad='1') & Q(x_actividad='522') & Q(
+                #     x_etapa_escolar='31'),
+                'q': (Q(actividad__clave_ex='539') | Q(actividad__clave_ex='400') | Q(actividad__clave_ex='522')) & Q(
+                    materia__curso__etapa_escolar__clave_ex='31'),
+                'horas_base': True,
+                'codecol': 10040
+            },
+        },
+        'Formación Profesional': {
+            'CFGM': {
+                # 'q': Q(x_etapa_escolar__in=['1373', '23']) & Q(x_actividad='1'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex__in=['1373', '23']),
+                'horas_base': True,
+                'codecol': 10045
+            },
+            'CFGS': {
+                # 'q': Q(x_etapa_escolar__in=['2', '1375']) & Q(x_actividad='1'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex__in=['2', '1375']),
+                'horas_base': True,
+                'codecol': 10050
+            },
+            'FPB': {
+                # 'q': Q(x_etapa_escolar='5504') & Q(x_actividad='1'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='5504'),
+                'horas_base': True,
+                'codecol': 10055
+            },
+        },
+        'Atención a la Diversidad y otras horas': {
+            'PACG': {
+                # 'q': Q(x_curso__in=['222074', '222075']) & Q(x_actividad='1'),
+                'q': Q(materia__curso__clave_ex__in=['222074', '222075']),
+                'horas_base': False,
+                'codecol': 10060
+            },
+            'Refuerzo 1º ESO': {
+                # 'q': Q(materia__icontains='mbito') & Q(x_curso='170506') & Q(x_actividad='1'),
+                'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='170506'),
+                'horas_base': False,
+                'codecol': 10065
+            },
+            'PMAR1': {
+                # 'q': Q(materia__icontains='mbito') & Q(x_curso='101324') & Q(x_actividad='1'),
+                'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='101324'),
+                'horas_base': False,
+                'codecol': 10070
+            },
+            'PMAR2': {
+                # 'q': Q(materia__icontains='mbito') & Q(x_curso='101325') & Q(x_actividad='1'),
+                'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='101325'),
+                'horas_base': False,
+                'codecol': 10075
+            },
+            'Curso Prep. Acceso CCFF': {
+                # 'q': Q(x_etapa_escolar__in=['3129', ]) & Q(x_actividad='1'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex__in=['3129', ]),
+                'horas_base': False,
+                'codecol': 10080
+            },
+            'Tutorías': {
+                # 'q': Q(x_actividad='519') | Q(x_actividad='2') | Q(x_actividad='376'),
+                'q': Q(actividad__clave_ex='519') | Q(actividad__clave_ex='2') | Q(actividad__clave_ex='376'),
+                'horas_base': True,
+                'codecol': 10085
+            },
+            'Jefatura Depart.': {
+                # 'q': Q(x_actividad='547'),
+                'q': Q(actividad__clave_ex='547'),
+                'horas_base': True,
+                'codecol': 10090
+            },
+            'Mayor 55 años': {
+                # 'q': Q(x_actividad='176'),
+                'q': Q(actividad__clave_ex='176'),
+                'horas_base': False,
+                'codecol': 10095
+            },
+        },
+    },
+    'C.E.P.A. - Centro Público de Educación de Personas Adultas': {
+        'Educación Secundaria': {
+            'ESPA Nivel I': {
+                # 'q': Q(x_etapa_escolar='2561') & Q(x_actividad='1') & (Q(x_curso='222076') | Q(x_curso='222077')),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='2561') & Q(
+                    materia__curso__clave_ex__in=['222076', '222077']),
+                'horas_base': True,
+                'codecol': 10100
+            },
+            'ESPA Nivel II': {
+                # 'q': Q(x_etapa_escolar='2561') & Q(x_actividad='1') & (Q(x_curso='222078') | Q(x_curso='222079')),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='2561') & Q(
+                    materia__curso__clave_ex__in=['222078', '222079']),
+                'horas_base': True,
+                'codecol': 10105
+            },
+            'ESPA Dist. Nivel I': {
+                # 'q': Q(x_etapa_escolar='2561') & Q(x_actividad='1') & (Q(x_curso='222080') | Q(x_curso='222081')),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='2561') & Q(
+                    materia__curso__clave_ex__in=['222080', '222081']),
+                'horas_base': True,
+                'codecol': 10110
+            },
+            'ESPA Dist. Nivel II': {
+                # 'q': Q(x_etapa_escolar='2561') & Q(x_actividad='1') & (Q(x_curso='222082') | Q(x_curso='222083')),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='2561') & Q(
+                    materia__curso__clave_ex__in=['222082', '222083']),
+                'horas_base': True,
+                'codecol': 10115
+            },
+        },
+        'Enseñanzas Iniciales': {
+            'Ens. Iniciales I': {
+                # 'q': Q(x_etapa_escolar='3167') & Q(x_actividad='1') & Q(x_curso='121469'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='3167') & Q(materia__curso__clave_ex='121469'),
+                'horas_base': True,
+                'codecol': 10120
+            },
+            'Ens. Iniciales II': {
+                # 'q': Q(x_etapa_escolar='3167') & Q(x_actividad='1') & Q(x_curso='121470'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='3167') & Q(materia__curso__clave_ex='121470'),
+                'horas_base': True,
+                'codecol': 10125
+            },
+        },
+        'Educación no reglada': {
+            'Competencias N-2': {
+                # 'q': Q(x_etapa_escolar='3170') & Q(x_actividad='1') & Q(x_curso='222071'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(materia__curso__clave_ex='222071'),
+                'horas_base': False,
+                'codecol': 10130
+            },
+            'Alfab. Inmigrantes': {
+                # 'q': Q(x_etapa_escolar='3170') & Q(curso__icontains='nmigrantes'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
+                    materia__curso__nombre__icontains='nmigrantes'),
+                'horas_base': False,
+                'codecol': 10135
+            },
+            'Cursos de preparación': {
+                # 'q': Q(x_etapa_escolar='3170') & Q(curso__icontains='mayores de'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
+                    materia__curso__nombre__icontains='mayores de'),
+                'horas_base': False,
+                'codecol': 10140
+            },
+            'Ofimática': {
+                # 'q': Q(x_etapa_escolar='3170') & Q(curso__icontains='ofim'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
+                    materia__curso__nombre__icontains='ofim'),
+                'horas_base': False,
+                'codecol': 10145
+            },
+            'Informática': {
+                # 'q': Q(x_etapa_escolar='3170') & Q(curso__icontains='inform'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
+                    materia__curso__nombre__icontains='inform'),
+                'horas_base': False,
+                'codecol': 10150
+            },
+            'Mecanografía': {
+                # 'q': Q(x_etapa_escolar='3170') & Q(curso__icontains='mecanog'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
+                    materia__curso__nombre__icontains='mecanog'),
+                'horas_base': False,
+                'codecol': 10155
+            },
+            'Inglés': {
+                # 'q': Q(x_etapa_escolar='3170') & Q(curso__icontains='ingl'),
+                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
+                    materia__curso__nombre__icontains='ingl'),
+                'horas_base': False,
+                'codecol': 10160
+            },
+        },
+        'Otras': {
+            'Tutorías': {
+                # 'q': Q(x_actividad='519') | Q(x_actividad='2') | Q(x_actividad='376'),
+                'q': Q(actividad__clave_ex='519') | Q(actividad__clave_ex='2') | Q(actividad__clave_ex='376'),
+                'horas_base': True,
+                'codecol': 10165
+            },
+            'Jefatura Depart.': {
+                # 'q': Q(x_actividad='547'),
+                'q': Q(actividad__clave_ex='547'),
+                'horas_base': True,
+                'codecol': 10170
+            },
+            'Mayor 55 años': {
+                # 'q': Q(x_actividad='176'),
+                'q': Q(actividad__clave_ex='176'),
+                'horas_base': False,
+                'codecol': 10175
+            },
+        },
+    },
+}
+
+
 class PlantillaOrganica(models.Model):
     g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
     ronda_centro = models.ForeignKey(Ronda, on_delete=models.CASCADE, blank=True, null=True)
-    creado = models.DateTimeField("Fecha y hora de encolar el mensaje", auto_now_add=True)
+    carga_completa = models.BooleanField('¿Se ha cargado completamente?', default=False)
+    creado = models.DateTimeField("Fecha y hora creación de la PO", auto_now_add=True)
 
     class Meta:
         verbose_name_plural = 'Plantillas orgánicas'
 
-    def crea_sesiones_docentes(self):
-        campos_sd = ['docente', 'departamento', 'x_departamento', 'hora_fin', 'hora_inicio_cadena', 'hora_fin_cadena',
-                     'actividad', 'x_actividad', 'l_requnidad', 'docencia', 'minutos']
-        # campos_sd = ['po', 'docente', 'x_docente', 'departamento', 'x_departamento', 'dia', 'hora_inicio', 'hora_fin',
-        #              'hora_inicio_cadena', 'hora_fin_cadena', 'actividad', 'x_actividad', 'l_requnidad', 'docencia',
-        #              'minutos']
-        # campos_usd = ['unidad', 'x_unidad', 'materia', 'x_materiaomg', 'curso', 'x_curso', 'omc', 'grupo_materias',
-        #               'etapa', 'horas_semana_min', 'horas_semana_max']
-        psxls = self.plantillaxls_set.all()
-        for p in psxls:
-            self.create_dependencia(p)
-            self.create_curso(p)
-            materia = self.create_materia(p)
-            grupo = self.create_grupo(p)
-            sd, c = SesionDocente.objects.get_or_create(po=self, x_docente=p.x_docente, dia=p.dia,
-                                                        hora_inicio=p.hora_inicio)
-            sd.grupos.add(grupo)
-            if c:
-                sd.materia = materia
-                for c_sd in campos_sd:
-                    valor = getattr(p, c_sd)
-                    setattr(sd, c_sd, valor)
-                sd.save()
-                # usd = UnidadSesionDocente.objects.create(sd=sd)
-                # for c_usd in campos_usd:
-                #     valor = getattr(p, c_usd)
-                #     setattr(usd, c_usd, valor)
-                # usd.save()
-            # else:
-            #     usd, c = UnidadSesionDocente.objects.get_or_create(sd=sd, x_unidad=p.x_unidad)
-            #     if c:
-            #         for c_usd in campos_usd:
-            #             valor = getattr(p, c_usd)
-            #             setattr(usd, c_usd, valor)
-            #         usd.save()
-
-    def create_dependencia(self, pxls):
+    ########################################################################
+    ############ Cargamos dependencias:
+    def carga_dependencia(self, pxls):
         if pxls.x_dependencia == '-1':
             return Dependencia.objects.none()
         else:
@@ -213,7 +450,6 @@ class PlantillaOrganica(models.Model):
                 if c:
                     dependencia.nombre = pxls.c_coddep
                     dependencia.abrev = pxls.c_coddep
-                    # dependencia.observaciones = 'Creada el %s por %s' % (now(), self.g_e)
                     dependencia.es_aula = True
                     dependencia.save()
             except:
@@ -223,90 +459,55 @@ class PlantillaOrganica(models.Model):
                 dependencias.exclude(pk__in=[dependencia.pk]).delete()
                 dependencia.nombre = pxls.c_coddep
                 dependencia.abrev = pxls.c_coddep
-                # dependencia.observaciones = 'Creada el %s por %s' % (now(), self.g_e)
                 dependencia.es_aula = True
                 dependencia.save()
             return dependencia
 
-    def create_dependencias(self):
+    def carga_dependencias(self):
         for pxls in self.plantillaxls_set.filter(~Q(x_dependencia='-1')):
-            self.create_dependencia(pxls)
+            self.carga_dependencia(pxls)
 
-    def create_curso(self, pxls):
+    ########################################################################
+    ############ Cargamos etapas:
+    def carga_etapas(self):
+        for pxls in self.plantillaxls_set.all():
+            EtapaEscolar.objects.get_or_create(nombre=pxls.etapa_escolar, clave_ex=pxls.x_etapa_escolar)
+
+    ########################################################################
+    ############ Cargamos cursos:
+    def carga_curso(self, pxls):
         try:
             curso, c = Curso.objects.get_or_create(clave_ex=pxls.x_curso, ronda=self.ronda_centro)
-            # if c:
-            curso.nombre = pxls.curso
-            # curso.observaciones = 'Creado el %s por %s' % (now(), self.g_e)
-            curso.etapa = pxls.etapa
-            curso.nombre_especifico = pxls.omc
-            curso.save()
         except:
             cursos = Curso.objects.filter(clave_ex=pxls.x_curso, ronda=self.ronda_centro)
             curso = cursos[0]
             cursos.exclude(pk__in=[curso.pk]).delete()
-            # curso.observaciones = 'Borrado de duplicados el %s por %s' % (now(), self.g_e)
-            curso.etapa = pxls.etapa
-            curso.nombre_especifico = pxls.omc
-            curso.save()
+        curso.nombre = pxls.curso
+        curso.nombre_especifico = pxls.omc
+        curso.etapa = pxls.etapa
+        try:
+            curso.etapa_escolar = EtapaEscolar.objects.get(clave_ex=pxls.x_etapa_escolar)
+        except:
+            LogCarga.objects.create(g_e=self.g_e, log='No encuentra etapa: %s' % pxls.x_etapa_escolar)
+        curso.save()
         return curso
 
-    def create_cursos(self):
+    def carga_cursos(self):
         for pxls in self.plantillaxls_set.all():
-            self.create_curso(pxls)
+            self.carga_curso(pxls)
         return True
 
-    def create_materia(self, pxls):
-        curso = self.create_curso(pxls)
-        try:
-            materia, c = Materia.objects.get_or_create(clave_ex=pxls.x_materiaomg, curso=curso)
-            if c:
-                nombre, dash, abreviatura = pxls.materia.rpartition('-')
-                horas, sc, minutos = pxls.horas_semana_min.rpartition(':')
-                materia.nombre = nombre.strip()
-                materia.abreviatura = abreviatura.strip()
-                # materia.observaciones = 'Creada el %s por %s' % (now(), self.g_e)
-                try:
-                    materia.horas = int(horas)
-                except:
-                    pass
-                materia.grupo_materias = pxls.grupo_materias
-                materia.horas_semana_min = pxls.horas_semana_min
-                materia.horas_semana_max = pxls.horas_semana_max
-                materia.save()
-        except:
-            materias = Materia.objects.filter(clave_ex=pxls.x_materiaomg, curso=curso)
-            materia = materias[0]
-            materias.exclude(pk__in=[materia.pk]).delete()
-            nombre, dash, abreviatura = pxls.materia.rpartition('-')
-            horas, sc, minutos = pxls.horas_semana_min.rpartition(':')
-            materia.nombre = nombre.strip()
-            materia.abreviatura = abreviatura.strip()
-            # materia.observaciones += '<br>Borrado de duplicados el %s por %s' % (now(), self.g_e)
-            try:
-                materia.horas = int(horas)
-            except:
-                pass
-            materia.grupo_materias = pxls.grupo_materias
-            materia.horas_semana_min = pxls.horas_semana_min
-            materia.horas_semana_max = pxls.horas_semana_max
-            materia.save()
-        return materia
-
-    def create_materias(self):
-        for pxls in self.plantillaxls_set.all():
-            self.create_materia(pxls)
-
-    def create_grupo(self, pxls):
+    ########################################################################
+    ############ Cargamos grupos:
+    def carga_grupo(self, pxls):
         try:
             grupo, c = Grupo.objects.get_or_create(clave_ex=pxls.x_unidad, ronda=self.ronda_centro)
-            curso = self.create_curso(pxls)
+            curso = self.carga_curso(pxls)
             grupo.cursos.add(curso)
             if c:
                 grupo.nombre = pxls.unidad
-                # grupo.observaciones = 'Creado el %s por %s' % (now(), self.g_e)
                 try:
-                    grupo.aula = self.create_dependencia(pxls)
+                    grupo.aula = self.carga_dependencia(pxls)
                 except:
                     pass
                     # grupo.aula = Dependencia.objects.none()
@@ -316,99 +517,287 @@ class PlantillaOrganica(models.Model):
             grupo = grupos[0]
             grupos.exclude(pk__in=[grupo.pk]).delete()
             grupo.nombre = pxls.unidad
-            # grupo.observaciones = 'Creado el %s por %s' % (now(), self.g_e)
             try:
-                grupo.aula = self.create_dependencia(pxls)
+                grupo.aula = self.carga_dependencia(pxls)
             except:
                 pass
                 # grupo.aula = Dependencia.objects.none()
-            curso = self.create_curso(pxls)
+            curso = self.carga_curso(pxls)
             grupo.cursos.add(curso)
             grupo.save()
         return grupo
 
-    def create_grupos(self):
+    def carga_grupos(self):
         for pxls in self.plantillaxls_set.all():
-            self.create_grupo(pxls)
+            self.carga_grupo(pxls)
 
-    @property
-    def cursos(self):
-        curs = {}
+    ########################################################################
+    ############ Cargamos materias:
+    def carga_materia(self, pxls):
+        curso = self.carga_curso(pxls)
+        try:
+            materia, c = Materia.objects.get_or_create(clave_ex=pxls.x_materiaomg, curso=curso)
+        except:
+            materias = Materia.objects.filter(clave_ex=pxls.x_materiaomg, curso=curso)
+            materia = materias[0]
+            materias.exclude(pk__in=[materia.pk]).delete()
+        horas, sc, minutos = pxls.horas_semana_min.rpartition(':')
+        try:
+            materia.horas = int(horas)
+        except:
+            LogCarga.objects.create(g_e=self.g_e, log='Error al cargar horas: %s' % horas)
+        nombre, dash, abreviatura = pxls.materia.rpartition('-')
+        materia.nombre = nombre.strip()
+        materia.abreviatura = abreviatura.strip()
+        materia.grupo_materias = pxls.grupo_materias
+        materia.horas_semana_min = pxls.horas_semana_min
+        materia.horas_semana_max = pxls.horas_semana_max
+        materia.save()
+        return materia
+
+    def carga_materias(self):
         for pxls in self.plantillaxls_set.all():
-            if not pxls.curso in curs:
-                if pxls.curso:
-                    curs[pxls.curso] = [(pxls.unidad, pxls.usar, pxls.x_unidad)]
+            self.carga_materia(pxls)
+
+    ########################################################################
+    ############ Cargamos departamentos:
+    def carga_departamentos(self):
+        departamentos = self.plantillaxls_set.all().values('departamento', 'x_departamento').distinct()
+        for d in departamentos:
+            if d['x_departamento'] == '63':  # El 63 es el departamento de Actividades compl. y extraes.
+                DepEntidad.objects.get_or_create(ronda=self.ronda_centro, nombre=d['departamento'],
+                                                 clave_ex=d['x_departamento'], didactico=False)
             else:
-                if not (pxls.unidad, pxls.usar, pxls.x_unidad) in curs[pxls.curso]:
-                    curs[pxls.curso].append((pxls.unidad, pxls.usar, pxls.x_unidad))
-        return curs
+                DepEntidad.objects.get_or_create(ronda=self.ronda_centro, nombre=d['departamento'],
+                                                 clave_ex=d['x_departamento'])
+        return True
+
+    ########################################################################
+    ############ Cargamos puestos <-> cargos:
+    def carga_puestos(self):
+        puestos = self.plantillaxls_set.all().values('puesto', 'x_puesto').distinct()
+        for p in puestos:
+            Cargo.objects.get_or_create(cargo=p['puesto'], clave_cargo=p['x_puesto'], borrable=False,
+                                        entidad=self.ronda_centro.entidad)
+        return True
+
+    ########################################################################
+    ############ Cargamos actividades:
+    def carga_actividades(self):
+        actividades = self.plantillaxls_set.all().values('actividad', 'x_actividad', 'l_requnidad',
+                                                         'docencia').distinct()
+        b = {'S': True, 'N': False, 's': True, 'n': False}
+        for a in actividades:
+            try:
+                Actividad.objects.get_or_create(entidad=self.ronda_centro.entidad, nombre=a['actividad'],
+                                                requiere_unidad=b[a['l_requnidad']], requiere_materia=b[a['docencia']],
+                                                clave_ex=a['x_actividad'])
+            except Exception as msg:
+                log = 'Error cargar actividad %s. %s' % (a['x_actividad'], str(msg))
+                LogCarga.objects.create(g_e=self.g_e, log=log)
+        return True
+
+    ########################################################################
+    ############ Cargamos docentes:
+
+    def get_gex_docente(self, gauser, clave_ex, x_puesto, x_departamento):
+        gex, c = Gauser_extra.objects.get_or_create(gauser=gauser, ronda=self.ronda_centro)
+        gex.clave_ex = clave_ex
+        gex.activo = True
+        gex.save()
+        egeneral = get_entidad_general()
+        cargo_data = Cargo.objects.get(clave_cargo='g_docente', entidad=egeneral).export_data()
+        cargo, c = Cargo.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_cargo=cargo_data['clave_cargo'],
+                                               borrable=False, cargo=cargo_data['cargo'])
+        for code_nombre in cargo_data['permisos']:
+            cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
+        gex.cargos.add(cargo)
+        try:
+            puesto = Cargo.objects.get(clave_cargo=x_puesto, entidad=self.ronda_centro.entidad)
+            gex.cargos.add(puesto)
+        except:
+            puesto = None
+            LogCarga.objects.create(g_e=gex, log='No encuentra puesto: %s' % x_puesto)
+        try:
+            departamento = DepEntidad.objects.get(clave_ex=x_departamento, ronda=self.ronda_centro)
+            midep, c = MiembroDepartamento.objects.get_or_create(departamento=departamento, g_e=gex)
+            if puesto:
+                midep.puesto = puesto.clave_cargo
+                midep.save()
+        except:
+            LogCarga.objects.create(g_e=gex, log='No encuentra departamento: %s' % x_departamento)
+        return gex
+
+    def carga_docentes(self):
+        ges = self.plantillaxls_set.all().values('docente', 'x_docente', 'dni', 'email', 'x_puesto',
+                                                 'x_departamento').distinct()
+        docentes = []
+        for ge in ges:
+            last_name, first_name = ge['docente'].split(', ')
+            clave_ex, dni, x_puesto, x_departamento = ge['x_docente'], ge['dni'], ge['x_puesto'], ge['x_departamento']
+            username, email = ge['email'].split('@')[0], ge['email']
+            try:
+                gauser = Gauser.objects.get(dni=dni)
+                gauser.username = username
+                gauser.first_name = first_name
+                gauser.last_name = last_name
+                gauser.email = email
+                gauser.save()
+                gex = self.get_gex_docente(gauser, clave_ex, x_puesto, x_departamento)
+                # self.carga_pdocente(gex)
+                docentes.append(gex)
+            except Exception as msg:
+                logger.warning('Error: %s. dni %s - username %s' % (str(msg), dni, username))
+                try:
+                    gex = Gauser_extra.objects.get(clave_ex=clave_ex, ronda=self.ronda_centro)
+                    log = 'Sin embargo existe usuario con clave_x: %s - %s' % (clave_ex, gex)
+                    logger.warning(log)
+                    LogCarga.objects.create(g_e=self.g_e, log=log)
+                except:
+                    try:
+                        gauser = Gauser.objects.get(email=email)
+                        log = 'Sin embargo existe usuario con email: %s - %s' % (email, gauser)
+                        logger.warning(log)
+                        LogCarga.objects.create(g_e=self.g_e, log=log)
+                    except:
+                        try:
+                            Gauser.objects.get(username=username)
+                            log = 'Ya existe un usuario: %s' % username
+                            logger.warning(log)
+                            LogCarga.objects.create(g_e=self.g_e, log=log)
+                        except:
+                            gauser = Gauser.objects.create_user(username, email=email, password=pass_generator(size=9),
+                                                                last_login=now())
+                            gauser.first_name = first_name[0:29]
+                            gauser.last_name = last_name[0:29]
+                            gauser.dni = dni
+                            gauser.save()
+                            gex = self.get_gex_docente(gauser, clave_ex, x_puesto, x_departamento)
+                            # self.carga_pdocente(gex)
+                            docentes.append(gex)
+        return docentes
+
+    ########################################################################
+    ############ Cargamos sesiones:
+
+    def carga_sesiones_docentes(self):
+        try:
+            Horario.objects.get(entidad=self.ronda_centro.entidad, predeterminado=True)
+            horario, c = Horario.objects.get_or_create(entidad=self.ronda_centro.entidad, ronda=self.ronda_centro,
+                                                       clave_ex=self.pk)
+        except:
+            horario, c = Horario.objects.get_or_create(entidad=self.ronda_centro.entidad, ronda=self.ronda_centro,
+                                                       clave_ex=self.pk, predeterminado=True)
+        if c:
+            horario.nombre = 'Horario creado por carga de datos de plantilla orgánica: %s' % self.pk
+            horario.save()
+        sesiones = []
+        psxls = self.plantillaxls_set.all()
+        for p in psxls:
+            g_e = Gauser_extra.objects.get(clave_ex=p.x_docente, ronda=self.ronda_centro)
+            sesion, c = Sesion.objects.get_or_create(horario=horario, dia=int(float(p.dia)), g_e=g_e,
+                                                     hora_inicio=int(float(p.hora_inicio)),
+                                                     hora_fin=int(float(p.hora_fin)),
+                                                     hora_inicio_cadena=p.hora_inicio_cadena,
+                                                     hora_fin_cadena=p.hora_fin_cadena)
+            try:
+                grupo = Grupo.objects.get(clave_ex=p.x_unidad, ronda=self.ronda_centro)
+            except:
+                grupo = None
+            try:
+                dependencia = Dependencia.objects.get(clave_ex=p.x_dependencia, entidad=self.ronda_centro.entidad)
+            except:
+                dependencia = None
+            try:
+                materia = Materia.objects.get(clave_ex=p.x_materiaomg, curso__ronda=self.ronda_centro)
+            except:
+                materia = None
+            try:
+                actividad = Actividad.objects.get(entidad=self.ronda_centro.entidad, clave_ex=p.x_actividad)
+            except:
+                actividad = None
+            SesionExtra.objects.get_or_create(sesion=sesion, grupo=grupo, dependencia=dependencia, materia=materia,
+                                              actividad=actividad)
+            sesiones.append(sesion)
+        return sesiones
+
+    ########################################################################
+    ############ Estructura PO:
+    @property
+    def estructura_po(self):
+        return TC[self.ronda_centro.entidad.entidadextra.tipo_centro]
+
+    @property #Anchura en porcentaje de cada parte de la tabla:
+    def anchura_cols(self):
+        departamentos_docentes = 25
+        horas_calculadas = 8
+        apartados = 100 - departamentos_docentes - horas_calculadas
+        return (departamentos_docentes, apartados, horas_calculadas)
+
+    ########################################################################
+    ############ Cálculos para cada docente:
+
+    def carga_pdocente(self, gex):
+        sextras = SesionExtra.objects.filter(sesion__horario__clave_ex=self.pk, sesion__g_e=gex)
+        pd, c = PDocente.objects.get_or_create(po=self, g_e=gex)
+        for apartado in self.estructura_po:
+            for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
+                pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'])
+                pdc.nombre = nombre_columna
+                pdc.periodos = sextras.filter(contenido_columna['q']).values_list('sesion', flat=True).distinct().count()
+                pdc.save()
+
+        # def PDocente4(models):
+        #     LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7),
+        #               (115, 129, 8), (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13),
+        #               (205, 219, 14), (220, 234, 15), (235, 249, 16), (250, 264, 17), (265, 279, 18), (280, 294, 19))
+        #     RESTO = ((12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7),
+        #              (124, 139, 8), (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13),
+        #              (220, 235, 14), (236, 251, 15), (252, 267, 16), (268, 283, 17), (284, 299, 18), (300, 235, 19))
+        #     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
+        #     g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
+        #
+        #     def __str__(self):
+        #         return '%s - %s' % (self.po, self.g_e)
+        #
+        # def PDocenteCol4(models):
+        #     pd = models.ForeignKey(self, on_delete=models.CASCADE)
+        #     codecol = models.IntegerField('Código de identificación de la columna', default=0)
+        #     nombre = models.CharField('Nombre de la columna', max_length=50)
+        #     periodos = models.IntegerField('Horas impartidas', default=0)
+        #
+            def __str__(self):
+                return '%s - %s - (%s)' % (self.pd, self.nombre, self.periodos)
+
+    def carga_pdocentes(self):
+        cargo_docente = Cargo.objects.get(entidad=self.ronda_centro.entidad, clave_cargo='g_docente')
+        docentes = Gauser_extra.objects.filter(cargos__in=[cargo_docente])
+        for docente in docentes:
+            self.carga_pdocente(docente)
+
+    ########################################################################
+    ############ Cálculos para cada departamento:
+    def horas_departamento(self, departamento):
+        for apartado in self.estructura_po:
+            for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
+                pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'])
+                pdc.nombre = nombre_columna
+                pdc.periodos = sextras.filter(contenido_columna['q']).values_list('sesion',
+                                                                                  flat=True).distinct().count()
+                pdc.save()
 
     # @property
-    # def unidades(self):
-    #     grupos = []
-    #     for pxls in self.plantillaxls_set.all():
-    #         if not pxls.unidad in grupos:
-    #             grupos.append((pxls.unidad, pxls.usar))
-    #     return grupos
+    # def get_tramos_centro(self):
+    #     return self.plantillaxls_set.all().order_by('inicio', 'dia').values('dia', 'inicio', 'fin',
+    #                                                                         'hora_inicio_cadena',
+    #                                                                         'hora_fin_cadena').distinct()
 
     # @property
-    # def unidades_sin_usar(self):
-    #     grupos = []
-    #     for pxls in self.plantillaxls_set.all():
-    #         if not pxls.unidad in grupos and not pxls.usar:
-    #             grupos.append(pxls.unidad)
-    #     return grupos
-
-    # @property
-    # def unidades_usadas(self):
-    #     grupos = []
-    #     for pxls in self.plantillaxls_set.all():
-    #         if not pxls.unidad in grupos and pxls.usar:
-    #             grupos.append(pxls.unidad)
-    #     return grupos
-
-    @property
-    def departamentos(self):
-        orden = {'Griego': 2, 'Orientación': 20, 'Tecnología': 14, 'Matemáticas': 6, 'Educación Física': 13,
-                 'Filosofía': 1, 'Geografía e Historia': 5, 'Inglés': 11, 'Formación y Orientación Laboral': 17,
-                 'Lengua Castellana y Literatura': 4, 'Ciencias Naturales': 8, 'Latín': 3, 'Artes Plásticas': 9,
-                 'Física y Química': 7, 'Música': 12, 'Economía': 15, 'Cultura Clásica': 16, 'Francés': 10}
-        deps = []
-        for pxls in self.plantillaxls_set.all():
-            o = orden[pxls.departamento] if pxls.departamento in orden else 10000
-            nuevo_dep = (o, pxls.x_departamento, pxls.departamento)
-            if not nuevo_dep in deps:
-                deps.append(nuevo_dep)
-        return sorted(deps, key=lambda x: x[0])
-
-    @property
-    def docentes(self):
-        return self.plantillaxls_set.all().values_list('departamento', 'x_departamento', 'docente',
-                                                       'x_docente').distinct()
-
-    @property
-    def get_tramos_centro(self):
-        return self.plantillaxls_set.all().order_by('inicio', 'dia').values('dia', 'inicio', 'fin',
-                                                                                 'hora_inicio_cadena',
-                                                                                 'hora_fin_cadena').distinct()
-
-    @property
-    def get_tramos_docencia_centro(self):
-        return self.plantillaxls_set.filter(x_actividad='1').order_by('dia', 'hora_inicio').values('dia', 'hora_inicio',
-                                                                                                   'hora_fin',
-                                                                                                   'hora_inicio_cadena',
-                                                                                                   'hora_fin_cadena').distinct()
-
-    def get_sesiones_docente(self, x_docente):
-        return self.sesiondocente_set.filter(x_docente=x_docente).order_by('dia', 'hora_inicio')
-
-    def get_sesiones_docencia_docente(self, x_docente):
-        return self.sesiondocente_set.filter(x_docente=x_docente, x_actividad='1').order_by('dia', 'hora_inicio')
-
-    # def get_periodos_docencia(self, x_docente):
-    #     sds = self.sesiondocente_set.filter(x_docente=x_docente, x_actividad='1')
-    #     for sd in sds:
-    #         pass
+    # def get_tramos_docencia_centro(self):
+    #     return self.plantillaxls_set.filter(x_actividad='1').order_by('dia', 'hora_inicio').values('dia', 'hora_inicio',
+    #                                                                                                'hora_fin',
+    #                                                                                                'hora_inicio_cadena',
+    #                                                                                                'hora_fin_cadena').distinct()
 
     def get_materias_docente(self, x_docente):
         sds = self.sesiondocente_set.filter(x_docente=x_docente, x_actividad='1')
@@ -421,131 +810,110 @@ class PlantillaOrganica(models.Model):
                 materias.append(t)
         return materias
 
-    # def calcula_materias_docente(self, psxls):
-    #     psxls_materias = psxls.filter(x_actividad='1').values_list('materia', 'omc', 'horas_semana_min', 'dia',
-    #                                                                'hora_fin')
-    #     m = psxls_materias[0]
-    #     try:
-    #         materias = [[m[0].split('-')[1].strip(), m[1], int(m[2].split(':')[0]), m[3], m[4], 0]]
-    #     except:
-    #         materias = [[m[0], m[1], 0, m[3], m[4], 0]]
-    #     for m in psxls_materias:
-    #         try:
-    #             m_trans = [m[0].split('-')[1].strip(), m[1], int(m[2].split(':')[0]), m[3], m[4]]
-    #         except:
-    #             m_trans = [m[0], m[1], 0, m[3], m[4]]
-    #         incluida = False
-    #         for materia in materias:
-    #             if m_trans[3] == materia[3] and m_trans[4] == materia[4]:
-    #                 incluida = True
-    #                 if m_trans[1] not in materia[1]:
-    #                     materia[1] = '%s/%s' % (materia[1], m_trans[1])
-    #         if not incluida:
-    #             materias.append(m_trans)
-    #     sin_repetir = []
-    #     todas = []
-    #     for materia in materias:
-    #         m = (materia[0], materia[1], materia[2])
-    #         todas.append(m)
-    #         if m not in sin_repetir:
-    #             sin_repetir.append(m)
-    #     analizadas = []
-    #     for d in sin_repetir:
-    #         if d[2] != 0:
-    #             for i in range(int(len([m for m in todas if m == d]) / d[2])):
-    #                 analizadas.append(d)
-    #     return analizadas
+    # def calcula_sesiones_docente(self, psxls):
+    #     # '222074 -> 1º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
+    #     # '222075 -> 2º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
+    #     # '101324 -> 2º E.S.O.'
+    #     # '101325 -> 3º E.S.O.'
+    #     sesiones = {}
+    #     sesiones['pacg'] = psxls.filter(x_curso__in=['222074', '222075'], x_actividad='1')
+    #     sesiones['pmar1'] = psxls.filter(materia__icontains='mbito', x_curso='101324', x_actividad='1')
+    #     sesiones['pmar2'] = psxls.filter(materia__icontains='mbito', x_curso='101325', x_actividad='1')
+    #     sesiones['refuerzo1'] = psxls.filter(materia__icontains='mbito', x_curso='170506', x_actividad='1')
+    #     troncales = (Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
+    #         grupo_materias__icontains='obligator')) & Q(x_actividad='1')
+    #     troneso = troncales & Q(etapa='da') & ~Q(x_curso__in=['222074', '222075']) & ~Q(materia__icontains='mbito')
+    #     espads1 = Q(etapa='ka') & Q(x_actividad='1') & (Q(x_curso='222080') | Q(x_curso='222081'))
+    #     espads2 = Q(etapa='ka') & Q(x_actividad='1') & (Q(x_curso='222082') | Q(x_curso='222083'))
+    #     espa1 = Q(etapa='ja') & Q(x_actividad='1') & (Q(x_curso='222076') | Q(x_curso='222077'))
+    #     espa2 = Q(etapa='ja') & Q(x_actividad='1') & (Q(x_curso='222078') | Q(x_curso='222079'))
+    #     epan2 = Q(etapa='ma') & Q(x_actividad='1') & Q(x_curso='222071')
+    #     # sesiones['iniciales'] = psxls.filter(etapa='ia')
+    #     sesiones['iniciales1'] = psxls.filter(etapa='ia', x_actividad='1', x_curso='121469')
+    #     sesiones['iniciales2'] = psxls.filter(etapa='ia', x_actividad='1', x_curso='121470')
+    #     sesiones['espa1'] = psxls.filter(espa1)
+    #     sesiones['espa2'] = psxls.filter(espa2)
+    #     sesiones['espads1'] = psxls.filter(espads1)
+    #     sesiones['espads2'] = psxls.filter(espads2)
+    #     # sesiones['espad'] = psxls.filter(etapa='la')
+    #     sesiones['epaofi'] = psxls.filter(etapa='ma', curso__icontains='ofim')
+    #     sesiones['epainf'] = psxls.filter(etapa='ma', curso__icontains='inform')
+    #     sesiones['epaing'] = psxls.filter(etapa='ma', curso__icontains='ingl')
+    #     sesiones['epamec'] = psxls.filter(etapa='ma', curso__icontains='mecanog')
+    #     sesiones['epan2'] = psxls.filter(epan2)
+    #     sesiones['epainm'] = psxls.filter(etapa='ma', curso__icontains='nmigrantes')
+    #     sesiones['epamay'] = psxls.filter(etapa='ma', curso__icontains='mayores de')
+    #     sesiones['troneso'] = psxls.filter(troneso)
+    #     sesiones['espeeso'] = psxls.filter(etapa='da', grupo_materias__icontains='espec', x_actividad='1')
+    #     excluir = Q(x_curso__in=['222074', '222075']) | Q(materia__icontains='mbito')
+    #     sesiones['libreso'] = psxls.filter(etapa='da', grupo_materias__icontains='libre conf',
+    #                                        x_actividad='1').exclude(excluir)
+    #     sesiones['tronbac'] = psxls.filter(Q(etapa='fa') & troncales)
+    #     sesiones['espebac'] = psxls.filter(etapa='fa', grupo_materias__icontains='espec', x_actividad='1')
+    #     sesiones['gm'] = psxls.filter(etapa='ga', x_actividad='1')
+    #     sesiones['gs'] = psxls.filter(etapa='ha', x_actividad='1')
+    #     sesiones['fpb'] = psxls.filter(etapa='ea', x_actividad='1')
+    #     posibles_desdobles = (Q(x_actividad='539') | Q(x_actividad='400')) & Q(x_actividad='1') & Q(x_actividad='522')
+    #     sesiones['desdobeso'] = psxls.filter(Q(etapa='da') & posibles_desdobles)
+    #     sesiones['desdobbac'] = psxls.filter(Q(etapa='fa') & posibles_desdobles)
+    #     sesiones['mayor55'] = psxls.filter(x_actividad='176')
+    #     sesiones['cppaccffgs'] = psxls.filter(x_curso='222073', x_actividad='1')
+    #     sesiones['tutorias'] = psxls.filter(Q(x_actividad='519') | Q(x_actividad='2') | Q(x_actividad='376'))
+    #     sesiones['jefatura'] = psxls.filter(x_actividad='547')
+    #     sesiones['relve'] = psxls.filter(x_actividad='1', grupo_materias__icontains='Rel. y Aten.')
+    #     return sesiones
+    #
+    # def calcula_horas_docente(self, psxls):
+    #     sesiones = self.calcula_sesiones_docente(psxls)
+    #     horas = {}
+    #     for key, queryset in sesiones.items():
+    #         horas[key] = queryset.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
+    #     return horas
 
-    def calcula_sesiones_docente(self, psxls):
-        # '222074 -> 1º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
-        # '222075 -> 2º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
-        # '101324 -> 2º E.S.O.'
-        # '101325 -> 3º E.S.O.'
-        sesiones = {}
-        sesiones['pacg'] = psxls.filter(x_curso__in=['222074', '222075'], x_actividad='1')
-        sesiones['pmar1'] = psxls.filter(materia__icontains='mbito', x_curso='101324', x_actividad='1')
-        sesiones['pmar2'] = psxls.filter(materia__icontains='mbito', x_curso='101325', x_actividad='1')
-        sesiones['refuerzo1'] = psxls.filter(materia__icontains='mbito', x_curso='170506', x_actividad='1')
-        troncales = (Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
-            grupo_materias__icontains='obligator')) & Q(x_actividad='1')
-        troneso = troncales & Q(etapa='da') & ~Q(x_curso__in=['222074', '222075']) & ~Q(materia__icontains='mbito')
-        espads1 = Q(etapa='ka') & Q(x_actividad='1') & (Q(x_curso='222080') | Q(x_curso='222081'))
-        espads2 = Q(etapa='ka') & Q(x_actividad='1') & (Q(x_curso='222082') | Q(x_curso='222083'))
-        espa1 = Q(etapa='ja') & Q(x_actividad='1') & (Q(x_curso='222076') | Q(x_curso='222077'))
-        espa2 = Q(etapa='ja') & Q(x_actividad='1') & (Q(x_curso='222078') | Q(x_curso='222079'))
-        epan2 = Q(etapa='ma') & Q(x_actividad='1') & Q(x_curso='222071')
-        # sesiones['iniciales'] = psxls.filter(etapa='ia')
-        sesiones['iniciales1'] = psxls.filter(etapa='ia', x_actividad='1', x_curso='121469')
-        sesiones['iniciales2'] = psxls.filter(etapa='ia', x_actividad='1', x_curso='121470')
-        sesiones['espa1'] = psxls.filter(espa1)
-        sesiones['espa2'] = psxls.filter(espa2)
-        sesiones['espads1'] = psxls.filter(espads1)
-        sesiones['espads2'] = psxls.filter(espads2)
-        # sesiones['espad'] = psxls.filter(etapa='la')
-        sesiones['epaofi'] = psxls.filter(etapa='ma', curso__icontains='ofim')
-        sesiones['epainf'] = psxls.filter(etapa='ma', curso__icontains='inform')
-        sesiones['epaing'] = psxls.filter(etapa='ma', curso__icontains='ingl')
-        sesiones['epamec'] = psxls.filter(etapa='ma', curso__icontains='mecanog')
-        sesiones['epan2'] = psxls.filter(epan2)
-        sesiones['epainm'] = psxls.filter(etapa='ma', curso__icontains='nmigrantes')
-        sesiones['epamay'] = psxls.filter(etapa='ma', curso__icontains='mayores de')
-        sesiones['troneso'] = psxls.filter(troneso)
-        sesiones['espeeso'] = psxls.filter(etapa='da', grupo_materias__icontains='espec', x_actividad='1')
-        excluir = Q(x_curso__in=['222074', '222075']) | Q(materia__icontains='mbito')
-        sesiones['libreso'] = psxls.filter(etapa='da', grupo_materias__icontains='libre conf',
-                                           x_actividad='1').exclude(excluir)
-        sesiones['tronbac'] = psxls.filter(Q(etapa='fa') & troncales)
-        sesiones['espebac'] = psxls.filter(etapa='fa', grupo_materias__icontains='espec', x_actividad='1')
-        sesiones['gm'] = psxls.filter(etapa='ga', x_actividad='1')
-        sesiones['gs'] = psxls.filter(etapa='ha', x_actividad='1')
-        sesiones['fpb'] = psxls.filter(etapa='ea', x_actividad='1')
-        posibles_desdobles = (Q(x_actividad='539') | Q(x_actividad='400')) & Q(x_actividad='1') & Q(x_actividad='522')
-        sesiones['desdobeso'] = psxls.filter(Q(etapa='da') & posibles_desdobles)
-        sesiones['desdobbac'] = psxls.filter(Q(etapa='fa') & posibles_desdobles)
-        sesiones['mayor55'] = psxls.filter(x_actividad='176')
-        sesiones['cppaccffgs'] = psxls.filter(x_curso='222073', x_actividad='1')
-        sesiones['tutorias'] = psxls.filter(Q(x_actividad='519') | Q(x_actividad='2') | Q(x_actividad='376'))
-        sesiones['jefatura'] = psxls.filter(x_actividad='547')
-        sesiones['relve'] = psxls.filter(x_actividad='1', grupo_materias__icontains='Rel. y Aten.')
-        return sesiones
-
-    def calcula_horas_docente(self, psxls):
-        sesiones = self.calcula_sesiones_docente(psxls)
-        horas = {}
-        for key, queryset in sesiones.items():
-            horas[key] = queryset.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-        return horas
-
-    def calcula_pdocente(self, docente):
-        orden = {'Griego': 2, 'Orientación': 20, 'Tecnología': 14, 'Matemáticas': 6, 'Educación Física': 13,
-                 'Filosofía': 1, 'Geografía e Historia': 5, 'Inglés': 11, 'Formación y Orientación Laboral': 17,
-                 'Lengua Castellana y Literatura': 4, 'Ciencias Naturales': 8, 'Latín': 3, 'Artes Plásticas': 9,
-                 'Física y Química': 7, 'Música': 12, 'Economía': 15, 'Cultura Clásica': 16, 'Francés': 10}
-
-        pd, c = PlantillaDocente.objects.get_or_create(po=self, x_docente=docente[3])
-        if c:
-            pd.departamento = docente[0]
-            pd.x_departamento = docente[1]
-            pd.docente = docente[2]
-            pd.x_docente = docente[3]
-        psXLS_docente = self.plantillaxls_set.filter(x_docente=docente[3], usar=True)
-        horas = self.calcula_horas_docente(psXLS_docente)
-        for key, num in horas.items():
-            setattr(pd, key, num)
-        if docente[0] in orden:
-            pd.orden = orden[docente[0]]
-        pd.save()
-        return pd
-
-    def calcula_pdocentes(self):
-        for docente in self.docentes:
-            self.calcula_pdocente(docente)
-
+    # def calcula_pdocente(self, docente):
+    #     orden = {'Griego': 2, 'Orientación': 20, 'Tecnología': 14, 'Matemáticas': 6, 'Educación Física': 13,
+    #              'Filosofía': 1, 'Geografía e Historia': 5, 'Inglés': 11, 'Formación y Orientación Laboral': 17,
+    #              'Lengua Castellana y Literatura': 4, 'Ciencias Naturales': 8, 'Latín': 3, 'Artes Plásticas': 9,
+    #              'Física y Química': 7, 'Música': 12, 'Economía': 15, 'Cultura Clásica': 16, 'Francés': 10}
+    #
+    #     pd, c = PlantillaDocente.objects.get_or_create(po=self, x_docente=docente.clave_ex, g_e=docente)
+    #     if c:
+    #         pd.departamento = docente[0]
+    #         pd.x_departamento = docente[1]
+    #         pd.docente = docente[2]
+    #     psXLS_docente = self.plantillaxls_set.filter(x_docente=docente.clave_ex, usar=True)
+    #     horas = self.calcula_horas_docente(psXLS_docente)
+    #     for key, num in horas.items():
+    #         setattr(pd, key, num)
+    #     if docente[0] in orden:
+    #         pd.orden = orden[docente[0]]
+    #     pd.save()
+    #     return pd
+    #
+    # def calcula_pdocentes(self):
+    #     for docente in self.carga_docentes():
+    #         self.calcula_pdocente(docente)
+    #
     def usar_unidad(self, unidad, usar):
         for pxls in self.plantillaxls_set.filter(unidad=unidad):
             pxls.usar = usar
             pxls.save()
         return True
+
+    def carga_plantilla_xls(self):
+        self.carga_dependencias()
+        self.carga_etapas()
+        self.carga_cursos()
+        self.carga_grupos()
+        self.carga_materias()
+        self.carga_departamentos()
+        self.carga_puestos()
+        self.carga_actividades()
+        self.carga_docentes()
+        self.carga_sesiones_docentes()
+        self.carga_pdocentes()
+        return True
+
 
 
 class PlantillaXLS(models.Model):
@@ -559,11 +927,22 @@ class PlantillaXLS(models.Model):
     year = models.CharField('Año', max_length=15, blank=True, null=True)
     centro = models.CharField('Nombre del centro', max_length=110, blank=True, null=True)
     docente = models.CharField('Nombre del docente', max_length=115, blank=True, null=True)
-    x_docente = models.CharField('Código del docente en Racima', max_length=11, blank=True, null=True)
+    x_docente = models.CharField('Código del docente en Racima', max_length=12, blank=True, null=True)
+    dni = models.CharField('DNI del docente', max_length=11, blank=True, null=True)
+    email = models.CharField('email del docente', max_length=150, blank=True, null=True)
+    puesto = models.CharField('Puesto del docente', max_length=150, blank=True, null=True)
+    x_puesto = models.CharField('Código del puesto del docente', max_length=11, blank=True, null=True)
+
+    etapa_escolar = models.CharField('Etapa escolar', max_length=150, blank=True, null=True)
+    x_etapa_escolar = models.CharField('Código de la etapa escolar', max_length=11, blank=True, null=True)
+
     departamento = models.CharField('Nombre del departamento', max_length=116, blank=True, null=True)
     x_departamento = models.CharField('Código del departamento en Racima', max_length=10, blank=True, null=True)
+
     fecha_inicio = models.CharField('Fecha inicio contrato profesor', max_length=15, blank=True, null=True)
     fecha_fin = models.CharField('Fecha fin contrato profesor', max_length=15, blank=True, null=True)
+
+    x_sesion = models.CharField('Código de la sesión', max_length=15, blank=True, null=True)
     dia = models.CharField('Día de la semana expresado en número', max_length=3, blank=True, null=True)
     hora_inicio = models.CharField('Hora inicio periodo en minutos', max_length=15, blank=True, null=True)
     inicio = models.IntegerField('Hora inicio periodo en minutos', default=0)
@@ -571,15 +950,19 @@ class PlantillaXLS(models.Model):
     fin = models.IntegerField('Hora inicio periodo en minutos', default=0)
     hora_inicio_cadena = models.CharField('Hora inicio periodo en formato H:i', max_length=8, blank=True, null=True)
     hora_fin_cadena = models.CharField('Hora fin periodo en formato H:i', max_length=8, blank=True, null=True)
+
     actividad = models.CharField('Nombre de la actividad', max_length=117, blank=True, null=True)
     x_actividad = models.CharField('Código de la actividad en Racima', max_length=20, blank=True, null=True)
     l_requnidad = models.CharField('¿La actividad requiere unidad/grupo?', max_length=2, blank=True, null=True)
     docencia = models.CharField('¿Es hora de docencia?', max_length=2, blank=True, null=True)
+
     minutos = models.CharField('Duración del periodo en minutos', max_length=15, blank=True, null=True)
+
     x_dependencia = models.CharField('Código de la dependencia en Racima', max_length=10, blank=True, null=True)
     c_coddep = models.CharField('Nombre corto de la dependencia', max_length=30, blank=True, null=True)
     x_dependencia2 = models.CharField('Código de la dependencia2 en Racima', max_length=10, blank=True, null=True)
     c_coddep2 = models.CharField('Nombre corto de la dependencia2', max_length=30, blank=True, null=True)
+
     unidad = models.CharField('Nombre del grupo', max_length=20, blank=True, null=True)
     x_unidad = models.CharField('Código del grupo en Racima', max_length=11, blank=True, null=True)
     materia = models.CharField('Nombre de la materia', max_length=118, blank=True, null=True)
@@ -588,7 +971,9 @@ class PlantillaXLS(models.Model):
     x_curso = models.CharField('Código del curso en Racima', max_length=120, blank=True, null=True)
     omc = models.CharField('Nombre corto del curso', max_length=20, blank=True, null=True)
     grupo_materias = models.CharField('Tipo de materia', max_length=50, blank=True, null=True)
+
     etapa = models.CharField('Etapa', max_length=4, blank=True, null=True, choices=ETAPAS)
+
     horas_semana_min = models.CharField('Horas mínimas de la materia por semana', max_length=10, blank=True, null=True)
     horas_semana_max = models.CharField('Horas máximas de la materia por semana', max_length=10, blank=True, null=True)
     usar = models.BooleanField('¿Usar este grupo para la calcular la plantilla orgánica', default=True)
@@ -638,8 +1023,8 @@ class PlantillaDepartamento(models.Model):
     epainm = models.IntegerField('Horas de alfabetización para inmigrantes', default=0)
     epamay = models.IntegerField('Horas de cursos de preparación para mayores de 18 y 25 años', default=0)
     orden = models.IntegerField('Orden de presentación', default=100)
-    creado = models.DateTimeField("Fecha y hora de encolar el mensaje", auto_now_add=True)
-    modificado = models.DateTimeField("Fecha y hora en la que se envió efectivamente el correo", auto_now=True)
+    creado = models.DateTimeField("Fecha y hora de creación", auto_now_add=True)
+    modificado = models.DateTimeField("Fecha y hora de modificación", auto_now=True)
 
     class Meta:
         verbose_name_plural = 'Plantilla por departamentos (PlantillaDepartamento)'
@@ -673,6 +1058,7 @@ class PlantillaDocente(models.Model):
              (124, 139, 8), (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13),
              (220, 235, 14), (236, 251, 15), (252, 267, 16), (268, 283, 17), (284, 299, 18), (300, 235, 19))
     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
+    g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
     docente = models.CharField('Docente', max_length=100, blank=True, null=True)
     x_docente = models.CharField('Código en Racima del docente', max_length=10, blank=True, null=True)
     departamento = models.CharField('Departamento', max_length=100, blank=True, null=True)
@@ -715,8 +1101,8 @@ class PlantillaDocente(models.Model):
     epainm = models.IntegerField('Horas de alfabetización para inmigrantes', default=0)
     epamay = models.IntegerField('Horas de cursos de preparación para mayores de 18 y 25 años', default=0)
     orden = models.IntegerField('Orden de presentación', default=100)
-    creado = models.DateTimeField("Fecha y hora de encolar el mensaje", auto_now_add=True)
-    modificado = models.DateTimeField("Fecha y hora en la que se envió efectivamente el correo", auto_now=True)
+    creado = models.DateTimeField("Fecha y hora de creación", auto_now_add=True)
+    modificado = models.DateTimeField("Fecha y hora de modificación", auto_now=True)
 
     @property
     def horas_basicas(self):
@@ -745,25 +1131,56 @@ class PlantillaDocente(models.Model):
         return po
 
 
+class PDocente(models.Model):
+    LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7),
+              (115, 129, 8), (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13),
+              (205, 219, 14), (220, 234, 15), (235, 249, 16), (250, 264, 17), (265, 279, 18), (280, 294, 19))
+    RESTO = ((12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7),
+             (124, 139, 8), (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13),
+             (220, 235, 14), (236, 251, 15), (252, 267, 16), (268, 283, 17), (284, 299, 18), (300, 235, 19))
+    po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
+    g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return '%s - %s' % (self.po, self.g_e)
+
+
+class PDocenteCol(models.Model):
+    pd = models.ForeignKey(PDocente, on_delete=models.CASCADE)
+    codecol = models.IntegerField('Código de identificación de la columna', default=0)
+    nombre = models.CharField('Nombre de la columna', max_length=50)
+    periodos = models.IntegerField('Horas impartidas', default=0)
+
+    def __str__(self):
+        return '%s - %s - (%s)' % (self.pd, self.nombre, self.periodos)
+
+
 class SesionDocente(models.Model):
     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
+
     docente = models.CharField('Nombre del docente', max_length=115, blank=True, null=True)
     x_docente = models.CharField('Código del docente en Racima', max_length=11, blank=True, null=True)
+
     departamento = models.CharField('Nombre del departamento', max_length=116, blank=True, null=True)
     x_departamento = models.CharField('Código del departamento en Racima', max_length=10, blank=True, null=True)
+
     dia = models.CharField('Día de la semana expresado en número', max_length=3, blank=True, null=True)
     hora_inicio = models.CharField('Hora inicio periodo en minutos', max_length=15, blank=True, null=True)
     hora_fin = models.CharField('Hora fin periodo en minutos', max_length=15, blank=True, null=True)
     hora_inicio_cadena = models.CharField('Hora inicio periodo en formato H:i', max_length=8, blank=True, null=True)
     hora_fin_cadena = models.CharField('Hora fin periodo en formato H:i', max_length=8, blank=True, null=True)
+
     actividad = models.CharField('Nombre de la actividad', max_length=117, blank=True, null=True)
     x_actividad = models.CharField('Código de la actividad en Racima', max_length=20, blank=True, null=True)
     l_requnidad = models.CharField('¿La actividad requiere unidad/grupo?', max_length=2, blank=True, null=True)
     docencia = models.CharField('¿Es hora de docencia?', max_length=2, blank=True, null=True)
+
     minutos = models.CharField('Duración del periodo en minutos', max_length=15, blank=True, null=True)
     dependencia = models.ForeignKey(Dependencia, blank=True, null=True, on_delete=models.CASCADE)
     materia = models.ForeignKey(Materia, blank=True, null=True, on_delete=models.CASCADE)
     grupos = models.ManyToManyField(Grupo, blank=True)
+    x_sesion = models.CharField('Código de la sesión en Racima', max_length=120, blank=True, null=True)
+
     # x_dependencia = models.CharField('Código de la dependencia en Racima', max_length=10, blank=True, null=True)
     # c_coddep = models.CharField('Nombre corto de la dependencia', max_length=30, blank=True, null=True)
     # x_dependencia2 = models.CharField('Código de la dependencia2 en Racima', max_length=10, blank=True, null=True)
@@ -821,6 +1238,7 @@ class UnidadSesionDocente(models.Model):
               ('na', 'Preparación Pruebas de Acceso a CCFF'), ('za', 'Etapa no identificada'))
     sd = models.ForeignKey(SesionDocente, on_delete=models.CASCADE, blank=True, null=True)
     grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE)
+
     # unidad = models.CharField('Nombre del grupo', max_length=20, blank=True, null=True)
     # x_unidad = models.CharField('Código del grupo en Racima', max_length=11, blank=True, null=True)
     # materia = models.CharField('Nombre de la materia', max_length=118, blank=True, null=True)
@@ -836,3 +1254,12 @@ class UnidadSesionDocente(models.Model):
     class Meta:
         verbose_name_plural = 'Unidades asociadas a una Sesión Docente'
         ordering = ['sd', 'grupo']
+
+
+class LogCarga(models.Model):
+    g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
+    log = models.TextField('Texto del log', default='')
+    creado = models.DateTimeField("Fecha y hora del log", auto_now_add=True)
+
+    def __str__(self):
+        return '%s - %s - %s...' % (self.creado, self.g_e, self.log[:50])

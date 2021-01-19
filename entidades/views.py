@@ -38,6 +38,7 @@ from datetime import date
 import simplejson as json
 from django.template.loader import render_to_string
 from django.http import HttpResponse, FileResponse
+from django.utils.timezone import datetime
 from entidades.forms import EntidadForm, Gauser_extra_mis_datos_Form
 from gauss.constantes import PROVINCIAS
 from captcha.fields import CaptchaField
@@ -528,7 +529,8 @@ def ajax_filtro(request):
             return HttpResponse(data)
         elif request.POST['action'] == 'update_nombre_filtrado':
             try:
-                filtrado = Filtrado.objects.get(propietario__ronda__entidad=g_e.ronda.entidad, id=request.POST['filtrado'])
+                filtrado = Filtrado.objects.get(propietario__ronda__entidad=g_e.ronda.entidad,
+                                                id=request.POST['filtrado'])
                 filtrado.nombre = request.POST['nombre']
                 filtrado.save()
                 return JsonResponse({'ok': True, 'nombre': filtrado.nombre})
@@ -576,7 +578,8 @@ def ajax_filtro(request):
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'update_tipo_filtro':
             try:
-                q = FiltroQ.objects.get(id=request.POST['filtro'], filtrado__propietario__ronda__entidad=g_e.ronda.entidad)
+                q = FiltroQ.objects.get(id=request.POST['filtro'],
+                                        filtrado__propietario__ronda__entidad=g_e.ronda.entidad)
                 q.filtro = request.POST['tipo']
                 q.save()
                 return JsonResponse({'ok': True})
@@ -584,7 +587,8 @@ def ajax_filtro(request):
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'update_value_filtro':
             try:
-                q = FiltroQ.objects.get(id=request.POST['filtro'], filtrado__propietario__ronda__entidad=g_e.ronda.entidad)
+                q = FiltroQ.objects.get(id=request.POST['filtro'],
+                                        filtrado__propietario__ronda__entidad=g_e.ronda.entidad)
                 q.value = request.POST['value']
                 q.save()
                 query = crea_query(q.filtrado)
@@ -1531,17 +1535,6 @@ def organigrama(request):
             usuarios = usuarios_ronda(g_e.ronda, cargos=[cargo])
             html = render_to_string("formulario_cargo.html", {'usuarios': usuarios, 'cargo': cargo, 'g_e': g_e})
             return JsonResponse({'ok': True, 'html': html})
-            # g_es = usuarios_de_gauss(entidad=g_e.ronda.entidad, cargos=[cargo]).values_list('id',
-            #                                                                                 'gauser__last_name',
-            #                                                                                 'gauser__first_name')
-            # keys = ('id', 'text')
-            # usuarios = json.dumps([dict(zip(keys, (row[0], '%s, %s' % (row[1], row[2])))) for row in g_es])
-            # permisos_cargo = cargo.permisos.all().values_list('code_nombre')
-            # data = render_to_string("formulario_cargo.html",
-            #                         {'permisos_cargo': permisos_cargo, 'entidad': g_e.ronda.entidad,
-            #                          'usuarios': usuarios, 'cargo': cargo, 'gauser_extra': g_e, 'request': request
-            #                          })
-            # return HttpResponse(data)
         elif action == 'add_permiso' and g_e.has_permiso('asigna_permisos'):
             permiso = Permiso.objects.get(id=request.POST['permiso'])
             cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
@@ -1578,7 +1571,6 @@ def organigrama(request):
                     return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
-
 
             cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, id=request.POST['cargo'])
             for ga in Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=list(request.POST.getlist('added[]'))):
@@ -1646,8 +1638,6 @@ def organigrama(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-
-
 
     cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad).order_by('nivel')
     menus = Menu.objects.filter(entidad=g_e.ronda.entidad, menu_default__tipo='Accesible')
@@ -2278,6 +2268,7 @@ def crear_entidades_from_file(request):
         crear_aviso(request, False, 'No tienes permiso para gestionar los módulos de la entidad')
         return redirect('/calendario/')
 
+
 #########################################################################
 
 @gauss_required
@@ -2292,6 +2283,93 @@ def modulos_entidad(request):
     else:
         crear_aviso(request, False, 'No tienes permiso para gestionar los módulos de la entidad')
         return redirect('/calendario/')
+
+
+########################################################################################################
+Cargos = [{'clave_cargo': 'g_inspector_educacion', 'cargo': 'Inspector de Educación',
+           'permisos': ['acceso_datos_entidad', 'acceso_calendario', 'acceso_vista_calendario', 'crea_eventos',
+                        'acceso_gestion_documental', 'acceso_documentos', 'crea_carpetas', 'sube_archivos',
+                        'acceso_cuestionarios', 'acceso_formularios', 'crea_formularios', 'copia_formularios',
+                        'acceso_cupos', 'acceso_acciones_usuarios1', 'acceso_registro', 'acceso_reparaciones',
+                        'crea_solicitud_reparacion', 'acceso_reuniones', 'acceso_conv_template', 'c_conv_template',
+                        'acceso_faqs', 'acceso_inspeccion_educativa', 'es_inspector_educacion', 'acceso_tareas_ie',
+                        'crea_tareas_ie', 'edita_tareas_ie', 'copia_tareas_ie', 'borra_tareas_ie',
+                        'acceso_conv_reunion', 'c_conv_reunion', 'acceso_informes_ie', 'crea_informes_ie',
+                        'acceso_plantilla_organica', 'acceso_mis_formularios', 'acceso_formularios_disponibles',
+                        'acceso_gestion_entidad', 'acceso_redactar_actas_reunion', 'w_sus_actas_reunion',
+                        'acceso_faqs_entidad', 'acceso_plantillas_informes_ie', 'acceso_asignar_centros_inspeccion',
+                        'acceso_control_asistencia_reunion', 'acceso_firmar_actas_reunion', 'acceso_faqs_sugeridas',
+                        'r_actas_reunion', 'acceso_lectura_actas_reunion']},
+          {'clave_cargo': 'g_docente', 'cargo': 'Docente',
+           'permisos': ['acceso_calendario', 'acceso_vista_calendario', 'crea_eventos', 'acceso_gestion_documental',
+                        'acceso_documentos', 'acceso_cuestionarios', 'acceso_formularios', 'crea_formularios',
+                        'acceso_horarios', 'acceso_acciones_usuarios1', 'acceso_convivencia', 'acceso_absentismo',
+                        'crea_actuacion_absentismo', 'acceso_reparaciones', 'crea_solicitud_reparacion',
+                        'acceso_actividades', 'crea_actividad', 'acceso_informes_usuarios',
+                        'acceso_informes_seguimiento', 'solicita_informes_seguimiento', 'acceso_competencias_clave',
+                        'acceso_programaciones_didacticas', 'acceso_evaluar_materias', 'evalua_materias_asignadas',
+                        'acceso_reuniones', 'acceso_faqs', 'acceso_sancionar_conductas', 'sancionar_nivel_docente',
+                        'genera_informe_sancionador', 'cc_valorar_mis_alumnos', 'acceso_cargar_programaciones',
+                        'carga_programaciones', 'descarga_programaciones', 'acceso_mis_formularios',
+                        'acceso_formularios_disponibles', 'acceso_informes_tareas', 'solicita_informes_tareas',
+                        'acceso_faqs_entidad', 'acceso_horario_usuarios', 've_horarios_usuarios',
+                        'acceso_control_asistencia_reunion', 'acceso_firmar_actas_reunion', 'acceso_faqs_sugeridas',
+                        'acceso_horario_aulas', 'acceso_lectura_actas_reunion', 'acceso_horarios_subentidades',
+                        've_horarios_entidad', 'acceso_guardias_horarios']},
+          {'clave_cargo': 'g_director_general_educacion', 'cargo': 'Director General de Educación',
+           'permisos': ['acceso_configuracion', 'acceso_perfiles_permisos', 'asigna_perfiles', 'asigna_permisos',
+                        'modifica_texto_menu', 'modifica_pos_menu', 'acceso_datos_entidad', 'acceso_calendario',
+                        'acceso_vista_calendario', 'crea_eventos', 've_todos_eventos', 'acceso_gestion_documental',
+                        'acceso_documentos', 'crea_carpetas', 'sube_archivos', 've_todas_carpetas',
+                        'edita_todos_archivos', 'borra_cualquier_archivo', 'borra_cualquier_carpeta', 'edita_carpetas',
+                        'acceso_cuestionarios', 'acceso_formularios', 'crea_formularios', 'copia_formularios',
+                        'borra_formularios', 'acceso_cupos', 'acceso_registro', 'crea_registros', 'acceso_reuniones',
+                        'acceso_conv_template', 'c_conv_template', 'w_conv_template', 'd_conv_template', 'acceso_faqs',
+                        'acceso_configura_faqs', 'crea_secciones_faqs', 'crea_faqs_entidad', 'edita_faqs_entidad',
+                        'publica_faqs_entidad', 'acceso_inspeccion_educativa', 'acceso_tareas_ie',
+                        'acceso_gestionar_perfiles', 'crea_perfiles', 'borra_perfiles', 'edita_perfiles',
+                        'acceso_conv_reunion', 'r_conv_reunion', 'c_conv_reunion', 'w_conv_reunion', 'd_conv_reunion',
+                        'm_conv_reunion', 'acceso_informes_ie', 'crea_informes_ie', 'acceso_plantilla_organica',
+                        'acceso_mis_formularios', 'acceso_formularios_disponibles', 'acceso_gestion_entidad',
+                        'acceso_redactar_actas_reunion', 'w_sus_actas_reunion', 'w_actas_subentidades_reunion',
+                        'w_cualquier_acta_reunion', 'mail_actas_reunion', 'acceso_faqs_entidad',
+                        'acceso_plantillas_informes_ie', 'acceso_gestionar_subentidades', 'crea_subentidades',
+                        'borra_subentidades', 'edita_subentidades', 'acceso_miembros_entidad', 'listado_usuarios',
+                        'acceso_control_asistencia_reunion', 'acceso_firmar_actas_reunion', 'acceso_faqs_sugeridas',
+                        'acepta_faqs_sugeridas', 'acceso_listados_usuarios', 'r_actas_reunion',
+                        'acceso_lectura_actas_reunion', 'acceso_doc_configuration']}
+          ]
+
+
+# @gauss_required
+def get_entidad_general():
+    try:
+        return Entidad.objects.get(code=11235813)
+    except:
+        o, c = Organization.objects.get_or_create(organization='Organización_general', iniciales='OG',
+                                                  web='https://organizaciongeneralgauss.es')
+        r, c = Ronda.objects.get_or_create(nombre='Ronda_general', inicio=datetime(2000, 1, 1),
+                                           fin=datetime(2100, 1, 1))
+        e, c = Entidad.objects.get_or_create(organization=o, ronda=r, code=11235813, name='Entidad_general')
+        r.entidad = e
+        r.save()
+        gauss = Gauser.objects.get(username='gauss')
+        Gauser_extra.objects.get_or_create(gauser=gauss, ronda=r, activo=True)
+        for menu_default in Menu_default.objects.all():
+            pos = Menu.objects.filter(entidad=e, menu_default__nivel=menu_default.nivel,
+                                      menu_default__parent=menu_default.parent).count() + 1
+            m, c = Menu.objects.get_or_create(entidad=e, menu_default=menu_default)
+            m.texto_menu = menu_default.texto_menu
+            m.pos = pos
+            m.save()
+        for c in Cargos:
+            try:
+                Cargo.objects.get(entidad=e, clave_cargo=c['clave_cargo'], borrable=False)
+            except:
+                cargo = Cargo.objects.create(entidad=e, clave_cargo=c['clave_cargo'], borrable=False, cargo=c['cargo'])
+                for code_nombre in c['permisos']:
+                    cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
+        return e
 
 
 # ##############################################################################
@@ -2450,6 +2528,7 @@ def crealinkge(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
+
 @permiso_required('acceso_doc_configuration')
 def doc_configuration(request):
     g_e = request.session['gauser_extra']
@@ -2546,7 +2625,7 @@ def doc_configuration(request):
             # fich = open(dce.url_pdf, 'rb')
             fich = pdfkit.from_string(c, False, dce.get_opciones)
             response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=doc_conf%s.pdf'% dce.id
+            response['Content-Disposition'] = 'attachment; filename=doc_conf%s.pdf' % dce.id
             return response
 
     return render(request, "doc_configuration.html",
@@ -2561,21 +2640,24 @@ def doc_configuration(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
+
 def selectgcs_organization(request):
     g_e = request.session['gauser_extra']
     if request.is_ajax():
         if request.method == 'GET':
             texto = request.GET['q']
             if 'subs[]' in request.GET:
-                subs = Subentidad.objects.filter(entidad__organization=g_e.ronda.entidad.organization, id__in=request.GET.getlist('subs[]'))
+                subs = Subentidad.objects.filter(entidad__organization=g_e.ronda.entidad.organization,
+                                                 id__in=request.GET.getlist('subs[]'))
             else:
                 subs = Subentidad.objects.none()
             if 'cars[]' in request.GET:
-                cars = Cargo.objects.filter(entidad__organization=g_e.ronda.entidad.organization, id__in=request.GET.getlist('cars[]'))
+                cars = Cargo.objects.filter(entidad__organization=g_e.ronda.entidad.organization,
+                                            id__in=request.GET.getlist('cars[]'))
             else:
                 cars = Cargo.objects.none()
             ges, cargos, subentidades = Gauser_extra.objects.none(), Cargo.objects.none(), Subentidad.objects.none()
-            for tipo in request.GET['tipo']: # tipo=c implica buscar cargos, tipo=s subentidades y tipo=g gauser_extras
+            for tipo in request.GET['tipo']:  # tipo=c implica buscar cargos, tipo=s subentidades y tipo=g gauser_extras
                 if tipo == 'g':
                     usronda = usuarios_organization(g_e.ronda, subentidades=subs, cargos=cars)
                     ges = usronda.filter(Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto))
@@ -2583,12 +2665,14 @@ def selectgcs_organization(request):
                     if cars:
                         cargos = cars
                     else:
-                        cargos = Cargo.objects.filter(entidad__organization=g_e.ronda.entidad.organization, cargo__icontains=texto)
+                        cargos = Cargo.objects.filter(entidad__organization=g_e.ronda.entidad.organization,
+                                                      cargo__icontains=texto)
                 elif tipo == 's':
                     if subs:
                         subentidades = subs
                     else:
-                        subentidades = Subentidad.objects.filter(entidad__organization=g_e.ronda.entidad.organization, nombre__icontains=texto)
+                        subentidades = Subentidad.objects.filter(entidad__organization=g_e.ronda.entidad.organization,
+                                                                 nombre__icontains=texto)
             # sub_alumnos = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='alumnos')
             # usuarios = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_alumnos])
             # filtrados = usuarios.filter(Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto))
@@ -2628,7 +2712,7 @@ def selectgcs(request):
             else:
                 cars = Cargo.objects.none()
             ges, cargos, subentidades = Gauser_extra.objects.none(), Cargo.objects.none(), Subentidad.objects.none()
-            for tipo in request.GET['tipo']: # tipo=c implica buscar cargos, tipo=s subentidades y tipo=g gauser_extras
+            for tipo in request.GET['tipo']:  # tipo=c implica buscar cargos, tipo=s subentidades y tipo=g gauser_extras
                 if tipo == 'g':
                     usronda = usuarios_ronda(g_e.ronda, subentidades=subs, cargos=cars)
                     ges = usronda.filter(Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto))
@@ -2666,6 +2750,7 @@ def selectgcs(request):
     else:
         return JsonResponse({'ok': False, 'm': 'No es ajax'})
 
+
 def decode_selectgcs(coded_ids, ronda):
     ges_ids = [int(idx[1:]) for idx in coded_ids if idx.startswith('g')]
     ges = Gauser_extra.objects.filter(id__in=ges_ids, ronda=ronda)
@@ -2674,6 +2759,7 @@ def decode_selectgcs(coded_ids, ronda):
     ss_ids = [int(idx[1:]) for idx in coded_ids if idx.startswith('s')]
     ss = Subentidad.objects.filter(id__in=ss_ids, entidad=ronda.entidad)
     return ges, cs, ss
+
 
 def decode_select_allges(coded_ids, ronda):
     ges_ids = [int(idx[1:]) for idx in coded_ids if idx.startswith('g')]

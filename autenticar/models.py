@@ -54,7 +54,7 @@ class Permiso(models.Model):
     menu = models.ForeignKey(Menu_default, blank=True, null=True, on_delete=models.CASCADE)
 
     class Meta:
-        ordering = ['pk']
+        ordering = ['menu', 'pk']
 
     def __str__(self):
         return u'%s (%s)' % (self.nombre, self.code_nombre)

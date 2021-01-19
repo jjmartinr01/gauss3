@@ -6,10 +6,10 @@ from lxml import etree as ElementTree
 from difflib import get_close_matches
 from django.db.models import Q
 from django.utils.timezone import datetime
-from entidades.models import CargaMasiva, Gauser_extra, Dependencia, Subentidad, Entidad
+from entidades.models import CargaMasiva, Gauser_extra, Dependencia, Subentidad, Entidad, Organization
 from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios
 from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia
-from cupo.models import PlantillaXLS, PlantillaDepartamento, PlantillaOrganica
+from cupo.models import PlantillaXLS, PlantillaOrganica, LogCarga
 from programaciones.models import Especialidad_entidad, Gauser_extra_programaciones, Departamento, \
     Especialidad_funcionario, crea_departamentos
 from gauss.rutas import MEDIA_FILES
@@ -523,79 +523,49 @@ def carga_masiva_from_file():
                     "HORA FIN": "hora_fin", "HORA INICIO CADENA": "hora_inicio_cadena",
                     "HORA FIN CADENA": "hora_fin_cadena", "X_ACTIVIDAD": "x_actividad",
                     "ACTIVIDAD": "actividad", "L_REQUNIDAD": "l_requnidad", "DOCENCIA": "docencia",
-                    "MINUTOS": "minutos", "X_DEPENDENCIA": "x_dependencia", "X_OFERTAMATRIG": 'x_curso',
+                    "MINUTOS": "minutos", "X_DEPENDENCIA": "x_dependencia", "X_OFERTAMATRIG": "x_curso",
                     "C_CODDEP": "c_coddep", "X_DEPENDENCIA2": "x_dependencia2", "C_CODDEP2": "c_coddep2",
                     "X_UNIDAD": "x_unidad", "UNIDAD": "unidad", "Grupo de materias": "grupo_materias",
                     "MATERIA": "materia", "X_MATERIOAOMG": "x_materiaomg", "CURSO": "curso", "OMC": "omc",
-                    "Horas Semana mínimo": "horas_semana_min", "Horas Semana máximo": "horas_semana_max"}
+                    "Horas Semana mínimo": "horas_semana_min", "Horas Semana máximo": "horas_semana_max",
+                    "DNI": "dni", "CORREO_E": "email", "PUESTO": "puesto", "X_PUESTO": "x_puesto",
+                    "X_SESION": "x_sesion", "X_ETAPA": "x_etapa_escolar", "ETAPA": "etapa_escolar"}
 
             for i, row_index in enumerate(range(5, sheet.nrows)):
                 pxls = PlantillaXLS.objects.create(po=po)
                 for col_index in range(sheet.ncols):
                     column_header = str(sheet.cell(4, col_index).value)
-                    if column_header == 'CURSO':
-                        valor = sheet.cell(row_index, col_index).value
-                        # No detectadas en educación de adultos:
-                        #   Iniciación a la Ofimática
-                        #   Iniciación a la Informática
-                        #   Inglés
-                        #   Preparación competencias N-2
-                        #   Mecanografía
-                        q = 'Ofim' in valor or 'Inform' in valor or 'Ingl' in valor or 'N-2' in valor or 'Meca' in valor
-                        if '.G.M.' in valor:
-                            pxls.etapa = 'ga'
-                        elif '.G.S.' in valor:
-                            pxls.etapa = 'ha'
-                        elif 'E.S.O.' in valor:
-                            pxls.etapa = 'da'
-                        elif 'Básica' in valor:
-                            pxls.etapa = 'ea'
-                        elif 'Bachillerato' in valor:
-                            pxls.etapa = 'fa'
-                        elif 'niciales I' in valor:
-                            pxls.etapa = 'ia'
-                        elif 'ivel I Pr' in valor or 'ivel II Pr' in valor:
-                            pxls.etapa = 'ja'
-                        elif 'ivel I a Di' in valor or 'ivel II a Di' in valor:
-                            pxls.etapa = 'ka'
-                        elif 'nmigrantes' in valor or 'mayores de' in valor or q:
-                            pxls.etapa = 'ma'
-                        else:
-                            pxls.etapa = 'za'
-                    elif column_header == 'HORA INICIO':
-                        try:
-                            pxls.inicio = int(float(sheet.cell(row_index, col_index).value))
-                        except:
-                            pass
-                    elif column_header == 'HORA FIN':
-                        try:
-                            pxls.fin = int(float(sheet.cell(row_index, col_index).value))
-                        except:
-                            pass
+                    # if column_header == 'HORA INICIO':
+                    #     try:
+                    #         pxls.inicio = int(float(sheet.cell(row_index, col_index).value))
+                    #     except:
+                    #         pass
+                    # elif column_header == 'HORA FIN':
+                    #     try:
+                    #         pxls.fin = int(float(sheet.cell(row_index, col_index).value))
+                    #     except:
+                    #         pass
                     try:
+                        # Al cargar un campo con valor '2', la hoja excel la devuelve como '2.0'
+                        # para grabar exactamento '2' lo convertimos float -> int -> str :
                         setattr(pxls, keys[column_header], str(int(float(sheet.cell(row_index, col_index).value))))
                     except:
                         setattr(pxls, keys[column_header], sheet.cell(row_index, col_index).value)
+                pxls.save()
                 if i == 0:  # Es la primera línea ejecutada del forloop. La primera fila leída del archivo XLS
                     nombre_centro, dash, code_centro = pxls.centro.rpartition('-')
-                    po.ronda_centro = Entidad.objects.get(code=int(code_centro)).ronda
+                    entidad, c = Entidad.objects.get_or_create(code=int(code_centro))
+                    entidad.name = nombre_centro
+                    try:
+                        entidad.organization = Organization.objects.get(organization__icontains='Gobierno')
+                    except:
+                        log = 'No encuentra Gobierno. %s - PO: %s' % (entidad.name, po.id)
+                        LogCarga.objects.create(g_e=carga.g_e, log=log)
+                    entidad.save()
+                    po.ronda_centro = entidad.ronda
                     po.save()
-                pxls.save()
-            po.calcula_pdocentes()
-            po.crea_sesiones_docentes()
+            po.save()
             carga.cargado = True
             carga.save()
-            # Las siguientes líneas hay que borrarlas.
-            # pos = PlantillaOrganica.objects.all()
-            # for po in pos:
-            #     psxls = po.plantillaxls_set.all()
-            #     if psxls[0].inicio == 0:
-            #         for p in psxls:
-            #             try:
-            #                 p.inicio = int(float(p.hora_inicio))
-            #                 p.fin = int(float(p.fin))
-            #             except:
-            #                 pass
-            #         po.calcula_pdocentes()
-            #         po.crea_sesiones_docentes()
+            po.carga_plantilla_xls()
     return True

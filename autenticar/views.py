@@ -1,29 +1,27 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import unicodedata
+
 import csv
-import logging
-import string
 import io
+import logging
 import os
-import time
+import string
 import subprocess
-import requests
-# from urllib import unquote
+import time
+import unicodedata
 from difflib import get_close_matches
+
+import requests
+
 try:
     from cryptography.fernet import Fernet
     from gauss.settings import RACIMA_KEY
 except:
     pass
-import simplejson as json
 from datetime import date, datetime, timedelta, timezone
-from urllib.parse import quote
 from time import sleep
 from django.shortcuts import render, redirect
-from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.template import RequestContext
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import authenticate, login, logout
@@ -33,12 +31,11 @@ from django.utils import translation, timezone
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.utils.encoding import smart_text
-from gauss.rutas import *
 from gauss.constantes import PROVINCIAS, GAUSER_COMODIN
-from gauss.funciones import usuarios_de_gauss, pass_generator
+from gauss.funciones import pass_generator
 from gauss.settings import RUTA_BASE_SETTINGS
-from estudios.models import Grupo, Gauser_extra_estudios
-from autenticar.models import Enlace, Permiso, Gauser, Menu_default  # , Candidato
+from estudios.models import Gauser_extra_estudios
+from autenticar.models import Enlace, Permiso, Gauser, Menu_default
 from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, CargaMasiva, ConfigurationUpdate, Ronda, \
     Reserva_plaza
 from entidades.tasks import carga_masiva_from_excel
@@ -577,7 +574,7 @@ def crear_nombre_usuario(nombre, apellidos):
     while valid_usuario == False:
         username = usuario + str(n)
         try:
-            user = Gauser.objects.get(username=username)
+            Gauser.objects.get(username=username)
             n += 1
         except:
             valid_usuario = True
@@ -720,7 +717,7 @@ def carga_masiva(request):
             if 'csv' in request.FILES['file_masivo'].content_type:
                 fichero = request.FILES['file_masivo']
                 # if fichero.multiple_chunks():
-                # csv_file = u''
+                # csv_file = ''
                 csv_file = ''
                 for chunk in fichero.chunks():
                     # csv_file += chunk.decode('utf-8')
