@@ -297,5 +297,22 @@
                 });
         });
 
+        {# ############################################################## #}
+        {# ############## Carga parcial de plantilla #################### #}
+        {# ############################################################## #}
+
+        $('body').on('click', '.plantilla_funcion', function (e) {
+            var po = $(this).data('po');
+            var funcion = $(this).data('funcion');
+            $.post("/plantilla_organica/", {action: 'carga_parcial_plantilla', po: po, funcion: funcion},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
     </script>
 {% endblock %}

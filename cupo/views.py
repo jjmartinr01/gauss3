@@ -597,6 +597,11 @@ def plantilla_organica(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'carga_parcial_plantilla' and request.is_ajax():
+            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
+            funcion = request.POST['funcion']
+            eval('po.' + funcion + '()')
+            return JsonResponse({'ok': True})
         elif request.POST['action'] == 'tdpdocente' and request.is_ajax():
             try:
                 pd = PlantillaDocente.objects.get(id=request.POST['id'], po__g_e=g_e)
