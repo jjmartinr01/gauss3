@@ -49,7 +49,7 @@
         </div>
     </div>
 {% endif %}
-
+{% if po.carga_completa %}
 <table style="width: 100%;position: relative;">
     <thead id="cabecera_tabla_po">
     <tr>
@@ -85,4 +85,9 @@
         </tbody>
     {% endfor %}
 </table>
-
+{% else %}
+    <h4 style="text-align: center;color: #008CBA;"><strong>Cargando la información
+        <i class="fa fa-spinner fa-pulse fa-2x"></i></strong></h4>
+    <h5 style="text-align: center;color: #008CBA;"><strong>Este proceso puede requerir de varios minutos.</strong></h5>
+    <h5 style="text-align: center;color: #008CBA;"><strong>Cierra este "acordeón" y vuélvelo a abrir en un rato.</strong></h5>
+{% endif %}

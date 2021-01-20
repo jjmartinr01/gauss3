@@ -564,8 +564,9 @@ def carga_masiva_from_file():
                     entidad.save()
                     po.ronda_centro = entidad.ronda
                     po.save()
-            po.save()
             carga.cargado = True
             carga.save()
             po.carga_plantilla_xls()
+            po.carga_completa = True
+            po.save()
     return True

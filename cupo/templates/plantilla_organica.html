@@ -40,6 +40,7 @@
         </div>
 
         <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="accordion_id" id="accordion_id" value="">
         <div class="panel callout" id="panel_carga_archivo" style="display:none;">
             <div class="row">
                 <div class="large-12 columns">
@@ -111,24 +112,31 @@
             }
         });
 
+
+        function carga_contenido_accordion() {
+            var id = $('#accordion_id').val();
+            $.post("/plantilla_organica/", {action: 'open_accordion', id: id},
+                function (data) {
+                    if (data.ok) {
+                        $('#panel' + id).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        }
+
         $(document).foundation({
             accordion: {
                 callback: function (accordion) {
                     if (accordion.hasClass('accordion-po')) {
                         var id = accordion.data('id');
+                        $('#accordion_id').val(id);
                         if ($('#circle' + id).hasClass('fa-plus-circle')) {
                             $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
                             window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post("/plantilla_organica/", {action: 'open_accordion', id: id},
-                                function (data) {
-                                    if (data.ok) {
-                                        $('#panel' + id).html(data.html);
-                                        $("#update_ok").show().delay(1500).fadeOut();
-                                    } else {
-                                        $("#update_error").show().delay(1500).fadeOut();
-                                    }
-                                });
+                            carga_contenido_accordion();
                         } else {
                             $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#panel' + id).html('');
