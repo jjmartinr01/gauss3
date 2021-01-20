@@ -12,6 +12,7 @@ from entidades.models import Subentidad, Entidad, Ronda, Cargo, Gauser_extra, De
 from entidades.models import Departamento as DepEntidad
 from estudios.models import Materia, Curso, Grupo, EtapaEscolar
 from horarios.models import Actividad, Horario, Sesion, SesionExtra
+from mensajes.models import Aviso
 from programaciones.models import Departamento, Especialidad_entidad
 from math import ceil
 
@@ -556,7 +557,7 @@ class PlantillaOrganica(models.Model):
         return materia
 
     def carga_materias(self):
-        for pxls in self.plantillaxls_set.all():
+        for pxls in self.plantillaxls_set.filter(x_actividad='1'):
             self.carga_materia(pxls)
 
     ########################################################################
@@ -605,7 +606,8 @@ class PlantillaOrganica(models.Model):
         gex.clave_ex = clave_ex
         gex.activo = True
         gex.save()
-        egeneral = get_entidad_general()
+        egeneral, errores = get_entidad_general()
+        Aviso.objects.create(usuario=self.g_e, aviso='-------'.join(errores), fecha=now())
         cargo_data = Cargo.objects.get(clave_cargo='g_docente', entidad=egeneral).export_data()
         cargo, c = Cargo.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_cargo=cargo_data['clave_cargo'],
                                                borrable=False, cargo=cargo_data['cargo'])

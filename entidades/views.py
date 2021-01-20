@@ -19,7 +19,6 @@ from django.core.paginator import Paginator
 import sys
 from django.core import serializers
 
-from cupo.models import LogCarga
 from gauss.constantes import CODE_CONTENEDOR
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required
 from autenticar.views import crear_nombre_usuario
@@ -2344,8 +2343,9 @@ Cargos = [{'clave_cargo': 'g_inspector_educacion', 'cargo': 'Inspector de Educac
 
 # @gauss_required
 def get_entidad_general():
+    errores = []
     try:
-        return Entidad.objects.get(code=11235813)
+        return (Entidad.objects.get(code=11235813), errores)
     except:
         o, c = Organization.objects.get_or_create(organization='Organización_general', iniciales='OG',
                                                   web='https://organizaciongeneralgauss.es')
@@ -2365,7 +2365,7 @@ def get_entidad_general():
                 m.pos = pos
                 m.save()
         except Exception as msg:
-            LogCarga.objects.create(g_e=ge, log=str(msg))
+            errores.append(str(msg))
         try:
             for c in Cargos:
                 try:
@@ -2375,9 +2375,8 @@ def get_entidad_general():
                     for code_nombre in c['permisos']:
                         cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
         except Exception as msg:
-            LogCarga.objects.create(g_e=ge, log=str(msg))
-
-        return e
+            errores.append(str(msg))
+        return (e, errores)
 
 
 # ##############################################################################
