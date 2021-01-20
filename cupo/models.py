@@ -901,16 +901,27 @@ class PlantillaOrganica(models.Model):
         return True
 
     def carga_plantilla_xls(self):
+        LogCarga.objects.create(g_e=self.g_e, log="Inicio carga dependencias")
         self.carga_dependencias()
+        LogCarga.objects.create(g_e=self.g_e, log="Inicio carga etapas")
         self.carga_etapas()
+        LogCarga.objects.create(g_e=self.g_e, log="Inicio carga cursos")
         self.carga_cursos()
+        LogCarga.objects.create(g_e=self.g_e, log="Inicio carga grupos")
         self.carga_grupos()
+        LogCarga.objects.create(g_e=self.g_e, log="Inicio carga materias")
         self.carga_materias()
+        LogCarga.objects.create(g_e=self.g_e, log="Inicio carga departamentos")
         self.carga_departamentos()
+        LogCarga.objects.create(g_e=self.g_e, log="Inicio carga puestos")
         self.carga_puestos()
+        LogCarga.objects.create(g_e=self.g_e, log="Inicio carga actividades")
         self.carga_actividades()
+        LogCarga.objects.create(g_e=self.g_e, log="Inicio carga docentes")
         self.carga_docentes()
+        LogCarga.objects.create(g_e=self.g_e, log="Inicio carga sesiones docentes")
         self.carga_sesiones_docentes()
+        LogCarga.objects.create(g_e=self.g_e, log="Inicio carga pdocentes")
         self.carga_pdocentes()
         return True
 
