@@ -2344,39 +2344,36 @@ Cargos = [{'clave_cargo': 'g_inspector_educacion', 'cargo': 'Inspector de Educac
 # @gauss_required
 def get_entidad_general():
     errores = []
+    o, c = Organization.objects.get_or_create(organization='Organización_general', iniciales='OG',
+                                              web='https://organizaciongeneralgauss.es')
+    r, c = Ronda.objects.get_or_create(nombre='Ronda_general', inicio=datetime(2000, 1, 1),
+                                       fin=datetime(2100, 1, 1))
+    e, c = Entidad.objects.get_or_create(organization=o, ronda=r, code=11235813, name='Entidad_general')
+    r.entidad = e
+    r.save()
+    gauss = Gauser.objects.get(username='gauss')
+    Gauser_extra.objects.get_or_create(gauser=gauss, ronda=r, activo=True)
     try:
-        return (Entidad.objects.get(code=11235813), errores)
-    except:
-        o, c = Organization.objects.get_or_create(organization='Organización_general', iniciales='OG',
-                                                  web='https://organizaciongeneralgauss.es')
-        r, c = Ronda.objects.get_or_create(nombre='Ronda_general', inicio=datetime(2000, 1, 1),
-                                           fin=datetime(2100, 1, 1))
-        e, c = Entidad.objects.get_or_create(organization=o, ronda=r, code=11235813, name='Entidad_general')
-        r.entidad = e
-        r.save()
-        gauss = Gauser.objects.get(username='gauss')
-        ge = Gauser_extra.objects.get_or_create(gauser=gauss, ronda=r, activo=True)
+        for menu_default in Menu_default.objects.all():
+            pos = Menu.objects.filter(entidad=e, menu_default__nivel=menu_default.nivel,
+                                      menu_default__parent=menu_default.parent).count() + 1
+            m, c = Menu.objects.get_or_create(entidad=e, menu_default=menu_default)
+            m.texto_menu = menu_default.texto_menu
+            m.pos = pos
+            m.save()
+    except Exception as msg:
+        errores.append(str(msg))
+    for c in Cargos:
         try:
-            for menu_default in Menu_default.objects.all():
-                pos = Menu.objects.filter(entidad=e, menu_default__nivel=menu_default.nivel,
-                                          menu_default__parent=menu_default.parent).count() + 1
-                m, c = Menu.objects.get_or_create(entidad=e, menu_default=menu_default)
-                m.texto_menu = menu_default.texto_menu
-                m.pos = pos
-                m.save()
-        except Exception as msg:
-            errores.append(str(msg))
-        try:
-            for c in Cargos:
-                try:
-                    Cargo.objects.get(entidad=e, clave_cargo=c['clave_cargo'], borrable=False)
-                except:
-                    cargo = Cargo.objects.create(entidad=e, clave_cargo=c['clave_cargo'], borrable=False, cargo=c['cargo'])
-                    for code_nombre in c['permisos']:
-                        cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
-        except Exception as msg:
-            errores.append(str(msg))
-        return (e, errores)
+            Cargo.objects.get(entidad=e, clave_cargo=c['clave_cargo'], borrable=False)
+        except:
+            try:
+                cargo = Cargo.objects.create(entidad=e, clave_cargo=c['clave_cargo'], borrable=False, cargo=c['cargo'])
+                for code_nombre in c['permisos']:
+                    cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
+            except Exception as msg:
+                errores.append(str(msg))
+    return e, errores
 
 
 # ##############################################################################
