@@ -19,6 +19,7 @@ from django.core.paginator import Paginator
 import sys
 from django.core import serializers
 
+from cupo.models import LogCarga
 from gauss.constantes import CODE_CONTENEDOR
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required
 from autenticar.views import crear_nombre_usuario
@@ -2354,21 +2355,28 @@ def get_entidad_general():
         r.entidad = e
         r.save()
         gauss = Gauser.objects.get(username='gauss')
-        Gauser_extra.objects.get_or_create(gauser=gauss, ronda=r, activo=True)
-        for menu_default in Menu_default.objects.all():
-            pos = Menu.objects.filter(entidad=e, menu_default__nivel=menu_default.nivel,
-                                      menu_default__parent=menu_default.parent).count() + 1
-            m, c = Menu.objects.get_or_create(entidad=e, menu_default=menu_default)
-            m.texto_menu = menu_default.texto_menu
-            m.pos = pos
-            m.save()
-        for c in Cargos:
-            try:
-                Cargo.objects.get(entidad=e, clave_cargo=c['clave_cargo'], borrable=False)
-            except:
-                cargo = Cargo.objects.create(entidad=e, clave_cargo=c['clave_cargo'], borrable=False, cargo=c['cargo'])
-                for code_nombre in c['permisos']:
-                    cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
+        ge = Gauser_extra.objects.get_or_create(gauser=gauss, ronda=r, activo=True)
+        try:
+            for menu_default in Menu_default.objects.all():
+                pos = Menu.objects.filter(entidad=e, menu_default__nivel=menu_default.nivel,
+                                          menu_default__parent=menu_default.parent).count() + 1
+                m, c = Menu.objects.get_or_create(entidad=e, menu_default=menu_default)
+                m.texto_menu = menu_default.texto_menu
+                m.pos = pos
+                m.save()
+        except Exception as msg:
+            LogCarga.objects.create(g_e=ge, log=str(msg))
+        try:
+            for c in Cargos:
+                try:
+                    Cargo.objects.get(entidad=e, clave_cargo=c['clave_cargo'], borrable=False)
+                except:
+                    cargo = Cargo.objects.create(entidad=e, clave_cargo=c['clave_cargo'], borrable=False, cargo=c['cargo'])
+                    for code_nombre in c['permisos']:
+                        cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
+        except Exception as msg:
+            LogCarga.objects.create(g_e=ge, log=str(msg))
+
         return e
 
 

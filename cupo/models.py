@@ -647,7 +647,9 @@ class PlantillaOrganica(models.Model):
                 # self.carga_pdocente(gex)
                 docentes.append(gex)
             except Exception as msg:
-                logger.warning('Error: %s. dni %s - username %s' % (str(msg), dni, username))
+                log = 'Error: %s. dni %s - username %s' % (str(msg), dni, username)
+                LogCarga.objects.create(g_e=self.g_e, log=log)
+                # logger.warning('Error: %s. dni %s - username %s' % (str(msg), dni, username))
                 try:
                     gex = Gauser_extra.objects.get(clave_ex=clave_ex, ronda=self.ronda_centro)
                     log = 'Sin embargo existe usuario con clave_x: %s - %s' % (clave_ex, gex)
@@ -668,6 +670,8 @@ class PlantillaOrganica(models.Model):
                         except:
                             gauser = Gauser.objects.create_user(username, email=email, password=pass_generator(size=9),
                                                                 last_login=now())
+                            log = 'Creado usuario: %s' % (gauser)
+                            LogCarga.objects.create(g_e=self.g_e, log=log)
                             gauser.first_name = first_name[0:29]
                             gauser.last_name = last_name[0:29]
                             gauser.dni = dni
