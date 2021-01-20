@@ -607,7 +607,6 @@ class PlantillaOrganica(models.Model):
         gex.activo = True
         gex.save()
         egeneral, errores = get_entidad_general()
-        Aviso.objects.create(usuario=self.g_e, aviso='-------'.join(errores), fecha=now())
         cargo_data = Cargo.objects.get(clave_cargo='g_docente', entidad=egeneral).export_data()
         cargo, c = Cargo.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_cargo=cargo_data['clave_cargo'],
                                                borrable=False, cargo=cargo_data['cargo'])

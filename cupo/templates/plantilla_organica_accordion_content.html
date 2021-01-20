@@ -15,36 +15,40 @@
         </ul>
     </div>
 </div>
-{#{% if g_e|has_permiso:'carga_plantillas_por_funciones' %}#}
+{% if g_e|has_permiso:'carga_plantillas_por_funciones' %}
     <div class="row">
-    <div class="columns large-12">
-        <ul class="button-group right">
-            <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_dependencias">
-                Carga dependencias</a></li>
-            <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_etapas">
-                Carga etapas</a></li>
-            <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_cursos">
-                Carga cursos</a></li>
-            <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_grupos">
-                Carga grupos</a></li>
-            <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_materias">
-                Carga materias</a></li>
-            <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_departamentos">
-                Carga departamentos</a></li>
-            <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_puestos">
-                Carga puestos</a></li>
-            <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_actividades">
-                Carga actividades</a></li>
-            <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_docentes">
-                Carga docentes</a></li>
-            <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_sesiones_docentes">
-                Carga sesiones</a></li>
-            <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_pdocentes">
-                Carga plantilla</a></li>
-        </ul>
+        <div class="columns large-12">
+            <ul class="button-group right">
+                <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}"
+                       data-funcion="carga_dependencias">
+                    Carga dependencias</a></li>
+                <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_etapas">
+                    Carga etapas</a></li>
+                <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_cursos">
+                    Carga cursos</a></li>
+                <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_grupos">
+                    Carga grupos</a></li>
+                <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_materias">
+                    Carga materias</a></li>
+                <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}"
+                       data-funcion="carga_departamentos">
+                    Carga departamentos</a></li>
+                <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_puestos">
+                    Carga puestos</a></li>
+                <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}"
+                       data-funcion="carga_actividades">
+                    Carga actividades</a></li>
+                <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_docentes">
+                    Carga docentes</a></li>
+                <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}"
+                       data-funcion="carga_sesiones_docentes">
+                    Carga sesiones</a></li>
+                <li><a class="button info plantilla_funcion tiny" data-po="{{ po.id }}" data-funcion="carga_pdocentes">
+                    Carga plantilla</a></li>
+            </ul>
+        </div>
     </div>
-</div>
-{#{% endif %}#}
+{% endif %}
 
 <table style="width: 100%;position: relative;">
     <thead id="cabecera_tabla_po">
@@ -59,7 +63,7 @@
     </tr>
     </thead>
     <tbody id="tbody_docente{{ po.id }}">
-        {% include "plantilla_organica_accordion_content_tbody.html" %}
+    {% include "plantilla_organica_accordion_content_tbody.html" %}
     </tbody>
 </table>
 
