@@ -169,13 +169,14 @@ class Profesor_cupo(models.Model):
 ############################################################################################
 ####################### Plantilla Orgánica #################################################
 ############################################################################################
+    # '222074 -> 1º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
+    # '222075 -> 2º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
+    # '101324 -> 2º E.S.O.'
+    # '101325 -> 3º E.S.O.'
 TC = {
     'I.E.S. - Instituto de Educación Secundaria': {
         'Educación Secundaria Obligatoria': {
             'Troncales': {
-                # 'q': (Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
-                #     grupo_materias__icontains='obligator')) & Q(x_actividad='1') & Q(x_etapa_escolar='24') & ~Q(
-                #     x_curso__in=['222074', '222075']) & ~Q(materia__icontains='mbito'),
                 'q': (Q(materia__grupo_materias__icontains='tronca') | Q(
                     materia__grupo_materias__icontains='extranj') | Q(
                     materia__grupo_materias__icontains='obligator')) & Q(
@@ -185,13 +186,11 @@ TC = {
                 'codecol': 10005
             },
             'Específicas': {
-                # 'q': Q(x_etapa_escolar='24') & Q(grupo_materias__icontains='espec') & Q(x_actividad='1'),
                 'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(materia__grupo_materias__icontains='espec'),
                 'horas_base': True,
                 'codecol': 10010
             },
             'Libre Conf. Aut.': {
-                # 'q': Q(x_etapa_escolar='24') & Q(grupo_materias__icontains='libre conf') & Q(x_actividad='1'),
                 'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
                     materia__grupo_materias__icontains='libre conf') & ~Q(
                     materia__curso__clave_ex__in=['222074', '222075']) & ~Q(materia__nombre__icontains='mbito'),
@@ -199,15 +198,12 @@ TC = {
                 'codecol': 10015
             },
             'Rel./Val. Éticos': {
-                # 'q': Q(x_etapa_escolar='24') & Q(x_actividad='1') & Q(grupo_materias__icontains='Rel. y Aten.'),
                 'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
                     materia__grupo_materias__icontains='Rel. y Aten.'),
                 'horas_base': True,
                 'codecol': 10020
             },
             'Desdobles ESO': {
-                # 'q': (Q(x_actividad='539') | Q(x_actividad='400')) & Q(x_actividad='1') & Q(x_actividad='522') & Q(
-                #     x_etapa_escolar='24'),
                 'q': (Q(actividad__clave_ex='539') | Q(actividad__clave_ex='400') | Q(actividad__clave_ex='522')) & Q(
                     materia__curso__etapa_escolar__clave_ex='24'),
                 'horas_base': True,
@@ -216,8 +212,6 @@ TC = {
         },
         'Bachillerato': {
             'Troncales': {
-                # 'q': (Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
-                #     grupo_materias__icontains='obligator')) & Q(x_actividad='1') & Q(x_etapa_escolar='31'),
                 'q': (Q(materia__grupo_materias__icontains='tronca') | Q(
                     materia__grupo_materias__icontains='extranj') | Q(
                     materia__grupo_materias__icontains='obligator')) & Q(
@@ -226,14 +220,11 @@ TC = {
                 'codecol': 10030
             },
             'Específicas': {
-                # 'q': Q(x_etapa_escolar='31') & Q(grupo_materias__icontains='espec') & Q(x_actividad='1'),
                 'q': Q(materia__curso__etapa_escolar__clave_ex='31') & Q(materia__grupo_materias__icontains='espec'),
                 'horas_base': True,
                 'codecol': 10035
             },
             'Desdobles BACH': {
-                # 'q': (Q(x_actividad='539') | Q(x_actividad='400')) & Q(x_actividad='1') & Q(x_actividad='522') & Q(
-                #     x_etapa_escolar='31'),
                 'q': (Q(actividad__clave_ex='539') | Q(actividad__clave_ex='400') | Q(actividad__clave_ex='522')) & Q(
                     materia__curso__etapa_escolar__clave_ex='31'),
                 'horas_base': True,
@@ -242,19 +233,16 @@ TC = {
         },
         'Formación Profesional': {
             'CFGM': {
-                # 'q': Q(x_etapa_escolar__in=['1373', '23']) & Q(x_actividad='1'),
                 'q': Q(materia__curso__etapa_escolar__clave_ex__in=['1373', '23']),
                 'horas_base': True,
                 'codecol': 10045
             },
             'CFGS': {
-                # 'q': Q(x_etapa_escolar__in=['2', '1375']) & Q(x_actividad='1'),
                 'q': Q(materia__curso__etapa_escolar__clave_ex__in=['2', '1375']),
                 'horas_base': True,
                 'codecol': 10050
             },
             'FPB': {
-                # 'q': Q(x_etapa_escolar='5504') & Q(x_actividad='1'),
                 'q': Q(materia__curso__etapa_escolar__clave_ex='5504'),
                 'horas_base': True,
                 'codecol': 10055
@@ -262,49 +250,158 @@ TC = {
         },
         'Atención a la Diversidad y otras horas': {
             'PACG': {
-                # 'q': Q(x_curso__in=['222074', '222075']) & Q(x_actividad='1'),
                 'q': Q(materia__curso__clave_ex__in=['222074', '222075']),
                 'horas_base': False,
                 'codecol': 10060
             },
             'Refuerzo 1º ESO': {
-                # 'q': Q(materia__icontains='mbito') & Q(x_curso='170506') & Q(x_actividad='1'),
                 'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='170506'),
                 'horas_base': False,
                 'codecol': 10065
             },
             'PMAR1': {
-                # 'q': Q(materia__icontains='mbito') & Q(x_curso='101324') & Q(x_actividad='1'),
                 'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='101324'),
                 'horas_base': False,
                 'codecol': 10070
             },
             'PMAR2': {
-                # 'q': Q(materia__icontains='mbito') & Q(x_curso='101325') & Q(x_actividad='1'),
                 'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='101325'),
                 'horas_base': False,
                 'codecol': 10075
             },
             'Curso Prep. Acceso CCFF': {
-                # 'q': Q(x_etapa_escolar__in=['3129', ]) & Q(x_actividad='1'),
                 'q': Q(materia__curso__etapa_escolar__clave_ex__in=['3129', ]),
                 'horas_base': False,
                 'codecol': 10080
             },
             'Tutorías': {
-                # 'q': Q(x_actividad='519') | Q(x_actividad='2') | Q(x_actividad='376'),
                 'q': Q(actividad__clave_ex='519') | Q(actividad__clave_ex='2') | Q(actividad__clave_ex='376'),
                 'horas_base': True,
                 'codecol': 10085
             },
             'Jefatura Depart.': {
-                # 'q': Q(x_actividad='547'),
                 'q': Q(actividad__clave_ex='547'),
                 'horas_base': True,
                 'codecol': 10090
             },
             'Mayor 55 años': {
-                # 'q': Q(x_actividad='176'),
+                'q': Q(actividad__clave_ex='176'),
+                'horas_base': False,
+                'codecol': 10095
+            },
+        },
+    },
+    'S.I.E.S. - Sección de Instituto de Educación Secundaria': {
+        'Educación Secundaria Obligatoria': {
+            'Troncales': {
+                'q': (Q(materia__grupo_materias__icontains='tronca') | Q(
+                    materia__grupo_materias__icontains='extranj') | Q(
+                    materia__grupo_materias__icontains='obligator')) & Q(
+                    materia__curso__etapa_escolar__clave_ex='24') & ~Q(
+                    materia__curso__clave_ex__in=['222074', '222075']) & ~Q(materia__nombre__icontains='mbito'),
+                'horas_base': True,
+                'codecol': 10005
+            },
+            'Específicas': {
+                'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(materia__grupo_materias__icontains='espec'),
+                'horas_base': True,
+                'codecol': 10010
+            },
+            'Libre Conf. Aut.': {
+                'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
+                    materia__grupo_materias__icontains='libre conf') & ~Q(
+                    materia__curso__clave_ex__in=['222074', '222075']) & ~Q(materia__nombre__icontains='mbito'),
+                'horas_base': True,
+                'codecol': 10015
+            },
+            'Rel./Val. Éticos': {
+                'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
+                    materia__grupo_materias__icontains='Rel. y Aten.'),
+                'horas_base': True,
+                'codecol': 10020
+            },
+            'Desdobles ESO': {
+                'q': (Q(actividad__clave_ex='539') | Q(actividad__clave_ex='400') | Q(actividad__clave_ex='522')) & Q(
+                    materia__curso__etapa_escolar__clave_ex='24'),
+                'horas_base': True,
+                'codecol': 10025
+            },
+        },
+        'Bachillerato': {
+            'Troncales': {
+                'q': (Q(materia__grupo_materias__icontains='tronca') | Q(
+                    materia__grupo_materias__icontains='extranj') | Q(
+                    materia__grupo_materias__icontains='obligator')) & Q(
+                    materia__curso__etapa_escolar__clave_ex='31'),
+                'horas_base': True,
+                'codecol': 10030
+            },
+            'Específicas': {
+                'q': Q(materia__curso__etapa_escolar__clave_ex='31') & Q(materia__grupo_materias__icontains='espec'),
+                'horas_base': True,
+                'codecol': 10035
+            },
+            'Desdobles BACH': {
+                'q': (Q(actividad__clave_ex='539') | Q(actividad__clave_ex='400') | Q(actividad__clave_ex='522')) & Q(
+                    materia__curso__etapa_escolar__clave_ex='31'),
+                'horas_base': True,
+                'codecol': 10040
+            },
+        },
+        'Formación Profesional': {
+            'CFGM': {
+                'q': Q(materia__curso__etapa_escolar__clave_ex__in=['1373', '23']),
+                'horas_base': True,
+                'codecol': 10045
+            },
+            'CFGS': {
+                'q': Q(materia__curso__etapa_escolar__clave_ex__in=['2', '1375']),
+                'horas_base': True,
+                'codecol': 10050
+            },
+            'FPB': {
+                'q': Q(materia__curso__etapa_escolar__clave_ex='5504'),
+                'horas_base': True,
+                'codecol': 10055
+            },
+        },
+        'Atención a la Diversidad y otras horas': {
+            'PACG': {
+                'q': Q(materia__curso__clave_ex__in=['222074', '222075']),
+                'horas_base': False,
+                'codecol': 10060
+            },
+            'Refuerzo 1º ESO': {
+                'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='170506'),
+                'horas_base': False,
+                'codecol': 10065
+            },
+            'PMAR1': {
+                'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='101324'),
+                'horas_base': False,
+                'codecol': 10070
+            },
+            'PMAR2': {
+                'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='101325'),
+                'horas_base': False,
+                'codecol': 10075
+            },
+            'Curso Prep. Acceso CCFF': {
+                'q': Q(materia__curso__etapa_escolar__clave_ex__in=['3129', ]),
+                'horas_base': False,
+                'codecol': 10080
+            },
+            'Tutorías': {
+                'q': Q(actividad__clave_ex='519') | Q(actividad__clave_ex='2') | Q(actividad__clave_ex='376'),
+                'horas_base': True,
+                'codecol': 10085
+            },
+            'Jefatura Depart.': {
+                'q': Q(actividad__clave_ex='547'),
+                'horas_base': True,
+                'codecol': 10090
+            },
+            'Mayor 55 años': {
                 'q': Q(actividad__clave_ex='176'),
                 'horas_base': False,
                 'codecol': 10095
@@ -730,9 +827,15 @@ class PlantillaOrganica(models.Model):
     ############ Estructura PO:
     @property
     def estructura_po(self):
-        return TC[self.ronda_centro.entidad.entidadextra.tipo_centro]
+        tipo_centro = self.ronda_centro.entidad.entidadextra.tipo_centro
+        try:
+            estructura = TC[tipo_centro]
+        except:
+            LogCarga.objects.create(g_e=self.g_e, log='No existe la estructura de: %s' % tipo_centro)
+            estructura = list(TC.keys())[0] # Por defecto tomar la primera key del diccionario
+        return estructura
 
-    @property #Anchura en porcentaje de cada parte de la tabla:
+    @property  # Anchura en porcentaje de cada parte de la tabla:
     def anchura_cols(self):
         departamentos_docentes = 25
         horas_calculadas = 8
@@ -749,30 +852,9 @@ class PlantillaOrganica(models.Model):
             for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
                 pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'])
                 pdc.nombre = nombre_columna
-                pdc.periodos = sextras.filter(contenido_columna['q']).values_list('sesion', flat=True).distinct().count()
+                pdc.periodos = sextras.filter(contenido_columna['q']).values_list('sesion',
+                                                                                  flat=True).distinct().count()
                 pdc.save()
-
-        # def PDocente4(models):
-        #     LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7),
-        #               (115, 129, 8), (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13),
-        #               (205, 219, 14), (220, 234, 15), (235, 249, 16), (250, 264, 17), (265, 279, 18), (280, 294, 19))
-        #     RESTO = ((12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7),
-        #              (124, 139, 8), (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13),
-        #              (220, 235, 14), (236, 251, 15), (252, 267, 16), (268, 283, 17), (284, 299, 18), (300, 235, 19))
-        #     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
-        #     g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
-        #
-        #     def __str__(self):
-        #         return '%s - %s' % (self.po, self.g_e)
-        #
-        # def PDocenteCol4(models):
-        #     pd = models.ForeignKey(self, on_delete=models.CASCADE)
-        #     codecol = models.IntegerField('Código de identificación de la columna', default=0)
-        #     nombre = models.CharField('Nombre de la columna', max_length=50)
-        #     periodos = models.IntegerField('Horas impartidas', default=0)
-        #
-            def __str__(self):
-                return '%s - %s - (%s)' % (self.pd, self.nombre, self.periodos)
 
     def carga_pdocentes(self):
         cargo_docente = Cargo.objects.get(entidad=self.ronda_centro.entidad, clave_cargo='g_docente')
@@ -791,114 +873,16 @@ class PlantillaOrganica(models.Model):
                                                                                   flat=True).distinct().count()
                 pdc.save()
 
-    # @property
-    # def get_tramos_centro(self):
-    #     return self.plantillaxls_set.all().order_by('inicio', 'dia').values('dia', 'inicio', 'fin',
-    #                                                                         'hora_inicio_cadena',
-    #                                                                         'hora_fin_cadena').distinct()
-
-    # @property
-    # def get_tramos_docencia_centro(self):
-    #     return self.plantillaxls_set.filter(x_actividad='1').order_by('dia', 'hora_inicio').values('dia', 'hora_inicio',
-    #                                                                                                'hora_fin',
-    #                                                                                                'hora_inicio_cadena',
-    #                                                                                                'hora_fin_cadena').distinct()
-
     def get_materias_docente(self, x_docente):
         sds = self.sesiondocente_set.filter(x_docente=x_docente, x_actividad='1')
         materias = []
         for s in sds:
             sesiones_mat = sds.filter(materia=s.materia, grupos__in=list(s.grupos.all().values_list('id', flat=True)))
             t = (s.materia, s.s_unidades, int(sesiones_mat.count() / s.grupos.all().count()))
-            # t = (s.materia, s.grupos.all().values_list('id', flat=True), int(sesiones_mat.count() / s.grupos.all().count()))
             if t not in materias:
                 materias.append(t)
         return materias
 
-    # def calcula_sesiones_docente(self, psxls):
-    #     # '222074 -> 1º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
-    #     # '222075 -> 2º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
-    #     # '101324 -> 2º E.S.O.'
-    #     # '101325 -> 3º E.S.O.'
-    #     sesiones = {}
-    #     sesiones['pacg'] = psxls.filter(x_curso__in=['222074', '222075'], x_actividad='1')
-    #     sesiones['pmar1'] = psxls.filter(materia__icontains='mbito', x_curso='101324', x_actividad='1')
-    #     sesiones['pmar2'] = psxls.filter(materia__icontains='mbito', x_curso='101325', x_actividad='1')
-    #     sesiones['refuerzo1'] = psxls.filter(materia__icontains='mbito', x_curso='170506', x_actividad='1')
-    #     troncales = (Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
-    #         grupo_materias__icontains='obligator')) & Q(x_actividad='1')
-    #     troneso = troncales & Q(etapa='da') & ~Q(x_curso__in=['222074', '222075']) & ~Q(materia__icontains='mbito')
-    #     espads1 = Q(etapa='ka') & Q(x_actividad='1') & (Q(x_curso='222080') | Q(x_curso='222081'))
-    #     espads2 = Q(etapa='ka') & Q(x_actividad='1') & (Q(x_curso='222082') | Q(x_curso='222083'))
-    #     espa1 = Q(etapa='ja') & Q(x_actividad='1') & (Q(x_curso='222076') | Q(x_curso='222077'))
-    #     espa2 = Q(etapa='ja') & Q(x_actividad='1') & (Q(x_curso='222078') | Q(x_curso='222079'))
-    #     epan2 = Q(etapa='ma') & Q(x_actividad='1') & Q(x_curso='222071')
-    #     # sesiones['iniciales'] = psxls.filter(etapa='ia')
-    #     sesiones['iniciales1'] = psxls.filter(etapa='ia', x_actividad='1', x_curso='121469')
-    #     sesiones['iniciales2'] = psxls.filter(etapa='ia', x_actividad='1', x_curso='121470')
-    #     sesiones['espa1'] = psxls.filter(espa1)
-    #     sesiones['espa2'] = psxls.filter(espa2)
-    #     sesiones['espads1'] = psxls.filter(espads1)
-    #     sesiones['espads2'] = psxls.filter(espads2)
-    #     # sesiones['espad'] = psxls.filter(etapa='la')
-    #     sesiones['epaofi'] = psxls.filter(etapa='ma', curso__icontains='ofim')
-    #     sesiones['epainf'] = psxls.filter(etapa='ma', curso__icontains='inform')
-    #     sesiones['epaing'] = psxls.filter(etapa='ma', curso__icontains='ingl')
-    #     sesiones['epamec'] = psxls.filter(etapa='ma', curso__icontains='mecanog')
-    #     sesiones['epan2'] = psxls.filter(epan2)
-    #     sesiones['epainm'] = psxls.filter(etapa='ma', curso__icontains='nmigrantes')
-    #     sesiones['epamay'] = psxls.filter(etapa='ma', curso__icontains='mayores de')
-    #     sesiones['troneso'] = psxls.filter(troneso)
-    #     sesiones['espeeso'] = psxls.filter(etapa='da', grupo_materias__icontains='espec', x_actividad='1')
-    #     excluir = Q(x_curso__in=['222074', '222075']) | Q(materia__icontains='mbito')
-    #     sesiones['libreso'] = psxls.filter(etapa='da', grupo_materias__icontains='libre conf',
-    #                                        x_actividad='1').exclude(excluir)
-    #     sesiones['tronbac'] = psxls.filter(Q(etapa='fa') & troncales)
-    #     sesiones['espebac'] = psxls.filter(etapa='fa', grupo_materias__icontains='espec', x_actividad='1')
-    #     sesiones['gm'] = psxls.filter(etapa='ga', x_actividad='1')
-    #     sesiones['gs'] = psxls.filter(etapa='ha', x_actividad='1')
-    #     sesiones['fpb'] = psxls.filter(etapa='ea', x_actividad='1')
-    #     posibles_desdobles = (Q(x_actividad='539') | Q(x_actividad='400')) & Q(x_actividad='1') & Q(x_actividad='522')
-    #     sesiones['desdobeso'] = psxls.filter(Q(etapa='da') & posibles_desdobles)
-    #     sesiones['desdobbac'] = psxls.filter(Q(etapa='fa') & posibles_desdobles)
-    #     sesiones['mayor55'] = psxls.filter(x_actividad='176')
-    #     sesiones['cppaccffgs'] = psxls.filter(x_curso='222073', x_actividad='1')
-    #     sesiones['tutorias'] = psxls.filter(Q(x_actividad='519') | Q(x_actividad='2') | Q(x_actividad='376'))
-    #     sesiones['jefatura'] = psxls.filter(x_actividad='547')
-    #     sesiones['relve'] = psxls.filter(x_actividad='1', grupo_materias__icontains='Rel. y Aten.')
-    #     return sesiones
-    #
-    # def calcula_horas_docente(self, psxls):
-    #     sesiones = self.calcula_sesiones_docente(psxls)
-    #     horas = {}
-    #     for key, queryset in sesiones.items():
-    #         horas[key] = queryset.values_list('x_dependencia', 'dia', 'hora_inicio', 'hora_fin').distinct().count()
-    #     return horas
-
-    # def calcula_pdocente(self, docente):
-    #     orden = {'Griego': 2, 'Orientación': 20, 'Tecnología': 14, 'Matemáticas': 6, 'Educación Física': 13,
-    #              'Filosofía': 1, 'Geografía e Historia': 5, 'Inglés': 11, 'Formación y Orientación Laboral': 17,
-    #              'Lengua Castellana y Literatura': 4, 'Ciencias Naturales': 8, 'Latín': 3, 'Artes Plásticas': 9,
-    #              'Física y Química': 7, 'Música': 12, 'Economía': 15, 'Cultura Clásica': 16, 'Francés': 10}
-    #
-    #     pd, c = PlantillaDocente.objects.get_or_create(po=self, x_docente=docente.clave_ex, g_e=docente)
-    #     if c:
-    #         pd.departamento = docente[0]
-    #         pd.x_departamento = docente[1]
-    #         pd.docente = docente[2]
-    #     psXLS_docente = self.plantillaxls_set.filter(x_docente=docente.clave_ex, usar=True)
-    #     horas = self.calcula_horas_docente(psXLS_docente)
-    #     for key, num in horas.items():
-    #         setattr(pd, key, num)
-    #     if docente[0] in orden:
-    #         pd.orden = orden[docente[0]]
-    #     pd.save()
-    #     return pd
-    #
-    # def calcula_pdocentes(self):
-    #     for docente in self.carga_docentes():
-    #         self.calcula_pdocente(docente)
-    #
     def usar_unidad(self, unidad, usar):
         for pxls in self.plantillaxls_set.filter(unidad=unidad):
             pxls.usar = usar
@@ -929,7 +913,6 @@ class PlantillaOrganica(models.Model):
         LogCarga.objects.create(g_e=self.g_e, log="Inicio carga pdocentes")
         self.carga_pdocentes()
         return True
-
 
 
 class PlantillaXLS(models.Model):
@@ -999,71 +982,71 @@ class PlantillaXLS(models.Model):
         ordering = ['etapa', 'curso', 'unidad']
 
 
-class PlantillaDepartamento(models.Model):
-    LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7),
-              (115, 129, 8), (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13),
-              (205, 219, 14), (220, 234, 15), (235, 249, 16), (250, 264, 17), (265, 279, 18), (280, 294, 19))
-    RESTO = ((12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7),
-             (124, 139, 8), (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13),
-             (220, 235, 14), (236, 251, 15), (252, 267, 16), (268, 283, 17), (284, 299, 18), (300, 235, 19))
-    po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
-    departamento = models.CharField('Departamento', max_length=100, blank=True, null=True)
-    x_departamento = models.CharField('Código en Racima del departamento', max_length=10, blank=True, null=True)
-    troneso = models.IntegerField('Horas de Troncales de ESO', blank=True, default=0)
-    espeeso = models.IntegerField('Horas de Específicas de ESO', default=0)
-    libreso = models.IntegerField('Horas de Libre Configuración Autonómica de ESO', default=0)
-    tronbac = models.IntegerField('Horas de Troncales de Bachillerato', default=0)
-    espebac = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
-    gm = models.IntegerField('Horas de Grado Medio', default=0)
-    gs = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
-    fpb = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
-    desdobeso = models.IntegerField('Desdobles autorizados ESO', default=0)
-    desdobbac = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
-    jefatura = models.IntegerField('Horas de jefatura de departamento', default=3)
-    mayor55 = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
-    cppaccffgs = models.IntegerField('Horas curso preparación pruebas de acceso a CCFF', default=0)
-    tutorias = models.IntegerField('Horas dedicadas a tutorías y FCTs', default=0)
-    refuerzo1 = models.IntegerField('Horas de 1º de Refuerzo Curriculas', default=0)
-    pacg = models.IntegerField('Horas de PACG', default=0)
-    pmar1 = models.IntegerField('Horas de 1º de PMAR (2º ESO)', default=0)
-    pmar2 = models.IntegerField('Horas de 2º de PMAR (3º ESO)', default=0)
-    iniciales = models.IntegerField('Horas de Enseñanzas Iniciales', default=0)
-    espa = models.IntegerField('Horas de Educación Secundaria para adultos', default=0)
-    espads = models.IntegerField('Horas de Educación Secundaria para adultos a distancia semipresencial', default=0)
-    espad = models.IntegerField('Horas de Educación Secundaria para adultos a distancia', default=0)
-    epaofi = models.IntegerField('Horas de enseñanzas de adultos ofimática', default=0)
-    epainf = models.IntegerField('Horas de enseñanzas de adultos informática', default=0)
-    epaing = models.IntegerField('Horas de enseñanzas de adultos inglés', default=0)
-    epamec = models.IntegerField('Horas de enseñanzas de adultos mecanografía', default=0)
-    epan2 = models.IntegerField('Horas de preparación competencias N-2', default=0)
-    epainm = models.IntegerField('Horas de alfabetización para inmigrantes', default=0)
-    epamay = models.IntegerField('Horas de cursos de preparación para mayores de 18 y 25 años', default=0)
-    orden = models.IntegerField('Orden de presentación', default=100)
-    creado = models.DateTimeField("Fecha y hora de creación", auto_now_add=True)
-    modificado = models.DateTimeField("Fecha y hora de modificación", auto_now=True)
-
-    class Meta:
-        verbose_name_plural = 'Plantilla por departamentos (PlantillaDepartamento)'
-        ordering = ['orden']
-
-    @property
-    def horas_basicas(self):
-        return self.troneso + self.espeeso + self.libreso + self.tronbac + self.espebac + self.gm + self.gs + self.fpb + self.desdobeso + self.desdobbac + self.jefatura
-
-    @property
-    def horas_totales(self):
-        return self.horas_basicas + self.mayor55 + self.cppaccffgs + self.tutorias + self.refuerzo1 + self.pacg + self.pmar1 + self.pmar2
-
-    @property
-    def plantilla_organica(self):
-        po = 0
-        horas_basicas = self.horas_basicas
-        condicion = self.departamento == 'Música' or 'astellana' in self.departamento or 'Matem' in self.departamento
-        plantillas = self.LCL_MU if condicion else self.RESTO
-        for plantilla in plantillas:
-            if horas_basicas >= plantilla[0] and horas_basicas <= plantilla[1]:
-                po = plantilla[2]
-        return po
+# class PlantillaDepartamento(models.Model):
+#     LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7),
+#               (115, 129, 8), (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13),
+#               (205, 219, 14), (220, 234, 15), (235, 249, 16), (250, 264, 17), (265, 279, 18), (280, 294, 19))
+#     RESTO = ((12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7),
+#              (124, 139, 8), (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13),
+#              (220, 235, 14), (236, 251, 15), (252, 267, 16), (268, 283, 17), (284, 299, 18), (300, 235, 19))
+#     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
+#     departamento = models.CharField('Departamento', max_length=100, blank=True, null=True)
+#     x_departamento = models.CharField('Código en Racima del departamento', max_length=10, blank=True, null=True)
+#     troneso = models.IntegerField('Horas de Troncales de ESO', blank=True, default=0)
+#     espeeso = models.IntegerField('Horas de Específicas de ESO', default=0)
+#     libreso = models.IntegerField('Horas de Libre Configuración Autonómica de ESO', default=0)
+#     tronbac = models.IntegerField('Horas de Troncales de Bachillerato', default=0)
+#     espebac = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
+#     gm = models.IntegerField('Horas de Grado Medio', default=0)
+#     gs = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
+#     fpb = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
+#     desdobeso = models.IntegerField('Desdobles autorizados ESO', default=0)
+#     desdobbac = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
+#     jefatura = models.IntegerField('Horas de jefatura de departamento', default=3)
+#     mayor55 = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
+#     cppaccffgs = models.IntegerField('Horas curso preparación pruebas de acceso a CCFF', default=0)
+#     tutorias = models.IntegerField('Horas dedicadas a tutorías y FCTs', default=0)
+#     refuerzo1 = models.IntegerField('Horas de 1º de Refuerzo Curriculas', default=0)
+#     pacg = models.IntegerField('Horas de PACG', default=0)
+#     pmar1 = models.IntegerField('Horas de 1º de PMAR (2º ESO)', default=0)
+#     pmar2 = models.IntegerField('Horas de 2º de PMAR (3º ESO)', default=0)
+#     iniciales = models.IntegerField('Horas de Enseñanzas Iniciales', default=0)
+#     espa = models.IntegerField('Horas de Educación Secundaria para adultos', default=0)
+#     espads = models.IntegerField('Horas de Educación Secundaria para adultos a distancia semipresencial', default=0)
+#     espad = models.IntegerField('Horas de Educación Secundaria para adultos a distancia', default=0)
+#     epaofi = models.IntegerField('Horas de enseñanzas de adultos ofimática', default=0)
+#     epainf = models.IntegerField('Horas de enseñanzas de adultos informática', default=0)
+#     epaing = models.IntegerField('Horas de enseñanzas de adultos inglés', default=0)
+#     epamec = models.IntegerField('Horas de enseñanzas de adultos mecanografía', default=0)
+#     epan2 = models.IntegerField('Horas de preparación competencias N-2', default=0)
+#     epainm = models.IntegerField('Horas de alfabetización para inmigrantes', default=0)
+#     epamay = models.IntegerField('Horas de cursos de preparación para mayores de 18 y 25 años', default=0)
+#     orden = models.IntegerField('Orden de presentación', default=100)
+#     creado = models.DateTimeField("Fecha y hora de creación", auto_now_add=True)
+#     modificado = models.DateTimeField("Fecha y hora de modificación", auto_now=True)
+#
+#     class Meta:
+#         verbose_name_plural = 'Plantilla por departamentos (PlantillaDepartamento)'
+#         ordering = ['orden']
+#
+#     @property
+#     def horas_basicas(self):
+#         return self.troneso + self.espeeso + self.libreso + self.tronbac + self.espebac + self.gm + self.gs + self.fpb + self.desdobeso + self.desdobbac + self.jefatura
+#
+#     @property
+#     def horas_totales(self):
+#         return self.horas_basicas + self.mayor55 + self.cppaccffgs + self.tutorias + self.refuerzo1 + self.pacg + self.pmar1 + self.pmar2
+#
+#     @property
+#     def plantilla_organica(self):
+#         po = 0
+#         horas_basicas = self.horas_basicas
+#         condicion = self.departamento == 'Música' or 'astellana' in self.departamento or 'Matem' in self.departamento
+#         plantillas = self.LCL_MU if condicion else self.RESTO
+#         for plantilla in plantillas:
+#             if horas_basicas >= plantilla[0] and horas_basicas <= plantilla[1]:
+#                 po = plantilla[2]
+#         return po
 
 
 class PlantillaDocente(models.Model):
@@ -1131,10 +1114,6 @@ class PlantillaDocente(models.Model):
         hs1 = self.cppaccffgs + self.refuerzo1 + self.pacg + self.pmar1 + self.pmar2
         return self.horas_basicas + self.mayor55 + self.tutorias + hs1
 
-    # @property
-    # def plantilla_departamento(self):
-    #     return self.po.plantilladepartamento_set.get(departamento=self.departamento)
-
     @property
     def plantilla_organica(self):
         po = 0
@@ -1171,105 +1150,93 @@ class PDocenteCol(models.Model):
         return '%s - %s - (%s)' % (self.pd, self.nombre, self.periodos)
 
 
-class SesionDocente(models.Model):
-    po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
+# class SesionDocente(models.Model):
+#     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
+#
+#     docente = models.CharField('Nombre del docente', max_length=115, blank=True, null=True)
+#     x_docente = models.CharField('Código del docente en Racima', max_length=11, blank=True, null=True)
+#
+#     departamento = models.CharField('Nombre del departamento', max_length=116, blank=True, null=True)
+#     x_departamento = models.CharField('Código del departamento en Racima', max_length=10, blank=True, null=True)
+#
+#     dia = models.CharField('Día de la semana expresado en número', max_length=3, blank=True, null=True)
+#     hora_inicio = models.CharField('Hora inicio periodo en minutos', max_length=15, blank=True, null=True)
+#     hora_fin = models.CharField('Hora fin periodo en minutos', max_length=15, blank=True, null=True)
+#     hora_inicio_cadena = models.CharField('Hora inicio periodo en formato H:i', max_length=8, blank=True, null=True)
+#     hora_fin_cadena = models.CharField('Hora fin periodo en formato H:i', max_length=8, blank=True, null=True)
+#
+#     actividad = models.CharField('Nombre de la actividad', max_length=117, blank=True, null=True)
+#     x_actividad = models.CharField('Código de la actividad en Racima', max_length=20, blank=True, null=True)
+#     l_requnidad = models.CharField('¿La actividad requiere unidad/grupo?', max_length=2, blank=True, null=True)
+#     docencia = models.CharField('¿Es hora de docencia?', max_length=2, blank=True, null=True)
+#
+#     minutos = models.CharField('Duración del periodo en minutos', max_length=15, blank=True, null=True)
+#     dependencia = models.ForeignKey(Dependencia, blank=True, null=True, on_delete=models.CASCADE)
+#     materia = models.ForeignKey(Materia, blank=True, null=True, on_delete=models.CASCADE)
+#     grupos = models.ManyToManyField(Grupo, blank=True)
+#     x_sesion = models.CharField('Código de la sesión en Racima', max_length=120, blank=True, null=True)
+#
+#     # x_dependencia = models.CharField('Código de la dependencia en Racima', max_length=10, blank=True, null=True)
+#     # c_coddep = models.CharField('Nombre corto de la dependencia', max_length=30, blank=True, null=True)
+#     # x_dependencia2 = models.CharField('Código de la dependencia2 en Racima', max_length=10, blank=True, null=True)
+#     # c_coddep2 = models.CharField('Nombre corto de la dependencia2', max_length=30, blank=True, null=True)
+#     usar = models.BooleanField('¿Usar este grupo para la calcular la plantilla orgánica', default=True)
+#
+#     class Meta:
+#         verbose_name_plural = 'Sesiones de Docentes'
+#         ordering = ['po', 'x_actividad']
+#
+#     @property
+#     def unidades(self):
+#         us = []
+#         if self.x_actividad == '1':
+#             for usd in self.unidadsesiondocente_set.all():
+#                 if not usd.grupo in us:
+#                     us.append(usd.grupo)
+#         return us
+#
+#     @property
+#     def s_unidades(self):
+#         us = [grupo.nombre for grupo in self.grupos.all().order_by('nombre')]
+#         return '/'.join(us)
+#
+#     @property
+#     def clase_horario(self):
+#         try:
+#             if self.x_actividad == '1':
+#                 ch = [str(self.materia.id)]
+#                 for grupo in self.grupos.all():
+#                     ch.append(str(grupo.id))
+#                 return '_'.join(ch)
+#             else:
+#                 return self.x_actividad
+#         except:
+#             return self.x_actividad
+#
+#     def s_materia(self):  # String Materia
+#         if self.x_actividad == '1':
+#             m = []
+#             for usd in self.unidadsesiondocente_set.all():
+#                 abv, horas = usd.materia.split('-')[1].strip(), usd.horas_semana_min.split(':')[0]
+#                 m.append('%s %s %sh' % (abv, self.s_unidades, horas))
+#             return set(m)
+#         else:
+#             return set()
 
-    docente = models.CharField('Nombre del docente', max_length=115, blank=True, null=True)
-    x_docente = models.CharField('Código del docente en Racima', max_length=11, blank=True, null=True)
 
-    departamento = models.CharField('Nombre del departamento', max_length=116, blank=True, null=True)
-    x_departamento = models.CharField('Código del departamento en Racima', max_length=10, blank=True, null=True)
-
-    dia = models.CharField('Día de la semana expresado en número', max_length=3, blank=True, null=True)
-    hora_inicio = models.CharField('Hora inicio periodo en minutos', max_length=15, blank=True, null=True)
-    hora_fin = models.CharField('Hora fin periodo en minutos', max_length=15, blank=True, null=True)
-    hora_inicio_cadena = models.CharField('Hora inicio periodo en formato H:i', max_length=8, blank=True, null=True)
-    hora_fin_cadena = models.CharField('Hora fin periodo en formato H:i', max_length=8, blank=True, null=True)
-
-    actividad = models.CharField('Nombre de la actividad', max_length=117, blank=True, null=True)
-    x_actividad = models.CharField('Código de la actividad en Racima', max_length=20, blank=True, null=True)
-    l_requnidad = models.CharField('¿La actividad requiere unidad/grupo?', max_length=2, blank=True, null=True)
-    docencia = models.CharField('¿Es hora de docencia?', max_length=2, blank=True, null=True)
-
-    minutos = models.CharField('Duración del periodo en minutos', max_length=15, blank=True, null=True)
-    dependencia = models.ForeignKey(Dependencia, blank=True, null=True, on_delete=models.CASCADE)
-    materia = models.ForeignKey(Materia, blank=True, null=True, on_delete=models.CASCADE)
-    grupos = models.ManyToManyField(Grupo, blank=True)
-    x_sesion = models.CharField('Código de la sesión en Racima', max_length=120, blank=True, null=True)
-
-    # x_dependencia = models.CharField('Código de la dependencia en Racima', max_length=10, blank=True, null=True)
-    # c_coddep = models.CharField('Nombre corto de la dependencia', max_length=30, blank=True, null=True)
-    # x_dependencia2 = models.CharField('Código de la dependencia2 en Racima', max_length=10, blank=True, null=True)
-    # c_coddep2 = models.CharField('Nombre corto de la dependencia2', max_length=30, blank=True, null=True)
-    usar = models.BooleanField('¿Usar este grupo para la calcular la plantilla orgánica', default=True)
-
-    class Meta:
-        verbose_name_plural = 'Sesiones de Docentes'
-        ordering = ['po', 'x_actividad']
-
-    @property
-    def unidades(self):
-        us = []
-        if self.x_actividad == '1':
-            for usd in self.unidadsesiondocente_set.all():
-                if not usd.grupo in us:
-                    us.append(usd.grupo)
-        return us
-
-    @property
-    def s_unidades(self):
-        us = [grupo.nombre for grupo in self.grupos.all().order_by('nombre')]
-        return '/'.join(us)
-
-    @property
-    def clase_horario(self):
-        try:
-            if self.x_actividad == '1':
-                ch = [str(self.materia.id)]
-                for grupo in self.grupos.all():
-                    ch.append(str(grupo.id))
-                return '_'.join(ch)
-            else:
-                return self.x_actividad
-        except:
-            return self.x_actividad
-
-    def s_materia(self):  # String Materia
-        if self.x_actividad == '1':
-            m = []
-            for usd in self.unidadsesiondocente_set.all():
-                abv, horas = usd.materia.split('-')[1].strip(), usd.horas_semana_min.split(':')[0]
-                m.append('%s %s %sh' % (abv, self.s_unidades, horas))
-            return set(m)
-        else:
-            return set()
-
-
-class UnidadSesionDocente(models.Model):
-    ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', 'FP Básica'), ('fa', 'Bachillerato'),
-              ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'), ('ia', 'Enseñanzas Iniciales de Personas Adultas'),
-              ('ja', 'Educación Secundaria de Personas Adultas'),
-              ('ka', 'Educación Secundaria de Personas Adultas a Distancia Semipresencial'),
-              ('la', 'Educación Secundaria de Personas Adultas a Distancia'), ('ma', 'Educación para Personas Adultas'),
-              ('na', 'Preparación Pruebas de Acceso a CCFF'), ('za', 'Etapa no identificada'))
-    sd = models.ForeignKey(SesionDocente, on_delete=models.CASCADE, blank=True, null=True)
-    grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE)
-
-    # unidad = models.CharField('Nombre del grupo', max_length=20, blank=True, null=True)
-    # x_unidad = models.CharField('Código del grupo en Racima', max_length=11, blank=True, null=True)
-    # materia = models.CharField('Nombre de la materia', max_length=118, blank=True, null=True)
-    # x_materiaomg = models.CharField('Código de la materia en Racima', max_length=11, blank=True, null=True)
-    # curso = models.CharField('Nombre largo del curso', max_length=119, blank=True, null=True)
-    # x_curso = models.CharField('Código del curso en Racima', max_length=120, blank=True, null=True)
-    # omc = models.CharField('Nombre corto del curso', max_length=20, blank=True, null=True)
-    # grupo_materias = models.CharField('Tipo de materia', max_length=50, blank=True, null=True)
-    # etapa = models.CharField('Etapa', max_length=4, blank=True, null=True, choices=ETAPAS)
-    # horas_semana_min = models.CharField('Horas mínimas de la materia por semana', max_length=10, blank=True, null=True)
-    # horas_semana_max = models.CharField('Horas máximas de la materia por semana', max_length=10, blank=True, null=True)
-
-    class Meta:
-        verbose_name_plural = 'Unidades asociadas a una Sesión Docente'
-        ordering = ['sd', 'grupo']
+# class UnidadSesionDocente(models.Model):
+#     ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', 'FP Básica'), ('fa', 'Bachillerato'),
+#               ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'), ('ia', 'Enseñanzas Iniciales de Personas Adultas'),
+#               ('ja', 'Educación Secundaria de Personas Adultas'),
+#               ('ka', 'Educación Secundaria de Personas Adultas a Distancia Semipresencial'),
+#               ('la', 'Educación Secundaria de Personas Adultas a Distancia'), ('ma', 'Educación para Personas Adultas'),
+#               ('na', 'Preparación Pruebas de Acceso a CCFF'), ('za', 'Etapa no identificada'))
+#     sd = models.ForeignKey(SesionDocente, on_delete=models.CASCADE, blank=True, null=True)
+#     grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE)
+#
+#     class Meta:
+#         verbose_name_plural = 'Unidades asociadas a una Sesión Docente'
+#         ordering = ['sd', 'grupo']
 
 
 class LogCarga(models.Model):
@@ -1278,4 +1245,4 @@ class LogCarga(models.Model):
     creado = models.DateTimeField("Fecha y hora del log", auto_now_add=True)
 
     def __str__(self):
-        return '%s - %s - %s...' % (self.creado, self.g_e, self.log[:50])
+        return '%s - %s - %s...' % (self.creado, self.g_e, self.log[:90])
