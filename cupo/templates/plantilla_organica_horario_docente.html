@@ -33,41 +33,16 @@
                 {% else %}
                     <td class="{{ sesion.clase_horario }} mwx198" data-m="{{ sesion.clase_horario }}"
                         style="color:mediumvioletred">{{ sesion.sesionextra_set.all.0.actividad.nombre }}
-                    <span style="color:darkorange">
+                        <span style="color:darkorange">
                     {% for sext in sesion.sesionextra_set.all %}
                         {{ sext.grupo.nombre }}
                     {% endfor %}
                         </span>
                     </td>
                 {% endif %}
-                {#                {% if sesion.0.x_actividad == '1' %}#}
-                {#                    <td title="{{ sesion.0.materia.curso.nombre }}" class="{{ sesion.0.clase_horario }} mwx198"#}
-                {#                    data-m="{{ sesion.0.clase_horario }}">{{ sesion.0.materia.nombre }}<br><span#}
-                {#                            style="color:darkorange">{{ sesion.0.s_unidades }}</span><br><span#}
-                {#                            style="color:lightseagreen">{{ sesion.0.dependencia.nombre }}</span></td>#}
-                {#                {% else %}#}
-                {#                    <td class="{{ sesion.0.clase_horario }} mwx198" data-m="{{ sesion.0.clase_horario }}"#}
-                {#                        style="color:mediumvioletred">{{ sesion.0.actividad }}</td>#}
-                {#                {% endif %}#}
             {% endfor %}
         </tr>
     {% endfor %}
-    {#    {% for tramo, sesiones_en_tramo in horario.items %}#}
-    {#        <tr>#}
-    {#            <td>{{ tramo }}</td>#}
-    {#            {% for dia, sesion in sesiones_en_tramo.items %}#}
-    {#                {% if sesion.0.x_actividad == '1' %}#}
-    {#                    <td title="{{ sesion.0.materia.curso.nombre }}" class="{{ sesion.0.clase_horario }} mwx198"#}
-    {#                    data-m="{{ sesion.0.clase_horario }}">{{ sesion.0.materia.nombre }}<br><span#}
-    {#                            style="color:darkorange">{{ sesion.0.s_unidades }}</span><br><span#}
-    {#                            style="color:lightseagreen">{{ sesion.0.dependencia.nombre }}</span></td>#}
-    {#                {% else %}#}
-    {#                    <td class="{{ sesion.0.clase_horario }} mwx198" data-m="{{ sesion.0.clase_horario }}"#}
-    {#                        style="color:mediumvioletred">{{ sesion.0.actividad }}</td>#}
-    {#                {% endif %}#}
-    {#            {% endfor %}#}
-    {#        </tr>#}
-    {#    {% endfor %}#}
     </tbody>
 </table>
 

@@ -149,18 +149,23 @@
 
         $('body').on('keyup', '.tdpdocente', function () {
             var element = $(this);
-            var id = element.data('id');
-            var campo = element.data('campo');
+            var ge = element.data('ge');
+            var po = element.data('po');
+            var codecol = element.data('codecol');
+            var departamento = element.data('departamento');
             var antiguo_texto = element.html();
             setTimeout(function () {
                 var nuevo_texto = element.html();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/plantilla_organica/", {action: 'tdpdocente', id: id, valor: nuevo_texto, campo: campo},
+                    $.post("/plantilla_organica/", {
+                            action: 'tdpdocente', ge: ge, valor: nuevo_texto, codecol: codecol, po: po,
+                            departamento: departamento
+                        },
                         function (data) {
                             if (data.ok) {
-                                $('#departamento' + data.x_departamento).html(data.html);
-                                $('#horas_totales' + id).html(data.htpd);
-                                $('#horas_basicas' + id).html(data.hbpd);
+                                $('#departamento' + departamento).html(data.html_departamento);
+                                $('#horas_totales' + ge).html(data.horas_totales);
+                                $('#horas_basicas' + ge).html(data.horas_basicas);
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $('#update_error').show().delay(1500).fadeOut();

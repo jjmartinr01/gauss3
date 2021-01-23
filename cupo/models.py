@@ -530,6 +530,7 @@ TC = {
 class PlantillaOrganica(models.Model):
     g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
     ronda_centro = models.ForeignKey(Ronda, on_delete=models.CASCADE, blank=True, null=True)
+    horario = models.ForeignKey(Horario, on_delete=models.SET_NULL, blank=True, null=True)
     carga_completa = models.BooleanField('¿Se ha cargado completamente?', default=False)
     creado = models.DateTimeField("Fecha y hora creación de la PO", auto_now_add=True)
 
@@ -793,6 +794,8 @@ class PlantillaOrganica(models.Model):
         if c:
             horario.nombre = 'Horario creado por carga de datos de plantilla orgánica: %s' % self.pk
             horario.save()
+        self.horario = horario
+        self.save()
         sesiones = []
         psxls = self.plantillaxls_set.all()
         for p in psxls:
@@ -846,7 +849,9 @@ class PlantillaOrganica(models.Model):
     ############ Cálculos para cada docente:
 
     def carga_pdocente(self, gex):
-        sextras = SesionExtra.objects.filter(sesion__horario__clave_ex=self.pk, sesion__g_e=gex)
+        sextras = SesionExtra.objects.filter(sesion__horario=self.horario, sesion__g_e=gex)
+        if sextras.count() == 0: # Esta línea y la siguiente solo son válidas durante la transición en la forma de cargar las sesiones
+            sextras = SesionExtra.objects.filter(sesion__horario__clave_ex=self.pk, sesion__g_e=gex)
         pd, c = PDocente.objects.get_or_create(po=self, g_e=gex)
         for apartado in self.estructura_po:
             for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
@@ -982,73 +987,6 @@ class PlantillaXLS(models.Model):
         ordering = ['etapa', 'curso', 'unidad']
 
 
-# class PlantillaDepartamento(models.Model):
-#     LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7),
-#               (115, 129, 8), (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13),
-#               (205, 219, 14), (220, 234, 15), (235, 249, 16), (250, 264, 17), (265, 279, 18), (280, 294, 19))
-#     RESTO = ((12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7),
-#              (124, 139, 8), (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13),
-#              (220, 235, 14), (236, 251, 15), (252, 267, 16), (268, 283, 17), (284, 299, 18), (300, 235, 19))
-#     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
-#     departamento = models.CharField('Departamento', max_length=100, blank=True, null=True)
-#     x_departamento = models.CharField('Código en Racima del departamento', max_length=10, blank=True, null=True)
-#     troneso = models.IntegerField('Horas de Troncales de ESO', blank=True, default=0)
-#     espeeso = models.IntegerField('Horas de Específicas de ESO', default=0)
-#     libreso = models.IntegerField('Horas de Libre Configuración Autonómica de ESO', default=0)
-#     tronbac = models.IntegerField('Horas de Troncales de Bachillerato', default=0)
-#     espebac = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
-#     gm = models.IntegerField('Horas de Grado Medio', default=0)
-#     gs = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
-#     fpb = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
-#     desdobeso = models.IntegerField('Desdobles autorizados ESO', default=0)
-#     desdobbac = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
-#     jefatura = models.IntegerField('Horas de jefatura de departamento', default=3)
-#     mayor55 = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
-#     cppaccffgs = models.IntegerField('Horas curso preparación pruebas de acceso a CCFF', default=0)
-#     tutorias = models.IntegerField('Horas dedicadas a tutorías y FCTs', default=0)
-#     refuerzo1 = models.IntegerField('Horas de 1º de Refuerzo Curriculas', default=0)
-#     pacg = models.IntegerField('Horas de PACG', default=0)
-#     pmar1 = models.IntegerField('Horas de 1º de PMAR (2º ESO)', default=0)
-#     pmar2 = models.IntegerField('Horas de 2º de PMAR (3º ESO)', default=0)
-#     iniciales = models.IntegerField('Horas de Enseñanzas Iniciales', default=0)
-#     espa = models.IntegerField('Horas de Educación Secundaria para adultos', default=0)
-#     espads = models.IntegerField('Horas de Educación Secundaria para adultos a distancia semipresencial', default=0)
-#     espad = models.IntegerField('Horas de Educación Secundaria para adultos a distancia', default=0)
-#     epaofi = models.IntegerField('Horas de enseñanzas de adultos ofimática', default=0)
-#     epainf = models.IntegerField('Horas de enseñanzas de adultos informática', default=0)
-#     epaing = models.IntegerField('Horas de enseñanzas de adultos inglés', default=0)
-#     epamec = models.IntegerField('Horas de enseñanzas de adultos mecanografía', default=0)
-#     epan2 = models.IntegerField('Horas de preparación competencias N-2', default=0)
-#     epainm = models.IntegerField('Horas de alfabetización para inmigrantes', default=0)
-#     epamay = models.IntegerField('Horas de cursos de preparación para mayores de 18 y 25 años', default=0)
-#     orden = models.IntegerField('Orden de presentación', default=100)
-#     creado = models.DateTimeField("Fecha y hora de creación", auto_now_add=True)
-#     modificado = models.DateTimeField("Fecha y hora de modificación", auto_now=True)
-#
-#     class Meta:
-#         verbose_name_plural = 'Plantilla por departamentos (PlantillaDepartamento)'
-#         ordering = ['orden']
-#
-#     @property
-#     def horas_basicas(self):
-#         return self.troneso + self.espeeso + self.libreso + self.tronbac + self.espebac + self.gm + self.gs + self.fpb + self.desdobeso + self.desdobbac + self.jefatura
-#
-#     @property
-#     def horas_totales(self):
-#         return self.horas_basicas + self.mayor55 + self.cppaccffgs + self.tutorias + self.refuerzo1 + self.pacg + self.pmar1 + self.pmar2
-#
-#     @property
-#     def plantilla_organica(self):
-#         po = 0
-#         horas_basicas = self.horas_basicas
-#         condicion = self.departamento == 'Música' or 'astellana' in self.departamento or 'Matem' in self.departamento
-#         plantillas = self.LCL_MU if condicion else self.RESTO
-#         for plantilla in plantillas:
-#             if horas_basicas >= plantilla[0] and horas_basicas <= plantilla[1]:
-#                 po = plantilla[2]
-#         return po
-
-
 class PlantillaDocente(models.Model):
     LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7),
               (115, 129, 8), (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13),
@@ -1136,6 +1074,11 @@ class PDocente(models.Model):
     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
     g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
 
+    @property
+    def horas_totales(self):
+        return sum(self.pdocentecol_set.all().values_list('periodos', flat=True))
+
+
     def __str__(self):
         return '%s - %s' % (self.po, self.g_e)
 
@@ -1148,95 +1091,6 @@ class PDocenteCol(models.Model):
 
     def __str__(self):
         return '%s - %s - (%s)' % (self.pd, self.nombre, self.periodos)
-
-
-# class SesionDocente(models.Model):
-#     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
-#
-#     docente = models.CharField('Nombre del docente', max_length=115, blank=True, null=True)
-#     x_docente = models.CharField('Código del docente en Racima', max_length=11, blank=True, null=True)
-#
-#     departamento = models.CharField('Nombre del departamento', max_length=116, blank=True, null=True)
-#     x_departamento = models.CharField('Código del departamento en Racima', max_length=10, blank=True, null=True)
-#
-#     dia = models.CharField('Día de la semana expresado en número', max_length=3, blank=True, null=True)
-#     hora_inicio = models.CharField('Hora inicio periodo en minutos', max_length=15, blank=True, null=True)
-#     hora_fin = models.CharField('Hora fin periodo en minutos', max_length=15, blank=True, null=True)
-#     hora_inicio_cadena = models.CharField('Hora inicio periodo en formato H:i', max_length=8, blank=True, null=True)
-#     hora_fin_cadena = models.CharField('Hora fin periodo en formato H:i', max_length=8, blank=True, null=True)
-#
-#     actividad = models.CharField('Nombre de la actividad', max_length=117, blank=True, null=True)
-#     x_actividad = models.CharField('Código de la actividad en Racima', max_length=20, blank=True, null=True)
-#     l_requnidad = models.CharField('¿La actividad requiere unidad/grupo?', max_length=2, blank=True, null=True)
-#     docencia = models.CharField('¿Es hora de docencia?', max_length=2, blank=True, null=True)
-#
-#     minutos = models.CharField('Duración del periodo en minutos', max_length=15, blank=True, null=True)
-#     dependencia = models.ForeignKey(Dependencia, blank=True, null=True, on_delete=models.CASCADE)
-#     materia = models.ForeignKey(Materia, blank=True, null=True, on_delete=models.CASCADE)
-#     grupos = models.ManyToManyField(Grupo, blank=True)
-#     x_sesion = models.CharField('Código de la sesión en Racima', max_length=120, blank=True, null=True)
-#
-#     # x_dependencia = models.CharField('Código de la dependencia en Racima', max_length=10, blank=True, null=True)
-#     # c_coddep = models.CharField('Nombre corto de la dependencia', max_length=30, blank=True, null=True)
-#     # x_dependencia2 = models.CharField('Código de la dependencia2 en Racima', max_length=10, blank=True, null=True)
-#     # c_coddep2 = models.CharField('Nombre corto de la dependencia2', max_length=30, blank=True, null=True)
-#     usar = models.BooleanField('¿Usar este grupo para la calcular la plantilla orgánica', default=True)
-#
-#     class Meta:
-#         verbose_name_plural = 'Sesiones de Docentes'
-#         ordering = ['po', 'x_actividad']
-#
-#     @property
-#     def unidades(self):
-#         us = []
-#         if self.x_actividad == '1':
-#             for usd in self.unidadsesiondocente_set.all():
-#                 if not usd.grupo in us:
-#                     us.append(usd.grupo)
-#         return us
-#
-#     @property
-#     def s_unidades(self):
-#         us = [grupo.nombre for grupo in self.grupos.all().order_by('nombre')]
-#         return '/'.join(us)
-#
-#     @property
-#     def clase_horario(self):
-#         try:
-#             if self.x_actividad == '1':
-#                 ch = [str(self.materia.id)]
-#                 for grupo in self.grupos.all():
-#                     ch.append(str(grupo.id))
-#                 return '_'.join(ch)
-#             else:
-#                 return self.x_actividad
-#         except:
-#             return self.x_actividad
-#
-#     def s_materia(self):  # String Materia
-#         if self.x_actividad == '1':
-#             m = []
-#             for usd in self.unidadsesiondocente_set.all():
-#                 abv, horas = usd.materia.split('-')[1].strip(), usd.horas_semana_min.split(':')[0]
-#                 m.append('%s %s %sh' % (abv, self.s_unidades, horas))
-#             return set(m)
-#         else:
-#             return set()
-
-
-# class UnidadSesionDocente(models.Model):
-#     ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', 'FP Básica'), ('fa', 'Bachillerato'),
-#               ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'), ('ia', 'Enseñanzas Iniciales de Personas Adultas'),
-#               ('ja', 'Educación Secundaria de Personas Adultas'),
-#               ('ka', 'Educación Secundaria de Personas Adultas a Distancia Semipresencial'),
-#               ('la', 'Educación Secundaria de Personas Adultas a Distancia'), ('ma', 'Educación para Personas Adultas'),
-#               ('na', 'Preparación Pruebas de Acceso a CCFF'), ('za', 'Etapa no identificada'))
-#     sd = models.ForeignKey(SesionDocente, on_delete=models.CASCADE, blank=True, null=True)
-#     grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE)
-#
-#     class Meta:
-#         verbose_name_plural = 'Unidades asociadas a una Sesión Docente'
-#         ordering = ['sd', 'grupo']
 
 
 class LogCarga(models.Model):

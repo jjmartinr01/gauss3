@@ -33,7 +33,7 @@ MENU_DEFAULT = [
      'pos': 3,
      'parent': 'acceso_inspeccion_educativa'
      },
-{'code_menu': 'acceso_asignar_centros_inspeccion',
+    {'code_menu': 'acceso_asignar_centros_inspeccion',
      'texto_menu': 'Asignación de centros',
      'href': 'asignar_centros_inspeccion',
      'nivel': 2,

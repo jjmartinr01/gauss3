@@ -1,23 +1,28 @@
 {% load cupo_extras %}
 {% for miembro in departamento.miembrodepartamento_set.all %}
-    <tr id="plantilladocente{{ miembro.g_e.id }}" class="docentes_dep{{ departamento.id }}" style="display: none;">
-        <td>
-            <div class="nombre_horario" data-po="{{ po.id }}" data-docente="{{ miembro.g_e.id }}">
-                <div class="docente">{{ miembro.g_e.gauser.get_full_name }}</div>
-                <div class="div_get_horario"><a class="get_horario"><i class="fa fa-calendar"></i></a></div>
-            </div>
-            <div class="materias_docente" id="materias_docente{{ miembro.g_e.id }}"></div>
-        </td>
+    {% with docente=miembro.g_e %}
+        <tr id="plantilladocente{{ docente.id }}" class="docentes_dep{{ departamento.id }}" style="display: none;">
+            <td>
+                <div class="nombre_horario" data-po="{{ po.id }}" data-docente="{{ docente.id }}">
+                    <div class="docente">{{ docente.gauser.get_full_name }}</div>
+                    <div class="div_get_horario"><a class="get_horario"><i class="fa fa-calendar"></i></a></div>
+                </div>
+                <div class="materias_docente" id="materias_docente{{ docente.id }}"></div>
+            </td>
 
-        {% with horas=po|get_columnas_docente:miembro.g_e %}
-            {% for columna in horas.columnas %}
-                <td data-codecol="{{ columna.codecol }}" contenteditable="true" class="tdpdocente"
-                    data-id="{{ miembro.g_e.id }}">{{ columna.periodos }}</td>
-            {% endfor %}
+            {% with horas=po|get_columnas_docente:docente %}
+                {% for columna in horas.columnas %}
+                    <td data-codecol="{{ columna.codecol }}" contenteditable="true"
+                        data-departamento="{{ departamento.id }}"
+                        data-ge="{{ docente.id }}" data-po="{{ po.id }}" class="tdpdocente">{{ columna.periodos }}</td>
+                {% endfor %}
 
-            <td style="font-weight: bold;text-align: center;">{{ horas.horas_totales }}</td>
-            <td style="font-weight: bold;text-align: center;">{{ horas.horas_basicas }}</td>
-            <td></td>
-        {% endwith %}
-    </tr>
+                <td id="horas_totales{{ docente.id }}"
+                    style="font-weight: bold;text-align: center;">{{ horas.horas_totales }}</td>
+                <td id="horas_basicas{{ docente.id }}"
+                    style="font-weight: bold;text-align: center;">{{ horas.horas_basicas }}</td>
+                <td></td>
+            {% endwith %}
+        </tr>
+    {% endwith %}
 {% endfor %}

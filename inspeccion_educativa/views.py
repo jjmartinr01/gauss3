@@ -746,7 +746,7 @@ def plantillas_ie(request):
 
 
 # @permiso_required('acceso_asignar_centros_inspeccion')
-def asignar_centros_inspector(request):
+def asignar_centros_inspeccion(request):
     g_e = request.session["gauser_extra"]
     inspectores = get_inspectores(request)
     if request.method == 'POST' and request.is_ajax():

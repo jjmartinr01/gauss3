@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 
 from autenticar.control_acceso import permiso_required
+from cupo.templatetags.cupo_extras import get_columnas_docente
 from gauss.funciones import html_to_pdf
 from gauss.rutas import *
 from django.http import HttpResponse
@@ -20,12 +21,11 @@ from horarios.models import SesionExtra, Horario, Sesion
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo
-from cupo.models import PlantillaOrganica, PlantillaDocente
+from cupo.models import PlantillaOrganica, PDocenteCol
 from entidades.models import CargaMasiva, Gauser_extra
 from entidades.models import Departamento as Depentidad
 from estudios.models import Curso, Materia, Grupo
 from horarios.tasks import carga_masiva_from_file
-from cupo.templatetags.cupo_extras import plantilla_departamento, plantilla_departamento_cepa
 
 from programaciones.models import Gauser_extra_programaciones, Departamento, crea_departamentos
 
@@ -595,21 +595,18 @@ def plantilla_organica(request):
             return JsonResponse({'ok': True})
         elif request.POST['action'] == 'tdpdocente' and request.is_ajax():
             try:
-                pd = PlantillaDocente.objects.get(id=request.POST['id'], po__g_e=g_e)
-                valor = int("".join(filter(str.isdigit, request.POST['valor'])))
-                setattr(pd, request.POST['campo'], valor)
-                pd.save()
-                # if 'C.E.P.A' in pd.po.ronda_centro.entidad.name:
-                #     departamento = plantilla_departamento_cepa(pd.po, pd.departamento)
-                #     html = render_to_string('plantilla_organica_accordion_cepa_content_tbody_departamento_tr.html',
-                #                             {'departamento': departamento})
-                # else:
-                #     departamento = plantilla_departamento(pd.po, pd.departamento)
-                #     html = render_to_string('plantilla_organica_accordion_ies_content_tbody_departamento_tr.html',
-                #                             {'departamento': departamento})
-                html=''
-                return JsonResponse({'ok': True, 'html': html, 'hbpd': pd.horas_basicas, 'htpd': pd.horas_totales,
-                                     'x_departamento': pd.x_departamento})
+                po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
+                ge = Gauser_extra.objects.get(ronda=po.ronda_centro, id=request.POST['ge'])
+                departamento = Depentidad.objects.get(ronda=po.ronda_centro, id=request.POST['departamento'])
+                pdcol = PDocenteCol.objects.get(pd__po=po, pd__g_e=ge, codecol=request.POST['codecol'])
+                # Para evitar los caracteres no numéricos obtenidos del div contenteditable no basta con int():
+                pdcol.periodos = int("".join(filter(str.isdigit, request.POST['valor'])))
+                pdcol.save()
+                data = get_columnas_docente(po, ge)
+                html_departamento = render_to_string('plantilla_organica_accordion_content_tbody_departamento.html',
+                                            {'departamento': departamento, 'po': po})
+                return JsonResponse({'ok': True, 'html_departamento': html_departamento,
+                                     'horas_basicas': data['horas_basicas'], 'horas_totales': data['horas_totales']})
             except:
                 return JsonResponse({'ok': False})
         # elif request.POST['action'] == 'update_unidad' and request.is_ajax():
@@ -645,10 +642,20 @@ def plantilla_organica(request):
         #     except:
         #         return JsonResponse({'ok': False})
         elif request.POST['action'] == 'copiar_po':
+            #Las siguientes líneas habrá que borrarlas y solo sirven para adecuar los horarios a las plantillas orgánicas
+            for ho in Horario.objects.all():
+                try:
+                    po = PlantillaOrganica.objects.get(pk=ho.clave_ex)
+                    po.horario = ho
+                    po.save()
+                except:
+                    pass
+
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
+                # horario = Horario.objects.get(ronda=po.ronda_centro, clave_ex=po.pk)
                 pxls = po.plantillaxls_set.all()
-                pds = po.plantilladocente_set.all()
+                pds = po.pdocente_set.all()
                 po.pk = None
                 po.save()
                 for p in pxls:
@@ -656,9 +663,27 @@ def plantilla_organica(request):
                     p.po = po
                     p.save()
                 for pd in pds:
+                    pdcols = pd.pdocentecol_set.all()
                     pd.pk = None
                     pd.po = po
                     pd.save()
+                    for pdcol in pdcols:
+                        pdcol.pk = None
+                        pdcol.pd = pd
+                        pdcol.save()
+                # sesiones = horario.sesion_set.all()
+                # horario.pk = None
+                # horario.clave_ex = po.pk
+                # horario.save()
+                # for sesion in sesiones:
+                #     sesiones_extra = sesion.sesionextra_set.all()
+                #     sesion.pk = None
+                #     sesion.horario = horario
+                #     sesion.save()
+                #     for sesion_extra in sesiones_extra:
+                #         sesion_extra.pk = None
+                #         sesion_extra.sesion = sesion
+                #         sesion_extra.save()
                 html = render_to_string('plantilla_organica_accordion.html',
                                         {'buscadas': False, 'plantillas_o': [po], 'g_e': g_e, 'nueva': True})
                 return JsonResponse({'ok': True, 'html': html})
@@ -684,7 +709,8 @@ def plantilla_organica(request):
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
                 docente = Gauser_extra.objects.get(id=request.POST['docente'], ronda=po.ronda_centro)
-                horario = Horario.objects.get(ronda=docente.ronda, clave_ex=po.pk)
+                # horario = Horario.objects.get(ronda=docente.ronda, clave_ex=po.pk)
+                horario = po.horario
                 materias = []
                 for se in SesionExtra.objects.filter(sesion__horario=horario, sesion__g_e=docente):
                     if se.materia:
@@ -710,20 +736,9 @@ def plantilla_organica(request):
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
                 docente = Gauser_extra.objects.get(id=request.POST['docente'], ronda=po.ronda_centro)
-                h = Horario.objects.get(ronda=docente.ronda, clave_ex=po.pk)
-                ss = Sesion.objects.filter(horario=h, g_e=docente)
-                tramos = ss.values_list('hora_inicio', 'hora_inicio_cadena', 'hora_fin_cadena').distinct()
-                horario = {}
-                for inicio, s_inicio, s_fin in tramos:
-                    tramo = '%s-%s' % (s_inicio, s_fin)
-                    sesiones_por_dia = {}
-                    for d in [1, 2, 3, 4, 5]:
-                        try:
-                            sesiones_por_dia[d] = ss.get(hora_inicio=inicio, dia=d)
-                        except:
-                            sesiones_por_dia[d] = Sesion.objects.none()
-                    horario[tramo] = sesiones_por_dia
-                    # horario[tramo] = {d: ss.filter(hora_inicio=inicio, dia=d) for d in [1, 2, 3, 4, 5]}
+                # h = Horario.objects.get(ronda=docente.ronda, clave_ex=po.pk)
+                h = po.horario
+                horario = h.get_horario(docente)
                 tabla = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario,
                                                                                      'docente': docente})
                 return JsonResponse({'ok': True, 'tabla': tabla, 'h': h.id, 'd': docente.id})

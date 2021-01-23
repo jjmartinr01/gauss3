@@ -145,6 +145,29 @@ class Horario(models.Model):
     def pixels_offset(self):
         return 50
 
+    def get_horario(self, docente):
+        """
+        :param docente: Gauser_extra
+        :return: dictionary {tramo_string1: {1: sesiones, 2: sesiones ...}, tramo_string2: {1: sesiones, ...
+        """
+        # Días para los cuales se calcula el horario
+        dias_dict = {1: self.lunes, 2: self.martes, 3: self.miercoles, 4: self.jueves, 5: self.viernes,
+                     6:self.sabado, 7: self.domingo}
+        dias = [d for d, valor in dias_dict.items() if valor]
+        ss = self.sesion_set.filter(g_e=docente)
+        tramos = ss.values_list('hora_inicio', 'hora_inicio_cadena', 'hora_fin_cadena').distinct()
+        horario = {}
+        for inicio, s_inicio, s_fin in tramos:
+            tramo = '%s-%s' % (s_inicio, s_fin)
+            sesiones_por_dia = {}
+            for d in dias:
+                try:
+                    sesiones_por_dia[d] = ss.get(hora_inicio=inicio, dia=d)
+                except:
+                    sesiones_por_dia[d] = Sesion.objects.none()
+            horario[tramo] = sesiones_por_dia
+        return horario
+
     def sesiones_aula(self, aula):
         return self.sesion_set.filter(dependencia=aula)
 
