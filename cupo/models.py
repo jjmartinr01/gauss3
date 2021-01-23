@@ -730,54 +730,57 @@ class PlantillaOrganica(models.Model):
     def carga_docentes(self):
         ges = self.plantillaxls_set.all().values('docente', 'x_docente', 'dni', 'email', 'x_puesto',
                                                  'x_departamento').distinct()
+        x_docentes = []
         docentes = []
         for ge in ges:
-            last_name, first_name = ge['docente'].split(', ')
-            clave_ex, dni, x_puesto, x_departamento = ge['x_docente'], ge['dni'], ge['x_puesto'], ge['x_departamento']
-            username, email = ge['email'].split('@')[0], ge['email']
-            try:
-                gauser = Gauser.objects.get(dni=dni)
-                gauser.username = username
-                gauser.first_name = first_name
-                gauser.last_name = last_name
-                gauser.email = email
-                gauser.save()
-                gex = self.get_gex_docente(gauser, clave_ex, x_puesto, x_departamento)
-                # self.carga_pdocente(gex)
-                docentes.append(gex)
-            except Exception as msg:
-                log = 'Error: %s. dni %s - username %s' % (str(msg), dni, username)
-                LogCarga.objects.create(g_e=self.g_e, log=log)
-                # logger.warning('Error: %s. dni %s - username %s' % (str(msg), dni, username))
+            if not ge['x_docente'] in x_docentes:
+                x_docentes.append(ge['x_docente'])
+                last_name, first_name = ge['docente'].split(', ')
+                clave_ex, dni, x_puesto, x_departamento = ge['x_docente'], ge['dni'], ge['x_puesto'], ge['x_departamento']
+                username, email = ge['email'].split('@')[0], ge['email']
                 try:
-                    gex = Gauser_extra.objects.get(clave_ex=clave_ex, ronda=self.ronda_centro)
-                    log = 'Sin embargo existe usuario con clave_x: %s - %s' % (clave_ex, gex)
-                    logger.warning(log)
+                    gauser = Gauser.objects.get(dni=dni)
+                    gauser.username = username
+                    gauser.first_name = first_name
+                    gauser.last_name = last_name
+                    gauser.email = email
+                    gauser.save()
+                    gex = self.get_gex_docente(gauser, clave_ex, x_puesto, x_departamento)
+                    # self.carga_pdocente(gex)
+                    docentes.append(gex)
+                except Exception as msg:
+                    log = 'Error: %s. dni %s - username %s' % (str(msg), dni, username)
                     LogCarga.objects.create(g_e=self.g_e, log=log)
-                except:
+                    # logger.warning('Error: %s. dni %s - username %s' % (str(msg), dni, username))
                     try:
-                        gauser = Gauser.objects.get(email=email)
-                        log = 'Sin embargo existe usuario con email: %s - %s' % (email, gauser)
+                        gex = Gauser_extra.objects.get(clave_ex=clave_ex, ronda=self.ronda_centro)
+                        log = 'Sin embargo existe usuario con clave_x: %s - %s' % (clave_ex, gex)
                         logger.warning(log)
                         LogCarga.objects.create(g_e=self.g_e, log=log)
                     except:
                         try:
-                            Gauser.objects.get(username=username)
-                            log = 'Ya existe un usuario: %s' % username
+                            gauser = Gauser.objects.get(email=email)
+                            log = 'Sin embargo existe usuario con email: %s - %s' % (email, gauser)
                             logger.warning(log)
                             LogCarga.objects.create(g_e=self.g_e, log=log)
                         except:
-                            gauser = Gauser.objects.create_user(username, email=email, password=pass_generator(size=9),
-                                                                last_login=now())
-                            log = 'Creado usuario: %s' % (gauser)
-                            LogCarga.objects.create(g_e=self.g_e, log=log)
-                            gauser.first_name = first_name[0:29]
-                            gauser.last_name = last_name[0:29]
-                            gauser.dni = dni
-                            gauser.save()
-                            gex = self.get_gex_docente(gauser, clave_ex, x_puesto, x_departamento)
-                            # self.carga_pdocente(gex)
-                            docentes.append(gex)
+                            try:
+                                Gauser.objects.get(username=username)
+                                log = 'Ya existe un usuario: %s' % username
+                                logger.warning(log)
+                                LogCarga.objects.create(g_e=self.g_e, log=log)
+                            except:
+                                gauser = Gauser.objects.create_user(username, email=email, last_login=now(),
+                                                                    password=pass_generator(size=9))
+                                log = 'Creado usuario: %s' % (gauser)
+                                LogCarga.objects.create(g_e=self.g_e, log=log)
+                                gauser.first_name = first_name[0:29]
+                                gauser.last_name = last_name[0:29]
+                                gauser.dni = dni
+                                gauser.save()
+                                gex = self.get_gex_docente(gauser, clave_ex, x_puesto, x_departamento)
+                                # self.carga_pdocente(gex)
+                                docentes.append(gex)
         return docentes
 
     ########################################################################
@@ -987,81 +990,81 @@ class PlantillaXLS(models.Model):
         ordering = ['etapa', 'curso', 'unidad']
 
 
-class PlantillaDocente(models.Model):
-    LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7),
-              (115, 129, 8), (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13),
-              (205, 219, 14), (220, 234, 15), (235, 249, 16), (250, 264, 17), (265, 279, 18), (280, 294, 19))
-    RESTO = ((12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7),
-             (124, 139, 8), (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13),
-             (220, 235, 14), (236, 251, 15), (252, 267, 16), (268, 283, 17), (284, 299, 18), (300, 235, 19))
-    po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
-    g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
-    docente = models.CharField('Docente', max_length=100, blank=True, null=True)
-    x_docente = models.CharField('Código en Racima del docente', max_length=10, blank=True, null=True)
-    departamento = models.CharField('Departamento', max_length=100, blank=True, null=True)
-    x_departamento = models.CharField('Código en Racima del departamento', max_length=10, blank=True, null=True)
-    troneso = models.IntegerField('Horas de Troncales de ESO', blank=True, default=0)
-    espeeso = models.IntegerField('Horas de Específicas de ESO', default=0)
-    libreso = models.IntegerField('Horas de Libre Configuración Autonómica de ESO', default=0)
-    tronbac = models.IntegerField('Horas de Troncales de Bachillerato', default=0)
-    espebac = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
-    gm = models.IntegerField('Horas de Grado Medio', default=0)
-    gs = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
-    fpb = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
-    desdobeso = models.IntegerField('Desdobles autorizados ESO', default=0)
-    desdobbac = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
-    jefatura = models.IntegerField('Horas de jefatura de departamento', default=0)
-    mayor55 = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
-    cppaccffgs = models.IntegerField('Horas curso preparación pruebas de acceso a CCFF', default=0)
-    tutorias = models.IntegerField('Horas dedicadas a tutorías y FCTs', default=0)
-    refuerzo1 = models.IntegerField('Horas de 1º de Refuerzo Curriculas', default=0)
-    pacg = models.IntegerField('Horas de PACG', default=0)
-    pmar1 = models.IntegerField('Horas de 1º de PMAR (2º ESO)', default=0)
-    pmar2 = models.IntegerField('Horas de 2º de PMAR (3º ESO)', default=0)
-    relve = models.IntegerField('Religión y Valores', default=0)
-    iniciales = models.IntegerField('Horas de Enseñanzas Iniciales', default=0)
-    iniciales1 = models.IntegerField('Horas de Enseñanzas Iniciales I', default=0)
-    iniciales2 = models.IntegerField('Horas de Enseñanzas Iniciales II', default=0)
-    espa = models.IntegerField('Horas de Educación Secundaria para adultos', default=0)
-    espa1 = models.IntegerField('Horas de Educación Secundaria para adultos nivel I', default=0)
-    espa2 = models.IntegerField('Horas de Educación Secundaria para adultos nivel II', default=0)
-    espads = models.IntegerField('Horas de Educación Secundaria para adultos a distancia semipresencial', default=0)
-    espads1 = models.IntegerField('Horas de Educ. Secund. para adultos a distancia semipresencial nivel I', default=0)
-    espads2 = models.IntegerField('Horas de Educ. Secund. para adultos a distancia semipresencial nivel II', default=0)
-    espad1 = models.IntegerField('Horas de Educación Secundaria para adultos a distancia nivel I', default=0)
-    espad2 = models.IntegerField('Horas de Educación Secundaria para adultos a distancia nivel II', default=0)
-    epaofi = models.IntegerField('Horas de enseñanzas de adultos ofimática', default=0)
-    epainf = models.IntegerField('Horas de enseñanzas de adultos informática', default=0)
-    epaing = models.IntegerField('Horas de enseñanzas de adultos inglés', default=0)
-    epamec = models.IntegerField('Horas de enseñanzas de adultos mecanografía', default=0)
-    epan2 = models.IntegerField('Horas de preparación competencias N-2', default=0)
-    epainm = models.IntegerField('Horas de alfabetización para inmigrantes', default=0)
-    epamay = models.IntegerField('Horas de cursos de preparación para mayores de 18 y 25 años', default=0)
-    orden = models.IntegerField('Orden de presentación', default=100)
-    creado = models.DateTimeField("Fecha y hora de creación", auto_now_add=True)
-    modificado = models.DateTimeField("Fecha y hora de modificación", auto_now=True)
-
-    @property
-    def horas_basicas(self):
-        hs1 = self.troneso + self.espeeso + self.libreso + self.tronbac + self.espebac + self.gm + self.gs + self.fpb + self.desdobeso + self.desdobbac + self.jefatura + self.relve
-        hs2 = self.iniciales1 + self.iniciales2 + self.espa1 + self.espa2 + self.espads1 + self.espads2 + self.epaofi + self.epainf + self.epaing + self.epamec + self.epan2 + self.epainm + self.epamay
-        return hs1 + hs2
-
-    @property
-    def horas_totales(self):
-        hs1 = self.cppaccffgs + self.refuerzo1 + self.pacg + self.pmar1 + self.pmar2
-        return self.horas_basicas + self.mayor55 + self.tutorias + hs1
-
-    @property
-    def plantilla_organica(self):
-        po = 0
-        horas_basicas = self.horas_basicas
-        condicion = self.departamento == 'Música' or 'astellana' in self.departamento or 'Matem' in self.departamento
-        plantillas = self.LCL_MU if condicion else self.RESTO
-        for plantilla in plantillas:
-            if horas_basicas >= plantilla[0] and horas_basicas <= plantilla[1]:
-                po = plantilla[2]
-        return po
+# class PlantillaDocente(models.Model):
+#     LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7),
+#               (115, 129, 8), (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13),
+#               (205, 219, 14), (220, 234, 15), (235, 249, 16), (250, 264, 17), (265, 279, 18), (280, 294, 19))
+#     RESTO = ((12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7),
+#              (124, 139, 8), (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13),
+#              (220, 235, 14), (236, 251, 15), (252, 267, 16), (268, 283, 17), (284, 299, 18), (300, 235, 19))
+#     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
+#     g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
+#     docente = models.CharField('Docente', max_length=100, blank=True, null=True)
+#     x_docente = models.CharField('Código en Racima del docente', max_length=10, blank=True, null=True)
+#     departamento = models.CharField('Departamento', max_length=100, blank=True, null=True)
+#     x_departamento = models.CharField('Código en Racima del departamento', max_length=10, blank=True, null=True)
+#     troneso = models.IntegerField('Horas de Troncales de ESO', blank=True, default=0)
+#     espeeso = models.IntegerField('Horas de Específicas de ESO', default=0)
+#     libreso = models.IntegerField('Horas de Libre Configuración Autonómica de ESO', default=0)
+#     tronbac = models.IntegerField('Horas de Troncales de Bachillerato', default=0)
+#     espebac = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
+#     gm = models.IntegerField('Horas de Grado Medio', default=0)
+#     gs = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
+#     fpb = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
+#     desdobeso = models.IntegerField('Desdobles autorizados ESO', default=0)
+#     desdobbac = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
+#     jefatura = models.IntegerField('Horas de jefatura de departamento', default=0)
+#     mayor55 = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
+#     cppaccffgs = models.IntegerField('Horas curso preparación pruebas de acceso a CCFF', default=0)
+#     tutorias = models.IntegerField('Horas dedicadas a tutorías y FCTs', default=0)
+#     refuerzo1 = models.IntegerField('Horas de 1º de Refuerzo Curriculas', default=0)
+#     pacg = models.IntegerField('Horas de PACG', default=0)
+#     pmar1 = models.IntegerField('Horas de 1º de PMAR (2º ESO)', default=0)
+#     pmar2 = models.IntegerField('Horas de 2º de PMAR (3º ESO)', default=0)
+#     relve = models.IntegerField('Religión y Valores', default=0)
+#     iniciales = models.IntegerField('Horas de Enseñanzas Iniciales', default=0)
+#     iniciales1 = models.IntegerField('Horas de Enseñanzas Iniciales I', default=0)
+#     iniciales2 = models.IntegerField('Horas de Enseñanzas Iniciales II', default=0)
+#     espa = models.IntegerField('Horas de Educación Secundaria para adultos', default=0)
+#     espa1 = models.IntegerField('Horas de Educación Secundaria para adultos nivel I', default=0)
+#     espa2 = models.IntegerField('Horas de Educación Secundaria para adultos nivel II', default=0)
+#     espads = models.IntegerField('Horas de Educación Secundaria para adultos a distancia semipresencial', default=0)
+#     espads1 = models.IntegerField('Horas de Educ. Secund. para adultos a distancia semipresencial nivel I', default=0)
+#     espads2 = models.IntegerField('Horas de Educ. Secund. para adultos a distancia semipresencial nivel II', default=0)
+#     espad1 = models.IntegerField('Horas de Educación Secundaria para adultos a distancia nivel I', default=0)
+#     espad2 = models.IntegerField('Horas de Educación Secundaria para adultos a distancia nivel II', default=0)
+#     epaofi = models.IntegerField('Horas de enseñanzas de adultos ofimática', default=0)
+#     epainf = models.IntegerField('Horas de enseñanzas de adultos informática', default=0)
+#     epaing = models.IntegerField('Horas de enseñanzas de adultos inglés', default=0)
+#     epamec = models.IntegerField('Horas de enseñanzas de adultos mecanografía', default=0)
+#     epan2 = models.IntegerField('Horas de preparación competencias N-2', default=0)
+#     epainm = models.IntegerField('Horas de alfabetización para inmigrantes', default=0)
+#     epamay = models.IntegerField('Horas de cursos de preparación para mayores de 18 y 25 años', default=0)
+#     orden = models.IntegerField('Orden de presentación', default=100)
+#     creado = models.DateTimeField("Fecha y hora de creación", auto_now_add=True)
+#     modificado = models.DateTimeField("Fecha y hora de modificación", auto_now=True)
+#
+#     @property
+#     def horas_basicas(self):
+#         hs1 = self.troneso + self.espeeso + self.libreso + self.tronbac + self.espebac + self.gm + self.gs + self.fpb + self.desdobeso + self.desdobbac + self.jefatura + self.relve
+#         hs2 = self.iniciales1 + self.iniciales2 + self.espa1 + self.espa2 + self.espads1 + self.espads2 + self.epaofi + self.epainf + self.epaing + self.epamec + self.epan2 + self.epainm + self.epamay
+#         return hs1 + hs2
+#
+#     @property
+#     def horas_totales(self):
+#         hs1 = self.cppaccffgs + self.refuerzo1 + self.pacg + self.pmar1 + self.pmar2
+#         return self.horas_basicas + self.mayor55 + self.tutorias + hs1
+#
+#     @property
+#     def plantilla_organica(self):
+#         po = 0
+#         horas_basicas = self.horas_basicas
+#         condicion = self.departamento == 'Música' or 'astellana' in self.departamento or 'Matem' in self.departamento
+#         plantillas = self.LCL_MU if condicion else self.RESTO
+#         for plantilla in plantillas:
+#             if horas_basicas >= plantilla[0] and horas_basicas <= plantilla[1]:
+#                 po = plantilla[2]
+#         return po
 
 
 class PDocente(models.Model):
