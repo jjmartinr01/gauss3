@@ -536,6 +536,7 @@ class PlantillaOrganica(models.Model):
 
     class Meta:
         verbose_name_plural = 'Plantillas orgánicas'
+        ordering = ['-creado']
 
     ########################################################################
     ############ Cargamos dependencias:
@@ -563,100 +564,103 @@ class PlantillaOrganica(models.Model):
             return dependencia
 
     def carga_dependencias(self):
+        x_dependencias = []
         for pxls in self.plantillaxls_set.filter(~Q(x_dependencia='-1')):
-            self.carga_dependencia(pxls)
+            if pxls.x_dependencia not in x_dependencias:
+                x_dependencias.append(pxls.x_dependencia)
+                self.carga_dependencia(pxls)
 
     ########################################################################
     ############ Cargamos etapas:
     def carga_etapas(self):
-        for pxls in self.plantillaxls_set.all():
-            EtapaEscolar.objects.get_or_create(nombre=pxls.etapa_escolar, clave_ex=pxls.x_etapa_escolar)
+        etapas = self.plantillaxls_set.all().values('etapa_escolar', 'x_etapa_escolar').distinct()
+        for etapa in etapas:
+            EtapaEscolar.objects.get_or_create(nombre=etapa['etapa_escolar'], clave_ex=etapa['x_etapa_escolar'])
 
     ########################################################################
     ############ Cargamos cursos:
-    def carga_curso(self, pxls):
+    def carga_curso(self, data):
         try:
-            curso, c = Curso.objects.get_or_create(clave_ex=pxls.x_curso, ronda=self.ronda_centro)
+            curso, c = Curso.objects.get_or_create(clave_ex=data['x_curso'], ronda=self.ronda_centro)
         except:
-            cursos = Curso.objects.filter(clave_ex=pxls.x_curso, ronda=self.ronda_centro)
+            cursos = Curso.objects.filter(clave_ex=data['x_curso'], ronda=self.ronda_centro)
             curso = cursos[0]
             cursos.exclude(pk__in=[curso.pk]).delete()
-        curso.nombre = pxls.curso
-        curso.nombre_especifico = pxls.omc
-        curso.etapa = pxls.etapa
+        curso.nombre = data['curso']
+        curso.nombre_especifico = data['omc']
         try:
-            curso.etapa_escolar = EtapaEscolar.objects.get(clave_ex=pxls.x_etapa_escolar)
+            curso.etapa_escolar = EtapaEscolar.objects.get(clave_ex=data['x_etapa_escolar'])
         except:
-            LogCarga.objects.create(g_e=self.g_e, log='No encuentra etapa: %s' % pxls.x_etapa_escolar)
+            LogCarga.objects.create(g_e=self.g_e, log='No encuentra etapa: %s' % data['x_etapa_escolar'])
         curso.save()
         return curso
 
     def carga_cursos(self):
-        for pxls in self.plantillaxls_set.all():
-            self.carga_curso(pxls)
+        cursos = self.plantillaxls_set.all().values('x_curso', 'curso', 'omc', 'x_etapa_escolar')
+        for curso in cursos:
+            self.carga_curso(curso)
         return True
 
     ########################################################################
     ############ Cargamos grupos:
-    def carga_grupo(self, pxls):
+    def carga_grupo(self, data):
         try:
-            grupo, c = Grupo.objects.get_or_create(clave_ex=pxls.x_unidad, ronda=self.ronda_centro)
-            curso = self.carga_curso(pxls)
-            grupo.cursos.add(curso)
+            grupo, c = Grupo.objects.get_or_create(clave_ex=data['x_unidad'], ronda=self.ronda_centro)
             if c:
-                grupo.nombre = pxls.unidad
-                try:
-                    grupo.aula = self.carga_dependencia(pxls)
-                except:
-                    pass
-                    # grupo.aula = Dependencia.objects.none()
+                grupo.nombre = data['unidad']
                 grupo.save()
         except:
-            grupos = Grupo.objects.filter(clave_ex=pxls.x_unidad, ronda=self.ronda_centro)
+            grupos = Grupo.objects.filter(clave_ex=data['x_unidad'], ronda=self.ronda_centro)
             grupo = grupos[0]
             grupos.exclude(pk__in=[grupo.pk]).delete()
-            grupo.nombre = pxls.unidad
-            try:
-                grupo.aula = self.carga_dependencia(pxls)
-            except:
-                pass
-                # grupo.aula = Dependencia.objects.none()
-            curso = self.carga_curso(pxls)
-            grupo.cursos.add(curso)
+            grupo.nombre = data['unidad']
             grupo.save()
+        try:
+            curso = Curso.objects.get(clave_ex=data['x_curso'], ronda=self.ronda_centro)
+            grupo.cursos.add(curso)
+        except:
+            LogCarga.objects.create(g_e=self.g_e, log='Error al cargar el curso: %s' % data['x_curso'])
         return grupo
 
     def carga_grupos(self):
-        for pxls in self.plantillaxls_set.all():
-            self.carga_grupo(pxls)
+        grupos = self.plantillaxls_set.all().values('x_curso', 'x_unidad', 'unidad')
+        for grupo in grupos:
+            self.carga_grupo(grupo)
 
     ########################################################################
     ############ Cargamos materias:
-    def carga_materia(self, pxls):
-        curso = self.carga_curso(pxls)
+    def carga_materia(self, data):
         try:
-            materia, c = Materia.objects.get_or_create(clave_ex=pxls.x_materiaomg, curso=curso)
+            curso = Curso.objects.get(clave_ex=data['x_curso'], ronda=self.ronda_centro)
         except:
-            materias = Materia.objects.filter(clave_ex=pxls.x_materiaomg, curso=curso)
+            LogCarga.objects.create(g_e=self.g_e, log='Error carga de curso de la materia: %s' % data['x_materiaomg'])
+            curso = None
+        try:
+            materia, c = Materia.objects.get_or_create(clave_ex=data['x_materiaomg'], curso=curso)
+        except:
+            materias = Materia.objects.filter(clave_ex=data['x_materiaomg'], curso=curso)
             materia = materias[0]
             materias.exclude(pk__in=[materia.pk]).delete()
-        horas, sc, minutos = pxls.horas_semana_min.rpartition(':')
+        horas, sc, minutos = data['horas_semana_min'].rpartition(':')
         try:
             materia.horas = int(horas)
         except:
             LogCarga.objects.create(g_e=self.g_e, log='Error al cargar horas: %s' % horas)
-        nombre, dash, abreviatura = pxls.materia.rpartition('-')
+        nombre, dash, abreviatura = data['materia'].rpartition('-')
         materia.nombre = nombre.strip()
         materia.abreviatura = abreviatura.strip()
-        materia.grupo_materias = pxls.grupo_materias
-        materia.horas_semana_min = pxls.horas_semana_min
-        materia.horas_semana_max = pxls.horas_semana_max
+        materia.grupo_materias = data['grupo_materias']
+        materia.horas_semana_min = data['horas_semana_min']
+        materia.horas_semana_max = data['horas_semana_max']
         materia.save()
         return materia
 
     def carga_materias(self):
-        for pxls in self.plantillaxls_set.filter(x_actividad='1'):
-            self.carga_materia(pxls)
+        materias = self.plantillaxls_set.filter(x_actividad='1').values('horas_semana_max', 'horas_semana_min',
+                                                                        'grupo_materias', 'x_materiaomg', 'x_curso',
+                                                                        'materia').distinct()
+        for materia in materias:
+            self.carga_materia(materia)
 
     ########################################################################
     ############ Cargamos departamentos:
@@ -698,18 +702,20 @@ class PlantillaOrganica(models.Model):
 
     ########################################################################
     ############ Cargamos docentes:
-
-    def get_gex_docente(self, gauser, clave_ex, x_puesto, x_departamento):
-        gex, c = Gauser_extra.objects.get_or_create(gauser=gauser, ronda=self.ronda_centro)
-        gex.clave_ex = clave_ex
-        gex.activo = True
-        gex.save()
+    def carga_cargo_g_docente(self):
         egeneral, errores = get_entidad_general()
         cargo_data = Cargo.objects.get(clave_cargo='g_docente', entidad=egeneral).export_data()
         cargo, c = Cargo.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_cargo=cargo_data['clave_cargo'],
                                                borrable=False, cargo=cargo_data['cargo'])
         for code_nombre in cargo_data['permisos']:
             cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
+        return cargo
+
+    def get_gex_docente(self, gauser, clave_ex, x_puesto, x_departamento, cargo):
+        gex, c = Gauser_extra.objects.get_or_create(gauser=gauser, ronda=self.ronda_centro)
+        gex.clave_ex = clave_ex
+        gex.activo = True
+        gex.save()
         gex.cargos.add(cargo)
         try:
             puesto = Cargo.objects.get(clave_cargo=x_puesto, entidad=self.ronda_centro.entidad)
@@ -732,6 +738,7 @@ class PlantillaOrganica(models.Model):
                                                  'x_departamento').distinct()
         x_docentes = []
         docentes = []
+        cargo = self.carga_cargo_g_docente()
         for ge in ges:
             if not ge['x_docente'] in x_docentes:
                 x_docentes.append(ge['x_docente'])
@@ -745,8 +752,7 @@ class PlantillaOrganica(models.Model):
                     gauser.last_name = last_name
                     gauser.email = email
                     gauser.save()
-                    gex = self.get_gex_docente(gauser, clave_ex, x_puesto, x_departamento)
-                    # self.carga_pdocente(gex)
+                    gex = self.get_gex_docente(gauser, clave_ex, x_puesto, x_departamento, cargo)
                     docentes.append(gex)
                 except Exception as msg:
                     log = 'Error: %s. dni %s - username %s' % (str(msg), dni, username)
@@ -778,8 +784,7 @@ class PlantillaOrganica(models.Model):
                                 gauser.last_name = last_name[0:29]
                                 gauser.dni = dni
                                 gauser.save()
-                                gex = self.get_gex_docente(gauser, clave_ex, x_puesto, x_departamento)
-                                # self.carga_pdocente(gex)
+                                gex = self.get_gex_docente(gauser, clave_ex, x_puesto, x_departamento, cargo)
                                 docentes.append(gex)
         return docentes
 
@@ -811,18 +816,28 @@ class PlantillaOrganica(models.Model):
             try:
                 grupo = Grupo.objects.get(clave_ex=p.x_unidad, ronda=self.ronda_centro)
             except:
+                LogCarga.objects.create(g_e=self.g_e, log='Error al cargar el grupo %s' % p.x_unidad)
                 grupo = None
             try:
-                dependencia = Dependencia.objects.get(clave_ex=p.x_dependencia, entidad=self.ronda_centro.entidad)
+                if p.x_dependencia != '-1':
+                    dependencia = Dependencia.objects.get(clave_ex=p.x_dependencia, entidad=self.ronda_centro.entidad)
+                else:
+                    dependencia = None
             except:
+                LogCarga.objects.create(g_e=self.g_e, log='Error al cargar la dependencia %s' % p.x_dependencia)
                 dependencia = None
             try:
-                materia = Materia.objects.get(clave_ex=p.x_materiaomg, curso__ronda=self.ronda_centro)
+                if p.x_materiaomg:
+                    materia = Materia.objects.get(clave_ex=p.x_materiaomg, curso__ronda=self.ronda_centro)
+                else:
+                    materia = None
             except:
+                LogCarga.objects.create(g_e=self.g_e, log='Error al cargar la materia %s' % p.x_materiaomg)
                 materia = None
             try:
                 actividad = Actividad.objects.get(entidad=self.ronda_centro.entidad, clave_ex=p.x_actividad)
             except:
+                LogCarga.objects.create(g_e=self.g_e, log='Error al cargar la actividad %s' % p.x_actividad)
                 actividad = None
             SesionExtra.objects.get_or_create(sesion=sesion, grupo=grupo, dependencia=dependencia, materia=materia,
                                               actividad=actividad)
@@ -872,24 +887,24 @@ class PlantillaOrganica(models.Model):
 
     ########################################################################
     ############ Cálculos para cada departamento:
-    def horas_departamento(self, departamento):
-        for apartado in self.estructura_po:
-            for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
-                pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'])
-                pdc.nombre = nombre_columna
-                pdc.periodos = sextras.filter(contenido_columna['q']).values_list('sesion',
-                                                                                  flat=True).distinct().count()
-                pdc.save()
+    # def horas_departamento(self, departamento):
+    #     for apartado in self.estructura_po:
+    #         for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
+    #             pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'])
+    #             pdc.nombre = nombre_columna
+    #             pdc.periodos = sextras.filter(contenido_columna['q']).values_list('sesion',
+    #                                                                               flat=True).distinct().count()
+    #             pdc.save()
 
-    def get_materias_docente(self, x_docente):
-        sds = self.sesiondocente_set.filter(x_docente=x_docente, x_actividad='1')
-        materias = []
-        for s in sds:
-            sesiones_mat = sds.filter(materia=s.materia, grupos__in=list(s.grupos.all().values_list('id', flat=True)))
-            t = (s.materia, s.s_unidades, int(sesiones_mat.count() / s.grupos.all().count()))
-            if t not in materias:
-                materias.append(t)
-        return materias
+    # def get_materias_docente(self, x_docente):
+    #     sds = self.sesiondocente_set.filter(x_docente=x_docente, x_actividad='1')
+    #     materias = []
+    #     for s in sds:
+    #         sesiones_mat = sds.filter(materia=s.materia, grupos__in=list(s.grupos.all().values_list('id', flat=True)))
+    #         t = (s.materia, s.s_unidades, int(sesiones_mat.count() / s.grupos.all().count()))
+    #         if t not in materias:
+    #             materias.append(t)
+    #     return materias
 
     def usar_unidad(self, unidad, usar):
         for pxls in self.plantillaxls_set.filter(unidad=unidad):
@@ -979,7 +994,7 @@ class PlantillaXLS(models.Model):
     omc = models.CharField('Nombre corto del curso', max_length=20, blank=True, null=True)
     grupo_materias = models.CharField('Tipo de materia', max_length=50, blank=True, null=True)
 
-    etapa = models.CharField('Etapa', max_length=4, blank=True, null=True, choices=ETAPAS)
+    # etapa = models.CharField('Etapa', max_length=4, blank=True, null=True, choices=ETAPAS)
 
     horas_semana_min = models.CharField('Horas mínimas de la materia por semana', max_length=10, blank=True, null=True)
     horas_semana_max = models.CharField('Horas máximas de la materia por semana', max_length=10, blank=True, null=True)
@@ -987,84 +1002,7 @@ class PlantillaXLS(models.Model):
 
     class Meta:
         verbose_name_plural = 'Sesiones obtenidas del XLS (PlantillaXLS)'
-        ordering = ['etapa', 'curso', 'unidad']
-
-
-# class PlantillaDocente(models.Model):
-#     LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7),
-#               (115, 129, 8), (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13),
-#               (205, 219, 14), (220, 234, 15), (235, 249, 16), (250, 264, 17), (265, 279, 18), (280, 294, 19))
-#     RESTO = ((12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7),
-#              (124, 139, 8), (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13),
-#              (220, 235, 14), (236, 251, 15), (252, 267, 16), (268, 283, 17), (284, 299, 18), (300, 235, 19))
-#     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
-#     g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
-#     docente = models.CharField('Docente', max_length=100, blank=True, null=True)
-#     x_docente = models.CharField('Código en Racima del docente', max_length=10, blank=True, null=True)
-#     departamento = models.CharField('Departamento', max_length=100, blank=True, null=True)
-#     x_departamento = models.CharField('Código en Racima del departamento', max_length=10, blank=True, null=True)
-#     troneso = models.IntegerField('Horas de Troncales de ESO', blank=True, default=0)
-#     espeeso = models.IntegerField('Horas de Específicas de ESO', default=0)
-#     libreso = models.IntegerField('Horas de Libre Configuración Autonómica de ESO', default=0)
-#     tronbac = models.IntegerField('Horas de Troncales de Bachillerato', default=0)
-#     espebac = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
-#     gm = models.IntegerField('Horas de Grado Medio', default=0)
-#     gs = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
-#     fpb = models.IntegerField('Horas de Específicas de Bachillerato', default=0)
-#     desdobeso = models.IntegerField('Desdobles autorizados ESO', default=0)
-#     desdobbac = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
-#     jefatura = models.IntegerField('Horas de jefatura de departamento', default=0)
-#     mayor55 = models.IntegerField('Desdobles autorizados Bachillerato', default=0)
-#     cppaccffgs = models.IntegerField('Horas curso preparación pruebas de acceso a CCFF', default=0)
-#     tutorias = models.IntegerField('Horas dedicadas a tutorías y FCTs', default=0)
-#     refuerzo1 = models.IntegerField('Horas de 1º de Refuerzo Curriculas', default=0)
-#     pacg = models.IntegerField('Horas de PACG', default=0)
-#     pmar1 = models.IntegerField('Horas de 1º de PMAR (2º ESO)', default=0)
-#     pmar2 = models.IntegerField('Horas de 2º de PMAR (3º ESO)', default=0)
-#     relve = models.IntegerField('Religión y Valores', default=0)
-#     iniciales = models.IntegerField('Horas de Enseñanzas Iniciales', default=0)
-#     iniciales1 = models.IntegerField('Horas de Enseñanzas Iniciales I', default=0)
-#     iniciales2 = models.IntegerField('Horas de Enseñanzas Iniciales II', default=0)
-#     espa = models.IntegerField('Horas de Educación Secundaria para adultos', default=0)
-#     espa1 = models.IntegerField('Horas de Educación Secundaria para adultos nivel I', default=0)
-#     espa2 = models.IntegerField('Horas de Educación Secundaria para adultos nivel II', default=0)
-#     espads = models.IntegerField('Horas de Educación Secundaria para adultos a distancia semipresencial', default=0)
-#     espads1 = models.IntegerField('Horas de Educ. Secund. para adultos a distancia semipresencial nivel I', default=0)
-#     espads2 = models.IntegerField('Horas de Educ. Secund. para adultos a distancia semipresencial nivel II', default=0)
-#     espad1 = models.IntegerField('Horas de Educación Secundaria para adultos a distancia nivel I', default=0)
-#     espad2 = models.IntegerField('Horas de Educación Secundaria para adultos a distancia nivel II', default=0)
-#     epaofi = models.IntegerField('Horas de enseñanzas de adultos ofimática', default=0)
-#     epainf = models.IntegerField('Horas de enseñanzas de adultos informática', default=0)
-#     epaing = models.IntegerField('Horas de enseñanzas de adultos inglés', default=0)
-#     epamec = models.IntegerField('Horas de enseñanzas de adultos mecanografía', default=0)
-#     epan2 = models.IntegerField('Horas de preparación competencias N-2', default=0)
-#     epainm = models.IntegerField('Horas de alfabetización para inmigrantes', default=0)
-#     epamay = models.IntegerField('Horas de cursos de preparación para mayores de 18 y 25 años', default=0)
-#     orden = models.IntegerField('Orden de presentación', default=100)
-#     creado = models.DateTimeField("Fecha y hora de creación", auto_now_add=True)
-#     modificado = models.DateTimeField("Fecha y hora de modificación", auto_now=True)
-#
-#     @property
-#     def horas_basicas(self):
-#         hs1 = self.troneso + self.espeeso + self.libreso + self.tronbac + self.espebac + self.gm + self.gs + self.fpb + self.desdobeso + self.desdobbac + self.jefatura + self.relve
-#         hs2 = self.iniciales1 + self.iniciales2 + self.espa1 + self.espa2 + self.espads1 + self.espads2 + self.epaofi + self.epainf + self.epaing + self.epamec + self.epan2 + self.epainm + self.epamay
-#         return hs1 + hs2
-#
-#     @property
-#     def horas_totales(self):
-#         hs1 = self.cppaccffgs + self.refuerzo1 + self.pacg + self.pmar1 + self.pmar2
-#         return self.horas_basicas + self.mayor55 + self.tutorias + hs1
-#
-#     @property
-#     def plantilla_organica(self):
-#         po = 0
-#         horas_basicas = self.horas_basicas
-#         condicion = self.departamento == 'Música' or 'astellana' in self.departamento or 'Matem' in self.departamento
-#         plantillas = self.LCL_MU if condicion else self.RESTO
-#         for plantilla in plantillas:
-#             if horas_basicas >= plantilla[0] and horas_basicas <= plantilla[1]:
-#                 po = plantilla[2]
-#         return po
+        ordering = ['x_etapa_escolar', 'curso', 'unidad']
 
 
 class PDocente(models.Model):
@@ -1102,4 +1040,4 @@ class LogCarga(models.Model):
     creado = models.DateTimeField("Fecha y hora del log", auto_now_add=True)
 
     def __str__(self):
-        return '%s - %s - %s...' % (self.creado, self.g_e, self.log[:90])
+        return '%s - %s - %s...' % (self.creado, self.g_e, self.log[:190])

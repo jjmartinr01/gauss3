@@ -35,19 +35,31 @@ def get_columnas(po):
             columnas.append(nombre_columna)
     return columnas
 
+
 def calcula_plantilla_organica(departamento, horas_basicas):
-    LCL_MU = (
-    (10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7), (115, 129, 8),
-    (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13), (205, 219, 14))
-    RESTO = (
-    (12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7), (124, 139, 8),
-    (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13), (220, 235, 14))
-    plantilla_organica = 0
-    plantillas = LCL_MU if (departamento.nombre == 'Música' or 'astellana' in departamento.nombre) else RESTO
-    for plantilla in plantillas:
-        if horas_basicas >= plantilla[0] and horas_basicas <= plantilla[1]:
-            plantilla_organica = plantilla[2]
-    return plantilla_organica
+    def num_profesores_calculados(min_num_horas, intervalo_horas, horas):
+        if horas < min_num_horas:
+            return 0
+        else:
+            return int((horas - min_num_horas) / intervalo_horas) + 1
+    if departamento.nombre == 'Música' or 'astellana' in departamento.nombre:
+        return num_profesores_calculados(10, 15, horas_basicas)
+    else:
+        return num_profesores_calculados(12, 16, horas_basicas)
+    # LCL_MU = (
+    #     (10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7), (115, 129, 8),
+    #     (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13), (205, 219, 14))
+    # RESTO = (
+    #     (12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7), (124, 139, 8),
+    #     (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13), (220, 235, 14))
+    # plantilla_organica = 0
+    # plantillas = LCL_MU if (departamento.nombre == 'Música' or 'astellana' in departamento.nombre) else RESTO
+    # for plantilla in plantillas:
+    #     if horas_basicas >= plantilla[0] and horas_basicas <= plantilla[1]:
+    #         plantilla_organica = plantilla[2]
+    # return plantilla_organica
+
+
 
 @register.filter
 def get_columnas_departamento(po, departamento):
@@ -64,6 +76,7 @@ def get_columnas_departamento(po, departamento):
                              'periodos': periodos})
     hp = calcula_plantilla_organica(departamento, horas_basicas)
     return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales, 'horas_plantilla': hp}
+
 
 @register.filter
 def get_columnas_docente(po, docente):
@@ -82,39 +95,40 @@ def get_columnas_docente(po, docente):
 
 ############################################
 
-LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7), (115, 129, 8),
-          (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13), (205, 219, 14))
-RESTO = ((12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7), (124, 139, 8),
-         (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13), (220, 235, 14))
+
+# LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7), (115, 129, 8),
+#           (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13), (205, 219, 14))
+# RESTO = ((12, 27, 1), (28, 43, 2), (44, 59, 3), (60, 75, 4), (76, 91, 5), (92, 107, 6), (108, 123, 7), (124, 139, 8),
+#          (140, 155, 9), (156, 171, 10), (172, 187, 11), (188, 203, 12), (204, 219, 13), (220, 235, 14))
 
 
-@register.filter
-def horas_departamento(departamento, g_e):
-    try:
-        psXLS = PlantillaXLS.objects.filter(departamento=departamento, entidad=g_e.ronda.entidad)
-    except:
-        psXLS = PlantillaXLS.objects.filter(departamento=departamento, g_e=g_e)
-    troncales = Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
-        grupo_materias__icontains='obligator')
-    libreconf = Q(grupo_materias__icontains='libre conf')
-    espec = Q(grupo_materias__icontains='espec')
-    troneso = psXLS.filter(Q(etapa='da') & troncales).count()
-    espeeso = psXLS.filter(Q(etapa='da') & espec).count()
-    libreso = psXLS.filter(Q(etapa='da') & libreconf).count()
-    tronbac = psXLS.filter(Q(etapa='fa') & troncales).count()
-    espebac = psXLS.filter(Q(etapa='fa') & espec).count()
-    gm = psXLS.filter(etapa='ga').count()
-    gs = psXLS.filter(etapa='ha').count()
-    fpb = psXLS.filter(etapa='ea').count()
-    horas_basicas = troneso + espeeso + libreso + tronbac + espebac + gm + gs + fpb
-    plantilla_organica = 0
-    plantillas = LCL_MU if (departamento == 'Música' or 'astellana' in departamento) else RESTO
-    for plantilla in plantillas:
-        if horas_basicas >= plantilla[0] and horas_basicas <= plantilla[1]:
-            plantilla_organica = plantilla[2]
-    return {'troneso': troneso, 'espeeso': espeeso, 'libreso': libreso, 'tronbac': tronbac, 'espebac': espebac,
-            'gm': gm, 'gs': gs, 'fpb': fpb, 'horas_basicas': horas_basicas, 'plantilla_organica': plantilla_organica}
-
+# @register.filter
+# def horas_departamento(departamento, g_e):
+#     try:
+#         psXLS = PlantillaXLS.objects.filter(departamento=departamento, entidad=g_e.ronda.entidad)
+#     except:
+#         psXLS = PlantillaXLS.objects.filter(departamento=departamento, g_e=g_e)
+#     troncales = Q(grupo_materias__icontains='tronca') | Q(grupo_materias__icontains='extranj') | Q(
+#         grupo_materias__icontains='obligator')
+#     libreconf = Q(grupo_materias__icontains='libre conf')
+#     espec = Q(grupo_materias__icontains='espec')
+#     troneso = psXLS.filter(Q(etapa='da') & troncales).count()
+#     espeeso = psXLS.filter(Q(etapa='da') & espec).count()
+#     libreso = psXLS.filter(Q(etapa='da') & libreconf).count()
+#     tronbac = psXLS.filter(Q(etapa='fa') & troncales).count()
+#     espebac = psXLS.filter(Q(etapa='fa') & espec).count()
+#     gm = psXLS.filter(etapa='ga').count()
+#     gs = psXLS.filter(etapa='ha').count()
+#     fpb = psXLS.filter(etapa='ea').count()
+#     horas_basicas = troneso + espeeso + libreso + tronbac + espebac + gm + gs + fpb
+#     plantilla_organica = 0
+#     plantillas = LCL_MU if (departamento == 'Música' or 'astellana' in departamento) else RESTO
+#     for plantilla in plantillas:
+#         if horas_basicas >= plantilla[0] and horas_basicas <= plantilla[1]:
+#             plantilla_organica = plantilla[2]
+#     return {'troneso': troneso, 'espeeso': espeeso, 'libreso': libreso, 'tronbac': tronbac, 'espebac': espebac,
+#             'gm': gm, 'gs': gs, 'fpb': fpb, 'horas_basicas': horas_basicas, 'plantilla_organica': plantilla_organica}
+#
 
 # @register.filter
 # def docentes_departamento(po, x_departamento):
