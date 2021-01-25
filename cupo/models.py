@@ -540,35 +540,32 @@ class PlantillaOrganica(models.Model):
 
     ########################################################################
     ############ Cargamos dependencias:
-    def carga_dependencia(self, pxls):
-        if pxls.x_dependencia == '-1':
-            return Dependencia.objects.none()
-        else:
-            try:
-                dependencia, c = Dependencia.objects.get_or_create(clave_ex=pxls.x_dependencia,
-                                                                   entidad=self.ronda_centro.entidad)
-                if c:
-                    dependencia.nombre = pxls.c_coddep
-                    dependencia.abrev = pxls.c_coddep
-                    dependencia.es_aula = True
-                    dependencia.save()
-            except:
-                dependencias = Dependencia.objects.filter(clave_ex=pxls.x_dependencia,
-                                                          entidad=self.ronda_centro.entidad)
-                dependencia = dependencias[0]
-                dependencias.exclude(pk__in=[dependencia.pk]).delete()
-                dependencia.nombre = pxls.c_coddep
-                dependencia.abrev = pxls.c_coddep
+    def carga_dependencia(self, data):
+        try:
+            dependencia, c = Dependencia.objects.get_or_create(clave_ex=data['x_dependencia'],
+                                                               entidad=self.ronda_centro.entidad)
+            if c:
+                dependencia.nombre = data['c_coddep']
+                dependencia.abrev = data['c_coddep']
                 dependencia.es_aula = True
                 dependencia.save()
-            return dependencia
+        except:
+            dependencias = Dependencia.objects.filter(clave_ex=data['x_dependencia'],
+                                                      entidad=self.ronda_centro.entidad)
+            dependencia = dependencias[0]
+            dependencias.exclude(pk__in=[dependencia.pk]).delete()
+            dependencia.nombre = data['c_coddep']
+            dependencia.abrev = data['c_coddep']
+            dependencia.es_aula = True
+            dependencia.save()
+        return dependencia
 
     def carga_dependencias(self):
-        x_dependencias = []
-        for pxls in self.plantillaxls_set.filter(~Q(x_dependencia='-1')):
-            if pxls.x_dependencia not in x_dependencias:
-                x_dependencias.append(pxls.x_dependencia)
-                self.carga_dependencia(pxls)
+        dependencias = self.plantillaxls_set.filter(~Q(x_dependencia='-1')).values('x_dependencia',
+                                                                                   'c_coddep').distinct()
+        for dependencia in dependencias:
+            self.carga_dependencia(dependencia)
+
 
     ########################################################################
     ############ Cargamos etapas:
@@ -692,12 +689,22 @@ class PlantillaOrganica(models.Model):
         b = {'S': True, 'N': False, 's': True, 'n': False}
         for a in actividades:
             try:
-                Actividad.objects.get_or_create(entidad=self.ronda_centro.entidad, nombre=a['actividad'],
-                                                requiere_unidad=b[a['l_requnidad']], requiere_materia=b[a['docencia']],
-                                                clave_ex=a['x_actividad'])
+                act, c = Actividad.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_ex=a['x_actividad'])
+                if c:
+                    act.requiere_unidad=b[a['l_requnidad']]
+                    act.nombre=a['actividad']
+                    act.requiere_materia=b[a['docencia']]
+                    act.save()
             except Exception as msg:
                 log = 'Error cargar actividad %s. %s' % (a['x_actividad'], str(msg))
                 LogCarga.objects.create(g_e=self.g_e, log=log)
+                acts = Actividad.objects.filter(entidad=self.ronda_centro.entidad, clave_ex=a['x_actividad'])
+                act = acts[0]
+                acts.exclude(pk__in=[act.pk]).delete()
+                act.requiere_unidad = b[a['l_requnidad']]
+                act.nombre = a['actividad']
+                act.requiere_materia = b[a['docencia']]
+                act.save()
         return True
 
     ########################################################################

@@ -509,6 +509,7 @@ def carga_masiva_from_file():
             carga.cargado = True
             carga.save()
         elif carga.tipo == 'PLANTILLAXLS':
+            LogCarga.objects.all().delete()
             try:
                 f = carga.fichero.read()
                 book = xlrd.open_workbook(file_contents=f)
