@@ -32,7 +32,7 @@
                     </td>
                 {% else %}
                     <td class="{{ sesion.clase_horario }} mwx198" data-m="{{ sesion.clase_horario }}"
-                        style="color:mediumvioletred">{{ sesion.sesionextra_set.all.0.actividad.nombre }}
+                        style="color:mediumvioletred">{{ sesion.sesionextra_set.all.0.actividad.nombre }}<br>
                         <span style="color:darkorange">
                     {% for sext in sesion.sesionextra_set.all %}
                         {{ sext.grupo.nombre }}
