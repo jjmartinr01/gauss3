@@ -177,7 +177,7 @@ TC = {
     'I.E.S. - Instituto de Educación Secundaria': {
         'Educación Secundaria Obligatoria': {
             'Troncales': {
-                'q': (Q(materia__grupo_materias__icontains='tronca') | Q(
+                'q': Q(actividad__clave_ex='1') & (Q(materia__grupo_materias__icontains='tronca') | Q(
                     materia__grupo_materias__icontains='extranj') | Q(
                     materia__grupo_materias__icontains='obligator')) & Q(
                     materia__curso__etapa_escolar__clave_ex='24') & ~Q(
@@ -186,19 +186,20 @@ TC = {
                 'codecol': 10005
             },
             'Específicas': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(materia__grupo_materias__icontains='espec'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
+                    materia__grupo_materias__icontains='espec'),
                 'horas_base': True,
                 'codecol': 10010
             },
             'Libre Conf. Aut.': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
                     materia__grupo_materias__icontains='libre conf') & ~Q(
                     materia__curso__clave_ex__in=['222074', '222075']) & ~Q(materia__nombre__icontains='mbito'),
                 'horas_base': True,
                 'codecol': 10015
             },
             'Rel./Val. Éticos': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
                     materia__grupo_materias__icontains='Rel. y Aten.'),
                 'horas_base': True,
                 'codecol': 10020
@@ -215,12 +216,13 @@ TC = {
                 'q': (Q(materia__grupo_materias__icontains='tronca') | Q(
                     materia__grupo_materias__icontains='extranj') | Q(
                     materia__grupo_materias__icontains='obligator')) & Q(
-                    materia__curso__etapa_escolar__clave_ex='31'),
+                    materia__curso__etapa_escolar__clave_ex='31') & Q(actividad__clave_ex='1'),
                 'horas_base': True,
                 'codecol': 10030
             },
             'Específicas': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex='31') & Q(materia__grupo_materias__icontains='espec'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='31') & Q(
+                    materia__grupo_materias__icontains='espec'),
                 'horas_base': True,
                 'codecol': 10035
             },
@@ -233,44 +235,47 @@ TC = {
         },
         'Formación Profesional': {
             'CFGM': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex__in=['1373', '23']),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex__in=['1373', '23']),
                 'horas_base': True,
                 'codecol': 10045
             },
             'CFGS': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex__in=['2', '1375']),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex__in=['2', '1375']),
                 'horas_base': True,
                 'codecol': 10050
             },
             'FPB': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex='5504'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='5504'),
                 'horas_base': True,
                 'codecol': 10055
             },
         },
         'Atención a la Diversidad y otras horas': {
             'PACG': {
-                'q': Q(materia__curso__clave_ex__in=['222074', '222075']),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__clave_ex__in=['222074', '222075']),
                 'horas_base': False,
                 'codecol': 10060
             },
             'Refuerzo 1º ESO': {
-                'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='170506'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__nombre__icontains='mbito') & Q(
+                    materia__curso__clave_ex='170506'),
                 'horas_base': False,
                 'codecol': 10065
             },
             'PMAR1': {
-                'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='101324'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__nombre__icontains='mbito') & Q(
+                    materia__curso__clave_ex='101324'),
                 'horas_base': False,
                 'codecol': 10070
             },
             'PMAR2': {
-                'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='101325'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__nombre__icontains='mbito') & Q(
+                    materia__curso__clave_ex='101325'),
                 'horas_base': False,
                 'codecol': 10075
             },
             'Curso Prep. Acceso CCFF': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex__in=['3129', ]),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex__in=['3129', ]),
                 'horas_base': False,
                 'codecol': 10080
             },
@@ -294,7 +299,7 @@ TC = {
     'S.I.E.S. - Sección de Instituto de Educación Secundaria': {
         'Educación Secundaria Obligatoria': {
             'Troncales': {
-                'q': (Q(materia__grupo_materias__icontains='tronca') | Q(
+                'q': Q(actividad__clave_ex='1') & (Q(materia__grupo_materias__icontains='tronca') | Q(
                     materia__grupo_materias__icontains='extranj') | Q(
                     materia__grupo_materias__icontains='obligator')) & Q(
                     materia__curso__etapa_escolar__clave_ex='24') & ~Q(
@@ -303,19 +308,20 @@ TC = {
                 'codecol': 10005
             },
             'Específicas': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(materia__grupo_materias__icontains='espec'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
+                    materia__grupo_materias__icontains='espec'),
                 'horas_base': True,
                 'codecol': 10010
             },
             'Libre Conf. Aut.': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
                     materia__grupo_materias__icontains='libre conf') & ~Q(
                     materia__curso__clave_ex__in=['222074', '222075']) & ~Q(materia__nombre__icontains='mbito'),
                 'horas_base': True,
                 'codecol': 10015
             },
             'Rel./Val. Éticos': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
                     materia__grupo_materias__icontains='Rel. y Aten.'),
                 'horas_base': True,
                 'codecol': 10020
@@ -332,12 +338,13 @@ TC = {
                 'q': (Q(materia__grupo_materias__icontains='tronca') | Q(
                     materia__grupo_materias__icontains='extranj') | Q(
                     materia__grupo_materias__icontains='obligator')) & Q(
-                    materia__curso__etapa_escolar__clave_ex='31'),
+                    materia__curso__etapa_escolar__clave_ex='31') & Q(actividad__clave_ex='1'),
                 'horas_base': True,
                 'codecol': 10030
             },
             'Específicas': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex='31') & Q(materia__grupo_materias__icontains='espec'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='31') & Q(
+                    materia__grupo_materias__icontains='espec'),
                 'horas_base': True,
                 'codecol': 10035
             },
@@ -350,44 +357,47 @@ TC = {
         },
         'Formación Profesional': {
             'CFGM': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex__in=['1373', '23']),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex__in=['1373', '23']),
                 'horas_base': True,
                 'codecol': 10045
             },
             'CFGS': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex__in=['2', '1375']),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex__in=['2', '1375']),
                 'horas_base': True,
                 'codecol': 10050
             },
             'FPB': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex='5504'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='5504'),
                 'horas_base': True,
                 'codecol': 10055
             },
         },
         'Atención a la Diversidad y otras horas': {
             'PACG': {
-                'q': Q(materia__curso__clave_ex__in=['222074', '222075']),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__clave_ex__in=['222074', '222075']),
                 'horas_base': False,
                 'codecol': 10060
             },
             'Refuerzo 1º ESO': {
-                'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='170506'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__nombre__icontains='mbito') & Q(
+                    materia__curso__clave_ex='170506'),
                 'horas_base': False,
                 'codecol': 10065
             },
             'PMAR1': {
-                'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='101324'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__nombre__icontains='mbito') & Q(
+                    materia__curso__clave_ex='101324'),
                 'horas_base': False,
                 'codecol': 10070
             },
             'PMAR2': {
-                'q': Q(materia__nombre__icontains='mbito') & Q(materia__curso__clave_ex='101325'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__nombre__icontains='mbito') & Q(
+                    materia__curso__clave_ex='101325'),
                 'horas_base': False,
                 'codecol': 10075
             },
             'Curso Prep. Acceso CCFF': {
-                'q': Q(materia__curso__etapa_escolar__clave_ex__in=['3129', ]),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex__in=['3129', ]),
                 'horas_base': False,
                 'codecol': 10080
             },
@@ -411,29 +421,25 @@ TC = {
     'C.E.P.A. - Centro Público de Educación de Personas Adultas': {
         'Educación Secundaria': {
             'ESPA Nivel I': {
-                # 'q': Q(x_etapa_escolar='2561') & Q(x_actividad='1') & (Q(x_curso='222076') | Q(x_curso='222077')),
-                'q': Q(materia__curso__etapa_escolar__clave_ex='2561') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='2561') & Q(
                     materia__curso__clave_ex__in=['222076', '222077']),
                 'horas_base': True,
                 'codecol': 10100
             },
             'ESPA Nivel II': {
-                # 'q': Q(x_etapa_escolar='2561') & Q(x_actividad='1') & (Q(x_curso='222078') | Q(x_curso='222079')),
-                'q': Q(materia__curso__etapa_escolar__clave_ex='2561') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='2561') & Q(
                     materia__curso__clave_ex__in=['222078', '222079']),
                 'horas_base': True,
                 'codecol': 10105
             },
             'ESPA Dist. Nivel I': {
-                # 'q': Q(x_etapa_escolar='2561') & Q(x_actividad='1') & (Q(x_curso='222080') | Q(x_curso='222081')),
-                'q': Q(materia__curso__etapa_escolar__clave_ex='2561') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='2561') & Q(
                     materia__curso__clave_ex__in=['222080', '222081']),
                 'horas_base': True,
                 'codecol': 10110
             },
             'ESPA Dist. Nivel II': {
-                # 'q': Q(x_etapa_escolar='2561') & Q(x_actividad='1') & (Q(x_curso='222082') | Q(x_curso='222083')),
-                'q': Q(materia__curso__etapa_escolar__clave_ex='2561') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='2561') & Q(
                     materia__curso__clave_ex__in=['222082', '222083']),
                 'horas_base': True,
                 'codecol': 10115
@@ -441,63 +447,57 @@ TC = {
         },
         'Enseñanzas Iniciales': {
             'Ens. Iniciales I': {
-                # 'q': Q(x_etapa_escolar='3167') & Q(x_actividad='1') & Q(x_curso='121469'),
-                'q': Q(materia__curso__etapa_escolar__clave_ex='3167') & Q(materia__curso__clave_ex='121469'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3167') & Q(
+                    materia__curso__clave_ex='121469'),
                 'horas_base': True,
                 'codecol': 10120
             },
             'Ens. Iniciales II': {
-                # 'q': Q(x_etapa_escolar='3167') & Q(x_actividad='1') & Q(x_curso='121470'),
-                'q': Q(materia__curso__etapa_escolar__clave_ex='3167') & Q(materia__curso__clave_ex='121470'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3167') & Q(
+                    materia__curso__clave_ex='121470'),
                 'horas_base': True,
                 'codecol': 10125
             },
         },
         'Educación no reglada': {
             'Competencias N-2': {
-                # 'q': Q(x_etapa_escolar='3170') & Q(x_actividad='1') & Q(x_curso='222071'),
-                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(materia__curso__clave_ex='222071'),
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
+                    materia__curso__clave_ex='222071'),
                 'horas_base': False,
                 'codecol': 10130
             },
             'Alfab. Inmigrantes': {
-                # 'q': Q(x_etapa_escolar='3170') & Q(curso__icontains='nmigrantes'),
-                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
                     materia__curso__nombre__icontains='nmigrantes'),
                 'horas_base': False,
                 'codecol': 10135
             },
             'Cursos de preparación': {
-                # 'q': Q(x_etapa_escolar='3170') & Q(curso__icontains='mayores de'),
-                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
                     materia__curso__nombre__icontains='mayores de'),
                 'horas_base': False,
                 'codecol': 10140
             },
             'Ofimática': {
-                # 'q': Q(x_etapa_escolar='3170') & Q(curso__icontains='ofim'),
-                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
                     materia__curso__nombre__icontains='ofim'),
                 'horas_base': False,
                 'codecol': 10145
             },
             'Informática': {
-                # 'q': Q(x_etapa_escolar='3170') & Q(curso__icontains='inform'),
-                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
                     materia__curso__nombre__icontains='inform'),
                 'horas_base': False,
                 'codecol': 10150
             },
             'Mecanografía': {
-                # 'q': Q(x_etapa_escolar='3170') & Q(curso__icontains='mecanog'),
-                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
                     materia__curso__nombre__icontains='mecanog'),
                 'horas_base': False,
                 'codecol': 10155
             },
             'Inglés': {
-                # 'q': Q(x_etapa_escolar='3170') & Q(curso__icontains='ingl'),
-                'q': Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3170') & Q(
                     materia__curso__nombre__icontains='ingl'),
                 'horas_base': False,
                 'codecol': 10160
@@ -505,19 +505,16 @@ TC = {
         },
         'Otras': {
             'Tutorías': {
-                # 'q': Q(x_actividad='519') | Q(x_actividad='2') | Q(x_actividad='376'),
                 'q': Q(actividad__clave_ex='519') | Q(actividad__clave_ex='2') | Q(actividad__clave_ex='376'),
                 'horas_base': True,
                 'codecol': 10165
             },
             'Jefatura Depart.': {
-                # 'q': Q(x_actividad='547'),
                 'q': Q(actividad__clave_ex='547'),
                 'horas_base': True,
                 'codecol': 10170
             },
             'Mayor 55 años': {
-                # 'q': Q(x_actividad='176'),
                 'q': Q(actividad__clave_ex='176'),
                 'horas_base': False,
                 'codecol': 10175
