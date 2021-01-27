@@ -22,22 +22,22 @@
                     <td title="{{ sesion.sesionextra_set.all.0.materia.curso.nombre }} ({{ sesion.sesionextra_set.all.0.actividad.nombre }})"
                         class="{{ sesion.clase_horario }} mwx198" data-m="{{ sesion.clase_horario }}">
                         {{ sesion.sesionextra_set.all.0.materia.nombre }}<br>
-                        <span style="color:darkorange">
                     {% for sext in sesion.sesionextra_set.all %}
-                        {{ sext.grupo.nombre }}
-                    {% endfor %}
+                        <span class="grupo_horario grupo_usado" data-grupo="{{ sext.grupo.id }}">
+                            {{ sext.grupo.nombre }}
                         </span>
+                    {% endfor %}
                         <br><span
                             style="color:lightseagreen">{{ sesion.sesionextra_set.all.0.dependencia.nombre }}</span>
                     </td>
                 {% else %}
                     <td class="{{ sesion.clase_horario }} mwx198" data-m="{{ sesion.clase_horario }}"
                         style="color:mediumvioletred">{{ sesion.sesionextra_set.all.0.actividad.nombre }}<br>
-                        <span style="color:darkorange">
                     {% for sext in sesion.sesionextra_set.all %}
-                        {{ sext.grupo.nombre }}
-                    {% endfor %}
+                        <span class="grupo_horario grupo_usado" data-grupo="{{ sext.grupo.id }}">
+                            {{ sext.grupo.nombre }}
                         </span>
+                    {% endfor %}
                     </td>
                 {% endif %}
             {% endfor %}

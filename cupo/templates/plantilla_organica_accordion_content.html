@@ -50,44 +50,48 @@
     </div>
 {% endif %}
 {% if po.carga_completa %}
-<table style="width: 100%;position: relative;">
-    <thead id="cabecera_tabla_po">
-    <tr>
-        <th style="color: #1b75bb;text-align: center;width: {{ po.anchura_cols.0 }}%;">Departamentos y Docentes</th>
-        {% for apartado in po|get_apartados %}
-            <th style="color: #1b75bb;text-align: center;width: {{ apartado.width }}%" colspan="{{ apartado.colspan }}">
-                {{ apartado.nombre }}
-            </th>
-        {% endfor %}
-        <th style="color: #1b75bb;text-align: center;width: {{ po.anchura_cols.2 }}%;" colspan="3">Horas calculadas</th>
-    </tr>
-    </thead>
-    <tbody id="tbody_docente{{ po.id }}">
-    {% include "plantilla_organica_accordion_content_tbody.html" %}
-    </tbody>
-</table>
-
-<label>Grupos tenidos en cuenta para el cálculo:</label>
-<table style="width: 100%">
-    {% for curso, grupos in po.cursos.items %}
-        <thead>
+    <table style="width: 100%;position: relative;">
+        <thead id="cabecera_tabla_po">
         <tr>
-            <th colspan="8">{{ curso }}</th>
+            <th style="color: #1b75bb;text-align: center;width: {{ po.anchura_cols.0 }}%;">Departamentos y Docentes</th>
+            {% for apartado in po|get_apartados %}
+                <th style="color: #1b75bb;text-align: center;width: {{ apartado.width }}%"
+                    colspan="{{ apartado.colspan }}">
+                    {{ apartado.nombre }}
+                </th>
+            {% endfor %}
+            <th style="color: #1b75bb;text-align: center;width: {{ po.anchura_cols.2 }}%;" colspan="3">Horas
+                calculadas
+            </th>
         </tr>
         </thead>
-        <tbody>
-        <tr>
-            {% for grupo in grupos %}
-                <td><input type="checkbox" class="grupocheck" data-id="{{ po.id }}" value="{{ grupo.2 }}"
-                           {% if grupo.1 %}checked{% endif %}> {{ grupo.0 }}</td>
-            {% endfor %}
-        </tr>
+        <tbody id="tbody_docente{{ po.id }}">
+        {% include "plantilla_organica_accordion_content_tbody.html" %}
         </tbody>
-    {% endfor %}
-</table>
+    </table>
+
+    <label for="select_grupoex{{ po.id }}">
+        Selecciona los grupos que no se deben tener en cuenta para el cálculo de plantilla:</label>
+    <div id="lista_grupoex{{ po.id }}">
+        {% include "plantilla_organica_accordion_content_gruposexcluidos.html" %}
+    </div>
+    <select class="select_grupoex" id="select_grupoex{{ po.id }}">
+        {% for grupo in po|get_grupos %}
+            <option value="{{ grupo.id }}">
+                {{ grupo.nombre }} --
+                {% for curso in grupo.cursos.all %}
+                    {{ curso.nombre }}
+                    {% if not forloop.last %}-{% endif %}
+                {% endfor %}</option>
+        {% endfor %}
+    </select>
+    <script>
+        $('#select_grupoex{{ po.id }}').select2();
+    </script>
 {% else %}
     <h4 style="text-align: center;color: #008CBA;"><strong>Cargando la información
         <i class="fa fa-spinner fa-pulse fa-2x"></i></strong></h4>
     <h5 style="text-align: center;color: #008CBA;"><strong>Este proceso puede requerir de varios minutos.</strong></h5>
-    <h5 style="text-align: center;color: #008CBA;"><strong>Cierra este "acordeón" y vuélvelo a abrir en un rato.</strong></h5>
+    <h5 style="text-align: center;color: #008CBA;"><strong>Cierra este "acordeón" y vuélvelo a abrir en un
+        rato.</strong></h5>
 {% endif %}

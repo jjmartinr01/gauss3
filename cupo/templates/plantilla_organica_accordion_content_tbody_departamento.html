@@ -11,10 +11,10 @@
 
 {% with horas=po|get_columnas_departamento:departamento %}
     {% for columna in horas.columnas %}
-        <th data-codecol="{{ columna.codecol }}">{{ columna.periodos }}</th>
+        <th id="d{{ departamento.id }}_{{ columna.codecol }}" data-codecol="{{ columna.codecol }}">{{ columna.periodos }}</th>
     {% endfor %}
 
-    <th style="font-weight: bold;text-align: center;">{{ horas.horas_totales }}</th>
-    <th style="font-weight: bold;text-align: center;">{{ horas.horas_basicas }}</th>
-    <th style="font-weight: bold;text-align: center;">{{ horas.horas_plantilla }}</th>
+    <th id="d_horas_totales{{ departamento.id }}" style="font-weight: bold;text-align: center;">{{ horas.horas_totales }}</th>
+    <th id="d_horas_basicas{{ departamento.id }}" style="font-weight: bold;text-align: center;">{{ horas.horas_basicas }}</th>
+    <th id="d_horas_plantilla{{ departamento.id }}" style="font-weight: bold;text-align: center;">{{ horas.horas_plantilla }}</th>
 {% endwith %}

@@ -5,9 +5,9 @@ import xlrd
 from lxml import etree as ElementTree
 from difflib import get_close_matches
 from django.db.models import Q
-from django.utils.timezone import datetime
+from django.utils.timezone import datetime, timedelta
 from entidades.models import CargaMasiva, Gauser_extra, Dependencia, Subentidad, Entidad, Organization
-from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios
+from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios, EtapaEscolar
 from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia
 from cupo.models import PlantillaXLS, PlantillaOrganica, LogCarga
 from programaciones.models import Especialidad_entidad, Gauser_extra_programaciones, Departamento, \
@@ -509,7 +509,12 @@ def carga_masiva_from_file():
             carga.cargado = True
             carga.save()
         elif carga.tipo == 'PLANTILLAXLS':
-            LogCarga.objects.all().delete()
+            hace_un_mes = datetime.now() - timedelta(days=31)
+            LogCarga.objects.filter(creado__lt=hace_un_mes).delete()
+            Curso.objects.filter(clave_ex__icontains='.0').delete()
+            Grupo.objects.filter(clave_ex__icontains='.0').delete()
+            Materia.objects.filter(clave_ex__icontains='.0').delete()
+            EtapaEscolar.objects.filter(clave_ex__icontains='.0').delete()
             try:
                 f = carga.fichero.read()
                 book = xlrd.open_workbook(file_contents=f)
@@ -536,16 +541,6 @@ def carga_masiva_from_file():
                 pxls = PlantillaXLS.objects.create(po=po)
                 for col_index in range(sheet.ncols):
                     column_header = str(sheet.cell(4, col_index).value)
-                    # if column_header == 'HORA INICIO':
-                    #     try:
-                    #         pxls.inicio = int(float(sheet.cell(row_index, col_index).value))
-                    #     except:
-                    #         pass
-                    # elif column_header == 'HORA FIN':
-                    #     try:
-                    #         pxls.fin = int(float(sheet.cell(row_index, col_index).value))
-                    #     except:
-                    #         pass
                     try:
                         # Al cargar un campo con valor '2', la hoja excel la devuelve como '2.0'
                         # para grabar exactamento '2' lo convertimos float -> int -> str :

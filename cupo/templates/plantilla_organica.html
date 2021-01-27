@@ -29,6 +29,18 @@
         .div_get_horario {
             display: inline-block;
         }
+
+        .grupo_usado {
+            color: darkorange;
+        }
+
+        .grupo_no_usado {
+            color: grey;
+            text-decoration: line-through;
+        }
+        .select2-hidden-accessible{
+            display: none;
+        }
     </style>
 {% endblock %}
 {% block contenido %}
@@ -41,6 +53,7 @@
 
         <input type="hidden" name="action" id="action" value="">
         <input type="hidden" name="accordion_id" id="accordion_id" value="">
+        <input type="hidden" name="po" id="po" value="">
         <div class="panel callout" id="panel_carga_archivo" style="display:none;">
             <div class="row">
                 <div class="large-12 columns">
@@ -132,6 +145,7 @@
                     if (accordion.hasClass('accordion-po')) {
                         var id = accordion.data('id');
                         $('#accordion_id').val(id);
+                        $('#po').val(id);
                         if ($('#circle' + id).hasClass('fa-plus-circle')) {
                             $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
@@ -145,7 +159,6 @@
                 }
             }
         });
-
 
         $('body').on('keyup', '.tdpdocente', function () {
             var element = $(this);
@@ -173,29 +186,6 @@
                         });
                 }
             }, 1000);
-        });
-
-        $('body').on('click', '.grupocheck', function () {
-            var id = $(this).data('id');
-            var x_unidad = $(this).val();
-            var checked = $(this).prop('checked');
-            $.post("/plantilla_organica/", {action: 'update_unidad', id: id, x_unidad: x_unidad, 'checked': checked},
-                function (data) {
-                    if (data.ok) {
-                        var i;
-                        for (i = 0; i < data.docentes.length; i++) {
-                            $('#plantilladocente' + data.docentes[i].id).html(data.docentes[i].html);
-                        }
-                        var j;
-                        for (j = 0; j < data.departamentos.length; j++) {
-                            $('#departamento' + data.departamentos[j].x_departamento).html(data.departamentos[j].html);
-                        }
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-
         });
 
         $('body').on('click', '.copiar_po', function () {
@@ -236,12 +226,14 @@
         });
 
         {# ############################################################## #}
-        $('body').on('mouseenter', '.dep_th', function (e) {
-            var departamento = $(this).data('departamento');
-            var po = $(this).data('po');
+        {# ############## Carga profesores del departamento ############# #}
+        {# ############################################################## #}
+
+        function carga_profesores_departamento(departamento) {
             var element = $('#tbody_departamento' + departamento);
             var contenido = element.html();
             if (!contenido) {
+                var po = $('#po').val();
                 $.post("/plantilla_organica/", {action: 'update_dep_th', departamento: departamento, po: po},
                     function (data) {
                         if (data.ok) {
@@ -252,26 +244,34 @@
                         }
                     });
             }
+        }
+
+        $('body').on('mouseenter', '.dep_th', function (e) {
+            var departamento = $(this).data('departamento');
+            carga_profesores_departamento(departamento);
         });
 
         $('body').on('click', '.dep_th', function (e) {
             {#var h = $('#cabecera_tabla_po').height();#}
             {#var top = $(this).offset().top;#}
             {#window.console.log(top);#}
-            var element = $(this);
+            {#var element = $(this);#}
             var departamento = $(this).data('departamento');
+            carga_profesores_departamento(departamento);
             $('.docentes_dep' + departamento).toggle();
             {#element.scrollTop(h);#}
             {#window.scrollTo(0, 50);#}
         });
 
         {# ############################################################## #}
-        $('body').on('mouseenter', '.docente', function (e) {
-            var docente = $(this).parent().data('docente');
-            var po = $(this).parent().data('po');
+        {# ############## Carga materias del docente #################### #}
+        {# ############################################################## #}
+
+        function carga_materias_docente(docente) {
             var element = $('#materias_docente' + docente);
             var materias = element.html();
             if (!materias) {
+                var po = $('#po').val();
                 $.post("/plantilla_organica/", {action: 'materias_docente', po: po, docente: docente},
                     function (data) {
                         if (data.ok) {
@@ -282,10 +282,16 @@
                         }
                     });
             }
+        }
+
+        $('body').on('mouseenter', '.docente', function (e) {
+            var docente = $(this).parent().data('docente');
+            carga_materias_docente(docente);
         });
 
         $('body').on('click', '.docente', function (e) {
             var docente = $(this).parent().data('docente');
+            carga_materias_docente(docente);
             $('#materias_docente' + docente).toggle();
         });
 
@@ -325,6 +331,52 @@
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
+        });
+
+        {# ############################################################## #}
+        {# ############## Grupos afectados por la plantilla ############# #}
+        {# ############################################################## #}
+
+        function update_grupos_excluidos(grupo, tipo) {
+            var po = $('#po').val();
+            $.post("/plantilla_organica/", {action: 'update_grupos_excluidos', po: po, grupo: grupo, tipo: tipo},
+                function (data) {
+                    if (data.ok) {
+                        $('#select_grupoex' + po).select2('val', null);
+                        $('#lista_grupoex' + po).html(data.html);
+                        for (var o = 0; o < data.data.length; o++) {
+                            $('#d_horas_totales' + data.data[o].departamento).html(data.data[o].horas_totales);
+                            $('#d_horas_basicas' + data.data[o].departamento).html(data.data[o].horas_basicas);
+                            $('#d_horas_plantilla' + data.data[o].departamento).html(data.data[o].horas_plantilla);
+                            for (var c = 0; c < data.data[o].columnas.length; c++) {
+                                $('#d' + data.data[o].departamento + '_' + data.data[o].columnas[c].codecol).html(data.data[o].columnas[c].periodos);
+                            }
+                            $('#tbody_departamento' + data.data[o].departamento).html('');
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        }
+
+        $('body').on('change', '.select_grupoex', function (e) {
+            var grupo = $(this).val();
+            if ($('#grupoex' + grupo).length == 0) {
+                update_grupos_excluidos(grupo, 'add');
+            } else {
+                var po = $('#po').val();
+                $('#select_grupoex' + po).select2('val', null);
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> Grupo ya excluido',
+                    texto: 'El grupo que deseas excluir ya está excluido. Observa la lista.'
+                })
+            }
+        });
+
+        $('body').on('click', '.borrar_grupoex', function (e) {
+            var grupo = $(this).data('grupo');
+            update_grupos_excluidos(grupo, 'remove');
         });
 
     </script>

@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 
 from autenticar.control_acceso import permiso_required
-from cupo.templatetags.cupo_extras import get_columnas_docente
+from cupo.templatetags.cupo_extras import get_columnas_docente, get_columnas_departamento
 from gauss.funciones import html_to_pdf
 from gauss.rutas import *
 from django.http import HttpResponse
@@ -20,9 +20,9 @@ from django.template.loader import render_to_string
 from horarios.models import SesionExtra, Horario, Sesion
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
-from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo
+from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo, GrupoExcluido
 from cupo.models import PlantillaOrganica, PDocenteCol
-from entidades.models import CargaMasiva, Gauser_extra
+from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento
 from entidades.models import Departamento as Depentidad
 from estudios.models import Curso, Materia, Grupo
 from horarios.tasks import carga_masiva_from_file
@@ -604,56 +604,36 @@ def plantilla_organica(request):
                 pdcol.save()
                 data = get_columnas_docente(po, ge)
                 html_departamento = render_to_string('plantilla_organica_accordion_content_tbody_departamento.html',
-                                            {'departamento': departamento, 'po': po})
+                                                     {'departamento': departamento, 'po': po})
                 return JsonResponse({'ok': True, 'html_departamento': html_departamento,
                                      'horas_basicas': data['horas_basicas'], 'horas_totales': data['horas_totales']})
             except:
                 return JsonResponse({'ok': False})
-        # elif request.POST['action'] == 'update_unidad' and request.is_ajax():
-        #     try:
-        #         po = PlantillaOrganica.objects.get(id=request.POST['id'], g_e=g_e)
-        #         pxls = po.plantillaxls_set.filter(x_unidad=request.POST['x_unidad'])
-        #         valor = False if request.POST['checked'] == 'false' else True
-        #         for p in pxls:
-        #             p.usar = valor
-        #             p.save()
-        #         pds, docentes, departamentos, array_departamentos = [], [], [], []
-        #         tuple_docentes = pxls.values_list('departamento', 'x_departamento', 'docente', 'x_docente').distinct()
-        #         for docente in tuple_docentes:
-        #             pd = po.calcula_pdocente(docente)
-        #             if 'C.E.P.A' in po.ronda_centro.entidad.name:
-        #                 html = render_to_string('plantilla_organica_accordion_cepa_content_tbody_docente_tr.html',
-        #                                         {'pd': pd})
-        #             else:
-        #                 html = render_to_string('plantilla_organica_accordion_ies_content_tbody_docente_tr.html',
-        #                                         {'pd': pd})
-        #             docentes.append({'id': pd.id, 'html': html})
-        #             if (pd.departamento, pd.x_departamento) not in array_departamentos:
-        #                 array_departamentos.append((pd.departamento, pd.x_departamento))
-        #         for departamento, x_departamento in array_departamentos:
-        #             if 'C.E.P.A' in po.ronda_centro.entidad.name:
-        #                 html = render_to_string('plantilla_organica_accordion_cepa_content_tbody_departamento_tr.html',
-        #                                         {'departamento': plantilla_departamento(po, departamento)})
-        #             else:
-        #                 html = render_to_string('plantilla_organica_accordion_ies_content_tbody_departamento_tr.html',
-        #                                         {'departamento': plantilla_departamento(po, departamento)})
-        #             departamentos.append({'x_departamento': x_departamento, 'html': html})
-        #         return JsonResponse({'ok': True, 'docentes': docentes, 'departamentos': departamentos})
-        #     except:
-        #         return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_grupos_excluidos' and request.is_ajax():
+            try:
+                po = PlantillaOrganica.objects.get(id=request.POST['po'], g_e=g_e)
+                grupo = Grupo.objects.get(id=request.POST['grupo'])
+                if request.POST['tipo'] == 'add':
+                    GrupoExcluido.objects.get_or_create(po=po, grupo=grupo)
+                else:
+                    GrupoExcluido.objects.get(po=po, grupo=grupo).delete()
+                docentes_id = SesionExtra.objects.filter(sesion__horario=po.horario, grupo=grupo).values_list(
+                    'sesion__g_e', flat=True).distinct()
+                for docente in Gauser_extra.objects.filter(id__in=docentes_id):
+                    po.carga_pdocente(docente)
+                departamentos_id = MiembroDepartamento.objects.filter(g_e__id__in=docentes_id).values_list(
+                    'departamento', flat=True).distinct()
+                departamentos = Depentidad.objects.filter(id__in=departamentos_id)
+                data = []
+                for departamento in departamentos:
+                    data.append(get_columnas_departamento(po, departamento))
+                html = render_to_string('plantilla_organica_accordion_content_gruposexcluidos.html', {'po': po})
+                return JsonResponse({'ok': True, 'po': po.id, 'data': data, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
         elif request.POST['action'] == 'copiar_po':
-            #Las siguientes líneas habrá que borrarlas y solo sirven para adecuar los horarios a las plantillas orgánicas
-            for ho in Horario.objects.all():
-                try:
-                    po = PlantillaOrganica.objects.get(pk=ho.clave_ex)
-                    po.horario = ho
-                    po.save()
-                except:
-                    pass
-
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
-                # horario = Horario.objects.get(ronda=po.ronda_centro, clave_ex=po.pk)
                 pxls = po.plantillaxls_set.all()
                 pds = po.pdocente_set.all()
                 po.pk = None
@@ -671,19 +651,6 @@ def plantilla_organica(request):
                         pdcol.pk = None
                         pdcol.pd = pd
                         pdcol.save()
-                # sesiones = horario.sesion_set.all()
-                # horario.pk = None
-                # horario.clave_ex = po.pk
-                # horario.save()
-                # for sesion in sesiones:
-                #     sesiones_extra = sesion.sesionextra_set.all()
-                #     sesion.pk = None
-                #     sesion.horario = horario
-                #     sesion.save()
-                #     for sesion_extra in sesiones_extra:
-                #         sesion_extra.pk = None
-                #         sesion_extra.sesion = sesion
-                #         sesion_extra.save()
                 html = render_to_string('plantilla_organica_accordion.html',
                                         {'buscadas': False, 'plantillas_o': [po], 'g_e': g_e, 'nueva': True})
                 return JsonResponse({'ok': True, 'html': html})

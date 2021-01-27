@@ -284,8 +284,8 @@ TC = {
                 'horas_base': True,
                 'codecol': 10085
             },
-            'Jefatura Depart.': {
-                'q': Q(actividad__clave_ex='547'),
+            'Jefatura Depart./CCP': {
+                'q': Q(actividad__clave_ex='547') | Q(actividad__clave_ex='545'),
                 'horas_base': True,
                 'codecol': 10090
             },
@@ -406,8 +406,8 @@ TC = {
                 'horas_base': True,
                 'codecol': 10085
             },
-            'Jefatura Depart.': {
-                'q': Q(actividad__clave_ex='547'),
+            'Jefatura Depart./CCP': {
+                'q': Q(actividad__clave_ex='547') | Q(actividad__clave_ex='545'),
                 'horas_base': True,
                 'codecol': 10090
             },
@@ -509,8 +509,8 @@ TC = {
                 'horas_base': True,
                 'codecol': 10165
             },
-            'Jefatura Depart.': {
-                'q': Q(actividad__clave_ex='547'),
+            'Jefatura Depart./CCP': {
+                'q': Q(actividad__clave_ex='547') | Q(actividad__clave_ex='545'),
                 'horas_base': True,
                 'codecol': 10170
             },
@@ -871,9 +871,12 @@ class PlantillaOrganica(models.Model):
     ############ Cálculos para cada docente:
 
     def carga_pdocente(self, gex):
+        grexc = self.grupoexcluido_set.all().values_list('grupo__id', flat=True)
+        LogCarga.objects.create(g_e=gex, log=grexc.count())
         sextras = SesionExtra.objects.filter(sesion__horario=self.horario, sesion__g_e=gex)
-        if sextras.count() == 0: # Esta línea y la siguiente solo son válidas durante la transición en la forma de cargar las sesiones
-            sextras = SesionExtra.objects.filter(sesion__horario__clave_ex=self.pk, sesion__g_e=gex)
+        LogCarga.objects.create(g_e=gex, log=sextras.count())
+        sextras = sextras.filter(~Q(grupo__id__in=grexc))
+        LogCarga.objects.create(g_e=gex, log=sextras.count())
         pd, c = PDocente.objects.get_or_create(po=self, g_e=gex)
         for apartado in self.estructura_po:
             for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
@@ -889,26 +892,7 @@ class PlantillaOrganica(models.Model):
         for docente in docentes:
             self.carga_pdocente(docente)
 
-    ########################################################################
-    ############ Cálculos para cada departamento:
-    # def horas_departamento(self, departamento):
-    #     for apartado in self.estructura_po:
-    #         for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
-    #             pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'])
-    #             pdc.nombre = nombre_columna
-    #             pdc.periodos = sextras.filter(contenido_columna['q']).values_list('sesion',
-    #                                                                               flat=True).distinct().count()
-    #             pdc.save()
 
-    # def get_materias_docente(self, x_docente):
-    #     sds = self.sesiondocente_set.filter(x_docente=x_docente, x_actividad='1')
-    #     materias = []
-    #     for s in sds:
-    #         sesiones_mat = sds.filter(materia=s.materia, grupos__in=list(s.grupos.all().values_list('id', flat=True)))
-    #         t = (s.materia, s.s_unidades, int(sesiones_mat.count() / s.grupos.all().count()))
-    #         if t not in materias:
-    #             materias.append(t)
-    #     return materias
 
     def usar_unidad(self, unidad, usar):
         for pxls in self.plantillaxls_set.filter(unidad=unidad):
@@ -939,6 +923,7 @@ class PlantillaOrganica(models.Model):
         self.carga_sesiones_docentes()
         LogCarga.objects.create(g_e=self.g_e, log="Inicio carga pdocentes")
         self.carga_pdocentes()
+        LogCarga.objects.create(g_e=self.g_e, log="Finalizada la carga de la plantilla")
         return True
 
 
@@ -1036,6 +1021,16 @@ class PDocenteCol(models.Model):
 
     def __str__(self):
         return '%s - %s - (%s)' % (self.pd, self.nombre, self.periodos)
+
+class GrupoExcluido(models.Model):
+    po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE)
+    grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ['po', 'grupo']
+
+    def __str__(self):
+        return '%s - %s' % (self.po, self.grupo)
 
 
 class LogCarga(models.Model):

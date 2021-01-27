@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+import random
+import requests
+import re
+import time
+import locale
 from datetime import datetime, timedelta
 
 import simplejson as json
@@ -7,6 +12,7 @@ from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from gauss.settings import TELEGRAM_BOT
 
 from calendario.models import Vevent
 from gtelegram.models import Update, Message, User, Chat, Genera_code
@@ -16,14 +22,9 @@ from gtelegram.models import Update, Message, User, Chat, Genera_code
 from entidades.models import Subentidad, Cargo, Gauser_extra
 from autenticar.models import Gauser
 
-import random
-import requests
-import re
-import time
-import locale
 locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')
 
-key = '166888701:AAFMSZgh9GEL59mmOH_Gv91aibU5b-Eg13Q'
+key = TELEGRAM_BOT
 url_myBot = 'https://api.telegram.org/bot%s/' % (key)
 
 # Comandos:

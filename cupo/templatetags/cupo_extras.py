@@ -3,6 +3,7 @@ from django.template import Library
 from django.db.models import Q, Sum
 from cupo.models import PlantillaXLS, PDocenteCol
 from programaciones.models import Departamento
+from estudios.models import Grupo
 
 register = Library()
 
@@ -75,7 +76,8 @@ def get_columnas_departamento(po, departamento):
             columnas.append({'codecol': contenido_columna['codecol'],
                              'periodos': periodos})
     hp = calcula_plantilla_organica(departamento, horas_basicas)
-    return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales, 'horas_plantilla': hp}
+    return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales,
+            'horas_plantilla': hp, 'departamento': departamento.id}
 
 
 @register.filter
@@ -92,6 +94,10 @@ def get_columnas_docente(po, docente):
                              'periodos': periodos})
     return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales}
 
+
+@register.filter
+def get_grupos(po):
+    return Grupo.objects.filter(ronda=po.ronda_centro)
 
 ############################################
 

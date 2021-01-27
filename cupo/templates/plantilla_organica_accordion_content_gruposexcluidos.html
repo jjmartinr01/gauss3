@@ -1,0 +1,11 @@
+{% for grupoex in po.grupoexcluido_set.all %}
+    <span class="label secondary" id="grupoex{{ grupoex.grupo.id }}">
+                    {{ grupoex.grupo.nombre }} --
+        {% for curso in grupoex.grupo.cursos.all %}
+            {{ curso.nombre }}
+        {% endfor %}
+        <a class="borrar_grupoex" data-po={{ po.id }} data-grupo="{{ grupoex.grupo.id }}">
+            <i class="fa fa-times"></i>
+        </a>
+            </span>
+{% endfor %}
