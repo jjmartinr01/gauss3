@@ -12,8 +12,10 @@ from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from gauss.settings import TELEGRAM_BOT
-
+try:
+    from gauss.settings import TELEGRAM_BOT
+except:
+    TELEGRAM_BOT = '964567914:NUMERO_DE_SERIE_INVENTADO_NO_FUNCIONA'
 from calendario.models import Vevent
 from gtelegram.models import Update, Message, User, Chat, Genera_code
 
