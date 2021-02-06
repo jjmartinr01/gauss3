@@ -1,0 +1,32 @@
+{#{% load my_templatetags %}#}
+{% load documentos_extras %}
+{% for etiqueta in d.etiquetas.all %}
+    {% if d|permiso_x:g_e or d|permiso_w:g_e %}
+    <span class="label secondary" id="etiqueta{{ etiqueta.id }}" style="font-weight: bold;">{{ etiqueta.etiquetas_text }}
+                        <a class="desasigna_etiqueta" data-etiqueta="{{ etiqueta.id }}" data-doc="{{ d.id }}">
+                            <i class="fa fa-times"></i></a></span>
+    {% else %}
+        <span class="label secondary" style="font-weight: bold;">{{ etiqueta.etiquetas_text }}</span>
+    {% endif %}
+{#    <a data-dropdown="drope{{ d.id }}" aria-controls="drope{{ d.id }}" id="a_dropdowne{{ d.id }}"#}
+{#       aria-expanded="false" class="p_documento"><span class="label"><b>{{ etiqueta.etiquetas_text }}</b></span>#}
+{#    </a>#}
+{#    <ul id="drope{{ d.id }}" class="f-dropdown text-left" data-dropdown-content#}
+{#        aria-hidden="true" tabindex="-1">#}
+{#        <li><a class="ver_archivos_carpeta" data-etiqueta="{{ d.etiqueta.id }}" data-doc="{{ d.id }}">Ver los archivos de esta carpeta</a></li>#}
+{#        {% if d.etiqueta.nombre == "General" %}#}
+{#            <li>Esta carpeta no se puede editar ni borrar</li>#}
+{#        {% else %}#}
+{#            {% if g_e|has_permiso:'edita_carpetas' %}#}
+{#                <li><a class="editar_carpeta" data-etiqueta="{{ d.etiqueta.id }}" data-doc="{{ d.id }}"><i#}
+{#                        class="fa fa-pencil fa-fw"></i> Editar</a>#}
+{#                </li>#}
+{#            {% endif %}#}
+{#            {% if g_e|has_permiso:'borra_cualquier_carpeta' %}#}
+{#                <li><a class="borrar_etiqueta" data-etiqueta="{{ d.etiqueta.id }}" data-doc="{{ d.id }}"><i#}
+{#                        class="fa fa-trash-o fa-fw"></i> Borrar</a>#}
+{#                </li>#}
+{#            {% endif %}#}
+{#        {% endif %}#}
+{#    </ul>#}
+{% endfor %}

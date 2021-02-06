@@ -1,0 +1,19 @@
+{% load documentos_extras %}
+{% for etiqueta in d.etiquetas.all %}
+    {% if d|permiso_x:g_e or d|permiso_w:g_e %}
+    <span class="label secondary" id="etiqueta{{ etiqueta.id }}" style="font-weight: bold;">{{ etiqueta.etiquetas_text }}
+                        <a class="desasigna_etiqueta" data-etiqueta="{{ etiqueta.id }}" data-doc="{{ d.id }}">
+                            <i class="fa fa-times"></i></a></span>
+    {% else %}
+        <span class="label secondary" style="font-weight: bold;">{{ etiqueta.etiquetas_text }}</span>
+    {% endif %}
+{% endfor %}
+
+{#{% for etiqueta in etiquetas %}#}
+{#    <span class="label secondary" id="etiqueta{{ etiqueta.id }}">#}
+{#        {{ etiqueta.etiquetas_text }}#}
+{#        <a class="desasigna_etiqueta" data-etiqueta="{{ etiqueta.id }}" data-doc="{{ doc.id }}">#}
+{#            <i class="fa fa-times"></i>#}
+{#        </a>#}
+{#    </span>#}
+{#{% endfor %}#}

@@ -1,0 +1,9 @@
+{#{% load my_templatetags %}#}
+{#{% load documentos_extras %}#}
+{% for p in d.compartir_ges_documental_set.all %}
+    {{ p.subentidad.nombre }}{{ p.cargo.cargo }}{{ p.gauser.get_full_name }}
+    <span title="Permisos que posee: {{ p.get_permiso_display }}">{% if p.permiso == 'r' %}
+        <i class='fa fa-eye'></i>{% elif p.permiso == 'rw' %}<i class='fa fa-eye'></i> y
+        <i class='fa fa-pencil'></i>{% else %}<i class='fa fa-eye'></i>, <i class='fa fa-pencil'></i> y
+        <i class='fa fa-trash'></i>{% endif %}</span><br>
+{% endfor %}

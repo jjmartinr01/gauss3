@@ -7,23 +7,39 @@
     </span>
     </div>
     <div class="row">
-        <div class="columns large-4">
+        <div class="columns large-8">
             <label>Selecciona el archivo</label>
-            <input id="id_archivo" name="id_archivo" type="file" value="">
+            <input id="id_archivo" name="id_archivo" type="file" value="" multiple="multiple">
         </div>
-        <div class="columns large-6">
-            <label title="Si no eliges carpeta el archivo se cargará en la carpeta llamada 'General'">Carpeta/Etiqueta
-                <select id="select_etiqueta" name="select_etiqueta">
-                    <option value="">Debes seleccionar una carpeta</option>
-                    {% for e in etiquetas %}
-                        <option value="{{ e.id }}">{{ e.etiquetas_text }}</option>
-                    {% endfor %}
-                </select>
-            </label>
-        </div>
-        <div class="columns large-2">
+{#        <div class="columns large-6">#}
+{#            <label title="Si no eliges carpeta el archivo se cargará en la carpeta llamada 'General'">Carpetas/Etiquetas#}
+{#                <select id="select_etiqueta" name="select_etiqueta">#}
+{#                    <option value="">Debes seleccionar una carpeta</option>#}
+{#                    {% for e in etiquetas %}#}
+{#                        <option value="{{ e.id }}">{{ e.etiquetas_text }}</option>#}
+{#                    {% endfor %}#}
+{#                </select>#}
+{#            </label>#}
+{#            <div id="list_etiquetas"></div>#}
+{#        </div>#}
+        <div class="columns large-4">
             <label>&nbsp;</label>
             <a class="button tiny" id="sube_archivo"><i class="fa fa-upload"></i> <b>Cargar</b></a>
         </div>
     </div>
 </fieldset>
+{#<script>#}
+{#    $('#select_etiqueta').select2(#}
+{#        {#}
+{#            "placeholder": "Selecciona una etiqueta/carpeta",#}
+{#            "language": {#}
+{#                "noResults": function () {#}
+{#                    return "No hay coincidencias. <a id='abrir_modal_crear_etiqueta' href='#' class='button tiny info right'>Crear etiqueta</a>";#}
+{#                }#}
+{#            },#}
+{#            "escapeMarkup": function (markup) {#}
+{#                return markup;#}
+{#            }#}
+{#        }#}
+{#    );#}
+{#</script>#}

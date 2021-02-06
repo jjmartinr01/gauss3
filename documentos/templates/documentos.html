@@ -19,8 +19,8 @@
         #tabla_archivos {
             width: 100%;
             display: block;
-            overflow-x: auto;
-            white-space: nowrap;
+            {#overflow-x: auto;#}
+            {#white-space: nowrap;#}
         }
 
 
@@ -38,8 +38,11 @@
         <input type="hidden" id="etiqueta_id" name="etiqueta_id" value="">
         <input type="hidden" id="buscar" name="buscar" value="0">
         <input type="hidden" name="page" id="page" value="1">
+        <input type="hidden" name="id_etiqueta_creada" id="id_etiqueta_creada" value="">
+        <input type="hidden" name="texto_etiqueta_creada" id="texto_etiqueta_creada" value="">
 
-        <h4 style="text-align: center;color: #008CBA;">
+
+        <h4 style="text-align: center;color: #008CBA;" id="title_h4">
             <strong> Documentos almacenados en la entidad</strong>
         </h4>
         <div id="div_fieldsets"></div>
@@ -49,6 +52,30 @@
         <div id="editarModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true"
              role="dialog">
             <div id="editar_archivo" style="position: relative;">
+            </div>
+            <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+        </div>
+        <div id="addEtiquetaModal" class="reveal-modal small" data-reveal aria-hidden="true" role="dialog">
+            <div class="columns large-12">
+                <h3><i class="fa fa-folder-o"></i> Crear nueva etiqueta </h3>
+            </div>
+            <div id="add_etiqueta" style="position: relative;" class="row">
+                <div class="columns large-12">
+                    <label>Nombre de la etiqueta
+                        <input type="text" value="" id="nombre_crea_etiqueta">
+                    </label>
+                </div>
+                <div class="columns large-12">
+                    <label id="label_select_etiqueta">Anidar dentro de ...
+                        <select id="select_crea_etiqueta"></select>
+                    </label>
+                </div>
+                <div class="columns large-12">
+                    <ul class="button-group right">
+                        <li><a id="close_addEtiquetaModal" class="secondary button tiny">Cancelar</a></li>
+                        <li><a id="crear_addEtiquetaModal" class="button tiny">Crear</a></li>
+                    </ul>
+                </div>
             </div>
             <a class="close-reveal-modal" aria-label="Close">&#215;</a>
         </div>
@@ -105,17 +132,21 @@
             e.preventDefault();
             $('#buscar').val(0);
             $('#page').val(1);
-            $('#id_fecha_inicio').val(''),
-                $('#id_fecha_fin').val(''),
-                $('#busca_texto_doc').val(''),
-                $('#etiqueta_busqueda').val(''),
+            $('#id_fecha_inicio').val('');
+                $('#id_fecha_fin').val('');
+                $('#busca_texto_doc').val('');
+                $('#etiqueta_busqueda').val('');
                 buscar_documentos();
             $('.fieldset_box').remove();
         });
 
         $('body').on('click', '.fieldset_close', function (e) {
             e.preventDefault();
+            var doc = $('#documento').val();
             $('.fieldset_box').remove();
+            $('#tabla_archivos').css('display', 'block');
+            {#document.getElementById('file' + doc).scrollIntoView();#}
+            $(document).scrollTop($('#fila' + doc).offset().top - 150);
         });
 
         $('body').on('click', '.go_page', function (e) {
@@ -131,9 +162,7 @@
             e.preventDefault();
             $('#documento').val($(this).data('doc'));
             $('#action').val('descargar_doc');
-            document
-        .{{formname}}.
-            submit();
+            document.getElementById('{{formname}}').submit();
         });
 
         {% if g_e|has_permiso:'sube_archivos' %}
@@ -154,6 +183,12 @@
             });
 
             $('body').on('click', '#sube_archivo', function () {
+                {#var etiquetas = [];#}
+                {#$('.borrar_etiqueta').each(function () {#}
+                {#    etiquetas.push($(this).data('etiqueta'));#}
+                {# });#}
+                $('#ajax-loader').css('display', 'block');
+
                 var input_files = document.getElementById('id_archivo').files;
 
                 for (var i = 0; i < input_files.length; i++) {
@@ -166,7 +201,8 @@
                 }
                 formData.append('n_files', input_files.length);
                 formData.append('action', 'sube_archivo');
-                formData.append('etiqueta', $('#select_etiqueta').val());
+                {#formData.append('etiqueta', $('#select_etiqueta').val());#}
+                {#formData.append('etiquetas', etiquetas);#}
                 formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
                 var xhr = new XMLHttpRequest();
                 {#xhr.upload.addEventListener("progress", updateProgress, false);#}
@@ -180,6 +216,8 @@
                                 show_mensajes({title: 'Error', texto: data.mensaje})
                             }
                         }
+                        $('#ajax-loader').css('display', 'none');
+                        $('#div_fieldsets').html('');
                     }
                 };
                 xhr.open('POST', "/documentos/", true);
@@ -204,16 +242,20 @@
                 }
             });
 
-            $('body').on('click', '#crea_etiqueta', function (e) {
-                e.preventDefault();
+            function crea_etiqueta(nombre, padre, doc) {
                 $.post("/documentos/", {
                         action: 'crea_etiqueta',
-                        nombre: $('#id_etiqueta_nueva').val(),
-                        padre: $('#select_etiqueta_padre').val()
+                        nombre: nombre,
+                        padre: padre
                     },
                     function (data) {
                         if (data.ok) {
-                            $('#div_fieldsets').html('');
+                            $("#id_etiqueta_creada").val(data.id_etiqueta);
+                            $("#texto_etiqueta_creada").val(data.texto_etiqueta);
+                            if (doc){
+                                $("#etiquetas" + doc).html(data.html);
+                            }
+                            $("list_etiquetas").html(data.html);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $("#update_error").show().delay(1500).fadeOut();
@@ -222,7 +264,15 @@
                             }
                         }
                     });
-            });
+            }
+
+            {#$('body').on('click', '#crea_etiqueta', function (e) {#}
+            {#    e.preventDefault();#}
+            {#    var nombre = $('#id_etiqueta_nueva').val();#}
+            {#    var padre = $('#select_etiqueta_padre').val();#}
+            {#    crea_etiqueta(nombre, padre, null);#}
+            {#    $('#div_fieldsets').html('');#}
+            {# });#}
         {% endif %}
 
         {% if g_e|has_permiso:'borra_cualquier_carpeta' %}
@@ -317,7 +367,7 @@
             });
         {% endif %}
 
-        $('body').on('click', '.editar_doc', function (e) {
+        $('body').on('click', '.editar_doc_antiguo', function (e) {
             e.preventDefault();
             var doc = $(this).data('doc');
             $.post("/documentos/", {
@@ -408,17 +458,75 @@
             });
         {% endif %}
 
-        $('body').on('keyup change', '.edit_archivo', function (e) {
+        {# ############################################################################## #}
+        {# ##################### Edición de los archivos ################################ #}
+        {# ############################################################################## #}
+
+        $('body').on('click', '.editar_doc', function (e) {
             e.preventDefault();
+            var doc = $(this).data('doc');
             $.post("/documentos/", {
-                    action: 'update_archivo',
-                    campo: $(this).data('campo'),
-                    modelo: $(this).data('modelo'),
-                    id: $(this).data('id'),
-                    valor: $(this).val()
+                    action: 'ver_formulario_editar',
+                    doc: doc
                 },
                 function (data) {
                     if (data.ok) {
+                        $('#documento').val(doc);
+                        $('#div_fieldsets').html(data.html);
+                        document.getElementById('title_h4').scrollIntoView();
+                        $('#tabla_archivos').css('display', 'none');
+                        $('#action').val(doc);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup', '#update_nombre_archivo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var element = $(this);
+            var antiguo_texto = element.val();
+            setTimeout(function () {
+                var nuevo_texto = element.val();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/documentos/", {action: 'update_nombre_archivo', nombre: nuevo_texto, id: id},
+                        function (data) {
+                            if (data.ok) {
+                                $("#a_dropdown" + id).html(nuevo_texto);
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
+        $('body').on('change', '#update_etiquetas_archivo', function (e) {
+            e.preventDefault();
+            var doc = $('#documento').val();
+            var etiqueta = $(this).val();
+            $.post("/documentos/", {action: 'update_etiquetas_archivo', etiqueta: etiqueta, doc: doc},
+                function (data) {
+                    if (data.ok) {
+                        $(".list_etiquetas" + doc).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.desasigna_etiqueta', function (e) {
+            e.preventDefault();
+            var doc = $(this).data('doc');
+            var etiqueta = $(this).data('etiqueta');
+            $.post("/documentos/", {action: 'desasigna_etiquetas_archivo', etiqueta: etiqueta, doc: doc},
+                function (data) {
+                    if (data.ok) {
+                        $(".list_etiquetas" + doc).html(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
@@ -428,14 +536,16 @@
 
         $('body').on('change', '.select_gcs_archivo', function (e) {
             e.preventDefault();
+            var doc = $(this).data('doc');
             $.post("/documentos/", {
                     action: 'update_new_permiso',
-                    doc: $(this).data('doc'),
+                    doc: doc,
                     seleccionados: $(this).val()
                 },
                 function (data) {
                     if (data.ok) {
-                        $("#tbody_permisos" + data.doc).html(data.html);
+                        $("#div_permisos" + doc).html(data.html);
+                        $("#cgds" + doc).html(data.html_tr);
                         $(".select_gcs_archivo").empty();
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
@@ -458,6 +568,83 @@
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
+        });
+
+        $('body').on('change', '.update_permiso_archivo', function (e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var permiso = $(this).val();
+            $.post("/documentos/", {action: 'update_permiso_archivo', permiso: permiso, id: id},
+                function (data) {
+                    if (data.ok) {
+                        $("#cgds" + data.doc).html(data.html_tr);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        {######################################################################}
+        {##### código para la selección y creación de carpetas/etiquetas ######}
+        {######################################################################}
+        {#$('body').on('change', '#select_etiqueta', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var nombre = $("#select_etiqueta option:selected").html();#}
+        {#    var id = $(this).val();#}
+        {#    var html = `<span class="label secondary" id="etiqueta` + id + `">` + nombre + `#}
+        {#                <a class="desasigna_etiqueta" data-etiqueta="` + id + `">#}
+        {#                    <i class="fa fa-times"></i></a></span> `#}
+        {#    $('#select_etiqueta').empty();#}
+        {#    $('#list_etiquetas').append(html);#}
+        {# });#}
+
+        $('body').on('click', '#abrir_modal_crear_etiqueta', function (e) {
+            e.preventDefault();
+            $.post("/documentos/", {
+                    action: 'get_etiquetas',
+                },
+                function (data) {
+                    if (data.ok) {
+                        var etiqueta = $('.select2-search__field').val();
+                        $('#update_etiquetas_archivo').select2('close');
+                        $('#addEtiquetaModal').foundation('reveal', 'open');
+                        $('#nombre_crea_etiqueta').val(etiqueta);
+                        $('#select_crea_etiqueta').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '#close_addEtiquetaModal', function (e) {
+            e.preventDefault();
+            $('#addEtiquetaModal').foundation('reveal', 'close');
+        });
+
+        $('body').on('click', '#crear_addEtiquetaModal', function (e) {
+            e.preventDefault();
+            $.post("/documentos/", {
+                        action: 'crea_etiqueta',
+                        nombre: $('#nombre_crea_etiqueta').val(),
+                        padre: $('#select_crea_etiqueta').val()
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            {#var doc = $('#documento').val();#}
+                            var newOption = new Option(data.texto_etiqueta, data.id_etiqueta, true, true);
+                            $('#update_etiquetas_archivo').append(newOption).trigger('change');
+                            {#$(".list_etiquetas" + doc).html(data.html);#}
+                            $('#addEtiquetaModal').foundation('reveal', 'close');
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                            if (data.mensaje) {
+                                show_mensajes({title: 'Error', texto: data.mensaje})
+                            }
+                        }
+                    });
         });
     </script>
 {% endblock %}

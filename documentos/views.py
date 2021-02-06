@@ -28,7 +28,7 @@ from mensajes.views import crear_aviso, enviar_correo
 def documentos_ge(request):
     g_e = request.session['gauser_extra']
     qa = Q(subentidad__in=g_e.subentidades.all()) | Q(cargo__in=g_e.cargos.all()) | Q(gauser=g_e.gauser)
-    qb = qa & Q(documento__etiqueta__entidad=g_e.ronda.entidad)
+    qb = qa & Q(documento__entidad=g_e.ronda.entidad)
     docs_id = Compartir_Ges_documental.objects.filter(qb).values_list('documento__id', flat=True)
     docs = Ges_documental.objects.filter(id__in=docs_id, borrado=False).distinct()
     try:
@@ -46,17 +46,27 @@ def documentos_ge(request):
 
     try:
         etiqueta = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['etiqueta'])
-        qb = Q(creado__gte=inicio) & Q(creado__lte=fin) & Q(nombre__icontains=texto) & Q(etiqueta__in=etiqueta.hijos)
+        qb = Q(creado__gte=inicio) & Q(creado__lte=fin) & Q(nombre__icontains=texto) & Q(etiquetas__in=etiqueta.hijos)
     except:
         qb = Q(creado__gte=inicio) & Q(creado__lte=fin) & Q(nombre__icontains=texto)
 
     return docs.filter(qb)
 
 
-@permiso_required('acceso_documentos')
+# @permiso_required('acceso_documentos')
 def documentos(request):
+    for d in Ges_documental.objects.all():
+        try:
+            d.etiquetas.add(d.etiqueta)
+        except:
+            pass
+        try:
+            d.entidad = d.propietario.ronda.entidad
+            d.save()
+        except:
+            pass
     g_e = request.session['gauser_extra']
-    if request.method == 'POST' and request.is_ajax():
+    if request.method == 'POST':
         if request.POST['action'] == 'ver_formulario_subir' and g_e.has_permiso('sube_archivos'):
             try:
                 etiquetas = Etiqueta_documental.objects.filter(entidad=g_e.ronda.entidad)
@@ -64,6 +74,85 @@ def documentos(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'sube_archivo':
+            n_files = int(request.POST['n_files'])
+            if g_e.has_permiso('sube_archivos'):
+                try:
+                    docs = []
+                    for i in range(n_files):
+                        fichero = request.FILES['fichero_xhr' + str(i)]
+                        doc = Ges_documental.objects.create(propietario=g_e, content_type=fichero.content_type,
+                                                            nombre=fichero.name, fichero=fichero)
+                        # etiquetas = Etiqueta_documental.objects.filter(id__in=request.POST['etiquetas'].split(','),
+                        #                                                entidad=g_e.ronda.entidad)
+                        # doc.etiquetas.add(*etiquetas)
+                        Compartir_Ges_documental.objects.create(gauser=g_e.gauser, documento=doc, permiso='rwx')
+                        docs.append(doc)
+                    html = render_to_string('documentos_table_tr.html', {'docs': docs, 'g_e': g_e})
+                    return JsonResponse({'ok': True, 'html': html, 'mensaje': False})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
+            else:
+                mensaje = 'No tienes permiso para subir archivos.'
+                return JsonResponse({'ok': False, 'mensaje': mensaje})
+        elif request.POST['action'] == 'borrar_documento':
+            try:
+                doc = Ges_documental.objects.get(id=request.POST['doc'], borrado=False)
+                if 'x' in doc.permisos(g_e):
+                    try:
+                        doc.compartir_ges_documental_set.filter(gauser=g_e.gauser).delete()
+                        if Compartir_Ges_documental.objects.filter(documento=doc).count() == 0:
+                            doc.borrado = True
+                            doc.save()
+                        m = 'Se ha borrado tu acceso personal al archivo.<br>Si todavía lo vieras es porque está compartido con un cargo que tienes asignado o una sección a la que perteneces.'
+                        return JsonResponse({'ok': True, 'mensaje': m})
+                    except:
+                        m = 'Archivo no borrado. <br>Lo sigues viendo porque está compartido con un cargo que tienes asignado o una sección a la que perteneces.'
+                        return JsonResponse({'ok': True, 'mensaje': m})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permisos para borrar el documento.'})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borrar_doc_completamente':
+            try:
+                doc = Ges_documental.objects.get(id=request.POST['doc'], borrado=False)
+                if doc.propietario.ronda.entidad == g_e.ronda.entidad:
+                    if g_e.has_permiso('borra_cualquier_archivo'):
+                        doc.borrado = True
+                        doc.save()
+                        cgds = doc.compartir_ges_documental_set.all()
+                        ss = Subentidad.objects.filter(id__in=set(cgds.values_list('subentidad__id', flat=True)))
+                        cs = Cargo.objects.filter(id__in=set(cgds.values_list('cargo__id', flat=True)))
+                        interesados = usuarios_ronda(g_e.ronda, subentidades=ss, cargos=cs)
+                        q1 = Q(id__in=interesados.values_list('gauser__id', flat=True))
+                        q2 = Q(id__in=set(cgds.values_list('gauser__id', flat=True)))
+                        receptores = Gauser.objects.filter(q1, q2)
+                        asunto = 'Se ha eliminado el archivo %s' % (doc.nombre)
+                        texto = render_to_string('documentos_correo_archivo_borrado.html', {'doc': doc, 'emisor': g_e})
+                        ok, m = enviar_correo(asunto=asunto, texto_html=texto, emisor=g_e, receptores=receptores)
+                        if not ok:
+                            aviso = '<br>Sin embargo, no se ha podido informar a los afectados.<br>(<i>%s</i>)' % m
+                            crear_aviso(request, True, aviso)
+                        else:
+                            aviso = ''
+                        mensaje = 'Durante los próximos 30 días puede ser recuperado por el administrador del sistema.'
+                        return JsonResponse({'ok': True, 'mensaje': mensaje + aviso})
+                    else:
+                        return JsonResponse({'ok': False, 'mensaje': 'No tienes permisos para borrar el documento.'})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No borrado. El archivo no pertenece a esta entidad.'})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'descargar_doc':
+            try:
+                docs = documentos_ge(request)
+                d = docs.get(id=request.POST['documento'])
+                nombre, dot, ext = d.fich_name.rpartition('.')  # slugify(d.fich_name.rpartition('.')[0])
+                response = HttpResponse(d.fichero, content_type=d.content_type)
+                response['Content-Disposition'] = 'attachment; filename=%s.%s' % (slugify(d.nombre), ext)
+                return response
+            except:
+                crear_aviso(request, False, 'Error. No se ha podido descargar el archivo.')
         elif request.POST['action'] == 'ver_formulario_crear_etiqueta' and g_e.has_permiso('crea_carpetas'):
             try:
                 etiquetas = Etiqueta_documental.objects.filter(entidad=g_e.ronda.entidad)
@@ -110,15 +199,16 @@ def documentos(request):
             try:
                 nombre = request.POST['nombre']
                 try:
-                    Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, nombre__iexact=nombre)
-                    return JsonResponse({'ok': False, 'mensaje': 'Ya existe una etiqueta/carpeta con ese nombre.'})
+                    e = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, nombre__iexact=nombre)
+                    return JsonResponse({'ok': False, 'mensaje': 'Ya existe una etiqueta/carpeta con ese nombre.',
+                                         'id_etiqueta': e.id, 'texto_etiqueta': e.etiquetas_text})
                 except:
                     if request.POST['padre']:
                         padre = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['padre'])
-                        Etiqueta_documental.objects.create(entidad=g_e.ronda.entidad, padre=padre, nombre=nombre)
+                        e = Etiqueta_documental.objects.create(entidad=g_e.ronda.entidad, padre=padre, nombre=nombre)
                     else:
-                        Etiqueta_documental.objects.create(entidad=g_e.ronda.entidad, nombre=nombre)
-                    return JsonResponse({'ok': True})
+                        e = Etiqueta_documental.objects.create(entidad=g_e.ronda.entidad, nombre=nombre)
+                    return JsonResponse({'ok': True, 'id_etiqueta': e.id, 'texto_etiqueta': e.etiquetas_text})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'borra_etiqueta' and g_e.has_permiso('borra_cualquier_carpeta'):
@@ -153,88 +243,108 @@ def documentos(request):
                 if g_e.has_permiso('edita_todos_archivos') or 'w' in doc.permisos(g_e):
                     etiquetas = Etiqueta_documental.objects.filter(entidad=g_e.ronda.entidad)
                     payload = {'g_e': g_e, 'etiquetas': etiquetas, 'd': doc}
-                    html = render_to_string("documentos_table_tr_archivo_edit.html", payload)
+                    # html = render_to_string("documentos_table_tr_archivo_edit.html", payload)
+                    html = render_to_string("documentos_fieldset_edit.html", payload)
                     return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'update_archivo':
+        elif request.POST['action'] == 'update_nombre_archivo':
             try:
-                valor = request.POST['valor']
-                campo = request.POST['campo']
-                if request.POST['modelo'] == 'Ges_documental':
-                    doc = Ges_documental.objects.get(id=request.POST['id'], borrado=False)
-                    permisos_ge = doc.permisos(g_e)
-                    if 'w' in permisos_ge or 'x' in permisos_ge:
-                        if campo == 'etiqueta':
-                            valor_campo = Etiqueta_documental.objects.get(id=valor, entidad=g_e.ronda.entidad)
-                        else:
-                            valor_campo = valor
-                        setattr(doc, campo, valor_campo)
-                        doc.save()
-                        return JsonResponse({'ok': True})
-                    else:
-                        return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
+                doc = Ges_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['id'], borrado=False)
+                permisos_ge = doc.permisos(g_e)
+                if 'w' in permisos_ge or 'x' in permisos_ge:
+                    doc.nombre = request.POST['nombre']
+                    doc.save()
+                    return JsonResponse({'ok': True})
                 else:
-                    cgd = Compartir_Ges_documental.objects.get(id=request.POST['id'])
-                    doc = cgd.documento
-                    if valor in doc.permisos(g_e):
-                        cgd.permiso = valor
-                        cgd.save()
-                        return JsonResponse({'ok': True})
-                    else:
-                        return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios'})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error'})
+        elif request.POST['action'] == 'update_etiquetas_archivo':
+            doc = Ges_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['doc'], borrado=False)
+            permisos_ge = doc.permisos(g_e)
+            if 'w' in permisos_ge or 'x' in permisos_ge:
+                etiqueta = Etiqueta_documental.objects.get(id=request.POST['etiqueta'], entidad=g_e.ronda.entidad)
+                doc.etiquetas.add(etiqueta)
+                html = render_to_string('documentos_list_etiquetas.html',
+                                        {'etiquetas': doc.etiquetas.all(), 'd': doc, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            try:
+                doc = Ges_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['id'], borrado=False)
+                permisos_ge = doc.permisos(g_e)
+                if 'w' in permisos_ge or 'x' in permisos_ge:
+                    etiqueta = Etiqueta_documental.objects.get(id=request.POST['etiqueta'], entidad=g_e.ronda.entidad)
+                    doc.etiquetas.add(etiqueta)
+                    html = render_to_string('documentos_list_etiquetas.html',
+                                            {'etiquetas': doc.etiquetas.all(), 'd': doc, 'g_e': g_e})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'borrar_documento':
+        elif request.POST['action'] == 'update_permiso_archivo':
             try:
-                doc = Ges_documental.objects.get(id=request.POST['doc'], borrado=False)
-                if 'x' in doc.permisos(g_e):
-                    try:
-                        Compartir_Ges_documental.objects.filter(documento=doc, gauser=g_e.gauser).delete()
-                        if Compartir_Ges_documental.objects.filter(documento=doc).count() == 0:
-                            doc.borrado = True
-                            doc.save()
-                        m = 'Se ha borrado tu acceso personal al archivo.<br>Si todavía lo vieras es porque está compartido con un cargo que tienes asignado o una sección a la que perteneces.'
-                        return JsonResponse({'ok': True, 'mensaje': m})
-                    except:
-                        m = 'Archivo no borrado. <br>Lo sigues viendo porque está compartido con un cargo que tienes asignado o una sección a la que perteneces.'
-                        return JsonResponse({'ok': True, 'mensaje': m})
+                cgd = Compartir_Ges_documental.objects.get(documento__entidad=g_e.ronda.entidad, id=request.POST['id'],
+                                                           documento__borrado=False)
+                permisos_ge = cgd.documento.permisos(g_e)
+                if 'w' in permisos_ge or 'x' in permisos_ge:
+                    cgd.permiso = request.POST['permiso']
+                    cgd.save()
+                    html_tr = render_to_string("documentos_table_tr_archivo_compartidocon.html", {'d': cgd.documento})
+                    return JsonResponse({'ok': True, 'html_tr': html_tr, 'doc': cgd.documento.id})
                 else:
-                    return JsonResponse({'ok': False, 'mensaje': 'No tienes permisos para borrar el documento.'})
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'borrar_doc_completamente':
-            try:
-                doc = Ges_documental.objects.get(id=request.POST['doc'], borrado=False)
-                if doc.propietario.ronda.entidad == g_e.ronda.entidad:
-                    if g_e.has_permiso('borra_cualquier_archivo'):
-                        doc.borrado = True
-                        doc.save()
-                        cgds = Compartir_Ges_documental.objects.filter(documento=doc)
-                        ss = Subentidad.objects.filter(id__in=set(cgds.values_list('subentidad__id', flat=True)))
-                        cs = Cargo.objects.filter(id__in=set(cgds.values_list('cargo__id', flat=True)))
-                        interesados = usuarios_ronda(g_e.ronda, subentidades=ss, cargos=cs)
-                        q1 = Q(id__in=interesados.values_list('gauser__id', flat=True))
-                        q2 = Q(id__in=set(cgds.values_list('gauser__id', flat=True)))
-                        receptores = Gauser.objects.filter(q1, q2)
-                        asunto = 'Se ha eliminado el archivo %s' % (doc.nombre)
-                        texto = render_to_string('documentos_correo_archivo_borrado.html', {'doc': doc, 'emisor': g_e})
-                        ok, m = enviar_correo(asunto=asunto, texto_html=texto, emisor=g_e, receptores=receptores)
-                        if not ok:
-                            aviso = '<br>Sin embargo, no se ha podido informar a los afectados.<br>(<i>%s</i>)' % m
-                            crear_aviso(request, True, aviso)
-                        else:
-                            aviso = ''
-                        mensaje = 'Durante los próximos 30 días puede ser recuperado por el administrador del sistema.'
-                        return JsonResponse({'ok': True, 'mensaje': mensaje + aviso})
-                    else:
-                        return JsonResponse({'ok': False, 'mensaje': 'No tienes permisos para borrar el documento.'})
-                else:
-                    return JsonResponse({'ok': False, 'mensaje': 'No borrado. El archivo no pertenece a esta entidad.'})
-            except:
-                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'desasigna_etiquetas_archivo':
+            # try:
+            doc = Ges_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['doc'], borrado=False)
+            permisos_ge = doc.permisos(g_e)
+            if 'w' in permisos_ge or 'x' in permisos_ge:
+                etiqueta = Etiqueta_documental.objects.get(id=request.POST['etiqueta'], entidad=g_e.ronda.entidad)
+                doc.etiquetas.remove(etiqueta)
+                html = render_to_string('documentos_list_etiquetas.html',
+                                        {'etiquetas': doc.etiquetas.all(), 'd': doc, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            else:
+                return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
+            # except:
+            #     return JsonResponse({'ok': False})
+        # elif request.POST['action'] == 'update_archivo':
+        #     html = ''
+        #     try:
+        #         valor = request.POST['valor']
+        #         campo = request.POST['campo']
+        #         if request.POST['modelo'] == 'Ges_documental':
+        #             doc = Ges_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['id'], borrado=False)
+        #             permisos_ge = doc.permisos(g_e)
+        #             if 'w' in permisos_ge or 'x' in permisos_ge:
+        #                 if campo == 'etiquetas':
+        #                     etiqueta = Etiqueta_documental.objects.get(id=valor, entidad=g_e.ronda.entidad)
+        #                     doc.etiquetas.add(etiqueta)
+        #                     html = render_to_string('documentos_list_etiquetas.html',
+        #                                             {'etiquetas': doc.etiquetas.all()})
+        #                 else:
+        #                     setattr(doc, campo, valor)
+        #                     doc.save()
+        #                 return JsonResponse({'ok': True, 'html': html, 'campo': campo})
+        #             else:
+        #                 return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
+        #         else:
+        #             cgd = Compartir_Ges_documental.objects.get(id=request.POST['id'])
+        #             doc = cgd.documento
+        #             if valor in doc.permisos(g_e):
+        #                 cgd.permiso = valor
+        #                 cgd.save()
+        #                 return JsonResponse({'ok': True, 'campo': campo})
+        #             else:
+        #                 return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
+        #     except:
+        #         return JsonResponse({'ok': False})
+
+
         elif request.POST['action'] == 'update_new_permiso':
             try:
                 doc = Ges_documental.objects.get(id=request.POST['doc'], borrado=False)
@@ -246,8 +356,9 @@ def documentos(request):
                         Compartir_Ges_documental.objects.get_or_create(documento=doc, cargo=c)
                     for s in ss:
                         Compartir_Ges_documental.objects.get_or_create(documento=doc, subentidad=s)
-                    html = render_to_string("documentos_table_tr_archivo_edit_permisos.html", {'d': doc})
-                    return JsonResponse({'ok': True, 'html': html, 'doc': doc.id})
+                    html = render_to_string("documentos_fieldset_edit_permisos.html", {'d': doc, 'g_e': g_e})
+                    html_tr = render_to_string("documentos_table_tr_archivo_compartidocon.html", {'d': doc})
+                    return JsonResponse({'ok': True, 'html': html, 'doc': doc.id, 'html_tr': html_tr})
                 else:
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes permisos para compartir el archivo.'})
             except:
@@ -273,44 +384,15 @@ def documentos(request):
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes permisos para editar el archivo.'})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'get_etiquetas':
+            try:
+                etiquetas = Etiqueta_documental.objects.filter(entidad=g_e.ronda.entidad)
+                html = render_to_string("documentos_fieldset_subir_select_etiquetas.html", {'etiquetas': etiquetas})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
         else:
             return JsonResponse({'ok': False, 'mensaje': 'Solicitud incorrecta.'})
-
-    elif request.method == 'POST':
-        if request.POST['action'] == 'sube_archivo':
-            n_files = int(request.POST['n_files'])
-            if g_e.has_permiso('sube_archivos'):
-                try:
-                    for i in range(n_files):
-                        fichero = request.FILES['fichero_xhr' + str(i)]
-                        try:
-                            etiqueta = Etiqueta_documental.objects.get(entidad=g_e.ronda.entidad,
-                                                                       id=request.POST['etiqueta'])
-                        except:
-                            etiqueta, c = Etiqueta_documental.objects.get_or_create(entidad=g_e.ronda.entidad,
-                                                                                    nombre='General')
-                        doc = Ges_documental.objects.create(propietario=g_e, content_type=fichero.content_type,
-                                                            etiqueta=etiqueta, nombre=fichero.name, fichero=fichero)
-                        Compartir_Ges_documental.objects.create(gauser=g_e.gauser, documento=doc, permiso='rwx')
-                        html = render_to_string('documentos_table_tr.html', {'docs': [doc], 'g_e': g_e})
-                        return JsonResponse({'ok': True, 'html': html, 'mensaje': False})
-                except:
-                    return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
-            else:
-                mensaje = 'No tienes permiso para cargar programaciones.'
-                return JsonResponse({'ok': False, 'mensaje': mensaje})
-
-        elif request.POST['action'] == 'descargar_doc':
-            try:
-                docs = documentos_ge(request)
-                d = docs.get(id=request.POST['documento'])
-                nombre, dot, ext = d.fich_name.rpartition('.') # slugify(d.fich_name.rpartition('.')[0])
-                response = HttpResponse(d.fichero, content_type=d.content_type)
-                response['Content-Disposition'] = 'attachment; filename=%s.%s' % (slugify(nombre), ext)
-                return response
-            except:
-                crear_aviso(request, False, 'Error. No se ha podido descargar el archivo.')
-
 
 
     # -----------
@@ -430,6 +512,7 @@ def contrato_gauss(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
+
 ####################################################################################
 ############################# TEXTOS EVALUABLES ####################################
 ####################################################################################
@@ -495,13 +578,14 @@ def plantillas_te(request):
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'copiar_p_te':
             try:
-                p_te = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
+                p_te = PlantillaInformeInspeccion.objects.get(creador__ronda__entidad=g_e.ronda.entidad,
+                                                              id=request.POST['id'])
                 variantes = p_te.variantepii_set.all()
                 p_te.pk = None
                 p_te.asunto = p_te.asunto + ' (Copia)'
                 p_te.save()
                 for v in variantes:
-                    v.pk =None
+                    v.pk = None
                     v.plantilla = p_te
                     v.save()
                 html = render_to_string('plantillas_te_accordion.html',
@@ -578,6 +662,7 @@ def plantillas_te(request):
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
     })
 
+
 ####################################################################################
 ####################################################################################
 ####################################################################################
@@ -590,4 +675,3 @@ def presentaciones(request):
             return render(request, "no_enlace.html")
     else:
         return render(request, "no_enlace.html")
-

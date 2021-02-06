@@ -66,6 +66,7 @@ def update_fichero_contrato(instance, filename):
 
 class Ges_documental(models.Model):
     propietario = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True, related_name='ge20')
+    entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE, blank=True, null=True)
     etiqueta = models.ForeignKey(Etiqueta_documental, blank=True, null=True, on_delete=models.CASCADE, related_name='f')
     etiquetas = models.ManyToManyField(Etiqueta_documental, blank=True)
     nombre = models.CharField("Nombre del documento", max_length=240)

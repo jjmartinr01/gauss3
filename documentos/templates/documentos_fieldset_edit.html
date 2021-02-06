@@ -1,0 +1,67 @@
+{% load my_templatetags %}
+<fieldset id="formulario_subir_archivo" class="fieldset_box">
+    <legend>Editar archivo</legend>
+    <div style="position:relative;">
+    <span style="position: absolute; top:-1.25rem; right: -0.25rem;font-size: large;font-weight: bold;">
+        <a class="fieldset_close"><i class="fa fa-times"></i></a>
+    </span>
+    </div>
+    <div class="row">
+        <div class="columns large-4">
+            <label>Nombre
+                <input id="update_nombre_archivo" data-id="{{ d.id }}" type="text" value="{{ d.nombre }}">
+            </label>
+        </div>
+        <div class="columns large-4">
+            <label title="Si no eliges carpeta el archivo se cargará en la carpeta llamada 'General'">Carpetas/Etiquetas
+                <select id="update_etiquetas_archivo" data-id="{{ d.id }}">
+                    <option value="">Debes seleccionar una carpeta</option>
+                    {% for e in etiquetas %}
+                        <option value="{{ e.id }}">{{ e.etiquetas_text }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <div class="columns large-4">
+            <label title="Puedes dar permisos a una persona, sección o cargo de la entidad">Añadir permiso
+                <select class="select_gcs_archivo" id="select_gcs_archivo{{ d.id }}" data-doc={{ d.id }}>
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-4">&nbsp;
+        </div>
+        <div class="columns large-8">
+            <div class="list_etiquetas{{ d.id }}">
+                {% include "documentos_list_etiquetas.html" %}
+            </div>
+        </div>
+    </div>
+    <div class="row" style="padding: 5px; background-color: #F5F5F5;margin: 5px;font-weight: bold;">
+        <div class="columns large-5" style="text-align:center;font-weight: bold;">Persona/Sección/Cargo</div>
+        <div class="columns large-5" style="text-align:center;font-weight: bold;">Tipo de permiso</div>
+        <div class="columns large-2" style="text-align:center;">¿Borrar?</div>
+    </div>
+    <div id="div_permisos{{ d.id }}">
+        {% include "documentos_fieldset_edit_permisos.html" %}
+    </div>
+</fieldset>
+<script>
+    $('#update_etiquetas_archivo').select2(
+        {
+            "placeholder": "Selecciona una etiqueta/carpeta",
+            "language": {
+                "noResults": function () {
+                    return "No hay coincidencias. <a id='abrir_modal_crear_etiqueta' href='#' class='button tiny info right'>Crear etiqueta</a>";
+                }
+            },
+            "escapeMarkup": function (markup) {
+                return markup;
+            }
+        }
+    );
+    setTimeout(function () {
+        $("#select_gcs_archivo{{ d.id }}").select2(conf_select2({'gcs': 'gcs', 'format_g': '{0}, {1}'}));
+    }, 200);
+</script>

@@ -1,6 +1,6 @@
 {% load my_templatetags %}
 {% load documentos_extras %}
-<td id="nombre{{ d.id }}" width="30%">
+<td id="nombre{{ d.id }}" style="width: 30%;">
     <a data-dropdown="drop{{ d.id }}" aria-controls="drop{{ d.id }}" id="a_dropdown{{ d.id }}"
        aria-expanded="false" class="p_documento">{{ d.nombre }}
     </a>&nbsp;{% if buscar %}<span style="color:red;"><i class="fa fa-check"></i></span>{% endif %}
@@ -33,33 +33,40 @@
         {% endif %}
     </ul>
 </td>
-<td width="40%">{% for p in d.compartir_ges_documental_set.all %}{{ p.subentidad.nombre }}{{ p.cargo.cargo }}{{ p.gauser.get_full_name }} ({{ p.get_permiso_display }})<br>{% endfor %}</td>
-<td width="10%" style="text-align:center;"><a class="descargar_doc" data-doc="{{ d.id }}"><i
-        class="fa fa-download fa-fw"></i></a></td>
-<td width="10%" style="text-align:center;" id="etiquetas{{ d.id }}">
-    <a data-dropdown="drope{{ d.id }}" aria-controls="drope{{ d.id }}" id="a_dropdowne{{ d.id }}"
-       aria-expanded="false" class="p_documento"><span class="label"><b>{{ d.etiqueta.etiquetas_text }}</b></span>
-    </a>
-    <ul id="drope{{ d.id }}" class="f-dropdown text-left" data-dropdown-content
-        aria-hidden="true" tabindex="-1">
-        <li><a class="ver_archivos_carpeta" data-etiqueta="{{ d.etiqueta.id }}" data-doc="{{ d.id }}">Ver los archivos de esta carpeta</a></li>
-        {% if d.etiqueta.nombre == "General" %}
-            <li>Esta carpeta no se puede editar ni borrar</li>
-        {% else %}
-            {% if g_e|has_permiso:'edita_carpetas' %}
-                <li><a class="editar_carpeta" data-etiqueta="{{ d.etiqueta.id }}" data-doc="{{ d.id }}"><i
-                        class="fa fa-pencil fa-fw"></i> Editar</a>
-                </li>
-            {% endif %}
-            {% if g_e|has_permiso:'borra_cualquier_carpeta' %}
-                <li><a class="borrar_etiqueta" data-etiqueta="{{ d.etiqueta.id }}" data-doc="{{ d.id }}"><i
-                        class="fa fa-trash-o fa-fw"></i> Borrar</a>
-                </li>
-            {% endif %}
-        {% endif %}
-    </ul>
+<td id="cgds{{ d.id }}" style="width: 30%;color:grey;">{% include "documentos_table_tr_archivo_compartidocon.html" %}</td>
+{#<td id="cgds{{ d.id }}" style="width: 30%;color:grey;">{% for p in d.compartir_ges_documental_set.all %}{{ p.subentidad.nombre }}{{ p.cargo.cargo }}{{ p.gauser.get_full_name }}#}
+{#    <span title="Permisos que posee: {{ p.get_permiso_display }}">{% if p.permiso == 'r' %}<i class='fa fa-eye'></i>{% elif p.permiso == 'rw' %}<i class='fa fa-eye'></i> y#}
+{#        <i class='fa fa-pencil'></i>{% else %}<i class='fa fa-eye'></i>, <i class='fa fa-pencil'></i> y#}
+{#        <i class='fa fa-trash'></i>{% endif %}</span><br>{% endfor %}</td>#}
+{#<td width="10%" style="text-align:center;"><a class="descargar_doc" data-doc="{{ d.id }}"><i#}
+{#        class="fa fa-download fa-fw"></i></a></td>#}
+<td style="text-align:center;width: 30%;" class="list_etiquetas{{ d.id }}" id="etiquetas{{ d.id }}">
+    {% include "documentos_list_etiquetas.html" %}
+{#{% for etiqueta in d.etiquetas.all %}#}
+{#    <a data-dropdown="drope{{ d.id }}" aria-controls="drope{{ d.id }}" id="a_dropdowne{{ d.id }}"#}
+{#       aria-expanded="false" class="p_documento"><span class="label"><b>{{ etiqueta.etiquetas_text }}</b></span>#}
+{#    </a>#}
+{#    <ul id="drope{{ d.id }}" class="f-dropdown text-left" data-dropdown-content#}
+{#        aria-hidden="true" tabindex="-1">#}
+{#        <li><a class="ver_archivos_carpeta" data-etiqueta="{{ d.etiqueta.id }}" data-doc="{{ d.id }}">Ver los archivos de esta carpeta</a></li>#}
+{#        {% if d.etiqueta.nombre == "General" %}#}
+{#            <li>Esta carpeta no se puede editar ni borrar</li>#}
+{#        {% else %}#}
+{#            {% if g_e|has_permiso:'edita_carpetas' %}#}
+{#                <li><a class="editar_carpeta" data-etiqueta="{{ d.etiqueta.id }}" data-doc="{{ d.id }}"><i#}
+{#                        class="fa fa-pencil fa-fw"></i> Editar</a>#}
+{#                </li>#}
+{#            {% endif %}#}
+{#            {% if g_e|has_permiso:'borra_cualquier_carpeta' %}#}
+{#                <li><a class="borrar_etiqueta" data-etiqueta="{{ d.etiqueta.id }}" data-doc="{{ d.id }}"><i#}
+{#                        class="fa fa-trash-o fa-fw"></i> Borrar</a>#}
+{#                </li>#}
+{#            {% endif %}#}
+{#        {% endif %}#}
+{#    </ul>#}
+{#{% endfor %}#}
 </td>
-<td width="10%" style="text-align:center;"
+<td style="text-align:center;width: 10%;"
     title="El documento fue añadido el {{ d.creado }}">
     {{ d.creado|date:"d/m/Y" }}
 </td>
