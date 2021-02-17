@@ -35,7 +35,7 @@ class Menu_default(models.Model):
         return Menu_default.objects.filter(parent=self)
 
     def __str__(self):
-        return u'%s --> %s' % (self.code_menu, self.texto_menu)
+        return '%s --> %s' % (self.code_menu, self.texto_menu)
 
 
 class Permiso(models.Model):
@@ -57,7 +57,7 @@ class Permiso(models.Model):
         ordering = ['menu', 'pk']
 
     def __str__(self):
-        return u'%s (%s)' % (self.nombre, self.code_nombre)
+        return '%s (%s)' % (self.nombre, self.code_nombre)
 
 
 class Gauser(AbstractUser):
@@ -87,9 +87,9 @@ class Gauser(AbstractUser):
 
     def __str__(self):
         if self.email:
-            texto = u'%s %s (%s)' % (self.first_name, self.last_name, self.email)
+            texto = '%s %s (%s)' % (self.first_name, self.last_name, self.email)
         else:
-            texto = u'%s %s' % (self.first_name, self.last_name)
+            texto = '%s %s' % (self.first_name, self.last_name)
         return texto
 
 
@@ -98,9 +98,10 @@ class Enlace(models.Model):
     code = models.CharField("Código", max_length=40)
     enlace = models.CharField("Enlace", max_length=100)
     deadline = models.DateField('Fecha límite de validez')
+    expiration = models.DateTimeField('Fecha y hora de expiración', blank=True, null=True)
 
     def __str__(self):
-        return u'%s -- %s (%s)' % (self.enlace, self.usuario, self.deadline)
+        return '%s -- %s (%s)' % (self.enlace, self.usuario, self.deadline)
 
 # class Candidato(models.Model):
 #     gauser= models.ForeignKey(Gauser, on_delete=models.CASCADE)
@@ -122,4 +123,4 @@ class Enlace(models.Model):
 #     arreglado = models.BooleanField("Está ya arreglada la confusión", default=False)
 #
 #     def __str__(self):
-#         return u'%s -- %s (%s)' % (self.gauser, self.username, self.dni)
+#         return '%s -- %s (%s)' % (self.gauser, self.username, self.dni)

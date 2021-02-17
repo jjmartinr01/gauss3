@@ -23,4 +23,6 @@ urlpatterns = [
     # path('acceso_from_racima/<str:token>/', views.acceso_from_racima),
     # URLs para el login a través del CAS del Gobierno:
     path('logincas/', views.logincas),
+    path('getloginlink/<int:entidad_code>/<str:usuario>/<str:passusuario>/', views.getloginlink),
+    path('loginlink/<str:id>/<str:token>/', views.loginlink),
 ]

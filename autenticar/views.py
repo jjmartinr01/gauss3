@@ -12,7 +12,7 @@ import unicodedata
 from difflib import get_close_matches
 
 import requests
-
+import simplejson as json
 try:
     from cryptography.fernet import Fernet
     from gauss.settings import RACIMA_KEY
@@ -1024,6 +1024,46 @@ def logincas(request):
             return redirect(request.session['nexturl'])
 
 
+# ------------------------------------------------------------------#
+# DEFINICIÓN DE FUNCIÓN PARA
+# ------------------------------------------------------------------#
+
+def getloginlink(request, entidad_code, usuario, passusuario):
+    try:
+        entidad = Entidad.objects.get(code=entidad_code)
+        user = authenticate(username=usuario, password=passusuario)
+        logger.info('getloginlink usuario %s con su contraseña' % user)
+        if user is not None:
+            if user.is_active:
+                gauser_extra = Gauser_extra.objects.get(gauser=user, activo=True, ronda=entidad.ronda)
+                code = pass_generator(size=39)
+                expiration = timezone.now() + timedelta(seconds=100)
+                enlace = Enlace.objects.create(usuario=user, code=code, deadline=expiration, expiration=expiration,
+                                               enlace=gauser_extra.id)
+                data = {'id': enlace.enlace, 'token': enlace.code}
+                return HttpResponse('loginlink(%s)' % json.dumps(data))
+    except:
+        data = {'id': None, 'token': 'error'}
+        return HttpResponse('loginlink(%s)' % json.dumps(data))
+
+def loginlink(request, id, token):
+    try:
+        enlace = Enlace.objects.get(enlace=id, code=token, expiration__gte=timezone.now())
+        g_e = Gauser_extra.objects.get(id=enlace.enlace, gauser=enlace.usuario)
+        if enlace.usuario.is_active:
+            enlace.usuario.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, enlace.usuario)
+            request.session['gauser_extra'] = g_e
+            request.session['num_items_page'] = 15
+            request.session['ronda'] = g_e.ronda
+            logger.info('%s se loguea en GAUSS a través de un enlace' % g_e.gauser.get_full_name())
+            return redirect('/calendario/')
+        else:
+            logger.info('%s no se puede loguear en GAUSS. Su usuario no está activo' % g_e.gauser.get_full_name())
+            return redirect('/')
+    except:
+        logout(request)
+        return redirect('/')
 
 # ------------------------------------------------------------------#
 # DEFINICIÓN DE FUNCIONES PARA ACTUALIZAR GAUSS
