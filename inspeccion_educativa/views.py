@@ -2,7 +2,7 @@
 import logging
 import xlwt
 import pdfkit
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 from django.shortcuts import render, redirect
 from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
@@ -301,7 +301,49 @@ def tareas_ie(request):
             response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
             logger.info('%s, genera informe de inspección' % (g_e))
             return response
-        if request.POST['action'] == 'crea_informe_semanal':
+        elif request.POST['action'] == 'excel_actuaciones':
+            ruta = MEDIA_INSPECCION + str(g_e.ronda.entidad.code) + '/'
+            if not os.path.exists(ruta):
+                os.makedirs(ruta)
+            fichero_xls = 'tareas_%s.xls' % slugify(g_e.gauser.get_full_name())
+            wb = xlwt.Workbook()
+            wr = wb.add_sheet('Tareas', cell_overwrite_ok=True)
+            fila_excel_listado = 0
+            estilo = xlwt.XFStyle()
+            font = xlwt.Font()
+            font.bold = True
+            estilo.font = font
+            date_format = xlwt.XFStyle()
+            date_format.num_format_str = 'dd/mm/yyyy'
+            col = 0
+            campos = ['creador', 'fecha', 'sector', 'localizacion', 'nivel', 'actuacion', 'objeto', 'asunto', 'tipo', 'funcion', 'participacion', 'centro']
+            for campo in campos:
+                wr.write(fila_excel_listado, col, campo, style=estilo)
+                col += 1
+            fila_excel_listado = 1
+            for tarea in TareaInspeccion.objects.filter(creador=g_e):
+                wr.write(fila_excel_listado, 0, g_e.gauser.get_full_name())
+                wr.write(fila_excel_listado, 1, tarea.fecha, date_format)
+                wr.write(fila_excel_listado, 2, tarea.get_sector_display())
+                wr.write(fila_excel_listado, 3, tarea.get_localizacion_display())
+                wr.write(fila_excel_listado, 4, tarea.get_nivel_display())
+                wr.write(fila_excel_listado, 5, tarea.get_actuacion_display())
+                wr.write(fila_excel_listado, 6, tarea.get_objeto_display())
+                wr.write(fila_excel_listado, 7, tarea.asunto)
+                wr.write(fila_excel_listado, 8, tarea.get_tipo_display())
+                wr.write(fila_excel_listado, 9, tarea.get_funcion_display())
+                wr.write(fila_excel_listado, 10, tarea.get_participacion_display())
+                try:
+                    wr.write(fila_excel_listado, 11, tarea.centro.name)
+                except:
+                    wr.write(fila_excel_listado, 11, 'Tarea no ligada a un centro')
+                fila_excel_listado += 1
+            wb.save(ruta + fichero_xls)
+            xlsfile = open(ruta + fichero_xls, 'rb')
+            response = FileResponse(xlsfile, content_type='application/vnd.ms-excel')
+            response['Content-Disposition'] = 'attachment; filename=listado.xls'
+            return response
+        elif request.POST['action'] == 'crea_informe_semanal':
             inf_semanal = 'Configuración informes semanales de actuaciones'
             try:
                 dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=inf_semanal)
@@ -359,8 +401,11 @@ def tareas_ie(request):
               'title': 'Crear una nueva actuación de Inspección',
               'permiso': 'crea_tareas_ie'},
              {'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'Informe',
-              'title': 'Generar informe con las reparaciones de la entidad',
+              'title': 'Generar informe con las tareas realizadas',
               'permiso': 'genera_informe_tareas_ie'},
+             {'tipo': 'button', 'nombre': 'file-excel-o', 'texto': 'Excel',
+              'title': 'Generar excel con laa tareas realizadas',
+              'permiso': 'acceso_tareas_ie'},
              {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar',
               'title': 'Buscar actuaciones de Inspección',
               'permiso': 'acceso_tareas_ie'},

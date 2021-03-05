@@ -472,6 +472,13 @@
                 document.getElementById("{{ formname }}").submit();
             });
         {% endif %}
+
+        habilita(['s_file-excel-o']);
+        $('#file-excel-o_sign').click(function (event) {
+            event.preventDefault();
+            $('#action').val('excel_actuaciones');
+            document.getElementById("{{ formname }}").submit();
+        });
     </script>
 
 {% endblock %}
