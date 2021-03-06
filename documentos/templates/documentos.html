@@ -226,7 +226,7 @@
         {% endif %}
 
         {% if g_e|has_permiso:'crea_carpetas' %}
-            habilita(['s_folder',]);
+            {#habilita(['s_folder',]);#}
             $('#folder_sign').click(function (e) {
                 e.preventDefault();
                 if (!($(this).hasClass('disabled'))) {
