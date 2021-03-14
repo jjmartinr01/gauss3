@@ -942,7 +942,8 @@ def redactar_actas_reunion(request):
                 acta = ActaReunion.objects.get(id=request.POST['id_acta'], convocatoria__entidad=g_e.ronda.entidad)
                 fecha = acta.convocatoria.fecha_hora.strftime('%Y%m%d')
                 nombre_fichero = slugify('%s-%s' % (acta.nombre, fecha)) + '.pdf'
-                c = render_to_string('acta_reunion2pdf.html', {'acta': acta, 'pdf': True})
+                p_d = request.POST['protocol_domain']
+                c = render_to_string('acta_reunion2pdf.html', {'acta': acta, 'pdf': True, 'p_d': p_d})
                 fich = pdfkit.from_string(c, False, dce.get_opciones)
                 logger.info('Creado pdf: %s' % nombre_fichero)
                 response = HttpResponse(fich, content_type='application/pdf')

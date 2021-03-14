@@ -59,7 +59,7 @@
         <div style="width: 280px;display: inline-block;">
             {% if firma.tipo == 'VB' %}<p>VºBº</p>{% else %}<p>&nbsp;</p>{% endif %}
             {% if firma.firma %}
-                <p><img src="{{ firma.firma.url }}" width="100px" alt="xxx"></p>
+                <p><img src="{{ p_d }}{{ firma.firma.url }}" width="100px" alt="Firma"></p>
             {% else %}
                 <p title="Falta la firma" style="color:red;">&nbsp;xxx</p>
             {% endif %}
@@ -151,7 +151,7 @@
         <div style="width: 280px;display: inline-block;">
             {% if firma.tipo == 'VB' %}<p>VºBº</p>{% else %}<p>&nbsp;</p>{% endif %}
             {% if firma.firma %}
-                <p><img src="{{ firma.firma.url }}" width="100px" alt="xxx"></p>
+                <p><img src="{{ p_d }}{{ firma.firma.url }}" width="100px" alt="Firma"></p>
             {% else %}
                 <p title="Falta la firma" style="color:red;">&nbsp;xxx</p>
             {% endif %}

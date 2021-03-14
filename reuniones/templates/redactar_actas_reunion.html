@@ -39,6 +39,7 @@
         <input type="hidden" id="id_acta" name="id_acta" value="">
         <input type="hidden" id="actas_buscar" value="0">
         <input type="hidden" id="faar" name="faar" value="">
+        <input type="hidden" id="protocol_domain" name="protocol_domain" value="">
 
         <div>
             <h4 class="title_page" id="titulo">Redacción de actas</h4>
@@ -467,6 +468,10 @@
             e.preventDefault();
             $('#id_acta').val($(this).data('id'));
             $('#action').val('pdf_acta');
+            var protocol = window.location.protocol;
+            var port = window.location.port;
+            var domain = window.location.hostname;
+            $('#protocol_domain').val(protocol + '//' + domain + ':' + port);
             document.getElementById("{{ formname }}").submit();
         });
 
