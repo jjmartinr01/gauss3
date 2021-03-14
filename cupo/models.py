@@ -169,10 +169,10 @@ class Profesor_cupo(models.Model):
 ############################################################################################
 ####################### Plantilla Orgánica #################################################
 ############################################################################################
-    # '222074 -> 1º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
-    # '222075 -> 2º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
-    # '101324 -> 2º E.S.O.'
-    # '101325 -> 3º E.S.O.'
+# '222074 -> 1º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
+# '222075 -> 2º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
+# '101324 -> 2º E.S.O.'
+# '101325 -> 3º E.S.O.'
 TC = {
     'I.E.S. - Instituto de Educación Secundaria': {
         'Educación Secundaria Obligatoria': {
@@ -521,6 +521,103 @@ TC = {
             },
         },
     },
+    'C.E.I.P. - Colegio de Educación Infantil y Primaria': {
+        'Infantil': {
+            '1º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3') & Q(
+                    materia__curso__clave_ex='100304'),
+                'horas_base': True,
+                'codecol': 10180
+            },
+            '2º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3') & Q(
+                    materia__curso__clave_ex='100305'),
+                'horas_base': True,
+                'codecol': 10185
+            },
+            '3º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3') & Q(
+                    materia__curso__clave_ex='100306'),
+                'horas_base': True,
+                'codecol': 10190
+            },
+        },
+        'Primaria': {
+            '1º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='12') & Q(
+                    materia__curso__clave_ex='101317'),
+                'horas_base': True,
+                'codecol': 10200
+            },
+            '2º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='12') & Q(
+                    materia__curso__clave_ex='101318'),
+                'horas_base': True,
+                'codecol': 10205
+            },
+            '3º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='12') & Q(
+                    materia__curso__clave_ex='101319'),
+                'horas_base': True,
+                'codecol': 10210
+            },
+            '4º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='12') & Q(
+                    materia__curso__clave_ex='101320'),
+                'horas_base': True,
+                'codecol': 10215
+            },
+            '5º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='12') & Q(
+                    materia__curso__clave_ex='101321'),
+                'horas_base': True,
+                'codecol': 10220
+            },
+            '6º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='12') & Q(
+                    materia__curso__clave_ex='101322'),
+                'horas_base': True,
+                'codecol': 10225
+            },
+        },
+        'Otras horas': {
+            'Apoyo': {
+                'q': Q(actividad__clave_ex='522'),
+                'horas_base': True,
+                'codecol': 10230
+            },
+            'Atención ACNEE AL': {
+                'q': Q(actividad__clave_ex='563'),
+                'horas_base': True,
+                'codecol': 10235
+            },
+            'Atención ACNEE PT': {
+                'q': Q(actividad__clave_ex='562'),
+                'horas_base': True,
+                'codecol': 10240
+            },
+            'Coordinador Ciclo': {
+                'q': Q(actividad__clave_ex='116'),
+                'horas_base': True,
+                'codecol': 10245
+            },
+            'Coor. Comedor/Transporte': {
+                'q': Q(actividad__clave_ex='527'),
+                'horas_base': True,
+                'codecol': 10250
+            },
+            'Dirección/Jefatura/Secretaría': {
+                'q': Q(actividad__clave_ex__in=['529', '530', '532']),
+                'horas_base': True,
+                'codecol': 10255
+            },
+            'Mayor 55': {
+                'q': Q(actividad__clave_ex='176'),
+                'horas_base': True,
+                'codecol': 10260
+            },
+        },
+    },
 }
 
 
@@ -562,7 +659,6 @@ class PlantillaOrganica(models.Model):
                                                                                    'c_coddep').distinct()
         for dependencia in dependencias:
             self.carga_dependencia(dependencia)
-
 
     ########################################################################
     ############ Cargamos etapas:
@@ -659,14 +755,20 @@ class PlantillaOrganica(models.Model):
     ########################################################################
     ############ Cargamos departamentos:
     def carga_departamentos(self):
-        departamentos = self.plantillaxls_set.all().values('departamento', 'x_departamento').distinct()
-        for d in departamentos:
-            if d['x_departamento'] == '63':  # El 63 es el departamento de Actividades compl. y extraes.
-                DepEntidad.objects.get_or_create(ronda=self.ronda_centro, nombre=d['departamento'],
-                                                 clave_ex=d['x_departamento'], didactico=False)
-            else:
-                DepEntidad.objects.get_or_create(ronda=self.ronda_centro, nombre=d['departamento'],
-                                                 clave_ex=d['x_departamento'])
+        if 'C.E.I.P.' in self.ronda_centro.entidad.entidadextra.tipo_centro:
+            departamentos = self.plantillaxls_set.all().values('puesto', 'x_puesto').distinct()
+            for d in departamentos:
+                DepEntidad.objects.get_or_create(ronda=self.ronda_centro, nombre=d['puesto'], clave_ex=d['x_puesto'])
+        else:
+            departamentos = self.plantillaxls_set.all().values('departamento', 'x_departamento').distinct()
+            for d in departamentos:
+                if d['x_departamento'] == '63':  # El 63 es el departamento de Actividades compl. y extraes.
+                    DepEntidad.objects.get_or_create(ronda=self.ronda_centro, nombre=d['departamento'],
+                                                     clave_ex=d['x_departamento'], didactico=False)
+                else:
+                    DepEntidad.objects.get_or_create(ronda=self.ronda_centro, nombre=d['departamento'],
+                                                     clave_ex=d['x_departamento'])
+
         return True
 
     ########################################################################
@@ -688,9 +790,9 @@ class PlantillaOrganica(models.Model):
             try:
                 act, c = Actividad.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_ex=a['x_actividad'])
                 if c:
-                    act.requiere_unidad=b[a['l_requnidad']]
-                    act.nombre=a['actividad']
-                    act.requiere_materia=b[a['docencia']]
+                    act.requiere_unidad = b[a['l_requnidad']]
+                    act.nombre = a['actividad']
+                    act.requiere_materia = b[a['docencia']]
                     act.save()
             except Exception as msg:
                 log = 'Error cargar actividad %s. %s' % (a['x_actividad'], str(msg))
@@ -728,7 +830,10 @@ class PlantillaOrganica(models.Model):
             puesto = None
             LogCarga.objects.create(g_e=gex, log='No encuentra puesto: %s' % x_puesto)
         try:
-            departamento = DepEntidad.objects.get(clave_ex=x_departamento, ronda=self.ronda_centro)
+            if 'C.E.I.P.' in self.ronda_centro.entidad.entidadextra.tipo_centro:
+                departamento = DepEntidad.objects.get(clave_ex=x_puesto, ronda=self.ronda_centro)
+            else:
+                departamento = DepEntidad.objects.get(clave_ex=x_departamento, ronda=self.ronda_centro)
             midep, c = MiembroDepartamento.objects.get_or_create(departamento=departamento, g_e=gex)
             if puesto:
                 midep.puesto = puesto.clave_cargo
@@ -747,7 +852,8 @@ class PlantillaOrganica(models.Model):
             if not ge['x_docente'] in x_docentes:
                 x_docentes.append(ge['x_docente'])
                 last_name, first_name = ge['docente'].split(', ')
-                clave_ex, dni, x_puesto, x_departamento = ge['x_docente'], ge['dni'], ge['x_puesto'], ge['x_departamento']
+                clave_ex, dni, x_puesto, x_departamento = ge['x_docente'], ge['dni'], ge['x_puesto'], ge[
+                    'x_departamento']
                 username, email = ge['email'].split('@')[0], ge['email']
                 try:
                     gauser = Gauser.objects.get(dni=dni)
@@ -857,7 +963,7 @@ class PlantillaOrganica(models.Model):
             estructura = TC[tipo_centro]
         except:
             LogCarga.objects.create(g_e=self.g_e, log='No existe la estructura de: %s' % tipo_centro)
-            estructura = list(TC.keys())[0] # Por defecto tomar la primera key del diccionario
+            estructura = list(TC.keys())[0]  # Por defecto tomar la primera key del diccionario
         return estructura
 
     @property  # Anchura en porcentaje de cada parte de la tabla:
@@ -891,8 +997,6 @@ class PlantillaOrganica(models.Model):
         docentes = Gauser_extra.objects.filter(cargos__in=[cargo_docente])
         for docente in docentes:
             self.carga_pdocente(docente)
-
-
 
     def usar_unidad(self, unidad, usar):
         for pxls in self.plantillaxls_set.filter(unidad=unidad):
@@ -1008,7 +1112,6 @@ class PDocente(models.Model):
     def horas_totales(self):
         return sum(self.pdocentecol_set.all().values_list('periodos', flat=True))
 
-
     def __str__(self):
         return '%s - %s' % (self.po, self.g_e)
 
@@ -1021,6 +1124,7 @@ class PDocenteCol(models.Model):
 
     def __str__(self):
         return '%s - %s - (%s)' % (self.pd, self.nombre, self.periodos)
+
 
 class GrupoExcluido(models.Model):
     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE)

@@ -1353,3 +1353,15 @@ class MiembroDepartamento(models.Model):
 
     def __str__(self):
         return '%s - dep: %s - puesto: %s' % (self.g_e, self.departamento.nombre, self.get_puesto())
+
+
+# class MiembroEspecialidad(models.Model):
+#     departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE)
+#     g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
+#     especialidad = models.ForeignKey(Especialidad_funcionario, on_delete=models.CASCADE, blank=True, null=True)
+#
+#     def get_puesto(self):
+#         return Cargo.objects.get(entidad=self.departamento.ronda.entidad, clave_cargo=self.puesto)
+#
+#     def __str__(self):
+#         return '%s - dep: %s - puesto: %s' % (self.g_e, self.departamento.nombre, self.get_puesto())

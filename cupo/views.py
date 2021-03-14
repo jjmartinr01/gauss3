@@ -582,6 +582,9 @@ def plantilla_organica(request):
             carga_masiva_from_file.delay()
             crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
         elif request.POST['action'] == 'open_accordion' and request.is_ajax():
+            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
+            html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
+            return JsonResponse({'ok': True, 'html': html})
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
                 html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
