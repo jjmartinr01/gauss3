@@ -33,7 +33,7 @@
                                     class="fa fa-calendar-check-o"></i> Evento</a></li>
                     {% endif %}
                 {% endif %}
-                {% if g_e|has_permiso:'d_conv_reunion' or g_e.gauser == conv.configura %}
+                {% if g_e|has_permiso:'d_conv_reunion' or g_e.gauser == conv.creador %}
                     <li title="Borrar la convocatoria">
                         <a data-id="{{ conv.id }}" class="button delete_conv_reunion"><i
                                 data-plantilla="{{ conv.plantilla }}" class="fa fa-trash-o"></i>
