@@ -469,6 +469,11 @@ def tareas_ie(request):
 # carga.save()
 # return HttpResponse(errores)
 
+@permiso_required('acceso_informes_ie')
+def get_informe_ie(request, id):
+    ie = InformeInspeccion.objects.get(id=id)
+    return JsonResponse({'asunto': ie.asunto, 'texto': ie.texto})
+
 
 @permiso_required('acceso_informes_ie')
 def informes_ie(request):
