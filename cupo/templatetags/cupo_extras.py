@@ -70,6 +70,8 @@ def get_columnas_departamento(po, departamento):
     for apartado in po.estructura_po:
         for nombre_columna, contenido_columna in po.estructura_po[apartado].items():
             periodos = pdcols.filter(codecol=contenido_columna['codecol']).aggregate(Sum('periodos'))['periodos__sum']
+            if not periodos:
+                periodos = 0
             horas_totales += periodos
             if contenido_columna['horas_base']:
                 horas_basicas += periodos

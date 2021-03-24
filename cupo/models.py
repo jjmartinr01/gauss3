@@ -294,6 +294,11 @@ TC = {
                 'horas_base': False,
                 'codecol': 10095
             },
+            'Horas TIC': {
+                'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='528') | Q(actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
+                'horas_base': False,
+                'codecol': 10096
+            },
         },
     },
     'S.I.E.S. - Sección de Instituto de Educación Secundaria': {
@@ -416,6 +421,11 @@ TC = {
                 'horas_base': False,
                 'codecol': 10095
             },
+            'Horas TIC': {
+                'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='528') | Q(actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
+                'horas_base': False,
+                'codecol': 10096
+            },
         },
     },
     'C.E.P.A. - Centro Público de Educación de Personas Adultas': {
@@ -519,6 +529,11 @@ TC = {
                 'horas_base': False,
                 'codecol': 10175
             },
+            'Horas TIC': {
+                'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='528') | Q(actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
+                'horas_base': False,
+                'codecol': 10176
+            },
         },
     },
     'C.E.I.P. - Colegio de Educación Infantil y Primaria': {
@@ -615,6 +630,11 @@ TC = {
                 'q': Q(actividad__clave_ex='176'),
                 'horas_base': True,
                 'codecol': 10260
+            },
+            'Horas TIC': {
+                'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='528') | Q(actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
+                'horas_base': False,
+                'codecol': 10261
             },
         },
     },
