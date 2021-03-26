@@ -295,7 +295,7 @@ TC = {
                 'codecol': 10095
             },
             'Horas TIC': {
-                'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='528') | Q(actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
+                'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='512') | Q(actividad__clave_ex='528') | Q(actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
                 'horas_base': False,
                 'codecol': 10096
             },
@@ -422,7 +422,7 @@ TC = {
                 'codecol': 10095
             },
             'Horas TIC': {
-                'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='528') | Q(actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
+                'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='512') | Q(actividad__clave_ex='528') | Q(actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
                 'horas_base': False,
                 'codecol': 10096
             },
@@ -530,7 +530,7 @@ TC = {
                 'codecol': 10175
             },
             'Horas TIC': {
-                'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='528') | Q(actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
+                'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='512') | Q(actividad__clave_ex='528') | Q(actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
                 'horas_base': False,
                 'codecol': 10176
             },
@@ -632,7 +632,7 @@ TC = {
                 'codecol': 10260
             },
             'Horas TIC': {
-                'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='528') | Q(actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
+                'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='512') | Q(actividad__clave_ex='528') | Q(actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
                 'horas_base': False,
                 'codecol': 10261
             },
