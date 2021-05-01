@@ -877,7 +877,8 @@ class PlantillaOrganica(models.Model):
     ########################################################################
     ############ Cargamos departamentos:
     def carga_departamentos(self):
-        if 'C.E.I.P.' in self.ronda_centro.entidad.entidadextra.tipo_centro:
+        tipo_centro = self.ronda_centro.entidad.entidadextra.tipo_centro
+        if 'C.E.I.P.' in tipo_centro or 'C.R.A.' in tipo_centro:
             departamentos = self.plantillaxls_set.all().values('puesto', 'x_puesto').distinct()
             for d in departamentos:
                 DepEntidad.objects.get_or_create(ronda=self.ronda_centro, nombre=d['puesto'], clave_ex=d['x_puesto'])
@@ -952,7 +953,8 @@ class PlantillaOrganica(models.Model):
             puesto = None
             LogCarga.objects.create(g_e=gex, log='No encuentra puesto: %s' % x_puesto)
         try:
-            if 'C.E.I.P.' in self.ronda_centro.entidad.entidadextra.tipo_centro:
+            tipo_centro = self.ronda_centro.entidad.entidadextra.tipo_centro
+            if 'C.E.I.P.' in tipo_centro or 'C.R.A.' in tipo_centro:
                 departamento = DepEntidad.objects.get(clave_ex=x_puesto, ronda=self.ronda_centro)
             else:
                 departamento = DepEntidad.objects.get(clave_ex=x_departamento, ronda=self.ronda_centro)
