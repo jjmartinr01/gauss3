@@ -21,7 +21,7 @@ from horarios.models import SesionExtra, Horario, Sesion
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo, GrupoExcluido, \
-    CursoCupo, EtapaEscolarCupo
+    CursoCupo, EtapaEscolarCupo, CupoPermisos
 from cupo.models import PlantillaOrganica, PDocenteCol
 from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento
 from entidades.models import Departamento as Depentidad
@@ -42,22 +42,50 @@ CUERPOS_CUPO = ('590', '591', '592', '593', '594', '595', '596')
 def cupo(request):
     g_e = request.session['gauser_extra']
 
-    etapas = EtapaEscolar.objects.all()
 
+    etapas = EtapaEscolar.objects.all()
     materias = Materia_cupo.objects.all()
     cupos = Cupo.objects.all()
+    # cursos = Curso.objects.all()
     for cupo in cupos:
-        pass
-    for m in materias:
         for etapa in etapas:
-            EtapaEscolarCupo.objects.get_or_create(cupo=m.cupo, nombre=etapa.nombre, clave_ex=etapa.clave_ex)
+            EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=etapa.nombre, clave_ex=etapa.clave_ex)
+        # for curso in cursos:
+        #     try:
+        #         etapa = EtapaEscolarCupo.objects.get(cupo=cupo, clave_ex=curso.etapa_escolar.clave_ex)
+        #     except:
+        #         etapa = None
+        #     CursoCupo.objects.get_or_create(cupo=cupo, nombre=curso.nombre, etapa_escolar=etapa,
+        #                                         tipo=curso.tipo,
+        #                                         nombre_especifico=curso.nombre_especifico, clave_ex=curso.clave_ex)
+    for m in materias:
         try:
-            etapa = EtapaEscolarCupo.objects.get(cupo=m.cupo, clave_ex=m.curso.etapa_escolar.clave_ex)
+            etapa = EtapaEscolarCupo.objects.get(clave_ex=m.curso.etapa_escolar.clave_ex)
         except:
-            etapa =None
-        cc, c = CursoCupo.objects.get_or_create(cupo=m.cupo, nombre=m.curso.nombre, etapa_escolar=etapa,
-                                               tipo=m.curso.tipo,
-                                               nombre_especifico=m.curso.nombre_especifico, clave_ex=m.curso.clave_ex)
+            etapa = None
+        try:
+            curso_nombre = m.curso.nombre
+        except:
+            curso_nombre = ''
+        try:
+            curso_tipo = m.curso.tipo
+        except:
+            curso_tipo = ''
+        try:
+            curso_nombre_esp = m.curso.nombre_especifico
+        except:
+            curso_nombre_esp = ''
+        try:
+            curso_clave_ex = m.curso.clave_ex
+        except:
+            curso_clave_ex = ''
+        cc, c = CursoCupo.objects.get_or_create(cupo=m.cupo, nombre=curso_nombre, etapa_escolar=etapa,
+                                        tipo=curso_tipo,
+                                        nombre_especifico=curso_nombre_esp, clave_ex=curso_clave_ex)
+        # try:
+        #     curso = CursoCupo.objects.get(cupo=m.cupo, clave_ex=m.curso.clave_ex)
+        # except:
+        #     curso = None
         m.curso_cupo = cc
         m.save()
 
@@ -76,7 +104,8 @@ def cupo(request):
             logger.info('%s, genera pdf del cupo %s' % (g_e, cupo.id))
             return response
 
-    cupos = Cupo.objects.filter(ronda__entidad=g_e.ronda.entidad)
+    cupos_id = CupoPermisos.objects.filter(gauser=g_e.gauser).values_list('cupo__id', flat=True)
+    cupos = Cupo.objects.filter(Q(ronda__entidad=g_e.ronda.entidad) | Q(id__in=cupos_id)).distinct()
     plantillas_o = PlantillaOrganica.objects.filter(g_e=g_e)
     return render(request, "cupo.html", {'formname': 'cupo_profesorado', 'cupos': cupos, 'plantillas_o': plantillas_o})
 
@@ -104,6 +133,7 @@ def crear_profesores_cupo(cupo):
     return True
 
 
+
 def ajax_cupo(request):
     if request.is_ajax():
         g_e = request.session['gauser_extra']
@@ -111,7 +141,9 @@ def ajax_cupo(request):
         if action == 'add_cupo' and g_e.has_permiso('crea_cupos'):
             try:
                 crea_departamentos(g_e.ronda)
-                cupo = Cupo.objects.create(ronda=g_e.ronda, nombre='Cupo creado el %s' % (datetime.datetime.now()))
+                nombre = '%s - Cupo creado el %s' % (g_e.ronda.entidad.name, datetime.datetime.now())
+                cupo = Cupo.objects.create(ronda=g_e.ronda, nombre=nombre)
+                CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
                 geps = Gauser_extra_programaciones.objects.filter(ge__ronda=cupo.ronda).order_by('puesto')
                 for pd in geps.values_list('puesto', 'departamento__id').distinct():
                     if pd[0]:
@@ -120,17 +152,39 @@ def ajax_cupo(request):
                             departamento = Departamento.objects.get(ronda=cupo.ronda, id=pd[1])
                             ec.departamento = departamento
                             ec.save()
+
+                for etapa in EtapaEscolar.objects.all():
+                    EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=etapa.nombre, clave_ex=etapa.clave_ex)
                 materias = Materia.objects.filter(curso__ronda=cupo.ronda)
                 for m in materias:
                     try:
-                        c = Curso.objects.get(ronda=cupo.ronda, nombre=m.curso.nombre)
+                        etapa = EtapaEscolarCupo.objects.get(clave_ex=m.curso.etapa_escolar.clave_ex)
                     except:
-                        c = None
+                        etapa = None
+                    try:
+                        curso_nombre = m.curso.nombre
+                    except:
+                        curso_nombre = ''
+                    try:
+                        curso_tipo = m.curso.tipo
+                    except:
+                        curso_tipo = ''
+                    try:
+                        curso_nombre_esp = m.curso.nombre_especifico
+                    except:
+                        curso_nombre_esp = ''
+                    try:
+                        curso_clave_ex = m.curso.clave_ex
+                    except:
+                        curso_clave_ex = ''
+                    cc, c = CursoCupo.objects.get_or_create(cupo=cupo, nombre=curso_nombre, etapa_escolar=etapa,
+                                                            tipo=curso_tipo,
+                                                            nombre_especifico=curso_nombre_esp, clave_ex=curso_clave_ex)
                     try:
                         horas = m.horas
                     except:
                         horas = 0
-                    Materia_cupo.objects.create(cupo=cupo, curso=c, nombre=m.nombre, periodos=horas)
+                    Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=m.nombre, periodos=horas)
                 logger.info('%s, add_cupo id=%s' % (g_e, cupo.id))
                 ds = Departamento.objects.filter(ronda=cupo.ronda)
                 html = render_to_string('formulario_cupo.html', {'cupo': cupo, 'request': request, 'departamentos': ds})
@@ -142,46 +196,60 @@ def ajax_cupo(request):
             try:
                 po = PlantillaOrganica.objects.get(id=request.POST['po'], g_e=g_e)
                 nombre = '%s - Cupo creado el %s' % (po.ronda_centro.entidad.name, datetime.datetime.now())
-                cupo = Cupo.objects.create(ronda=g_e.ronda, nombre=nombre)
+                cupo = Cupo.objects.create(ronda=po.ronda_centro, nombre=nombre)
+                CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
                 especialidades = set(po.plantillaxls_set.all().values_list('x_puesto', 'puesto'))
                 for e in especialidades:
                     EspecialidadCupo.objects.get_or_create(cupo=cupo, departamento=None, nombre=e[1])
-                # departamentos = Depentidad.objects.filter(ronda=po.ronda_centro)
-                # for d in departamentos:
-                #     try:
-                #         dp = Departamento.objects.get(ronda=d.ronda, abreviatura=d.abreviatura)
-                #     except:
-                #         dp = Departamento.objects.create(ronda=d.ronda, abreviatura=d.abreviatura,
-                #                                          didactico=d.didactico, nombre=d.nombre,
-                #                                          horas_coordinador=d.horas_coordinador, fp=d.fp)
-                #     for miembro in dp.miembrodepartamento_set.all():
-                #         EspecialidadCupo.objects.get_or_create(cupo=cupo, departamento=dp,
-                #                                                nombre=miembro.especialidad.nombre)
+                for etapa in EtapaEscolar.objects.all():
+                    EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=etapa.nombre, clave_ex=etapa.clave_ex)
                 materias = Materia.objects.filter(curso__ronda=cupo.ronda)
                 for m in materias:
                     try:
-                        c = Curso.objects.get(ronda=cupo.ronda, nombre=m.curso.nombre)
+                        etapa = EtapaEscolarCupo.objects.get(cupo=cupo, clave_ex=m.curso.etapa_escolar.clave_ex)
                     except:
-                        c = None
+                        etapa = None
+                    try:
+                        curso_nombre = m.curso.nombre
+                    except:
+                        curso_nombre = ''
+                    try:
+                        curso_tipo = m.curso.tipo
+                    except:
+                        curso_tipo = ''
+                    try:
+                        curso_nombre_esp = m.curso.nombre_especifico
+                    except:
+                        curso_nombre_esp = ''
+                    try:
+                        curso_clave_ex = m.curso.clave_ex
+                    except:
+                        curso_clave_ex = ''
+                    cc, c = CursoCupo.objects.get_or_create(cupo=cupo, nombre=curso_nombre, etapa_escolar=etapa,
+                                                            tipo=curso_tipo,
+                                                            nombre_especifico=curso_nombre_esp, clave_ex=curso_clave_ex)
                     try:
                         horas = m.horas
                     except:
                         horas = 0
-                    Materia_cupo.objects.create(cupo=cupo, curso=c, nombre=m.nombre, periodos=horas)
+                    Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=m.nombre, periodos=horas)
                 logger.info('%s, add_cupo id=%s' % (g_e, cupo.id))
                 ds = Departamento.objects.filter(ronda=cupo.ronda)
                 html = render_to_string('formulario_cupo.html', {'cupo': cupo, 'request': request, 'departamentos': ds})
                 return JsonResponse({'ok': True, 'html': html})
-            except:
-                return JsonResponse({'ok': False})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
 
         elif action == 'copy_cupo' and g_e.has_permiso('copia_cupo_profesorado'):
-            orig = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
+            orig = Cupo.objects.get(id=request.POST['cupo'])
+            if orig.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() < 1:
+                return JsonResponse({'ok': False, 'msg': 'No tienes permiso para copiar el cupo'})
             cupo = Cupo.objects.create(ronda=g_e.ronda, nombre='(copia) %s' % (orig.nombre),
                                        max_completa=orig.max_completa, min_completa=orig.min_completa,
                                        max_dostercios=orig.max_dostercios, min_dostercios=orig.min_dostercios,
                                        max_media=orig.max_media, min_media=orig.min_media,
                                        max_tercio=orig.max_tercio, min_tercio=orig.min_tercio)
+            CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
             crea_departamentos(g_e.ronda)
             for e in orig.especialidadcupo_set.all():
                 e.pk = None
@@ -192,9 +260,27 @@ def ajax_cupo(request):
                     e.departamento = None
                     crear_aviso(request, False, 'No se encuentra departamento para %s' % e.nombre)
                 e.save()
+            for etapa in orig.etapaescolarcupo_set.all():
+                etapa.pk = None
+                etapa.cupo = cupo
+                etapa.save()
+            for curso in orig.cursocupo_set.all():
+                if curso.etapa_escolar:
+                    etapa = cupo.etapaescolarcupo_set.get(clave_ex=curso.etapa_escolar.clave_ex)
+                else:
+                    etapa = None
+                curso.pk = None
+                curso.etapa_escolar = etapa
+                curso.cupo = cupo
+                curso.save()
             for m in orig.materia_cupo_set.all():
+                if m.curso_cupo:
+                    curso = cupo.cursocupo_set.get(clave_ex=m.curso_cupo.clave_ex)
+                else:
+                    curso = None
                 m.pk = None
                 m.cupo = cupo
+                m.curso_cupo = curso
                 try:
                     especialidad = EspecialidadCupo.objects.get(cupo=cupo, nombre=m.especialidad.nombre)
                     m.especialidad = especialidad
@@ -234,46 +320,69 @@ def ajax_cupo(request):
 
         elif action == 'delete_cupo' and g_e.has_permiso('borra_cupo_profesorado'):
             try:
-                cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                logger.info('%s, delete_cupo %s' % (g_e, cupo.id))
-                cupo.delete()
-                return JsonResponse({'ok': True})
-            except:
-                return JsonResponse({'ok': False})
-
-        elif action == 'bloquea_cupo' and g_e.has_permiso('bloquea_cupos'):
-            try:
-                bloquear = request.POST['bloquear']
-                cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                logger.info('%s, bloquea_cupo %s %s' % (g_e, cupo.id, bloquear))
-                cupo.bloqueado = {'true': True, 'false': False}[bloquear]
-                cupo.save()
-                return JsonResponse({'ok': True})
-            except:
-                return JsonResponse({'ok': False})
-
-        elif action == 'add_filtro' and g_e.has_permiso('pdf_cupo'):
-            try:
-                cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                logger.info('%s, add_filtro_cupo %s' % (g_e, cupo.id))
-                nombre = request.POST['nombre']
-                filtro = request.POST['filtro']
-                if len(filtro) > 0 and len(nombre) > 0:
-                    f = FiltroCupo.objects.create(cupo=cupo, nombre=nombre, filtro=filtro)
-                    return JsonResponse({'ok': True, 'filtro': render_to_string('filtro_cupo.html', {'filtro': f}),
-                                         'cupo': cupo.id})
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                if cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='x').count() > 0:
+                    logger.info('%s, delete_cupo %s' % (g_e, cupo.id))
+                    cupo.delete()
+                    return JsonResponse({'ok': True})
                 else:
-                    return JsonResponse({'ok': False})
+                    msg = '%s, intento fallido de borrar el cupo %s' % (g_e, cupo.id)
+                    logger.info(msg)
+                    return JsonResponse({'ok': False, 'msg': msg})
+            except:
+                msg = '%s, error al intentar borrar el cupo %s' % (g_e, request.POST['cupo'])
+                logger.info(msg)
+                return JsonResponse({'ok': False, 'msg': msg})
+
+        elif action == 'bloquea_cupo':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('bloquea_cupos')
+                if con1 or con2:
+                    bloquear = request.POST['bloquear']
+                    logger.info('%s, bloquea_cupo %s %s' % (g_e, cupo.id, bloquear))
+                    cupo.bloqueado = {'true': True, 'false': False}[bloquear]
+                    cupo.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except:
                 return JsonResponse({'ok': False})
 
-        elif action == 'delete_filtro' and g_e.has_permiso('pdf_cupo'):
+        elif action == 'add_filtro':
             try:
-                filtro = FiltroCupo.objects.get(cupo__ronda__entidad=g_e.ronda.entidad, cupo=request.POST['cupo'],
-                                                id=request.POST['filtro'])
-                id = filtro.id
-                filtro.delete()
-                return JsonResponse({'ok': True, 'filtro': id})
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('pdf_cupo')
+                if con1 or con2:
+                    logger.info('%s, add_filtro_cupo %s' % (g_e, cupo.id))
+                    nombre = request.POST['nombre']
+                    filtro = request.POST['filtro']
+                    if len(filtro) > 0 and len(nombre) > 0:
+                        f = FiltroCupo.objects.create(cupo=cupo, nombre=nombre, filtro=filtro)
+                        return JsonResponse({'ok': True, 'filtro': render_to_string('filtro_cupo.html', {'filtro': f}),
+                                             'cupo': cupo.id})
+                    else:
+                        return JsonResponse({'ok': False})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
+            except:
+                return JsonResponse({'ok': False})
+
+        elif action == 'delete_filtro':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('pdf_cupo')
+                if con1 or con2:
+                    filtro = FiltroCupo.objects.get(cupo__ronda__entidad=g_e.ronda.entidad, cupo=cupo,
+                                                    id=request.POST['filtro'])
+                    id = filtro.id
+                    filtro.delete()
+                    return JsonResponse({'ok': True, 'filtro': id})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except:
                 return JsonResponse({'ok': False})
 
@@ -305,70 +414,85 @@ def ajax_cupo(request):
                 return JsonResponse({'ok': False})
         elif action == 'change_max_min_cupo':  # and g_e.has_permiso('edita_cupos'):
             try:
-                cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                if not cupo.bloqueado:
-                    attr = request.POST['attr']
-                    logger.info('%s, change_%s %s' % (g_e, attr, cupo.id))
-                    setattr(cupo, attr, request.POST['valor'])
-                    cupo.save()
-                    return JsonResponse({'ok': True})
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    if not cupo.bloqueado:
+                        attr = request.POST['attr']
+                        logger.info('%s, change_%s %s' % (g_e, attr, cupo.id))
+                        setattr(cupo, attr, request.POST['valor'])
+                        cupo.save()
+                        return JsonResponse({'ok': True})
+                    else:
+                        return JsonResponse({'ok': False})
                 else:
-                    return JsonResponse({'ok': False})
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except:
                 return JsonResponse({'ok': False})
 
         elif action == 'change_curso':
             try:
-                cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                if not request.POST['curso']:
-                    materias_cupo = Materia_cupo.objects.filter(cupo=cupo, curso=None)
-                    if not materias_cupo:
-                        m = Materia_cupo.objects.create(cupo=cupo, min_num_alumnos=1, max_num_alumnos=100,
-                                                        nombre="Actividad/Materia no asociada a ningún curso",
-                                                        periodos=2)
-                        materias_cupo = [m]
-                    logger.info('%s, change_curso empty' % (g_e))
-                elif request.POST['curso'] == 'any_course':
-                    materias_cupo = Materia_cupo.objects.filter(cupo=cupo)
-                    logger.info('%s, change_curso any_course' % g_e)
-                else:
-                    curso = Curso.objects.get(id=request.POST['curso'], ronda=cupo.ronda)
-                    materias_cupo = Materia_cupo.objects.filter(cupo=cupo, curso=curso)
-                    if not materias_cupo:  # Por ejemplo en un cupo creado antes que un determinado curso
-                        m = Materia_cupo.objects.create(cupo=cupo, min_num_alumnos=15, max_num_alumnos=35,
-                                                        nombre="Actividad/Materia creada automáticamente",
-                                                        periodos=4, curso=curso)
-                        materias_cupo = [m]
-                    logger.info('%s, change_curso %s' % (g_e, curso.nombre))
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    if not request.POST['curso']:
+                        materias_cupo = Materia_cupo.objects.filter(cupo=cupo, curso=None)
+                        if not materias_cupo:
+                            m = Materia_cupo.objects.create(cupo=cupo, min_num_alumnos=1, max_num_alumnos=100,
+                                                            nombre="Actividad/Materia no asociada a ningún curso",
+                                                            periodos=2)
+                            materias_cupo = [m]
+                        logger.info('%s, change_curso empty' % (g_e))
+                    elif request.POST['curso'] == 'any_course':
+                        materias_cupo = Materia_cupo.objects.filter(cupo=cupo)
+                        logger.info('%s, change_curso any_course' % g_e)
+                    else:
+                        curso = CursoCupo.objects.get(id=request.POST['curso'], cupo=cupo)
+                        materias_cupo = Materia_cupo.objects.filter(cupo=cupo, curso_cupo=curso)
+                        if not materias_cupo:  # Por ejemplo en un cupo creado antes que un determinado curso
+                            m = Materia_cupo.objects.create(cupo=cupo, min_num_alumnos=15, max_num_alumnos=35,
+                                                            nombre="Actividad/Materia creada automáticamente",
+                                                            periodos=4, curso=curso)
+                            materias_cupo = [m]
+                        logger.info('%s, change_curso %s' % (g_e, curso.nombre))
 
-                especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
-                materias = render_to_string('edit_cupo_materias.html',
-                                            {'materias': materias_cupo, 'especialidades': especialidades, 's_c': True})
-                return JsonResponse({'ok': True, 'materias': materias})
+                    especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
+                    materias = render_to_string('edit_cupo_materias.html',
+                                                {'materias': materias_cupo, 'especialidades': especialidades, 's_c': True})
+                    return JsonResponse({'ok': True, 'materias': materias})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
         elif action == 'change_especialidad_global':
             try:
-                cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                if request.POST['especialidad']:
-                    especialidad = EspecialidadCupo.objects.get(id=request.POST['especialidad'], cupo=cupo)
-                    profesores_cupo = cupo_especialidad(cupo, especialidad).reparto_profes
-                    materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=especialidad)
-                    especialidad_nombre = especialidad.nombre
-                    logger.info('%s, change_especialidad_global %s' % (g_e, especialidad_nombre))
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    if request.POST['especialidad']:
+                        especialidad = EspecialidadCupo.objects.get(id=request.POST['especialidad'], cupo=cupo)
+                        profesores_cupo = cupo_especialidad(cupo, especialidad).reparto_profes
+                        materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=especialidad)
+                        especialidad_nombre = especialidad.nombre
+                        logger.info('%s, change_especialidad_global %s' % (g_e, especialidad_nombre))
+                    else:
+                        materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=None)
+                        profesores_cupo = None
+                        especialidad_nombre = None
+                        especialidad = None
+                        logger.info('%s, change_especialidad_global sin especialidad' % (g_e))
+                    especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
+                    materias = render_to_string('edit_cupo_materias.html',
+                                                {'materias': materias_cupo, 'especialidades': especialidades,
+                                                 'especialidad': especialidad})
+                    return JsonResponse({'ok': True, 'materias': materias, 'profesores_cupo': profesores_cupo,
+                                         'especialidad': especialidad_nombre})
                 else:
-                    materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=None)
-                    profesores_cupo = None
-                    especialidad_nombre = None
-                    especialidad = None
-                    logger.info('%s, change_especialidad_global sin especialidad' % (g_e))
-                especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
-                materias = render_to_string('edit_cupo_materias.html',
-                                            {'materias': materias_cupo, 'especialidades': especialidades,
-                                             'especialidad': especialidad})
-                return JsonResponse({'ok': True, 'materias': materias, 'profesores_cupo': profesores_cupo,
-                                     'especialidad': especialidad_nombre})
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
@@ -376,178 +500,228 @@ def ajax_cupo(request):
             q = request.POST['q']
             s_c = True
             try:
-                cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                especialidad = None
-                if request.POST['especialidad'] == 'empty':
-                    if not request.POST['curso']:
-                        materias_cupo = Materia_cupo.objects.filter(cupo=cupo, curso=None, nombre__icontains=q)
-                        s_c = False
-                        logger.info('%s, filtro_materia no asociadas a curso' % (g_e))
-                    elif request.POST['curso'] == 'any_course':
-                        materias_cupo = Materia_cupo.objects.filter(cupo=cupo, nombre__icontains=q)
-                        s_c = False
-                        logger.info('%s, filtro_materia any_course' % g_e)
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    especialidad = None
+                    if request.POST['especialidad'] == 'empty':
+                        if not request.POST['curso']:
+                            materias_cupo = Materia_cupo.objects.filter(cupo=cupo, curso=None, nombre__icontains=q)
+                            s_c = False
+                            logger.info('%s, filtro_materia no asociadas a curso' % (g_e))
+                        elif request.POST['curso'] == 'any_course':
+                            materias_cupo = Materia_cupo.objects.filter(cupo=cupo, nombre__icontains=q)
+                            s_c = False
+                            logger.info('%s, filtro_materia any_course' % g_e)
+                        else:
+                            curso = CursoCupo.objects.get(id=request.POST['curso'], cupo=cupo)
+                            materias_cupo = Materia_cupo.objects.filter(cupo=cupo, curso_cupo=curso, nombre__icontains=q)
+                            logger.info('%s, filtro_materia %s' % (g_e, curso.nombre))
                     else:
-                        curso = Curso.objects.get(id=request.POST['curso'], ronda=cupo.ronda)
-                        materias_cupo = Materia_cupo.objects.filter(cupo=cupo, curso=curso, nombre__icontains=q)
-                        logger.info('%s, filtro_materia %s' % (g_e, curso.nombre))
+                        if request.POST['especialidad']:
+                            especialidad_id = request.POST['especialidad']
+                            especialidad = EspecialidadCupo.objects.get(id=especialidad_id, cupo=cupo)
+                            materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=especialidad,
+                                                                        nombre__icontains=q)
+                            s_c = False
+                            logger.info('%s, filtro_materia %s' % (g_e, especialidad.nombre))
+                        else:
+                            materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=None, nombre__icontains=q)
+                            s_c = False
+                            logger.info('%s, filtro_materia sin especialidad' % (g_e))
+                    especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
+                    materias = render_to_string('edit_cupo_materias.html',
+                                                {'materias': materias_cupo, 'especialidades': especialidades, 's_c': s_c,
+                                                 'especialidad': especialidad})
+                    return JsonResponse({'ok': True, 'materias': materias})
                 else:
-                    if request.POST['especialidad']:
-                        especialidad_id = request.POST['especialidad']
-                        especialidad = EspecialidadCupo.objects.get(id=especialidad_id, cupo=cupo)
-                        materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=especialidad,
-                                                                    nombre__icontains=q)
-                        s_c = False
-                        logger.info('%s, filtro_materia %s' % (g_e, especialidad.nombre))
-                    else:
-                        materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=None, nombre__icontains=q)
-                        s_c = False
-                        logger.info('%s, filtro_materia sin especialidad' % (g_e))
-                especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
-                materias = render_to_string('edit_cupo_materias.html',
-                                            {'materias': materias_cupo, 'especialidades': especialidades, 's_c': s_c,
-                                             'especialidad': especialidad})
-                return JsonResponse({'ok': True, 'materias': materias})
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
         elif action == 'change_nombre_materia':
             try:
-                cupo = Cupo.objects.get(id=request.POST['cupo'], ronda__entidad=g_e.ronda.entidad)
-                materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                logger.info('%s, cupo %s change_nombre_materia "%s" -> "%s"' % (
-                    g_e, cupo.id, materia.nombre, request.POST['nombre']))
-                materia.nombre = request.POST['nombre']
-                materia.save()
-                return JsonResponse({'ok': True, 'nombre_materia': materia.nombre})
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
+                    logger.info('%s, cupo %s change_nombre_materia "%s" -> "%s"' % (
+                        g_e, cupo.id, materia.nombre, request.POST['nombre']))
+                    materia.nombre = request.POST['nombre']
+                    materia.save()
+                    return JsonResponse({'ok': True, 'nombre_materia': materia.nombre})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
         elif action == 'duplicate_materia':
             try:
-                cupo = Cupo.objects.get(id=request.POST['cupo'], ronda__entidad=g_e.ronda.entidad)
-                materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                materia.pk = None
-                materia.nombre += ' (copia)'
-                materia.save()
-                especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
-                especialidad = materia.especialidad
-                materias = render_to_string('edit_cupo_materias.html',
-                                            {'materias': [materia], 'duplicated': True,
-                                             'especialidades': especialidades, 'especialidad': especialidad})
-                logger.info('%s, cupo %s duplicate_materia %s' % (g_e, cupo.id, materia.nombre))
-                return JsonResponse({'ok': True, 'materias': materias})
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
+                    materia.pk = None
+                    materia.nombre += ' (copia)'
+                    materia.save()
+                    especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
+                    especialidad = materia.especialidad
+                    materias = render_to_string('edit_cupo_materias.html',
+                                                {'materias': [materia], 'duplicated': True,
+                                                 'especialidades': especialidades, 'especialidad': especialidad})
+                    logger.info('%s, cupo %s duplicate_materia %s' % (g_e, cupo.id, materia.nombre))
+                    return JsonResponse({'ok': True, 'materias': materias})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
         elif action == 'delete_materia':
             try:
-                cupo = Cupo.objects.get(id=request.POST['cupo'], ronda__entidad=g_e.ronda.entidad)
-                materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                logger.info('%s, cupo %s delete_materia %s' % (g_e, cupo.id, materia.nombre))
-                materia.delete()
-                return JsonResponse({'ok': True})
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
+                    logger.info('%s, cupo %s delete_materia %s' % (g_e, cupo.id, materia.nombre))
+                    materia.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
         elif action == 'change_num_periodos':
             try:
-                cupo = Cupo.objects.get(id=request.POST['cupo'], ronda__entidad=g_e.ronda.entidad)
-                materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                logger.info('%s, cupo %s - %s, %s -> %s' % (
-                    g_e, cupo.id, materia.nombre, materia.periodos, request.POST['periodos']))
-                materia.periodos = request.POST['periodos']
-                materia.save()
-                if materia.especialidad:
-                    profesores_cupo = cupo_especialidad(cupo, materia.especialidad)
-                    return JsonResponse({'ok': True, 'profesores_cupo': profesores_cupo.reparto_profes,
-                                         'especialidad': materia.especialidad.nombre})
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
+                    logger.info('%s, cupo %s - %s, %s -> %s' % (
+                        g_e, cupo.id, materia.nombre, materia.periodos, request.POST['periodos']))
+                    materia.periodos = request.POST['periodos']
+                    materia.save()
+                    if materia.especialidad:
+                        profesores_cupo = cupo_especialidad(cupo, materia.especialidad)
+                        return JsonResponse({'ok': True, 'profesores_cupo': profesores_cupo.reparto_profes,
+                                             'especialidad': materia.especialidad.nombre})
+                    else:
+                        return JsonResponse({'ok': True, 'especialidad': ''})
                 else:
-                    return JsonResponse({'ok': True, 'especialidad': ''})
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
         elif action == 'change_especialidad_materia':
             try:
-                cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                try:
-                    especialidad = EspecialidadCupo.objects.get(id=request.POST['especialidad'], cupo=cupo)
-                except:
-                    especialidad = None
-                materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                materia.especialidad = especialidad
-                materia.save()
-                logger.info('%s, cupo %s - %s -> %s' % (g_e, cupo.id, materia.nombre, materia.especialidad))
-                if materia.especialidad:
-                    profesores_cupo = cupo_especialidad(cupo, materia.especialidad)
-                    return JsonResponse({'materia': materia.id, 'profesores_cupo': profesores_cupo.reparto_profes,
-                                         'especialidad': materia.especialidad.nombre, 'ok': True})
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    try:
+                        especialidad = EspecialidadCupo.objects.get(id=request.POST['especialidad'], cupo=cupo)
+                    except:
+                        especialidad = None
+                    materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
+                    materia.especialidad = especialidad
+                    materia.save()
+                    logger.info('%s, cupo %s - %s -> %s' % (g_e, cupo.id, materia.nombre, materia.especialidad))
+                    if materia.especialidad:
+                        profesores_cupo = cupo_especialidad(cupo, materia.especialidad)
+                        return JsonResponse({'materia': materia.id, 'profesores_cupo': profesores_cupo.reparto_profes,
+                                             'especialidad': materia.especialidad.nombre, 'ok': True})
+                    else:
+                        return JsonResponse({'ok': True, 'especialidad': '', 'materia': materia.id})
                 else:
-                    return JsonResponse({'ok': True, 'especialidad': '', 'materia': materia.id})
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
         elif action == 'mouseover_especialidad_materia':
             try:
-                cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                especialidad = EspecialidadCupo.objects.get(id=request.POST['especialidad'], cupo=cupo)
-                profesores_cupo = cupo_especialidad(cupo, especialidad)
-                return JsonResponse({'ok': True, 'profesores_cupo': profesores_cupo.reparto_profes,
-                                     'especialidad': especialidad.nombre})
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    especialidad = EspecialidadCupo.objects.get(id=request.POST['especialidad'], cupo=cupo)
+                    profesores_cupo = cupo_especialidad(cupo, especialidad)
+                    return JsonResponse({'ok': True, 'profesores_cupo': profesores_cupo.reparto_profes,
+                                         'especialidad': especialidad.nombre})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
         elif action == 'change_num_alumnos':
             try:
-                cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                logger.info('%s, cupo %s - %s change_num_alumnos %s -> %s' % (
-                    g_e, cupo.id, materia.nombre, materia.num_alumnos, request.POST['alumnos']))
-                materia.num_alumnos = int(request.POST['alumnos'])
-                materia.save()
-                if materia.especialidad:
-                    profesores_cupo = cupo_especialidad(cupo, materia.especialidad)
-                    return JsonResponse({'ok': True, 'profesores_cupo': profesores_cupo.reparto_profes,
-                                         'especialidad': materia.especialidad.nombre,
-                                         'num_grupos': materia.num_grupos})
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
+                    logger.info('%s, cupo %s - %s change_num_alumnos %s -> %s' % (
+                        g_e, cupo.id, materia.nombre, materia.num_alumnos, request.POST['alumnos']))
+                    materia.num_alumnos = int(request.POST['alumnos'])
+                    materia.save()
+                    if materia.especialidad:
+                        profesores_cupo = cupo_especialidad(cupo, materia.especialidad)
+                        return JsonResponse({'ok': True, 'profesores_cupo': profesores_cupo.reparto_profes,
+                                             'especialidad': materia.especialidad.nombre,
+                                             'num_grupos': materia.num_grupos})
+                    else:
+                        return JsonResponse({'ok': True, 'especialidad': '', 'num_grupos': materia.num_grupos})
                 else:
-                    return JsonResponse({'ok': True, 'especialidad': '', 'num_grupos': materia.num_grupos})
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
         elif action == 'change_max_num_alumnos':
             try:
-                cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                logger.info('%s, en el cupo %s - %s max_num_alumnos %s -> %s' % (
-                    g_e, cupo.id, materia.nombre, materia.max_num_alumnos, request.POST['alumnos']))
-                materia.max_num_alumnos = int(request.POST['alumnos'])
-                materia.save()
-                if materia.especialidad:
-                    profesores_cupo = cupo_especialidad(cupo, materia.especialidad)
-                    return JsonResponse({'ok': True, 'profesores_cupo': profesores_cupo.reparto_profes,
-                                         'especialidad': materia.especialidad.nombre,
-                                         'num_grupos': materia.num_grupos})
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
+                    logger.info('%s, en el cupo %s - %s max_num_alumnos %s -> %s' % (
+                        g_e, cupo.id, materia.nombre, materia.max_num_alumnos, request.POST['alumnos']))
+                    materia.max_num_alumnos = int(request.POST['alumnos'])
+                    materia.save()
+                    if materia.especialidad:
+                        profesores_cupo = cupo_especialidad(cupo, materia.especialidad)
+                        return JsonResponse({'ok': True, 'profesores_cupo': profesores_cupo.reparto_profes,
+                                             'especialidad': materia.especialidad.nombre,
+                                             'num_grupos': materia.num_grupos})
+                    else:
+                        return JsonResponse({'ok': True, 'especialidad': '', 'num_grupos': materia.num_grupos})
                 else:
-                    return JsonResponse({'ok': True, 'especialidad': '', 'num_grupos': materia.num_grupos})
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
         elif action == 'change_min_num_alumnos':
             try:
-                cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                logger.info('%s, cupo %s - %s change_min_num_alumnos %s -> %s' % (
-                    g_e, cupo.id, materia.nombre, materia.min_num_alumnos, request.POST['alumnos']))
-                materia.min_num_alumnos = int(request.POST['alumnos'])
-                materia.save()
-                if materia.especialidad:
-                    profesores_cupo = cupo_especialidad(cupo, materia.especialidad)
-                    return JsonResponse({'ok': True, 'profesores_cupo': profesores_cupo.reparto_profes,
-                                         'especialidad': materia.especialidad.nombre,
-                                         'num_grupos': materia.num_grupos})
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
+                    logger.info('%s, cupo %s - %s change_min_num_alumnos %s -> %s' % (
+                        g_e, cupo.id, materia.nombre, materia.min_num_alumnos, request.POST['alumnos']))
+                    materia.min_num_alumnos = int(request.POST['alumnos'])
+                    materia.save()
+                    if materia.especialidad:
+                        profesores_cupo = cupo_especialidad(cupo, materia.especialidad)
+                        return JsonResponse({'ok': True, 'profesores_cupo': profesores_cupo.reparto_profes,
+                                             'especialidad': materia.especialidad.nombre,
+                                             'num_grupos': materia.num_grupos})
+                    else:
+                        return JsonResponse({'ok': True, 'especialidad': '', 'num_grupos': materia.num_grupos})
                 else:
-                    return JsonResponse({'ok': True, 'especialidad': '', 'num_grupos': materia.num_grupos})
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
@@ -585,10 +759,18 @@ def ajax_cupo(request):
         return HttpResponse(status=400)
 
 
+def clave_ex2int(curso):
+    try:
+        print(int(curso.etapa_escolar.clave_ex))
+        return int(curso.etapa_escolar.clave_ex)
+    except:
+        return 0
+
 # @permiso_required('edita_cupos')
 def edit_cupo(request, cupo_id):
     g_e = request.session['gauser_extra']
-    cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=cupo_id)
+    cupo = Cupo.objects.get(id=cupo_id)
+
     if not cupo.bloqueado:
         if request.method == 'POST':
             if request.POST['action'] == 'genera_informe':
@@ -600,8 +782,10 @@ def edit_cupo(request, cupo_id):
                 response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
                 return response
 
-        cursos = Curso.objects.filter(ronda=cupo.ronda)
-        materias = Materia_cupo.objects.filter(curso=cursos[0], cupo=cupo)
+        # cursos = Curso.objects.filter(ronda=cupo.ronda)
+        cursos = CursoCupo.objects.filter(cupo=cupo)
+        cursos = sorted(cursos, key=lambda curso: clave_ex2int(curso))
+        materias = Materia_cupo.objects.filter(curso_cupo=cursos[0], cupo=cupo)
         especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
         # s_c stands for 'selected course' and in case of taking True value means edit_cupo doesn't have to show course
         return render(request, "edit_cupo.html", {'formname': 'cupo', 'cupo': cupo, 'curso': cursos[0],

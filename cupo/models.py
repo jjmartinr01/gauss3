@@ -43,6 +43,15 @@ class Cupo(models.Model):
         return '%s %s (%s)' % (self.ronda.entidad.name, self.nombre, self.modificado)
 
 
+class CupoPermisos(models.Model):
+    PERMISOS = (('plwx', 'Propietario'), ('l', 'Lectura'), ('lw', 'Escritura'), ('lwx', 'Escritura y borrado'))
+    cupo = models.ForeignKey(Cupo, on_delete=models.CASCADE)
+    gauser = models.ForeignKey(Gauser, on_delete=models.CASCADE)
+    permiso = models.CharField('Tipo de permiso', default='l', max_length=5, choices=PERMISOS)
+
+    def __str__(self):
+        return '%s %s (%s)' % (self.cupo, self.gauser, self.get_permiso_display())
+
 class EspecialidadCupo(models.Model):
     cupo = models.ForeignKey(Cupo, on_delete=models.CASCADE)
     nombre = models.CharField("Nombre de la especialidad", max_length=150)
@@ -87,7 +96,7 @@ class CursoCupo(models.Model):
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
 
     class Meta:
-        ordering = ['etapa_escolar', 'tipo', 'nombre']
+        ordering = ['etapa_escolar__clave_ex', 'tipo', 'nombre']
 
     def __str__(self):
         return '%s (%s)' % (self.nombre, self.cupo.ronda.entidad.name)
