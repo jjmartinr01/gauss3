@@ -20,11 +20,12 @@ from django.template.loader import render_to_string
 from horarios.models import SesionExtra, Horario, Sesion
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
-from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo, GrupoExcluido
+from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo, GrupoExcluido, \
+    CursoCupo, EtapaEscolarCupo
 from cupo.models import PlantillaOrganica, PDocenteCol
 from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento
 from entidades.models import Departamento as Depentidad
-from estudios.models import Curso, Materia, Grupo
+from estudios.models import Curso, Materia, Grupo, EtapaEscolar
 from horarios.tasks import carga_masiva_from_file
 
 from programaciones.models import Gauser_extra_programaciones, Departamento, crea_departamentos
@@ -40,20 +41,44 @@ CUERPOS_CUPO = ('590', '591', '592', '593', '594', '595', '596')
 # @permiso_required('acceso_cupo_profesorado')
 def cupo(request):
     g_e = request.session['gauser_extra']
+
+    etapas = EtapaEscolar.objects.all()
+
+    materias = Materia_cupo.objects.all()
+    cupos = Cupo.objects.all()
+    for cupo in cupos:
+        pass
+    for m in materias:
+        for etapa in etapas:
+            EtapaEscolarCupo.objects.get_or_create(cupo=m.cupo, nombre=etapa.nombre, clave_ex=etapa.clave_ex)
+        try:
+            etapa = EtapaEscolarCupo.objects.get(cupo=m.cupo, clave_ex=m.curso.etapa_escolar.clave_ex)
+        except:
+            etapa =None
+        cc, c = CursoCupo.objects.get_or_create(cupo=m.cupo, nombre=m.curso.nombre, etapa_escolar=etapa,
+                                               tipo=m.curso.tipo,
+                                               nombre_especifico=m.curso.nombre_especifico, clave_ex=m.curso.clave_ex)
+        m.curso_cupo = cc
+        m.save()
+
+
+
+
     if request.method == 'POST':
         if request.POST['action'] == 'genera_informe':
             cupo = Cupo.objects.get(id=request.POST['cupo'], ronda__entidad=g_e.ronda.entidad)
             fichero = 'cupo%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
             texto_html = render_to_string('cupo2pdf.html', {'cupo': cupo, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
             ruta = MEDIA_CUPO + '%s/' % cupo.ronda.entidad.code
-            fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title=u'Cupo de la Entidad')
+            fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Cupo de la Entidad')
             response = HttpResponse(fich, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-            logger.info(u'%s, genera pdf del cupo %s' % (g_e, cupo.id))
+            logger.info('%s, genera pdf del cupo %s' % (g_e, cupo.id))
             return response
 
     cupos = Cupo.objects.filter(ronda__entidad=g_e.ronda.entidad)
-    return render(request, "cupo.html", {'formname': 'cupo_profesorado', 'cupos': cupos})
+    plantillas_o = PlantillaOrganica.objects.filter(g_e=g_e)
+    return render(request, "cupo.html", {'formname': 'cupo_profesorado', 'cupos': cupos, 'plantillas_o': plantillas_o})
 
 
 def cupo_especialidad(cupo, especialidad):
@@ -106,7 +131,44 @@ def ajax_cupo(request):
                     except:
                         horas = 0
                     Materia_cupo.objects.create(cupo=cupo, curso=c, nombre=m.nombre, periodos=horas)
-                logger.info(u'%s, add_cupo id=%s' % (g_e, cupo.id))
+                logger.info('%s, add_cupo id=%s' % (g_e, cupo.id))
+                ds = Departamento.objects.filter(ronda=cupo.ronda)
+                html = render_to_string('formulario_cupo.html', {'cupo': cupo, 'request': request, 'departamentos': ds})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+
+        elif action == 'crea_cupo_from_po' and g_e.has_permiso('crea_cupos'):
+            try:
+                po = PlantillaOrganica.objects.get(id=request.POST['po'], g_e=g_e)
+                nombre = '%s - Cupo creado el %s' % (po.ronda_centro.entidad.name, datetime.datetime.now())
+                cupo = Cupo.objects.create(ronda=g_e.ronda, nombre=nombre)
+                especialidades = set(po.plantillaxls_set.all().values_list('x_puesto', 'puesto'))
+                for e in especialidades:
+                    EspecialidadCupo.objects.get_or_create(cupo=cupo, departamento=None, nombre=e[1])
+                # departamentos = Depentidad.objects.filter(ronda=po.ronda_centro)
+                # for d in departamentos:
+                #     try:
+                #         dp = Departamento.objects.get(ronda=d.ronda, abreviatura=d.abreviatura)
+                #     except:
+                #         dp = Departamento.objects.create(ronda=d.ronda, abreviatura=d.abreviatura,
+                #                                          didactico=d.didactico, nombre=d.nombre,
+                #                                          horas_coordinador=d.horas_coordinador, fp=d.fp)
+                #     for miembro in dp.miembrodepartamento_set.all():
+                #         EspecialidadCupo.objects.get_or_create(cupo=cupo, departamento=dp,
+                #                                                nombre=miembro.especialidad.nombre)
+                materias = Materia.objects.filter(curso__ronda=cupo.ronda)
+                for m in materias:
+                    try:
+                        c = Curso.objects.get(ronda=cupo.ronda, nombre=m.curso.nombre)
+                    except:
+                        c = None
+                    try:
+                        horas = m.horas
+                    except:
+                        horas = 0
+                    Materia_cupo.objects.create(cupo=cupo, curso=c, nombre=m.nombre, periodos=horas)
+                logger.info('%s, add_cupo id=%s' % (g_e, cupo.id))
                 ds = Departamento.objects.filter(ronda=cupo.ronda)
                 html = render_to_string('formulario_cupo.html', {'cupo': cupo, 'request': request, 'departamentos': ds})
                 return JsonResponse({'ok': True, 'html': html})
@@ -165,7 +227,7 @@ def ajax_cupo(request):
                     p_c.profesorado = p
                     p_c.save()
 
-            logger.info(u'%s, copy_cupo id=%s -> id=%s' % (g_e, orig.id, cupo.id))
+            logger.info('%s, copy_cupo id=%s -> id=%s' % (g_e, orig.id, cupo.id))
             ds = Departamento.objects.filter(ronda=g_e.ronda)
             html = render_to_string('formulario_cupo.html', {'cupo': cupo, 'request': request, 'departamentos': ds})
             return JsonResponse({'ok': True, 'html': html})
@@ -173,7 +235,7 @@ def ajax_cupo(request):
         elif action == 'delete_cupo' and g_e.has_permiso('borra_cupo_profesorado'):
             try:
                 cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                logger.info(u'%s, delete_cupo %s' % (g_e, cupo.id))
+                logger.info('%s, delete_cupo %s' % (g_e, cupo.id))
                 cupo.delete()
                 return JsonResponse({'ok': True})
             except:
@@ -183,7 +245,7 @@ def ajax_cupo(request):
             try:
                 bloquear = request.POST['bloquear']
                 cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                logger.info(u'%s, bloquea_cupo %s %s' % (g_e, cupo.id, bloquear))
+                logger.info('%s, bloquea_cupo %s %s' % (g_e, cupo.id, bloquear))
                 cupo.bloqueado = {'true': True, 'false': False}[bloquear]
                 cupo.save()
                 return JsonResponse({'ok': True})
@@ -193,7 +255,7 @@ def ajax_cupo(request):
         elif action == 'add_filtro' and g_e.has_permiso('pdf_cupo'):
             try:
                 cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                logger.info(u'%s, add_filtro_cupo %s' % (g_e, cupo.id))
+                logger.info('%s, add_filtro_cupo %s' % (g_e, cupo.id))
                 nombre = request.POST['nombre']
                 filtro = request.POST['filtro']
                 if len(filtro) > 0 and len(nombre) > 0:
@@ -219,7 +281,7 @@ def ajax_cupo(request):
             try:
                 cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
                 if not cupo.bloqueado:
-                    logger.info(u'%s, change_nombre_cupo %s' % (g_e, cupo.id))
+                    logger.info('%s, change_nombre_cupo %s' % (g_e, cupo.id))
                     cupo.nombre = request.POST['nombre']
                     cupo.save()
                     return JsonResponse({'ok': True, 'nombre': cupo.nombre})
@@ -231,7 +293,7 @@ def ajax_cupo(request):
             try:
                 cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
                 if not cupo.bloqueado:
-                    logger.info(u'%s, update_departamento %s' % (g_e, cupo.id))
+                    logger.info('%s, update_departamento %s' % (g_e, cupo.id))
                     especialidad = EspecialidadCupo.objects.get(cupo=cupo, id=request.POST['especialidad'])
                     departamento = Departamento.objects.get(ronda=cupo.ronda, id=request.POST['departamento'])
                     especialidad.departamento = departamento
@@ -246,7 +308,7 @@ def ajax_cupo(request):
                 cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
                 if not cupo.bloqueado:
                     attr = request.POST['attr']
-                    logger.info(u'%s, change_%s %s' % (g_e, attr, cupo.id))
+                    logger.info('%s, change_%s %s' % (g_e, attr, cupo.id))
                     setattr(cupo, attr, request.POST['valor'])
                     cupo.save()
                     return JsonResponse({'ok': True})
@@ -265,10 +327,10 @@ def ajax_cupo(request):
                                                         nombre="Actividad/Materia no asociada a ningún curso",
                                                         periodos=2)
                         materias_cupo = [m]
-                    logger.info(u'%s, change_curso empty' % (g_e))
+                    logger.info('%s, change_curso empty' % (g_e))
                 elif request.POST['curso'] == 'any_course':
                     materias_cupo = Materia_cupo.objects.filter(cupo=cupo)
-                    logger.info(u'%s, change_curso any_course' % g_e)
+                    logger.info('%s, change_curso any_course' % g_e)
                 else:
                     curso = Curso.objects.get(id=request.POST['curso'], ronda=cupo.ronda)
                     materias_cupo = Materia_cupo.objects.filter(cupo=cupo, curso=curso)
@@ -277,7 +339,7 @@ def ajax_cupo(request):
                                                         nombre="Actividad/Materia creada automáticamente",
                                                         periodos=4, curso=curso)
                         materias_cupo = [m]
-                    logger.info(u'%s, change_curso %s' % (g_e, curso.nombre))
+                    logger.info('%s, change_curso %s' % (g_e, curso.nombre))
 
                 especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
                 materias = render_to_string('edit_cupo_materias.html',
@@ -294,13 +356,13 @@ def ajax_cupo(request):
                     profesores_cupo = cupo_especialidad(cupo, especialidad).reparto_profes
                     materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=especialidad)
                     especialidad_nombre = especialidad.nombre
-                    logger.info(u'%s, change_especialidad_global %s' % (g_e, especialidad_nombre))
+                    logger.info('%s, change_especialidad_global %s' % (g_e, especialidad_nombre))
                 else:
                     materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=None)
                     profesores_cupo = None
                     especialidad_nombre = None
                     especialidad = None
-                    logger.info(u'%s, change_especialidad_global sin especialidad' % (g_e))
+                    logger.info('%s, change_especialidad_global sin especialidad' % (g_e))
                 especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
                 materias = render_to_string('edit_cupo_materias.html',
                                             {'materias': materias_cupo, 'especialidades': especialidades,
@@ -320,15 +382,15 @@ def ajax_cupo(request):
                     if not request.POST['curso']:
                         materias_cupo = Materia_cupo.objects.filter(cupo=cupo, curso=None, nombre__icontains=q)
                         s_c = False
-                        logger.info(u'%s, filtro_materia no asociadas a curso' % (g_e))
+                        logger.info('%s, filtro_materia no asociadas a curso' % (g_e))
                     elif request.POST['curso'] == 'any_course':
                         materias_cupo = Materia_cupo.objects.filter(cupo=cupo, nombre__icontains=q)
                         s_c = False
-                        logger.info(u'%s, filtro_materia any_course' % g_e)
+                        logger.info('%s, filtro_materia any_course' % g_e)
                     else:
                         curso = Curso.objects.get(id=request.POST['curso'], ronda=cupo.ronda)
                         materias_cupo = Materia_cupo.objects.filter(cupo=cupo, curso=curso, nombre__icontains=q)
-                        logger.info(u'%s, filtro_materia %s' % (g_e, curso.nombre))
+                        logger.info('%s, filtro_materia %s' % (g_e, curso.nombre))
                 else:
                     if request.POST['especialidad']:
                         especialidad_id = request.POST['especialidad']
@@ -336,11 +398,11 @@ def ajax_cupo(request):
                         materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=especialidad,
                                                                     nombre__icontains=q)
                         s_c = False
-                        logger.info(u'%s, filtro_materia %s' % (g_e, especialidad.nombre))
+                        logger.info('%s, filtro_materia %s' % (g_e, especialidad.nombre))
                     else:
                         materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=None, nombre__icontains=q)
                         s_c = False
-                        logger.info(u'%s, filtro_materia sin especialidad' % (g_e))
+                        logger.info('%s, filtro_materia sin especialidad' % (g_e))
                 especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
                 materias = render_to_string('edit_cupo_materias.html',
                                             {'materias': materias_cupo, 'especialidades': especialidades, 's_c': s_c,
@@ -353,7 +415,7 @@ def ajax_cupo(request):
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'], ronda__entidad=g_e.ronda.entidad)
                 materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                logger.info(u'%s, cupo %s change_nombre_materia "%s" -> "%s"' % (
+                logger.info('%s, cupo %s change_nombre_materia "%s" -> "%s"' % (
                     g_e, cupo.id, materia.nombre, request.POST['nombre']))
                 materia.nombre = request.POST['nombre']
                 materia.save()
@@ -373,7 +435,7 @@ def ajax_cupo(request):
                 materias = render_to_string('edit_cupo_materias.html',
                                             {'materias': [materia], 'duplicated': True,
                                              'especialidades': especialidades, 'especialidad': especialidad})
-                logger.info(u'%s, cupo %s duplicate_materia %s' % (g_e, cupo.id, materia.nombre))
+                logger.info('%s, cupo %s duplicate_materia %s' % (g_e, cupo.id, materia.nombre))
                 return JsonResponse({'ok': True, 'materias': materias})
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
@@ -382,7 +444,7 @@ def ajax_cupo(request):
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'], ronda__entidad=g_e.ronda.entidad)
                 materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                logger.info(u'%s, cupo %s delete_materia %s' % (g_e, cupo.id, materia.nombre))
+                logger.info('%s, cupo %s delete_materia %s' % (g_e, cupo.id, materia.nombre))
                 materia.delete()
                 return JsonResponse({'ok': True})
             except Exception as e:
@@ -392,7 +454,7 @@ def ajax_cupo(request):
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'], ronda__entidad=g_e.ronda.entidad)
                 materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                logger.info(u'%s, cupo %s - %s, %s -> %s' % (
+                logger.info('%s, cupo %s - %s, %s -> %s' % (
                     g_e, cupo.id, materia.nombre, materia.periodos, request.POST['periodos']))
                 materia.periodos = request.POST['periodos']
                 materia.save()
@@ -415,7 +477,7 @@ def ajax_cupo(request):
                 materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
                 materia.especialidad = especialidad
                 materia.save()
-                logger.info(u'%s, cupo %s - %s -> %s' % (g_e, cupo.id, materia.nombre, materia.especialidad))
+                logger.info('%s, cupo %s - %s -> %s' % (g_e, cupo.id, materia.nombre, materia.especialidad))
                 if materia.especialidad:
                     profesores_cupo = cupo_especialidad(cupo, materia.especialidad)
                     return JsonResponse({'materia': materia.id, 'profesores_cupo': profesores_cupo.reparto_profes,
@@ -439,7 +501,7 @@ def ajax_cupo(request):
             try:
                 cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
                 materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                logger.info(u'%s, cupo %s - %s change_num_alumnos %s -> %s' % (
+                logger.info('%s, cupo %s - %s change_num_alumnos %s -> %s' % (
                     g_e, cupo.id, materia.nombre, materia.num_alumnos, request.POST['alumnos']))
                 materia.num_alumnos = int(request.POST['alumnos'])
                 materia.save()
@@ -457,7 +519,7 @@ def ajax_cupo(request):
             try:
                 cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
                 materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                logger.info(u'%s, en el cupo %s - %s max_num_alumnos %s -> %s' % (
+                logger.info('%s, en el cupo %s - %s max_num_alumnos %s -> %s' % (
                     g_e, cupo.id, materia.nombre, materia.max_num_alumnos, request.POST['alumnos']))
                 materia.max_num_alumnos = int(request.POST['alumnos'])
                 materia.save()
@@ -475,7 +537,7 @@ def ajax_cupo(request):
             try:
                 cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
                 materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
-                logger.info(u'%s, cupo %s - %s change_min_num_alumnos %s -> %s' % (
+                logger.info('%s, cupo %s - %s change_min_num_alumnos %s -> %s' % (
                     g_e, cupo.id, materia.nombre, materia.min_num_alumnos, request.POST['alumnos']))
                 materia.min_num_alumnos = int(request.POST['alumnos'])
                 materia.save()
@@ -533,7 +595,7 @@ def edit_cupo(request, cupo_id):
                 fichero = 'cupo%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
                 texto_html = render_to_string('cupo2pdf.html', {'cupo': cupo, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
                 ruta = MEDIA_CUPO + '%s/' % cupo.ronda.entidad.code
-                fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title=u'Cupo de la Entidad')
+                fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Cupo de la Entidad')
                 response = HttpResponse(fich, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
                 return response

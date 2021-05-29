@@ -65,7 +65,7 @@
 {% endfor %}
 
 
-<h1 class="pagebreak" style="padding-bottom: -15px;text-align: center"> Resumen de horas por departamento</h1>
+<h1 class="pagebreak" style="padding-bottom: -15px;text-align: center"> Resumen de horas por especialidades</h1>
 <table style="width:100%;" border="1">
     <tr>
         <td style="text-align:center;padding-top:2px;" colspan="4"><strong>Especialidad</strong>
@@ -117,7 +117,7 @@
 </table>
 
 
-<h1 class="pagebreak">INFORME CUPO PROFESORES POR DEPARTAMENTO</h1>
+<h1 class="pagebreak">INFORME CUPO PROFESORES POR ESPECIALIDAD</h1>
 {% for p in cupo.profesores_cupo_set.all %}
     {% if p.num_periodos > 0 %}
         {#    <h2 class="pagebreak" style="text-align:center;"> INFORME CUPO ({{ cupo.nombre }})</h2>#}

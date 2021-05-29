@@ -10,6 +10,16 @@
         .fa-unlock {
             color: green;
         }
+
+        .show_po {
+            border: solid #d8d8d8 1px;
+            background: #d8d8d8;
+            margin: 3px;
+            padding: 5px;
+        }
+        .show_po:hover {background: #4fa9e6;}
+        .show_po:hover .text_show_po {color: antiquewhite;}
+        .text_show_po{color: #008CBA; font-weight: bold;}
     </style>
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
@@ -18,13 +28,31 @@
         <div class="">
             <h4 style="text-align: center;color: #008CBA;"><strong> Lista y creación de nuevos cupos</strong></h4>
         </div>
+        {% if plantillas_o and request.session.gauser_extra|has_permiso:'crea_cupos'%}
+            <div class="panel callout radius">
+                <h5><b>Crea un cupo basado en el análisis de alguna de las siguientes plantillas orgánicas:</b></h5>
+                <div class="row">
+                    {% for po in plantillas_o %}
+                        <div class="columns large-3">
+                        <a class="crea_cupo_from_po" data-po="{{ po.id }}">
+                            <div class="show_po">
+                                <p class="text_show_po">{{ po.ronda_centro.entidad.name }}</p>
+                                <p class="text_show_po">(creado:{{ po.creado|date:'d-m-Y' }})</p>
+                            </div></a>
+
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        {% endif %}
 
         <dl class="accordion" data-accordion id="list_cupos" title="Lista de cupos">
             {% for cupo in cupos %}
                 {% include "formulario_cupo.html" %}
             {% endfor %}
         </dl>
-        {% if request.session.gauser_extra|has_permiso:'crea_cupos' %}
+        {% if request.session.gauser_extra|has_permiso:'crea_cupos' and not plantillas_o %}
             <hr>
             <div class="row">
                 <div class="columns large-12">
@@ -45,6 +73,18 @@
             $('#add_cupo').click(function (e) {
                 e.preventDefault();
                 $.post("/ajax_cupo/", {action: 'add_cupo'}, function (data) {
+                    if (data.ok) {
+                        $('#list_cupos').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+            });
+            $('body').on('click', '.crea_cupo_from_po', function (e) {
+                e.preventDefault();
+                var po = $(this).data('po');
+                $.post("/ajax_cupo/", {action: 'crea_cupo_from_po', po: po}, function (data) {
                     if (data.ok) {
                         $('#list_cupos').prepend(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
