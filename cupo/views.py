@@ -99,25 +99,26 @@ def cupo(request):
 
 def cupo_especialidad(cupo, especialidad):
     materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=especialidad)
-    profesores_cupo, created = Profesores_cupo.objects.get_or_create(cupo=cupo, especialidad=especialidad)
-    if created:
-        geps = Gauser_extra_programaciones.objects.filter(ge__ronda=cupo.ronda, puesto=especialidad.nombre)
-        for gep in geps:
-            Profesor_cupo.objects.create(profesorado=profesores_cupo, nombre=gep.ge.gauser.get_full_name())
+    profesores_cupo = Profesores_cupo.objects.get(cupo=cupo, especialidad=especialidad)
+    # profesores_cupo, created = Profesores_cupo.objects.get_or_create(cupo=cupo, especialidad=especialidad)
+    # if created:
+    #     geps = Gauser_extra_programaciones.objects.filter(ge__ronda=cupo.ronda, puesto=especialidad.nombre)
+    #     for gep in geps:
+    #         Profesor_cupo.objects.create(profesorado=profesores_cupo, nombre=gep.ge.gauser.get_full_name())
     profesores_cupo.num_periodos = sum([m.total_periodos for m in materias_cupo])
     profesores_cupo.save()
     return profesores_cupo
 
 
-def crear_profesores_cupo(cupo):
-    p_cs = Profesores_cupo.objects.filter(cupo=cupo)
-    for p_c in p_cs:
-        geps = Gauser_extra_programaciones.objects.filter(ge__ronda=cupo.ronda, puesto=p_c.especialidad.nombre)
-        if geps.count() == 0:
-            Profesor_cupo.objects.create(profesorado=p_c, nombre='Profesor Interino', tipo='NONE')
-        for gep in geps:
-            Profesor_cupo.objects.create(profesorado=p_c, nombre=gep.ge.gauser.get_full_name())
-    return True
+# def crear_profesores_cupo(cupo):
+#     p_cs = Profesores_cupo.objects.filter(cupo=cupo)
+#     for p_c in p_cs:
+#         geps = Gauser_extra_programaciones.objects.filter(ge__ronda=cupo.ronda, puesto=p_c.especialidad.nombre)
+#         if geps.count() == 0:
+#             Profesor_cupo.objects.create(profesorado=p_c, nombre='Profesor Interino', tipo='NONE')
+#         for gep in geps:
+#             Profesor_cupo.objects.create(profesorado=p_c, nombre=gep.ge.gauser.get_full_name())
+#     return True
 
 
 
@@ -139,7 +140,12 @@ def ajax_cupo(request):
                             departamento = Departamento.objects.get(ronda=cupo.ronda, id=pd[1])
                             ec.departamento = departamento
                             ec.save()
-
+                        profesores_cupo, created = Profesores_cupo.objects.get_or_create(cupo=cupo, especialidad=ec)
+                        if created:
+                            geps = Gauser_extra_programaciones.objects.filter(ge__ronda=cupo.ronda, puesto=ec.nombre)
+                            for gep in geps:
+                                Profesor_cupo.objects.create(profesorado=profesores_cupo,
+                                                             nombre=gep.ge.gauser.get_full_name())
                 for etapa in EtapaEscolar.objects.all():
                     EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=etapa.nombre, clave_ex=etapa.clave_ex)
                 materias = Materia.objects.filter(curso__ronda=cupo.ronda)
@@ -185,9 +191,26 @@ def ajax_cupo(request):
                 nombre = '%s - Cupo creado el %s' % (po.ronda_centro.entidad.name, datetime.datetime.now())
                 cupo = Cupo.objects.create(ronda=po.ronda_centro, nombre=nombre)
                 CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
-                especialidades = set(po.plantillaxls_set.all().values_list('x_puesto', 'puesto'))
+                # Crea filtros automáticos:
+                filtros = [('Materias Bilingües', 'bilingüe'), ('Reducciones por bilingüismo', 'cción biling'),
+                           ('Tutorías', 'Tutor'), ('Jefaturas de departamento', 'jefatur'),
+                           ('Reducciones mayores de 55 años', '55')]
+                for filtro in filtros:
+                    FiltroCupo.objects.create(cupo=cupo, nombre=filtro[0], filtro=filtro[1])
+                # Especialidades, Etapas, Cursos, ...
+                especialidades = list(set(po.plantillaxls_set.all().values_list('x_puesto', 'puesto')))
                 for e in especialidades:
-                    EspecialidadCupo.objects.get_or_create(cupo=cupo, departamento=None, nombre=e[1])
+                    ec, c = EspecialidadCupo.objects.get_or_create(cupo=cupo, departamento=None, nombre=e[1])
+
+                    profesores_cupo, created = Profesores_cupo.objects.get_or_create(cupo=cupo, especialidad=ec)
+                    if created:
+                        geps = po.plantillaxls_set.filter(x_puesto=e[0]).values_list('docente', flat=True)
+                        # geps = Gauser_extra_programaciones.objects.filter(ge__ronda=cupo.ronda,
+                        #                                                   puesto=especialidad.nombre)
+                        for gep in list(set(geps)):
+                            Profesor_cupo.objects.create(profesorado=profesores_cupo, nombre=gep)
+
+
                 for etapa in EtapaEscolar.objects.all():
                     EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=etapa.nombre, clave_ex=etapa.clave_ex)
                 materias = Materia.objects.filter(curso__ronda=cupo.ronda)
@@ -781,7 +804,12 @@ def edit_cupo(request, cupo_id):
                                                   'iconos':
                                                       ({'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'Informe',
                                                         'title': 'Generar el documento con el cupo',
-                                                        'permiso': 'pdf_cupo'},),
+                                                        'permiso': 'pdf_cupo'},
+                                                       {'tipo': 'button', 'nombre': 'arrow-left',
+                                                        'texto': 'Listado de cupos',
+                                                        'title': 'Volver al listado de cupos disponibles',
+                                                        'permiso': 'libre'},
+                                                       ),
                                                   })
     else:
         return redirect('/cupo/')

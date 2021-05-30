@@ -186,29 +186,34 @@
         </div>
         <br>
         <div class="row">
-            <div class="columns large-6">
-                <b>Puesto de trabajo</b>
-            </div>
-            <div class="columns large-6">
-                <b>Departamento</b>
-            </div>
+            {% for e in cupo.especialidadcupo_set.all %}
+                <div class="label"><b>{{ e.nombre }}</b></div>
+            {% endfor %}
         </div>
-        {% for e in cupo.especialidadcupo_set.all %}
-            <div class="row">
-                <div class="columns large-6">
-                    {{ e.nombre }}
-                </div>
-                <div class="columns large-6">
-                    <select class="departamento" data-id="{{ e.id }}" data-cupo="{{ cupo.id }}">
-                        <option value="">Sin departamento</option>
-                        {% for d in cupo|departamentos %}
-                            <option value="{{ d.id }}"
-                                    {% if e.departamento == d %}selected{% endif %}>{{ d.nombre }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-        {% endfor %}
+        {#        <div class="row">#}
+        {#            <div class="columns large-6">#}
+        {#                <b>Puesto de trabajo</b>#}
+        {#            </div>#}
+        {#            <div class="columns large-6">#}
+        {#                <b>Departamento</b>#}
+        {#            </div>#}
+        {#        </div>#}
+        {#        {% for e in cupo.especialidadcupo_set.all %}#}
+        {#            <div class="row">#}
+        {#                <div class="columns large-6">#}
+        {#                    {{ e.nombre }}#}
+        {#                </div>#}
+        {#                <div class="columns large-6">#}
+        {#                    <select class="departamento" data-id="{{ e.id }}" data-cupo="{{ cupo.id }}">#}
+        {#                        <option value="">Sin departamento</option>#}
+        {#                        {% for d in cupo|departamentos %}#}
+        {#                            <option value="{{ d.id }}"#}
+        {#                                    {% if e.departamento == d %}selected{% endif %}>{{ d.nombre }}#}
+        {#                            </option>#}
+        {#                        {% endfor %}#}
+        {#                    </select>#}
+        {#                </div>#}
+        {#            </div>#}
+        {#        {% endfor %}#}
     </div>
 </dd>

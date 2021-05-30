@@ -17,9 +17,19 @@
             margin: 3px;
             padding: 5px;
         }
-        .show_po:hover {background: #4fa9e6;}
-        .show_po:hover .text_show_po {color: antiquewhite;}
-        .text_show_po{color: #008CBA; font-weight: bold;}
+
+        .show_po:hover {
+            background: #4fa9e6;
+        }
+
+        .show_po:hover .text_show_po {
+            color: antiquewhite;
+        }
+
+        .text_show_po {
+            color: #008CBA;
+            font-weight: bold;
+        }
     </style>
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
@@ -28,17 +38,18 @@
         <div class="">
             <h4 style="text-align: center;color: #008CBA;"><strong> Lista y creación de nuevos cupos</strong></h4>
         </div>
-        {% if plantillas_o and request.session.gauser_extra|has_permiso:'crea_cupos'%}
+        {% if plantillas_o and request.session.gauser_extra|has_permiso:'crea_cupos' %}
             <div class="panel callout radius">
                 <h5><b>Crea un cupo basado en el análisis de alguna de las siguientes plantillas orgánicas:</b></h5>
                 <div class="row">
                     {% for po in plantillas_o %}
                         <div class="columns large-3">
-                        <a class="crea_cupo_from_po" data-po="{{ po.id }}">
-                            <div class="show_po">
-                                <p class="text_show_po">{{ po.ronda_centro.entidad.name }}</p>
-                                <p class="text_show_po">(creado:{{ po.creado|date:'d-m-Y' }})</p>
-                            </div></a>
+                            <a class="crea_cupo_from_po" data-po="{{ po.id }}">
+                                <div class="show_po">
+                                    <p class="text_show_po">{{ po.ronda_centro.entidad.name }}</p>
+                                    <p class="text_show_po">(creado:{{ po.creado|date:'d-m-Y' }})</p>
+                                </div>
+                            </a>
 
                         </div>
                     {% endfor %}
@@ -97,13 +108,35 @@
         {% if request.session.gauser_extra|has_permiso:'borra_cupo_profesorado' %}
             $('body').on('click', '.delete_cupo', function (e) {
                 e.preventDefault();
-                var cupo = $(this).data('cupo');
-                $.post("/ajax_cupo/", {action: 'delete_cupo', cupo: cupo}, function (data) {
-                    if (data.ok) {
-                        $('#accordion' + cupo).remove();
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
+                $('#cupo').val($(this).data('cupo'));
+                title1 = 'Borrar estudio del cupo de profesorado';
+                texto1 = 'Si aceptas, este estudio de cupo será eliminado' +
+                    ' completamente de la base de datos.';
+                title2 = 'Borrado cancelado';
+                texto2 = 'No tienes permiso para borrar este estudio de cupo';
+                show_mensajes({
+                    title: title1,
+                    texto: texto1,
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Aceptar": function () {
+                            hide_mensajes();
+                            var cupo = $('#cupo').val();
+                            $.post("/ajax_cupo/", {action: 'delete_cupo', cupo: cupo}, function (data) {
+                                if (data.ok) {
+                                    $('#accordion' + cupo).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                    show_mensajes({
+                                        title: title2,
+                                        texto: texto2
+                                    });
+                                }
+                            });
+                        }
                     }
                 });
             });

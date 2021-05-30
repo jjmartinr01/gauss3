@@ -88,7 +88,9 @@
                     <select name="subentidad" id="especialidad">
                         <option value="">Sin especialidad</option>
                         {% for esp in especialidades %}
-                            <option value="{{ esp.id }}">{{ esp.nombre }} ({{ esp.departamento.abreviatura }})</option>
+                            <option value="{{ esp.id }}">
+                                {{ esp.nombre }}
+                            </option>
                         {% endfor %}
                         <option selected=selected value="empty">Ninguna especialidad seleccionada</option>
                     </select>
@@ -133,11 +135,15 @@
 {% block final %}
     <script>
         {#    $('.especialidad').select2();#}
-        habilita(['s_file-pdf-o']);
+        habilita(['s_file-pdf-o', 's_arrow-left']);
         $('#file-pdf-o_sign').click(function (e) {
             e.preventDefault();
             $('#action').val('genera_informe');
             document.getElementById("{{ formname }}").submit();
+        });
+        $('#arrow-left_sign').click(function (e) {
+            e.preventDefault();
+            window.location.href = '/cupo/';
         });
         cupo_id = {{ cupo.id }};
         especialidad_id = 0;
