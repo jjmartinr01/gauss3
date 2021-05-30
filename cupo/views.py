@@ -43,51 +43,38 @@ def cupo(request):
     g_e = request.session['gauser_extra']
 
 
-    etapas = EtapaEscolar.objects.all()
-    materias = Materia_cupo.objects.all()
-    cupos = Cupo.objects.all()
-    # cursos = Curso.objects.all()
-    for cupo in cupos:
-        for etapa in etapas:
-            EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=etapa.nombre, clave_ex=etapa.clave_ex)
-        # for curso in cursos:
-        #     try:
-        #         etapa = EtapaEscolarCupo.objects.get(cupo=cupo, clave_ex=curso.etapa_escolar.clave_ex)
-        #     except:
-        #         etapa = None
-        #     CursoCupo.objects.get_or_create(cupo=cupo, nombre=curso.nombre, etapa_escolar=etapa,
-        #                                         tipo=curso.tipo,
-        #                                         nombre_especifico=curso.nombre_especifico, clave_ex=curso.clave_ex)
-    for m in materias:
-        try:
-            etapa = EtapaEscolarCupo.objects.get(clave_ex=m.curso.etapa_escolar.clave_ex)
-        except:
-            etapa = None
-        try:
-            curso_nombre = m.curso.nombre
-        except:
-            curso_nombre = ''
-        try:
-            curso_tipo = m.curso.tipo
-        except:
-            curso_tipo = ''
-        try:
-            curso_nombre_esp = m.curso.nombre_especifico
-        except:
-            curso_nombre_esp = ''
-        try:
-            curso_clave_ex = m.curso.clave_ex
-        except:
-            curso_clave_ex = ''
-        cc, c = CursoCupo.objects.get_or_create(cupo=m.cupo, nombre=curso_nombre, etapa_escolar=etapa,
-                                        tipo=curso_tipo,
-                                        nombre_especifico=curso_nombre_esp, clave_ex=curso_clave_ex)
-        # try:
-        #     curso = CursoCupo.objects.get(cupo=m.cupo, clave_ex=m.curso.clave_ex)
-        # except:
-        #     curso = None
-        m.curso_cupo = cc
-        m.save()
+    # etapas = EtapaEscolar.objects.all()
+    # materias = Materia_cupo.objects.all()
+    # cupos = Cupo.objects.all()
+    # for cupo in cupos:
+    #     for etapa in etapas:
+    #         EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=etapa.nombre, clave_ex=etapa.clave_ex)
+    # for m in materias:
+    #     try:
+    #         etapa = EtapaEscolarCupo.objects.get(clave_ex=m.curso.etapa_escolar.clave_ex)
+    #     except:
+    #         etapa = None
+    #     try:
+    #         curso_nombre = m.curso.nombre
+    #     except:
+    #         curso_nombre = ''
+    #     try:
+    #         curso_tipo = m.curso.tipo
+    #     except:
+    #         curso_tipo = ''
+    #     try:
+    #         curso_nombre_esp = m.curso.nombre_especifico
+    #     except:
+    #         curso_nombre_esp = ''
+    #     try:
+    #         curso_clave_ex = m.curso.clave_ex
+    #     except:
+    #         curso_clave_ex = ''
+    #     cc, c = CursoCupo.objects.get_or_create(cupo=m.cupo, nombre=curso_nombre, etapa_escolar=etapa,
+    #                                     tipo=curso_tipo,
+    #                                     nombre_especifico=curso_nombre_esp, clave_ex=curso_clave_ex)
+    #     m.curso_cupo = cc
+    #     m.save()
 
 
 
