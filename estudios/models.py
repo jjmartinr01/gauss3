@@ -87,6 +87,7 @@ class Materia(models.Model):
     nombre = models.CharField("Nombre de la materia", max_length=100, null=True, blank=True)
     abreviatura = models.CharField("Abreviatura de la materia", max_length=20, null=True, blank=True)
     horas = models.IntegerField("Número de horas a impartir por semana", null=True, blank=True)
+    # horasf = models.FloatField("Número de horas lectivas por semana", null=True, blank=True)
     duracion = models.IntegerField('Horas totales previstas para impartir toda la materia', blank=True, null=True)
     observaciones = models.TextField("Observaciones", null=True, blank=True)
     grupo_materias = models.CharField('Tipo de materia', max_length=50, blank=True, null=True)

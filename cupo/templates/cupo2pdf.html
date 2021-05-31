@@ -52,7 +52,7 @@
                 <tr>
                     <td colspan="10">{{ m.nombre }} {% if m.curso %}- {{ m.curso.nombre }}{% endif %}</td>
                     <td></td>
-                    <td style="text-align:center;">{{ m.periodos }}</td>
+                    <td style="text-align:center;">{{ m.horas }}</td>
                     <td colspan="5">{{ m.especialidad.nombre }}</td>
                 </tr>
                 <tr>
@@ -78,11 +78,11 @@
         <td></td>
     </tr>
     {% for p in cupo.profesores_cupo_set.all %}
-        {% if p.num_periodos > 0 %}
+        {% if p.num_horas > 0 %}
             <tr>
                 <td style="text-align:center;padding-top:2px;" colspan="4">{{ p.especialidad.nombre }}
                 </td>
-                <td style="padding-top:2px;padding-left: 50px;"><strong> {{ p.num_periodos }}</strong></td>
+                <td style="padding-top:2px;padding-left: 50px;"><strong> {{ p.num_horas }}</strong></td>
                 <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_completos }}</td>
                 <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_dostercios }}</td>
                 <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_media }}</td>
@@ -119,16 +119,16 @@
 
 <h1 class="pagebreak">INFORME CUPO PROFESORES POR ESPECIALIDAD</h1>
 {% for p in cupo.profesores_cupo_set.all %}
-    {% if p.num_periodos > 0 %}
+    {% if p.num_horas > 0 %}
         {#    <h2 class="pagebreak" style="text-align:center;"> INFORME CUPO ({{ cupo.nombre }})</h2>#}
         {#    Especialidad: <strong> {{ p.especialidad.nombre }}</strong><br/>#}
         <h2 class="pagebreak" style="padding-bottom: -15px;text-align: center"> {{ p.especialidad.nombre }}</h2>
         INFORME CUPO ({{ cupo.nombre }})<br>
-        Total de horas que deben asignarse: <strong> {{ p.num_periodos }}</strong>
+        Total de horas que deben asignarse: <strong> {{ p.num_horas }}</strong>
         <table style="width:100%;" border="1">
             <tr>
                 <td style="text-align:center;padding-top:2px;" colspan="4">Plazas para la especialidad tras
-                    asignar {{ p.num_periodos|sub:p.reparto_profes.periodos_sobrantes }} periodos lectivos
+                    asignar {{ p.num_horas|sub:p.reparto_profes.periodos_sobrantes }} periodos lectivos
                 </td>
             </tr>
             <tr>
@@ -188,14 +188,14 @@
 
 <h1 class="pagebreak">INFORME CUPO CON MATERIAS</h1>
 {% for p in cupo.profesores_cupo_set.all %}
-    {% if p.num_periodos > 0 %}
+    {% if p.num_horas > 0 %}
         <h2 class="pagebreak" style="padding-bottom: -15px;text-align: center"> {{ p.especialidad.nombre }}</h2>
         INFORME CUPO ({{ cupo.nombre }})<br>
-        Total de horas que deben asignarse: <strong> {{ p.num_periodos }}</strong>
+        Total de horas que deben asignarse: <strong> {{ p.num_horas }}</strong>
         <table style="width:100%;" border="1">
             <tr>
                 <td style="text-align:center;padding-top:2px;" colspan="4">Plazas para la especialidad tras
-                    asignar {{ p.num_periodos|sub:p.reparto_profes.periodos_sobrantes }} periodos lectivos
+                    asignar {{ p.num_horas|sub:p.reparto_profes.periodos_sobrantes }} periodos lectivos
                 </td>
             </tr>
             <tr>
@@ -230,7 +230,7 @@
                     <tr>
                         <td colspan="10">{{ m.nombre }} {% if m.curso %}- {{ m.curso.nombre }}{% endif %}</td>
                         <td></td>
-                        <td style="text-align:center;">{{ m.periodos }}</td>
+                        <td style="text-align:center;">{{ m.horas }}</td>
                         <td colspan="5"></td>
                     </tr>
                     <tr>

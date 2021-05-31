@@ -271,7 +271,8 @@
         });
         $('body').on('keyup', '.num_periodos', function (e) {
             var materia = $(this).data('materia');
-            var periodos = parseInt($(this).html());
+            {#var periodos = parseInt($(this).html());#}
+            var periodos = parseFloat($(this).html().replace(',', '.'));
             $.post("/ajax_cupo/", {action: 'change_num_periodos', cupo: cupo_id, materia: materia, periodos: periodos},
                 function (data) {
                     if (data.ok) {
@@ -432,7 +433,7 @@
             } else if (campo != 'borrar' && campo != 'duplicar') {
                 valor = $(this).val();
             }
-            $.post("/ajax_cupo/", {action: 'change_profesor_cupo', id: id, campo: campo, valor: valor},
+            $.post("/ajax_cupo/", {action: 'change_profesor_cupo', id: id, campo: campo, valor: valor, cupo: cupo_id},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut().css("z-index", 1000);

@@ -54,7 +54,7 @@
         </div>
         <div class="columns large-1 medium-1 small-3 num_periodos" contenteditable="true" data-materia="{{ m.id }}"
              title="Periodos lectivos en una semana que son destinados a la materia">
-            {% if m.periodos %}{{ m.periodos }}{% else %}0{% endif %}
+            {% if m.horas %}{{ m.horas }}{% else %}0{% endif %}
         </div>
         <div class="columns large-1 medium-1 small-3 num_grupos"
              title="Número de grupos calculados en función del número de alumnos máximo y mínimo permitido.">
