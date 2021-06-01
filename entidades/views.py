@@ -2650,51 +2650,15 @@ def selectgcs_organization(request):
     if request.is_ajax():
         if request.method == 'GET':
             texto = request.GET['q']
-            if 'subs[]' in request.GET:
-                subs = Subentidad.objects.filter(entidad__organization=g_e.ronda.entidad.organization,
-                                                 id__in=request.GET.getlist('subs[]'))
-            else:
-                subs = Subentidad.objects.none()
-            if 'cars[]' in request.GET:
-                cars = Cargo.objects.filter(entidad__organization=g_e.ronda.entidad.organization,
-                                            id__in=request.GET.getlist('cars[]'))
-            else:
-                cars = Cargo.objects.none()
-            ges, cargos, subentidades = Gauser_extra.objects.none(), Cargo.objects.none(), Subentidad.objects.none()
-            for tipo in request.GET['tipo']:  # tipo=c implica buscar cargos, tipo=s subentidades y tipo=g gauser_extras
-                if tipo == 'g':
-                    usronda = usuarios_organization(g_e.ronda, subentidades=subs, cargos=cars)
-                    ges = usronda.filter(Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto))
-                elif tipo == 'c':
-                    if cars:
-                        cargos = cars
-                    else:
-                        cargos = Cargo.objects.filter(entidad__organization=g_e.ronda.entidad.organization,
-                                                      cargo__icontains=texto)
-                elif tipo == 's':
-                    if subs:
-                        subentidades = subs
-                    else:
-                        subentidades = Subentidad.objects.filter(entidad__organization=g_e.ronda.entidad.organization,
-                                                                 nombre__icontains=texto)
-            # sub_alumnos = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='alumnos')
-            # usuarios = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_alumnos])
-            # filtrados = usuarios.filter(Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto))
+            rondas = Entidad.objects.filter(organization=g_e.ronda.entidad.organization).values_list('ronda__id', flat=True)
+            q1 = Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)
+            q2 = Q(ronda__id__in=rondas)
+            ges = Gauser_extra.objects.filter(q1 & q2)
             options = []
             for ge in ges.distinct():
-                try:
-                    grupo = ge.gauser_extra_estudios.grupo.nombre
-                    tutor = ge.gauser_extra_estudios.tutor.gauser.get_full_name()
-                    cotutor = ge.gauser_extra_estudios.cotutor.gauser.get_full_name()
-                except:
-                    grupo, tutor, cotutor = '', '', ''
                 options.append(
                     {'id': ge.id, 'first_name': ge.gauser.first_name, 'last_name': ge.gauser.last_name,
-                     'grupo': grupo, 'tutor': tutor, 'cotutor': cotutor, 'tipo': 'g', 'entidad': ge.ronda.entidad.name})
-            for c in cargos.distinct():
-                options.append({'id': c.id, 'cargo': c.cargo, 'tipo': 'c', 'entidad': c.entidad.name})
-            for s in subentidades.distinct():
-                options.append({'id': s.id, 'subentidad': s.nombre, 'tipo': 's', 'entidad': s.entidad.name})
+                     'entidad': ge.ronda.entidad.name, 'tipo': 'g'})
             return JsonResponse(options, safe=False)
         else:
             return JsonResponse({'ok': False, 'm': 'No es GET'})

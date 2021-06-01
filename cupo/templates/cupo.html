@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base_select2-4.html" %}
 {% load my_templatetags %}
 
 {% block contenido %}
@@ -80,6 +80,53 @@
 
 {% block final %}
     <script>
+
+    $(".usuarios_invitados").select2(
+        conf_select2({
+            'gcs': 'g',
+            'format_g': '{0}, {1}',
+            'placeholder': 'Escribe parte del nombre del invitado para buscarlo',
+            'url': '/selectgcs_organization/'
+        })
+    );
+    $('body').on('change.select2', '.usuarios_invitados', function (e) {
+            var cupo = $(this).data('id');
+            var invitado = $(this).val();
+            $.post("/ajax_cupo/", {
+                    action: 'update_usuarios_invitados',
+                    cupo: cupo,
+                    invitado: invitado
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#div_invitados" + data.cupo).append(data.html_span);
+                        $(".usuarios_invitados").empty();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.borrar_invitado', function (e) {
+            var cupo = $(this).data('cupo');
+            var invitado = $(this).data('invitado');
+            $.post("/ajax_cupo/", {
+                    action: 'borrar_invitado',
+                    cupo: cupo,
+                    invitado: invitado
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#invitado" + data.cupo + '_' + data.invitado).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+    {# ################################################################################# #}
         {% if request.session.gauser_extra|has_permiso:'crea_cupos' %}
             $('#add_cupo').click(function (e) {
                 e.preventDefault();

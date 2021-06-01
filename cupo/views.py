@@ -42,39 +42,6 @@ CUERPOS_CUPO = ('590', '591', '592', '593', '594', '595', '596')
 def cupo(request):
     g_e = request.session['gauser_extra']
 
-    # etapas = EtapaEscolar.objects.all()
-    # materias = Materia_cupo.objects.all()
-    # cupos = Cupo.objects.all()
-    # for cupo in cupos:
-    #     for etapa in etapas:
-    #         EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=etapa.nombre, clave_ex=etapa.clave_ex)
-    # for m in materias:
-    #     try:
-    #         etapa = EtapaEscolarCupo.objects.get(clave_ex=m.curso.etapa_escolar.clave_ex)
-    #     except:
-    #         etapa = None
-    #     try:
-    #         curso_nombre = m.curso.nombre
-    #     except:
-    #         curso_nombre = ''
-    #     try:
-    #         curso_tipo = m.curso.tipo
-    #     except:
-    #         curso_tipo = ''
-    #     try:
-    #         curso_nombre_esp = m.curso.nombre_especifico
-    #     except:
-    #         curso_nombre_esp = ''
-    #     try:
-    #         curso_clave_ex = m.curso.clave_ex
-    #     except:
-    #         curso_clave_ex = ''
-    #     cc, c = CursoCupo.objects.get_or_create(cupo=m.cupo, nombre=curso_nombre, etapa_escolar=etapa,
-    #                                     tipo=curso_tipo,
-    #                                     nombre_especifico=curso_nombre_esp, clave_ex=curso_clave_ex)
-    #     m.curso_cupo = cc
-    #     m.save()
-
     if request.method == 'POST':
         if request.POST['action'] == 'genera_informe':
             cupo = Cupo.objects.get(id=request.POST['cupo'], ronda__entidad=g_e.ronda.entidad)
@@ -399,6 +366,34 @@ def ajax_cupo(request):
                     return JsonResponse({'ok': False})
             except:
                 return JsonResponse({'ok': False})
+
+        elif action == 'update_usuarios_invitados':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+                if con1 or con2:
+                    invitado = Gauser_extra.objects.get(id=int(request.POST['invitado'][1:]))
+                    cp, creado = CupoPermisos.objects.get_or_create(gauser=invitado.gauser, cupo=cupo, permiso='lw')
+                    html_span = render_to_string('formulario_cupo_invitados.html', {'cupo': cupo, 'cp': cp})
+                    return JsonResponse({'ok': True, 'cupo': cupo.id, 'html_span': html_span})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'borrar_invitado':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+                if con1 or con2:
+                    CupoPermisos.objects.get(id=int(request.POST['invitado']), cupo=cupo).delete()
+                    return JsonResponse({'ok': True, 'cupo': cupo.id, 'invitado': request.POST['invitado']})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+            except:
+                return JsonResponse({'ok': False})
+
         elif action == 'update_departamento' and g_e.has_permiso('edita_cupos'):
             try:
                 cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])

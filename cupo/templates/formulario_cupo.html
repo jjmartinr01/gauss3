@@ -190,6 +190,26 @@
                 <div class="label"><b>{{ e.nombre }}</b></div>
             {% endfor %}
         </div>
+        <hr>
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Personas invitadas a editar este estudio de cupo:</b></label>
+            </div>
+        </div>
+        <div class="row" style="padding-bottom: 2px;">
+            <div class="columns large-12" id="div_invitados{{ cupo.id }}">
+                {% for cp in cupo.cupopermisos_set.all %}
+                    {% include "formulario_cupo_invitados.html" %}
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <select id="usuarios_invitados{{ cupo.id }}" class="usuarios_invitados" style="width: 400px;"
+                        data-id="{{ cupo.id }}"></select>
+            </div>
+        </div>
+        <hr>
         {#        <div class="row">#}
         {#            <div class="columns large-6">#}
         {#                <b>Puesto de trabajo</b>#}
@@ -217,3 +237,4 @@
         {#        {% endfor %}#}
     </div>
 </dd>
+
