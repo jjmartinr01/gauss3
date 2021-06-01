@@ -198,7 +198,14 @@ def ajax_cupo(request):
                 for pxls in po.plantillaxls_set.all():
                     if len(pxls.x_materiaomg) > 0:
                         try:
-                            EspecialidadCupo.objects.get(cupo=cupo, clave_ex=pxls.x_puesto)
+                            # EspecialidadCupo.objects.get(cupo=cupo, clave_ex=pxls.x_puesto)
+                            # Los x_puesto de un catedrático y de un docente son diferentes por lo que
+                            # crea dos especialidades con el mismo nombre. Para evitar esto, se crea
+                            # únicamente una especialidad obviando si es o no catedrático ya que en el cupo no
+                            # tiene importancia.
+                            # Ejemplos :    17769 -> Música catedrático; 17957 -> Música
+                            #               17761 -> Biología y Geología catedrático; 17949 -> Biología y Geología
+                            EspecialidadCupo.objects.get(cupo=cupo, nombre=pxls.puesto)
                         except:
                             ec = EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre=pxls.puesto,
                                                                  clave_ex=pxls.x_puesto)
@@ -207,7 +214,7 @@ def ajax_cupo(request):
                             for gep in list(set(geps)):
                                 Profesor_cupo.objects.create(profesorado=profesores_cupo, nombre=gep)
                         try:
-                            Materia_cupo.objects.get(clave_ex=pxls.x_materiaomg)
+                            Materia_cupo.objects.get(clave_ex=pxls.x_materiaomg, cupo=cupo)
                         except:
                             ec, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=pxls.etapa_escolar,
                                                                            clave_ex=pxls.x_etapa_escolar)
