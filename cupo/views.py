@@ -187,26 +187,14 @@ def ajax_cupo(request):
                 cupo = Cupo.objects.create(ronda=po.ronda_centro, nombre=nombre)
                 CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
                 # Crea filtros automáticos:
-                filtros = [('Materias Bilingües', 'bilingüe'), ('Reducciones por bilingüismo', 'cción biling'),
-                           ('Tutorías', 'Tutor'), ('Jefaturas de departamento', 'jefatur'),
+                # filtros = [('Materias Bilingües', 'bilingüe'), ('Reducciones por bilingüismo', 'cción biling'),
+                #            ('Tutorías', 'Tutor'), ('Jefaturas de departamento', 'jefatur'),
+                #            ('Reducciones mayores de 55 años', '55')]
+                filtros = [('Tutorías', 'Tutor'), ('Jefaturas de departamento', 'jefatura'),
                            ('Reducciones mayores de 55 años', '55')]
                 for filtro in filtros:
                     FiltroCupo.objects.create(cupo=cupo, nombre=filtro[0], filtro=filtro[1])
                 # Especialidades, Etapas, Cursos, ...
-
-                # especialidades = list(set(po.plantillaxls_set.all().values_list('x_puesto', 'puesto')))
-                # for e in especialidades:
-                #     ec, c = EspecialidadCupo.objects.get_or_create(cupo=cupo, departamento=None, nombre=e[1])
-                #
-                #     profesores_cupo, created = Profesores_cupo.objects.get_or_create(cupo=cupo, especialidad=ec)
-                #     if created:
-                #         geps = po.plantillaxls_set.filter(x_puesto=e[0]).values_list('docente', flat=True)
-                #         for gep in list(set(geps)):
-                #             Profesor_cupo.objects.create(profesorado=profesores_cupo, nombre=gep)
-
-                # for etapa in EtapaEscolar.objects.all():
-                #     EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=etapa.nombre, clave_ex=etapa.clave_ex)
-
                 for pxls in po.plantillaxls_set.all():
                     if len(pxls.x_materiaomg) > 0:
                         try:
@@ -234,36 +222,6 @@ def ajax_cupo(request):
                             Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=pxls.materia, horas=horas,
                                                         clave_ex=pxls.x_materiaomg)
 
-                # materias = Materia.objects.filter(curso__ronda=cupo.ronda)
-                # for m in materias:
-                #     try:
-                #         etapa = EtapaEscolarCupo.objects.get(cupo=cupo, clave_ex=m.curso.etapa_escolar.clave_ex)
-                #     except:
-                #         etapa = None
-                #     try:
-                #         curso_nombre = m.curso.nombre
-                #     except:
-                #         curso_nombre = ''
-                #     try:
-                #         curso_tipo = m.curso.tipo
-                #     except:
-                #         curso_tipo = ''
-                #     try:
-                #         curso_nombre_esp = m.curso.nombre_especifico
-                #     except:
-                #         curso_nombre_esp = ''
-                #     try:
-                #         curso_clave_ex = m.curso.clave_ex
-                #     except:
-                #         curso_clave_ex = ''
-                #     cc, c = CursoCupo.objects.get_or_create(cupo=cupo, nombre=curso_nombre, etapa_escolar=etapa,
-                #                                             tipo=curso_tipo,
-                #                                             nombre_especifico=curso_nombre_esp, clave_ex=curso_clave_ex)
-                #     try:
-                #         horas = m.horas
-                #     except:
-                #         horas = 0
-                #     Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=m.nombre, periodos=horas)
                 logger.info('%s, add_cupo id=%s' % (g_e, cupo.id))
                 # ds = Departamento.objects.filter(ronda=cupo.ronda)
                 # html = render_to_string('formulario_cupo.html', {'cupo': cupo, 'request': request, 'departamentos': ds})
@@ -353,9 +311,13 @@ def ajax_cupo(request):
         elif action == 'delete_cupo' and g_e.has_permiso('borra_cupo_profesorado'):
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                if cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='x').count() > 0:
+                if cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0:
                     logger.info('%s, delete_cupo %s' % (g_e, cupo.id))
                     cupo.delete()
+                    return JsonResponse({'ok': True})
+                elif cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='x').count() > 0:
+                    logger.info('%s, delete user access %s' % (g_e, cupo.id))
+                    cupo.cupopermisos_set.filter(gauser=g_e.gauser).delete()
                     return JsonResponse({'ok': True})
                 else:
                     msg = '%s, intento fallido de borrar el cupo %s' % (g_e, cupo.id)

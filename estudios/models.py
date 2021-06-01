@@ -84,7 +84,7 @@ class Grupo(models.Model):
 
 class Materia(models.Model):
     curso = models.ForeignKey(Curso, null=True, blank=True, on_delete=models.CASCADE)
-    nombre = models.CharField("Nombre de la materia", max_length=100, null=True, blank=True)
+    nombre = models.CharField("Nombre de la materia", max_length=120, null=True, blank=True)
     abreviatura = models.CharField("Abreviatura de la materia", max_length=20, null=True, blank=True)
     horas = models.IntegerField("Número de horas a impartir por semana", null=True, blank=True)
     # horasf = models.FloatField("Número de horas lectivas por semana", null=True, blank=True)

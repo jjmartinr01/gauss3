@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils.timezone import now
 
+from cupo.habilitar_permisos import Miembro_Equipo_Directivo
 from entidades.views import get_entidad_general
 from gauss.funciones import pass_generator
 from autenticar.models import Gauser, Permiso
@@ -108,7 +109,7 @@ class Materia_cupo(models.Model):
     especialidad = models.ForeignKey(EspecialidadCupo, blank=True, null=True, on_delete=models.CASCADE)
     curso = models.ForeignKey(Curso, blank=True, null=True, on_delete=models.CASCADE)
     curso_cupo = models.ForeignKey(CursoCupo, blank=True, null=True, on_delete=models.CASCADE)
-    nombre = models.CharField("Nombre de la materia o actividad", max_length=100, null=True, blank=True)
+    nombre = models.CharField("Nombre de la materia o actividad", max_length=120, null=True, blank=True)
     periodos = models.IntegerField("Número de periodos lectivos por semana", null=True, blank=True)
     horas = models.FloatField("Número de horas lectivas por semana", null=True, blank=True)
     num_alumnos = models.IntegerField("Nº de alumnos previstos", default=1)
@@ -599,6 +600,22 @@ class PlantillaOrganica(models.Model):
             pxls.save()
         return True
 
+    def habilitar_miembros_equipo_directivo(self):
+        permisos = Permiso.objects.filter(code_nombre__in=Miembro_Equipo_Directivo)
+        try:
+            miembro_equipo_directivo = Cargo.objects.get(entidad=self.ronda_centro.entidad, clave_cargo='202006011113')
+        except:
+            miembro_equipo_directivo = Cargo.objects.create(entidad=self.ronda_centro.entidad, borrable=False,
+                                                            cargo='Miembro del Equipo Directivo',
+                                                            nivel=1, clave_cargo='202006011113')
+            miembro_equipo_directivo.permisos.add(*permisos)
+        for pxls in self.plantillaxls_set.filter(x_actividad='529'):
+            try:
+                gex = Gauser_extra.objects.get(ronda=self.ronda_centro, clave_ex=pxls.x_docente)
+                gex.cargos.add(miembro_equipo_directivo)
+            except:
+                pass
+
     def carga_plantilla_xls(self):
         LogCarga.objects.create(g_e=self.g_e, log="Inicio carga dependencias")
         self.carga_dependencias()
@@ -622,6 +639,8 @@ class PlantillaOrganica(models.Model):
         self.carga_sesiones_docentes()
         LogCarga.objects.create(g_e=self.g_e, log="Inicio carga pdocentes")
         self.carga_pdocentes()
+        LogCarga.objects.create(g_e=self.g_e, log="Inicio habilitar miembros equipo directivo")
+        self.habilitar_miembros_equipo_directivo()
         LogCarga.objects.create(g_e=self.g_e, log="Finalizada la carga de la plantilla")
         return True
 
