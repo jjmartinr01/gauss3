@@ -50,7 +50,7 @@
         {% for m in filtro|materias_filtro %}
             {% for a in m.num_grupos|get_range %}
                 <tr>
-                    <td colspan="10">{{ m.nombre }} {% if m.curso %}- {{ m.curso.nombre }}{% endif %}</td>
+                    <td colspan="10">{{ m.nombre }} {% if m.curso_cupo %}- {{ m.curso_cupo.nombre }}{% endif %}</td>
                     <td></td>
                     <td style="text-align:center;">{{ m.horas }}</td>
                     <td colspan="5">{{ m.especialidad.nombre }}</td>
@@ -228,7 +228,7 @@
             {% for m in p.materias %}
                 {% for a in m.num_grupos|get_range %}
                     <tr>
-                        <td colspan="10">{{ m.nombre }} {% if m.curso %}- {{ m.curso.nombre }}{% endif %}</td>
+                        <td colspan="10">{{ m.nombre }} {% if m.curso_cupo %}- {{ m.curso_cupo.nombre }}{% endif %}</td>
                         <td></td>
                         <td style="text-align:center;">{{ m.horas }}</td>
                         <td colspan="5"></td>

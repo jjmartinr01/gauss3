@@ -50,7 +50,7 @@
                 <label>Cambia el nombre:<input type="text" data-materia="{{ m.id }}" class="change_nombre"
                                                value="{{ m.nombre }}"></label>
             </div>
-            {% if not s_c %}-{% if m.curso %}{{ m.curso.nombre }}{% else %}No asignada a un curso{% endif %}{% endif %}
+            {% if not s_c %}-{% if m.curso_cupo %}{{ m.curso_cupo.nombre }}{% else %}No asignada a un curso{% endif %}{% endif %}
         </div>
         <div class="columns large-1 medium-1 small-3 num_periodos" contenteditable="true" data-materia="{{ m.id }}"
              title="Periodos lectivos en una semana que son destinados a la materia">
