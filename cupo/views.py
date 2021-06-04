@@ -305,7 +305,7 @@ def ajax_cupo(request):
         elif action == 'bloquea_cupo':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('bloquea_cupos')
                 if con1 or con2:
                     bloquear = request.POST['bloquear']
@@ -321,7 +321,7 @@ def ajax_cupo(request):
         elif action == 'add_filtro':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('pdf_cupo')
                 if con1 or con2:
                     logger.info('%s, add_filtro_cupo %s' % (g_e, cupo.id))
@@ -341,7 +341,7 @@ def ajax_cupo(request):
         elif action == 'delete_filtro':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('pdf_cupo')
                 if con1 or con2:
                     filtro = FiltroCupo.objects.get(cupo__ronda__entidad=g_e.ronda.entidad, cupo=cupo,
@@ -411,7 +411,7 @@ def ajax_cupo(request):
         elif action == 'change_max_min_cupo':  # and g_e.has_permiso('edita_cupos'):
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
                 if con1 or con2:
                     if not cupo.bloqueado:
@@ -430,7 +430,7 @@ def ajax_cupo(request):
         elif action == 'change_curso':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
                 if con1 or con2:
                     if not request.POST['curso']:
@@ -467,7 +467,7 @@ def ajax_cupo(request):
         elif action == 'change_especialidad_global':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
                 if con1 or con2:
                     if request.POST['especialidad']:
@@ -498,7 +498,7 @@ def ajax_cupo(request):
             s_c = True
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
                 if con1 or con2:
                     especialidad = None
@@ -543,7 +543,7 @@ def ajax_cupo(request):
         elif action == 'change_nombre_materia':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
                 if con1 or con2:
                     materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
@@ -560,7 +560,7 @@ def ajax_cupo(request):
         elif action == 'duplicate_materia':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
                 if con1 or con2:
                     materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
@@ -582,7 +582,7 @@ def ajax_cupo(request):
         elif action == 'delete_materia':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
                 if con1 or con2:
                     materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
@@ -597,7 +597,7 @@ def ajax_cupo(request):
         elif action == 'change_num_periodos':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
                 if con1 or con2:
                     materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
@@ -620,7 +620,7 @@ def ajax_cupo(request):
         elif action == 'change_especialidad_materia':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
                 if con1 or con2:
                     try:
@@ -645,7 +645,7 @@ def ajax_cupo(request):
         elif action == 'mouseover_especialidad_materia':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
                 if con1 or con2:
                     especialidad = EspecialidadCupo.objects.get(id=request.POST['especialidad'], cupo=cupo)
@@ -660,7 +660,7 @@ def ajax_cupo(request):
         elif action == 'change_num_alumnos':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
                 if con1 or con2:
                     materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
@@ -683,7 +683,7 @@ def ajax_cupo(request):
         elif action == 'change_max_num_alumnos':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
                 if con1 or con2:
                     materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
@@ -706,7 +706,7 @@ def ajax_cupo(request):
         elif action == 'change_min_num_alumnos':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
-                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='p').count() > 0
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
                 if con1 or con2:
                     materia = Materia_cupo.objects.get(id=request.POST['materia'], cupo=cupo)
