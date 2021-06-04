@@ -344,20 +344,21 @@ def ajax_cupo(request):
                 con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('pdf_cupo')
                 if con1 or con2:
-                    filtro = FiltroCupo.objects.get(cupo__ronda__entidad=g_e.ronda.entidad, cupo=cupo,
-                                                    id=request.POST['filtro'])
+                    filtro = FiltroCupo.objects.get(cupo=cupo, id=request.POST['filtro'])
                     id = filtro.id
                     filtro.delete()
                     return JsonResponse({'ok': True, 'filtro': id})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
-            except:
-                return JsonResponse({'ok': False})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
 
         elif action == 'change_nombre_cupo' and g_e.has_permiso('edita_cupos'):
             try:
-                cupo = Cupo.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['cupo'])
-                if not cupo.bloqueado:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('pdf_cupo')
+                if (con1 or con2) and not cupo.bloqueado:
                     logger.info('%s, change_nombre_cupo %s' % (g_e, cupo.id))
                     cupo.nombre = request.POST['nombre']
                     cupo.save()
@@ -387,8 +388,12 @@ def ajax_cupo(request):
                 con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
                 if con1 or con2:
-                    CupoPermisos.objects.get(id=int(request.POST['invitado']), cupo=cupo).delete()
-                    return JsonResponse({'ok': True, 'cupo': cupo.id, 'invitado': request.POST['invitado']})
+                    cp = CupoPermisos.objects.get(id=int(request.POST['invitado']), cupo=cupo)
+                    if 'p' not in cp.permiso:
+                        cp.delete()
+                        return JsonResponse({'ok': True, 'cupo': cupo.id, 'invitado': request.POST['invitado']})
+                    else:
+                        return JsonResponse({'ok': False, 'msg': 'No es posible borrar al propietario del cupo.'})
                 else:
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:

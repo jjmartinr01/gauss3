@@ -1,3 +1,8 @@
 <span class="label secondary" id="invitado{{ cupo.id }}_{{ cp.id }}">{{ cp.gauser.last_name }},
     {{ cp.gauser.first_name }}
-    <a class="borrar_invitado" data-cupo={{ cupo.id }} data-invitado="{{ cp.id }}"><i class="fa fa-times"></i></a></span>
+    {% if cp.permiso == 'plwx' %}
+        <span style="color:gray;" title="El propietario no puede ser borrado"><i class="fa fa-times"></i></span>
+    {% else %}
+        <a class="borrar_invitado" data-cupo={{ cupo.id }} data-invitado="{{ cp.id }}"><i class="fa fa-times"></i></a>
+    {% endif %}
+</span>
