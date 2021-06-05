@@ -157,38 +157,38 @@ def ajax_cupo(request):
                 # filtros = [('Materias Bilingües', 'bilingüe'), ('Reducciones por bilingüismo', 'cción biling'),
                 #            ('Tutorías', 'Tutor'), ('Jefaturas de departamento', 'jefatur'),
                 #            ('Reducciones mayores de 55 años', '55')]
-                filtros = [('Tutorías', 'Tutor'), ('Jefaturas de departamento', 'jefatura'),
-                           ('Reducciones mayores de 55 años', '55')]
+                filtros = [('Tutorías', 'Tutor'), ('Jefaturas de departamento', 'atura de dep'),
+                           ('Reducciones mayores de 55 años', '55'), ('Reducciones Equipo Directivo', '(ED)')]
                 for filtro in filtros:
                     FiltroCupo.objects.create(cupo=cupo, nombre=filtro[0], filtro=filtro[1])
                 # Especialidades, Etapas, Cursos, ...
-                EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre='Orientación Educativa',
-                                                clave_ex='17959', dep='Orientación', x_dep='95')
+                # EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre='Orientación Educativa',
+                #                                 clave_ex='17959', dep='Orientación', x_dep='95')
                 for pxls in po.plantillaxls_set.all():
-                    if len(pxls.x_materiaomg) > 0:
-                        try:
-                            # EspecialidadCupo.objects.get(cupo=cupo, clave_ex=pxls.x_puesto)
-                            # Los x_puesto de un catedrático y de un docente son diferentes por lo que
-                            # crea dos especialidades con el mismo nombre. Para evitar esto, se crea
-                            # únicamente una especialidad obviando si es o no catedrático ya que en el cupo no
-                            # tiene importancia.
-                            # Ejemplos :    17769 -> Música catedrático; 17957 -> Música
-                            #               17761 -> Biología y Geología catedrático; 17949 -> Biología y Geología
-                            EspecialidadCupo.objects.get(cupo=cupo, nombre=pxls.puesto)
-                        except:
-                            ec = EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre=pxls.puesto,
-                                                                 clave_ex=pxls.x_puesto, dep=pxls.departamento,
-                                                                 x_dep=pxls.x_departamento)
-                            profesores_cupo = Profesores_cupo.objects.create(cupo=cupo, especialidad=ec)
-                            geps = po.plantillaxls_set.filter(x_puesto=pxls.x_puesto).values_list('docente', flat=True)
-                            for gep in list(set(geps)):
-                                Profesor_cupo.objects.create(profesorado=profesores_cupo, nombre=gep)
-                        try:
-                            Materia_cupo.objects.get(clave_ex=pxls.x_materiaomg, cupo=cupo)
-                        except:
-                            ec, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=pxls.etapa_escolar,
-                                                                           clave_ex=pxls.x_etapa_escolar)
-                            cc, c = CursoCupo.objects.get_or_create(cupo=cupo, nombre=pxls.curso, etapa_escolar=ec,
+                    try:
+                        # EspecialidadCupo.objects.get(cupo=cupo, clave_ex=pxls.x_puesto)
+                        # Los x_puesto de un catedrático y de un docente son diferentes por lo que
+                        # crea dos especialidades con el mismo nombre. Para evitar esto, se crea
+                        # únicamente una especialidad obviando si es o no catedrático ya que en el cupo no
+                        # tiene importancia.
+                        # Ejemplos :    17769 -> Música catedrático; 17957 -> Música
+                        #               17761 -> Biología y Geología catedrático; 17949 -> Biología y Geología
+                        ec = EspecialidadCupo.objects.get(cupo=cupo, nombre=pxls.puesto)
+                    except:
+                        ec = EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre=pxls.puesto,
+                                                             clave_ex=pxls.x_puesto, dep=pxls.departamento,
+                                                             x_dep=pxls.x_departamento)
+                        profesores_cupo = Profesores_cupo.objects.create(cupo=cupo, especialidad=ec)
+                        geps = po.plantillaxls_set.filter(x_puesto=pxls.x_puesto).values_list('docente', flat=True)
+                        for gep in list(set(geps)):
+                            Profesor_cupo.objects.create(profesorado=profesores_cupo, nombre=gep)
+                    try:
+                        Materia_cupo.objects.get(clave_ex=pxls.x_materiaomg, cupo=cupo)
+                    except:
+                        if len(pxls.x_materiaomg) > 0:
+                            eec, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=pxls.etapa_escolar,
+                                                                            clave_ex=pxls.x_etapa_escolar)
+                            cc, c = CursoCupo.objects.get_or_create(cupo=cupo, nombre=pxls.curso, etapa_escolar=eec,
                                                                     nombre_especifico=pxls.omc, clave_ex=pxls.x_curso)
                             h, sc, m = pxls.horas_semana_min.rpartition(':')
                             try:
@@ -197,7 +197,35 @@ def ajax_cupo(request):
                                 return JsonResponse({'horas': pxls.horas_semana_min, 'h': h, 'm': m,
                                                      'etapa': pxls.x_etapa_escolar, 'x_materia': pxls.x_materiaomg})
                             Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=pxls.materia, horas=horas,
-                                                        clave_ex=pxls.x_materiaomg)
+                                                        clave_ex=pxls.x_materiaomg, especialidad=ec)
+                        elif pxls.x_actividad in ['2', '614']:  # Esto sucede en las tutorías
+                            eec, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=pxls.etapa_escolar,
+                                                                            clave_ex=pxls.x_etapa_escolar)
+                            cc, c = CursoCupo.objects.get_or_create(cupo=cupo, nombre=pxls.curso, etapa_escolar=eec,
+                                                                    nombre_especifico=pxls.omc, clave_ex=pxls.x_curso)
+                            try:
+                                Materia_cupo.objects.get(cupo=cupo, curso_cupo=cc, clave_ex=pxls.x_actividad,
+                                                         especialidad=ec)
+                            except:
+                                t = 'Tutoría (%s)' % pxls.unidad
+                                Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=t, horas=2,
+                                                            clave_ex=pxls.x_actividad, especialidad=ec)
+                        elif pxls.x_actividad in ['547', '176', '528', '562', '507', '532', '531', '541', '530',
+                                                  '522', '525', '555', '605', '563', '527', '378', '529', '542']:
+                            nombres = {'547': 'Jefatura de departamento', '530': 'Jefatura de estudios (ED)',
+                                       '531': 'Jefatura de estudios adjunta (ED)', '532': 'Secretaría (ED)',
+                                       '548': 'Jefatura de departamento', '529': 'Dirección (ED)'}
+                            try:
+                                nombre = nombres[pxls.x_actividad]
+                            except:
+                                nombre = pxls.actividad
+                            try:
+                                Materia_cupo.objects.get(cupo=cupo, curso_cupo=None, clave_ex=pxls.x_actividad,
+                                                         especialidad=ec)
+                            except:
+                                Materia_cupo.objects.create(cupo=cupo, curso_cupo=None, nombre=nombre,
+                                                            horas=1, clave_ex=pxls.x_actividad, especialidad=ec,
+                                                            min_num_alumnos=1, max_num_alumnos=100)
 
                 logger.info('%s, add_cupo id=%s' % (g_e, cupo.id))
                 # ds = Departamento.objects.filter(ronda=cupo.ronda)
