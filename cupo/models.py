@@ -58,10 +58,12 @@ class EspecialidadCupo(models.Model):
     nombre = models.CharField("Nombre de la especialidad", max_length=150)
     departamento = models.ForeignKey(Departamento, blank=True, null=True, on_delete=models.CASCADE)
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
+    dep = models.CharField('Departamento', max_length=310, blank=True, null=True)
+    x_dep = models.CharField('Departamento clave', max_length=9, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'Especialidades en el cupo del profesorado'
-        ordering = ['nombre']
+        ordering = ['x_dep', 'nombre']
 
     def __str__(self):
         return '%s %s (%s)' % (self.cupo.nombre, self.nombre, self.cupo.ronda.entidad.name)
@@ -145,7 +147,7 @@ class Profesores_cupo(models.Model):
 
     class Meta:
         verbose_name_plural = 'Profesores por especialidad asociados cupo'
-        ordering = ['especialidad__departamento']
+        ordering = ['especialidad__x_dep', 'especialidad__nombre']
 
     @property
     def materias(self):

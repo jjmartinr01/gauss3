@@ -162,6 +162,8 @@ def ajax_cupo(request):
                 for filtro in filtros:
                     FiltroCupo.objects.create(cupo=cupo, nombre=filtro[0], filtro=filtro[1])
                 # Especialidades, Etapas, Cursos, ...
+                EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre='Orientación Educativa',
+                                                clave_ex='17959', dep='Orientación', x_dep='95')
                 for pxls in po.plantillaxls_set.all():
                     if len(pxls.x_materiaomg) > 0:
                         try:
@@ -175,7 +177,8 @@ def ajax_cupo(request):
                             EspecialidadCupo.objects.get(cupo=cupo, nombre=pxls.puesto)
                         except:
                             ec = EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre=pxls.puesto,
-                                                                 clave_ex=pxls.x_puesto)
+                                                                 clave_ex=pxls.x_puesto, dep=pxls.departamento,
+                                                                 x_dep=pxls.x_departamento)
                             profesores_cupo = Profesores_cupo.objects.create(cupo=cupo, especialidad=ec)
                             geps = po.plantillaxls_set.filter(x_puesto=pxls.x_puesto).values_list('docente', flat=True)
                             for gep in list(set(geps)):
