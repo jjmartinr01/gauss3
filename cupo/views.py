@@ -212,17 +212,17 @@ def ajax_cupo(request):
                                                             clave_ex=pxls.x_actividad, especialidad=ec)
                         elif pxls.x_actividad in ['547', '176', '528', '562', '507', '532', '531', '541', '530',
                                                   '522', '525', '555', '605', '563', '527', '378', '529', '542']:
-                            nombres = {'547': 'Jefatura de departamento', '530': 'Jefatura de estudios (ED)',
-                                       '531': 'Jefatura de estudios adjunta (ED)', '532': 'Secretaría (ED)',
-                                       '548': 'Jefatura de departamento', '529': 'Dirección (ED)'}
-                            try:
-                                nombre = nombres[pxls.x_actividad]
-                            except:
-                                nombre = pxls.actividad
                             try:
                                 Materia_cupo.objects.get(cupo=cupo, curso_cupo=None, clave_ex=pxls.x_actividad,
                                                          especialidad=ec)
                             except:
+                                nombres = {'547': 'Jefatura de departamento', '530': 'Jefatura de estudios (ED)',
+                                           '531': 'Jefatura de estudios adjunta (ED)', '532': 'Secretaría (ED)',
+                                           '548': 'Jefatura de departamento', '529': 'Dirección (ED)'}
+                                try:
+                                    nombre = nombres[pxls.x_actividad]
+                                except:
+                                    nombre = pxls.actividad
                                 Materia_cupo.objects.create(cupo=cupo, curso_cupo=None, nombre=nombre,
                                                             horas=1, clave_ex=pxls.x_actividad, especialidad=ec,
                                                             min_num_alumnos=1, max_num_alumnos=100)
