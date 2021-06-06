@@ -103,6 +103,15 @@ def get_grupos(po):
 
 ############################################
 
+@register.filter
+def get_horas_media(cc):
+    horas = 0
+    for materia in cc.materia_cupo_set.all():
+        horas += materia.horas * materia.num_alumnos
+    try:
+        return horas / cc.num_alumnos
+    except:
+        return 0
 
 # LCL_MU = ((10, 24, 1), (25, 39, 2), (40, 54, 3), (55, 69, 4), (70, 84, 5), (85, 99, 6), (100, 114, 7), (115, 129, 8),
 #           (130, 144, 9), (145, 159, 10), (160, 174, 11), (175, 189, 12), (190, 204, 13), (205, 219, 14))

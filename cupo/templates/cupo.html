@@ -81,15 +81,15 @@
 {% block final %}
     <script>
 
-    $(".usuarios_invitados").select2(
-        conf_select2({
-            'gcs': 'g',
-            'format_g': '{0}, {1}',
-            'placeholder': 'Escribe parte del nombre del invitado para buscarlo',
-            'url': '/selectgcs_organization/'
-        })
-    );
-    $('body').on('change.select2', '.usuarios_invitados', function (e) {
+        $(".usuarios_invitados").select2(
+            conf_select2({
+                'gcs': 'g',
+                'format_g': '{0}, {1}',
+                'placeholder': 'Escribe parte del nombre del invitado para buscarlo',
+                'url': '/selectgcs_organization/'
+            })
+        );
+        $('body').on('change.select2', '.usuarios_invitados', function (e) {
             var cupo = $(this).data('id');
             var invitado = $(this).val();
             $.post("/ajax_cupo/", {
@@ -126,7 +126,7 @@
                 });
         });
 
-    {# ################################################################################# #}
+        {# ################################################################################# #}
         {% if request.session.gauser_extra|has_permiso:'crea_cupos' %}
             $('#add_cupo').click(function (e) {
                 e.preventDefault();

@@ -1,4 +1,5 @@
 {% load my_templatetags %}
+{% load cupo_extras %}
 {% for m in materias %}
     {% if forloop.counter0|divisibleby:8 and not duplicated %}
         <div class="row">
@@ -31,13 +32,13 @@
          class="row materia  {% if duplicated %} duplicated
              {% else %}{% if forloop.counter|divisibleby:2 %}par{% else %}impar{% endif %}{% endif %}">
         <div class="columns large-4 medium-4 small-6">
-        {% if m.nombre %}
-            <a id="nombre_actual{{ m.id }}" data-dropdown="drop{{ m.id }}" aria-controls="drop{{ m.id }}"
-               aria-expanded="false">{{ m.nombre }}</a>
-        {% else %}
-            <a id="nombre_actual{{ m.id }}" data-dropdown="drop{{ m.id }}" aria-controls="drop{{ m.id }}"
-               aria-expanded="false">Materia sin nombre</a>
-        {% endif %}
+            {% if m.nombre %}
+                <a id="nombre_actual{{ m.id }}" data-dropdown="drop{{ m.id }}" aria-controls="drop{{ m.id }}"
+                   aria-expanded="false">{{ m.nombre }}</a>
+            {% else %}
+                <a id="nombre_actual{{ m.id }}" data-dropdown="drop{{ m.id }}" aria-controls="drop{{ m.id }}"
+                   aria-expanded="false">Materia sin nombre</a>
+            {% endif %}
             <div id="drop{{ m.id }}" data-dropdown-content class="f-dropdown content medium" aria-hidden="true"
                  tabindex="-1"
                  aria-autoclose="false">
@@ -50,7 +51,8 @@
                 <label>Cambia el nombre:<input type="text" data-materia="{{ m.id }}" class="change_nombre"
                                                value="{{ m.nombre }}"></label>
             </div>
-            {% if not s_c %}-{% if m.curso_cupo %}{{ m.curso_cupo.nombre }}{% else %}No asignada a un curso{% endif %}{% endif %}
+            {% if not s_c %}-
+                {% if m.curso_cupo %}{{ m.curso_cupo.nombre }}{% else %}No asignada a un curso{% endif %}{% endif %}
         </div>
         <div class="columns large-1 medium-1 small-3 num_periodos" contenteditable="true" data-materia="{{ m.id }}"
              title="Periodos lectivos en una semana que son destinados a la materia">
@@ -84,6 +86,30 @@
         </div>
     </div>
 {% endfor %}
+
+{% if s_c %}
+    <br>
+    <div class="row">
+        <div class="columns large-2">
+            <label title="Escribe aquí el número total de alumnos en {{ materias.0.curso_cupo.nombre }}"><b>Alumnos</b>
+                <input data-curso="{{ materias.0.curso_cupo.id }}" class="num_total_alumnos_curso" type="number" min="0"
+                       max="300" value="{{ materias.0.curso_cupo.num_alumnos }}" data-cupo="{{ materias.0.cupo.id }}">
+            </label>
+        </div>
+        <div class="columns large-10">
+            <label><b>Número de horas lectivas de un alumno por semana:</b></label>
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+                <mfrac style="font-size: x-large;">
+                    <mn>&Sigma; horas materia x num. alumnos materia</mn>
+                    <mi>número alumnos en {{ materias.0.curso_cupo.nombre }}</mi>
+                </mfrac>
+                <mo style="font-size: large;">= </mo>
+            </math>
+            <span id="horas_media{{ materias.0.curso_cupo.id }}">
+                    {{ materias.0.curso_cupo|get_horas_media }}</span>
+        </div>
+    </div>
+{% endif %}
 
 {% if especialidad %}
     <hr>

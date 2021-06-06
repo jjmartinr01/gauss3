@@ -150,8 +150,15 @@ def ajax_cupo(request):
         elif action == 'crea_cupo_from_po' and g_e.has_permiso('crea_cupos'):
             try:
                 po = PlantillaOrganica.objects.get(id=request.POST['po'], g_e=g_e)
+                if 'I.E.S' in po.ronda_centro.entidad.entidadextra.tipo_centro:
+                    J = {'cmax': 20, 'cmin': 18, 'mmax': 9, 'mmin': 10, 'dmax': 13, 'dmin': 12, 'umax': 7, 'umin': 6}
+                else:
+                    J = {'cmax': 24, 'cmin': 24, 'mmax': 12, 'mmin': 12, 'dmax': 16, 'dmin': 16, 'umax': 8, 'umin': 8}
                 nombre = '%s - Cupo creado el %s' % (po.ronda_centro.entidad.name, datetime.datetime.now())
-                cupo = Cupo.objects.create(ronda=po.ronda_centro, nombre=nombre)
+                cupo = Cupo.objects.create(ronda=po.ronda_centro, nombre=nombre, max_completa=J['cmax'],
+                                           min_completa=J['cmin'], max_dostercios=J['dmax'], min_dostercios=J['dmin'],
+                                           max_media=J['mmax'], min_media=J['mmin'], max_tercio=J['umax'],
+                                           min_tercio =J['umin'])
                 CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
                 # Crea filtros automáticos:
                 # filtros = [('Materias Bilingües', 'bilingüe'), ('Reducciones por bilingüismo', 'cción biling'),
@@ -182,50 +189,61 @@ def ajax_cupo(request):
                         geps = po.plantillaxls_set.filter(x_puesto=pxls.x_puesto).values_list('docente', flat=True)
                         for gep in list(set(geps)):
                             Profesor_cupo.objects.create(profesorado=profesores_cupo, nombre=gep)
-                    try:
-                        Materia_cupo.objects.get(clave_ex=pxls.x_materiaomg, cupo=cupo)
-                    except:
-                        if len(pxls.x_materiaomg) > 0:
-                            eec, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=pxls.etapa_escolar,
-                                                                            clave_ex=pxls.x_etapa_escolar)
-                            cc, c = CursoCupo.objects.get_or_create(cupo=cupo, nombre=pxls.curso, etapa_escolar=eec,
-                                                                    nombre_especifico=pxls.omc, clave_ex=pxls.x_curso)
-                            h, sc, m = pxls.horas_semana_min.rpartition(':')
+                    # try:
+                    #     if pxls.x_actividad == '1':
+                    #         Materia_cupo.objects.get(clave_ex=pxls.x_materiaomg, cupo=cupo)
+                    #     else:
+                    #         Materia_cupo.objects.get(cupo=cupo, curso_cupo=cc, nombre=pxls.actividad,
+                    #                                            horas=horas, clave_ex=pxls.x_actividad,
+                    #                                            especialidad=ec)
+                    # except:
+                    if len(pxls.x_materiaomg) > 0:
+                        eec, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=pxls.etapa_escolar,
+                                                                        clave_ex=pxls.x_etapa_escolar)
+                        cc, c = CursoCupo.objects.get_or_create(cupo=cupo, nombre=pxls.curso, etapa_escolar=eec,
+                                                                nombre_especifico=pxls.omc, clave_ex=pxls.x_curso)
+                        h, sc, m = pxls.horas_semana_min.rpartition(':')
+                        try:
+                            horas = int(h) + int(m) / 60
+                        except:
+                            return JsonResponse({'horas': pxls.horas_semana_min, 'h': h, 'm': m,
+                                                 'etapa': pxls.x_etapa_escolar, 'x_materia': pxls.x_materiaomg})
+                        if pxls.x_actividad == '1':
+                            Materia_cupo.objects.get_or_create(cupo=cupo, curso_cupo=cc, nombre=pxls.materia,
+                                                               horas=horas, clave_ex=pxls.x_materiaomg, especialidad=ec,
+                                                               num_alumnos=cc.num_alumnos)
+                        else:
+                            Materia_cupo.objects.get_or_create(cupo=cupo, curso_cupo=cc, nombre=pxls.actividad,
+                                                               horas=horas, clave_ex=pxls.x_actividad,
+                                                               especialidad=ec, num_alumnos=cc.num_alumnos)
+                    elif pxls.x_actividad in ['2', '614']:  # Esto sucede en las tutorías
+                        eec, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=pxls.etapa_escolar,
+                                                                        clave_ex=pxls.x_etapa_escolar)
+                        cc, c = CursoCupo.objects.get_or_create(cupo=cupo, nombre=pxls.curso, etapa_escolar=eec,
+                                                                nombre_especifico=pxls.omc, clave_ex=pxls.x_curso)
+                        try:
+                            Materia_cupo.objects.get(cupo=cupo, curso_cupo=cc, clave_ex=pxls.x_actividad,
+                                                     especialidad=ec)
+                        except:
+                            t = 'Tutoría (%s)' % pxls.unidad
+                            Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=t, horas=2,
+                                                        clave_ex=pxls.x_actividad, especialidad=ec, num_alumnos=20)
+                    elif pxls.x_actividad in ['547', '176', '528', '562', '507', '532', '531', '541', '530',
+                                              '522', '525', '555', '605', '563', '527', '378', '529', '542']:
+                        try:
+                            Materia_cupo.objects.get(cupo=cupo, curso_cupo=None, clave_ex=pxls.x_actividad,
+                                                     especialidad=ec)
+                        except:
+                            nombres = {'547': 'Jefatura de departamento', '530': 'Jefatura de estudios (ED)',
+                                       '531': 'Jefatura de estudios adjunta (ED)', '532': 'Secretaría (ED)',
+                                       '548': 'Jefatura de departamento', '529': 'Dirección (ED)'}
                             try:
-                                horas = int(h) + int(m) / 60
+                                nombre = nombres[pxls.x_actividad]
                             except:
-                                return JsonResponse({'horas': pxls.horas_semana_min, 'h': h, 'm': m,
-                                                     'etapa': pxls.x_etapa_escolar, 'x_materia': pxls.x_materiaomg})
-                            Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=pxls.materia, horas=horas,
-                                                        clave_ex=pxls.x_materiaomg, especialidad=ec)
-                        elif pxls.x_actividad in ['2', '614']:  # Esto sucede en las tutorías
-                            eec, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=pxls.etapa_escolar,
-                                                                            clave_ex=pxls.x_etapa_escolar)
-                            cc, c = CursoCupo.objects.get_or_create(cupo=cupo, nombre=pxls.curso, etapa_escolar=eec,
-                                                                    nombre_especifico=pxls.omc, clave_ex=pxls.x_curso)
-                            try:
-                                Materia_cupo.objects.get(cupo=cupo, curso_cupo=cc, clave_ex=pxls.x_actividad,
-                                                         especialidad=ec)
-                            except:
-                                t = 'Tutoría (%s)' % pxls.unidad
-                                Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=t, horas=2,
-                                                            clave_ex=pxls.x_actividad, especialidad=ec)
-                        elif pxls.x_actividad in ['547', '176', '528', '562', '507', '532', '531', '541', '530',
-                                                  '522', '525', '555', '605', '563', '527', '378', '529', '542']:
-                            try:
-                                Materia_cupo.objects.get(cupo=cupo, curso_cupo=None, clave_ex=pxls.x_actividad,
-                                                         especialidad=ec)
-                            except:
-                                nombres = {'547': 'Jefatura de departamento', '530': 'Jefatura de estudios (ED)',
-                                           '531': 'Jefatura de estudios adjunta (ED)', '532': 'Secretaría (ED)',
-                                           '548': 'Jefatura de departamento', '529': 'Dirección (ED)'}
-                                try:
-                                    nombre = nombres[pxls.x_actividad]
-                                except:
-                                    nombre = pxls.actividad
-                                Materia_cupo.objects.create(cupo=cupo, curso_cupo=None, nombre=nombre,
-                                                            horas=1, clave_ex=pxls.x_actividad, especialidad=ec,
-                                                            min_num_alumnos=1, max_num_alumnos=100)
+                                nombre = pxls.actividad
+                            Materia_cupo.objects.create(cupo=cupo, curso_cupo=None, nombre=nombre,
+                                                        horas=1, clave_ex=pxls.x_actividad, especialidad=ec,
+                                                        min_num_alumnos=1, max_num_alumnos=100)
 
                 logger.info('%s, add_cupo id=%s' % (g_e, cupo.id))
                 # ds = Departamento.objects.filter(ronda=cupo.ronda)
@@ -757,6 +775,23 @@ def ajax_cupo(request):
                                              'num_grupos': materia.num_grupos})
                     else:
                         return JsonResponse({'ok': True, 'especialidad': '', 'num_grupos': materia.num_grupos})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
+            except Exception as e:
+                return JsonResponse({'ok': False, 'error': repr(e)})
+
+        elif action == 'change_num_total_alumnos_curso':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+                if con1 or con2:
+                    curso = CursoCupo.objects.get(id=request.POST['curso_cupo'], cupo=cupo)
+                    logger.info('%s, cupo %s - %s change_num_total_alumnos_curso %s -> %s' % (
+                        g_e, cupo.id, curso.nombre, curso.num_alumnos, request.POST['num_alumnos']))
+                    curso.num_alumnos = int(request.POST['num_alumnos'])
+                    curso.save()
+                    return JsonResponse({'ok': True, 'horas_media': curso.get_horas_media, 'curso': curso.id})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
             except Exception as e:

@@ -423,6 +423,26 @@
                 });
         });
 
+        $('body').on('change keyup', '.num_total_alumnos_curso', function () {
+                var cupo = $(this).data('cupo');
+                var curso_cupo = $(this).data('curso');
+                var num_alumnos = $(this).val();
+                $.post("/ajax_cupo/", {
+                        action: 'change_num_total_alumnos_curso',
+                        cupo: cupo,
+                        curso_cupo: curso_cupo,
+                        num_alumnos: num_alumnos
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#horas_media' + data.curso).html(data.horas_media);
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
         {#Las siguientes líneas son para las acciones relacionadas con Profesor_cupo:#}
         $('body').on('keyup change click', '.profesor_cupo', function (e) {
             var id = $(this).data('id');

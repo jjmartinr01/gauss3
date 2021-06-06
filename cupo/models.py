@@ -98,6 +98,17 @@ class CursoCupo(models.Model):
     tipo = models.CharField("Tipo de estudio", max_length=75, null=True, blank=True)
     nombre_especifico = models.CharField("Nombre específico", max_length=150, null=True, blank=True)
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
+    num_alumnos = models.IntegerField("Número de alumnos previsto en este curso", default=20)
+
+    @property
+    def get_horas_media(self):
+        horas = 0
+        for materia in self.materia_cupo_set.all():
+            horas += materia.horas * materia.num_alumnos
+        try:
+            return horas / self.num_alumnos
+        except:
+            return 0
 
     class Meta:
         ordering = ['etapa_escolar__clave_ex', 'tipo', 'nombre']
@@ -143,7 +154,7 @@ class Profesores_cupo(models.Model):
     cupo = models.ForeignKey(Cupo, on_delete=models.CASCADE)
     especialidad = models.ForeignKey(EspecialidadCupo, blank=True, null=True, on_delete=models.CASCADE)
     num_periodos = models.IntegerField("Nº de periodos lectivos para la especialidad", null=True, blank=True)
-    num_horas = models.FloatField("Nº de horas lectivas para la especialidad", null=True, blank=True)
+    num_horas = models.FloatField("Nº de horas lectivas para la especialidad", default=0)
 
     class Meta:
         verbose_name_plural = 'Profesores por especialidad asociados cupo'
