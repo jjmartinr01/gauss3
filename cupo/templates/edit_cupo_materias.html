@@ -1,5 +1,4 @@
 {% load my_templatetags %}
-{% load cupo_extras %}
 {% for m in materias %}
     {% if forloop.counter0|divisibleby:8 and not duplicated %}
         <div class="row">
@@ -89,6 +88,7 @@
 
 {% if s_c %}
     <br>
+    <hr>
     <div class="row">
         <div class="columns large-2">
             <label title="Escribe aquí el número total de alumnos en {{ materias.0.curso_cupo.nombre }}"><b>Alumnos</b>
@@ -103,17 +103,85 @@
                     <mn>&Sigma; horas materia x num. alumnos materia</mn>
                     <mi>número alumnos en {{ materias.0.curso_cupo.nombre }}</mi>
                 </mfrac>
-                <mo style="font-size: large;">= </mo>
+                <mo style="font-size: large;">=</mo>
             </math>
             <span id="horas_media{{ materias.0.curso_cupo.id }}">
-                    {{ materias.0.curso_cupo|get_horas_media }}</span>
+                    {{ materias.0.curso_cupo.get_horas_media }}</span>
         </div>
     </div>
 {% endif %}
 
 {% if especialidad %}
-    <hr>
-    {% for p in especialidad|profesores_especialidad %}
-        {% include "edit_cupo_materias_profesor.html" with contador=forloop.counter %}
-    {% endfor %}
+    {#    <hr>#}
+    <style>
+        th {
+            text-align: center;
+        }
+    </style>
+    <br>
+    <div class="row">
+        <table>
+            <thead>
+            <tr>
+                <th style="text-align: center;" colspan="8">Rangos, en horas, de las diferentes jornadas</th>
+            </tr>
+            <tr>
+                <th style="text-align: center;" colspan="2">1/3 Jornada</th>
+                <th style="text-align: center;" colspan="2">1/2 Jornada</th>
+                <th style="text-align: center;" colspan="2">2/3 Jornada</th>
+                <th style="text-align: center;" colspan="2">Jornada completa</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  data-especialidad="{{ especialidad.id }}"
+                                                                  value="{{ especialidad.min_tercio }}"></label></td>
+                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  data-especialidad="{{ especialidad.id }}"
+                                                                  value="{{ especialidad.max_tercio }}"></label></td>
+                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  data-especialidad="{{ especialidad.id }}"
+                                                                  value="{{ especialidad.min_media }}"></label></td>
+                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  data-especialidad="{{ especialidad.id }}"
+                                                                  value="{{ especialidad.max_media }}"></label></td>
+                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  data-especialidad="{{ especialidad.id }}"
+                                                                  value="{{ especialidad.min_dostercios }}"></label></td>
+                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  data-especialidad="{{ especialidad.id }}"
+                                                                  value="{{ especialidad.max_dostercios }}"></label></td>
+                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  data-especialidad="{{ especialidad.id }}"
+                                                                  value="{{ especialidad.min_completa }}"></label></td>
+                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  data-especialidad="{{ especialidad.id }}"
+                                                                  value="{{ especialidad.max_completa }}"></label></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <div id="profesor_cupo{{ p.id }}">
+        <div class="row">
+            <table style="width: 100%;" id="tabla_lista_profesores{{ p.id }}">
+                <thead>
+                <tr>
+                <th style="text-align: center;" colspan="6">Docentes necesarios en función de las horas asignadas</th>
+            </tr>
+                <tr>
+                    <th style="text-align: center;">Nombre</th>
+                    <th style="text-align: center;">Tipo docente</th>
+                    <th style="text-align: center;">Jornada</th>
+                    <th style="text-align: center;" colspan="3">Otros datos</th>
+                </tr>
+                </thead>
+                {% for p in especialidad|profesores_especialidad %}
+                    {% include "edit_cupo_materias_profesor.html" %}
+                {% endfor %}
+            </table>
+        </div>
+    </div>
 {% endif %}

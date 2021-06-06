@@ -87,7 +87,11 @@
                 <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_dostercios }}</td>
                 <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_media }}</td>
                 <td style="text-align:center;padding-top:2px;">{{ p.reparto_profes.profes_tercio }}</td>
-                <td>{% if p.reparto_profes.periodos_sobrantes > 0 %}<span style="color:red;">*</span> {% endif %}</td>
+                <td>{% if p.reparto_profes.periodos_sobrantes > 0 %}
+                    <span style="color:red;">{{ p.reparto_profes.periodos_sobrantes }}</span>
+                {% else %}
+                    <span style="color:green;">&#10004;</span>
+                {% endif %}</td>
             </tr>
         {% endif %}
     {% endfor %}

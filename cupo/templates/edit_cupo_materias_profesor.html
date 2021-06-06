@@ -1,36 +1,34 @@
-<div id="profesor_cupo{{ p.id }}">
-    <div class="row {% if contador|divisibleby:2 %}par{% else %}impar{% endif %}">
-        <div class="columns large-4">
-            <input type="text" maxlength="150" value="{{ p.nombre }}" data-id="{{ p.id }}" class="profesor_cupo"
-                   data-campo="nombre" placeholder="Nombre del profesor/a"></div>
-        <div class="columns large-3">
-            <select data-id="{{ p.id }}" class="profesor_cupo" data-campo="tipo">
-                <option value="DEF" {% if p.tipo == "DEF" %}selected{% endif %}>Destino definitivo</option>
-                <option value="INT" {% if p.tipo == "INT" %}selected{% endif %}>Docente interino</option>
-                <option value="NONE" {% if p.tipo == "NONE" %}selected{% endif %}>Profesor no necesario</option>
-            </select>
-        </div>
-        <div class="columns large-3">
-            <select data-id="{{ p.id }}" class="profesor_cupo" data-campo="jornada">
-                <option value="1" {% if p.jornada == "1" %}selected{% endif %}>Jornada completa</option>
-                <option value="2" {% if p.jornada == "2" %}selected{% endif %}>Jornada de 2/3</option>
-                <option value="3" {% if p.jornada == "3" %}selected{% endif %}>Media jornada</option>
-                <option value="4" {% if p.jornada == "4" %}selected{% endif %}>Jornada de 1/3</option>
-            </select>
-        </div>
-        <div class="columns large-2">
-            <input type="checkbox" data-id="{{ p.id }}" class="profesor_cupo" data-campo="bilingue"
-                   {% if p.bilingue %}checked{% endif %}> Bilingüe
-        </div>
-    </div>
-    <div class="row {% if contador|divisibleby:2 %}par{% else %}impar{% endif %}">
-        <div class="columns large-2"><a class="button tiny profesor_cupo" data-id="{{ p.id }}" data-campo="borrar"><i
-                class="fa fa-trash"></i> Borrar</a></div>
-        <div class="columns large-2"><a class="button tiny profesor_cupo" data-id="{{ p.id }}" data-campo="duplicar"><i
-                class="fa fa-copy"></i> Duplicar</a></div>
-        <div class="columns large-8">
-                    <textarea data-id="{{ p.id }}" class="profesor_cupo" placeholder="Observaciones sobre este profesor"
-                              data-campo="observaciones">{{ p.observaciones }}</textarea>
-        </div>
-    </div>
-</div>
+<tbody style="border-bottom: 1px solid lightgrey;" id="docente_cupo{{ p.id }}">
+<tr>
+    <td><input type="text" maxlength="150" value="{{ p.nombre }}" data-id="{{ p.id }}" class="profesor_cupo"
+               data-campo="nombre" placeholder="Nombre del profesor/a">
+    </td>
+    <td><select data-id="{{ p.id }}" class="profesor_cupo" data-campo="tipo">
+        <option value="DEF" {% if p.tipo == "DEF" %}selected{% endif %}>Destino definitivo</option>
+        <option value="INT" {% if p.tipo == "INT" %}selected{% endif %}>Docente interino</option>
+        <option value="NONE" {% if p.tipo == "NONE" %}selected{% endif %}>Profesor no necesario</option>
+    </select>
+    </td>
+    <td><select data-id="{{ p.id }}" class="profesor_cupo" data-campo="jornada">
+        <option value="1" {% if p.jornada == "1" %}selected{% endif %}>Jornada completa</option>
+        <option value="2" {% if p.jornada == "2" %}selected{% endif %}>Jornada de 2/3</option>
+        <option value="3" {% if p.jornada == "3" %}selected{% endif %}>Media jornada</option>
+        <option value="4" {% if p.jornada == "4" %}selected{% endif %}>Jornada de 1/3</option>
+    </select>
+    </td>
+    <td><label>Bilingüe<br><input type="checkbox" data-id="{{ p.id }}" class="profesor_cupo" data-campo="bilingue"
+                                  {% if p.bilingue %}checked{% endif %}></label></td>
+    <td><label>Itinerante<br><input type="checkbox" data-id="{{ p.id }}" class="profesor_cupo" data-campo="itinerante"
+                                    {% if p.itinerante %}checked{% endif %}></label></td>
+    <td><label>No afín<br><input type="checkbox" data-id="{{ p.id }}" class="profesor_cupo" data-campo="noafin"
+                                 {% if p.noafin %}checked{% endif %}></label></td>
+</tr>
+<tr class="">
+    <td colspan="4"><textarea data-id="{{ p.id }}" class="profesor_cupo" placeholder="Observaciones sobre este profesor"
+                              data-campo="observaciones">{{ p.observaciones }}</textarea></td>
+    <td><a class="button tiny profesor_cupo" data-id="{{ p.id }}" data-campo="borrar"><i
+            class="fa fa-trash"></i> Borrar</a></td>
+    <td><a class="button tiny profesor_cupo" data-id="{{ p.id }}" data-campo="duplicar"><i
+            class="fa fa-copy"></i> Duplicar</a></td>
+</tr>
+</tbody>

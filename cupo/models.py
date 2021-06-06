@@ -60,6 +60,14 @@ class EspecialidadCupo(models.Model):
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
     dep = models.CharField('Departamento', max_length=310, blank=True, null=True)
     x_dep = models.CharField('Departamento clave', max_length=9, blank=True, null=True)
+    max_completa = models.IntegerField("Máximo número de periodos lectivos con jornada completa", default=20)
+    min_completa = models.IntegerField("Mínimo número de periodos lectivos con jornada completa", default=18)
+    max_dostercios = models.IntegerField("Máximo número de periodos lectivos con 2/3 de jornada", default=13)
+    min_dostercios = models.IntegerField("Mínimo número de periodos lectivos con 2/3 de jornada", default=12)
+    max_media = models.IntegerField("Máximo número de periodos lectivos con media jornada", default=10)
+    min_media = models.IntegerField("Mínimo número de periodos lectivos con media jornada", default=9)
+    max_tercio = models.IntegerField("Máximo número de periodos lectivos con 1/3 de jornada", default=7)
+    min_tercio = models.IntegerField("Mínimo número de periodos lectivos con 1/3 de jornada", default=6)
 
     class Meta:
         verbose_name_plural = 'Especialidades en el cupo del profesorado'
@@ -166,14 +174,14 @@ class Profesores_cupo(models.Model):
 
     @property
     def reparto_profes(self):
-        profes_completos = int(self.num_horas / self.cupo.min_completa)
-        periodos_sobrantes = self.num_horas % self.cupo.min_completa
-        profes_dostercios = int(periodos_sobrantes / self.cupo.min_dostercios)
-        periodos_sobrantes = periodos_sobrantes % self.cupo.min_dostercios
-        profes_media = int(periodos_sobrantes / self.cupo.min_media)
-        periodos_sobrantes = periodos_sobrantes % self.cupo.min_media
-        profes_tercio = int(periodos_sobrantes / self.cupo.min_tercio)
-        periodos_sobrantes = periodos_sobrantes % self.cupo.min_tercio
+        profes_completos = int(self.num_horas / self.especialidad.min_completa)
+        periodos_sobrantes = self.num_horas % self.especialidad.min_completa
+        profes_dostercios = int(periodos_sobrantes / self.especialidad.min_dostercios)
+        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_dostercios
+        profes_media = int(periodos_sobrantes / self.especialidad.min_media)
+        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_media
+        profes_tercio = int(periodos_sobrantes / self.especialidad.min_tercio)
+        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_tercio
 
         # if periodos_sobrantes >= self.cupo.min_dostercios:
         #     profes_dostercios = int(periodos_sobrantes / self.cupo.min_dostercios)
@@ -208,6 +216,8 @@ class Profesor_cupo(models.Model):
     tipo = models.CharField('Tipo', choices=TIPO_PROFESOR, blank=True, null=True, max_length=10, default='DEF')
     jornada = models.CharField('Jornada', choices=TIPO_JORNADA, blank=True, null=True, max_length=10, default='1')
     bilingue = models.BooleanField('Es bilingüe?', default=False)
+    itinerante = models.BooleanField('Es itinerante?', default=False)
+    noafin = models.BooleanField('Es no afín?', default=False)
     observaciones = models.TextField('Observaciones', blank=True, null=True, default='')
 
     class Meta:

@@ -158,7 +158,7 @@ def ajax_cupo(request):
                 cupo = Cupo.objects.create(ronda=po.ronda_centro, nombre=nombre, max_completa=J['cmax'],
                                            min_completa=J['cmin'], max_dostercios=J['dmax'], min_dostercios=J['dmin'],
                                            max_media=J['mmax'], min_media=J['mmin'], max_tercio=J['umax'],
-                                           min_tercio =J['umin'])
+                                           min_tercio=J['umin'])
                 CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
                 # Crea filtros automáticos:
                 # filtros = [('Materias Bilingües', 'bilingüe'), ('Reducciones por bilingüismo', 'cción biling'),
@@ -172,6 +172,12 @@ def ajax_cupo(request):
                 # EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre='Orientación Educativa',
                 #                                 clave_ex='17959', dep='Orientación', x_dep='95')
                 for pxls in po.plantillaxls_set.all():
+                    if pxls.x_puesto == '18429':
+                        nombre_especialidad = 'Música de Primaria'
+                    elif pxls.x_puesto == '18409':
+                        nombre_especialidad = 'Educación Física de Primaria'
+                    else:
+                        nombre_especialidad = pxls.puesto
                     try:
                         # EspecialidadCupo.objects.get(cupo=cupo, clave_ex=pxls.x_puesto)
                         # Los x_puesto de un catedrático y de un docente son diferentes por lo que
@@ -180,11 +186,21 @@ def ajax_cupo(request):
                         # tiene importancia.
                         # Ejemplos :    17769 -> Música catedrático; 17957 -> Música
                         #               17761 -> Biología y Geología catedrático; 17949 -> Biología y Geología
-                        ec = EspecialidadCupo.objects.get(cupo=cupo, nombre=pxls.puesto)
+                        ec = EspecialidadCupo.objects.get(cupo=cupo, nombre=nombre_especialidad)
                     except:
-                        ec = EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre=pxls.puesto,
+                        if pxls.x_puesto in ['18401', '18409', '18410', '18416', '18429', '18431', '18433', '18434']:
+                            J = {'cmax': 24, 'cmin': 24, 'mmax': 12, 'mmin': 12, 'dmax': 16, 'dmin': 16, 'umax': 8,
+                                 'umin': 8}
+                        else:
+                            J = {'cmax': 20, 'cmin': 18, 'mmax': 9, 'mmin': 10, 'dmax': 13, 'dmin': 12, 'umax': 7,
+                                 'umin': 6}
+                        ec = EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre=nombre_especialidad,
                                                              clave_ex=pxls.x_puesto, dep=pxls.departamento,
-                                                             x_dep=pxls.x_departamento)
+                                                             x_dep=pxls.x_departamento, max_completa=J['cmax'],
+                                                             min_completa=J['cmin'], max_dostercios=J['dmax'],
+                                                             min_dostercios=J['dmin'], max_media=J['mmax'],
+                                                             min_media=J['mmin'], max_tercio=J['umax'],
+                                                             min_tercio=J['umin'])
                         profesores_cupo = Profesores_cupo.objects.create(cupo=cupo, especialidad=ec)
                         geps = po.plantillaxls_set.filter(x_puesto=pxls.x_puesto).values_list('docente', flat=True)
                         for gep in list(set(geps)):
@@ -803,7 +819,7 @@ def ajax_cupo(request):
                 campo = request.POST['campo']
                 valor = request.POST['valor']
                 p_c = Profesor_cupo.objects.get(id=request.POST['id'], profesorado__cupo__id=cupo)
-                if campo == 'bilingue':
+                if campo == 'bilingue' or campo == 'itinerante' or campo == 'noafin':
                     valores = {'true': True, 'false': False}
                     valor = valores[valor]
                 elif campo == 'borrar':
@@ -860,6 +876,8 @@ def edit_cupo(request, cupo_id):
         cursos = sorted(cursos, key=lambda curso: clave_ex2int(curso))
         materias = Materia_cupo.objects.filter(curso_cupo=cursos[0], cupo=cupo)
         especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
+        for especialidad in especialidades:
+            cupo_especialidad(cupo, especialidad)
         # s_c stands for 'selected course' and in case of taking True value means edit_cupo doesn't have to show course
         return render(request, "edit_cupo.html", {'formname': 'cupo', 'cupo': cupo, 'curso': cursos[0],
                                                   'materias': materias, 'especialidades': especialidades, 's_c': True,
