@@ -150,10 +150,10 @@ def ajax_cupo(request):
         elif action == 'crea_cupo_from_po' and g_e.has_permiso('crea_cupos'):
             try:
                 po = PlantillaOrganica.objects.get(id=request.POST['po'], g_e=g_e)
-                if 'I.E.S' in po.ronda_centro.entidad.entidadextra.tipo_centro:
-                    J = {'cmax': 20, 'cmin': 18, 'mmax': 9, 'mmin': 10, 'dmax': 13, 'dmin': 12, 'umax': 7, 'umin': 6}
-                else:
-                    J = {'cmax': 24, 'cmin': 24, 'mmax': 12, 'mmin': 12, 'dmax': 16, 'dmin': 16, 'umax': 8, 'umin': 8}
+                # if 'I.E.S' in po.ronda_centro.entidad.entidadextra.tipo_centro:
+                #     J = {'cmax': 20, 'cmin': 18, 'mmax': 9, 'mmin': 10, 'dmax': 13, 'dmin': 12, 'umax': 7, 'umin': 6}
+                # else:
+                #     J = {'cmax': 24, 'cmin': 24, 'mmax': 12, 'mmin': 12, 'dmax': 16, 'dmin': 16, 'umax': 8, 'umin': 8}
                 nombre = '%s - Cupo creado el %s' % (po.ronda_centro.entidad.name, datetime.datetime.now())
                 cupo = Cupo.objects.create(ronda=po.ronda_centro, nombre=nombre, max_completa=J['cmax'],
                                            min_completa=J['cmin'], max_dostercios=J['dmax'], min_dostercios=J['dmin'],
@@ -188,7 +188,8 @@ def ajax_cupo(request):
                         #               17761 -> Biología y Geología catedrático; 17949 -> Biología y Geología
                         ec = EspecialidadCupo.objects.get(cupo=cupo, nombre=nombre_especialidad)
                     except:
-                        if pxls.x_puesto in ['18401', '18409', '18410', '18416', '18429', '18431', '18433', '18434']:
+                        maestros = ['18401', '18407', '18408', '18409', '18410', '18416', '18429', '18431', '18433', '18434']
+                        if pxls.x_puesto in maestros:
                             J = {'cmax': 24, 'cmin': 24, 'mmax': 12, 'mmin': 12, 'dmax': 16, 'dmin': 16, 'umax': 8,
                                  'umin': 8}
                         else:
