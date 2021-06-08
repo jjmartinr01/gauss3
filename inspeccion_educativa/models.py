@@ -4,9 +4,12 @@ import os
 from datetime import datetime
 from django.db import models
 from django.template import Context, Template
+from django.utils.text import slugify
 from autenticar.models import Gauser
 from entidades.models import Entidad, Ronda, Gauser_extra, Subentidad
 from django.utils.timezone import now
+
+from estudios.models import Curso
 from gauss.funciones import pass_generator
 
 # Manejo de los ficheros subidos para que se almacenen con el nombre que deseo y no con el que originalmente tenían
@@ -830,3 +833,34 @@ class CentroInspeccionado(models.Model):
 
     def __str__(self):
         return '%s (%s)' % (self.centro, self.inspector)
+
+
+#######################################################################################
+#######################################################################################
+
+def update_acta(instance, filename):
+    nombre, dot, ext = filename.rpartition('.')
+    fichero = slugify(instance.curso.nombre) + '.' + ext
+    instance.fich_name = fichero
+    code = str(instance.ronda.entidad.code)
+    ronda = slugify(instance.ronda.nombre)
+    return '/'.join(['inspeccion', 'actas', code, ronda, fichero])
+
+class ActaCursoFirmada(models.Model):
+    TIPOS = (('ORD', 'Ordinaria'), ('EXT', 'Extraordinaria'),('OFP1', 'Ordinaria junio 1 (FP)'),
+             ('OFP2', 'Ordinaria junio 2 (FP)'), ('OFPE', 'Ordinaria enero (FP)'))
+    subido_por = models.ForeignKey(Gauser, on_delete=models.SET_NULL, blank=True, null=True)
+    ronda = models.ForeignKey(Ronda, on_delete=models.SET_NULL, blank=True, null=True) #Ronda del centro que sube acta
+    curso = models.ForeignKey(Curso, on_delete=models.SET_NULL, blank=True, null=True)
+    convocatoria = models.CharField('Tipo de convocatoria', max_length=5, choices=TIPOS, default='ORD')
+    acta = models.FileField("Fichero escaneado del acta firmada", upload_to=update_acta, blank=True)
+    content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
+    fich_name = models.CharField("Nombre del archivo", max_length=200, blank=True, null=True)
+    creado = models.DateField("Fecha de creación", default=now)
+
+    class Meta:
+        verbose_name_plural = 'Actas de evaluación firmadas'
+        ordering = ['id']
+
+    def __str__(self):
+        return '%s (%s) - %s' % (self.ronda, self.get_convocatoria_display(), self.fich_name)

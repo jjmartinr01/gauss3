@@ -316,7 +316,8 @@ def tareas_ie(request):
             date_format = xlwt.XFStyle()
             date_format.num_format_str = 'dd/mm/yyyy'
             col = 0
-            campos = ['creador', 'fecha', 'sector', 'localizacion', 'nivel', 'actuacion', 'objeto', 'asunto', 'tipo', 'funcion', 'participacion', 'centro']
+            campos = ['creador', 'fecha', 'sector', 'localizacion', 'nivel', 'actuacion', 'objeto', 'asunto', 'tipo',
+                      'funcion', 'participacion', 'centro']
             for campo in campos:
                 wr.write(fila_excel_listado, col, campo, style=estilo)
                 col += 1
@@ -849,7 +850,6 @@ def asignar_centros_inspeccion(request):
             except:
                 return JsonResponse({'ok': False})
 
-
     organization = g_e.ronda.entidad.organization
     centros_inspeccionados = CentroInspeccionado.objects.filter(ronda__entidad__organization=organization)
     for e in Entidad.objects.filter(organization=g_e.ronda.entidad.organization):
@@ -962,4 +962,108 @@ def carga_masiva_inspeccion(request):
                       'formname': 'carga_masiva_inspeccion',
                       'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+
+# @permiso_required('acceso_actas_firmadas')
+def actas_firmadas(request):
+    g_e = request.session["gauser_extra"]
+    if request.method == 'POST':
+        action = request.POST['action']
+        if action == 'change_entidad_buscar':
+            try:
+                entidad = Entidad.objects.get(id=request.POST['entidad'])
+                if g_e.has_permiso('descarga_actas_evaluacion') or g_e.ronda == entidad.ronda:
+                    acfs_posibles = ActaCursoFirmada.objects.filter(ronda__entidad=g_e.ronda.entidad)
+                    paginator = Paginator(acfs_posibles, 25)
+                    acfs = paginator.page(1)
+                    html = render_to_string('actas_firmadas_lista.html', {'acfs': acfs, 'pag': 1})
+                    opts = render_to_string('actas_firmadas_options.html', {'options': entidad.rondas.all()})
+                    return JsonResponse({'ok': True, 'html': html, 'opts': opts})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos para esa búsqueda'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'change_ronda_buscar':
+            try:
+                ronda = Ronda.objects.get(id=request.POST['ronda'])
+                if g_e.has_permiso('descarga_actas_evaluacion') or g_e.ronda.entidad == ronda.entidad:
+                    acfs_posibles = ActaCursoFirmada.objects.filter(ronda=ronda)
+                    paginator = Paginator(acfs_posibles, 25)
+                    acfs = paginator.page(1)
+                    html = render_to_string('actas_firmadas_lista.html', {'acfs': acfs, 'pag': 1})
+                    opts = render_to_string('actas_firmadas_options.html', {'options': ronda.estudios.all()})
+                    return JsonResponse({'ok': True, 'html': html, 'opts': opts})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos para esa búsqueda'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'change_curso_buscar':
+            try:
+                curso = Curso.objects.get(id=request.POST['curso'])
+                if g_e.has_permiso('descarga_actas_evaluacion') or g_e.ronda.entidad == ronda.entidad:
+                    acfs_posibles = ActaCursoFirmada.objects.filter(curso=curso)
+                    paginator = Paginator(acfs_posibles, 25)
+                    acfs = paginator.page(1)
+                    html = render_to_string('actas_firmadas_lista.html', {'acfs': acfs, 'pag': 1})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos para esa búsqueda'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'change_ronda_subir':
+            try:
+                ronda = Ronda.objects.get(id=request.POST['ronda'], entidad=g_e.ronda.entidad)
+                cursos = Curso.objects.filter(ronda=ronda)
+                html = render_to_string('actas_firmadas_options.html', {'options': cursos})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': True, 'msg': str(msg)})
+        elif action == 'acta_subir_button':
+            try:
+                ronda = Ronda.objects.get(id=request.POST['ronda_subir'], entidad=g_e.ronda.entidad)
+                curso = Curso.objects.get(id=request.POST['curso_subir'], ronda__entidad=g_e.ronda.entidad)
+                convocatoria = request.POST['convocatoria_subir']
+                fichero = request.FILES['acta_subir']
+                ActaCursoFirmada.objects.create(subido_por=g_e.gauser, ronda=ronda, curso=curso, acta=fichero,
+                                                convocatoria=convocatoria, content_type=fichero.content_type)
+            except Exception as msg:
+                crear_aviso(request, False, 'Informa al administrador: %s' % str(msg))
+        elif action == 'descarga_acta':
+            try:
+                if g_e.has_permiso('descarga_actas_evaluacion'):
+                    acta = ActaCursoFirmada.objects.get(id=request.POST['acta'],
+                                                        ronda__entidad__organization=g_e.ronda.entidad.organization)
+                else:
+                    acta = ActaCursoFirmada.objects.get(ronda__entidad=g_e.ronda.entidad, id=request.POST['acta'])
+                response = HttpResponse(acta.acta, content_type=acta.content_type)
+                response['Content-Disposition'] = 'attachment; filename=' + acta.fich_name
+                return response
+            except Exception as msg:
+                crear_aviso(request, False, 'Informa al administrador: %s' % str(msg))
+        elif action == 'borrar_acta':
+            try:
+                acta = ActaCursoFirmada.objects.get(subido_por=g_e.gauser, id=request.POST['acta'])
+                if datetime.today().date() - acta.creado < timedelta(days=31):
+                    os.remove(acta.acta.path)
+                    acta.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'Lleva más de un mes subida'})
+            except:
+                return JsonResponse({'ok': False, 'msg': 'No tienes permisos para borrar el acta'})
+
+
+    acfs_posibles = ActaCursoFirmada.objects.filter(ronda__entidad=g_e.ronda.entidad)
+    paginator = Paginator(acfs_posibles, 25)
+    acfs = paginator.page(1)
+    entidades = Entidad.objects.filter(organization=g_e.ronda.entidad.organization)
+    return render(request, "actas_firmadas.html",
+                  {
+                      'formname': 'actas_firmadas',
+                      'g_e': g_e,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                      'pag': 1,
+                      'acfs': acfs,
+                      'entidades': entidades,
                   })

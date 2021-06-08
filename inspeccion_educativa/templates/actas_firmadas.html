@@ -1,0 +1,250 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Actas de evaluación</strong></h4>
+        </div>
+
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="acta" id="acta" value="">
+        <fieldset id="fieldset_buscar">
+            <legend>Búsqueda de actas</legend>
+            <div id="formulario_search">
+                <div class="row">
+                    <div class="columns large-4">
+                        <label>Buscar actas del centro ...</label>
+                        <select id="id_entidad_buscar" name="entidad_buscar" class="buscar_actas">
+                            <option value="">----------</option>
+                            {% for entidad in entidades %}
+                                <option value="{{ entidad.id }}">{{ entidad.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="columns large-4">
+                        <label>Curso escolar ...</label>
+                        <select id="id_ronda_buscar" name="ronda_buscar" class="buscar_actas">
+                            <option value="">----------</option>
+                        </select>
+                    </div>
+                    <div class="columns large-4">
+                        <label>Estudios ...</label>
+                        <select id="id_curso_buscar" name="curso_buscar" class="buscar_actas">
+                            <option value="">----------</option>
+                        </select>
+                    </div>
+                </div>
+                {#                <div class="row" style="padding-top: 15px;">#}
+                {#                    <div class="columns large-10">#}
+                {#                        <input type="text" name="busca_acfs" id="busca_acfs"#}
+                {#                               placeholder="Ejemplo: comercio 2020 infor">#}
+                {#                    </div>#}
+                {#                    <div class="columns large-2">#}
+                {#                        <a id="busca_acfs_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>#}
+                {#                    </div>#}
+                {#                </div>#}
+            </div>
+        </fieldset>
+        {% if g_e|has_permiso:'sube_actas_evaluacion' %}
+            <fieldset id="fieldset_subir">
+                <legend>Cargar/Almacenar actas de {{ g_e.ronda.entidad.name }}</legend>
+                <div id="formulario_cargar">
+                    <div class="row">
+                        <div class="columns large-3">
+                            <label>Curso escolar ...</label>
+                            <select id="id_ronda_subir" name="ronda_subir">
+                                <option value="">----------</option>
+                                {% for r in g_e.ronda.entidad.rondas.all %}
+                                    <option value="{{ r.id }}">{{ r.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="columns large-6">
+                            <label>Estudios ...</label>
+                            <select id="id_curso_subir" name="curso_subir">
+                                <option value="">----------</option>
+                            </select>
+                        </div>
+                        <div class="columns large-3">
+                            <label>Convocatoria</label>
+                            <select id="id_convocatoria_subir" name="convocatoria_subir">
+                                <option value="">----------</option>
+                                <option value="ORD">Ordinaria (ESO-BACH)</option>
+                                <option value="EXT">Extraordinaria (ESO-BACH)</option>
+                                <option value="OFP1">Ordinaria junio 1 (FP)</option>
+                                <option value="OFP2">Ordinaria junio 2 (FP)</option>
+                                <option value="OFPE">Ordinaria enero (FP)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="columns large-6">
+                            <label>Actas escaneadas ...</label>
+                            <input type="file" id="id_acta_subir" name="acta_subir">
+                        </div>
+                        <div class="columns large-3">
+                            <label>&nbsp;</label>
+                            <a id="acta_subir_button" class="button tiny"><i class="fa fa-upload"></i> <b>Cargar</b></a>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+        {% endif %}
+        <div id="div_list_actas">
+            {% include "actas_firmadas_lista.html" %}
+        </div>
+    </form>
+
+{% endblock %}
+
+
+{% block final %}
+    <script>
+        $('#id_entidad_buscar').select2();
+        $('#id_ronda_buscar').select2();
+        $('#id_curso_buscar').select2();
+
+        $('#Contenido').on('change', '#id_entidad_buscar', function (e) {
+            e.preventDefault();
+            $.post("/actas_firmadas/", {
+                    action: 'change_entidad_buscar',
+                    entidad: $(this).val()
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#update_ok').show().delay(1500).fadeOut();
+                        $('#id_ronda_buscar').html(data.opts);
+                        $('#div_list_actas').html(data.html);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        $('#Contenido').on('change', '#id_ronda_buscar', function (e) {
+            e.preventDefault();
+            $.post("/actas_firmadas/", {
+                    action: 'change_ronda_buscar',
+                    ronda: $(this).val()
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#update_ok').show().delay(1500).fadeOut();
+                        $('#id_curso_buscar').html(data.opts);
+                        $('#div_list_actas').html(data.html);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('#Contenido').on('change', '#id_curso_buscar', function (e) {
+            e.preventDefault();
+            $.post("/actas_firmadas/", {
+                    action: 'change_curso_buscar',
+                    curso: $(this).val()
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#update_ok').show().delay(1500).fadeOut();
+                        $('#div_list_actas').html(data.html);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        {# ############################################################################# #}
+
+        $('#Contenido').on('change', '#id_ronda_subir', function (e) {
+            e.preventDefault();
+            $.post("/actas_firmadas/", {
+                    action: 'change_ronda_subir',
+                    ronda: $(this).val()
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#update_ok').show().delay(1500).fadeOut();
+                        $('#id_curso_subir').html(data.html);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.descarga_acta', function (e) {
+            e.preventDefault();
+            $('#acta').val($(this).data('acta'));
+            $('#action').val('descarga_acta');
+            document.getElementById("{{ formname }}").submit();
+        });
+
+        $('body').on('click', '.borrar_acta', function (e) {
+            e.preventDefault();
+            $('#acta').val($(this).data('acta'));
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar el acta indicada?',
+                texto: 'Si aceptas el acta se borrará por completo de la base de datos', size: 'large',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/actas_firmadas/", {action: 'borrar_acta', acta: $('#acta').val()},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#tr' + $('#acta').val()).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+        {% if g_e|has_permiso:'sube_actas_evaluacion' %}
+            $('#acta_subir_button').click(function (e) {
+                e.preventDefault();
+                var ronda = false;
+                var curso = false;
+                var archivo = false;
+                var convocatoria = false;
+                var msg = '';
+                if ($('#id_ronda_subir').val()) {
+                    ronda = true;
+                } else {
+                    msg = msg + '<br>- Debes indicar el curso escolar asociado al acta';
+                }
+                if ($('#id_curso_subir').val()) {
+                    curso = true;
+                } else {
+                    msg = msg + '<br>- Debes indicar los estudios asociados al acta';
+                }
+                if ($('#id_convocatoria_subir').val()) {
+                    convocatoria = true;
+                } else {
+                    msg = msg + '<br>- Debes indicar la convocatoria asociada al acta';
+                }
+                if ($('#id_acta_subir').val()) {
+                    archivo = true;
+                } else {
+                    msg = msg + '<br>- Debes cargar el archivo pulsando en "Examinar..."';
+                }
+
+                if (ronda && curso && archivo && convocatoria) {
+                    $('#action').val('acta_subir_button');
+                    document.getElementById("{{ formname }}").submit();
+                } else {
+                    show_mensajes({
+                        title: '<i class="fa fa-warning"></i> Faltan datos!!!!', texto: msg
+                    })
+                }
+            });
+        {% endif %}
+    </script>
+{% endblock %}

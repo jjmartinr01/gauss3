@@ -1,0 +1,65 @@
+{% load my_templatetags %}
+<table style="width: 100%;" id="table_list_actas">
+    <thead>
+    <tr>
+        <th>Centro</th>
+        <th>Curso escolar</th>
+        <th>Estudios</th>
+        <th>Convocatoria</th>
+        <th>Archivo <i class="fa fa-download"></i></th>
+        <th>Fecha</th>
+        <th style="text-align: center;">¿Borrar?</th>
+    </tr>
+    </thead>
+    <tbody id="tbody_list_actas">
+    {% for acta in acfs %}
+        <tr id="tr{{ acta.id }}">
+            <td>{{ acta.ronda.entidad.name }}</td>
+            <td>{{ acta.ronda.nombre }}</td>
+            <td>{{ acta.curso.nombre }}</td>
+            <td>{{ acta.get_convocatoria_display }}</td>
+            <td><a class="descarga_acta" data-acta="{{ acta.id }}">{{ acta.fich_name }}</a></td>
+            <td>{{ acta.creado|date:'d-m-Y' }}</td>
+            <td style="text-align: center;"><a class="borrar_acta" data-acta="{{ acta.id }}"><i
+                    class="fa fa-trash"></i> </a></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% if pag %}
+    {% if acfs.paginator.num_pages > 1 %}
+        <br>
+        <div class="row">
+            <div class="columns large-12">
+                <ul class="pagination" role="menubar" aria-label="Pagination">
+                    {% if acfs.has_previous %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ acfs.previous_page_number }}">&laquo; Anterior</a>
+                        </li>
+                    {% else %}
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">&laquo; Anterior</a>
+                        </li>
+                    {% endif %}
+                    {% for page in acfs.paginator.num_pages|number_range %}
+                        {% if page == acfs.number %}
+                            <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
+                        {% else %}
+                            <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if acfs.has_next %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ acfs.next_page_number }}">Siguiente &raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">Siguiente &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}

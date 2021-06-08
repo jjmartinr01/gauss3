@@ -49,6 +49,14 @@ MENU_DEFAULT = [
      'pos': 5,
      'parent': 'acceso_inspeccion_educativa'
      },
+    {'code_menu': 'acceso_actas_firmadas',
+     'texto_menu': 'Actas de evaluación',
+     'href': 'actas_firmadas',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 6,
+     'parent': 'acceso_inspeccion_educativa'
+     },
 ]
 # Se añaden otros permisos para el usuario
 
@@ -107,5 +115,13 @@ PERMISOS = [{'code_nombre': 'crea_tareas_ie',
             {'code_nombre': 'carga_datos_centros',
              'nombre': 'Tiene permiso para cargar archivo "Datos de los centros"',
              'menu': 'acceso_carga_masiva_inspeccion'
+             },
+            {'code_nombre': 'sube_actas_evaluacion',
+             'nombre': 'Tiene permiso para subir actas de evaluación',
+             'menu': 'acceso_actas_firmadas'
+             },
+            {'code_nombre': 'descarga_actas_evaluacion',
+             'nombre': 'Tiene permiso para descargar actas de evaluación',
+             'menu': 'acceso_actas_firmadas'
              },
             ]

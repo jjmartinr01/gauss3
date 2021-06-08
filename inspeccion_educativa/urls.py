@@ -12,4 +12,5 @@ urlpatterns = [
     # path('carga_actuaciones_ie/', views.carga_actuaciones_ie),
     path('carga_masiva_inspeccion/', views.carga_masiva_inspeccion),
     path('get_informe_ie/<int:id>/', views.get_informe_ie),
+    path('actas_firmadas/', views.actas_firmadas),
 ]

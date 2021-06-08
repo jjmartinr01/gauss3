@@ -155,10 +155,11 @@ def ajax_cupo(request):
                 # else:
                 #     J = {'cmax': 24, 'cmin': 24, 'mmax': 12, 'mmin': 12, 'dmax': 16, 'dmin': 16, 'umax': 8, 'umin': 8}
                 nombre = '%s - Cupo creado el %s' % (po.ronda_centro.entidad.name, datetime.datetime.now())
-                cupo = Cupo.objects.create(ronda=po.ronda_centro, nombre=nombre, max_completa=J['cmax'],
-                                           min_completa=J['cmin'], max_dostercios=J['dmax'], min_dostercios=J['dmin'],
-                                           max_media=J['mmax'], min_media=J['mmin'], max_tercio=J['umax'],
-                                           min_tercio=J['umin'])
+                # cupo = Cupo.objects.create(ronda=po.ronda_centro, nombre=nombre, max_completa=J['cmax'],
+                #                            min_completa=J['cmin'], max_dostercios=J['dmax'], min_dostercios=J['dmin'],
+                #                            max_media=J['mmax'], min_media=J['mmin'], max_tercio=J['umax'],
+                #                            min_tercio=J['umin'])
+                cupo = Cupo.objects.create(ronda=po.ronda_centro, nombre=nombre)
                 CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
                 # Crea filtros automáticos:
                 # filtros = [('Materias Bilingües', 'bilingüe'), ('Reducciones por bilingüismo', 'cción biling'),
