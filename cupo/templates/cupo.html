@@ -40,14 +40,16 @@
         </div>
         {% if plantillas_o and request.session.gauser_extra|has_permiso:'crea_cupos' %}
             <div class="panel callout radius">
-                <h5><b>Crea un cupo basado en el análisis de alguna de las siguientes plantillas orgánicas:</b></h5>
+                <h5><b>Crea un cupo basado en el análisis de alguna de las siguientes plantillas orgánicas haciendo
+                    click sobre ella:</b></h5>
                 <div class="row">
                     {% for po in plantillas_o %}
                         <div class="columns large-3">
                             <a class="crea_cupo_from_po" data-po="{{ po.id }}">
                                 <div class="show_po">
-                                    <p class="text_show_po">{{ po.ronda_centro.entidad.name }}</p>
-                                    <p class="text_show_po">(creado:{{ po.creado|date:'d-m-Y' }})</p>
+                                    <p class="text_show_po">{{ po.ronda_centro.entidad.name }}
+                                    <br><span style="font-size: small;">{{ po.creado|date:'d-m-Y' }}</span> </p>
+{#                                    <p class="text_show_po">{{ po.creado|date:'d-m-Y' }}</p>#}
                                 </div>
                             </a>
 
@@ -55,7 +57,12 @@
                     {% endfor %}
                 </div>
             </div>
-
+        {% else %}
+            <div class="panel callout radius">
+                <h5><b>Solo es posible crear un estudio de cupo a través de un estudio de plantilla orgánica que haya
+                creado el Inspector del centro, o haciendo una copia de un estudio de cupo ya existente.</b></h5>
+                <h5>Si no hubiera ningún estudio de plantilla creado, debes esperar a que el Inspector lo cree.</h5>
+            </div>
         {% endif %}
 
         <dl class="accordion" data-accordion id="list_cupos" title="Lista de cupos">
@@ -63,14 +70,14 @@
                 {% include "formulario_cupo.html" %}
             {% endfor %}
         </dl>
-        {% if request.session.gauser_extra|has_permiso:'crea_cupos' and not plantillas_o %}
-            <hr>
-            <div class="row">
-                <div class="columns large-12">
-                    <a class="button" id="add_cupo"><i class="fa fa-plus"></i> Crear un nuevo cupo</a>
-                </div>
-            </div>
-        {% endif %}
+{#        {% if request.session.gauser_extra|has_permiso:'crea_cupos' and not plantillas_o %}#}
+{#            <hr>#}
+{#            <div class="row">#}
+{#                <div class="columns large-12">#}
+{#                    <a class="button" id="add_cupo"><i class="fa fa-plus"></i> Crear un nuevo cupo</a>#}
+{#                </div>#}
+{#            </div>#}
+{#        {% endif %}#}
 
 
         <div id="especialidad_data"></div>

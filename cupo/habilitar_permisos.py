@@ -68,7 +68,8 @@ Miembro_Equipo_Directivo = ['acceso_configuracion', 'acceso_perfiles_permisos', 
                             'edita_actividades_horario', 'acceso_guardias_horarios', 'crea_guardias_horario',
                             'borra_guardias_horario', 'edita_guardias_horario', 'acceso_horarios_alumnos',
                             'asigna_grupo_alumnos', 'asigna_tutor_alumnos', 'acceso_actillas', 'genera_actillas',
-                            'acceso_tutores_entidad']
+                            'acceso_tutores_entidad', 'acceso_inspeccion_educativa', 'acceso_actas_firmadas',
+                            'sube_actas_evaluacion']
 
 # def habilitar_miembros_equipo_directivo(po):
 #     permisos = Permiso.objects.filter(code_nombre__in=Miembro_Equipo_Directivo)

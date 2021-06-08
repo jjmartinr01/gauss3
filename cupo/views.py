@@ -55,8 +55,9 @@ def cupo(request):
             return response
 
     cupos_id = CupoPermisos.objects.filter(gauser=g_e.gauser).values_list('cupo__id', flat=True)
-    cupos = Cupo.objects.filter(Q(ronda__entidad=g_e.ronda.entidad) | Q(id__in=cupos_id)).distinct()
-    plantillas_o = PlantillaOrganica.objects.filter(g_e=g_e)
+    f = datetime.datetime(2021,1,1)
+    cupos = Cupo.objects.filter(Q(creado__gt=f), Q(ronda__entidad=g_e.ronda.entidad) | Q(id__in=cupos_id)).distinct()
+    plantillas_o = PlantillaOrganica.objects.filter(Q(g_e=g_e) | Q(ronda_centro=g_e.ronda))
     return render(request, "cupo.html", {'formname': 'cupo_profesorado', 'cupos': cupos, 'plantillas_o': plantillas_o})
 
 
@@ -91,7 +92,8 @@ def ajax_cupo(request):
         if action == 'add_cupo' and g_e.has_permiso('crea_cupos'):
             try:
                 crea_departamentos(g_e.ronda)
-                nombre = '%s - Cupo creado el %s' % (g_e.ronda.entidad.name, datetime.datetime.now())
+                fecha_hora = datetime.datetime.now().strftime('%d-%m-%Y %H:%M')
+                nombre = '%s - Cupo creado el %s' % (g_e.ronda.entidad.name, fecha_hora)
                 cupo = Cupo.objects.create(ronda=g_e.ronda, nombre=nombre)
                 CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
                 geps = Gauser_extra_programaciones.objects.filter(ge__ronda=cupo.ronda).order_by('puesto')
@@ -150,11 +152,13 @@ def ajax_cupo(request):
         elif action == 'crea_cupo_from_po' and g_e.has_permiso('crea_cupos'):
             try:
                 po = PlantillaOrganica.objects.get(id=request.POST['po'], g_e=g_e)
+                po.habilitar_miembros_equipo_directivo()
                 # if 'I.E.S' in po.ronda_centro.entidad.entidadextra.tipo_centro:
                 #     J = {'cmax': 20, 'cmin': 18, 'mmax': 9, 'mmin': 10, 'dmax': 13, 'dmin': 12, 'umax': 7, 'umin': 6}
                 # else:
                 #     J = {'cmax': 24, 'cmin': 24, 'mmax': 12, 'mmin': 12, 'dmax': 16, 'dmin': 16, 'umax': 8, 'umin': 8}
-                nombre = '%s - Cupo creado el %s' % (po.ronda_centro.entidad.name, datetime.datetime.now())
+                fecha_hora = datetime.datetime.now().strftime('%d-%m-%Y %H:%M')
+                nombre = '%s - Cupo creado el %s' % (po.ronda_centro.entidad.name, fecha_hora)
                 # cupo = Cupo.objects.create(ronda=po.ronda_centro, nombre=nombre, max_completa=J['cmax'],
                 #                            min_completa=J['cmin'], max_dostercios=J['dmax'], min_dostercios=J['dmin'],
                 #                            max_media=J['mmax'], min_media=J['mmin'], max_tercio=J['umax'],

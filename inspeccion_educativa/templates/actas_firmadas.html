@@ -117,6 +117,7 @@
                     if (data.ok) {
                         $('#update_ok').show().delay(1500).fadeOut();
                         $('#id_ronda_buscar').html(data.opts);
+                        $('#id_curso_buscar').html('<option value="">------------</option>');
                         $('#div_list_actas').html(data.html);
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();

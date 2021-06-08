@@ -974,7 +974,7 @@ def actas_firmadas(request):
             try:
                 entidad = Entidad.objects.get(id=request.POST['entidad'])
                 if g_e.has_permiso('descarga_actas_evaluacion') or g_e.ronda == entidad.ronda:
-                    acfs_posibles = ActaCursoFirmada.objects.filter(ronda__entidad=g_e.ronda.entidad)
+                    acfs_posibles = ActaCursoFirmada.objects.filter(ronda__entidad=entidad)
                     paginator = Paginator(acfs_posibles, 25)
                     acfs = paginator.page(1)
                     html = render_to_string('actas_firmadas_lista.html', {'acfs': acfs, 'pag': 1})
