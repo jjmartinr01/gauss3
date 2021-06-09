@@ -608,3 +608,11 @@ def remove_newlines(texto):
     # Then simply remove the newlines like so.
     return mark_safe(normalized_text.replace('\n', ' '))
 
+# La siguiente función existe en inspeccion_educativa_extras.py
+# @register.filter
+# def get_iniciales(texto):
+#     palabras = texto.title().split()
+#     iniciales = ''
+#     for p in palabras:
+#         iniciales += p[0]
+#     return iniciales

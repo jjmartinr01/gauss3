@@ -22,6 +22,7 @@ from gauss.rutas import MEDIA_INSPECCION
 from gauss.constantes import CODE_CONTENEDOR
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required
 from inspeccion_educativa.models import *
+from inspeccion_educativa.templatetags.inspeccion_educativa_extras import get_puntos
 from autenticar.views import crear_nombre_usuario
 from mensajes.views import encolar_mensaje, crea_mensaje_cola
 from entidades.tasks import carga_masiva_from_excel
@@ -795,58 +796,86 @@ def plantillas_ie(request):
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
     })
 
+def get_puntos_inspector(inspectores):
+    resultados = {}
+    for inspector in inspectores:
+        try:
+            resultados[inspector.id] = get_puntos(inspector)
+        except:
+            resultados[0] = 0
+    return resultados
 
 # @permiso_required('acceso_asignar_centros_inspeccion')
 def asignar_centros_inspeccion(request):
     g_e = request.session["gauser_extra"]
     inspectores = get_inspectores(request)
-    if request.method == 'POST' and request.is_ajax():
-        if request.POST['action'] == 'buscar_grupos':
-            try:
-                cis = CentroInspeccionado.objects.filter(ronda=g_e.ronda, centro__name__icontains=request.POST['q'])
-                grupos = [{'id': ci.grupo, 'text': ci.s_centros_grupo()} for ci in cis]
-                return JsonResponse({'ok': True, 'grupos': grupos})
-            except:
-                JsonResponse({'ok': False})
-        elif request.POST['action'] == 'update_grupo':
-            try:
-                cis = CentroInspeccionado.objects.filter(ronda=g_e.ronda)
-                inspector = cis.filter(grupo=request.POST['grupo'])[0].inspector
-                ci = cis.get(id=request.POST['ci'])
-                if ci.inspector != inspector and inspector:
-                    nombre_inspector = inspector.gauser.get_full_name()
-                    msg = 'El inspector de este grupo de centros es %s' % nombre_inspector
-                else:
-                    msg, nombre_inspector = None, 'Sin asignar'
-                ci.grupo = request.POST['grupo']
-                ci.inspector = inspector
-                ci.save()
-                return JsonResponse({'ok': True, 'msg': msg, 'inspector': nombre_inspector})
-            except:
-                return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'update_campo':
+    if request.method == 'POST':
+        if request.POST['action'] == 'update_campo':
             try:
                 ci = CentroInspeccionado.objects.get(ronda=g_e.ronda, id=request.POST['ci'])
-                if request.POST['campo'] == 'inspector':
-                    ci.inspector = inspectores.get(id=request.POST['valor'])
-                    texto = ci.inspector.gauser.get_full_name()
-                elif request.POST['campo'] == 'tipo':
-                    ci.tipo = request.POST['valor']
-                    texto = ci.get_tipo_display()
-                elif request.POST['campo'] == 'zonai':
+                if request.POST['campo'] == 'zonai':
                     ci.zonai = request.POST['valor']
-                    texto = ci.get_zonai_display()
-                elif request.POST['campo'] == 'etapas':
-                    ci.etapas = request.POST['valor']
-                    texto = ci.get_etapas_display()
+                    ci.save()
+                    return JsonResponse({'ok': True})
                 elif request.POST['campo'] == 'clasificado':
                     ci.clasificado = request.POST['valor']
-                    texto = ci.get_clasificado_display()
+                    ci.save()
+                    return JsonResponse({'ok': True})
                 elif request.POST['campo'] == 'puntos':
                     ci.puntos = request.POST['valor']
-                    texto = ci.puntos
-                ci.save()
-                return JsonResponse({'ok': True, 'texto': texto})
+                    ci.save()
+                    puntos = get_puntos_inspector([ci.inspectorasignado_set.all()[0].inspector])
+                    return JsonResponse({'ok': True, 'puntos': puntos})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_campoia':
+            try:
+                ci = CentroInspeccionado.objects.get(ronda=g_e.ronda, id=request.POST['ci'])
+                ia = ci.inspectorasignado_set.get(id=request.POST['ia'])
+                if request.POST['campo'] == 'inspector':
+                    insp_antiguo = ia.inspector
+                    ia.inspector = inspectores.get(id=request.POST['valor'])
+                    ia.save()
+                    puntos= get_puntos_inspector([ia.inspector, insp_antiguo])
+                    return JsonResponse({'ok': True, 'puntos': puntos})
+                elif request.POST['campo'] == 'etapa':
+                    ia.etapa = request.POST['valor']
+                    ia.save()
+                    return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'busca_ci':
+            try:
+                logica = '' # Puede ser OR o AND
+                if logica == 'OR':
+                    palabras = request.POST['texto'].split()
+                    cis_ronda = CentroInspeccionado.objects.filter(ronda=g_e.ronda)
+                    cis = CentroInspeccionado.objects.none()
+                    for palabra in palabras:
+                        q1 = Q(centro__name__icontains=palabra) | Q(zonai__icontains=palabra) | Q(puntos__icontains=palabra) | Q(clasificado__icontains=palabra)
+                        cis = cis.union(cis_ronda.filter(q1))
+                        q2 = Q(etapa__icontains=palabra[:3]) | Q(inspector__gauser__first_name__icontains=palabra) | Q(inspector__gauser__last_name__icontains=palabra)
+                        ias = InspectorAsignado.objects.filter(q2).values_list('cenins__id', flat=True)
+                        cis = cis.union(cis_ronda.filter(id__in=ias))
+                else:
+                    palabras = request.POST['texto'].split()
+                    cis_ronda = CentroInspeccionado.objects.filter(ronda=g_e.ronda)
+                    resultados = []
+                    for palabra in palabras:
+                        q1 = Q(centro__name__icontains=palabra) | Q(zonai__icontains=palabra) | Q(
+                            puntos__icontains=palabra) | Q(clasificado__icontains=palabra)
+                        cis1 = cis_ronda.filter(q1).values_list('id', flat=True)
+                        q2 = Q(etapa__icontains=palabra[:3]) | Q(inspector__gauser__first_name__icontains=palabra) | Q(
+                            inspector__gauser__last_name__icontains=palabra)
+                        cis2 = InspectorAsignado.objects.filter(q2).values_list('cenins__id', flat=True)
+                        resultados.append(cis1.union(cis2))
+                    cis_ids = cis_ronda.values_list('id', flat=True).intersection(*resultados)
+                    cis = cis_ronda.filter(id__in=cis_ids)
+
+
+                html = render_to_string('asignar_centros_inspector_buscar.html', {'cis': cis, 'buscar': True,
+                                                                                  'inspectores': inspectores})
+                return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
 
@@ -868,9 +897,10 @@ def asignar_centros_inspeccion(request):
               'title': 'Crear una nueva plantilla de Informe de Inspección',
               'permiso': 'acceso_plantillas_informes_ie'},
              ),
-        'g_e': g_e, 'cis': cis, 'oci': CentroInspeccionado,
+        'g_e': g_e, 'cis': cis,
         'inspectores': inspectores,
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+        'pag': 1
     })
 
 
@@ -1056,7 +1086,6 @@ def actas_firmadas(request):
                     return JsonResponse({'ok': False, 'msg': 'Lleva más de un mes subida'})
             except:
                 return JsonResponse({'ok': False, 'msg': 'No tienes permisos para borrar el acta'})
-
 
     acfs_posibles = ActaCursoFirmada.objects.filter(ronda__entidad=g_e.ronda.entidad)
     paginator = Paginator(acfs_posibles, 25)

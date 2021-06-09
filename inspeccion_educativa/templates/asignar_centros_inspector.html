@@ -1,5 +1,6 @@
 {% extends "base_select2-4.html" %}
 {% load my_templatetags %}
+{% load inspeccion_educativa_extras %}
 
 {% block contenido %}
     <style>
@@ -25,245 +26,149 @@
         <div>
             <h4 id="title_page"><strong>Asignación de centros a inspectores</strong></h4>
         </div>
-        {#        <div id="formulario_add"></div>#}
-        {#        <div id="formulario_search">#}
-        {#            <div class="row">#}
-        {#                <div class="columns large-4">#}
-        {#                    <label>Buscar entre esta fecha ...</label>#}
-        {#                    <input id="id_fecha_inicio" name="fecha_inicio" type="text"#}
-        {#                           value="{{ g_e.ronda.inicio|date:'d-m-Y' }}">#}
-        {#                </div>#}
-        {#                <div class="columns large-4">#}
-        {#                    <label>... y esta otra</label>#}
-        {#                    <input id="id_fecha_fin" name="fecha_fin" type="text" value="{% now "d\-m\-Y" %}">#}
-        {#                </div>#}
-        {#                <div class="columns large-4">#}
-        {#                    <label>Buscar en ...</label>#}
-        {#                    <select id="tipo_busqueda" name="tipo_busqueda">#}
-        {# Se busca en negativo, por eso SAL es para entradas y ENT para salidas. Ver el views.py #}
-        {#                        <option value="tod">Todas las plantillas</option>#}
-        {#                        {% for t in tipos %}#}
-        {#                            <option value="{{ t.0 }}">{{ t.1 }}</option>{% endfor %}#}
-        {#                    </select>#}
-        {#                </div>#}
-        {#            </div>#}
-        {#            <div class="row">#}
-        {#                <div class="columns large-10">#}
-        {#                    <input type="text" name="busca_ci" id="busca_ci"#}
-        {#                           placeholder="Escribe parte del texto incluido en el actuación">#}
-        {#                </div>#}
-        {#                <div class="columns large-2">#}
-        {#                    <a id="busca_ci_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>#}
-        {#                </div>#}
-        {#            </div>#}
-        {#        </div>#}
-
-        {% for ci in cis %}
+        <div id="formulario_add"></div>
+        <div id="formulario_search">
             <div class="row">
-                <div class="columns large-5"><label>Centro:</label><b>{{ ci.centro.name }}</b></div>
-                <div class="columns large-3"><label>Zona asignada:
-                    <select name="zona{{ ci.id }}" id="texto_zonai{{ ci.id }}"
-                            class="campo" data-campo="zonai" data-ci="{{ ci.id }}">
-                        {% for n in oci.ZONAS %}
-                            <option value="{{ n.0 }}">{{ n.1 }}</option>
-                        {% endfor %}
-                    </select></label>
-                </div>
-                <div class="columns large-2"><label>Clasificación:
-                    <select name="clasificado{{ ci.id }}" id="texto_clasificado{{ ci.id }}"
-                            class="campo" data-campo="clasificado" data-ci="{{ ci.id }}">
-                        {% for n in oci.CL %}
-                            <option value="{{ n.0 }}">{{ n.1 }}</option>
-                        {% endfor %}
-                    </select></label>
-                </div>
-                <div class="columns large-2"><label>Puntos:
-                    <select name="puntos{{ ci.id }}" id="texto_puntos{{ ci.id }}"
-                            class="campo" data-campo="puntos" data-ci="{{ ci.id }}">
-                        {% for n in oci.PUNTOS %}
-                            <option value="{{ n.0 }}">{{ n.1 }}</option>
-                        {% endfor %}
-                    </select></label>
+                <div class="columns large-12">
+                    <label><span style="color: #0078a0;font-weight: bold;">
+                                <i class="fa fa-search"></i> <b>Buscar</b>
+                            </span>
+                        <input type="text" name="busca_ci" id="busca_ci"
+                               placeholder="Escribe parte del nombre del centro, inspector, o texto a buscar">
+                    </label>
+
                 </div>
             </div>
-            {% for ia in ci.inspectorasignado_set.all %}
-                <div class="row">
-                    <div class="columns large-6">
-                        <select name="etapas{{ ci.id }}" id="texto_etapas{{ ci.id }}"
-                                class="campo" data-campo="etapas" data-ci="{{ ci.id }}">
-                            {% for n in ia.ETAPAS %}
-                                <option value="{{ n.0 }}">{{ n.1 }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="columns large-6">
-                        <select name="inspector{{ ci.id }}" id="texto_inspector{{ ci.id }}"
-                                class="campo" data-campo="inspector" data-ci="{{ ci.id }}">
-                            {% for i in inspectores %}
-                                <option value="{{ i.id }}">{{ i.gauser.get_full_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-            {% endfor %}
-            <hr>
-        {% endfor %}
-        <table id="tabla_cis">
-            <thead>
-            <tr>
-                <th style="width: 18%">Centro</th>
-                <th style="width: 10%">Tipo</th>
-                <th style="width: 12%">Zona</th>
-                <th style="width: 12%">Etapas</th>
-                <th style="width: 10%">Clasif.</th>
-                <th style="width: 5%">Puntos</th>
-                <th style="width: 18%">Grupo</th>
-                <th style="width: 15%">Inspector</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for ci in cis %}
-                <tr>
-                    <td>{{ ci.centro.name }}</td>
-                    <td>
-                        <label>Tipo
-                            <select name="tipo{{ ci.id }}" id="texto_tipo{{ ci.id }}" class="campo" data-campo="tipo"
-                                    data-ci="{{ ci.id }}">
-                                {% for n in oci.TIPOS %}
-                                    <option value="{{ n.0 }}">{{ n.1 }}</option>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <table style="width: 100%;">
+                    <thead>
+                    <tr>
+                        {% for i in inspectores %}
+                            <th><b>{{ i.gauser.get_full_name|get_iniciales }}</b> <span
+                                    id="insp{{ i.id }}">{{ i|get_puntos }}</span></th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <hr>
+        <div id="list_cis">
+            {% include "asignar_centros_inspector_buscar.html" %}
+
+            {% if pag %}
+                {% if cis.paginator.num_pages > 1 %}
+                    <br>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <ul class="pagination" role="menubar" aria-label="Pagination">
+                                {% if cis.has_previous %}
+                                    <li class="arrow">
+                                        <a class="go_page" data-page="{{ cis.previous_page_number }}">&laquo;
+                                            Anterior</a>
+                                    </li>
+                                {% else %}
+                                    <li class="arrow unavailable" aria-disabled="true">
+                                        <a class="go_page">&laquo; Anterior</a>
+                                    </li>
+                                {% endif %}
+                                {% for page in cis.paginator.num_pages|number_range %}
+                                    {% if page == cis.number %}
+                                        <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
+                                    {% else %}
+                                        <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                                    {% endif %}
                                 {% endfor %}
-                            </select></label>
-                    </td>
-                    <td>
-                        <select name="zona{{ ci.id }}" id="texto_zonai{{ ci.id }}"
-                                class="campo" data-campo="zonai" data-ci="{{ ci.id }}">
-                            {% for n in oci.ZONAS %}
-                                <option value="{{ n.0 }}">{{ n.1 }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td>
-                        <select name="etapas{{ ci.id }}" id="texto_etapas{{ ci.id }}"
-                                class="campo" data-campo="etapas" data-ci="{{ ci.id }}">
-                            {% for n in oci.ETAPAS %}
-                                <option value="{{ n.0 }}">{{ n.1 }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td>
-                        <select name="clasificado{{ ci.id }}" id="texto_clasificado{{ ci.id }}"
-                                class="campo" data-campo="clasificado" data-ci="{{ ci.id }}">
-                            {% for n in oci.CL %}
-                                <option value="{{ n.0 }}">{{ n.1 }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td>
-                        <select name="puntos{{ ci.id }}" id="texto_puntos{{ ci.id }}"
-                                class="campo" data-campo="puntos" data-ci="{{ ci.id }}">
-                            {% for n in oci.PUNTOS %}
-                                <option value="{{ n.0 }}">{{ n.1 }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td>
-                        <select class="select_grupo" data-ci="{{ ci.id }}">
-                            <option value="{{ ci.grupo }}">{{ ci.s_centros_grupo }}</option>
-                        </select>
-                    </td>
-                    <td>
-                        <select name="inspector{{ ci.id }}" id="texto_inspector{{ ci.id }}"
-                                class="campo" data-campo="inspector" data-ci="{{ ci.id }}">
-                            {% for i in inspectores %}
-                                <option value="{{ i.id }}">{{ i.gauser.get_full_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                </tr>
-                {#                <tr></tr>#}
-            {% endfor %}
-            </tbody>
-        </table>
+                                {% if cis.has_next %}
+                                    <li class="arrow">
+                                        <a class="go_page" data-page="{{ cis.next_page_number }}">Siguiente &raquo;</a>
+                                    </li>
+                                {% else %}
+                                    <li class="arrow unavailable" aria-disabled="true">
+                                        <a class="go_page">Siguiente &raquo;</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
     </form>
 {% endblock %}
 
 {% block final %}
     <script>
-        {#$('.select_grupo').select2();#}
-        $('.select_grupo').select2({
-            placeholder: "Para buscar un grupo, escribe parte de su nombre",
-            allowClear: true,
-            ajax: {
-                url: "/asignar_centros_inspector/",
-                type: 'POST',
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        action: 'buscar_grupos',
-                        q: params.term, //search term
-                        page: params.page // page number
-                    };
-                },
-                processResults: function (data, page) {
-                    return {
-                        results: $.map(data.grupos, function (item) {
-                            return {
-                                text: item.text,
-                                id: item.id
-                            }
-                        })
-                    };
-                },
-                cache: true
-            },
-            escapeMarkup: function (markup) {
-                return markup;
-            }, // let our custom formatter work
-            minimumInputLength: 3,
-            language: {
-                inputTooShort: function () {
-                    return "Introduce al menos 3 caracteres para iniciar búsqueda";
-                }
-            }
-        });
-
-        $(".select_grupo").change(function () {
-            var ci = $(this).data('ci');
-            var grupo = $(this).val();
-            $.post("/asignar_centros_inspector/", {
-                    action: 'update_grupo',
-                    ci: ci,
-                    grupo: grupo
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#texto_inspector' + ci).html(data.inspector);
-                        if (data.msg) {
-                            setTimeout(function () {
-                                show_mensajes({title: 'Inspector asignado', texto: data.msg})
-                            }, 200);
-                        }
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.campo', function () {
+        $('body').on('change', '.campo', function () {
             var ci = $(this).data('ci');
             var campo = $(this).data('campo');
-            var valor = $(this).data('valor');
-            $.post("/asignar_centros_inspector/", {action: 'update_campo', ci: ci, valor: valor, campo: campo},
+            var valor = $(this).val();
+            $.post("/asignar_centros_inspeccion/", {action: 'update_campo', ci: ci, valor: valor, campo: campo},
                 function (data) {
                     if (data.ok) {
-                        $('#texto_' + campo + ci).html(data.texto);
                         $("#update_ok").show().delay(1500).fadeOut();
+                        if (campo == 'puntos') {
+                            $.each(data.puntos, function (i, p) {
+                                $('#insp' + i).html(p);
+                            });
+                        }
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
+        });
+
+        $('body').on('change', '.campoia', function () {
+            var ci = $(this).data('ci');
+            var ia = $(this).data('ia');
+            var campo = $(this).data('campo');
+            var valor = $(this).val();
+            $.post("/asignar_centros_inspeccion/", {
+                    action: 'update_campoia',
+                    ci: ci,
+                    valor: valor,
+                    campo: campo,
+                    ia: ia
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        if (campo == 'inspector') {
+                            $.each(data.puntos, function (i, p) {
+                                $('#insp' + i).html(p);
+                            });
+                        }
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        {# ################################################################# #}
+
+        $('body').on('keyup', '#busca_ci', function () {
+            var element = $(this);
+            var antiguo_texto = element.val();
+            setTimeout(function () {
+                var nuevo_texto = element.val();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/asignar_centros_inspeccion/", {
+                            action: 'busca_ci',
+                            texto: nuevo_texto
+                        },
+                        function (data) {
+                            if (data.ok) {
+                                $('#update_ok').show().delay(1500).fadeOut();
+                                $('#list_cis').html(data.html);
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
         });
     </script>
 

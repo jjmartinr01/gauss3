@@ -1,0 +1,78 @@
+{% if buscar %}
+    <h5 style="color: #0078a0;font-weight: bold;">Se han encontrado {{ cis|length }} coincidencias.</h5>
+{% endif %}
+{% for ci in cis %}
+    <div class="row">
+        <div class="columns large-5"><label>Centro:</label><b>{{ ci.centro.name }}</b></div>
+        <div class="columns large-3"><label>Zona asignada:
+            <select name="zona{{ ci.id }}" id="texto_zonai{{ ci.id }}"
+                    class="campo" data-campo="zonai" data-ci="{{ ci.id }}">
+                <option value="">----------</option>
+                {% for n in ci.ZONAS %}
+                    {% if n.0 == ci.zonai %}
+                        <option value="{{ n.0 }}" selected>{{ n.1 }}</option>
+                    {% else %}
+                        <option value="{{ n.0 }}">{{ n.1 }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select></label>
+        </div>
+        <div class="columns large-2"><label>Clasificación:
+            <select name="clasificado{{ ci.id }}" id="texto_clasificado{{ ci.id }}"
+                    class="campo" data-campo="clasificado" data-ci="{{ ci.id }}">
+                <option value="">----------</option>
+                {% for n in ci.CL %}
+                    {% if n.0 == ci.clasificado %}
+                        <option value="{{ n.0 }}" selected>{{ n.1 }}</option>
+                    {% else %}
+                        <option value="{{ n.0 }}">{{ n.1 }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select></label>
+        </div>
+        <div class="columns large-2"><label>Puntos:
+            <select name="puntos{{ ci.id }}" id="texto_puntos{{ ci.id }}"
+                    class="campo" data-campo="puntos" data-ci="{{ ci.id }}">
+                <option value="">----------</option>
+                {% for n in ci.PUNTOS %}
+                    {% if n.0 == ci.puntos %}
+                        <option value="{{ n.0 }}" selected>{{ n.1 }}</option>
+                    {% else %}
+                        <option value="{{ n.0 }}">{{ n.1 }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select></label>
+        </div>
+    </div>
+    {% for ia in ci.inspectorasignado_set.all %}
+        <div class="row">
+            <div class="columns large-6">
+                <select name="etapas{{ ci.id }}" id="texto_etapa{{ ci.id }}"
+                        class="campoia" data-campo="etapa" data-ci="{{ ci.id }}" data-ia="{{ ia.id }}">
+                    <option value="">----------</option>
+                    {% for n in ia.ETAPAS %}
+                        {% if n.0 == ia.etapa %}
+                            <option value="{{ n.0 }}" selected>{{ n.1 }}</option>
+                        {% else %}
+                            <option value="{{ n.0 }}">{{ n.1 }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="columns large-6">
+                <select name="inspector{{ ci.id }}" id="texto_inspector{{ ci.id }}"
+                        class="campoia" data-campo="inspector" data-ci="{{ ci.id }}" data-ia="{{ ia.id }}">
+                    <option value="">----------</option>
+                    {% for i in inspectores %}
+                        {% if i == ia.inspector %}
+                            <option value="{{ i.id }}" selected>{{ i.gauser.get_full_name }}</option>
+                        {% else %}
+                            <option value="{{ i.id }}">{{ i.gauser.get_full_name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    {% endfor %}
+    <hr>
+{% endfor %}

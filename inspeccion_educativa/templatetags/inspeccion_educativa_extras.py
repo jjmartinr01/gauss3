@@ -4,6 +4,7 @@ from entidades.models import Subentidad
 from estudios.models import Grupo, Materia
 from horarios.models import Sesion
 from datetime import datetime, time
+from inspeccion_educativa.models import InspectorAsignado
 
 register = Library()
 
@@ -40,12 +41,13 @@ def permiso_instarea_x(instarea, g_e):
     except:
         return False
 
+@register.filter
 def get_iniciales(nombre):
-    words = nombre.split(' ')
-    character = ''
-    for word in words:
-        character += word[0]
-    return character
+    palabras = nombre.split()
+    iniciales = ''
+    for palabra in palabras:
+        iniciales += palabra[0]
+    return iniciales
 
 @register.filter
 def inspectores_colaboradores(instarea):
@@ -55,3 +57,11 @@ def inspectores_colaboradores(instarea):
     for i in instarea.tarea.inspectortarea_set.all():
         iniciales.append(get_iniciales(i.inspector.gauser.get_full_name()))
     return ', '.join(iniciales)
+
+@register.filter
+def get_puntos(inspector):
+    ias = InspectorAsignado.objects.filter(inspector=inspector)
+    puntos = 0
+    for ia in ias:
+        puntos += ia.cenins.puntos
+    return puntos
