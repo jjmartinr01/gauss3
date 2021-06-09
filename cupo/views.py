@@ -23,7 +23,8 @@ from mensajes.views import crear_aviso
 from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo, GrupoExcluido, \
     CursoCupo, EtapaEscolarCupo, CupoPermisos
 from cupo.models import PlantillaOrganica, PDocenteCol
-from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento
+from cupo.habilitar_permisos import ESPECIALIDADES
+from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento, Especialidad_funcionario
 from entidades.models import Departamento as Depentidad
 from estudios.models import Curso, Materia, Grupo, EtapaEscolar
 from horarios.tasks import carga_masiva_from_file
@@ -55,10 +56,11 @@ def cupo(request):
             return response
 
     cupos_id = CupoPermisos.objects.filter(gauser=g_e.gauser).values_list('cupo__id', flat=True)
-    f = datetime.datetime(2021,1,1)
+    f = datetime.datetime(2021, 1, 1)
     cupos = Cupo.objects.filter(Q(creado__gt=f), Q(ronda__entidad=g_e.ronda.entidad) | Q(id__in=cupos_id)).distinct()
     plantillas_o = PlantillaOrganica.objects.filter(Q(g_e=g_e) | Q(ronda_centro=g_e.ronda))
-    return render(request, "cupo.html", {'formname': 'cupo_profesorado', 'cupos': cupos, 'plantillas_o': plantillas_o})
+    return render(request, "cupo.html", {'formname': 'cupo_profesorado', 'cupos': cupos, 'plantillas_o': plantillas_o,
+                                         'especialidades_existentes': ESPECIALIDADES})
 
 
 def cupo_especialidad(cupo, especialidad):
@@ -193,7 +195,8 @@ def ajax_cupo(request):
                         #               17761 -> Biología y Geología catedrático; 17949 -> Biología y Geología
                         ec = EspecialidadCupo.objects.get(cupo=cupo, nombre=nombre_especialidad)
                     except:
-                        maestros = ['18401', '18407', '18408', '18409', '18410', '18416', '18429', '18431', '18433', '18434']
+                        maestros = ['18401', '18407', '18408', '18409', '18410', '18416', '18429', '18431', '18433',
+                                    '18434']
                         if pxls.x_puesto in maestros:
                             J = {'cmax': 24, 'cmin': 24, 'mmax': 12, 'mmin': 12, 'dmax': 16, 'dmin': 16, 'umax': 8,
                                  'umin': 8}
@@ -436,6 +439,24 @@ def ajax_cupo(request):
                     return JsonResponse({'ok': True, 'nombre': cupo.nombre})
                 else:
                     return JsonResponse({'ok': False})
+            except:
+                return JsonResponse({'ok': False})
+
+        elif action == 'select_add_especialidad':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+                if con1 or con2:
+                    ec, created = EspecialidadCupo.objects.get_or_create(cupo=cupo, nombre=request.POST['especialidad'],
+                                                                         clave_ex=request.POST['especialidad'][:10])
+                    if created:
+                        pc, created = Profesores_cupo.objects.get_or_create(cupo=cupo, especialidad=ec)
+                        if created:
+                            Profesor_cupo.objects.create(profesorado=pc, nombre='Prof. Interino', tipo='INT')
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False})
 

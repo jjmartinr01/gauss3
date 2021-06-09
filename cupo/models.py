@@ -632,7 +632,7 @@ class PlantillaOrganica(models.Model):
                                                             cargo='Miembro del Equipo Directivo',
                                                             nivel=1, clave_cargo='202006011113')
             miembro_equipo_directivo.permisos.add(*permisos)
-        for pxls in self.plantillaxls_set.filter(x_actividad='529'):
+        for pxls in self.plantillaxls_set.filter(x_actividad__in=['529', '530', '532']):
             try:
                 gex = Gauser_extra.objects.get(ronda=self.ronda_centro, clave_ex=pxls.x_docente)
                 gex.cargos.add(miembro_equipo_directivo)

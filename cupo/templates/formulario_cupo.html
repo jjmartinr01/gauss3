@@ -186,10 +186,19 @@
             </div>
         </div>
         <br>
-        <div class="row">
+        <div class="row" id="list_especialidades_cupo">
             {% for e in cupo.especialidadcupo_set.all %}
                 <div class="label"><b>{{ e.nombre }}</b></div>
             {% endfor %}
+        </div>
+        <div class="row">
+            <label>Añade otra especialidad si fuera necesario:
+            <select class="select_add_especialidad" data-cupo="{{ cupo.id }}" style="width: 500px;">
+                <option value="">---------</option>
+                {% for e in especialidades_existentes %}
+                    <option value="{{ e.1 }}">{{ e.1 }}</option>
+                {% endfor %}
+            </select></label>
         </div>
         <hr>
         <div class="row">

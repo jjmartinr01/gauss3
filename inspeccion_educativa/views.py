@@ -851,10 +851,14 @@ def asignar_centros_inspeccion(request):
                 return JsonResponse({'ok': False})
 
     organization = g_e.ronda.entidad.organization
-    centros_inspeccionados = CentroInspeccionado.objects.filter(ronda__entidad__organization=organization)
-    for e in Entidad.objects.filter(organization=g_e.ronda.entidad.organization):
-        CentroInspeccionado.objects.get_or_create(centro=e, ronda=g_e.ronda)
-    centros_inspeccionados = CentroInspeccionado.objects.filter(ronda=g_e.ronda)
+    for e in Entidad.objects.filter(organization=organization):
+        ci, c = CentroInspeccionado.objects.get_or_create(centro=e, ronda=g_e.ronda)
+        if ci.inspectorasignado_set.all().count() == 0:
+            InspectorAsignado.objects.create(cenins=ci)
+    cis_posibles = CentroInspeccionado.objects.filter(ronda=g_e.ronda)
+    paginator = Paginator(cis_posibles, 25)
+    cis = paginator.page(1)
+
     logger.info('Entra en ' + request.META['PATH_INFO'])
     if 'ge' in request.GET:
         pass
@@ -864,7 +868,7 @@ def asignar_centros_inspeccion(request):
               'title': 'Crear una nueva plantilla de Informe de Inspección',
               'permiso': 'acceso_plantillas_informes_ie'},
              ),
-        'g_e': g_e, 'cis': centros_inspeccionados, 'oci': CentroInspeccionado,
+        'g_e': g_e, 'cis': cis, 'oci': CentroInspeccionado,
         'inspectores': inspectores,
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
     })

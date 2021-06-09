@@ -812,28 +812,36 @@ class CentroInspeccionado(models.Model):
     centro = models.OneToOneField(Entidad, blank=True, null=True, on_delete=models.CASCADE)
     ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE)  # Ronda de la entidad inspectora
     tipo = models.CharField('Tipo de centro', max_length=5, choices=TIPOS, blank=True, null=True, default='PU')
-    zona = models.ForeignKey(Subentidad, blank=True, null=True, on_delete=models.SET_NULL)
+    # zona = models.ForeignKey(Subentidad, blank=True, null=True, on_delete=models.SET_NULL)
     zonai = models.CharField('Zona de inspección', max_length=5, choices=ZONAS, default='RM')
-    etapas = models.CharField('Etapas en el centro', max_length=5, choices=ETAPAS, blank=True, null=True, default='IP')
+    # etapas = models.CharField('Etapas en el centro', max_length=5, choices=ETAPAS, blank=True, null=True, default='IP')
     clasificado = models.CharField('Clasificación', max_length=5, choices=CL, blank=True, null=True, default='C')
     puntos = models.IntegerField('Puntos asignados', default=1)
-    grupo = models.CharField('Grupo de centros al que pertenece', max_length=12, default=code_grupo)
-    inspector = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
+    # grupo = models.CharField('Grupo de centros al que pertenece', max_length=12, default=code_grupo)
+    # inspector = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name_plural = 'Centros Inspeccionados'
         ordering = ['id']
 
-    def centros_grupo(self):
-        return CentroInspeccionado.objects.filter(grupo=self.grupo)
-
-    def s_centros_grupo(self):
-        cs = self.centros_grupo().values_list('centro__name', flat=True)
-        return ', '.join(cs)
+    # def centros_grupo(self):
+    #     return CentroInspeccionado.objects.filter(grupo=self.grupo)
+    #
+    # def s_centros_grupo(self):
+    #     cs = self.centros_grupo().values_list('centro__name', flat=True)
+    #     return ', '.join(cs)
 
     def __str__(self):
-        return '%s (%s)' % (self.centro, self.inspector)
+        return '%s (%s)' % (self.centro, self.get_zonai_display())
 
+class InspectorAsignado(models.Model):
+    ETAPAS = (('INF', 'Infantil'), ('PRI', 'Primaria'), ('SEC', 'Secundaria'), ('TOD', 'Todas las etapas'))
+    cenins = models.ForeignKey(CentroInspeccionado, on_delete=models.CASCADE)
+    etapa = models.CharField('Etapas en el centro', max_length=5, choices=ETAPAS, default='TOD')
+    inspector = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return '%s (%s: %s)' % (self.cenins, self.get_etapa_display(), self.inspector)
 
 #######################################################################################
 #######################################################################################

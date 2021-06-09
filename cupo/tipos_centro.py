@@ -739,4 +739,107 @@ TC = {
             },
         },
     },
+'C.E.E. - Centro de Educación Especial': {
+        'Infantil': {
+            '1º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3') & Q(
+                    materia__curso__clave_ex='100304'),
+                'horas_base': True,
+                'codecol': 70180
+            },
+            '2º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3') & Q(
+                    materia__curso__clave_ex='100305'),
+                'horas_base': True,
+                'codecol': 70185
+            },
+            '3º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3') & Q(
+                    materia__curso__clave_ex='100306'),
+                'horas_base': True,
+                'codecol': 70190
+            },
+        },
+        'Primaria': {
+            '1º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='12') & Q(
+                    materia__curso__clave_ex='101317'),
+                'horas_base': True,
+                'codecol': 70200
+            },
+            '2º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='12') & Q(
+                    materia__curso__clave_ex='101318'),
+                'horas_base': True,
+                'codecol': 70205
+            },
+            '3º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='12') & Q(
+                    materia__curso__clave_ex='101319'),
+                'horas_base': True,
+                'codecol': 70210
+            },
+            '4º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='12') & Q(
+                    materia__curso__clave_ex='101320'),
+                'horas_base': True,
+                'codecol': 70215
+            },
+            '5º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='12') & Q(
+                    materia__curso__clave_ex='101321'),
+                'horas_base': True,
+                'codecol': 70220
+            },
+            '6º': {
+                'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='12') & Q(
+                    materia__curso__clave_ex='101322'),
+                'horas_base': True,
+                'codecol': 70225
+            },
+        },
+        'Otras horas': {
+            'Apoyo': {
+                'q': Q(actividad__clave_ex='522'),
+                'horas_base': True,
+                'codecol': 70230
+            },
+            'Atención ACNEE AL': {
+                'q': Q(actividad__clave_ex='563'),
+                'horas_base': True,
+                'codecol': 70235
+            },
+            'Atención ACNEE PT': {
+                'q': Q(actividad__clave_ex='562'),
+                'horas_base': True,
+                'codecol': 70240
+            },
+            'Coordinador Ciclo': {
+                'q': Q(actividad__clave_ex='116'),
+                'horas_base': True,
+                'codecol': 70245
+            },
+            'Coor. Comedor/Transporte': {
+                'q': Q(actividad__clave_ex='527'),
+                'horas_base': True,
+                'codecol': 70250
+            },
+            'Dirección/Jefatura/Secretaría': {
+                'q': Q(actividad__clave_ex__in=['529', '530', '532']),
+                'horas_base': True,
+                'codecol': 70255
+            },
+            'Mayor 55': {
+                'q': Q(actividad__clave_ex='176'),
+                'horas_base': True,
+                'codecol': 70260
+            },
+            'Horas TIC': {
+                'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='512') | Q(actividad__clave_ex='528') | Q(
+                    actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
+                'horas_base': False,
+                'codecol': 70261
+            },
+        },
+    },
 }
