@@ -39,26 +39,25 @@
                     </div>
                 </div>
             {% endif %}
-            <hr>
-{#            {% if g_e|has_permiso:'carga_excel_mdb' %}#}
-                <div class="row">
-                    <div class="large-12 columns">
-                        <p style="font-weight: bold;color: #008CBA">Carga del excel exportado del aplicativo MDB de Inspección:</p>
-                    </div>
-                </div>
-                <hr>
-                <div class="row">
-                    <div class="large-3 columns">
-                        <b>Archivo xls (MDB):</b>
-                    </div>
-                    <div class="large-6 columns center-block">
-                        <input type="file" name="file_xls_mdb" id="file_xls_mdb"/>
-                    </div>
-                    <div class="large-3 columns">
-                        <a class="button" id="carga_masiva_xls_mdb">Cargar el archivo</a>
-                    </div>
-                </div>
-{#            {% endif %}#}
+            {#            <hr>#}
+            {#                <div class="row">#}
+            {#                    <div class="large-12 columns">#}
+            {#                        <p style="font-weight: bold;color: #008CBA">Carga del excel exportado del aplicativo MDB de Inspección:</p>#}
+            {#                    </div>#}
+            {#                </div>#}
+            {#                <hr>#}
+            {#                <div class="row">#}
+            {#                    <div class="large-3 columns">#}
+            {#                        <b>Archivo xls (MDB):</b>#}
+            {#                    </div>#}
+            {#                    <div class="large-6 columns center-block">#}
+            {#                        <input type="file" name="file_xls_mdb" id="file_xls_mdb"/>#}
+            {#                    </div>#}
+            {#                    <div class="large-3 columns">#}
+            {#                        <a class="button" id="carga_masiva_xls_mdb">Cargar el archivo</a>#}
+            {#                    </div>#}
+            {#                </div>#}
+
         </div>
     </form>
 
@@ -82,18 +81,18 @@
             });
         {% endif %}
 
-    $('#carga_masiva_xls_mdb').click(function (e) {
-                e.preventDefault();
-                if ($('#file_xls_mdb').val()) {
-                    $('#action').val('carga_masiva_xls_mdb');
-                    document.getElementById("{{ formname }}").submit();
-                } else {
-                    show_mensajes({
-                        title: '<i class="fa fa-warning"></i> No has cargado un archivo!!!!', texto: 'Para ' +
-                            'subir un archivo primero debes cargarlo pulsando en "Examinar..."'
-                    })
-                }
-            });
+        $('#carga_masiva_xls_mdb').click(function (e) {
+            e.preventDefault();
+            if ($('#file_xls_mdb').val()) {
+                $('#action').val('carga_masiva_xls_mdb');
+                document.getElementById("{{ formname }}").submit();
+            } else {
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> No has cargado un archivo!!!!', texto: 'Para ' +
+                        'subir un archivo primero debes cargarlo pulsando en "Examinar..."'
+                })
+            }
+        });
 
     </script>
 {% endblock %}

@@ -819,6 +819,7 @@ class CentroInspeccionado(models.Model):
     puntos = models.IntegerField('Puntos asignados', default=1)
     # grupo = models.CharField('Grupo de centros al que pertenece', max_length=12, default=code_grupo)
     # inspector = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
+    observaciones = models.TextField('Observaciones', default='', blank=True)
 
     class Meta:
         verbose_name_plural = 'Centros Inspeccionados'

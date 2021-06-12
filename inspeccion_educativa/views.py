@@ -844,6 +844,17 @@ def asignar_centros_inspeccion(request):
                     return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_observaciones':
+            try:
+                ci = CentroInspeccionado.objects.get(ronda=g_e.ronda, id=request.POST['ci'])
+                if ci.inspectorasignado_set.filter(inspector=g_e).count() > 0:
+                    ci.observaciones = request.POST['texto']
+                    ci.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No puedes cambiar las observaciones'})
+            except:
+                return JsonResponse({'ok': False})
         elif request.POST['action'] == 'busca_ci':
             try:
                 logica = '' # Puede ser OR o AND
@@ -875,6 +886,18 @@ def asignar_centros_inspeccion(request):
 
                 html = render_to_string('asignar_centros_inspector_buscar.html', {'cis': cis, 'buscar': True,
                                                                                   'inspectores': inspectores})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+
+        elif request.POST['action'] == 'paginar_cis':
+            try:
+                cis_posibles = CentroInspeccionado.objects.filter(ronda=g_e.ronda)
+                paginator = Paginator(cis_posibles, 25)
+                cis = paginator.page(int(request.POST['page']))
+                html = render_to_string('asignar_centros_inspector_buscar.html', {'cis': cis, 'pag': True,
+                                                                                  'inspectores': inspectores,
+                                                                                  })
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})

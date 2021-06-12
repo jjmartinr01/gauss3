@@ -1,3 +1,4 @@
+{% load my_templatetags %}
 {% if buscar %}
     <h5 style="color: #0078a0;font-weight: bold;">Se han encontrado {{ cis|length }} coincidencias.</h5>
 {% endif %}
@@ -44,6 +45,15 @@
             </select></label>
         </div>
     </div>
+    <div class="row">
+    <div class="columns large-4">
+        <label>Director/a:</label>{{ ci.centro.entidadextra.director }}
+    </div>
+    <div class="columns large-8"><label>Otros datos de interés:
+    <div contenteditable="true" style="border: solid 1px lightgrey;cursor: text;" class="observaciones"
+    data-ci="{{ ci.id }}">{% autoescape off %}{{ ci.observaciones }}{% endautoescape %}</div></label></div>
+    </div>
+    <br>
     {% for ia in ci.inspectorasignado_set.all %}
         <div class="row">
             <div class="columns large-6">
@@ -76,3 +86,42 @@
     {% endfor %}
     <hr>
 {% endfor %}
+
+
+{% if pag %}
+    {% if cis.paginator.num_pages > 1 %}
+        <br>
+        <div class="row">
+            <div class="columns large-12">
+                <ul class="pagination" role="menubar" aria-label="Pagination">
+                    {% if cis.has_previous %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ cis.previous_page_number }}">&laquo;
+                                Anterior</a>
+                        </li>
+                    {% else %}
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">&laquo; Anterior</a>
+                        </li>
+                    {% endif %}
+                    {% for page in cis.paginator.num_pages|number_range %}
+                        {% if page == cis.number %}
+                            <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
+                        {% else %}
+                            <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if cis.has_next %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ cis.next_page_number }}">Siguiente &raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">Siguiente &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}

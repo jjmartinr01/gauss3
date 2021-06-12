@@ -58,44 +58,6 @@
         <hr>
         <div id="list_cis">
             {% include "asignar_centros_inspector_buscar.html" %}
-
-            {% if pag %}
-                {% if cis.paginator.num_pages > 1 %}
-                    <br>
-                    <div class="row">
-                        <div class="columns large-12">
-                            <ul class="pagination" role="menubar" aria-label="Pagination">
-                                {% if cis.has_previous %}
-                                    <li class="arrow">
-                                        <a class="go_page" data-page="{{ cis.previous_page_number }}">&laquo;
-                                            Anterior</a>
-                                    </li>
-                                {% else %}
-                                    <li class="arrow unavailable" aria-disabled="true">
-                                        <a class="go_page">&laquo; Anterior</a>
-                                    </li>
-                                {% endif %}
-                                {% for page in cis.paginator.num_pages|number_range %}
-                                    {% if page == cis.number %}
-                                        <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
-                                    {% else %}
-                                        <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
-                                    {% endif %}
-                                {% endfor %}
-                                {% if cis.has_next %}
-                                    <li class="arrow">
-                                        <a class="go_page" data-page="{{ cis.next_page_number }}">Siguiente &raquo;</a>
-                                    </li>
-                                {% else %}
-                                    <li class="arrow unavailable" aria-disabled="true">
-                                        <a class="go_page">Siguiente &raquo;</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    </div>
-                {% endif %}
-            {% endif %}
         </div>
     </form>
 {% endblock %}
@@ -170,6 +132,50 @@
                 }
             }, 750);
         });
+
+        {# ################################################################# #}
+
+        $('body').on('click', '.go_page', function (e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            if (page) {
+                $.post("/asignar_centros_inspeccion/", {action: 'paginar_cis', page: page},
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_cis').html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        });
+
+        {# ################################################################# #}
+
+        $('body').on('keyup', '.observaciones', function () {
+            var ci = $(this).data('ci');
+            var element = $(this);
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post("/asignar_centros_inspeccion/", {
+                            action: 'update_observaciones',
+                            ci: ci,
+                            texto: nuevo_texto
+                        },
+                        function (data) {
+                            if (data.ok) {
+                                $('#update_ok').show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
     </script>
 
 {% endblock %}

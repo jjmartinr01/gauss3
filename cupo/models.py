@@ -8,9 +8,10 @@ from django.utils.timezone import now
 from cupo.habilitar_permisos import Miembro_Equipo_Directivo
 from entidades.views import get_entidad_general
 from gauss.funciones import pass_generator
-from autenticar.models import Gauser, Permiso
-from entidades.models import Subentidad, Entidad, Ronda, Cargo, Gauser_extra, Dependencia, MiembroDepartamento
+from autenticar.models import Gauser, Permiso, Menu_default
+from entidades.models import Subentidad, Entidad, Ronda, Cargo, Gauser_extra, Dependencia, MiembroDepartamento, Menu
 from entidades.models import Departamento as DepEntidad
+from entidades.menus_entidades import Menus_Centro_Educativo, TiposCentro
 from estudios.models import Materia, Curso, Grupo, EtapaEscolar
 from horarios.models import Actividad, Horario, Sesion, SesionExtra
 from mensajes.models import Aviso
@@ -624,6 +625,14 @@ class PlantillaOrganica(models.Model):
         return True
 
     def habilitar_miembros_equipo_directivo(self):
+        if self.ronda_centro.entidad.entidadextra.tipo_centro in TiposCentro:
+            for menu in Menus_Centro_Educativo:
+                md = Menu_default.objects.get(code_menu=menu[0])
+                try:
+                    Menu.objects.get(entidad=self.ronda_centro.entidad, menu_default=md)
+                except:
+                    Menu.objects.create(entidad=self.ronda_centro.entidad, menu_default=md, texto_menu=menu[1],
+                                               pos=menu[2])
         permisos = Permiso.objects.filter(code_nombre__in=Miembro_Equipo_Directivo)
         try:
             miembro_equipo_directivo = Cargo.objects.get(entidad=self.ronda_centro.entidad, clave_cargo='202006011113')

@@ -153,6 +153,9 @@ def ajax_cupo(request):
 
         elif action == 'crea_cupo_from_po' and g_e.has_permiso('crea_cupos'):
             try:
+                centros_primaria = ['C.E.E. - Centro de Educación Especial',
+                                    'C.R.A. - Colegio Rural Agrupado',
+                                    'C.E.I.P. - Colegio de Educación Infantil y Primaria']
                 po = PlantillaOrganica.objects.get(id=request.POST['po'], g_e=g_e)
                 po.habilitar_miembros_equipo_directivo()
                 # if 'I.E.S' in po.ronda_centro.entidad.entidadextra.tipo_centro:
@@ -171,14 +174,22 @@ def ajax_cupo(request):
                 # filtros = [('Materias Bilingües', 'bilingüe'), ('Reducciones por bilingüismo', 'cción biling'),
                 #            ('Tutorías', 'Tutor'), ('Jefaturas de departamento', 'jefatur'),
                 #            ('Reducciones mayores de 55 años', '55')]
-                filtros = [('Tutorías', 'Tutor'), ('Jefaturas de departamento', 'atura de dep'),
-                           ('Reducciones mayores de 55 años', '55'), ('Reducciones Equipo Directivo', '(ED)')]
+                if po.ronda_centro.entidad.entidadextra.tipo_centro in centros_primaria:
+                    filtros = [('Reducciones mayores de 55 años', '55'), ('Reducciones Equipo Directivo', '(ED)'),
+                               ('Horas de apoyo al profesorado', 'apoyo')]
+                else:
+                    filtros = [('Tutorías', 'Tutor'), ('Jefaturas de departamento', 'atura de dep'),
+                               ('Reducciones mayores de 55 años', '55'), ('Reducciones Equipo Directivo', '(ED)')]
                 for filtro in filtros:
                     FiltroCupo.objects.create(cupo=cupo, nombre=filtro[0], filtro=filtro[1])
                 # Especialidades, Etapas, Cursos, ...
                 # EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre='Orientación Educativa',
                 #                                 clave_ex='17959', dep='Orientación', x_dep='95')
                 for pxls in po.plantillaxls_set.all():
+                    if po.ronda_centro.entidad.entidadextra.tipo_centro in centros_primaria:
+                        mn = 25 #max_num_alumnos en caso de infantil y primaria
+                    else:
+                        mn = 30 #max_num_alumnos en el resto de casos
                     if pxls.x_puesto == '18429':
                         nombre_especialidad = 'Música de Primaria'
                     elif pxls.x_puesto == '18409':
@@ -236,11 +247,11 @@ def ajax_cupo(request):
                         if pxls.x_actividad == '1':
                             Materia_cupo.objects.get_or_create(cupo=cupo, curso_cupo=cc, nombre=pxls.materia,
                                                                horas=horas, clave_ex=pxls.x_materiaomg, especialidad=ec,
-                                                               num_alumnos=cc.num_alumnos)
+                                                               num_alumnos=cc.num_alumnos, max_num_alumnos=mn)
                         else:
                             Materia_cupo.objects.get_or_create(cupo=cupo, curso_cupo=cc, nombre=pxls.actividad,
-                                                               horas=horas, clave_ex=pxls.x_actividad,
-                                                               especialidad=ec, num_alumnos=cc.num_alumnos)
+                                                               horas=horas, clave_ex=pxls.x_actividad, especialidad=ec,
+                                                               max_num_alumnos=mn, num_alumnos=cc.num_alumnos)
                     elif pxls.x_actividad in ['2', '614']:  # Esto sucede en las tutorías
                         eec, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=pxls.etapa_escolar,
                                                                         clave_ex=pxls.x_etapa_escolar)
@@ -251,7 +262,7 @@ def ajax_cupo(request):
                                                      especialidad=ec)
                         except:
                             t = 'Tutoría (%s)' % pxls.unidad
-                            Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=t, horas=2,
+                            Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=t, horas=2, max_num_alumnos=mn,
                                                         clave_ex=pxls.x_actividad, especialidad=ec, num_alumnos=20)
                     elif pxls.x_actividad in ['547', '176', '528', '562', '507', '532', '531', '541', '530',
                                               '522', '525', '555', '605', '563', '527', '378', '529', '542']:
