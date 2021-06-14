@@ -99,23 +99,27 @@
 
 <h1 class="pagebreak" style="padding-bottom: -15px;text-align: center"> Solicitud de profesores interinos de cupo</h1>
 <table style="width:100%;">
-{#    <tr>#}
-{#        <td style="text-align:center;padding-top:2px;" colspan="4"><strong>Especialidad</strong></td>#}
-{#        <td style="text-align:center;padding-top:2px;"><strong>Jornada</strong></td>#}
-{#        <td style="text-align:center;padding-top:2px;font-weight: 700;">Bilingüe</td>#}
-{#        <td style="text-align:center;padding-top:2px;font-weight: 700;">Observaciones</td>#}
-{#    </tr>#}
+    {#    <tr>#}
+    {#        <td style="text-align:center;padding-top:2px;" colspan="4"><strong>Especialidad</strong></td>#}
+    {#        <td style="text-align:center;padding-top:2px;"><strong>Jornada</strong></td>#}
+    {#        <td style="text-align:center;padding-top:2px;font-weight: 700;">Bilingüe</td>#}
+    {#        <td style="text-align:center;padding-top:2px;font-weight: 700;">Observaciones</td>#}
+    {#    </tr>#}
     {% for p in cupo|interinos %}
         {% ifchanged p.profesorado.especialidad %}
             <tr>
-                <td style="border-top: solid 1px darkgray;font-weight: 800;" colspan="3">{{ p.profesorado.especialidad.nombre }}</td>
+                <td style="border-top: solid 1px darkgray;font-weight: 800;"
+                    colspan="3">{{ p.profesorado.especialidad.nombre }}</td>
             </tr>
         {% endifchanged %}
         <tr>
-{#            <td style="text-align:center;padding-top:2px;" colspan="4">{{ p.profesorado.especialidad.nombre }}</td>#}
+            {#            <td style="text-align:center;padding-top:2px;" colspan="4">{{ p.profesorado.especialidad.nombre }}</td>#}
             <td style="padding-top:2px;padding-left: 25px;width: 24%;">1 {{ p.get_jornada_display }}</td>
-            <td style="text-align:center;padding-top:2px;font-weight: 700;width: 15%;">{% if p.bilingue %}Bilingüe{% endif %}</td>
-            <td style="padding-top:2px;width: 57%;">{{ p.observaciones }}</td>
+            <td style="text-align:center;padding-top:2px;font-weight: 700;width: 30%;">{% if p.bilingue %}
+                Bilingüe{% endif %}
+            {% if p.itinerante %}Itinerante{% endif %}
+            {% if p.noafin %}No afín{% endif %}</td>
+            <td style="padding-top:2px;width: 46%;">{{ p.observaciones }}</td>
         </tr>
     {% endfor %}
 </table>
