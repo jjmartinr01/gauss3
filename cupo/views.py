@@ -45,22 +45,29 @@ def cupo(request):
 
     if request.method == 'POST':
         if request.POST['action'] == 'genera_informe':
-            cupo = Cupo.objects.get(id=request.POST['cupo'], ronda__entidad=g_e.ronda.entidad)
-            fichero = 'cupo%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
-            texto_html = render_to_string('cupo2pdf.html', {'cupo': cupo, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
-            ruta = MEDIA_CUPO + '%s/' % cupo.ronda.entidad.code
-            fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Cupo de la Entidad')
-            response = HttpResponse(fich, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
-            logger.info('%s, genera pdf del cupo %s' % (g_e, cupo.id))
-            return response
+            cupo = Cupo.objects.get(id=request.POST['cupo'])
+            if cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() > 0:
+                fichero = 'cupo%s_%s' % (str(cupo.ronda.entidad.code), cupo.id)
+                texto_html = render_to_string('cupo2pdf.html', {'cupo': cupo, 'MEDIA_ANAGRAMAS': MEDIA_ANAGRAMAS})
+                ruta = MEDIA_CUPO + '%s/' % cupo.ronda.entidad.code
+                fich = html_to_pdf(request, texto_html, fichero=fichero, media=ruta, title='Cupo de la Entidad')
+                response = HttpResponse(fich, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
+                logger.info('%s, genera pdf del cupo %s' % (g_e, cupo.id))
+                return response
+            else:
+                crear_aviso(request, False, 'No tienes permiso para generar del archivo pdf solicitado')
 
     cupos_id = CupoPermisos.objects.filter(gauser=g_e.gauser).values_list('cupo__id', flat=True)
     f = datetime.datetime(2021, 1, 1)
     cupos = Cupo.objects.filter(Q(creado__gt=f), Q(ronda__entidad=g_e.ronda.entidad) | Q(id__in=cupos_id)).distinct()
     plantillas_o = PlantillaOrganica.objects.filter(Q(g_e=g_e) | Q(ronda_centro=g_e.ronda))
-    return render(request, "cupo.html", {'formname': 'cupo_profesorado', 'cupos': cupos, 'plantillas_o': plantillas_o,
-                                         'especialidades_existentes': ESPECIALIDADES})
+    return render(request, "cupo.html",
+                  {'formname': 'cupo_profesorado',
+                   'cupos': cupos,
+                   'plantillas_o': plantillas_o,
+                   'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                   'especialidades_existentes': ESPECIALIDADES})
 
 
 def cupo_especialidad(cupo, especialidad):
@@ -679,7 +686,7 @@ def ajax_cupo(request):
                     especialidad = materia.especialidad
                     materias = render_to_string('edit_cupo_materias.html',
                                                 {'materias': [materia], 'duplicated': True,
-                                                 'especialidades': especialidades, 'especialidad': especialidad})
+                                                 'especialidades': especialidades, 'especialidad': None})
                     logger.info('%s, cupo %s duplicate_materia %s' % (g_e, cupo.id, materia.nombre))
                     return JsonResponse({'ok': True, 'materias': materias})
                 else:

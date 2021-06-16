@@ -92,7 +92,11 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
 
     logger.info('Written file: %s' % (fichero_html))
     cabecera = MEDIA_ANAGRAMAS + '%s_cabecera.html' % request.session['gauser_extra'].ronda.entidad.code
+    if not os.path.isfile(cabecera):
+        cabecera = ''
     pie = MEDIA_ANAGRAMAS + '%s_pie.html' % request.session['gauser_extra'].ronda.entidad.code
+    if not os.path.isfile(pie):
+        pie = ''
     logger.info('cabecera y pie definidas. Tipo: %s' % tipo)
     if tipo == 'doc':
         estilo = media + 'estilo.xsl'
@@ -113,11 +117,15 @@ def html_to_pdf(request, texto, media=MEDIA_DOCUMENTOS, fichero='borrar', title=
             'margin-left': docconf.marginleft,
             'encoding': docconf.encoding,
             'no-outline': None,
-            '--header-html': 'file://%s' % cabecera,
-            '--footer-html': 'file://%s' % pie,
+            # '--header-html': 'file://%s' % cabecera,
+            # '--footer-html': 'file://%s' % pie,
             '--header-spacing': docconf.headerspacing,
             '--load-error-handling': 'ignore',
         }
+        if cabecera:
+            options['--header-html'] = 'file://%s' % cabecera
+        if pie:
+            options['--footer-html'] = 'file://%s' % pie
         logger.info('Preparado para generar pdf')
         pdfkit.from_string(c, fichero_pdf, options)
         logger.info('Pdf generado')
