@@ -112,7 +112,6 @@
 {% endif %}
 
 {% if especialidad %}
-    {#    <hr>#}
     <style>
         th {
             text-align: center;
@@ -134,30 +133,38 @@
             </thead>
             <tbody>
             <tr>
-                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                                                                  data-jornada="min_terciof"
                                                                   data-especialidad="{{ especialidad.id }}"
-                                                                  value="{{ especialidad.min_tercio }}"></label></td>
-                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  value="{{ especialidad.min_terciof }}"></label></td>
+                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                                                                  data-jornada="max_terciof"
                                                                   data-especialidad="{{ especialidad.id }}"
-                                                                  value="{{ especialidad.max_tercio }}"></label></td>
-                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  value="{{ especialidad.max_terciof }}"></label></td>
+                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                                                                  data-jornada="min_mediaf"
                                                                   data-especialidad="{{ especialidad.id }}"
-                                                                  value="{{ especialidad.min_media }}"></label></td>
-                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  value="{{ especialidad.min_mediaf }}"></label></td>
+                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
                                                                   data-especialidad="{{ especialidad.id }}"
-                                                                  value="{{ especialidad.max_media }}"></label></td>
-                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  data-jornada="max_mediaf"
+                                                                  value="{{ especialidad.max_mediaf }}"></label></td>
+                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                                                                  data-jornada="min_dosterciosf"
                                                                   data-especialidad="{{ especialidad.id }}"
-                                                                  value="{{ especialidad.min_dostercios }}"></label></td>
-                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  value="{{ especialidad.min_dosterciosf }}"></label></td>
+                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                                                                  data-jornada="max_dosterciosf"
                                                                   data-especialidad="{{ especialidad.id }}"
-                                                                  value="{{ especialidad.max_dostercios }}"></label></td>
-                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  value="{{ especialidad.max_dosterciosf }}"></label></td>
+                <td style="text-align: center;"><label>min <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                                                                  data-jornada="min_completaf"
                                                                   data-especialidad="{{ especialidad.id }}"
-                                                                  value="{{ especialidad.min_completa }}"></label></td>
-                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}"
+                                                                  value="{{ especialidad.min_completaf }}"></label></td>
+                <td style="text-align: center;"><label>max <input type="text" data-cupo="{{ especialidad.cupo.id }}" class="jornhoras"
+                                                                  data-jornada="max_completaf"
                                                                   data-especialidad="{{ especialidad.id }}"
-                                                                  value="{{ especialidad.max_completa }}"></label></td>
+                                                                  value="{{ especialidad.max_completaf }}"></label></td>
             </tr>
             </tbody>
         </table>

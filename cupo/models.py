@@ -25,14 +25,14 @@ logger = logging.getLogger('django')
 class Cupo(models.Model):
     ronda = models.ForeignKey(Ronda, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField("Nombre de la versión del cupo", max_length=150)
-    max_completa = models.IntegerField("Máximo número de periodos lectivos con jornada completa", default=22)
-    min_completa = models.IntegerField("Mínimo número de periodos lectivos con jornada completa", default=20)
-    max_dostercios = models.IntegerField("Máximo número de periodos lectivos con 2/3 de jornada", default=14)
-    min_dostercios = models.IntegerField("Mínimo número de periodos lectivos con 2/3 de jornada", default=13)
-    max_media = models.IntegerField("Máximo número de periodos lectivos con media jornada", default=11)
-    min_media = models.IntegerField("Mínimo número de periodos lectivos con media jornada", default=10)
-    max_tercio = models.IntegerField("Máximo número de periodos lectivos con 1/3 de jornada", default=7)
-    min_tercio = models.IntegerField("Mínimo número de periodos lectivos con 1/3 de jornada", default=6)
+    # max_completa = models.IntegerField("Máximo número de periodos lectivos con jornada completa", default=22)
+    # min_completa = models.IntegerField("Mínimo número de periodos lectivos con jornada completa", default=20)
+    # max_dostercios = models.IntegerField("Máximo número de periodos lectivos con 2/3 de jornada", default=14)
+    # min_dostercios = models.IntegerField("Mínimo número de periodos lectivos con 2/3 de jornada", default=13)
+    # max_media = models.IntegerField("Máximo número de periodos lectivos con media jornada", default=11)
+    # min_media = models.IntegerField("Mínimo número de periodos lectivos con media jornada", default=10)
+    # max_tercio = models.IntegerField("Máximo número de periodos lectivos con 1/3 de jornada", default=7)
+    # min_tercio = models.IntegerField("Mínimo número de periodos lectivos con 1/3 de jornada", default=6)
     bloqueado = models.BooleanField("¿Está bloqueado?", default=False)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateField("Fecha de modificación", auto_now=True)
@@ -69,6 +69,14 @@ class EspecialidadCupo(models.Model):
     min_media = models.IntegerField("Mínimo número de periodos lectivos con media jornada", default=9)
     max_tercio = models.IntegerField("Máximo número de periodos lectivos con 1/3 de jornada", default=7)
     min_tercio = models.IntegerField("Mínimo número de periodos lectivos con 1/3 de jornada", default=6)
+    max_completaf = models.FloatField("Máximo número de periodos lectivos con jornada completa", default=20)
+    min_completaf = models.FloatField("Mínimo número de periodos lectivos con jornada completa", default=18)
+    max_dosterciosf = models.FloatField("Máximo número de periodos lectivos con 2/3 de jornada", default=13)
+    min_dosterciosf = models.FloatField("Mínimo número de periodos lectivos con 2/3 de jornada", default=12)
+    max_mediaf = models.FloatField("Máximo número de periodos lectivos con media jornada", default=10)
+    min_mediaf = models.FloatField("Mínimo número de periodos lectivos con media jornada", default=9)
+    max_terciof = models.FloatField("Máximo número de periodos lectivos con 1/3 de jornada", default=7)
+    min_terciof = models.FloatField("Mínimo número de periodos lectivos con 1/3 de jornada", default=6)
 
     class Meta:
         verbose_name_plural = 'Especialidades en el cupo del profesorado'
@@ -175,14 +183,18 @@ class Profesores_cupo(models.Model):
 
     @property
     def reparto_profes(self):
-        profes_completos = int(self.num_horas / self.especialidad.min_completa)
-        periodos_sobrantes = self.num_horas % self.especialidad.min_completa
-        profes_dostercios = int(periodos_sobrantes / self.especialidad.min_dostercios)
-        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_dostercios
-        profes_media = int(periodos_sobrantes / self.especialidad.min_media)
-        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_media
-        profes_tercio = int(periodos_sobrantes / self.especialidad.min_tercio)
-        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_tercio
+        for jornada in ['min_completaf', 'min_dosterciosf', 'min_mediaf', 'min_terciof']:
+            if not getattr(self.especialidad, jornada) > 0:
+                setattr(self.especialidad, jornada, 1)
+                self.especialidad.save()
+        profes_completos = int(self.num_horas / self.especialidad.min_completaf)
+        periodos_sobrantes = self.num_horas % self.especialidad.min_completaf
+        profes_dostercios = int(periodos_sobrantes / self.especialidad.min_dosterciosf)
+        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_dosterciosf
+        profes_media = int(periodos_sobrantes / self.especialidad.min_mediaf)
+        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_mediaf
+        profes_tercio = int(periodos_sobrantes / self.especialidad.min_terciof)
+        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_terciof
 
         # if periodos_sobrantes >= self.cupo.min_dostercios:
         #     profes_dostercios = int(periodos_sobrantes / self.cupo.min_dostercios)

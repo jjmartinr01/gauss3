@@ -42,6 +42,21 @@ CUERPOS_CUPO = ('590', '591', '592', '593', '594', '595', '596')
 # @permiso_required('acceso_cupo_profesorado')
 def cupo(request):
     g_e = request.session['gauser_extra']
+    # ###############
+    for mc in EspecialidadCupo.objects.all():
+        # try:
+        mc.max_completaf = mc.max_completa
+        mc.min_completaf = mc.min_completa
+        mc.max_dosterciosf = mc.max_dostercios
+        mc.min_dosterciosf = mc.min_dostercios
+        mc.max_mediaf = mc.max_media
+        mc.min_mediaf = mc.min_media
+        mc.max_terciof = mc.max_tercio
+        mc.min_terciof = mc.min_tercio
+        mc.save()
+        # except:
+        #     pass
+    # ###############
 
     if request.method == 'POST':
         if request.POST['action'] == 'genera_informe':
@@ -194,9 +209,9 @@ def ajax_cupo(request):
                 #                                 clave_ex='17959', dep='Orientación', x_dep='95')
                 for pxls in po.plantillaxls_set.all():
                     if po.ronda_centro.entidad.entidadextra.tipo_centro in centros_primaria:
-                        mn = 25 #max_num_alumnos en caso de infantil y primaria
+                        mn = 25  # max_num_alumnos en caso de infantil y primaria
                     else:
-                        mn = 30 #max_num_alumnos en el resto de casos
+                        mn = 30  # max_num_alumnos en el resto de casos
                     if pxls.x_puesto == '18429':
                         nombre_especialidad = 'Música de Primaria'
                     elif pxls.x_puesto == '18409':
@@ -216,18 +231,18 @@ def ajax_cupo(request):
                         maestros = ['18401', '18407', '18408', '18409', '18410', '18416', '18429', '18431', '18433',
                                     '18434']
                         if pxls.x_puesto in maestros:
-                            J = {'cmax': 24, 'cmin': 24, 'mmax': 12, 'mmin': 12, 'dmax': 16, 'dmin': 16, 'umax': 8,
-                                 'umin': 8}
+                            J = {'cmax': 21.5, 'cmin': 21.5, 'mmax': 10.75, 'mmin': 10.75, 'dmax': 14.33,
+                                 'dmin': 14.33, 'umax': 7.16, 'umin': 7.16}
                         else:
                             J = {'cmax': 20, 'cmin': 18, 'mmax': 9, 'mmin': 10, 'dmax': 13, 'dmin': 12, 'umax': 7,
                                  'umin': 6}
                         ec = EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre=nombre_especialidad,
                                                              clave_ex=pxls.x_puesto, dep=pxls.departamento,
-                                                             x_dep=pxls.x_departamento, max_completa=J['cmax'],
-                                                             min_completa=J['cmin'], max_dostercios=J['dmax'],
-                                                             min_dostercios=J['dmin'], max_media=J['mmax'],
-                                                             min_media=J['mmin'], max_tercio=J['umax'],
-                                                             min_tercio=J['umin'])
+                                                             x_dep=pxls.x_departamento, max_completaf=J['cmax'],
+                                                             min_completaf=J['cmin'], max_dosterciosf=J['dmax'],
+                                                             min_dosterciosf=J['dmin'], max_mediaf=J['mmax'],
+                                                             min_mediaf=J['mmin'], max_terciof=J['umax'],
+                                                             min_terciof=J['umin'])
                         profesores_cupo = Profesores_cupo.objects.create(cupo=cupo, especialidad=ec)
                         geps = po.plantillaxls_set.filter(x_puesto=pxls.x_puesto).values_list('docente', flat=True)
                         for gep in list(set(geps)):
@@ -300,11 +315,7 @@ def ajax_cupo(request):
             orig = Cupo.objects.get(id=request.POST['cupo'])
             if orig.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() < 1:
                 return JsonResponse({'ok': False, 'msg': 'No tienes permiso para copiar el cupo'})
-            cupo = Cupo.objects.create(ronda=g_e.ronda, nombre='(copia) %s' % (orig.nombre),
-                                       max_completa=orig.max_completa, min_completa=orig.min_completa,
-                                       max_dostercios=orig.max_dostercios, min_dostercios=orig.min_dostercios,
-                                       max_media=orig.max_media, min_media=orig.min_media,
-                                       max_tercio=orig.max_tercio, min_tercio=orig.min_tercio)
+            cupo = Cupo.objects.create(ronda=g_e.ronda, nombre='(copia) %s' % (orig.nombre))
             CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
             crea_departamentos(g_e.ronda)
             for e in orig.especialidadcupo_set.all():
@@ -580,6 +591,31 @@ def ajax_cupo(request):
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
         elif action == 'change_especialidad_global':
+
+            cupo = Cupo.objects.get(id=request.POST['cupo'])
+            con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+            con2 = (cupo.ronda.entidad == g_e.ronda.entidad)
+            if con1 or con2:
+                if request.POST['especialidad']:
+                    especialidad = EspecialidadCupo.objects.get(id=request.POST['especialidad'], cupo=cupo)
+                    profesores_cupo = cupo_especialidad(cupo, especialidad).reparto_profes
+                    materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=especialidad)
+                    especialidad_nombre = especialidad.nombre
+                    logger.info('%s, change_especialidad_global %s' % (g_e, especialidad_nombre))
+                else:
+                    materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=None)
+                    profesores_cupo = None
+                    especialidad_nombre = None
+                    especialidad = None
+                    logger.info('%s, change_especialidad_global sin especialidad' % (g_e))
+                especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
+                materias = render_to_string('edit_cupo_materias.html',
+                                            {'materias': materias_cupo, 'especialidades': especialidades,
+                                             'especialidad': especialidad})
+                return JsonResponse({'ok': True, 'materias': materias, 'profesores_cupo': profesores_cupo,
+                                     'especialidad': especialidad_nombre})
+
+
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
                 con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
@@ -886,8 +922,26 @@ def ajax_cupo(request):
             except Exception as e:
                 return JsonResponse({'ok': False, 'error': repr(e)})
 
+        elif action == 'update_jornhoras':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+                if con1 or con2:
+                    especialidad = EspecialidadCupo.objects.get(id=request.POST['especialidad'], cupo=cupo)
+                    setattr(especialidad, request.POST['jornada'], float(request.POST['valor']))
+                    especialidad.save()
+                    profesores_cupo = cupo_especialidad(cupo, especialidad)
+                    return JsonResponse({'profesores_cupo': profesores_cupo.reparto_profes,
+                                         'especialidad': especialidad.nombre, 'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos suficientes'})
+            except Exception as e:
+                return JsonResponse({'ok': False, 'error': repr(e)})
+
         else:
             return JsonResponse({'ok': False, 'error': 'No tienes permiso para ejecutar lo solicitado'})
+
     else:
         return HttpResponse(status=400)
 
