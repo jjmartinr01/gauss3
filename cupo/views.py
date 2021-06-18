@@ -43,19 +43,16 @@ CUERPOS_CUPO = ('590', '591', '592', '593', '594', '595', '596')
 def cupo(request):
     g_e = request.session['gauser_extra']
     # ###############
-    for mc in EspecialidadCupo.objects.all():
-        # try:
-        mc.max_completaf = mc.max_completa
-        mc.min_completaf = mc.min_completa
-        mc.max_dosterciosf = mc.max_dostercios
-        mc.min_dosterciosf = mc.min_dostercios
-        mc.max_mediaf = mc.max_media
-        mc.min_mediaf = mc.min_media
-        mc.max_terciof = mc.max_tercio
-        mc.min_terciof = mc.min_tercio
-        mc.save()
-        # except:
-        #     pass
+    # for mc in EspecialidadCupo.objects.all():
+    #     mc.max_completaf = mc.max_completa
+    #     mc.min_completaf = mc.min_completa
+    #     mc.max_dosterciosf = mc.max_dostercios
+    #     mc.min_dosterciosf = mc.min_dostercios
+    #     mc.max_mediaf = mc.max_media
+    #     mc.min_mediaf = mc.min_media
+    #     mc.max_terciof = mc.max_tercio
+    #     mc.min_terciof = mc.min_tercio
+    #     mc.save()
     # ###############
 
     if request.method == 'POST':
