@@ -77,6 +77,14 @@ class EspecialidadCupo(models.Model):
     min_mediaf = models.FloatField("Mínimo número de periodos lectivos con media jornada", default=9)
     max_terciof = models.FloatField("Máximo número de periodos lectivos con 1/3 de jornada", default=7)
     min_terciof = models.FloatField("Mínimo número de periodos lectivos con 1/3 de jornada", default=6)
+    max_completa = models.FloatField("Máximo número de periodos lectivos con jornada completa", default=20)
+    min_completa = models.FloatField("Mínimo número de periodos lectivos con jornada completa", default=18)
+    max_dostercios = models.FloatField("Máximo número de periodos lectivos con 2/3 de jornada", default=13)
+    min_dostercios = models.FloatField("Mínimo número de periodos lectivos con 2/3 de jornada", default=12)
+    max_media = models.FloatField("Máximo número de periodos lectivos con media jornada", default=10)
+    min_media = models.FloatField("Mínimo número de periodos lectivos con media jornada", default=9)
+    max_tercio = models.FloatField("Máximo número de periodos lectivos con 1/3 de jornada", default=7)
+    min_tercio = models.FloatField("Mínimo número de periodos lectivos con 1/3 de jornada", default=6)
 
     class Meta:
         verbose_name_plural = 'Especialidades en el cupo del profesorado'
