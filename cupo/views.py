@@ -43,16 +43,16 @@ CUERPOS_CUPO = ('590', '591', '592', '593', '594', '595', '596')
 def cupo(request):
     g_e = request.session['gauser_extra']
     # ###############
-    # for mc in EspecialidadCupo.objects.all():
-    #     mc.max_completaf = mc.max_completa
-    #     mc.min_completaf = mc.min_completa
-    #     mc.max_dosterciosf = mc.max_dostercios
-    #     mc.min_dosterciosf = mc.min_dostercios
-    #     mc.max_mediaf = mc.max_media
-    #     mc.min_mediaf = mc.min_media
-    #     mc.max_terciof = mc.max_tercio
-    #     mc.min_terciof = mc.min_tercio
-    #     mc.save()
+    for mc in EspecialidadCupo.objects.all():
+        mc.max_completa = mc.max_completaf
+        mc.min_completa = mc.min_completaf
+        mc.max_dostercios = mc.max_dosterciosf
+        mc.min_dostercios = mc.min_dosterciosf
+        mc.max_media = mc.max_mediaf
+        mc.min_media = mc.min_mediaf
+        mc.max_tercio = mc.max_terciof
+        mc.min_tercio = mc.min_terciof
+        mc.save()
     # ###############
 
     if request.method == 'POST':
@@ -235,11 +235,11 @@ def ajax_cupo(request):
                                  'umin': 6}
                         ec = EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre=nombre_especialidad,
                                                              clave_ex=pxls.x_puesto, dep=pxls.departamento,
-                                                             x_dep=pxls.x_departamento, max_completaf=J['cmax'],
-                                                             min_completaf=J['cmin'], max_dosterciosf=J['dmax'],
-                                                             min_dosterciosf=J['dmin'], max_mediaf=J['mmax'],
-                                                             min_mediaf=J['mmin'], max_terciof=J['umax'],
-                                                             min_terciof=J['umin'])
+                                                             x_dep=pxls.x_departamento, max_completa=J['cmax'],
+                                                             min_completa=J['cmin'], max_dostercios=J['dmax'],
+                                                             min_dostercios=J['dmin'], max_media=J['mmax'],
+                                                             min_media=J['mmin'], max_tercio=J['umax'],
+                                                             min_tercio=J['umin'])
                         profesores_cupo = Profesores_cupo.objects.create(cupo=cupo, especialidad=ec)
                         geps = po.plantillaxls_set.filter(x_puesto=pxls.x_puesto).values_list('docente', flat=True)
                         for gep in list(set(geps)):

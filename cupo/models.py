@@ -191,18 +191,20 @@ class Profesores_cupo(models.Model):
 
     @property
     def reparto_profes(self):
-        for jornada in ['min_completaf', 'min_dosterciosf', 'min_mediaf', 'min_terciof']:
+        for jornada in ['min_completa', 'min_dostercios', 'min_media', 'min_tercio']:
             if not getattr(self.especialidad, jornada) > 0:
                 setattr(self.especialidad, jornada, 1)
                 self.especialidad.save()
-        profes_completos = int(self.num_horas / self.especialidad.min_completaf)
-        periodos_sobrantes = self.num_horas % self.especialidad.min_completaf
-        profes_dostercios = int(periodos_sobrantes / self.especialidad.min_dosterciosf)
-        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_dosterciosf
-        profes_media = int(periodos_sobrantes / self.especialidad.min_mediaf)
-        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_mediaf
-        profes_tercio = int(periodos_sobrantes / self.especialidad.min_terciof)
-        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_terciof
+        profes_completos = int(self.num_horas / self.especialidad.min_completa)
+        periodos_sobrantes = self.num_horas % self.especialidad.min_completa
+        profes_dostercios = int(periodos_sobrantes / self.especialidad.min_dostercios)
+        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_dostercios
+        profes_media = int(periodos_sobrantes / self.especialidad.min_media)
+        periodos_sobrantes = periodos_sobrantes % self.especialidad.min_media
+        profes_tercio = int(periodos_sobrantes / self.especialidad.min_tercio)
+        # Limitamos el número de periodos sobrantes a dos decimales:
+        periodos_sobrantes = round(periodos_sobrantes % self.especialidad.min_tercio, 2)
+        # periodos_sobrantes = '{:.2f}'.format(periodos_sobrantes % self.especialidad.min_tercio)
 
         # if periodos_sobrantes >= self.cupo.min_dostercios:
         #     profes_dostercios = int(periodos_sobrantes / self.cupo.min_dostercios)
