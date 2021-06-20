@@ -43,16 +43,16 @@ CUERPOS_CUPO = ('590', '591', '592', '593', '594', '595', '596')
 def cupo(request):
     g_e = request.session['gauser_extra']
     # ###############
-    for mc in EspecialidadCupo.objects.all():
-        mc.max_completa = mc.max_completaf
-        mc.min_completa = mc.min_completaf
-        mc.max_dostercios = mc.max_dosterciosf
-        mc.min_dostercios = mc.min_dosterciosf
-        mc.max_media = mc.max_mediaf
-        mc.min_media = mc.min_mediaf
-        mc.max_tercio = mc.max_terciof
-        mc.min_tercio = mc.min_terciof
-        mc.save()
+    # for mc in EspecialidadCupo.objects.all():
+    #     mc.max_completa = mc.max_completaf
+    #     mc.min_completa = mc.min_completaf
+    #     mc.max_dostercios = mc.max_dosterciosf
+    #     mc.min_dostercios = mc.min_dosterciosf
+    #     mc.max_media = mc.max_mediaf
+    #     mc.min_media = mc.min_mediaf
+    #     mc.max_tercio = mc.max_terciof
+    #     mc.min_tercio = mc.min_terciof
+    #     mc.save()
     # ###############
 
     if request.method == 'POST':
@@ -74,12 +74,15 @@ def cupo(request):
     f = datetime.datetime(2021, 1, 1)
     cupos = Cupo.objects.filter(Q(creado__gt=f), Q(ronda__entidad=g_e.ronda.entidad) | Q(id__in=cupos_id)).distinct()
     plantillas_o = PlantillaOrganica.objects.filter(Q(g_e=g_e) | Q(ronda_centro=g_e.ronda))
+    cursos_existentes = Curso.objects.filter(ronda__entidad__organization=g_e.ronda.entidad.organization,
+                                             clave_ex__isnull=False).values_list('clave_ex', 'nombre').distinct()
     return render(request, "cupo.html",
                   {'formname': 'cupo_profesorado',
                    'cupos': cupos,
                    'plantillas_o': plantillas_o,
                    'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-                   'especialidades_existentes': ESPECIALIDADES})
+                   'especialidades_existentes': ESPECIALIDADES,
+                   'cursos_existentes': cursos_existentes})
 
 
 def cupo_especialidad(cupo, especialidad):
@@ -486,6 +489,35 @@ def ajax_cupo(request):
             except:
                 return JsonResponse({'ok': False})
 
+        elif action == 'select_add_curso':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+                if con1 or con2:
+                    curso = Curso.objects.filter(clave_ex=request.POST['curso'], etapa_escolar__isnull=False).last()
+                    try:
+                        ee = EtapaEscolarCupo.objects.get(cupo=cupo, clave_ex=curso.etapa_escolar.clave_ex)
+                    except:
+                        ee = EtapaEscolarCupo.objects.create(cupo=cupo, clave_ex=curso.etapa_escolar.clave_ex,
+                                                             nombre=curso.etapa_escolar.nombre)
+                    try:
+                        cc = CursoCupo.objects.get(cupo=cupo, clave_ex=curso.clave_ex)
+                    except:
+                        cc = CursoCupo.objects.create(cupo=cupo, nombre=curso.nombre, etapa_escolar=ee,
+                                                      clave_ex=curso.clave_ex)
+                    for m in curso.materia_set.all():
+                        try:
+                            Materia_cupo.objects.get(cupo=cupo, clave_ex=m.clave_ex)
+                        except:
+                            Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=m.nombre, horas=m.horas,
+                                                        clave_ex=m.clave_ex)
+                    return JsonResponse({'ok': True, 'curso': cc.nombre})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+
         elif action == 'update_usuarios_invitados':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
@@ -611,7 +643,6 @@ def ajax_cupo(request):
                                              'especialidad': especialidad})
                 return JsonResponse({'ok': True, 'materias': materias, 'profesores_cupo': profesores_cupo,
                                      'especialidad': especialidad_nombre})
-
 
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])

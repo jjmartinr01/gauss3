@@ -89,6 +89,7 @@
     <script>
 
         $('.select_add_especialidad').select2();
+        $('.select_add_curso').select2();
 
         $('body').on('change', '.select_add_especialidad', function (e) {
             var cupo = $(this).data('cupo');
@@ -101,6 +102,24 @@
                 function (data) {
                     if (data.ok) {
                         $("#list_especialidades_cupo").append('<div class="label"><b>'+ especialidad +'</b></div>');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.select_add_curso', function (e) {
+            var cupo = $(this).data('cupo');
+            var curso = $(this).val();
+            $.post("/ajax_cupo/", {
+                    action: 'select_add_curso',
+                    cupo: cupo,
+                    curso: curso,
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#list_cursos_cupo").append('<div class="label"><b>'+ data.curso +'</b></div>');
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
