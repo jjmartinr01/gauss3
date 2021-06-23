@@ -42,18 +42,6 @@ CUERPOS_CUPO = ('590', '591', '592', '593', '594', '595', '596')
 # @permiso_required('acceso_cupo_profesorado')
 def cupo(request):
     g_e = request.session['gauser_extra']
-    # ###############
-    # for mc in EspecialidadCupo.objects.all():
-    #     mc.max_completa = mc.max_completaf
-    #     mc.min_completa = mc.min_completaf
-    #     mc.max_dostercios = mc.max_dosterciosf
-    #     mc.min_dostercios = mc.min_dosterciosf
-    #     mc.max_media = mc.max_mediaf
-    #     mc.min_media = mc.min_mediaf
-    #     mc.max_tercio = mc.max_terciof
-    #     mc.min_tercio = mc.min_terciof
-    #     mc.save()
-    # ###############
 
     if request.method == 'POST':
         if request.POST['action'] == 'genera_informe':
@@ -88,25 +76,9 @@ def cupo(request):
 def cupo_especialidad(cupo, especialidad):
     materias_cupo = Materia_cupo.objects.filter(cupo=cupo, especialidad=especialidad)
     profesores_cupo = Profesores_cupo.objects.get(cupo=cupo, especialidad=especialidad)
-    # profesores_cupo, created = Profesores_cupo.objects.get_or_create(cupo=cupo, especialidad=especialidad)
-    # if created:
-    #     geps = Gauser_extra_programaciones.objects.filter(ge__ronda=cupo.ronda, puesto=especialidad.nombre)
-    #     for gep in geps:
-    #         Profesor_cupo.objects.create(profesorado=profesores_cupo, nombre=gep.ge.gauser.get_full_name())
     profesores_cupo.num_horas = sum([m.total_periodos for m in materias_cupo])
     profesores_cupo.save()
     return profesores_cupo
-
-
-# def crear_profesores_cupo(cupo):
-#     p_cs = Profesores_cupo.objects.filter(cupo=cupo)
-#     for p_c in p_cs:
-#         geps = Gauser_extra_programaciones.objects.filter(ge__ronda=cupo.ronda, puesto=p_c.especialidad.nombre)
-#         if geps.count() == 0:
-#             Profesor_cupo.objects.create(profesorado=p_c, nombre='Profesor Interino', tipo='NONE')
-#         for gep in geps:
-#             Profesor_cupo.objects.create(profesorado=p_c, nombre=gep.ge.gauser.get_full_name())
-#     return True
 
 
 def ajax_cupo(request):
@@ -247,14 +219,6 @@ def ajax_cupo(request):
                         geps = po.plantillaxls_set.filter(x_puesto=pxls.x_puesto).values_list('docente', flat=True)
                         for gep in list(set(geps)):
                             Profesor_cupo.objects.create(profesorado=profesores_cupo, nombre=gep)
-                    # try:
-                    #     if pxls.x_actividad == '1':
-                    #         Materia_cupo.objects.get(clave_ex=pxls.x_materiaomg, cupo=cupo)
-                    #     else:
-                    #         Materia_cupo.objects.get(cupo=cupo, curso_cupo=cc, nombre=pxls.actividad,
-                    #                                            horas=horas, clave_ex=pxls.x_actividad,
-                    #                                            especialidad=ec)
-                    # except:
                     if len(pxls.x_materiaomg) > 0:
                         eec, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, nombre=pxls.etapa_escolar,
                                                                         clave_ex=pxls.x_etapa_escolar)
@@ -747,7 +711,6 @@ def ajax_cupo(request):
                     materia.nombre += ' (copia)'
                     materia.save()
                     especialidades = EspecialidadCupo.objects.filter(cupo=cupo)
-                    especialidad = materia.especialidad
                     materias = render_to_string('edit_cupo_materias.html',
                                                 {'materias': [materia], 'duplicated': True,
                                                  'especialidades': especialidades, 'especialidad': None})
@@ -998,7 +961,6 @@ def edit_cupo(request, cupo_id):
                 response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
                 return response
 
-        # cursos = Curso.objects.filter(ronda=cupo.ronda)
         cursos = CursoCupo.objects.filter(cupo=cupo)
         cursos = sorted(cursos, key=lambda curso: clave_ex2int(curso))
         materias = Materia_cupo.objects.filter(curso_cupo=cursos[0], cupo=cupo)

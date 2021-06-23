@@ -254,7 +254,7 @@ def documentos(request):
             try:
                 doc = Ges_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['id'], borrado=False)
                 permisos_ge = doc.permisos(g_e)
-                if 'w' in permisos_ge or 'x' in permisos_ge:
+                if 'w' in permisos_ge or 'x' in permisos_ge or g_e.has_permiso('edita_todos_archivos'):
                     doc.nombre = request.POST['nombre']
                     doc.save()
                     return JsonResponse({'ok': True})
@@ -263,18 +263,18 @@ def documentos(request):
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error'})
         elif request.POST['action'] == 'update_etiquetas_archivo':
-            doc = Ges_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['doc'], borrado=False)
-            permisos_ge = doc.permisos(g_e)
-            if 'w' in permisos_ge or 'x' in permisos_ge:
-                etiqueta = Etiqueta_documental.objects.get(id=request.POST['etiqueta'], entidad=g_e.ronda.entidad)
-                doc.etiquetas.add(etiqueta)
-                html = render_to_string('documentos_list_etiquetas.html',
-                                        {'etiquetas': doc.etiquetas.all(), 'd': doc, 'g_e': g_e})
-                return JsonResponse({'ok': True, 'html': html})
+            # doc = Ges_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['doc'], borrado=False)
+            # permisos_ge = doc.permisos(g_e)
+            # if 'w' in permisos_ge or 'x' in permisos_ge or g_e.has_permiso('edita_carpetas'):
+            #     etiqueta = Etiqueta_documental.objects.get(id=request.POST['etiqueta'], entidad=g_e.ronda.entidad)
+            #     doc.etiquetas.add(etiqueta)
+            #     html = render_to_string('documentos_list_etiquetas.html',
+            #                             {'etiquetas': doc.etiquetas.all(), 'd': doc, 'g_e': g_e})
+            #     return JsonResponse({'ok': True, 'html': html})
             try:
                 doc = Ges_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['id'], borrado=False)
                 permisos_ge = doc.permisos(g_e)
-                if 'w' in permisos_ge or 'x' in permisos_ge:
+                if 'w' in permisos_ge or 'x' in permisos_ge or g_e.has_permiso('edita_carpetas'):
                     etiqueta = Etiqueta_documental.objects.get(id=request.POST['etiqueta'], entidad=g_e.ronda.entidad)
                     doc.etiquetas.add(etiqueta)
                     html = render_to_string('documentos_list_etiquetas.html',
@@ -289,7 +289,7 @@ def documentos(request):
                 cgd = Compartir_Ges_documental.objects.get(documento__entidad=g_e.ronda.entidad, id=request.POST['id'],
                                                            documento__borrado=False)
                 permisos_ge = cgd.documento.permisos(g_e)
-                if 'w' in permisos_ge or 'x' in permisos_ge:
+                if 'w' in permisos_ge or 'x' in permisos_ge or g_e.has_permiso('edita_todos_archivos'):
                     cgd.permiso = request.POST['permiso']
                     cgd.save()
                     html_tr = render_to_string("documentos_table_tr_archivo_compartidocon.html", {'d': cgd.documento})
@@ -299,19 +299,19 @@ def documentos(request):
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'desasigna_etiquetas_archivo':
-            # try:
-            doc = Ges_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['doc'], borrado=False)
-            permisos_ge = doc.permisos(g_e)
-            if 'w' in permisos_ge or 'x' in permisos_ge:
-                etiqueta = Etiqueta_documental.objects.get(id=request.POST['etiqueta'], entidad=g_e.ronda.entidad)
-                doc.etiquetas.remove(etiqueta)
-                html = render_to_string('documentos_list_etiquetas.html',
-                                        {'etiquetas': doc.etiquetas.all(), 'd': doc, 'g_e': g_e})
-                return JsonResponse({'ok': True, 'html': html})
-            else:
-                return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
-            # except:
-            #     return JsonResponse({'ok': False})
+            try:
+                doc = Ges_documental.objects.get(entidad=g_e.ronda.entidad, id=request.POST['doc'], borrado=False)
+                permisos_ge = doc.permisos(g_e)
+                if 'w' in permisos_ge or 'x' in permisos_ge or g_e.has_permiso('edita_todos_archivos'):
+                    etiqueta = Etiqueta_documental.objects.get(id=request.POST['etiqueta'], entidad=g_e.ronda.entidad)
+                    doc.etiquetas.remove(etiqueta)
+                    html = render_to_string('documentos_list_etiquetas.html',
+                                            {'etiquetas': doc.etiquetas.all(), 'd': doc, 'g_e': g_e})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'mensaje': 'No tienes los permisos necesarios.'})
+            except:
+                return JsonResponse({'ok': False})
         # elif request.POST['action'] == 'update_archivo':
         #     html = ''
         #     try:
@@ -348,7 +348,7 @@ def documentos(request):
         elif request.POST['action'] == 'update_new_permiso':
             try:
                 doc = Ges_documental.objects.get(id=request.POST['doc'], borrado=False)
-                if 'w' in doc.permisos(g_e):
+                if 'w' in doc.permisos(g_e) or g_e.has_permiso('edita_todos_archivos'):
                     ges, cs, ss = decode_selectgcs([request.POST['seleccionados']], g_e.ronda)
                     for ge in ges:
                         Compartir_Ges_documental.objects.get_or_create(documento=doc, gauser=ge.gauser)
@@ -367,7 +367,7 @@ def documentos(request):
             try:
                 cgd = Compartir_Ges_documental.objects.get(id=request.POST['cgd'])
                 doc = cgd.documento
-                if 'w' in doc.permisos(g_e):
+                if 'w' in doc.permisos(g_e) or g_e.has_permiso('edita_todos_archivos'):
                     cgd.delete()
                     return JsonResponse({'ok': True, 'cgd': request.POST['cgd']})
                 else:
@@ -377,7 +377,7 @@ def documentos(request):
         elif request.POST['action'] == 'fieldset_archivo_editar_close':
             try:
                 doc = Ges_documental.objects.get(id=request.POST['doc'], borrado=False)
-                if 'w' in doc.permisos(g_e):
+                if 'w' in doc.permisos(g_e) or g_e.has_permiso('edita_todos_archivos'):
                     html = render_to_string('documentos_table_tr_archivo.html', {'d': doc, 'g_e': g_e})
                     return JsonResponse({'ok': True, 'html': html, 'doc': doc.id})
                 else:
