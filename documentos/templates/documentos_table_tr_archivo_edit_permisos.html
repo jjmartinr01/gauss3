@@ -1,9 +1,10 @@
 {% load documentos_extras %}
+{% load my_templatetags %}
 {% for c in d.compartir_ges_documental_set.all %}
     <tr id="fila_permiso{{ c.id }}">
         <td colspan="7">{{ c.cargo.cargo }}{{ c.subentidad.nombre }}{{ c.gauser.get_full_name }}</td>
         <td colspan="3">
-            {% if d|permiso_x:g_e %}
+            {% if d|permiso_x:g_e or g_e|has_permiso:'edita_todos_archivos'%}
                 <select class="edit_archivo" data-id="{{ c.id }}" data-campo="permiso"
                         data-modelo="Compartir_Ges_documental">
                     <option value="r" {% if c.permiso == 'r' %}selected{% endif %}>Puede ver</option>
@@ -28,7 +29,7 @@
                 {% endif %}
             {% endif %}
         </td>
-        {% if d|permiso_x:g_e %}
+        {% if d|permiso_x:g_e or g_e|has_permiso:'edita_todos_archivos' %}
             <td colspan="2"><a class="borrar_permiso_archivo" data-cgd="{{ c.id }}"><i class="fa fa-trash"></i>
                 Borrar</a></td>
         {% elif d|permiso_w:g_e %}
