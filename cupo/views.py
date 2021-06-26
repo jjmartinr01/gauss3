@@ -42,6 +42,12 @@ CUERPOS_CUPO = ('590', '591', '592', '593', '594', '595', '596')
 # @permiso_required('acceso_cupo_profesorado')
 def cupo(request):
     g_e = request.session['gauser_extra']
+    # ##########################################
+    for ec in EspecialidadCupo.objects.filter(max_media=9, min_media=10):
+        ec.max_media=10
+        ec.min_media=9
+        ec.save()
+    # ##########################################
 
     if request.method == 'POST':
         if request.POST['action'] == 'genera_informe':
@@ -153,7 +159,7 @@ def ajax_cupo(request):
                 po = PlantillaOrganica.objects.get(id=request.POST['po'], g_e=g_e)
                 po.habilitar_miembros_equipo_directivo()
                 # if 'I.E.S' in po.ronda_centro.entidad.entidadextra.tipo_centro:
-                #     J = {'cmax': 20, 'cmin': 18, 'mmax': 9, 'mmin': 10, 'dmax': 13, 'dmin': 12, 'umax': 7, 'umin': 6}
+                #     J = {'cmax': 20, 'cmin': 18, 'mmax': 10, 'mmin': 9, 'dmax': 13, 'dmin': 12, 'umax': 7, 'umin': 6}
                 # else:
                 #     J = {'cmax': 24, 'cmin': 24, 'mmax': 12, 'mmin': 12, 'dmax': 16, 'dmin': 16, 'umax': 8, 'umin': 8}
                 fecha_hora = datetime.datetime.now().strftime('%d-%m-%Y %H:%M')
@@ -206,7 +212,7 @@ def ajax_cupo(request):
                             J = {'cmax': 21.5, 'cmin': 21.5, 'mmax': 10.75, 'mmin': 10.75, 'dmax': 14.33,
                                  'dmin': 14.33, 'umax': 7.16, 'umin': 7.16}
                         else:
-                            J = {'cmax': 20, 'cmin': 18, 'mmax': 9, 'mmin': 10, 'dmax': 13, 'dmin': 12, 'umax': 7,
+                            J = {'cmax': 20, 'cmin': 18, 'mmax': 10, 'mmin': 9, 'dmax': 13, 'dmin': 12, 'umax': 7,
                                  'umin': 6}
                         ec = EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre=nombre_especialidad,
                                                              clave_ex=pxls.x_puesto, dep=pxls.departamento,

@@ -47,23 +47,23 @@
                     Total horas: <span id="total_horas">{{ profesores_cupo.num_periodos }}</span>
                 </div>
                 <div class="columns large-1 medium-1 small-2"
-                     title="Número de profesores con jornada completa necesarios. Entre {{ profesores_cupo.especialidad.min_completa }} y {{ profesores_cupo.especialidad.max_completa }} periodos">
+                     title="Número de profesores necesarios con jornada completa.">
                     JC: <span id="jornada_completa">{{ profesores_cupo.profes_completos }}</span>
                 </div>
                 <div class="columns large-1 medium-1 small-2"
-                     title="Número de profesores a 2/3 necesarios. Entre {{ profesores_cupo.especialidad.min_dostercios }} y {{ profesores_cupo.especialidad.max_dostercios }} periodos">
+                     title="Número de profesores necesarios a 2/3.">
                     2/3: <span id="jornada_23">{{ profesores_cupo.profes_dostercios }}</span>
                 </div>
                 <div class="columns large-1 medium-1 small-2"
-                     title="Número de profesores con media jornada necesarios. Entre {{ profesores_cupo.especialidad.min_media }} y {{ profesores_cupo.especialidad.max_media }} periodos">
-                    MC: <span id="jornada_media">{{ profesores_cupo.profes_media }}</span>
+                     title="Número de profesores necesarios con media jornada.">
+                    MJ: <span id="jornada_media">{{ profesores_cupo.profes_media }}</span>
                 </div>
                 <div class="columns large-1 medium-1 small-2"
-                     title="Número de profesores con jornada de 1/3 necesarios. Entre {{ profesores_cupo.especialidad.min_tercio }} y {{ profesores_cupo.especialidad.max_tercio }}">
+                     title="Número de profesores necesarios con jornada de 1/3.">
                     1/3: <span id="jornada_13">{{ profesores_cupo.profes_tercio }}</span>
                 </div>
                 <div class="columns large-1 medium-1 small-2" style="color:darkred;"
-                     title="Número de horas sobrantes en el reparto.">
+                     title="Número de horas sobrantes en el reparto tras asignar el mínimo de horas a cada jornada.">
                     S: <span id="jornada_sobran">{{ profesores_cupo.periodos_sobrantes }}</span>
                 </div>
             </div>
