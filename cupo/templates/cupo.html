@@ -315,6 +315,12 @@
                 console.log('cupo', $('#cupo').val(), $(this).data('cupo'));
                 document.getElementById("{{ formname }}").submit();
             });
+            $('body').on('click', '.xls_cupo', function (e) {
+                e.preventDefault();
+                $('#action').val('genera_excel');
+                $('#cupo').val($(this).data('cupo'));
+                document.getElementById("{{ formname }}").submit();
+            });
             $('body').on('click', '.add_filtro', function (e) {
                 e.preventDefault();
                 var cupo = $(this).data('cupo');

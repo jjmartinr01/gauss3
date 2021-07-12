@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
 import datetime
+import os
+
 import xlwt
 import xlrd
 
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
+from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 
@@ -13,7 +16,7 @@ from autenticar.control_acceso import permiso_required
 from cupo.templatetags.cupo_extras import get_columnas_docente, get_columnas_departamento
 from gauss.funciones import html_to_pdf
 from gauss.rutas import *
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from django.db.models import Q
 from django.template.loader import render_to_string
 
@@ -63,6 +66,57 @@ def cupo(request):
                 return response
             else:
                 crear_aviso(request, False, 'No tienes permiso para generar del archivo pdf solicitado')
+        elif request.POST['action'] == 'genera_excel':
+            cupo = Cupo.objects.get(id=request.POST['cupo'])
+            if cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='l').count() > 0:
+                ruta = '%s%s/%s' % (MEDIA_CUPO, slugify(cupo.ronda.entidad.code), slugify(cupo.ronda.nombre))
+                if not os.path.exists(ruta):
+                    os.makedirs(ruta)
+                fichero_xls = '%s.xls' % slugify(cupo.nombre)
+                wb = xlwt.Workbook()
+                wc = wb.add_sheet('Cupo')
+                fila_excel_cupo = 0
+                estilo = xlwt.XFStyle()
+                font = xlwt.Font()
+                font.bold = True
+                estilo.font = font
+                for i in range(10):
+                    wc.col(i).width = 6000
+                wc.write(fila_excel_cupo, 0, 'CENTRO', style=estilo)
+                wc.write(fila_excel_cupo, 1, 'LOCALIDAD', style=estilo)
+                wc.write(fila_excel_cupo, 2, 'CUERPO', style=estilo)
+                wc.write(fila_excel_cupo, 3, 'ESPECIALIDAD', style=estilo)
+                wc.write(fila_excel_cupo, 4, 'CARÁCTER (C)', style=estilo)
+                wc.write(fila_excel_cupo, 5, 'CARÁCTER (P)', style=estilo)
+                wc.write(fila_excel_cupo, 6, 'CARÁCTER (I)', style=estilo)
+                wc.write(fila_excel_cupo, 7, 'CARÁCTER (N)', style=estilo)
+                wc.write(fila_excel_cupo, 8, 'OBSERVACIONES', style=estilo)
+                wc.write(fila_excel_cupo, 9, 'MOTIVACIÓN', style=estilo)
+                interinos = Profesor_cupo.objects.filter(profesorado__cupo=cupo, tipo='INT').order_by('profesorado__especialidad')
+                for p in interinos:
+                    fila_excel_cupo += 1
+                    wc.write(fila_excel_cupo, 0, cupo.ronda.entidad.name)
+                    wc.write(fila_excel_cupo, 1, cupo.ronda.entidad.localidad)
+                    wc.write(fila_excel_cupo, 2, '')
+                    wc.write(fila_excel_cupo, 3, p.profesorado.especialidad.nombre)
+                    if p.jornada == '1':
+                        wc.write(fila_excel_cupo, 4, p.get_jornada_display())
+                    else:
+                        wc.write(fila_excel_cupo, 5, p.get_jornada_display())
+                    if p.itinerante:
+                        wc.write(fila_excel_cupo, 6, 'Sí')
+                    if p.noafin:
+                        wc.write(fila_excel_cupo, 7, 'Sí')
+                    if p.bilingue:
+                        wc.write(fila_excel_cupo, 8, 'Es bilingüe')
+                    wc.write(fila_excel_cupo, 9, p.observaciones)
+                wb.save(ruta + fichero_xls)
+                xlsfile = open(ruta + fichero_xls, 'rb')
+                response = FileResponse(xlsfile, content_type='application/vnd.ms-excel')
+                response['Content-Disposition'] = 'attachment; filename=%s' % fichero_xls
+                return response
+            else:
+                crear_aviso(request, False, 'No tienes permiso para generar del archivo excel solicitado')
 
     cupos_id = CupoPermisos.objects.filter(gauser=g_e.gauser).values_list('cupo__id', flat=True)
     f = datetime.datetime(2021, 1, 1)
