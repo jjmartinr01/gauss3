@@ -1,5 +1,6 @@
 {% extends "base_select2-4.html" %}
 {% load my_templatetags %}
+{% load cupo_extras %}
 
 {% block contenido %}
     <style>
@@ -35,6 +36,8 @@
         {% csrf_token %}
         <input type="hidden" id="action" name="action" value=""/>
         <input type="hidden" id="cupo" name="cupo" value=""/>
+        <input type="hidden" id="especialidad" name="especialidad" value=""/>
+        <input type="hidden" id="curso" name="curso" value=""/>
         <div class="">
             <h4 style="text-align: center;color: #008CBA;"><strong> Lista y creación de nuevos cupos</strong></h4>
         </div>
@@ -48,8 +51,8 @@
                             <a class="crea_cupo_from_po" data-po="{{ po.id }}">
                                 <div class="show_po">
                                     <p class="text_show_po">{{ po.ronda_centro.entidad.name }}
-                                    <br><span style="font-size: small;">{{ po.creado|date:'d-m-Y' }}</span> </p>
-{#                                    <p class="text_show_po">{{ po.creado|date:'d-m-Y' }}</p>#}
+                                        <br><span style="font-size: small;">{{ po.creado|date:'d-m-Y' }}</span></p>
+                                    {#                                    <p class="text_show_po">{{ po.creado|date:'d-m-Y' }}</p>#}
                                 </div>
                             </a>
 
@@ -60,25 +63,16 @@
         {% else %}
             <div class="panel callout radius">
                 <h5><b>Solo es posible crear un estudio de cupo a través de un estudio de plantilla orgánica que haya
-                creado el Inspector del centro, o haciendo una copia de un estudio de cupo ya existente.</b></h5>
+                    creado el Inspector del centro, o haciendo una copia de un estudio de cupo ya existente.</b></h5>
                 <h5>Si no hubiera ningún estudio de plantilla creado, debes esperar a que el Inspector lo cree.</h5>
             </div>
         {% endif %}
 
         <dl class="accordion" data-accordion id="list_cupos" title="Lista de cupos">
             {% for cupo in cupos %}
-                {% include "formulario_cupo.html" %}
+                {% include "cupo_accordion.html" %}
             {% endfor %}
         </dl>
-{#        {% if request.session.gauser_extra|has_permiso:'crea_cupos' and not plantillas_o %}#}
-{#            <hr>#}
-{#            <div class="row">#}
-{#                <div class="columns large-12">#}
-{#                    <a class="button" id="add_cupo"><i class="fa fa-plus"></i> Crear un nuevo cupo</a>#}
-{#                </div>#}
-{#            </div>#}
-{#        {% endif %}#}
-
 
         <div id="especialidad_data"></div>
     </form>
@@ -87,9 +81,71 @@
 
 {% block final %}
     <script>
+        function inicializar_select2() {
+            setTimeout(function () {
+                $('.select_add_especialidad').select2({
+                    "placeholder": "Escribe parte del nombre para añadir otra especialidad",
+                    "language": {
+                        "noResults": function () {
+                            return "No hay coincidencias. <a href='#' class='button tiny info right select_add_new_especialidad'>Crear especialidad</a>";
+                        }
+                    },
+                    "escapeMarkup": function (markup) {
+                        return markup;
+                    }
+                });
 
-        $('.select_add_especialidad').select2();
-        $('.select_add_curso').select2();
+                $('.select_add_curso').select2({
+                    "placeholder": "Escribe parte del nombre para añadir otro curso y sus respectivas asignaturas",
+                    "language": {
+                        "noResults": function () {
+                            return "No hay coincidencias. <a href='#' class='button tiny info right select_add_new_curso'>Crear curso</a>";
+                        }
+                    },
+                    "escapeMarkup": function (markup) {
+                        return markup;
+                    }
+                });
+
+                $(".usuarios_invitados").select2(
+                    conf_select2({
+                        'gcs': 'g',
+                        'format_g': '{0}, {1}',
+                        'placeholder': 'Escribe parte del nombre del invitado para buscarlo',
+                        'url': '/selectgcs_organization/'
+                    })
+                );
+            }, 300)
+        };
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-cupo')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/ajax_cupo/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        $('#cupo').val(id);
+                                        inicializar_select2();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
 
         $('body').on('change', '.select_add_especialidad', function (e) {
             var cupo = $(this).data('cupo');
@@ -101,12 +157,82 @@
                 },
                 function (data) {
                     if (data.ok) {
-                        $("#list_especialidades_cupo").append('<div class="label"><b>'+ especialidad +'</b></div>');
+                        $("#list_especialidades_cupo").append(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
+        });
+
+        $('body').on('click', '.select_add_new_especialidad', function (e) {
+            e.preventDefault();
+            var cupo = $('#cupo').val();
+            console.log($(this))
+            var especialidad = $('.select2-search__field').val();
+            $('.select_add_especialidad').select2('close');
+            $.post("/ajax_cupo/", {
+                    action: 'select_add_especialidad',
+                    cupo: cupo,
+                    especialidad: especialidad,
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#list_especialidades_cupo").append(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup', '.texto_nombre_espec', function (e) {
+            e.preventDefault();
+            var espec = $(this).data('espec');
+            var cupo = $('#cupo').val();
+            var nombre = $(this).text();
+            $.post("/ajax_cupo/", {action: 'change_texto_nombre_espec', cupo: cupo, espec: espec, nombre: nombre},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.select_del_especialidad', function (e) {
+            e.preventDefault();
+            $('#cupo').val($(this).data('cupo'));
+            $('#especialidad').val($(this).data('especialidad'));
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> Vas a borrar la especialidad',
+                texto: 'Si borras la especialidad no podrás asignarla a las diferentes asignaturas o actividades',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/ajax_cupo/", {
+                            action: 'select_del_especialidad',
+                            cupo: $('#cupo').val(),
+                            especialidad: $('#especialidad').val()
+                        }, function (data) {
+                            if (data.ok) {
+                                $('#label_especialidad' + $('#especialidad').val()).remove();
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                                show_mensajes({
+                                    title: 'Error. Especialidad no borrada',
+                                    texto: 'Se ha producido un error al intentar borrar la especialidad.'
+                                });
+                            }
+                        });
+                    }
+                }
+            });
         });
 
         $('body').on('change', '.select_add_curso', function (e) {
@@ -119,7 +245,7 @@
                 },
                 function (data) {
                     if (data.ok) {
-                        $("#list_cursos_cupo").append('<div class="label"><b>'+ data.curso +'</b></div>');
+                        $("#list_cursos_cupo").append(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
@@ -127,16 +253,78 @@
                 });
         });
 
+        $('body').on('click', '.select_del_curso', function (e) {
+            e.preventDefault();
+            $('#cupo').val($(this).data('cupo'));
+            $('#curso').val($(this).data('curso'));
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> Vas a borrar el curso',
+                texto: 'Si borras el curso también se borrarán las materias asignadas a él.',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Aceptar": function () {
+                        hide_mensajes();
+                        $.post("/ajax_cupo/", {
+                            action: 'select_del_curso',
+                            cupo: $('#cupo').val(),
+                            curso: $('#curso').val()
+                        }, function (data) {
+                            if (data.ok) {
+                                $('#label_curso' + $('#curso').val()).remove();
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                                show_mensajes({
+                                    title: 'Error. Curso no borrado',
+                                    texto: 'Se ha producido un error al intentar borrar el curso.'
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+        });
+
+        $('body').on('click', '.select_add_new_curso', function (e) {
+            e.preventDefault();
+            var cupo = $('#cupo').val();
+            var curso = $('.select2-search__field').val();
+            $('.select_add_curso').select2('close');
+            $.post("/ajax_cupo/", {
+                    action: 'select_add_new_curso',
+                    cupo: cupo,
+                    curso: curso,
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#list_cursos_cupo").append(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup', '.texto_nombre_curso', function (e) {
+            e.preventDefault();
+            var curso = $(this).data('curso');
+            var cupo = $('#cupo').val();
+            var nombre = $(this).text();
+            $.post("/ajax_cupo/", {action: 'change_texto_nombre_curso', cupo: cupo, curso: curso, nombre: nombre},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
         {# ################################################################################# #}
 
-        $(".usuarios_invitados").select2(
-            conf_select2({
-                'gcs': 'g',
-                'format_g': '{0}, {1}',
-                'placeholder': 'Escribe parte del nombre del invitado para buscarlo',
-                'url': '/selectgcs_organization/'
-            })
-        );
+
         $('body').on('change.select2', '.usuarios_invitados', function (e) {
             var cupo = $(this).data('id');
             var invitado = $(this).val();

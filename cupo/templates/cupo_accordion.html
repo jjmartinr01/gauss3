@@ -1,0 +1,13 @@
+<dd class="accordion-navigation" id="accordion{{ cupo.id }}">
+    <a href="#panel{{ cupo.id }}">
+        <i id="circle{{ cupo.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <span id="span_nombre{{ cupo.id }}" style="font-weight: 800;">{{ cupo.nombre }}</span>
+        {% if cupo.bloqueado %}
+            <i id="bloqueado{{ cupo.id }}" class="fa fa-lock"></i>
+        {% else %}
+            <i id="bloqueado{{ cupo.id }}" class="fa fa-unlock"></i>
+        {% endif %}
+    </a>
+    <div id="panel{{ cupo.id }}" class="content accordion-cupo" data-id="{{ cupo.id }}">
+    </div>
+</dd>

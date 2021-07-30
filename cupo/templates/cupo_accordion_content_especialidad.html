@@ -1,0 +1,9 @@
+
+<div id="label_especialidad{{ e.id }}" class="label secondary">
+    <div contenteditable="true" style="display: inline-block;font-weight: bold;"
+             class="texto_nombre_espec" id="texto_nombre_espec{{ e.id }}" data-espec="{{ e.id }}">{{ e.nombre }}</div>
+        <div style="display: inline-block; font-weight: bold;">
+            <a class="select_del_especialidad" data-cupo="{{ e.cupo.id }}" data-especialidad="{{ e.id }}"><i
+            class="fa fa-times"></i></a>
+        </div>
+</div>

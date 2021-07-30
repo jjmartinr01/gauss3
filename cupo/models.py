@@ -129,7 +129,7 @@ class CursoCupo(models.Model):
 
 class Materia_cupo(models.Model):
     cupo = models.ForeignKey(Cupo, on_delete=models.CASCADE)
-    especialidad = models.ForeignKey(EspecialidadCupo, blank=True, null=True, on_delete=models.CASCADE)
+    especialidad = models.ForeignKey(EspecialidadCupo, blank=True, null=True, on_delete=models.SET_NULL)
     curso = models.ForeignKey(Curso, blank=True, null=True, on_delete=models.CASCADE)
     curso_cupo = models.ForeignKey(CursoCupo, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField("Nombre de la materia o actividad", max_length=120, null=True, blank=True)
@@ -157,7 +157,7 @@ class Materia_cupo(models.Model):
         ordering = ['curso', 'nombre']
 
     def __str__(self):
-        return '%s (%s) -- %s' % (self.nombre, self.curso, self.cupo)
+        return '%s (%s) -- %s' % (self.nombre, self.curso_cupo, self.cupo)
 
 
 class Profesores_cupo(models.Model):

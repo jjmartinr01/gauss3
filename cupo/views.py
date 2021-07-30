@@ -2,6 +2,7 @@
 import logging
 import datetime
 import os
+import random
 
 import xlwt
 import xlrd
@@ -47,8 +48,8 @@ def cupo(request):
     g_e = request.session['gauser_extra']
     # ##########################################
     for ec in EspecialidadCupo.objects.filter(max_media=9, min_media=10):
-        ec.max_media=10
-        ec.min_media=9
+        ec.max_media = 10
+        ec.min_media = 9
         ec.save()
     # ##########################################
 
@@ -92,7 +93,8 @@ def cupo(request):
                 wc.write(fila_excel_cupo, 7, 'CARÁCTER (N)', style=estilo)
                 wc.write(fila_excel_cupo, 8, 'OBSERVACIONES', style=estilo)
                 wc.write(fila_excel_cupo, 9, 'MOTIVACIÓN', style=estilo)
-                interinos = Profesor_cupo.objects.filter(profesorado__cupo=cupo, tipo='INT').order_by('profesorado__especialidad')
+                interinos = Profesor_cupo.objects.filter(profesorado__cupo=cupo, tipo='INT').order_by(
+                    'profesorado__especialidad')
                 for p in interinos:
                     fila_excel_cupo += 1
                     wc.write(fila_excel_cupo, 0, cupo.ronda.entidad.name)
@@ -145,7 +147,18 @@ def ajax_cupo(request):
     if request.is_ajax():
         g_e = request.session['gauser_extra']
         action = request.POST['action']
-        if action == 'add_cupo' and g_e.has_permiso('crea_cupos'):
+        if action == 'open_accordion':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['id'])
+                cexs = Curso.objects.filter(ronda__entidad__organization=g_e.ronda.entidad.organization,
+                                            clave_ex__isnull=False).values_list('clave_ex', 'nombre').distinct()
+                html = render_to_string('cupo_accordion_content.html', {'cupo': cupo, 'cursos_existentes': cexs,
+                                                                        'especialidades_existentes': ESPECIALIDADES,
+                                                                        'request': request})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'add_cupo' and g_e.has_permiso('crea_cupos'):
             try:
                 crea_departamentos(g_e.ronda)
                 fecha_hora = datetime.datetime.now().strftime('%d-%m-%Y %H:%M')
@@ -199,8 +212,7 @@ def ajax_cupo(request):
                         horas = 0
                     Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=m.nombre, periodos=horas)
                 logger.info('%s, add_cupo id=%s' % (g_e, cupo.id))
-                ds = Departamento.objects.filter(ronda=cupo.ronda)
-                html = render_to_string('formulario_cupo.html', {'cupo': cupo, 'request': request, 'departamentos': ds})
+                html = render_to_string('cupo_accordion.html', {'cupo': cupo})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
@@ -328,9 +340,7 @@ def ajax_cupo(request):
                                                         min_num_alumnos=1, max_num_alumnos=100)
 
                 logger.info('%s, add_cupo id=%s' % (g_e, cupo.id))
-                # ds = Departamento.objects.filter(ronda=cupo.ronda)
-                # html = render_to_string('formulario_cupo.html', {'cupo': cupo, 'request': request, 'departamentos': ds})
-                html = render_to_string('formulario_cupo.html', {'cupo': cupo, 'request': request})
+                html = render_to_string('cupo_accordion.html', {'cupo': cupo})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -341,15 +351,15 @@ def ajax_cupo(request):
                 return JsonResponse({'ok': False, 'msg': 'No tienes permiso para copiar el cupo'})
             cupo = Cupo.objects.create(ronda=g_e.ronda, nombre='(copia) %s' % (orig.nombre))
             CupoPermisos.objects.create(cupo=cupo, gauser=g_e.gauser, permiso='plwx')
-            crea_departamentos(g_e.ronda)
+            # crea_departamentos(g_e.ronda)
             for e in orig.especialidadcupo_set.all():
                 e.pk = None
                 e.cupo = cupo
-                try:
-                    e.departamento = Departamento.objects.get(ronda=g_e.ronda, abreviatura=e.departamento.abreviatura)
-                except:
-                    e.departamento = None
-                    crear_aviso(request, False, 'No se encuentra departamento para %s' % e.nombre)
+                # try:
+                #     e.departamento = Departamento.objects.get(ronda=g_e.ronda, abreviatura=e.departamento.abreviatura)
+                # except:
+                #     e.departamento = None
+                #     crear_aviso(request, False, 'No se encuentra departamento para %s' % e.nombre)
                 e.save()
             for etapa in orig.etapaescolarcupo_set.all():
                 etapa.pk = None
@@ -405,8 +415,7 @@ def ajax_cupo(request):
                     p_c.save()
 
             logger.info('%s, copy_cupo id=%s -> id=%s' % (g_e, orig.id, cupo.id))
-            ds = Departamento.objects.filter(ronda=g_e.ronda)
-            html = render_to_string('formulario_cupo.html', {'cupo': cupo, 'request': request, 'departamentos': ds})
+            html = render_to_string('cupo_accordion.html', {'cupo': cupo})
             return JsonResponse({'ok': True, 'html': html})
 
         elif action == 'delete_cupo' and g_e.has_permiso('borra_cupo_profesorado'):
@@ -456,7 +465,8 @@ def ajax_cupo(request):
                     filtro = request.POST['filtro']
                     if len(filtro) > 0 and len(nombre) > 0:
                         f = FiltroCupo.objects.create(cupo=cupo, nombre=nombre, filtro=filtro)
-                        return JsonResponse({'ok': True, 'filtro': render_to_string('filtro_cupo.html', {'filtro': f}),
+                        return JsonResponse({'ok': True, 'filtro': render_to_string(
+                            'cupo_accordion_content_filtro.html', {'filtro': f}),
                                              'cupo': cupo.id})
                     else:
                         return JsonResponse({'ok': False})
@@ -507,11 +517,38 @@ def ajax_cupo(request):
                         pc, created = Profesores_cupo.objects.get_or_create(cupo=cupo, especialidad=ec)
                         if created:
                             Profesor_cupo.objects.create(profesorado=pc, nombre='Prof. Interino', tipo='INT')
-                    return JsonResponse({'ok': True})
+                    html = render_to_string('cupo_accordion_content_especialidad.html', {'e': ec})
+                    return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'change_texto_nombre_espec':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+                if con1 or con2:
+                    ec = EspecialidadCupo.objects.get(cupo=cupo, id=request.POST['espec'])
+                    ec.nombre = request.POST['nombre']
+                    ec.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'select_del_especialidad':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+                if con1 or con2:
+                    EspecialidadCupo.objects.get(cupo=cupo, id=request.POST['especialidad']).delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
 
         elif action == 'select_add_curso':
             try:
@@ -520,23 +557,85 @@ def ajax_cupo(request):
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
                 if con1 or con2:
                     curso = Curso.objects.filter(clave_ex=request.POST['curso'], etapa_escolar__isnull=False).last()
+                    if curso:
+                        cc_ex = curso.clave_ex
+                        cec_ex = curso.etapa_escolar.clave_ex
+                        c_nombre = curso.nombre
+                        ce_nombre = curso.etapa_escolar.nombre
+                    else:
+                        curso = Curso.objects.filter(clave_ex=request.POST['curso']).last()
+                        cc_ex = curso.clave_ex
+                        cec_ex = 'No etapa'
+                        c_nombre = curso.nombre
+                        ce_nombre = cec_ex
+
+                    # return JsonResponse({'ok': True,})
+
+
+
                     try:
-                        ee = EtapaEscolarCupo.objects.get(cupo=cupo, clave_ex=curso.etapa_escolar.clave_ex)
+                        ee = EtapaEscolarCupo.objects.get(cupo=cupo, clave_ex=cec_ex)
                     except:
-                        ee = EtapaEscolarCupo.objects.create(cupo=cupo, clave_ex=curso.etapa_escolar.clave_ex,
-                                                             nombre=curso.etapa_escolar.nombre)
+                        ee = EtapaEscolarCupo.objects.create(cupo=cupo, clave_ex=cec_ex, nombre=ce_nombre)
                     try:
-                        cc = CursoCupo.objects.get(cupo=cupo, clave_ex=curso.clave_ex)
+                        cc = CursoCupo.objects.get(cupo=cupo, clave_ex=cc_ex)
                     except:
-                        cc = CursoCupo.objects.create(cupo=cupo, nombre=curso.nombre, etapa_escolar=ee,
-                                                      clave_ex=curso.clave_ex)
+                        cc = CursoCupo.objects.create(cupo=cupo, nombre=c_nombre, etapa_escolar=ee, clave_ex=cc_ex)
                     for m in curso.materia_set.all():
                         try:
                             Materia_cupo.objects.get(cupo=cupo, clave_ex=m.clave_ex)
                         except:
                             Materia_cupo.objects.create(cupo=cupo, curso_cupo=cc, nombre=m.nombre, horas=m.horas,
                                                         clave_ex=m.clave_ex)
-                    return JsonResponse({'ok': True, 'curso': cc.nombre})
+                    html = render_to_string('cupo_accordion_content_curso.html', {'c': cc})
+                    return JsonResponse({'ok': True, 'html': html, 'curso': cc.nombre})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'select_add_new_curso':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+                if con1 or con2:
+                    cnombre = request.POST['curso']
+                    ce_nombre = 'Etapa cursos creados'
+                    ee, c = EtapaEscolarCupo.objects.get_or_create(cupo=cupo, clave_ex='etapa_creada', nombre=ce_nombre)
+                    cc, c = CursoCupo.objects.get_or_create(cupo=cupo, nombre=cnombre, etapa_escolar=ee,
+                                                            clave_ex=cnombre[:14])
+                    Materia_cupo.objects.get_or_create(cupo=cupo, curso_cupo=cc, nombre='Materia inventada', horas=4,
+                                                       clave_ex='materia_creada')
+                    html = render_to_string('cupo_accordion_content_curso.html', {'c': cc})
+                    return JsonResponse({'ok': True, 'html': html, 'curso': cc.nombre})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+
+        elif action == 'change_texto_nombre_curso':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+                if con1 or con2:
+                    cc = CursoCupo.objects.get(cupo=cupo, id=request.POST['curso'])
+                    cc.nombre = request.POST['nombre']
+                    cc.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+
+        elif action == 'select_del_curso':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+                if con1 or con2:
+                    CursoCupo.objects.get(cupo=cupo, id=request.POST['curso']).delete()
+                    return JsonResponse({'ok': True})
                 else:
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except Exception as msg:
@@ -550,7 +649,7 @@ def ajax_cupo(request):
                 if con1 or con2:
                     invitado = Gauser_extra.objects.get(id=int(request.POST['invitado'][1:]))
                     cp, creado = CupoPermisos.objects.get_or_create(gauser=invitado.gauser, cupo=cupo, permiso='lw')
-                    html_span = render_to_string('formulario_cupo_invitados.html', {'cupo': cupo, 'cp': cp})
+                    html_span = render_to_string('cupo_accordion_content_invitados.html', {'cupo': cupo, 'cp': cp})
                     return JsonResponse({'ok': True, 'cupo': cupo.id, 'html_span': html_span})
                 else:
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
@@ -629,7 +728,7 @@ def ajax_cupo(request):
                         if not materias_cupo:  # Por ejemplo en un cupo creado antes que un determinado curso
                             m = Materia_cupo.objects.create(cupo=cupo, min_num_alumnos=15, max_num_alumnos=35,
                                                             nombre="Actividad/Materia creada automáticamente",
-                                                            periodos=4, curso_cupo=curso)
+                                                            periodos=4, curso_cupo=curso, horas=4)
                             materias_cupo = [m]
                         logger.info('%s, change_curso %s' % (g_e, curso.nombre))
 
