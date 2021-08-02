@@ -523,15 +523,58 @@ def ajax_cupo(request):
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
             except:
                 return JsonResponse({'ok': False})
-        elif action == 'change_texto_nombre_espec':
+        elif action == 'edit_especialidades':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+                if con1 or con2:
+                    html = render_to_string('cupo_accordion_content_especialidad_edit.html', {'cupo': cupo})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'edit_cursos':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+                if con1 or con2:
+                    html = render_to_string('cupo_accordion_content_curso_edit.html', {'cupo': cupo})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'change_campo_espec_edit':
             try:
                 cupo = Cupo.objects.get(id=request.POST['cupo'])
                 con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
                 con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
                 if con1 or con2:
                     ec = EspecialidadCupo.objects.get(cupo=cupo, id=request.POST['espec'])
-                    ec.nombre = request.POST['nombre']
+                    setattr(ec, request.POST['campo'], request.POST['valor'])
                     ec.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'm': 'No tienes permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'change_campo_curso_edit':
+            try:
+                cupo = Cupo.objects.get(id=request.POST['cupo'])
+                con1 = cupo.cupopermisos_set.filter(gauser=g_e.gauser, permiso__icontains='w').count() > 0
+                con2 = (cupo.ronda.entidad == g_e.ronda.entidad) and g_e.has_permiso('edita_cupos')
+                if con1 or con2:
+                    cc = CursoCupo.objects.get(cupo=cupo, id=request.POST['curso'])
+                    campo = request.POST['campo']
+                    if campo == 'etapa_escolar':
+                        valor = EtapaEscolarCupo.objects.get(cupo=cupo, id=request.POST['valor'])
+                    else:
+                        valor = request.POST['valor']
+                    setattr(cc, request.POST['campo'], valor)
+                    cc.save()
                     return JsonResponse({'ok': True})
                 else:
                     return JsonResponse({'ok': False, 'm': 'No tienes permiso'})

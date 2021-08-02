@@ -25,14 +25,6 @@ logger = logging.getLogger('django')
 class Cupo(models.Model):
     ronda = models.ForeignKey(Ronda, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField("Nombre de la versión del cupo", max_length=150)
-    # max_completa = models.IntegerField("Máximo número de periodos lectivos con jornada completa", default=22)
-    # min_completa = models.IntegerField("Mínimo número de periodos lectivos con jornada completa", default=20)
-    # max_dostercios = models.IntegerField("Máximo número de periodos lectivos con 2/3 de jornada", default=14)
-    # min_dostercios = models.IntegerField("Mínimo número de periodos lectivos con 2/3 de jornada", default=13)
-    # max_media = models.IntegerField("Máximo número de periodos lectivos con media jornada", default=11)
-    # min_media = models.IntegerField("Mínimo número de periodos lectivos con media jornada", default=10)
-    # max_tercio = models.IntegerField("Máximo número de periodos lectivos con 1/3 de jornada", default=7)
-    # min_tercio = models.IntegerField("Mínimo número de periodos lectivos con 1/3 de jornada", default=6)
     bloqueado = models.BooleanField("¿Está bloqueado?", default=False)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateField("Fecha de modificación", auto_now=True)
@@ -57,10 +49,11 @@ class CupoPermisos(models.Model):
 class EspecialidadCupo(models.Model):
     cupo = models.ForeignKey(Cupo, on_delete=models.CASCADE)
     nombre = models.CharField("Nombre de la especialidad", max_length=150)
-    departamento = models.ForeignKey(Departamento, blank=True, null=True, on_delete=models.CASCADE)
+    # departamento = models.ForeignKey(Departamento, blank=True, null=True, on_delete=models.CASCADE)
+    cod_espec = models.CharField("Código de especialidad", max_length=15, blank=True, null=True, default='')
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
-    dep = models.CharField('Departamento', max_length=310, blank=True, null=True)
-    x_dep = models.CharField('Departamento clave', max_length=9, blank=True, null=True)
+    dep = models.CharField('Departamento', max_length=310, blank=True, null=True, default='')
+    x_dep = models.CharField('Departamento clave', max_length=9, blank=True, null=True, default='')
     max_completa = models.FloatField("Máximo número de periodos lectivos con jornada completa", default=20)
     min_completa = models.FloatField("Mínimo número de periodos lectivos con jornada completa", default=18)
     max_dostercios = models.FloatField("Máximo número de periodos lectivos con 2/3 de jornada", default=13)
@@ -94,6 +87,7 @@ class EtapaEscolarCupo(models.Model):
     cupo = models.ForeignKey(Cupo, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre de la etapa escolar', max_length=250)
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
+    orden = models.IntegerField('Orden', default=1)
 
     class Meta:
         ordering = ['clave_ex', 'nombre']
@@ -109,6 +103,7 @@ class CursoCupo(models.Model):
     nombre_especifico = models.CharField("Nombre específico", max_length=150, null=True, blank=True)
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
     num_alumnos = models.IntegerField("Número de alumnos previsto en este curso", default=20)
+    orden = models.IntegerField('Orden', default=1)
 
     @property
     def get_horas_media(self):
@@ -230,7 +225,7 @@ class Profesor_cupo(models.Model):
 
     class Meta:
         verbose_name_plural = 'Profesores del cupo'
-        ordering = ['profesorado__especialidad__departamento', 'tipo', 'jornada']
+        ordering = ['profesorado__especialidad__dep', 'tipo', 'jornada']
 
     def __str__(self):
         return '%s (%s) -- %s:%s' % (

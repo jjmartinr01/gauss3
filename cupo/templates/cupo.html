@@ -186,12 +186,45 @@
                 });
         });
 
-        $('body').on('keyup', '.texto_nombre_espec', function (e) {
+        $('body').on('click', '.edit_especialidades', function (e) {
+            e.preventDefault();
+            $.post("/ajax_cupo/", {
+                    action: 'edit_especialidades', cupo: $('#cupo').val()
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#especialidades_edit' + $('#cupo').val()).html(data.html)
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.edit_cursos', function (e) {
+            e.preventDefault();
+            $.post("/ajax_cupo/", {
+                    action: 'edit_cursos', cupo: $('#cupo').val()
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#cursos_edit' + $('#cupo').val()).html(data.html)
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('keyup', '.espec_edit', function (e) {
             e.preventDefault();
             var espec = $(this).data('espec');
             var cupo = $('#cupo').val();
-            var nombre = $(this).text();
-            $.post("/ajax_cupo/", {action: 'change_texto_nombre_espec', cupo: cupo, espec: espec, nombre: nombre},
+            var valor = $(this).text();
+            var campo = $(this).data('campo');
+            $.post("/ajax_cupo/", {
+                    action: 'change_campo_espec_edit', cupo: cupo, espec: espec, valor: valor, campo: campo
+                },
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -200,6 +233,74 @@
                     }
                 });
         });
+
+        $('body').on('keyup change', '.curso_edit', function (e) {
+            e.preventDefault();
+            var curso = $(this).data('curso');
+            var cupo = $('#cupo').val();
+            var campo = $(this).data('campo');
+            if (campo === 'etapa_escolar') {
+                var valor = $(this).val();
+                console.log('dfafd ' + valor)
+            } else {
+                var valor = $(this).text();
+            }
+            $.post("/ajax_cupo/", {
+                    action: 'change_campo_curso_edit', cupo: cupo, curso: curso, valor: valor, campo: campo
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        {#$('body').on('keyup', '.texto_nombre_espec', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var espec = $(this).data('espec');#}
+        {#    var cupo = $('#cupo').val();#}
+        {#    var nombre = $(this).text();#}
+        {#    $.post("/ajax_cupo/", {action: 'change_texto_nombre_espec', cupo: cupo, espec: espec, nombre: nombre},#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
+        {##}
+        {#$('body').on('keyup', '.texto_cod_espec', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var espec = $(this).data('espec');#}
+        {#    var cupo = $('#cupo').val();#}
+        {#    var nombre = $(this).text();#}
+        {#    $.post("/ajax_cupo/", {action: 'change_texto_cod_espec', cupo: cupo, espec: espec, nombre: nombre},#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
+        {##}
+        {#$('body').on('keyup', '.texto_dep_espec', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var espec = $(this).data('espec');#}
+        {#    var cupo = $('#cupo').val();#}
+        {#    var nombre = $(this).text();#}
+        {#    $.post("/ajax_cupo/", {action: 'change_texto_dep_espec', cupo: cupo, espec: espec, nombre: nombre},#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
 
         $('body').on('click', '.select_del_especialidad', function (e) {
             e.preventDefault();

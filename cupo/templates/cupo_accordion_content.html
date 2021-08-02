@@ -45,7 +45,6 @@
             <span style="font-weight: 800;">{{ cupo.materia_cupo_set.all|length }} materias</span>
             <a href="#" class="close">&times;</a>
         </div>
-        {#                {{ cupo.materia_cupo_set.all|length }} Materias#}
     </div>
 </div>
 
@@ -88,6 +87,7 @@
 <div class="row">
     <div class="columns large-12">
         <label><b>Especialidades del profesorado incluidas en el cupo ({{ cupo.especialidadcupo_set.all|length }}):</b>
+            <a class="edit_especialidades right" data-cupo="{{ cupo.id }}"><i class="fa fa-pencil-square-o"></i></a>
         </label>
     </div>
 </div>
@@ -106,10 +106,13 @@
         </select>
     </label>
 </div>
+<div class="row" id="especialidades_edit{{ cupo.id }}">
+</div>
 <hr>
 <div class="row">
     <div class="columns large-12">
         <label><b>Cursos incluidos en el cupo ({{ cupo.cursocupo_set.all|length }}):</b>
+        <a class="edit_cursos right" data-cupo="{{ cupo.id }}"><i class="fa fa-pencil-square-o"></i></a>
         </label>
     </div>
 </div>
@@ -127,6 +130,8 @@
             {% endfor %}
         </select>
     </label>
+</div>
+<div class="row" id="cursos_edit{{ cupo.id }}">
 </div>
 <hr>
 <div class="row">

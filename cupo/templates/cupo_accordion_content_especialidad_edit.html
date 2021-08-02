@@ -1,0 +1,17 @@
+<br>
+<table>
+    <thead>
+    <tr>
+        <th>Nombre</th>
+        <th>Código</th>
+        <th>Departamento</th>
+    </tr>
+    </thead>
+    {% for e in cupo.especialidadcupo_set.all %}
+        <tr>
+            <td contenteditable="true" class="espec_edit" data-campo="nombre" data-espec="{{ e.id }}">{{ e.nombre }}</td>
+            <td contenteditable="true" class="espec_edit" data-campo="cod_espec" data-espec="{{ e.id }}">{{ e.cod_espec }}</td>
+            <td contenteditable="true" class="espec_edit" data-campo="dep" data-espec="{{ e.id }}">{{ e.dep }}</td>
+        </tr>
+    {% endfor %}
+</table>

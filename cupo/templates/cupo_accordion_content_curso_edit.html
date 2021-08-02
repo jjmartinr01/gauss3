@@ -1,0 +1,25 @@
+<br>
+<table>
+    <thead>
+    <tr>
+{#        <th>Orden Curso</th>#}
+        <th>Curso</th>
+        <th>Etapa</th>
+    </tr>
+    </thead>
+    {% for c in cupo.cursocupo_set.all %}
+        <tr>
+{#            <td contenteditable="true" class="curso_edit" data-campo="orden"#}
+{#                data-curso="{{ c.id }}">{{ c.orden }}</td>#}
+            <td contenteditable="true" class="curso_edit" data-campo="nombre"
+                data-curso="{{ c.id }}">{{ c.nombre }}</td>
+            <td>
+                <select class="curso_edit" data-campo="etapa_escolar" data-curso="{{ c.id }}">
+                    {% for etapa in cupo.etapaescolarcupo_set.all %}
+                        <option value="{{ etapa.id }}"
+                                {% if c.etapa_escolar == etapa %}selected{% endif %}>{{ etapa.nombre }}</option>
+                    {% endfor %}
+                </select></td>
+        </tr>
+    {% endfor %}
+</table>
