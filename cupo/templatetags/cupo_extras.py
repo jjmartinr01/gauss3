@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.template import Library
 from django.db.models import Q, Sum
-from cupo.models import PlantillaXLS, PDocenteCol
+from cupo.models import PlantillaXLS, PDocenteCol, CargaPlantillaOrganicaCentros, EspecialidadPlantilla
 from programaciones.models import Departamento
 from estudios.models import Grupo
 
@@ -14,6 +14,14 @@ def departamentos(cupo):
 
 
 ##########################################
+@register.filter
+def get_plazas(po):
+    cpoc = CargaPlantillaOrganicaCentros.objects.all().last()
+    return EspecialidadPlantilla.objects.filter(cpoc=cpoc, centro=po.ronda_centro.entidad)
+
+@register.filter
+def get_fecha_plazas(po):
+    return CargaPlantillaOrganicaCentros.objects.all().last().creado
 
 @register.filter
 def get_apartados(po):

@@ -25,10 +25,10 @@ from horarios.models import SesionExtra, Horario, Sesion
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo, GrupoExcluido, \
-    CursoCupo, EtapaEscolarCupo, CupoPermisos
+    CursoCupo, EtapaEscolarCupo, CupoPermisos, CargaPlantillaOrganicaCentros, EspecialidadPlantilla
 from cupo.models import PlantillaOrganica, PDocenteCol
 from cupo.habilitar_permisos import ESPECIALIDADES
-from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento, Especialidad_funcionario
+from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento, Especialidad_funcionario, Entidad
 from entidades.models import Departamento as Depentidad
 from estudios.models import Curso, Materia, Grupo, EtapaEscolar
 from horarios.tasks import carga_masiva_from_file
@@ -1196,6 +1196,38 @@ def plantilla_organica(request):
             CargaMasiva.objects.create(g_e=g_e, fichero=request.FILES['file_masivo_xls'], tipo='PLANTILLAXLS')
             carga_masiva_from_file.delay()
             crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+        elif request.POST['action'] == 'carga_plantilla_organica_centros':
+            logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls_sigpyn'].content_type)
+            fichero = request.FILES['file_masivo_xls_sigpyn']
+            f = fichero.read()
+            book = xlrd.open_workbook(file_contents=f)
+            sheet = book.sheet_by_index(0)
+            cpoc = CargaPlantillaOrganicaCentros.objects.create(g_e=g_e, ejer=str(sheet.cell(1, 0).value))
+            keys = {"CCENTRO": "", "ESP": "", "DESPEC": "", "TIPO": "", "TEORICAS": "", "OCUPADAS": ""}
+            keys_index = {col_index: str(sheet.cell(0, col_index).value) for col_index in range(sheet.ncols)}
+
+            for row_index in range(1, sheet.nrows):
+                for col_index in range(sheet.ncols):
+                    keys[keys_index[col_index]] = sheet.cell(row_index, col_index).value
+                if keys['CCENTRO'] == '26800109C': # 26800109C es el centro penitenciario
+                    centro = Entidad.objects.get(code=26002941) #Plus Ultra
+                else:
+                    centro = Entidad.objects.get(code=int(keys['CCENTRO'][:-1]))
+                plazas, ocupadas = int(keys['TEORICAS']), int(keys['OCUPADAS'])
+                if 'Ord' in keys['TIPO']:
+                    tipo = 'ord'
+                elif 'Com' in keys['TIPO']:
+                    tipo = 'com'
+                elif 'Bil' in keys['TIPO']:
+                    tipo = 'bil'
+                # elif 'Iti' in keys['TIPO']:
+                #     tipo = 'iti'
+                else:
+                    tipo = 'iti'
+
+                EspecialidadPlantilla.objects.create(cpoc=cpoc, centro=centro, code=str(int(keys['ESP'])), tipo=tipo,
+                                                     nombre=keys['DESPEC'], plazas=plazas, ocupadas=ocupadas)
+            crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
         elif request.POST['action'] == 'genera_xls':
             wboriginal = xlrd.open_workbook("/home/juanjo/Descargas/borrar/plantilla_organica.xls")
             shsec = wboriginal.sheet_by_index(0)
@@ -1351,8 +1383,11 @@ def plantilla_organica(request):
     plantillas_o = PlantillaOrganica.objects.filter(g_e=g_e)
     return render(request, "plantilla_organica.html",
                   {
-                      'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos',
+                      'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos Racima',
                                   'title': 'Cargar datos a partir de archivo obtenido de Racima',
+                                  'permiso': 'libre'},
+                                 {'tipo': 'button', 'nombre': 'upload', 'texto': 'Cargar datos SIGPYN',
+                                  'title': 'Cargar datos a partir de archivo obtenido de SIGPYN',
                                   'permiso': 'libre'}, {}),
                       'formname': 'plantilla_organica',
                       'plantillas_o': plantillas_o,

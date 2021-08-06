@@ -46,6 +46,7 @@ class CupoPermisos(models.Model):
     def __str__(self):
         return '%s %s (%s)' % (self.cupo, self.gauser, self.get_permiso_display())
 
+
 class EspecialidadCupo(models.Model):
     cupo = models.ForeignKey(Cupo, on_delete=models.CASCADE)
     nombre = models.CharField("Nombre de la especialidad", max_length=150)
@@ -83,6 +84,7 @@ class FiltroCupo(models.Model):
     def __str__(self):
         return '%s %s (%s)' % (self.cupo.ronda.entidad.name, self.nombre, self.filtro)
 
+
 class EtapaEscolarCupo(models.Model):
     cupo = models.ForeignKey(Cupo, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre de la etapa escolar', max_length=250)
@@ -94,6 +96,7 @@ class EtapaEscolarCupo(models.Model):
 
     def __str__(self):
         return '%s (%s)' % (self.nombre, self.clave_ex)
+
 
 class CursoCupo(models.Model):
     cupo = models.ForeignKey(Cupo, on_delete=models.CASCADE)
@@ -239,6 +242,44 @@ class Profesor_cupo(models.Model):
 # '222075 -> 2º E.S.O. (ADAPTACIÓN CURRICULAR EN GRUPO)'
 # '101324 -> 2º E.S.O.'
 # '101325 -> 3º E.S.O.'
+
+class CargaPlantillaOrganicaCentros(models.Model):
+    g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
+    ejer = models.CharField('Ejercicio. Se corresponde con el año.', max_length=6)
+    creado = models.DateTimeField("Fecha y hora creación de la carga", auto_now_add=True)
+
+    def __str__(self):
+        return '%s (%s)' % (self.g_e, self.creado)
+
+
+class EspecialidadPlantilla(models.Model):
+    TIPOS = (('com', 'Compartida'), ('ord', 'Ordinaria'), ('iti', 'Itinerante'), ('bil', 'Bilingüe'))
+    cpoc = models.ForeignKey(CargaPlantillaOrganicaCentros, on_delete=models.CASCADE)
+    centro = models.ForeignKey(Entidad, on_delete=models.CASCADE)
+    code = models.CharField('Código cuerpo y especialidad', max_length=8)
+    tipo = models.CharField('Tipo de plaza', choices=TIPOS, max_length=4, default='ord')
+    nombre = models.CharField('Nombre de la especialidad', blank=True, null=True, max_length=65)
+    plazas = models.IntegerField('Número de plazas existentes')
+    ocupadas = models.IntegerField('Número de plazas ocupadas')
+
+    @property
+    def vacantes(self):
+        return self.plazas - self.ocupadas
+
+    @property
+    def cod_cuerpo(self):
+        return self.code[:3]
+
+    @property
+    def cod_especialidad(self):
+        return self.code[3:]
+
+    class Meta:
+        verbose_name_plural = 'Especialidades en Plantilla Orgánica'
+        ordering = ['-cpoc__creado']
+
+    def __str__(self):
+        return '%s - %s - %s (%s, %s)' % (self.centro, self.code, self.nombre, self.plazas, self.ocupadas)
 
 
 class PlantillaOrganica(models.Model):
@@ -634,7 +675,7 @@ class PlantillaOrganica(models.Model):
                     Menu.objects.get(entidad=self.ronda_centro.entidad, menu_default=md)
                 except:
                     Menu.objects.create(entidad=self.ronda_centro.entidad, menu_default=md, texto_menu=menu[1],
-                                               pos=menu[2])
+                                        pos=menu[2])
         permisos = Permiso.objects.filter(code_nombre__in=Miembro_Equipo_Directivo)
         try:
             miembro_equipo_directivo = Cargo.objects.get(entidad=self.ronda_centro.entidad, clave_cargo='202006011113')

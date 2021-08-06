@@ -49,6 +49,41 @@
         </div>
     </div>
 {% endif %}
+
+<table style="width: 100%;position: relative;">
+    <thead id="cabecera_tabla_vacantes">
+    <tr>
+        <th colspan="7" style="color: #1b75bb;text-align: center;width: {{ po.anchura_cols.0 }}%;">Plazas de plantilla
+            orgánica actualizadas a {{ po|get_fecha_plazas }}</th>
+    </tr>
+    <tr>
+        <th>Especialidad</th>
+        <th>Cuerpo</th>
+        <th>Código</th>
+        <th>Tipo</th>
+        <th>Plazas</th>
+        <th>Ocupadas</th>
+        <th>Vacantes</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for plaza in po|get_plazas %}
+        <tr>
+            <td>{{ plaza.nombre }}</td>
+            <td>{{ plaza.cod_cuerpo }}</td>
+            <td>{{ plaza.cod_especialidad }}</td>
+            <td {% if plaza.tipo == 'ord' %}title="Plaza ordinaria"
+                {% elif plaza.tipo == 'com' %}title="Plaza compartida con otros centros de la misma localidad"
+                {% elif plaza.tipo == 'iti' %}title="Plaza con carácter itinerante entre diferentes localidades"
+                {% else %}title="Plaza bilingüe"{% endif %}>{{ plaza.get_tipo_display }}</td>
+            <td>{{ plaza.plazas }}</td>
+            <td>{{ plaza.ocupadas }}</td>
+            <td>{{ plaza.vacantes }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
 {% if po.carga_completa %}
     <table style="width: 100%;position: relative;">
         <thead id="cabecera_tabla_po">

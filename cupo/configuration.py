@@ -61,4 +61,8 @@ PERMISOS = [{'code_nombre': 'crea_cupos',
              'nombre': 'Tiene permiso para ejecutar la carga de una plantilla por partes',
              'menu': 'acceso_cupo_profesorado'
              },
+            {'code_nombre': 'carga_datos_sigpyn',
+             'nombre': 'Tiene permiso para cargar datos de SIGPYN',
+             'menu': 'acceso_plantilla_organica'
+             },
             ]
