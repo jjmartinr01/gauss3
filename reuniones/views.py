@@ -34,6 +34,8 @@ from mensajes.views import crear_aviso, encolar_mensaje, crea_mensaje_cola, envi
 locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
 
 logger = logging.getLogger('django')
+
+
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
 # FUNCIONES RELACIONADAS CON LA CREACIÓN DE PLANTILLAS DE CONVOCATORIAS DE REUNIÓN
@@ -443,6 +445,7 @@ def conv_reunion(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
+
 def get_plantillas(g_e):
     if g_e.has_permiso('c_conv_reunion'):
         return ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True)
@@ -451,6 +454,8 @@ def get_plantillas(g_e):
         q2 = Q(puede_convocar=True)
         conv_ids = PermisoReunion.objects.filter(q1, q2).values_list('plantilla__id', flat=True)
         return ConvReunion.objects.filter(entidad=g_e.ronda.entidad, plantilla=True, id__in=conv_ids)
+
+
 @login_required()
 def conv_reunion_ajax(request):
     g_e = request.session['gauser_extra']
@@ -791,7 +796,7 @@ def conv_reunion_ajax(request):
         elif request.POST['action'] == 'add_permisos_conv':
             try:
                 plantilla = ConvReunion.objects.get(entidad=g_e.ronda.entidad, plantilla=True,
-                                                       id=request.POST['plantilla'])
+                                                    id=request.POST['plantilla'])
                 if plantilla.permiso(g_e, 'edita_plantilla'):
                     ges, cs, ss = decode_selectgcs([request.POST['seleccionado']], g_e.ronda)
                     p, cr = PermisoReunion.objects.none(), False
@@ -809,7 +814,7 @@ def conv_reunion_ajax(request):
         elif request.POST['action'] == 'update_permisos_conv':
             try:
                 pr = PermisoReunion.objects.get(plantilla__entidad=g_e.ronda.entidad,
-                                                     plantilla__plantilla=True, id=request.POST['permiso'])
+                                                plantilla__plantilla=True, id=request.POST['permiso'])
                 if pr.plantilla.permiso(g_e, 'edita_plantilla'):
                     estado = getattr(pr, request.POST['tipo'])
                     setattr(pr, request.POST['tipo'], not estado)
@@ -822,7 +827,7 @@ def conv_reunion_ajax(request):
         elif request.POST['action'] == 'borra_permiso_plantilla':
             try:
                 pr = PermisoReunion.objects.get(plantilla__entidad=g_e.ronda.entidad,
-                                                     plantilla__plantilla=True, id=request.POST['permiso'])
+                                                plantilla__plantilla=True, id=request.POST['permiso'])
                 if pr.plantilla.permiso(g_e, 'edita_plantilla'):
                     pr.delete()
                     return JsonResponse({'ok': True})
@@ -1235,7 +1240,8 @@ def redactar_actas_reunion_ajax(request):
                     asunto = 'Acta: %s' % (acta.convocatoria.nombre)
                     html = render_to_string('acta_reunion2pdf.html', {'acta': acta})
                     if acta.convocatoria.convocados.all().count() > 0:
-                        rs = [ge.gauser for ge in usuarios_ronda(g_e.ronda, subentidades=acta.convocatoria.convocados.all())]
+                        rs = [ge.gauser for ge in
+                              usuarios_ronda(g_e.ronda, subentidades=acta.convocatoria.convocados.all())]
                     else:
                         rs = [ge.gauser for ge in usuarios_ronda(g_e.ronda)]
                     try:
@@ -1249,6 +1255,7 @@ def redactar_actas_reunion_ajax(request):
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para enviar el correo'})
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Error al tratar de llevar a cabo la acción solicitada'})
+
 
 @permiso_required('acceso_control_asistencia_reunion')
 def control_asistencia_reunion(request):
@@ -1353,7 +1360,6 @@ def firmar_acta_reunion(request):
                           })
 
 
-
 # ----------------------------------------------------------------------------------------------------#
 # ----------------------------------------------------------------------------------------------------#
 # FUNCIONES RELACIONADAS CON LA LECTURA DE ACTAS
@@ -1439,3 +1445,51 @@ def lectura_actas_reunion(request):
                       'formname': 'leer_acta_reunion',
                       'actas_publicadas': paginator.page(1)
                   })
+
+
+a = ['ID', 'Hora de inicio', 'Hora de finalización', 'Nombre del centro educativo', 'Localidad del centro',
+     'FLEXIBILIZACIÓN DE JORNADA Y TIPO DE JORNADA: Indicar si como medida del plan de contingencia existen cambios de horario de entrada y salida, recreos, etc. (flexibilización horaria).',
+     'Si ha indicado que "Sí", señale a continuación las medidas que se han adoptado.',
+     'FLEXIBILIZACIÓN DE JORNADA Y TIPO DE JORNADA: Indicar si existen medidas de escalonamiento de entradas y salidas,turnos de recreo…',
+     'Si ha indicado que "Sí", señale a continuación las medidas que se han adoptado.2',
+     'FLEXIBILIZACIÓN DE JORNADA Y TIPO DE JORNADA: Indicar si se ha modificado el tipo de jornada del centro.',
+     'Si ha indicado que "Sí", señale a continuación la modificación de jornada adoptada.',
+     'GRADO DE PRESENCIALIDAD: Indicar si en los niveles de alerta 1 y 2 (nueva normalidad) hay en su centro garantía de presencialidad en todos los niveles y etapas.',
+     'GRADO DE PRESENCIALIDAD: Indicar si en los niveles de alerta 3 y 4 existirá en su centro la posibilidad de atender telemáticamente al alumnado que no pudiera asistir presencialmente.',
+     'GRUPOS DE CONVIVENCIA ESTABLES. MEDIDAS DE LIMITACIÓN DE CONTACTOS: En los centros de Educación Infantil, Primaria y en Educación Especial, indicar si el centro se ha organizado en grupos de convi...',
+     'Si ha indicado que "No", señale los motivos por los que el centro no se ha organizado en GCE y en qué niveles no se ha hecho.',
+     'GRUPOS DE CONVIVENCIA ESTABLES. MEDIDAS DE LIMITACIÓN DE CONTACTOS: Indicar si se cumplen las ratios máximas previstas para los distintos niveles y etapas educativas en el PCG.',
+     'Si ha indicado que "NO", indique los motivos por los que no se cumplen.',
+     'DISTANCIAMIENTO EN AULAS Y OTRAS DEPENDENCIAS Y SERVICIOS. SEÑALIZACIÓN Y SECTORIZACIÓN DE LOS CENTROS: Indicar si se cumple el distanciamiento de 1,2 m. en las aulas de ESO, bachillerato, FP, ens...',
+     'Si has indicado que "No", señale en cuántas aulas no se cumple.',
+     'DISTANCIAMIENTO EN AULAS Y OTRAS DEPENDENCIAS Y SERVICIOS. SEÑALIZACIÓN Y SECTORIZACIÓN DE LOS CENTROS: Indicar si se cumplen las medidas de distanciamiento en el comedor escolar y en el servicio ...',
+     'Si ha indicado que "No", señale en cuál de los servicios no se cumplen las medidas.',
+     'DISTANCIAMIENTO EN AULAS Y OTRAS DEPENDENCIAS Y SERVICIOS. SEÑALIZACIÓN Y SECTORIZACIÓN DE LOS CENTROS: Indicar si se cumplen las medidas de distanciamiento en recreos y actividades al aire libre.',
+     'Si ha indicado que "No", señale en cuál no se cumplen las medidas.',
+     'DISTANCIAMIENTO EN AULAS Y OTRAS DEPENDENCIAS Y SERVICIOS. SEÑALIZACIÓN Y SECTORIZACIÓN DE LOS CENTROS: Indicar si existe la figura del coordinador de transporte escolar y si se cumple el distanci...',
+     'Si ha indicado que "No", señale si no existe la figura del coordinador y/o qué medidas no se cumplen.',
+     'DISTANCIAMIENTO EN AULAS Y OTRAS DEPENDENCIAS Y SERVICIOS. SEÑALIZACIÓN Y SECTORIZACIÓN DE LOS CENTROS: Indicar si existe la sectorización y señalización de los centros.',
+     'Si ha indicado que "No", señale cuál de las dos medidas no existe en el centro.',
+     'HORARIO LECTIVO DEL ALUMNO: Indicar si se respeta la distribución temporal ordinaria del horario lectivo del alumno.',
+     'Si ha indicado que "No", señale los motivos por los que no se ha respetado.',
+     'HORARIO LECTIVO DEL ALUMNO: Indicar si se han realizado actividades formativas del alumno en materia de sanidad, limpieza o similares, incluidas en los períodos lectivos correspondientes, recibien...',
+     'HORARIO COMPLEMENTARIO DEL PROFESORADO: Indicar si se han realizado alteraciones en el horario complementario del profesorado,teniendo en cuenta su mayor dedicación de tiempo lectivo y el principi...',
+     'HORARIO COMPLEMENTARIO DEL PROFESORADO: Indicar si se ha realizado la atención habitual a las familias.',
+     'COORDINADOR/A COVID: Indicar si existe la figura del Coordinador/a Covid-Interlocutor con los servicios sanitarios.',
+     'Si existe dicha figura, indique sus datos personales: Nombre, apellidos y correo electrónico.',
+     'COORDINADOR/A COVID: Indicar si queda garantizada la correcta información y formación a toda la comunidad educativa de los procedimientos de implementación de los protocolos y medidas de seguridad...',
+     'Si ha respondido que "No", indique qué aspectos no se han garantizado correctamente.',
+     'EQUIPO DE TRABAJO/COMISIÓN DE SALUD: Indicar si se ha determinado la composición reglamentaria de ese equipo de trabajo: coordinador Covid, dirección del centro, miembro del personal de administra...',
+     'ENTRADA AL CENTRO: Indicar si el PCC recoge la medida de prohibición de entrada al centro a toda persona con síntomas o que se encuentre en cuarentena domiciliaria.',
+     'USO DE MASCARILLA: Indicar si se contempla el uso correcto de la mascarilla en cada uno de los siguientes casos:',
+     'LIMPIEZA: Indicar si se incluye en el PCC el protocolo de limpieza.',
+     'VENTILACIÓN: Indicar si se incluyen las medidas de ventilación (natural, mecánica, mediante filtros o purificadores).',
+     'Si has respondido que "Sí", indica qué medidas de ventilación se han incluido en tu centro.',
+     'VENTILACIÓN: Indicar si existen equipos de medición de CO2 o si se tiene previsto su uso.',
+     'GESTIÓN DE RESIDUOS: Indicar si existe en su centro disponibilidad de papeleras con tapa y pedal y otras medidas para la gestión de residuos.',
+     'USO DE BAÑOS: Indicar si el PCC hace referencia a un uso de los aseos acorde con las circunstancias del momento.',
+     'TOMA DE TEMPERATURA: Indicar si existe un mecanismo establecido en el centro para la toma de temperatura de forma generalizada o aleatoriamente.',
+     'GESTIÓN DE CASOS: Indicar si el PCC contempla un protocolo de actuación en caso de detectar síntomas en algún alumno, profesor o personal de administración y servicios, de acuerdo con el punto 4 d...',
+     'REGISTRO DE ASISTENCIAS: Indicar si el PCC presenta los siguientes registros para facilitar el estudio de contactos:    -Asistencia ordinaria del alumno, resuelto a través de Racima.',
+     'REGISTRO DE ASISTENCIAS: Indicar si el PCC presenta los siguientes registros para facilitar el estudio de contactos:    - Participación del alumno en servicios complementarios y en actividades ex...',
+     'REGISTRO DE ASISTENCIAS: Indicar si el PCC presenta los siguientes registros para facilitar el estudio de contactos:  - Asistencia de personas ajenas al centro.']

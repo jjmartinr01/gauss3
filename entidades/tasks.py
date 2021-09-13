@@ -6,6 +6,7 @@ import xlrd
 from difflib import get_close_matches
 from celery import shared_task
 from django.utils.timezone import timedelta, datetime, now
+from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils.encoding import smart_text
 from estudios.models import Grupo, Gauser_extra_estudios, Materia, Matricula
@@ -483,13 +484,39 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
             Cargo.objects.create(entidad=entidad, cargo='Maestro/a', nivel=3)
             Cargo.objects.create(entidad=entidad, cargo='Alumno/a')
             Cargo.objects.create(entidad=entidad, cargo='Madre/Padre')
-        if not entidad.ronda:
+        if entidad.ronda: #Capturamos los g_es con perfiles de dirección
+            q = Q(cargo__icontains='director') | Q(cargo__icontains='estudios') | Q(cargo__icontains='secretar')
+            cargos = Cargo.objects.filter(q, Q(entidad=entidad))
+            g_es = Gauser_extra.objects.filter(ronda=entidad.ronda, cargos__in=cargos, activo=True)
+        else:
+            g_es = Gauser_extra.objects.none()
+        if not entidad.ronda or entidad.ronda.fin < datetime.today().date():
             y1, y2 = datetime.today().year, datetime.today().year + 1
             inicio = datetime.strptime("1/9/%s" % y1, "%d/%m/%Y")
             fin = datetime.strptime("31/8/%s" % y2, "%d/%m/%Y")
             ronda = Ronda.objects.create(nombre="%s/%s" % (y1, y2), entidad=entidad, inicio=inicio, fin=fin)
             entidad.ronda = ronda
             entidad.save()
+            # Cargamos los usuarios capturados antes en la nueva ronda:
+            for g__e in g_es:
+                try:
+                    Gauser_extra.objects.get(gauser=g__e.gauser, ronda=ronda)
+                except:
+                    new_user = Gauser_extra.objects.create(gauser=g__e.gauser,
+                                                           ronda=ronda,
+                                                           id_entidad=g__e.id_entidad,
+                                                           id_organizacion=g__e.id_organizacion,
+                                                           alias=g__e.alias, activo=True,
+                                                           observaciones=g__e.observaciones,
+                                                           foto=g__e.foto,
+                                                           tutor1=None, tutor2=None,
+                                                           ocupacion=g__e.ocupacion,
+                                                           num_cuenta_bancaria=g__e.num_cuenta_bancaria)
+                    new_user.subentidades.add(*g__e.subentidades.all())
+                    new_user.subsubentidades.add(*g__e.subsubentidades.all())
+                    new_user.cargos.add(*g__e.cargos.all())
+                    new_user.permisos.add(*g__e.permisos.all())
+
         # Menus:
         for m in Menus_Centro_Educativo:
             try:
