@@ -628,12 +628,15 @@ def informes_ie(request):
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
         elif request.POST['action'] == 'descarga_gauss_file':
-            ie = InformeInspeccion.objects.get(inspector__gauser=g_e.gauser, id=request.POST['id_ie'])
-            faii = FileAttachedII.objects.get(informe=ie, id=request.POST['faii'])
-            fich = faii.fichero
-            response = HttpResponse(fich, content_type='%s' % faii.content_type)
-            response['Content-Disposition'] = 'attachment; filename=%s' % faii.fich_name
-            return response
+            try:
+                ie = InformeInspeccion.objects.get(inspector__gauser=g_e.gauser, id=request.POST['id_ie'])
+                faii = FileAttachedII.objects.get(informe=ie, id=request.POST['faii'])
+                fich = faii.fichero
+                response = HttpResponse(fich, content_type='%s' % faii.content_type)
+                response['Content-Disposition'] = 'attachment; filename=%s' % faii.fich_name
+                return response
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
 
     informes = InformeInspeccion.objects.filter(inspector__gauser=g_e.gauser)
     logger.info('Entra en ' + request.META['PATH_INFO'])
