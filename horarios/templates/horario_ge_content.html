@@ -1,76 +1,79 @@
 {% load my_templatetags %}
 
-<div class="dia_horario" id="horas">
-    {% if request.session.gauser_extra|has_permiso:"borra_sesiones_horario" %}
-        <a id="del_horario_usuario"
-           title="Borrar el horario de {{ gauser_extra.gauser.get_full_name }}"><span
-                class="label radius"><i class="fa fa-trash"></i> Borrar</span></a>
-    {% endif %}
-    {% for hora in horas_ge %}
-        <div class="horas" style="top:{{ hora.top }}px;"><b>{{ hora.inicio }}-{{ hora.fin }}</b></div>
-    {% endfor %}
+{#<div class="dia_horario" id="horas">#}
+{#    {% if request.session.gauser_extra|has_permiso:"borra_sesiones_horario" %}#}
+{#        <a id="del_horario_usuario"#}
+{#           title="Borrar el horario de {{ gauser_extra.gauser.get_full_name }}"><span#}
+{#                class="label radius"><i class="fa fa-trash"></i> Borrar</span></a>#}
+{#    {% endif %}#}
+{#    {% for hora in horas_ge %}#}
+{#        <div class="horas" style="top:{{ hora.top }}px;"><b>{{ hora.his }}-{{ hora.hfs }}</b></div>#}
+{#    {% endfor %}#}
+{#</div>#}
+{#{% for info_dia in sesiones %}#}
+{#    <div class="dia_horario" id="dia{{ info_dia.dia_num }}">#}
+{#        <b>{{ info_dia.dia_nombre }}</b>#}
+{#        {% for sesiones_hora in info_dia.sesiones_dia %}#}
+{#            <div class="div_cell_sesion"#}
+{#                 style="z-index: {{ sesiones_hora.0.top }}; top:{{ sesiones_hora.0.top }}px;max-height: {{ sesiones_hora.0.height }}px;min-height: {{ sesiones_hora.0.height }}px;">#}
+{#                {% for s in sesiones_hora %}#}
+{#                    {% if forloop.first %}#}
+{#                        <a data-dropdown="drop{{ s.id }}" aria-controls="drop{{ s.id }}"#}
+{#                           id="a_dropdown{{ s.id }}" aria-expanded="false" class="a_sesion">#}
+{#                            <hr class="hr"/>#}
+{#                            {% if s.grupo %}#}
+{#                                <span class="dependencia">{{ s.dependencia.nombre }}</span><br>#}
+{#                                <span class="materia">{{ s.materia.nombre }}</span><br>#}
+{#                                <span class="grupo">{{ s.grupo.nombre }}</span>#}
+{#                            {% else %}#}
+{#                                <span class="actividad">{{ s.actividad.nombre }}</span>#}
+{#                            {% endif %}#}
+{#                        </a>#}
+{#                    {% else %}#}
+{#                        <a data-dropdown="drop{{ s.id }}" aria-controls="drop{{ s.id }}"#}
+{#                           id="a_dropdown{{ s.id }}" aria-expanded="false" class="a_sesion">#}
+{#                            <hr class="hr"/>#}
+{#                            {% if s.grupo %}#}
+{#                                <br><span class="grupo">{{ s.grupo.nombre }}</span>#}
+{#                            {% else %}#}
+{#                                <span class="actividad">{{ s.actividad.nombre }}</span>#}
+{#                            {% endif %}#}
+{#                        </a>#}
+{#                    {% endif %}#}
+{#                    {% if request.session.gauser_extra|has_permiso:"modifica_sesiones_horario" or s.grupo %}#}
+{#                        <ul id="drop{{ s.id }}" class="f-dropdown text-left" data-dropdown-content#}
+{#                            aria-hidden="true" tabindex="-1">#}
+{#                            {% if request.session.gauser_extra|has_permiso:"modifica_sesiones_horario" %}#}
+{#                                {% if request.session.gauser_extra|has_permiso:"borra_sesiones_horario" %}#}
+{#                                    <li><a class="borrar_sesion" data-sesion="{{ s.id }}"><i#}
+{#                                            class="fa fa-trash-o fa-fw"></i> Borrar</a>#}
+{#                                    </li>#}
+{#                                {% endif %}#}
+{#                                <li><a class="editar_sesion" data-sesion="{{ s.id }}"><i#}
+{#                                        class="fa fa-pencil fa-fw"></i> Modificar</a>#}
+{#                                </li>#}
+{#                                <li><a class="copiar_sesion" data-sesion="{{ s.id }}"><i#}
+{#                                        class="fa fa-copy fa-fw"></i> Copiar</a>#}
+{#                                </li>#}
+{#                            {% endif %}#}
+{#                            {% if s.grupo %}#}
+{#                                <li><a class="asistencia_sesion" data-sesion="{{ s.id }}"><i#}
+{#                                        class="fa fa-calendar-check-o fa-fw"></i> Control asistencia</a>#}
+{#                                </li>#}
+{#                                <li><a class="alumnos_sesion" data-sesion="{{ s.id }}"><i#}
+{#                                        class="fa fa-group fa-fw"></i> Alumnos</a>#}
+{#                                </li>#}
+{#                            {% endif %}#}
+{#                        </ul>#}
+{#                    {% endif %}#}
+{#                {% endfor %}#}
+{#            </div>#}
+{#        {% endfor %}#}
+{#    </div>#}
+{#{% endfor %}#}
+<div id="tabla_horario_docente">
+    {{ tabla_horario }}
 </div>
-{% for info_dia in sesiones %}
-    <div class="dia_horario" id="dia{{ info_dia.dia_num }}">
-        <b>{{ info_dia.dia_nombre }}</b>
-        {% for sesiones_hora in info_dia.sesiones_dia %}
-            <div class="div_cell_sesion"
-                 style="z-index: {{ sesiones_hora.0.top }}; top:{{ sesiones_hora.0.top }}px;max-height: {{ sesiones_hora.0.height }}px;min-height: {{ sesiones_hora.0.height }}px;">
-                {% for s in sesiones_hora %}
-                    {% if forloop.first %}
-                        <a data-dropdown="drop{{ s.id }}" aria-controls="drop{{ s.id }}"
-                           id="a_dropdown{{ s.id }}" aria-expanded="false" class="a_sesion">
-                            <hr class="hr"/>
-                            {% if s.grupo %}
-                                <span class="dependencia">{{ s.dependencia.nombre }}</span><br>
-                                <span class="materia">{{ s.materia.nombre }}</span><br>
-                                <span class="grupo">{{ s.grupo.nombre }}</span>
-                            {% else %}
-                                <span class="actividad">{{ s.actividad.nombre }}</span>
-                            {% endif %}
-                        </a>
-                    {% else %}
-                        <a data-dropdown="drop{{ s.id }}" aria-controls="drop{{ s.id }}"
-                           id="a_dropdown{{ s.id }}" aria-expanded="false" class="a_sesion">
-                            <hr class="hr"/>
-                            {% if s.grupo %}
-                                <br><span class="grupo">{{ s.grupo.nombre }}</span>
-                            {% else %}
-                                <span class="actividad">{{ s.actividad.nombre }}</span>
-                            {% endif %}
-                        </a>
-                    {% endif %}
-                    {% if request.session.gauser_extra|has_permiso:"modifica_sesiones_horario" or s.grupo %}
-                        <ul id="drop{{ s.id }}" class="f-dropdown text-left" data-dropdown-content
-                            aria-hidden="true" tabindex="-1">
-                            {% if request.session.gauser_extra|has_permiso:"modifica_sesiones_horario" %}
-                                {% if request.session.gauser_extra|has_permiso:"borra_sesiones_horario" %}
-                                    <li><a class="borrar_sesion" data-sesion="{{ s.id }}"><i
-                                            class="fa fa-trash-o fa-fw"></i> Borrar</a>
-                                    </li>
-                                {% endif %}
-                                <li><a class="editar_sesion" data-sesion="{{ s.id }}"><i
-                                        class="fa fa-pencil fa-fw"></i> Modificar</a>
-                                </li>
-                                <li><a class="copiar_sesion" data-sesion="{{ s.id }}"><i
-                                        class="fa fa-copy fa-fw"></i> Copiar</a>
-                                </li>
-                            {% endif %}
-                            {% if s.grupo %}
-                                <li><a class="asistencia_sesion" data-sesion="{{ s.id }}"><i
-                                        class="fa fa-calendar-check-o fa-fw"></i> Control asistencia</a>
-                                </li>
-                                <li><a class="alumnos_sesion" data-sesion="{{ s.id }}"><i
-                                        class="fa fa-group fa-fw"></i> Alumnos</a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        {% endfor %}
-    </div>
-{% endfor %}
 
 <script>
     $('#nombre_usuario_seleccionado').html('{{ gauser_extra.gauser.get_full_name }}');

@@ -477,7 +477,7 @@ def get_informe_ie(request, id):
     return JsonResponse({'asunto': ie.asunto, 'texto': ie.texto})
 
 
-@permiso_required('acceso_informes_ie')
+# @permiso_required('acceso_informes_ie')
 def informes_ie(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST' and request.is_ajax():

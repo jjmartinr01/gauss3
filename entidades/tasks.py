@@ -263,7 +263,9 @@ def carga_masiva_tipo_EXCEL(carga):
             'observaciones_tutor1': '', 'observaciones_tutor2': '',
             'perfiles_tutor1': '', 'perfiles_tutor2': '', }
 
+    # print('esto es antes del if')
     if len(keys) < 30:  # This implies the file is from Personal (RegInfPerCen.xls)
+        # print('esto es el if')
         for row_index in range(5, sheet.nrows):
             d = pdic
             # d = {krp[keys[col_index]]: sheet.cell(row_index, col_index).value for col_index in

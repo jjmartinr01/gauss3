@@ -435,13 +435,19 @@ def horario_ge(request):
     horas_ge = horario.horas_ge(ge)
     sesiones = []
     for d in dias:
-        sesiones_dia = sesiones_ge.filter(dia=d).order_by('inicio')
+        sesiones_dia = sesiones_ge.filter(dia=d).order_by('hora_inicio')
         info_dia = {'dia_num': d, 'dia_nombre': nombre_dias[d], 'sesiones_dia': []}
         for hora in horas_ge:
-            sesiones_hora = sesiones_dia.filter(inicio=hora['inicio'])
+            sesiones_hora = sesiones_dia.filter(hora_inicio=hora['inicio'])
             if sesiones_hora.count() > 0:
                 info_dia['sesiones_dia'].append(sesiones_hora)
         sesiones.append(info_dia)
+
+
+    horario_docente = horario.get_horario(ge)
+    tabla_horario = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario_docente,
+                                                                         'docente': ge})
+
 
     respuesta = {
         'iconos':
@@ -457,6 +463,7 @@ def horario_ge(request):
         'g_es': g_es,
         'gauser_extra': ge,
         'sesiones': sesiones,
+        'tabla_horario': tabla_horario,
         'horas_ge': horas_ge,
         'grupos': Grupo.objects.filter(ronda=g_e.ronda),
         'dependencias': Dependencia.objects.filter(entidad=g_e.ronda.entidad),
@@ -748,24 +755,31 @@ def horarios_ajax(request):
         elif action == 'carga_horario_usuario':
             ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
             horario = Horario.objects.get(id=request.POST['horario'], ronda=g_e.ronda)
-            sesiones_ge = horario.sesion_set.filter(g_e=ge)
-            dias = sesiones_ge.values_list('dia', flat=True).order_by('dia').distinct()
-            nombre_dias = {1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado',
-                           7: 'Domingo'}
-            horas_ge = horario.horas_ge(ge)
-            sesiones = []
-            for d in dias:
-                sesiones_dia = sesiones_ge.filter(dia=d).order_by('inicio')
-                info_dia = {'dia_num': d, 'dia_nombre': nombre_dias[d], 'sesiones_dia': []}
-                for hora in horas_ge:
-                    sesiones_hora = sesiones_dia.filter(inicio=hora['inicio'])
-                    if sesiones_hora.count() > 0:
-                        info_dia['sesiones_dia'].append(sesiones_hora)
-                sesiones.append(info_dia)
-            html = render_to_string('horario_ge_content.html',
-                                    {'horas_ge': horas_ge, 'sesiones': sesiones, 'gauser_extra': ge,
-                                     'request': request})
-            return JsonResponse({'ok': True, 'html': html})
+            # sesiones_ge = horario.sesion_set.filter(g_e=ge)
+            # dias = sesiones_ge.values_list('dia', flat=True).order_by('dia').distinct()
+            # nombre_dias = {1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado',
+            #                7: 'Domingo'}
+            # horas_ge = horario.horas_ge(ge)
+            # sesiones = []
+            # for d in dias:
+            #     sesiones_dia = sesiones_ge.filter(dia=d).order_by('inicio')
+            #     info_dia = {'dia_num': d, 'dia_nombre': nombre_dias[d], 'sesiones_dia': []}
+            #     for hora in horas_ge:
+            #         sesiones_hora = sesiones_dia.filter(inicio=hora['inicio'])
+            #         if sesiones_hora.count() > 0:
+            #             info_dia['sesiones_dia'].append(sesiones_hora)
+            #     sesiones.append(info_dia)
+            # html = render_to_string('horario_ge_content.html',
+            #                         {'horas_ge': horas_ge, 'sesiones': sesiones, 'gauser_extra': ge,
+            #                          'request': request})
+            # return JsonResponse({'ok': True, 'html': html})
+            try:
+                horario_docente = horario.get_horario(ge)
+                tabla_horario = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario_docente,
+                                                                                             'docente': ge})
+                return JsonResponse({'ok': True, 'tabla_horario': tabla_horario, 'h': horario.id, 'd': ge.id})
+            except:
+                return JsonResponse({'ok': False})
 
         elif action == 'carga_horario_aula':
             aula = Dependencia.objects.get(id=request.POST['aula'], entidad=g_e.ronda.entidad)

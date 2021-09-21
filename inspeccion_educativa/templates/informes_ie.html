@@ -335,6 +335,34 @@
         {# #################### CARGA DE ARCHIVOS ############################## #}
         {# ##################################################################### #}
 
+        // Slugify a string
+        function slugify_filename(str) {
+            var re = /(?:\.([^.]+))?$/;
+            var ext = re.exec(str)[1];
+            str = str.replace(/\.[^/.]+$/, "") {# quitar la extensión #}
+            str = str.replace(/^\s+|\s+$/g, '');
+
+            // Make the string lowercase
+            str = str.toLowerCase();
+
+            // Remove accents, swap ñ for n, etc
+            var from = "ÁÄÂÀÃÅČÇĆĎÉĚËÈÊẼĔȆÍÌÎÏŇÑÓÖÒÔÕØŘŔŠŤÚŮÜÙÛÝŸŽáäâàãåčçćďéěëèêẽĕȇíìîïňñóöòôõøðřŕšťúůüùûýÿžþÞĐđßÆa·/_,:;";
+            var to = "AAAAAACCCDEEEEEEEEIIIINNOOOOOORRSTUUUUUYYZaaaaaacccdeeeeeeeeiiiinnooooooorrstuuuuuyyzbBDdBAa------";
+            for (var i = 0, l = from.length; i < l; i++) {
+                str = str.replace(new RegExp(from.charAt(i), 'g'), to.charAt(i));
+            }
+
+            // Remove invalid chars
+            str = str.replace(/[^a-z0-9 -]/g, '')
+                // Collapse whitespace and replace by -
+                .replace(/\s+/g, '-')
+                // Collapse dashes
+                .replace(/-+/g, '-');
+
+            return str + '.' + ext;
+        }
+
+
         function updateProgress(evt) {
             if (evt.lengthComputable) {
                 var percentComplete = (evt.loaded / evt.total) * 100;
@@ -357,19 +385,19 @@
 
             var formData = new FormData();
             for (var i = 0; i < input_files.length; i++) {
-                formData.append('archivo_xhr' + i, input_files[i]);
+                formData.append('archivo_xhr' + i, input_files[i], slugify_filename(input_files[i].name));
             }
             formData.append('n_files', input_files.length);
             formData.append('action', 'upload_archivo_xhr');
             formData.append('ie', id);
             formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
             var xhr = new XMLHttpRequest();
-            xhr.upload.addEventListener("progress", updateProgress, false);
+            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
             xhr.onload = function () {
                 if (xhr.readyState === xhr.DONE) {
                     if (xhr.status === 200) {
                         console.log(xhr.responseText);
-                        var b = xhr.responseText;
+                        {#var b = xhr.responseText;#}
                         var data = JSON.parse(xhr.responseText);
                         $('#tbody_gauss_file' + data.id).html(data.html);
                         $('#span_spin').hide();

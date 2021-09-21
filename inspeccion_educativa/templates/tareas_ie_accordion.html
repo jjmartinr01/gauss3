@@ -27,7 +27,13 @@
                 {% else %}{{ tarea_ie.tarea.asunto }}{% endif %}</b> -- <span
                     id="tipo{{ tarea_ie.id }}">{{ tarea_ie.tarea.get_tipo_display }}</span> -- <span
                     id="localizacion{{ tarea_ie.id }}">{{ tarea_ie.tarea.get_localizacion_display }}</span>
-                (<span id="fecha{{ tarea_ie.id }}">{{ tarea_ie.tarea.fecha|date:"d-m-Y" }}</span>)
+            {% if tarea_ie.tarea.tarea_programada %}
+                (<span style="color:red;" id="fecha{{ tarea_ie.id }}">{{ tarea_ie.tarea.fecha|date:"d-m-Y" }}
+                <i class="fa fa-calendar-times-o"></i> </span>)
+                {% else %}
+                (<span id="fecha{{ tarea_ie.id }}">{{ tarea_ie.tarea.fecha|date:"d-m-Y" }}d</span>)
+                {% endif %}
+
 
                 {% if tarea_ie.inspector %}
                     <span style="color: green; padding-right: 20px;"><i
@@ -36,6 +42,7 @@
                     <span style="color: red; padding-right: 20px;"><i
                             class="fa fa-user"></i> {{ tarea_ie.tarea.get_inspector_mdb_display }}</span>
                 {% endif %}
+
                 {% if buscadas %}
                     <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
                 {% endif %}

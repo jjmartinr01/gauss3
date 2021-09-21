@@ -17,7 +17,6 @@ register = Library()
 #         cursos_entidad = Curso.objects.filter(entidad=sub.entidad, grupos__in=[sub])
 #     return cursos_entidad
 
-
 @register.filter
 def filtrar_pds(pds, campo):
     if campo == 'profesor':

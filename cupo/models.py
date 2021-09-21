@@ -580,41 +580,45 @@ class PlantillaOrganica(models.Model):
         sesiones = []
         psxls = self.plantillaxls_set.all()
         for p in psxls:
-            g_e = Gauser_extra.objects.get(clave_ex=p.x_docente, ronda=self.ronda_centro)
-            sesion, c = Sesion.objects.get_or_create(horario=horario, dia=int(float(p.dia)), g_e=g_e,
-                                                     hora_inicio=int(float(p.hora_inicio)),
-                                                     hora_fin=int(float(p.hora_fin)),
-                                                     hora_inicio_cadena=p.hora_inicio_cadena,
-                                                     hora_fin_cadena=p.hora_fin_cadena)
             try:
-                grupo = Grupo.objects.get(clave_ex=p.x_unidad, ronda=self.ronda_centro)
-            except:
-                LogCarga.objects.create(g_e=self.g_e, log='Error al cargar el grupo %s' % p.x_unidad)
-                grupo = None
-            try:
-                if p.x_dependencia != '-1':
-                    dependencia = Dependencia.objects.get(clave_ex=p.x_dependencia, entidad=self.ronda_centro.entidad)
-                else:
+                g_e = Gauser_extra.objects.get(clave_ex=p.x_docente, ronda=self.ronda_centro)
+                sesion, c = Sesion.objects.get_or_create(horario=horario, dia=int(float(p.dia)), g_e=g_e,
+                                                         hora_inicio=int(float(p.hora_inicio)),
+                                                         hora_fin=int(float(p.hora_fin)),
+                                                         hora_inicio_cadena=p.hora_inicio_cadena,
+                                                         hora_fin_cadena=p.hora_fin_cadena)
+                try:
+                    grupo = Grupo.objects.get(clave_ex=p.x_unidad, ronda=self.ronda_centro)
+                except:
+                    LogCarga.objects.create(g_e=self.g_e, log='Error al cargar el grupo %s' % p.x_unidad)
+                    grupo = None
+                try:
+                    if p.x_dependencia != '-1':
+                        dependencia = Dependencia.objects.get(clave_ex=p.x_dependencia, entidad=self.ronda_centro.entidad)
+                    else:
+                        dependencia = None
+                except:
+                    LogCarga.objects.create(g_e=self.g_e, log='Error al cargar la dependencia %s' % p.x_dependencia)
                     dependencia = None
-            except:
-                LogCarga.objects.create(g_e=self.g_e, log='Error al cargar la dependencia %s' % p.x_dependencia)
-                dependencia = None
-            try:
-                if p.x_materiaomg:
-                    materia = Materia.objects.get(clave_ex=p.x_materiaomg, curso__ronda=self.ronda_centro)
-                else:
+                try:
+                    if p.x_materiaomg:
+                        materia = Materia.objects.get(clave_ex=p.x_materiaomg, curso__ronda=self.ronda_centro)
+                    else:
+                        materia = None
+                except:
+                    LogCarga.objects.create(g_e=self.g_e, log='Error al cargar la materia %s' % p.x_materiaomg)
                     materia = None
-            except:
-                LogCarga.objects.create(g_e=self.g_e, log='Error al cargar la materia %s' % p.x_materiaomg)
-                materia = None
-            try:
-                actividad = Actividad.objects.get(entidad=self.ronda_centro.entidad, clave_ex=p.x_actividad)
-            except:
-                LogCarga.objects.create(g_e=self.g_e, log='Error al cargar la actividad %s' % p.x_actividad)
-                actividad = None
-            SesionExtra.objects.get_or_create(sesion=sesion, grupo=grupo, dependencia=dependencia, materia=materia,
-                                              actividad=actividad)
-            sesiones.append(sesion)
+                try:
+                    actividad = Actividad.objects.get(entidad=self.ronda_centro.entidad, clave_ex=p.x_actividad)
+                except:
+                    LogCarga.objects.create(g_e=self.g_e, log='Error al cargar la actividad %s' % p.x_actividad)
+                    actividad = None
+                SesionExtra.objects.get_or_create(sesion=sesion, grupo=grupo, dependencia=dependencia, materia=materia,
+                                                  actividad=actividad)
+                sesiones.append(sesion)
+            except Exception as msg:
+                print(p.x_docente, self.ronda_centro)
+                print(str(msg))
         return sesiones
 
     ########################################################################

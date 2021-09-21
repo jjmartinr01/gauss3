@@ -337,7 +337,7 @@ TIPOS = (
     ('IN', 'Incidental'),
     ('PR', 'Prioritaria'))
 
-LOCALIZACIONES = (("CE", "Centro"), ("OT", "Otros"), ("SE", "Sede"))
+LOCALIZACIONES = (("CE", "Visita al centro educativo"), ("OT", "Otros"), ("SE", "Permanencia en despacho"))
 
 # "FUNCIÓN INSPECTORA","DEFINICIÓN"),
 FUNCIONES = (
@@ -643,6 +643,13 @@ class TareaInspeccion(models.Model):
 
     def permiso(self, gauser):
         return ''.join(list(self.inspectortarea_set.filter(inspector__gauser=gauser).values_list('permiso', flat=True)))
+
+    @property
+    def tarea_programada(self):
+        if self.fecha > datetime.today().date():
+            return True
+        else:
+            return False
 
     class Meta:
         verbose_name_plural = 'Actuaciones de Inspección'

@@ -314,7 +314,8 @@
                 hide_mensajes();
                 if (data.ok) {
                     $("#update_ok").show().delay(1500).fadeOut();
-                    $('#div_horario_usuario').html(data.html);
+                    {#$('#div_horario_usuario').html(data.html);#}
+                    $('#tabla_horario_docente').html(data.tabla_horario);
                 } else {
                     $("#update_error").show().delay(1500).fadeOut();
                 }

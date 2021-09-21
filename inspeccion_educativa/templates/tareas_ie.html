@@ -65,41 +65,41 @@
                 </div>
             </div>
         </fieldset>
-        <fieldset>
-            <legend>Generar informe semanal</legend>
-            <div class="row">
-                {% if g_e|has_permiso:'genera_informe_tareas_ie' %}
-                    <div class="columns large-4">
-                        <label>Selecciona el inspector
-                            <select name="inspector_informe">
-                                {% for i in inspectores %}
-                                    <option value="{{ i.id }}"
-                                            {% if i == g_e %}selected{% endif %}>{{ i.gauser.get_full_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </label>
-                    </div>
-                {% else %}
-                    <div class="columns large-4">
-                        <input type="hidden" name="inspector_informe" value="{{ g_e.id }}">
-                        <label>Inspector<br><b>{{ g_e.gauser.get_full_name }}</b></label>
-                    </div>
-                {% endif %}
-                <div class="columns large-6">
-                    <label>Selecciona una semana de trabajo y pulsa "Generar PDF"
-                        <select name="semana">
-                            {% for s in semanas %}
-                                <option value="{{ s.0 }}">{{ s.1 }}</option>
-                            {% endfor %}
-                        </select>
-                    </label>
-                </div>
-                <div class="columns large-2">
-                    <label>&nbsp;<br><a class="button tiny" id="crea_informe_semanal">Generar PDF</a>
-                    </label>
-                </div>
-            </div>
-        </fieldset>
+{#        <fieldset>#}
+{#            <legend>Generar informe semanal</legend>#}
+{#            <div class="row">#}
+{#                {% if g_e|has_permiso:'genera_informe_tareas_ie' %}#}
+{#                    <div class="columns large-4">#}
+{#                        <label>Selecciona el inspector#}
+{#                            <select name="inspector_informe">#}
+{#                                {% for i in inspectores %}#}
+{#                                    <option value="{{ i.id }}"#}
+{#                                            {% if i == g_e %}selected{% endif %}>{{ i.gauser.get_full_name }}</option>#}
+{#                                {% endfor %}#}
+{#                            </select>#}
+{#                        </label>#}
+{#                    </div>#}
+{#                {% else %}#}
+{#                    <div class="columns large-4">#}
+{#                        <input type="hidden" name="inspector_informe" value="{{ g_e.id }}">#}
+{#                        <label>Inspector<br><b>{{ g_e.gauser.get_full_name }}</b></label>#}
+{#                    </div>#}
+{#                {% endif %}#}
+{#                <div class="columns large-6">#}
+{#                    <label>Selecciona una semana de trabajo y pulsa "Generar PDF"#}
+{#                        <select name="semana">#}
+{#                            {% for s in semanas %}#}
+{#                                <option value="{{ s.0 }}">{{ s.1 }}</option>#}
+{#                            {% endfor %}#}
+{#                        </select>#}
+{#                    </label>#}
+{#                </div>#}
+{#                <div class="columns large-2">#}
+{#                    <label>&nbsp;<br><a class="button tiny" id="crea_informe_semanal">Generar PDF</a>#}
+{#                    </label>#}
+{#                </div>#}
+{#            </div>#}
+{#        </fieldset>#}
 
         <div id="listado_tareas_ie">
             {% include 'tareas_ie_accordion.html' %}

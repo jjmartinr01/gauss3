@@ -172,11 +172,9 @@ class Horario(models.Model):
         return self.sesion_set.filter(dependencia=aula)
 
     def horas_aula(self, aula):
-        hs = self.sesion_set.filter(dependencia=aula).values_list('inicio', 'fin').distinct().order_by('inicio')
-        return [{'top': (hora[0].hour * 60 + hora[0].minute - hs[0][0].hour * 60 - hs[0][
-            0].minute) * self.pixels_minuto + self.pixels_offset,
-                 'height': (hora[1].hour * 60 + hora[1].minute - hora[0].hour * 60 - hora[
-                     0].minute) * self.pixels_minuto,
+        hs = self.sesion_set.filter(dependencia=aula).values_list('hora_inicio', 'hora_fin').distinct().order_by('hora_inicio')
+        return [{'top': (hora[0] - hs[0][0]) * self.pixels_minuto + self.pixels_offset,
+                 'height': (hora[1] - hora[0]) * self.pixels_minuto,
                  'inicio': hora[0], 'fin': hora[1]} for hora in hs]
 
     def hora_inicio_aula(self, aula):
@@ -191,11 +189,9 @@ class Horario(models.Model):
         return self.sesion_set.filter(grupo=grupo)
 
     def horas_grupo(self, grupo):
-        hs = self.sesion_set.filter(grupo=grupo).values_list('inicio', 'fin').distinct().order_by('inicio')
-        return [{'top': (hora[0].hour * 60 + hora[0].minute - hs[0][0].hour * 60 - hs[0][
-            0].minute) * self.pixels_minuto + self.pixels_offset,
-                 'height': (hora[1].hour * 60 + hora[1].minute - hora[0].hour * 60 - hora[
-                     0].minute) * self.pixels_minuto,
+        hs = self.sesion_set.filter(grupo=grupo).values_list('hora_inicio', 'hora_fin').distinct().order_by('hora_inicio')
+        return [{'top': (hora[0] - hs[0][0]) * self.pixels_minuto + self.pixels_offset,
+                 'height': (hora[1] - hora[0]) * self.pixels_minuto,
                  'inicio': hora[0], 'fin': hora[1]} for hora in hs]
 
     def hora_inicio_grupo(self, grupo):
@@ -210,19 +206,23 @@ class Horario(models.Model):
         return self.sesion_set.filter(g_e=ge)
 
     def horas_ge(self, ge):
-        hs = self.sesion_set.filter(g_e=ge).values_list('inicio', 'fin').distinct().order_by('inicio')
-        return [{'top': (hora[0].hour * 60 + hora[0].minute - hs[0][0].hour * 60 - hs[0][
-            0].minute) * self.pixels_minuto + self.pixels_offset,
-                 'height': (hora[1].hour * 60 + hora[1].minute - hora[0].hour * 60 - hora[
-                     0].minute) * self.pixels_minuto,
-                 'inicio': hora[0], 'fin': hora[1]} for hora in hs]
+        # hs = self.sesion_set.filter(g_e=ge).values_list('inicio', 'fin').distinct().order_by('inicio')
+        # return [{'top': (hora[0].hour * 60 + hora[0].minute - hs[0][0].hour * 60 - hs[0][
+        #     0].minute) * self.pixels_minuto + self.pixels_offset,
+        #          'height': (hora[1].hour * 60 + hora[1].minute - hora[0].hour * 60 - hora[
+        #              0].minute) * self.pixels_minuto,
+        #          'inicio': hora[0], 'fin': hora[1]} for hora in hs]
+        hs = self.sesion_set.filter(g_e=ge).values_list('hora_inicio', 'hora_fin', 'hora_inicio_cadena', 'hora_fin_cadena').distinct().order_by('hora_inicio')
+        return [{'top': (hora[0] - hs[0][0]) * self.pixels_minuto + self.pixels_offset,
+                 'height': (hora[1] - hora[0]) * self.pixels_minuto,
+                 'inicio': hora[0], 'fin': hora[1], 'his': hora[2], 'hfs': hora[3]} for hora in hs]
 
     def hora_inicio_ge(self, ge):
-        horas = self.sesion_set.filter(g_e=ge).values_list('inicio', 'fin').distinct().order_by('inicio')
+        horas = self.sesion_set.filter(g_e=ge).values_list('hora_inicio', 'hora_fin').distinct().order_by('hora_inicio')
         return horas[0][0]
 
     def hora_fin_ge(self, ge):
-        horas = self.sesion_set.filter(g_e=ge).values_list('inicio', 'fin').distinct().order_by('inicio')
+        horas = self.sesion_set.filter(g_e=ge).values_list('hora_inicio', 'hora_fin').distinct().order_by('hora_inicio')
         return horas.last()[1]
 
     @property
@@ -232,21 +232,21 @@ class Horario(models.Model):
 
     @property
     def hora_inicio(self):
-        horas = self.sesion_set.all().values_list('inicio', 'fin').distinct().order_by('inicio')
+        horas = self.sesion_set.all().values_list('hora_inicio', 'hora_fin').distinct().order_by('hora_inicio')
         return horas[0][0]
 
     @property
     def hora_fin(self):
-        horas = self.sesion_set.all().values_list('inicio', 'fin').distinct().order_by('inicio')
+        horas = self.sesion_set.all().values_list('hora_inicio', 'hora_fin').distinct().order_by('hora_inicio')
         return horas.last()[1]
 
     @property
     def horario_height(self):
         try:
-            horas = self.sesion_set.all().values_list('inicio', 'fin').distinct().order_by('inicio')
+            horas = self.sesion_set.all().values_list('hora_inicio', 'hora_fin').distinct().order_by('hora_inicio')
             l = horas.last()[1]
             i = horas[0][0]
-            return (l.hour * 60 + l.minute - i.hour * 60 - i.minute + 5) * self.pixels_minuto + self.pixels_offset
+            return (l - i + 5) * self.pixels_minuto + self.pixels_offset
         except:
             return 400
 
@@ -389,18 +389,17 @@ class Sesion(models.Model):
 
     @property
     def top(self):
-        hora_inicio = self.horario.hora_inicio_ge(self.g_e)
+        hi = self.horario.hora_inicio_ge(self.g_e)
         offset = self.horario.pixels_offset
         pixels_minuto = self.horario.pixels_minuto
-        return (
-                       self.inicio.hour * 60 + self.inicio.minute - hora_inicio.hour * 60 - hora_inicio.minute) * pixels_minuto + offset
+        return (self.hora_inicio - hi) * pixels_minuto + offset
 
     @property
     def height(self):
-        hora_inicio = self.horario.hora_inicio
-        hora_fin = self.horario.hora_fin
+        hi = self.horario.hora_inicio
+        hf = self.horario.hora_fin
         pixels_minuto = self.horario.pixels_minuto
-        return (hora_fin.hour * 60 + hora_fin.minute - hora_inicio.hour * 60 - hora_inicio.minute) * pixels_minuto
+        return (hf - hi) * pixels_minuto
 
     def __str__(self):
         return '%s - %s' % (self.dia, self.horario)
