@@ -1295,8 +1295,10 @@ def add_usuario(request):
 @permiso_required('acceso_tutores_entidad')
 def tutores_entidad(request):
     g_e = request.session['gauser_extra']
-    sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
-    docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+    # sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+    # docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+    cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+    docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
     grupos = Grupo.objects.filter(ronda=g_e.ronda).order_by('cursos__etapa', 'nombre')
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
