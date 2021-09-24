@@ -27,7 +27,7 @@ from gauss.funciones import usuarios_de_gauss, usuarios_ronda, get_dce
 from gauss.rutas import MEDIA_ACTILLAS
 from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios
 from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia, SeguimientoAlumno, \
-    PlataformaDistancia
+    PlataformaDistancia, SesionExtra
 from horarios.tasks import carga_masiva_from_file
 from my_templatetags.templatetags.my_templatetags import human_readable_ges
 from entidades.models import *
@@ -443,11 +443,9 @@ def horario_ge(request):
                 info_dia['sesiones_dia'].append(sesiones_hora)
         sesiones.append(info_dia)
 
-
     horario_docente = horario.get_horario(ge)
     tabla_horario = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario_docente,
-                                                                         'docente': ge})
-
+                                                                                 'docente': ge})
 
     respuesta = {
         'iconos':
@@ -1420,20 +1418,23 @@ def guardias_horario(request):
             except:
                 pass
 
-    horario = Horario.objects.get(entidad=g_e.ronda.entidad, ronda=g_e.ronda, predeterminado=True)
+    horario = Horario.objects.get(ronda=g_e.ronda, predeterminado=True)
     if 'd' in request.GET:
         fecha = datetime.strptime(request.GET['d'], '%d%m%Y').date()
     else:
         fecha = date.today()
     # dias = ('lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo')
     # dia = dias[fecha.weekday()]
-    guardias = Guardia.objects.filter(fecha=fecha, sesion__horario=horario)
-    id_usuarios = Sesion.objects.filter(horario=horario).values_list('g_e__id')
-    usuarios_posibles = usuarios_ronda(g_e.ronda)
-    usuarios = usuarios_posibles.filter(id__in=id_usuarios).distinct()
+    # guardias = Guardia.objects.filter(fecha=fecha, sesion__horario=horario)
+    guardias = Guardia.objects.filter(fecha=fecha, sesion__horario__ronda=g_e.ronda)
+    # id_usuarios = Sesion.objects.filter(horario=horario).values_list('g_e__id')
+    # usuarios_posibles = usuarios_ronda(g_e.ronda)
+    # usuarios = usuarios_posibles.filter(id__in=id_usuarios).distinct()
+    docente = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+    usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[docente])
     # usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=id_usuarios).distinct()
-    tramos = Sesion.objects.filter(horario=horario).values_list('horario', 'inicio', 'fin').distinct().order_by(
-        'inicio')
+    tramos = horario.sesion_set.all().values_list('horario', 'hora_inicio_cadena',
+                                                                'hora_fin_cadena').distinct().order_by('hora_inicio')
 
     return render(request, "guardias_horario.html",
                   {
@@ -1444,7 +1445,9 @@ def guardias_horario(request):
                       'dia': fecha.isoweekday(),
                       'fecha': fecha,
                       'usuarios': usuarios,
-                      'horario_guardias': horario.horario_guardias(fecha.isoweekday())
+                      'horario_guardias': horario.horario_guardias(fecha.isoweekday()),
+                      'tramos': tramos,
+                      'posibles_guardias': Actividad.objects.filter(entidad=g_e.ronda.entidad, guardia=True)
                   })
 
 
@@ -1488,28 +1491,41 @@ def guardias_ajax(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'change_tipo_guardia':
+            try:
+                se = SesionExtra.objects.get(id=request.POST['se'], sesion__horario__ronda=g_e.ronda)
+                actividad = Actividad.objects.get(entidad=g_e.ronda.entidad, id=request.POST['tipo'])
+                se.actividad = actividad
+                se.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
     else:
         if action == 'add_guardia':
             observaciones = ' - ' + request.POST['observaciones']
             ge = Gauser_extra.objects.get(id=request.POST['g_e'], ronda=g_e.ronda)
             horario = Horario.objects.get(id=request.POST['horario'])
-            inicio = time(int(request.POST['inicio_hora']), int(request.POST['inicio_minutos']))
-            fin = time(int(request.POST['fin_hora']), int(request.POST['fin_minutos']))
+            inicio = request.POST['inicio_hora']
+            fin = request.POST['fin_hora']
+            # inicio = time(int(request.POST['inicio_hora']), int(request.POST['inicio_minutos']))
+            # fin = time(int(request.POST['fin_hora']), int(request.POST['fin_minutos']))
             fecha = datetime.strptime(request.POST['fecha'], '%d/%m/%Y')
             dia = fecha.isoweekday()
-            sesiones = Sesion.objects.filter(horario=horario, inicio=inicio, fin=fin, g_e=ge, dia=dia)
-            if sesiones.count() > 0:
+
+            sesionex = SesionExtra.objects.filter(sesion__horario=horario, sesion__hora_inicio_cadena=inicio,
+                                                  sesion__hora_fin_cadena=fin, sesion__g_e=ge, sesion__dia=dia)
+            if sesionex.count() > 0:
                 try:
-                    grupos = ', '.join(set(sesiones.values_list('grupo__nombre', flat=True)))
+                    grupos = ', '.join(set(sesionex.values_list('grupo__nombre', flat=True)))
                 except:
                     grupos = 'Sin grupo de alumnos'
                 try:
-                    dependencias = ', '.join(set(sesiones.values_list('dependencia__nombre', flat=True)))
+                    dependencias = ', '.join(set(sesionex.values_list('dependencia__nombre', flat=True)))
                 except:
                     dependencias = ''
                 usuario = '<br><span style="color:#dc322f">' + ge.gauser.get_full_name() + '</span>'
                 obs = '%s - %s - %s - %s' % (usuario, dependencias, grupos, observaciones)
-                guardia = Guardia.objects.create(ge=ge, sesion=sesiones[0], fecha=fecha, observaciones=obs)
+                guardia = Guardia.objects.create(ge=ge, sesion=sesionex[0].sesion, fecha=fecha, observaciones=obs)
                 try:
                     guardia.tarea = request.FILES['fichero_xhr0']
                     guardia.content_type = request.FILES['fichero_xhr0'].content_type
@@ -1520,6 +1536,29 @@ def guardias_ajax(request):
                 return JsonResponse({'texto': texto, 'ok': True})
             else:
                 return JsonResponse({'ok': False, 'usuario': ge.gauser.get_full_name()})
+            # sesiones = Sesion.objects.filter(horario=horario, hora_inicio_cadena=inicio, hora_fin_cadena=fin, g_e=ge, dia=dia)
+            # if sesiones.count() > 0:
+            #     try:
+            #         grupos = ', '.join(set(sesiones.values_list('grupo__nombre', flat=True)))
+            #     except:
+            #         grupos = 'Sin grupo de alumnos'
+            #     try:
+            #         dependencias = ', '.join(set(sesiones.values_list('dependencia__nombre', flat=True)))
+            #     except:
+            #         dependencias = ''
+            #     usuario = '<br><span style="color:#dc322f">' + ge.gauser.get_full_name() + '</span>'
+            #     obs = '%s - %s - %s - %s' % (usuario, dependencias, grupos, observaciones)
+            #     guardia = Guardia.objects.create(ge=ge, sesion=sesiones[0], fecha=fecha, observaciones=obs)
+            #     try:
+            #         guardia.tarea = request.FILES['fichero_xhr0']
+            #         guardia.content_type = request.FILES['fichero_xhr0'].content_type
+            #         guardia.save()
+            #     except:
+            #         pass
+            #     texto = render_to_string('guardias_horario_content.html', {'g': guardia, 'request': request})
+            #     return JsonResponse({'texto': texto, 'ok': True})
+            # else:
+            #     return JsonResponse({'ok': False, 'usuario': ge.gauser.get_full_name()})
 
 
 # @permiso_required('acceso_guardias_horarios')
@@ -1809,7 +1848,8 @@ def seguimiento_educativo(request):
                     ('DISPONIBILIDAD\nDEL DISPOSITIVO', estilo, 'sa.get_ticdisponible_display()', 5500),
                     ('INTERNET', estilo, '["No", "Sí"][sa.internet]', 3500),
                     ('OBSERVACIONES RESPECTO\nA LA ACCESIBILIDAD', estilo, 'sa.get_obsaccesibilidad_display()', 7000),
-                    ('OBSERVACIONES RESPECTO\nA LAS COMPETENCIAS\nDIGITALES', estilo, 'sa.get_obscompdigitales_display()', 7000),
+                    ('OBSERVACIONES RESPECTO\nA LAS COMPETENCIAS\nDIGITALES', estilo,
+                     'sa.get_obscompdigitales_display()', 7000),
                     ('ACOMPAÑANTE EDUCATIVO\nTELEMÁTICO', estilo, '["No", "Sí"][sa.acompeducativo]', 7000),
                     ('DISPONIBILIDAD DE\nMATERIALES DIDÁCTICOS', estilo, '["No", "Sí"][sa.materialesdidacticos]', 7000),
                     ('ATENCIÓN A LA\nDIVERSIDAD', estilo, '["No", "Sí"][sa.atdiversidad]', 5500),
@@ -1840,7 +1880,8 @@ def seguimiento_educativo(request):
                             wa.write(fila_excel_alumnos, c_num, '')
             except Exception as e:
                 fila_excel_incidencias += 1
-                aviso = 'Error al grabar el alumno %s - %s' % (sa.alumno.ge.gauser.get_full_name(), sa.alumno.grupo.nombre)
+                aviso = 'Error al grabar el alumno %s - %s' % (
+                sa.alumno.ge.gauser.get_full_name(), sa.alumno.grupo.nombre)
                 wi.write(fila_excel_incidencias, 0, aviso)
         profesores_id = PlataformaDistancia.objects.filter(profesor__ronda=g_e.ronda).values_list('profesor__id',
                                                                                                   flat=True).distinct()

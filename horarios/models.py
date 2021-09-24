@@ -35,11 +35,11 @@ DIAS = (
 # ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', 'FP Básica'), ('fa', 'Bachillerato'),
 #           ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'))
 ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', 'FP Básica'), ('fa', 'Bachillerato'),
-              ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'), ('ia', 'Enseñanzas Iniciales de Personas Adultas'),
-              ('ja', 'Educación Secundaria de Personas Adultas'),
-              ('ka', 'Educación Secundaria de Personas Adultas a Distancia Semipresencial'),
-              ('la', 'Educación Secundaria de Personas Adultas a Distancia'), ('ma', 'Educación para Personas Adultas'),
-              ('na', 'Preparación Pruebas de Acceso a CCFF'), ('za', 'Etapa no identificada'))
+          ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'), ('ia', 'Enseñanzas Iniciales de Personas Adultas'),
+          ('ja', 'Educación Secundaria de Personas Adultas'),
+          ('ka', 'Educación Secundaria de Personas Adultas a Distancia Semipresencial'),
+          ('la', 'Educación Secundaria de Personas Adultas a Distancia'), ('ma', 'Educación para Personas Adultas'),
+          ('na', 'Preparación Pruebas de Acceso a CCFF'), ('za', 'Etapa no identificada'))
 
 
 # class Curso(models.Model):
@@ -152,7 +152,7 @@ class Horario(models.Model):
         """
         # Días para los cuales se calcula el horario
         dias_dict = {1: self.lunes, 2: self.martes, 3: self.miercoles, 4: self.jueves, 5: self.viernes,
-                     6:self.sabado, 7: self.domingo}
+                     6: self.sabado, 7: self.domingo}
         dias = [d for d, valor in dias_dict.items() if valor]
         ss = self.sesion_set.filter(g_e=docente)
         tramos = ss.values_list('hora_inicio', 'hora_inicio_cadena', 'hora_fin_cadena').distinct()
@@ -172,7 +172,8 @@ class Horario(models.Model):
         return self.sesion_set.filter(dependencia=aula)
 
     def horas_aula(self, aula):
-        hs = self.sesion_set.filter(dependencia=aula).values_list('hora_inicio', 'hora_fin').distinct().order_by('hora_inicio')
+        hs = self.sesion_set.filter(dependencia=aula).values_list('hora_inicio', 'hora_fin').distinct().order_by(
+            'hora_inicio')
         return [{'top': (hora[0] - hs[0][0]) * self.pixels_minuto + self.pixels_offset,
                  'height': (hora[1] - hora[0]) * self.pixels_minuto,
                  'inicio': hora[0], 'fin': hora[1]} for hora in hs]
@@ -189,7 +190,8 @@ class Horario(models.Model):
         return self.sesion_set.filter(grupo=grupo)
 
     def horas_grupo(self, grupo):
-        hs = self.sesion_set.filter(grupo=grupo).values_list('hora_inicio', 'hora_fin').distinct().order_by('hora_inicio')
+        hs = self.sesion_set.filter(grupo=grupo).values_list('hora_inicio', 'hora_fin').distinct().order_by(
+            'hora_inicio')
         return [{'top': (hora[0] - hs[0][0]) * self.pixels_minuto + self.pixels_offset,
                  'height': (hora[1] - hora[0]) * self.pixels_minuto,
                  'inicio': hora[0], 'fin': hora[1]} for hora in hs]
@@ -212,7 +214,8 @@ class Horario(models.Model):
         #          'height': (hora[1].hour * 60 + hora[1].minute - hora[0].hour * 60 - hora[
         #              0].minute) * self.pixels_minuto,
         #          'inicio': hora[0], 'fin': hora[1]} for hora in hs]
-        hs = self.sesion_set.filter(g_e=ge).values_list('hora_inicio', 'hora_fin', 'hora_inicio_cadena', 'hora_fin_cadena').distinct().order_by('hora_inicio')
+        hs = self.sesion_set.filter(g_e=ge).values_list('hora_inicio', 'hora_fin', 'hora_inicio_cadena',
+                                                        'hora_fin_cadena').distinct().order_by('hora_inicio')
         return [{'top': (hora[0] - hs[0][0]) * self.pixels_minuto + self.pixels_offset,
                  'height': (hora[1] - hora[0]) * self.pixels_minuto,
                  'inicio': hora[0], 'fin': hora[1], 'his': hora[2], 'hfs': hora[3]} for hora in hs]
@@ -284,12 +287,19 @@ class Horario(models.Model):
         return d
 
     def horario_guardias(self, dia):
-        g_es = usuarios_ronda(self.entidad.ronda)
         gs = []
-        for hora in self.horas:
-            ss = Sesion.objects.filter(horario=self, inicio=hora[0], fin=hora[1], actividad__guardia=True, dia=dia,
-                                       g_e__in=g_es).distinct()
-            gs.append({'hora': hora, 'sesiones': ss})
+        tramos = self.sesion_set.all().values_list('horario', 'hora_inicio_cadena',
+                                                   'hora_fin_cadena').distinct().order_by('hora_inicio')
+        for tramo in tramos:
+            ss = SesionExtra.objects.filter(sesion__horario=self, sesion__hora_inicio_cadena=tramo[1],
+                                            actividad__guardia=True, sesion__dia=dia).distinct()
+            gs.append({'tramo': tramo, 'sesiones': ss})
+        # g_es = usuarios_ronda(self.entidad.ronda)
+        # gs = []
+        # for hora in self.horas:
+        #     ss = Sesion.objects.filter(horario=self, inicio=hora[0], fin=hora[1], actividad__guardia=True, dia=dia,
+        #                                g_e__in=g_es).distinct()
+        #     gs.append({'hora': hora, 'sesiones': ss})
         return gs
 
     @property
@@ -404,6 +414,7 @@ class Sesion(models.Model):
     def __str__(self):
         return '%s - %s' % (self.dia, self.horario)
 
+
 class SesionExtra(models.Model):
     sesion = models.ForeignKey(Sesion, on_delete=models.CASCADE, blank=True, null=True)
     grupo = models.ForeignKey(EGrupo, null=True, blank=True, on_delete=models.CASCADE)
@@ -416,7 +427,6 @@ class SesionExtra(models.Model):
 
     def __str__(self):
         return '%s' % (self.sesion)
-
 
 
 TIPO_FALTA = (('f', 'Falta'), ('r', 'Retraso'))
@@ -542,4 +552,3 @@ class SeguimientoAlumno(models.Model):
 #         emateria = EMateria.objects.get(clave_ex=s.materia.clave_ex, curso__ronda=s.materia.curso.ronda)
 #         s.emateria = emateria
 #         s.save()
-
