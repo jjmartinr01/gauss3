@@ -93,7 +93,7 @@
                     {% for s in t.sesiones %}
                         <div style="display: block;white-space: nowrap;"
                              title="{{ s.sesion.g_e.gauser.get_full_name }} - {{ s.actividad.nombre }}">{{ s.sesion.g_e.gauser.get_full_name }}
-                            {% if request.session.gauser_extra|has_permiso:'crea_guardias_horario' %}
+                            {% if request.session.gauser_extra|has_permiso:'modifica_sesiones_horario' %}
                                 <select class="change_tipo_guardia" data-se="{{ s.id }}">
                                     <option value="">{{ s.actividad.nombre }}</option>
                                     {% for pg in posibles_guardias %}
@@ -361,7 +361,7 @@
             });
         });
 
-        {% if request.session.gauser_extra|has_permiso:'crea_guardias_horario' %}
+        {% if request.session.gauser_extra|has_permiso:'modifica_sesiones_horario' %}
             $('body').on('change', '.change_tipo_guardia', function (e) {
                 var se = $(this).data('se');
                 var tipo = $(this).val();
