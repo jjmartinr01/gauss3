@@ -46,12 +46,24 @@
                     <thead>
                     <tr>
                         {% for i in inspectores %}
-                            <th><b>{{ i.gauser.get_full_name|get_iniciales }}</b> <span
-                                    id="insp{{ i.id }}">{{ i|get_puntos }}</span></th>
+                            <th title="{{ i.gauser.get_full_name }}"><b>{{ i.gauser.get_full_name|get_iniciales }}</b>
+                                <span
+                                        id="insp{{ i.id }}">{{ i|get_puntos }}</span></th>
                         {% endfor %}
                     </tr>
                     </thead>
                 </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-6">
+                <b>Número de centros/entidades:</b> {{ num_centros }}
+            </div>
+            <div class="columns large-6">
+                <b>Número de centros/entidades sin asignar:</b>
+                <span id="num_centros_sin_asignar">{{ num_centros_sin_asignar }}</span>
+                <a title="Ver lista de centros/entidades sin asignar" id="listar_centros_sin_asignar">
+                    <i class="fa fa-list-alt"></i></a>
             </div>
         </div>
 
@@ -174,6 +186,21 @@
                         });
                 }
             }, 750);
+        });
+
+
+        $('body').on('click', '#listar_centros_sin_asignar', function (e) {
+            e.preventDefault();
+            $.post("/asignar_centros_inspeccion/", {action: 'listar_centros_sin_asignar'},
+                function (data) {
+                    if (data.ok) {
+                        $('#list_cis').html(data.html);
+                        $('#num_centros_sin_asignar').text(data.num_centros_sin_asignar);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
         });
 
     </script>

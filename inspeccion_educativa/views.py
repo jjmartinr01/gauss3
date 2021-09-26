@@ -905,9 +905,26 @@ def asignar_centros_inspeccion(request):
             except:
                 return JsonResponse({'ok': False})
 
+        elif request.POST['action'] == 'listar_centros_sin_asignar':
+            try:
+                ias = InspectorAsignado.objects.filter(inspector__isnull=True)
+                cis_ids = ias.values_list('cenins__centro__id', flat=True)
+                cis_posibles = CentroInspeccionado.objects.filter(ronda=g_e.ronda, centro__in=cis_ids)
+                paginator = Paginator(cis_posibles, 25)
+                cis = paginator.page(1)
+                html = render_to_string('asignar_centros_inspector_buscar.html', {'cis': cis, 'pag': True,
+                                                                                  'inspectores': inspectores,
+                                                                                  })
+                return JsonResponse({'ok': True, 'html': html, 'num_centros_sin_asignar': ias.count()})
+            except:
+                return JsonResponse({'ok': False})
+
     organization = g_e.ronda.entidad.organization
     for e in Entidad.objects.filter(organization=organization):
-        ci, c = CentroInspeccionado.objects.get_or_create(centro=e, ronda=g_e.ronda)
+        ci, c = CentroInspeccionado.objects.get_or_create(centro=e)
+        if ci.ronda != g_e.ronda:
+            ci.ronda = g_e.ronda
+            ci.save()
         if ci.inspectorasignado_set.all().count() == 0:
             InspectorAsignado.objects.create(cenins=ci)
     cis_posibles = CentroInspeccionado.objects.filter(ronda=g_e.ronda)
@@ -926,7 +943,9 @@ def asignar_centros_inspeccion(request):
         'g_e': g_e, 'cis': cis,
         'inspectores': inspectores,
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
-        'pag': 1
+        'pag': 1,
+        'num_centros': CentroInspeccionado.objects.filter(ronda=g_e.ronda).count(),
+        'num_centros_sin_asignar': InspectorAsignado.objects.filter(inspector__isnull=True).count()
     })
 
 
