@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import os
-from datetime import datetime
+from datetime import datetime, date
 from django.db import models
 from django.template import Context, Template
 from django.utils.text import slugify
@@ -646,7 +646,7 @@ class TareaInspeccion(models.Model):
 
     @property
     def tarea_programada(self):
-        if self.fecha > datetime.today().date():
+        if self.fecha > date.today():
             return True
         else:
             return False
@@ -677,6 +677,28 @@ class InspectorTarea(models.Model):
 
     def __str__(self):
         return '%s - %s - %s' % (self.permiso, self.inspector, self.tarea)
+
+def update_fichero_tarea(instance, filename):
+    nombre, dot, ext = filename.rpartition('.')
+    instance.fich_name = filename
+    fichero = pass_generator(size=20) + '.' + ext
+    return '/'.join(['inspeccion', str(instance.tarea.creador.ronda.entidad.code), fichero])
+
+class FileAttachedTI(models.Model):
+    tarea = models.ForeignKey(TareaInspeccion, on_delete=models.CASCADE)
+    fichero = models.FileField("Fichero adjunto a informe de inspección", upload_to=update_fichero_tarea, blank=True)
+    content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
+    fich_name = models.CharField("Nombre del archivo", max_length=200, blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = "Ficheros adjuntos a las tareas de inspección"
+
+    def filename(self):
+        f = os.path.basename(self.fichero.name)
+        return os.path.split(f)[1]
+
+    def __str__(self):
+        return '%s (%s)' % (self.fichero, self.tarea)
 
 
 class PlantillaInformeInspeccion(models.Model):
@@ -774,7 +796,6 @@ def update_fichero(instance, filename):
     instance.fich_name = filename
     fichero = pass_generator(size=20) + '.' + ext
     return '/'.join(['inspeccion', str(instance.informe.inspector.ronda.entidad.code), fichero])
-
 
 class FileAttachedII(models.Model):
     informe = models.ForeignKey(InformeInspeccion, on_delete=models.CASCADE)

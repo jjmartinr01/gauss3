@@ -1,5 +1,6 @@
 {% extends "base_select2-4.html" %}
 {% load my_templatetags %}
+{% load inspeccion_educativa_extras %}
 
 {% block contenido %}
     <style>
@@ -24,6 +25,8 @@
         <input type="hidden" name="q" id="q" value="">
         <input type="hidden" name="page" id="page" value="">
         <input type="hidden" id="id_tareas_ie" name="id_tareas_ie" value="">
+        <input type="hidden" id="fati" name="fati" value="">
+        <input type="hidden" id="id_ti" name="id_ti" value="">
 
         <div id="div_tareas_ie_seleccionados"></div>
 
@@ -65,41 +68,40 @@
                 </div>
             </div>
         </fieldset>
-{#        <fieldset>#}
-{#            <legend>Generar informe semanal</legend>#}
-{#            <div class="row">#}
-{#                {% if g_e|has_permiso:'genera_informe_tareas_ie' %}#}
-{#                    <div class="columns large-4">#}
-{#                        <label>Selecciona el inspector#}
-{#                            <select name="inspector_informe">#}
-{#                                {% for i in inspectores %}#}
-{#                                    <option value="{{ i.id }}"#}
-{#                                            {% if i == g_e %}selected{% endif %}>{{ i.gauser.get_full_name }}</option>#}
-{#                                {% endfor %}#}
-{#                            </select>#}
-{#                        </label>#}
-{#                    </div>#}
-{#                {% else %}#}
-{#                    <div class="columns large-4">#}
-{#                        <input type="hidden" name="inspector_informe" value="{{ g_e.id }}">#}
-{#                        <label>Inspector<br><b>{{ g_e.gauser.get_full_name }}</b></label>#}
-{#                    </div>#}
-{#                {% endif %}#}
-{#                <div class="columns large-6">#}
-{#                    <label>Selecciona una semana de trabajo y pulsa "Generar PDF"#}
-{#                        <select name="semana">#}
-{#                            {% for s in semanas %}#}
-{#                                <option value="{{ s.0 }}">{{ s.1 }}</option>#}
-{#                            {% endfor %}#}
-{#                        </select>#}
-{#                    </label>#}
-{#                </div>#}
-{#                <div class="columns large-2">#}
-{#                    <label>&nbsp;<br><a class="button tiny" id="crea_informe_semanal">Generar PDF</a>#}
-{#                    </label>#}
-{#                </div>#}
-{#            </div>#}
-{#        </fieldset>#}
+        <fieldset id="fieldset_informe" style="display: none;">
+            <legend>Generar informe de tareas</legend>
+            <div class="row">
+                <div class="columns large-4">
+                    <label>Selecciona el inspector
+                        <select name="inspector_informe" id="select_inspector_informe">
+                        <option value="general">Todos los inspectores</option>
+                            {% for i in inspectores %}
+                                <option value="{{ i.id }}">{{ i.gauser.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+                <div class="columns large-2">
+                    <label>Entre esta fecha ...</label>
+                    <input id="id_fecha_inicio_ti" name="fecha_inicio_ti" type="text"
+                           value="{% get_last_monday %}">
+                </div>
+                <div class="columns large-2">
+                    <label>... y esta otra</label>
+                    <input id="id_fecha_fin_ti" name="fecha_fin_ti" type="text" value="{% get_next_friday %}">
+                </div>
+                <div class="columns large-2">
+                    <label>&nbsp;<br><a class="button tiny crea_informe" data-action="crea_informe_pdf"><i class="fa fa-file-pdf-o"></i>
+                        Genera PDF</a>
+                    </label>
+                </div>
+                <div class="columns large-2">
+                    <label>&nbsp;<br><a class="button tiny crea_informe" data-action="crea_informe_excel"><i class="fa fa-file-excel-o"></i>
+                        Genera Excel</a>
+                    </label>
+                </div>
+            </div>
+        </fieldset>
 
         <div id="listado_tareas_ie">
             {% include 'tareas_ie_accordion.html' %}
@@ -111,43 +113,45 @@
     <script>
 
 
-
-    function constructEditorInstances() {
-        CKEDITOR.editorConfig = function (config){
-            config.toolbarGroups = [
-        { name: 'clipboard',   groups: [ 'Cut','Copy','Paste','PasteText','PasteFromWord','Undo','Redo' ] },
-        { name: 'editing',     groups: [ 'find', 'selection', 'spellchecker' ] },
-        { name: 'links' },
-        { name: 'insert' },
-        {#{ name: 'forms' },#}
-        { name: 'tools' },
-        { name: 'document',       groups: [ 'mode', 'document', 'doctools' ] },
-        { name: 'others' },
-        '/',
-        { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
-        { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ] },
-        { name: 'styles',      groups : [ 'Styles','Format','Font','FontSize' ] },
-        { name: 'colors',        groups : [ 'TextColor','BGColor' ] },
-        { name: 'about' }
-    ];
-        }
+        function constructEditorInstances() {
+            CKEDITOR.editorConfig = function (config) {
+                config.toolbarGroups = [
+                    {name: 'clipboard', groups: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', 'Undo', 'Redo']},
+                    {name: 'editing', groups: ['find', 'selection', 'spellchecker']},
+                    {name: 'links'},
+                    {name: 'insert'},
+                    {#{ name: 'forms' },#}
+                    {name: 'tools'},
+                    {name: 'document', groups: ['mode', 'document', 'doctools']},
+                    {name: 'others'},
+                    '/',
+                    {name: 'basicstyles', groups: ['basicstyles', 'cleanup']},
+                    {name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi']},
+                    {name: 'styles', groups: ['Styles', 'Format', 'Font', 'FontSize']},
+                    {name: 'colors', groups: ['TextColor', 'BGColor']},
+                    {name: 'about'}
+                ];
+            }
             for (var instance in CKEDITOR.instances) {
                 CKEDITOR.instances[instance].inline({
                     toolbarGroups: [
-        { name: 'clipboard',   groups: [ 'Cut','Copy','Paste','PasteText','PasteFromWord','Undo','Redo' ] },
-        { name: 'editing',     groups: [ 'find', 'selection', 'spellchecker' ] },
-        { name: 'links' },
-        { name: 'insert' },
-        {#{ name: 'forms' },#}
-        { name: 'tools' },
-        { name: 'document',       groups: [ 'mode', 'document', 'doctools' ] },
-        { name: 'others' },
-        '/',
-        { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
-        { name: 'styles',      groups : [ 'Styles','Format','Font','FontSize' ] },
-        { name: 'colors',        groups : [ 'TextColor','BGColor' ] },
-        { name: 'about' }
-    ]
+                        {
+                            name: 'clipboard',
+                            groups: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', 'Undo', 'Redo']
+                        },
+                        {name: 'editing', groups: ['find', 'selection', 'spellchecker']},
+                        {name: 'links'},
+                        {name: 'insert'},
+                        {#{ name: 'forms' },#}
+                        {name: 'tools'},
+                        {name: 'document', groups: ['mode', 'document', 'doctools']},
+                        {name: 'others'},
+                        '/',
+                        {name: 'basicstyles', groups: ['basicstyles', 'cleanup']},
+                        {name: 'styles', groups: ['Styles', 'Format', 'Font', 'FontSize']},
+                        {name: 'colors', groups: ['TextColor', 'BGColor']},
+                        {name: 'about'}
+                    ]
                 });
             }
         }
@@ -173,6 +177,7 @@
                                         $('#panel' + id).html(data.html);
                                         destroyEditorInstances();
                                         constructEditorInstances();
+                                        $('#id_ti').val(id);
                                         {#CKEDITOR.inlineAll();#}
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
@@ -288,20 +293,15 @@
                 var nuevo_texto = get_texto_from_update_texto(element, id);
                 if (antiguo_texto === nuevo_texto) {
                     $.post("/tareas_ie/", {action: 'update_texto', id: id, valor: nuevo_texto, campo: campo},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
                 }
             }, 750);
-
-
-
-
-
         });
 
 
@@ -459,25 +459,104 @@
                 });
         });
 
-        $('#crea_informe_semanal').click(function (event) {
+        {% if g_e|has_permiso:"genera_informe_tareas_ie" %}
+            habilita(['s_file-text-o']);
+            $('#file-text-o_sign').click(function (event) {
+                event.preventDefault();
+                $('#fieldset_informe').toggle();
+                setTimeout(function (){$('#select_inspector_informe').select2();},200);
+                {#$('#action').val('genera_informe');#}
+                {#document.getElementById("{{ formname }}").submit();#}
+            });
+
+            $('.crea_informe').click(function (event) {
             event.preventDefault();
-            $('#action').val('crea_informe_semanal');
+            $('#action').val($(this).data('action'));
             document.getElementById("{{ formname }}").submit();
         });
-        {% if g_e|has_permiso:"genera_informe_tareas_ie" %}
-            {#habilita(['s_file-pdf-o']);#}
-            $('#file-pdf-o_sign').click(function (event) {
-                event.preventDefault();
-                $('#action').val('genera_informe');
-                document.getElementById("{{ formname }}").submit();
-            });
         {% endif %}
 
-        habilita(['s_file-excel-o']);
-        $('#file-excel-o_sign').click(function (event) {
-            event.preventDefault();
-            $('#action').val('excel_actuaciones');
-            document.getElementById("{{ formname }}").submit();
+
+        {# ##################################################################### #}
+        {# #################### CARGA DE ARCHIVOS ############################## #}
+        {# ##################################################################### #}
+
+
+        {#function updateProgress(evt) {#}
+        {#    if (evt.lengthComputable) {#}
+        {#        var percentComplete = (evt.loaded / evt.total) * 100;#}
+        {#        $('.span_porcentage').html(parseInt(percentComplete) + '%');#}
+        {#        console.log(percentComplete);#}
+        {#    } else {#}
+        {#        console.log('No es posible calcular el porcentaje de carga en el servidor');#}
+        {#    }#}
+        {# }#}
+
+        $('body').on('click', '.subir_gauss_file', function () {
+            var id = $(this).data('id');
+            var input_files = document.getElementById('input_gauss_file' + id).files;
+            $('#span_spin').show();
+            {#$('.span_porcentage').show();#}
+
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('archivo_xhr' + i, input_files[i], slugify_filename(input_files[i].name));
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'upload_archivo_xhr');
+            formData.append('ti', id);
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log(xhr.responseText);
+                        {#var b = xhr.responseText;#}
+                        var data = JSON.parse(xhr.responseText);
+                        $('#tbody_gauss_file' + data.id).html(data.html);
+                        $('#span_spin').hide();
+                        {#$('#span_porcentage').hide();#}
+                    }
+                }
+            };
+            xhr.open('POST', "/tareas_ie/", true);
+            xhr.send(formData);
+        });
+
+        $('#Contenido').on('click', '.descarga_gauss_file', function (e) {
+            e.preventDefault();
+            $('#action').val('descarga_gauss_file');
+            $('#fati').val($(this).data('id'));
+            document.getElementById('{{formname}}').submit();
+        });
+
+        $('body').on('click', '.borra_gauss_file', function () {
+            id = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar este archivo adjunto a la tarea?',
+                texto: 'Si aceptas el archivo se borrará por completo de la base de datos', size: 'large', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/tareas_ie/", {action: 'borrar_fati', id: id},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#gauss_file' + id).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
         });
     </script>
 

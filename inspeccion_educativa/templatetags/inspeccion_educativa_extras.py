@@ -3,11 +3,31 @@ from django.template import Library
 from entidades.models import Subentidad
 from estudios.models import Grupo, Materia
 from horarios.models import Sesion
-from datetime import datetime, time
+from datetime import datetime, timedelta, time
 from inspeccion_educativa.models import InspectorAsignado
 
 register = Library()
 
+
+# @register.simple_tag(takes_context=True)
+# def get_next_friday(context):
+#     selected_date = context['selected_date']
+#     next_month = selected_date.month % 12 + 1
+#     return datetime.date(1900, next_month, 1).strftime("%b")
+
+@register.simple_tag(takes_context=False)
+def get_next_friday():
+    d = datetime.today().date() - timedelta(4)
+    while d.weekday() != 4:
+        d += timedelta(1)
+    return d.strftime('%d-%m-%Y')
+
+@register.simple_tag(takes_context=False)
+def get_last_monday():
+    d = datetime.today().date() - timedelta(4)
+    while d.weekday() != 0:
+        d -= timedelta(1)
+    return d.strftime('%d-%m-%Y')
 
 @register.filter
 def texto2nombre(s):

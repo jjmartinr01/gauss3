@@ -1,0 +1,6 @@
+{% if tarea_ie.tarea.tarea_programada %}
+    (<span style="color:red;">{{ tarea_ie.tarea.fecha|date:"d-m-Y" }}
+                <i class="fa fa-calendar-times-o"></i></span>)
+{% else %}
+    (<span>{{ tarea_ie.tarea.fecha|date:"d-m-Y" }}</span>)
+{% endif %}

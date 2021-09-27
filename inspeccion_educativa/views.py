@@ -110,9 +110,9 @@ def tareas_ie(request):
     if request.method == 'POST' and request.is_ajax():
         if request.POST['action'] == 'crea_tarea_ie':
             if g_e.has_permiso('crea_tareas_ie'):
-                tarea = TareaInspeccion.objects.create(ronda_centro=g_e.ronda.entidad.ronda, fecha=datetime.today(),
+                tarea = TareaInspeccion.objects.create(ronda_centro=g_e.ronda.entidad.ronda,
                                                        # asunto='Nueva actuación de Inspección Educativa',
-                                                       observaciones='', creador=g_e)
+                                                       observaciones='', fecha=datetime.today().date(), creador=g_e)
                 itarea = InspectorTarea.objects.create(inspector=g_e, tarea=tarea, permiso='rwx', rol='1')
                 html = render_to_string('tareas_ie_accordion.html',
                                         {'buscadas': False, 'tareas_ie': [itarea], 'g_e': g_e, 'nueva': True})
@@ -182,9 +182,11 @@ def tareas_ie(request):
         elif request.POST['action'] == 'update_fecha':
             try:
                 itarea = InspectorTarea.objects.get(inspector__ronda__entidad=g_e.ronda.entidad, id=request.POST['id'])
-                itarea.tarea.fecha = datetime.strptime(request.POST['valor'], '%Y-%m-%d')
+                itarea.tarea.fecha = datetime.strptime(request.POST['valor'], '%Y-%m-%d').date()
                 itarea.tarea.save()
-                return JsonResponse({'ok': True, 'fecha': itarea.tarea.fecha.strftime('%d-%m-%Y'), 'id': itarea.id})
+                fecha = render_to_string('tareas_ie_accordion_fecha.html', {'tarea_ie': itarea})
+                # return JsonResponse({'ok': True, 'fecha': itarea.tarea.fecha.strftime('%d-%m-%Y'), 'id': itarea.id})
+                return JsonResponse({'ok': True, 'fecha': fecha, 'id': itarea.id})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'borrar_tarea_ie':
@@ -283,6 +285,15 @@ def tareas_ie(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'borrar_fati':
+            try:
+                fati = FileAttachedTI.objects.get(id=request.POST['id'])
+                TareaInspeccion.objects.get(creador__gauser=g_e.gauser, id=fati.tarea.id)
+                os.remove(fati.fichero.path)
+                fati.delete()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
     elif request.method == 'POST' and not request.is_ajax():
         if request.POST['action'] == 'genera_informe':
             instareas = InspectorTarea.objects.all()
@@ -302,7 +313,7 @@ def tareas_ie(request):
             response['Content-Disposition'] = 'attachment; filename=' + fichero + '.pdf'
             logger.info('%s, genera informe de inspección' % (g_e))
             return response
-        elif request.POST['action'] == 'excel_actuaciones':
+        elif request.POST['action'] == 'crea_informe_excel':
             ruta = MEDIA_INSPECCION + str(g_e.ronda.entidad.code) + '/'
             if not os.path.exists(ruta):
                 os.makedirs(ruta)
@@ -345,7 +356,7 @@ def tareas_ie(request):
             response = FileResponse(xlsfile, content_type='application/vnd.ms-excel')
             response['Content-Disposition'] = 'attachment; filename=listado.xls'
             return response
-        elif request.POST['action'] == 'crea_informe_semanal':
+        elif request.POST['action'] == 'crea_informe_pdf':
             inf_semanal = 'Configuración informes semanales de actuaciones'
             try:
                 dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=inf_semanal)
@@ -356,14 +367,24 @@ def tareas_ie(request):
                 dce.predeterminado = False
                 dce.editable = False
                 dce.save()
-            inspector = inspectores.get(id=request.POST['inspector_informe'])
-            lunes = datetime.strptime(request.POST['semana'], '%d-%m-%Y')
-            viernes = lunes + timedelta(days=4)
-            instareas = InspectorTarea.objects.filter(inspector=inspector, tarea__fecha__gte=lunes,
-                                                      tarea__fecha__lte=viernes)
-            fichero = 'Informe_%s_%s.pdf' % (str(g_e.ronda.entidad.code), inspector.gauser.username)
-            texto_html = render_to_string('informe_personal2pdf.html',
-                                          {'instareas': instareas, 'lunes': lunes, 'viernes': viernes})
+            fecha_inicio = datetime.strptime(request.POST['fecha_inicio'], '%d-%m-%Y')
+            fecha_fin = datetime.strptime(request.POST['fecha_fin'], '%d-%m-%Y')
+            general = True
+            if request.POST['inspector_informe'] == 'general':
+                instareas = InspectorTarea.objects.filter(inspector__ronda__entidad=g_e.ronda.entidad,
+                                                          tarea__fecha__gte=fecha_inicio,
+                                                          tarea__fecha__lte=fecha_fin).order_by('inspector')
+                fichero = 'Informe_general_%s.pdf' % str(g_e.ronda.entidad.code)
+            else:
+                inspector = inspectores.get(id=request.POST['inspector_informe'])
+                instareas = InspectorTarea.objects.filter(inspector=inspector, tarea__fecha__gte=fecha_inicio,
+                                                          tarea__fecha__lte=fecha_fin)
+                fichero = 'Informe_%s_%s.pdf' % (str(g_e.ronda.entidad.code), inspector.gauser.username)
+                general = False
+
+            texto_html = render_to_string('informe_personal2pdf.html', {'instareas': instareas, 'fecha_fin': fecha_fin,
+                                                                        'fecha_inicio': fecha_inicio,
+                                                                        'es_informe_general': general})
             ruta = MEDIA_INSPECCION + '%s/' % g_e.ronda.entidad.code
             opciones = {
                 'orientation': 'Landscape',
@@ -378,6 +399,29 @@ def tareas_ie(request):
             response['Content-Disposition'] = 'attachment; filename=' + fichero
             logger.info('%s, genera informe de inspección' % (g_e))
             return response
+        elif request.POST['action'] == 'upload_archivo_xhr':
+            try:
+                n_files = int(request.POST['n_files'])
+                ti = TareaInspeccion.objects.get(creador__gauser=g_e.gauser, id=request.POST['ti'])
+                for i in range(n_files):
+                    fichero = request.FILES['archivo_xhr' + str(i)]
+                    FileAttachedTI.objects.create(tarea=ti, fich_name=fichero.name,
+                                                  content_type=fichero.content_type, fichero=fichero)
+                html = render_to_string('tareas_ie_accordion_content_tr_files.html', {'ti': ti})
+                return JsonResponse({'ok': True, 'id': ti.id, 'html': html})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
+        elif request.POST['action'] == 'descarga_gauss_file':
+            try:
+                ti = InspectorTarea.objects.get(inspector__ronda__entidad=g_e.ronda.entidad,
+                                                id=request.POST['id_ti']).tarea
+                fati = FileAttachedTI.objects.get(tarea=ti, id=request.POST['fati'])
+                fich = fati.fichero
+                response = HttpResponse(fich, content_type='%s' % fati.content_type)
+                response['Content-Disposition'] = 'attachment; filename=%s' % fati.fich_name
+                return response
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
     logger.info('Entra en ' + request.META['PATH_INFO'])
     # Para evitar que se añadan participaciones/colaboraciones vacías en las tareas de inspección
     # borramos las que no tienen asociado un inspector.
@@ -402,7 +446,7 @@ def tareas_ie(request):
             ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
               'title': 'Crear una nueva actuación de Inspección',
               'permiso': 'crea_tareas_ie'},
-             {'tipo': 'button', 'nombre': 'file-pdf-o', 'texto': 'Informe',
+             {'tipo': 'button', 'nombre': 'file-text-o', 'texto': 'Informe',
               'title': 'Generar informe con las tareas realizadas',
               'permiso': 'genera_informe_tareas_ie'},
              {'tipo': 'button', 'nombre': 'file-excel-o', 'texto': 'Excel',

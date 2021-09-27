@@ -163,6 +163,29 @@
         </div>
     </div>
 
+    <div class="row">
+    <div class="columns large-12">
+        <label><b>Archivos adjuntos a la tarea </b></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <table>
+            <tbody id="tbody_gauss_file{{ instarea.tarea.id }}">
+            {% include 'tareas_ie_accordion_content_tr_files.html' with ti=instarea.tarea %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-8">
+        <label><input type="file" id="input_gauss_file{{ instarea.tarea.id }}" multiple="multiple"></label>
+    </div>
+    <div class="columns large-4">
+        <a class="button tiny subir_gauss_file" data-id="{{ instarea.tarea.id }}"><i class="fa fa-cloud-upload"></i> Cargar archivos</a>
+    </div>
+</div>
+
     <script>
         $('select').select2({placeholder: "Escribe parte del nombre para buscar coincidencias"});
     </script>

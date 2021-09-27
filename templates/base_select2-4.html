@@ -555,10 +555,14 @@
     {# explicados en la propia función #}
 
     function conf_select2(arguments) {
-        var gcs = arguments.gcs || 'gcs'; {# busca gauser_extra (g), cargos (c) y/o subentidades (s) #}
-        var format_g = arguments.format_g || "{0}, {1} - {2} (Tutor/a: {3})"; {# Cadena presentación gauser_extras #}
-        var cars = arguments.cars || []; {# array con los id de los cargos en los que buscar #}
-        var subs = arguments.subs || []; {# array con los id de las subentidades en las que buscar #}
+        var gcs = arguments.gcs || 'gcs';
+        {# busca gauser_extra (g), cargos (c) y/o subentidades (s) #}
+        var format_g = arguments.format_g || "{0}, {1} - {2} (Tutor/a: {3})";
+        {# Cadena presentación gauser_extras #}
+        var cars = arguments.cars || [];
+        {# array con los id de los cargos en los que buscar #}
+        var subs = arguments.subs || [];
+        {# array con los id de las subentidades en las que buscar #}
         var ph = arguments.placeholder || "Escribe parte del nombre";
         var mil = arguments.minimumInputLength || 3;
         var lan = arguments.language || "es";
@@ -585,16 +589,18 @@
                         results: $.map(data, function (item) {
                             if (item.entidad) {
                                 entidad = ' (' + item.entidad + ')';
-                            }else{entidad = ''}
+                            } else {
+                                entidad = ''
+                            }
                             if (item.tipo === 'g') {
-                                return  {
+                                return {
                                     text: format_g.format(item.last_name, item.first_name, item.grupo, item.tutor) + entidad,
                                     id: item.tipo + item.id
                                 }
                             } else if (item.tipo === 'c') {
-                                return  {text: item.cargo + entidad, id: item.tipo + item.id}
+                                return {text: item.cargo + entidad, id: item.tipo + item.id}
                             } else if (item.tipo === 's') {
-                                return  {text: item.subentidad + entidad, id: item.tipo + item.id}
+                                return {text: item.subentidad + entidad, id: item.tipo + item.id}
                             }
                         })
                     };
@@ -608,6 +614,34 @@
                 return "<span>" + a.text + "</span>"
             }
         }
+    }
+
+    // Slugify a string
+    function slugify_filename(str) {
+        var re = /(?:\.([^.]+))?$/;
+        var ext = re.exec(str)[1];
+        str = str.replace(/\.[^/.]+$/, "")
+        {# quitar la extensión #}
+        str = str.replace(/^\s+|\s+$/g, '');
+
+        // Make the string lowercase
+        str = str.toLowerCase();
+
+        // Remove accents, swap ñ for n, etc
+        var from = "ÁÄÂÀÃÅČÇĆĎÉĚËÈÊẼĔȆÍÌÎÏŇÑÓÖÒÔÕØŘŔŠŤÚŮÜÙÛÝŸŽáäâàãåčçćďéěëèêẽĕȇíìîïňñóöòôõøðřŕšťúůüùûýÿžþÞĐđßÆa·/_,:;";
+        var to = "AAAAAACCCDEEEEEEEEIIIINNOOOOOORRSTUUUUUYYZaaaaaacccdeeeeeeeeiiiinnooooooorrstuuuuuyyzbBDdBAa------";
+        for (var i = 0, l = from.length; i < l; i++) {
+            str = str.replace(new RegExp(from.charAt(i), 'g'), to.charAt(i));
+        }
+
+        // Remove invalid chars
+        str = str.replace(/[^a-z0-9 -]/g, '')
+            // Collapse whitespace and replace by -
+            .replace(/\s+/g, '-')
+            // Collapse dashes
+            .replace(/-+/g, '-');
+
+        return str + '.' + ext;
     }
 </script>
 {% block final %}{% endblock %}
