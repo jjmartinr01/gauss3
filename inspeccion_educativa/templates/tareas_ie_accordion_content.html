@@ -1,28 +1,42 @@
 {% load entidades_extras %}
 {% load inspeccion_educativa_extras %}
 <style>
-    .observaciones {cursor: text}
+    .observaciones {
+        cursor: text
+    }
 </style>
 {% if instarea|permiso_instarea_w:g_e %}
     <div class="row">
         <div class="columns large-12">
-            {% if instarea.tarea.creador.gauser == g_e.gauser or g_e|has_permiso:'borra_cualquier_tarea_ie' %}
-                <a class="button alert borrar_tarea_ie right" data-id="{{ instarea.id }}">
-                    <i class="fa fa-trash-o"></i> Borrar</a>
-            {% else %}
-                <a class="button secondary right" title="No tienes permisos para borrar la actuación">
-                    <i class="fa fa-trash-o"></i> Borrar</a>
-            {% endif %}
+            <ul class="button-group right">
+                <li><a class="button copiar_tareas_ie small" data-id="{{ instarea.id }}"
+                       title="Hacer una copia (un duplicado) de esta tarea"><i class="fa fa-copy"></i> Copiar</a>
+                </li>
+                {% if instarea.tarea.creador.gauser == g_e.gauser or g_e|has_permiso:'borra_cualquier_tarea_ie' %}
+                    <li><a class="button alert borrar_tarea_ie small" data-id="{{ instarea.id }}">
+                        <i class="fa fa-trash-o"></i> Borrar</a></li>
+                {% else %}
+                    <li><a class="button secondary small" title="No tienes permisos para borrar la actuación">
+                        <i class="fa fa-trash-o"></i> Borrar</a></li>
+                {% endif %}
+            </ul>
+            {#            {% if instarea.tarea.creador.gauser == g_e.gauser or g_e|has_permiso:'borra_cualquier_tarea_ie' %}#}
+            {#                <a class="button alert borrar_tarea_ie right" data-id="{{ instarea.id }}">#}
+            {#                    <i class="fa fa-trash-o"></i> Borrar</a>#}
+            {#            {% else %}#}
+            {#                <a class="button secondary right" title="No tienes permisos para borrar la actuación">#}
+            {#                    <i class="fa fa-trash-o"></i> Borrar</a>#}
+            {#            {% endif %}#}
         </div>
     </div>
     <div class="row">
         <div class="columns large-9">
             <label><b>Asunto </b><input type="text" class="update_texto" data-campo="asunto"
-                                         data-id="{{ instarea.id }}"
-                                         value="{{ instarea.tarea.asunto }}"
-                                         placeholder="Introduce aquí el nombre de la actuación"></label>
+                                        data-id="{{ instarea.id }}"
+                                        value="{{ instarea.tarea.asunto }}"
+                                        placeholder="Introduce aquí el nombre de la actuación"></label>
         </div>
-    <div class="columns large-3">
+        <div class="columns large-3">
             <label><b>Fecha</b><input type="date" class="fecha" name="fecha" id="fecha" data-id={{ instarea.id }}
                     value="{{ instarea.tarea.fecha|date:'Y-m-d' }}"></label>
         </div>
@@ -47,7 +61,7 @@
                 {% endfor %}
             </select></label>
         </div>
-    <div class="columns large-4">
+        <div class="columns large-4">
             <label><b>Función inspectora</b><select class="selector" data-campo="funcion" data-id="{{ instarea.id }}">
                 <option value="">---------</option>
                 {% for f in funciones %}
@@ -56,56 +70,57 @@
                 {% endfor %}
             </select></label>
         </div>
-{#        <div class="columns large-3">#}
-{#            <label><b>Sector</b><select class="selector" data-campo="sector" data-id="{{ instarea.id }}">#}
-{#                <option value="">---------</option>#}
-{#                {% for s in sectores %}#}
-{#                    <option value="{{ s.0 }}"#}
-{#                            {% if instarea.tarea.sector == s.0 %}selected{% endif %}>{{ s.1 }}</option>#}
-{#                {% endfor %}#}
-{#            </select></label>#}
-{#        </div>#}
-{#        <div class="columns large-3">#}
-{#            <label><b>Nivel</b><select class="selector" data-campo="nivel" data-id="{{ instarea.id }}">#}
-{#                <option value="">---------</option>#}
-{#                {% for n in niveles %}#}
-{#                    <option value="{{ n.0 }}"#}
-{#                            {% if instarea.tarea.nivel == n.0 %}selected{% endif %}>{{ n.1 }}</option>#}
-{#                {% endfor %}#}
-{#            </select></label>#}
-{#        </div>#}
+        {#        <div class="columns large-3">#}
+        {#            <label><b>Sector</b><select class="selector" data-campo="sector" data-id="{{ instarea.id }}">#}
+        {#                <option value="">---------</option>#}
+        {#                {% for s in sectores %}#}
+        {#                    <option value="{{ s.0 }}"#}
+        {#                            {% if instarea.tarea.sector == s.0 %}selected{% endif %}>{{ s.1 }}</option>#}
+        {#                {% endfor %}#}
+        {#            </select></label>#}
+        {#        </div>#}
+        {#        <div class="columns large-3">#}
+        {#            <label><b>Nivel</b><select class="selector" data-campo="nivel" data-id="{{ instarea.id }}">#}
+        {#                <option value="">---------</option>#}
+        {#                {% for n in niveles %}#}
+        {#                    <option value="{{ n.0 }}"#}
+        {#                            {% if instarea.tarea.nivel == n.0 %}selected{% endif %}>{{ n.1 }}</option>#}
+        {#                {% endfor %}#}
+        {#            </select></label>#}
+        {#        </div>#}
     </div>
     <div class="row">
 
-{#        <div class="columns large-4">#}
-{#            <label><b>Centro MDB</b><select class="centro" data-id="{{ instarea.id }}" data-campo="centro_mdb">#}
-{#                <option value="">---------</option>#}
-{#                {% for c in centrosmdb %}#}
-{#                    <option value="{{ c.id }}"#}
-{#                            {% if instarea.tarea.centro_mdb.id == c.id %}selected{% endif %}>{{ c.nombre }}</option>#}
-{#                {% endfor %}#}
-{#            </select></label>#}
-{#        </div>#}
-{#        <div class="columns large-3">#}
-{#            <label><b>Función inspectora</b><select class="selector" data-campo="funcion" data-id="{{ instarea.id }}">#}
-{#                <option value="">---------</option>#}
-{#                {% for f in funciones %}#}
-{#                    <option value="{{ f.0 }}"#}
-{#                            {% if instarea.tarea.funcion == f.0 %}selected{% endif %}>{{ f.1 }}</option>#}
-{#                {% endfor %}#}
-{#            </select></label>#}
-{#        </div>#}
+        {#        <div class="columns large-4">#}
+        {#            <label><b>Centro MDB</b><select class="centro" data-id="{{ instarea.id }}" data-campo="centro_mdb">#}
+        {#                <option value="">---------</option>#}
+        {#                {% for c in centrosmdb %}#}
+        {#                    <option value="{{ c.id }}"#}
+        {#                            {% if instarea.tarea.centro_mdb.id == c.id %}selected{% endif %}>{{ c.nombre }}</option>#}
+        {#                {% endfor %}#}
+        {#            </select></label>#}
+        {#        </div>#}
+        {#        <div class="columns large-3">#}
+        {#            <label><b>Función inspectora</b><select class="selector" data-campo="funcion" data-id="{{ instarea.id }}">#}
+        {#                <option value="">---------</option>#}
+        {#                {% for f in funciones %}#}
+        {#                    <option value="{{ f.0 }}"#}
+        {#                            {% if instarea.tarea.funcion == f.0 %}selected{% endif %}>{{ f.1 }}</option>#}
+        {#                {% endfor %}#}
+        {#            </select></label>#}
+        {#        </div>#}
         <div class="columns large-6">
             <label><b>Centro</b><select class="centro" data-id="{{ instarea.id }}" data-campo="centro">
                 <option value="">---------</option>
                 {% for c in centros %}
                     <option value="{{ c.id }}"
                             {% if instarea.tarea.centro.id == c.id %}selected{% endif %}>{{ c.name }}
-                        ({{ c.localidad }})</option>
+                        ({{ c.localidad }})
+                    </option>
                 {% endfor %}
             </select></label>
         </div>
-<div class="columns large-3">
+        <div class="columns large-3">
             <label><b>Objeto</b><select class="selector" data-campo="objeto" data-id="{{ instarea.id }}">
                 <option value="">---------</option>
                 {% for o in objetos %}
@@ -164,27 +179,28 @@
     </div>
 
     <div class="row">
-    <div class="columns large-12">
-        <label><b>Archivos adjuntos a la tarea </b></label>
+        <div class="columns large-12">
+            <label><b>Archivos adjuntos a la tarea </b></label>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="columns large-12">
-        <table>
-            <tbody id="tbody_gauss_file{{ instarea.tarea.id }}">
-            {% include 'tareas_ie_accordion_content_tr_files.html' with ti=instarea.tarea %}
-            </tbody>
-        </table>
+    <div class="row">
+        <div class="columns large-12">
+            <table>
+                <tbody id="tbody_gauss_file{{ instarea.tarea.id }}">
+                {% include 'tareas_ie_accordion_content_tr_files.html' with ti=instarea.tarea %}
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="columns large-8">
-        <label><input type="file" id="input_gauss_file{{ instarea.tarea.id }}" multiple="multiple"></label>
+    <div class="row">
+        <div class="columns large-8">
+            <label><input type="file" id="input_gauss_file{{ instarea.tarea.id }}" multiple="multiple"></label>
+        </div>
+        <div class="columns large-4">
+            <a class="button tiny subir_gauss_file" data-id="{{ instarea.tarea.id }}"><i class="fa fa-cloud-upload"></i>
+                Cargar archivos</a>
+        </div>
     </div>
-    <div class="columns large-4">
-        <a class="button tiny subir_gauss_file" data-id="{{ instarea.tarea.id }}"><i class="fa fa-cloud-upload"></i> Cargar archivos</a>
-    </div>
-</div>
 
     <script>
         $('select').select2({placeholder: "Escribe parte del nombre para buscar coincidencias"});
@@ -192,13 +208,18 @@
 {% else %}
     <div class="row">
         <div class="columns large-12">
-            {% if instarea.tarea.creador.gauser == g_e.gauser or g_e|has_permiso:'borra_cualquier_tarea_ie' %}
-                <a class="button alert borrar_tarea_ie right small" data-id="{{ instarea.id }}">
-                    <i class="fa fa-trash-o"></i> Borrar</a>
-            {% else %}
-                <a class="button secondary right small" title="No tienes permisos para borrar la actuación">
-                    <i class="fa fa-trash-o"></i> Borrar</a>
-            {% endif %}
+            <ul class="button-group right">
+                <li><a class="button copiar_tareas_ie small" data-id="{{ instarea.id }}"
+                       title="Hacer una copia (un duplicado) de esta tarea"><i class="fa fa-copy"></i> Copiar</a>
+                </li>
+                {% if instarea.tarea.creador.gauser == g_e.gauser or g_e|has_permiso:'borra_cualquier_tarea_ie' %}
+                    <li><a class="button alert borrar_tarea_ie small" data-id="{{ instarea.id }}">
+                        <i class="fa fa-trash-o"></i> Borrar</a></li>
+                {% else %}
+                    <li><a class="button secondary small" title="No tienes permisos para borrar la actuación">
+                        <i class="fa fa-trash-o"></i> Borrar</a></li>
+                {% endif %}
+            </ul>
         </div>
     </div>
     <div class="row">
@@ -220,12 +241,12 @@
         <div class="columns large-4">
             <label><b>Función inspectora </b></label> {{ instarea.tarea.get_funcion_display }}
         </div>
-{#        <div class="columns large-3">#}
-{#            <label><b>Sector </b></label> {{ instarea.tarea.get_sector_display }}#}
-{#        </div>#}
-{#        <div class="columns large-3">#}
-{#            <label><b>Nivel </b></label> {{ instarea.tarea.get_nivel_display }}#}
-{#        </div>#}
+        {#        <div class="columns large-3">#}
+        {#            <label><b>Sector </b></label> {{ instarea.tarea.get_sector_display }}#}
+        {#        </div>#}
+        {#        <div class="columns large-3">#}
+        {#            <label><b>Nivel </b></label> {{ instarea.tarea.get_nivel_display }}#}
+        {#        </div>#}
     </div>
     <hr>
     <div class="row">

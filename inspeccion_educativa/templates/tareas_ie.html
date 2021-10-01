@@ -27,6 +27,8 @@
         <input type="hidden" id="id_tareas_ie" name="id_tareas_ie" value="">
         <input type="hidden" id="fati" name="fati" value="">
         <input type="hidden" id="id_ti" name="id_ti" value="">
+        <input type="hidden" id="fecha_inicio_informe" name="fecha_inicio_informe" value="">
+        <input type="hidden" id="fecha_fin_informe" name="fecha_fin_informe" value="">
 
         <div id="div_tareas_ie_seleccionados"></div>
 
@@ -476,6 +478,18 @@
         });
         {% endif %}
 
+        $('body').on('click', '.copiar_tareas_ie', function () {
+            var id = $(this).data('id');
+            $.post("/tareas_ie/", {action: 'copiar_tareas_ie', id: id},
+                function (data) {
+                    if (data.ok) {
+                        $('#list_tareas_ie').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
 
         {# ##################################################################### #}
         {# #################### CARGA DE ARCHIVOS ############################## #}

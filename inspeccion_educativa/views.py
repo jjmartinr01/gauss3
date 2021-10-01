@@ -236,6 +236,23 @@ def tareas_ie(request):
                     return JsonResponse({'ok': False, 'msg': 'No tienes permisos de borrado'})
             except:
                 return JsonResponse({'ok': False, 'msg': 'Se ha producido un error'})
+        elif request.POST['action'] == 'copiar_tareas_ie':
+            try:
+                if g_e.has_permiso('crea_tareas_ie'):
+                    itarea = InspectorTarea.objects.get(inspector__ronda__entidad=g_e.ronda.entidad,
+                                                        id=request.POST['id'])
+                    tarea = itarea.tarea
+                    tarea.pk = None
+                    tarea.asunto = tarea.asunto + ' (Copia)'
+                    tarea.save()
+                    itarea_nueva = InspectorTarea.objects.create(inspector=g_e, tarea=tarea, rol='1', permiso='rwx')
+                    html = render_to_string('tareas_ie_accordion.html',
+                                            {'buscadas': False, 'tareas_ie': [itarea_nueva], 'g_e': g_e, 'nueva': True})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso para crear tareas'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg':str(msg)})
         elif request.POST['action'] == 'busca_tareas_ie':
             try:
                 try:
@@ -367,8 +384,8 @@ def tareas_ie(request):
                 dce.predeterminado = False
                 dce.editable = False
                 dce.save()
-            fecha_inicio = datetime.strptime(request.POST['fecha_inicio'], '%d-%m-%Y')
-            fecha_fin = datetime.strptime(request.POST['fecha_fin'], '%d-%m-%Y')
+            fecha_inicio = datetime.strptime(request.POST['fecha_inicio_ti'], '%d-%m-%Y')
+            fecha_fin = datetime.strptime(request.POST['fecha_fin_ti'], '%d-%m-%Y')
             general = True
             if request.POST['inspector_informe'] == 'general':
                 instareas = InspectorTarea.objects.filter(inspector__ronda__entidad=g_e.ronda.entidad,
