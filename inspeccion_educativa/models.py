@@ -651,6 +651,19 @@ class TareaInspeccion(models.Model):
         else:
             return False
 
+    @property
+    def colaboradores(self):
+        def get_iniciales(nombre):
+            palabras = nombre.split()
+            iniciales = ''
+            for palabra in palabras:
+                iniciales += palabra[0]
+            return iniciales
+        iniciales = []
+        for i in self.inspectortarea_set.all():
+            iniciales.append(get_iniciales(i.inspector.gauser.get_full_name()))
+        return ', '.join(iniciales)
+
     class Meta:
         verbose_name_plural = 'Actuaciones de Inspección'
 
