@@ -743,6 +743,7 @@ class VariantePII(models.Model):
 
 class InformeInspeccion(models.Model):
     inspector = models.ForeignKey(Gauser_extra, blank=True, null=True, on_delete=models.SET_NULL)
+    instarea = models.ForeignKey(InspectorTarea, blank=True, null=True, on_delete=models.SET_NULL)
     variante = models.ForeignKey(VariantePII, blank=True, null=True, on_delete=models.SET_NULL)
     title = models.CharField('Nombre de la variable', blank=True, null=True, default='', max_length=300)
     destinatario = models.TextField('Destinatario del informe', blank=True, null=True, default='')

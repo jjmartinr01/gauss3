@@ -272,7 +272,11 @@ def tareas_ie(request):
                 q_fin = Q(tarea__fecha__lte=fin)
                 q_tipo = Q(tarea__tipo__in=tipo)
                 if g_e.has_permiso('ve_cualquier_tarea_ie'):
-                    q_entidad = Q(inspector__ronda__entidad=g_e.ronda.entidad)
+                    if request.POST['filtro_inspector_tareas'] == 'general':
+                        q_entidad = Q(inspector__ronda__entidad=g_e.ronda.entidad)
+                    else:
+                        inspector = Gauser_extra.objects.get(id=request.POST['filtro_inspector_tareas'])
+                        q_entidad = Q(inspector__gauser=inspector.gauser)
                 else:
                     q_entidad = Q(inspector__gauser=g_e.gauser)
                 its = InspectorTarea.objects.filter(q_entidad, q_texto, q_inicio, q_fin, q_tipo)
@@ -289,10 +293,28 @@ def tareas_ie(request):
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'paginar_tareas_ie':
+            q1 = Q(tarea__fecha__gte=g_e.ronda.inicio, tarea__fecha__lte=g_e.ronda.fin)
+            if g_e.has_permiso('ve_cualquier_tarea_ie'):
+                if request.POST['filtro_inspector_tareas'] == 'general':
+                    q2 = Q(tarea__creador__ronda__entidad=g_e.ronda.entidad)
+                else:
+                    inspector = Gauser_extra.objects.get(id=request.POST['filtro_inspector_tareas'])
+                    q2 = Q(tarea__creador__gauser=g_e.gauser) | Q(inspector__gauser=inspector.gauser)
+            else:
+                q2 = Q(tarea__creador__gauser=g_e.gauser) | Q(inspector__gauser=g_e.gauser)
+            posibles_tareas_ie = InspectorTarea.objects.filter(q1 & q2)
+            paginator = Paginator(posibles_tareas_ie, 25)
+            tareas_ie = paginator.page(int(request.POST['page']))
+            html = render_to_string('tareas_ie_accordion.html', {'tareas_ie': tareas_ie, 'pag': True})
+            return JsonResponse({'ok': True, 'html': html})
             try:
                 q1 = Q(tarea__fecha__gte=g_e.ronda.inicio, tarea__fecha__lte=g_e.ronda.fin)
                 if g_e.has_permiso('ve_cualquier_tarea_ie'):
-                    q2 = Q(tarea__creador__ronda__entidad=g_e.ronda.entidad)
+                    if request.POST['filtro_inspector_tareas'] == 'general':
+                        q2 = Q(tarea__creador__ronda__entidad=g_e.ronda.entidad)
+                    else:
+                        inspector = Gauser_extra.objects.get(id=request.POST['filtro_inspector_tareas'])
+                        q2 = Q(tarea__creador__gauser=g_e.gauser) | Q(inspector__gauser=inspector.gauser)
                 else:
                     q2 = Q(tarea__creador__gauser=g_e.gauser) | Q(inspector__gauser=g_e.gauser)
                 posibles_tareas_ie = InspectorTarea.objects.filter(q1 & q2)
@@ -483,9 +505,9 @@ def tareas_ie(request):
              {'tipo': 'button', 'nombre': 'file-text-o', 'texto': 'Informe',
               'title': 'Generar informe con las tareas realizadas',
               'permiso': 'genera_informe_tareas_ie'},
-             {'tipo': 'button', 'nombre': 'file-excel-o', 'texto': 'Excel',
-              'title': 'Generar excel con laa tareas realizadas',
-              'permiso': 'acceso_tareas_ie'},
+             {'tipo': 'button', 'nombre': 'filter', 'texto': 'Filtro',
+              'title': 'Filtrar las tareas por inspector',
+              'permiso': 've_cualquier_tarea_ie'},
              {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar',
               'title': 'Buscar actuaciones de Inspección',
               'permiso': 'acceso_tareas_ie'},
@@ -686,6 +708,15 @@ def informes_ie(request):
                 dce.editable = False
                 dce.save()
             ie = InformeInspeccion.objects.get(inspector__gauser=g_e.gauser, id=request.POST['id_ie'])
+            if not ie.instarea:
+                tarea = TareaInspeccion.objects.create(ronda_centro=g_e.ronda.entidad.ronda, tipo='HA', actuacion='IN',
+                                                       observaciones='', fecha=ie.modificado, creador=g_e)
+                itarea = InspectorTarea.objects.create(inspector=g_e, tarea=tarea, permiso='rwx', rol='1')
+                ie.instarea = itarea
+                ie.save()
+            ie.instarea.tarea.asunto = ie.asunto
+            ie.instarea.tarea.fecha = ie.modificado
+            ie.instarea.tarea.save()
             c = render_to_string('informes_ie_accordion_content_texto2pdf.html', {'ie': ie, 'pdf': True})
             pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
             fich = open(dce.url_pdf, 'rb')

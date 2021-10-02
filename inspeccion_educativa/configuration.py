@@ -96,6 +96,10 @@ PERMISOS = [{'code_nombre': 'crea_tareas_ie',
              'nombre': 'Tiene permiso para generar un informe de tareas de Inspección Educativa',
              'menu': 'acceso_tareas_ie'
              },
+            {'code_nombre': 'genera_informe_tareas_ie_general',
+             'nombre': 'Tiene permiso para generar un informe de las tareas de todos los inspectores',
+             'menu': 'acceso_tareas_ie'
+             },
             {'code_nombre': 'crea_informes_ie',
              'nombre': 'Tiene permiso para crear informes de Inspección Educativa',
              'menu': 'acceso_informes_ie'

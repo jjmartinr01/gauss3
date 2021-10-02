@@ -76,10 +76,14 @@
                 <div class="columns large-4">
                     <label>Selecciona el inspector
                         <select name="inspector_informe" id="select_inspector_informe">
-                        <option value="general">Todos los inspectores</option>
-                            {% for i in inspectores %}
-                                <option value="{{ i.id }}">{{ i.gauser.get_full_name }}</option>
-                            {% endfor %}
+                            {% if g_e|has_permiso:"genera_informe_tareas_ie_general" %}
+                                <option value="general">Todos los inspectores</option>
+                                {% for i in inspectores %}
+                                    <option value="{{ i.id }}">{{ i.gauser.get_full_name }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="{{ g_e.id }}">{{ g_e.gauser.get_full_name }}</option>
+                            {% endif %}
                         </select>
                     </label>
                 </div>
@@ -93,17 +97,38 @@
                     <input id="id_fecha_fin_ti" name="fecha_fin_ti" type="text" value="{% get_next_friday %}">
                 </div>
                 <div class="columns large-2">
-                    <label>&nbsp;<br><a class="button tiny crea_informe" data-action="crea_informe_pdf"><i class="fa fa-file-pdf-o"></i>
+                    <label>&nbsp;<br><a class="button tiny crea_informe" data-action="crea_informe_pdf"><i
+                            class="fa fa-file-pdf-o"></i>
                         Genera PDF</a>
                     </label>
                 </div>
                 <div class="columns large-2">
-                    <label>&nbsp;<br><a class="button tiny crea_informe" data-action="crea_informe_excel"><i class="fa fa-file-excel-o"></i>
+                    <label>&nbsp;<br><a class="button tiny crea_informe" data-action="crea_informe_excel"><i
+                            class="fa fa-file-excel-o"></i>
                         Genera Excel</a>
                     </label>
                 </div>
             </div>
         </fieldset>
+        {% if g_e|has_permiso:"ve_cualquier_tarea_ie" %}
+            <fieldset id="fieldset_filtrar_tareas" style="display: none;">
+                <legend>Filtrar tareas por inspector</legend>
+                <div class="row">
+                    <div class="columns large-12">
+                        <label>Selecciona el inspector
+                            <select name="filtro_inspector_tareas" id="filtro_inspector_tareas">
+                                <option value="general">Todos los inspectores</option>
+                                {% for i in inspectores %}
+                                    <option value="{{ i.id }}">{{ i.gauser.get_full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                    </div>
+                </div>
+            </fieldset>
+        {% else %}
+            <input type="hidden" name="filtro_inspector_tareas" id="filtro_inspector_tareas" value="{{ g_e.id }}">
+        {% endif %}
 
         <div id="listado_tareas_ie">
             {% include 'tareas_ie_accordion.html' %}
@@ -401,41 +426,82 @@
                 });
         });
 
-        $("body").on('click', '#busca_tareas_ie_manual', function (e) {
+        function buscar_tareas_inspeccion() {
             var texto = $('#busca_tareas_ie').val();
             var id_fecha_inicio = $('#id_fecha_inicio').val();
             var id_fecha_fin = $('#id_fecha_fin').val();
             var tipo_busqueda = $('#tipo_busqueda').val();
+            var filtro_inspector_tareas = $('#filtro_inspector_tareas').val();
             $.post("/tareas_ie/", {
                     action: 'busca_tareas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,
-                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
+                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda,
+                    filtro_inspector_tareas: filtro_inspector_tareas
                 },
                 function (data) {
-                    $('#listado_tareas_ie').html(data['html']);
-                    $(document).foundation();
+                    if (data.ok) {
+                        $('#listado_tareas_ie').html(data['html']);
+                        $(document).foundation();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
                 });
+        }
+
+        $("body").on('click', '#busca_tareas_ie_manual', function (e) {
+            buscar_tareas_inspeccion();
+            {#var texto = $('#busca_tareas_ie').val();#}
+            {#var id_fecha_inicio = $('#id_fecha_inicio').val();#}
+            {#var id_fecha_fin = $('#id_fecha_fin').val();#}
+            {#var tipo_busqueda = $('#tipo_busqueda').val();#}
+            {#var filtro_inspector_tareas = $('#filtro_inspector_tareas').val();#}
+            {#$.post("/tareas_ie/", {#}
+            {#        action: 'busca_tareas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,#}
+            {#        id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda,#}
+            {#        filtro_inspector_tareas: filtro_inspector_tareas#}
+            {#    },#}
+            {#    function (data) {#}
+            {#        if (data.ok) {#}
+            {#            $('#listado_tareas_ie').html(data['html']);#}
+            {#            $(document).foundation();#}
+            {#            $("#update_ok").show().delay(1500).fadeOut();#}
+            {#        } else {#}
+            {#            $('#update_error').show().delay(1500).fadeOut();#}
+            {#        }#}
+            {#    });#}
         });
 
         $("body").on('keyup', '#busca_tareas_ie', function (e) {
-            var texto = $('#busca_tareas_ie').val();
-            var id_fecha_inicio = $('#id_fecha_inicio').val();
-            var id_fecha_fin = $('#id_fecha_fin').val();
-            var tipo_busqueda = $('#tipo_busqueda').val();
-            $.post("/tareas_ie/", {
-                    action: 'busca_tareas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,
-                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
-                },
-                function (data) {
-                    $('#listado_tareas_ie').html(data['html']);
-                    $(document).foundation();
-                });
+            buscar_tareas_inspeccion();
+            {#var texto = $('#busca_tareas_ie').val();#}
+            {#var id_fecha_inicio = $('#id_fecha_inicio').val();#}
+            {#var id_fecha_fin = $('#id_fecha_fin').val();#}
+            {#var tipo_busqueda = $('#tipo_busqueda').val();#}
+            {#var filtro_inspector_tareas = $('#filtro_inspector_tareas').val();#}
+            {#$.post("/tareas_ie/", {#}
+            {#        action: 'busca_tareas_ie', texto: texto, id_fecha_inicio: id_fecha_inicio,#}
+            {#        id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda,#}
+            {#        filtro_inspector_tareas: filtro_inspector_tareas#}
+            {#    },#}
+            {#    function (data) {#}
+            {#        if (data.ok) {#}
+            {#            $('#listado_tareas_ie').html(data['html']);#}
+            {#            $(document).foundation();#}
+            {#            $("#update_ok").show().delay(1500).fadeOut();#}
+            {#        } else {#}
+            {#            $('#update_error').show().delay(1500).fadeOut();#}
+            {#        }#}
+            {#    });#}
         });
 
         $('body').on('click', '.go_page', function (e) {
             e.preventDefault();
             var page = $(this).data('page');
+            var filtro_inspector_tareas = $('#filtro_inspector_tareas').val();
             if (page) {
-                $.post("/tareas_ie/", {action: 'paginar_tareas_ie', page: page},
+                $.post("/tareas_ie/", {
+                        action: 'paginar_tareas_ie', page: page, filtro_inspector_tareas: filtro_inspector_tareas
+                    },
                     function (data) {
                         if (data.ok) {
                             $('#listado_tareas_ie').html(data.html);
@@ -450,7 +516,11 @@
         $('body').on('click', '.listado_normal', function (e) {
             e.preventDefault();
             var page = $(this).data('page');
-            $.post("/tareas_ie/", {action: 'paginar_tareas_ie', page: 1},
+            var filtro_inspector_tareas = $('#filtro_inspector_tareas').val();
+            $.post("/tareas_ie/", {
+                    action: 'paginar_tareas_ie', page: 1,
+                    filtro_inspector_tareas: filtro_inspector_tareas
+                },
                 function (data) {
                     if (data.ok) {
                         $('#listado_tareas_ie').html(data.html);
@@ -461,21 +531,46 @@
                 });
         });
 
+        {% if g_e|has_permiso:"ve_cualquier_tarea_ie" %}
+            habilita(['s_filter']);
+            $('#filter_sign').click(function (event) {
+                event.preventDefault();
+                $('#fieldset_filtrar_tareas').toggle();
+                setTimeout(function () {
+                    $('#filtro_inspector_tareas').select2();
+                }, 200);
+            });
+            $('body').on('change', '#filtro_inspector_tareas', function (event) {
+                buscar_tareas_inspeccion();
+                {#var inspector = $(this).val();#}
+                {#$.post("/tareas_ie/", {action: 'filtro_inspector_tareas', inspector: inspector},#}
+                {#    function (data) {#}
+                {#        if (data.ok) {#}
+                {#            $('#list_tareas_ie').html(data.html);#}
+                {#            $("#update_ok").show().delay(1500).fadeOut();#}
+                {#        } else {#}
+                {#            $('#update_error').show().delay(1500).fadeOut();#}
+                {#        }#}
+                {#    });#}
+            });
+        {% endif %}
         {% if g_e|has_permiso:"genera_informe_tareas_ie" %}
             habilita(['s_file-text-o']);
             $('#file-text-o_sign').click(function (event) {
                 event.preventDefault();
                 $('#fieldset_informe').toggle();
-                setTimeout(function (){$('#select_inspector_informe').select2();},200);
+                setTimeout(function () {
+                    $('#select_inspector_informe').select2();
+                }, 200);
                 {#$('#action').val('genera_informe');#}
                 {#document.getElementById("{{ formname }}").submit();#}
             });
 
             $('.crea_informe').click(function (event) {
-            event.preventDefault();
-            $('#action').val($(this).data('action'));
-            document.getElementById("{{ formname }}").submit();
-        });
+                event.preventDefault();
+                $('#action').val($(this).data('action'));
+                document.getElementById("{{ formname }}").submit();
+            });
         {% endif %}
 
         $('body').on('click', '.copiar_tareas_ie', function () {
