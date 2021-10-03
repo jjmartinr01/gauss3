@@ -47,57 +47,62 @@
 <body>
 
 <table style="width: 100%">
-    {% for i in instareas %}
-        {% ifchanged i.inspector %}
-            <thead>
-            <tr>
-                <td colspan="10" style="border: 1px solid black; border-collapse: collapse;">
-                    <table style="width: 100%">
-                        <tr>
-                            <td>INSPECTOR/A: {{ i.inspector.gauser.get_full_name|upper }}</td>
-                            <td>PERIODO DEL {{ fecha_inicio|date:'d-m-Y' }} AL {{ fecha_fin|date:'d-m-Y' }}</td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            </thead>
-            <thead>
-            <tr>
-                <th>Fecha</th>
-                <th>Centro</th>
-                {#                <th>Localidad</th>#}
-                <th>Lugar</th>
-                <th>Act.</th>
-                <th>Obj.</th>
-                <th>Asunto</th>
-                <th>Tipo</th>
-                <th>Func.</th>
-                <th>Participantes</th>
-            </tr>
-            </thead>
-        {% endifchanged %}
-        <tbody>
+    {% for dato in datos %}
+        <thead>
         <tr>
-            <td style="width: 70px;">{{ i.tarea.fecha|date:'d-m-Y' }}</td>
-            <td>{% if i.tarea.centro %}{{ i.tarea.centro.name }} ({{ i.tarea.centro.localidad }}){% else %}
-                Tarea no asociada a un centro{% endif %}</td>
-            {#            <td>{{ i.tarea.centro.localidad }}</td>#}
-            <td>{{ i.tarea.localizacion }}</td>
-            <td>{{ i.tarea.actuacion }}</td>
-            <td>{{ i.tarea.objeto }}</td>
-            <td>{{ i.tarea.asunto }}</td>
-            <td>{{ i.tarea.tipo }}</td>
-            <td>{{ i.tarea.funcion }}</td>
-            <td>{{ i|inspectores_colaboradores }}</td>
+            <td colspan="10" style="border: 1px solid black; border-collapse: collapse;">
+                <table style="width: 100%">
+                    <tr>
+                        {% if dato.inspector.gauser.sexo == 'H' %}
+                            <td style="width: 60%;">INSPECTOR: {{ dato.inspector.gauser.get_full_name|upper }}</td>
+                        {% else %}
+                            <td style="width: 60%;">INSPECTORA: {{ dato.inspector.gauser.get_full_name|upper }}</td>
+                        {% endif %}
+                        <td style="width: 40%;">PERIODO DEL {{ fecha_inicio|date:'d-m-Y' }}
+                            AL {{ fecha_fin|date:'d-m-Y' }}</td>
+                    </tr>
+                </table>
+            </td>
         </tr>
-        {% if i.tarea.localizacion == 'CE' %}
+        </thead>
+        <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Centro</th>
+            {#                <th>Localidad</th>#}
+            <th>Lugar</th>
+            <th>Act.</th>
+            <th>Obj.</th>
+            <th>Asunto</th>
+            <th>Tipo</th>
+            <th>Func.</th>
+            <th>Participantes</th>
+        </tr>
+        </thead>
+        {% for i in dato.instareas %}
+            <tbody>
             <tr>
-                <td>&nbsp;</td>
-                <td colspan="8">{% autoescape off %}{{ i.tarea.observaciones }}{% endautoescape %}</td>
+                <td style="width: 70px;">{{ i.tarea.fecha|date:'d-m-Y' }}</td>
+                <td>{% if i.tarea.centro %}{{ i.tarea.centro.name }} ({{ i.tarea.centro.localidad }}){% else %}
+                    Tarea no asociada a un centro{% endif %}</td>
+                {#            <td>{{ i.tarea.centro.localidad }}</td>#}
+                <td>{{ i.tarea.localizacion }}</td>
+                <td>{{ i.tarea.actuacion }}</td>
+                <td>{{ i.tarea.objeto }}</td>
+                <td>{{ i.tarea.asunto }}</td>
+                <td>{{ i.tarea.tipo }}</td>
+                <td>{{ i.tarea.funcion }}</td>
+                <td>{{ i|inspectores_colaboradores }}</td>
             </tr>
-        {% endif %}
+            {% if i.tarea.localizacion == 'CE' %}
+                <tr>
+                    <td>&nbsp;</td>
+                    <td colspan="8">{% autoescape off %}{{ i.tarea.observaciones }}{% endautoescape %}</td>
+                </tr>
+            {% endif %}
+            </tbody>
+        {% endfor %}
     {% endfor %}
-    </tbody>
 </table>
 
 {#<br>#}

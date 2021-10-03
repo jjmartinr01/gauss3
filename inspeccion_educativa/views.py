@@ -86,7 +86,7 @@ def get_inspectores(request):
         inspectores = usuarios_ronda(g_e.ronda, cargos=[cargo])
     except:
         Cargo.objects.create(entidad=g_e.ronda.entidad, cargo='Inspector de Educación',
-                             borrable=False, clave_cargo='%s_ie' % g_e.ronda.entidad.code)
+                             borrable=False, clave_cargo='g_inspector_educacion')
         inspectores = Gauser_extra.objects.none()
         msg = '''Se ha creado el cargo "Inspector de Educación" al que se deben añadir miembros para que
         se pueda asignar una actuación de Inspección a una persona.'''
@@ -294,20 +294,6 @@ def tareas_ie(request):
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'paginar_tareas_ie':
-            q1 = Q(tarea__fecha__gte=g_e.ronda.inicio, tarea__fecha__lte=g_e.ronda.fin)
-            if g_e.has_permiso('ve_cualquier_tarea_ie'):
-                if request.POST['filtro_inspector_tareas'] == 'general':
-                    q2 = Q(tarea__creador__ronda__entidad=g_e.ronda.entidad)
-                else:
-                    inspector = Gauser_extra.objects.get(id=request.POST['filtro_inspector_tareas'])
-                    q2 = Q(tarea__creador__gauser=g_e.gauser) | Q(inspector__gauser=inspector.gauser)
-            else:
-                q2 = Q(tarea__creador__gauser=g_e.gauser) | Q(inspector__gauser=g_e.gauser)
-            posibles_tareas_ie = InspectorTarea.objects.filter(q1 & q2)
-            paginator = Paginator(posibles_tareas_ie, 25)
-            tareas_ie = paginator.page(int(request.POST['page']))
-            html = render_to_string('tareas_ie_accordion.html', {'tareas_ie': tareas_ie, 'pag': True})
-            return JsonResponse({'ok': True, 'html': html})
             try:
                 q1 = Q(tarea__fecha__gte=g_e.ronda.inicio, tarea__fecha__lte=g_e.ronda.fin)
                 if g_e.has_permiso('ve_cualquier_tarea_ie'):
@@ -427,19 +413,24 @@ def tareas_ie(request):
             fecha_inicio = datetime.strptime(request.POST['fecha_inicio_ti'], '%d-%m-%Y')
             fecha_fin = datetime.strptime(request.POST['fecha_fin_ti'], '%d-%m-%Y')
             general = True
+            datos = []
             if request.POST['inspector_informe'] == 'general':
-                instareas = InspectorTarea.objects.filter(inspector__ronda__entidad=g_e.ronda.entidad,
-                                                          tarea__fecha__gte=fecha_inicio,
-                                                          tarea__fecha__lte=fecha_fin).order_by('inspector', 'tarea__fecha')
+                inspectores = get_inspectores(request)
+                for inspector in inspectores:
+                    instareas = InspectorTarea.objects.filter(inspector=inspector, tarea__fecha__gte=fecha_inicio,
+                                                              tarea__fecha__lte=fecha_fin).order_by('tarea__fecha')
+                    if instareas.count() > 0:
+                        datos.append({'inspector': inspector, 'instareas': instareas})
                 fichero = 'Informe_general_%s.pdf' % str(g_e.ronda.entidad.code)
             else:
                 inspector = inspectores.get(id=request.POST['inspector_informe'])
                 instareas = InspectorTarea.objects.filter(inspector=inspector, tarea__fecha__gte=fecha_inicio,
                                                           tarea__fecha__lte=fecha_fin).order_by('tarea__fecha')
+                datos.append({'inspector': inspector, 'instareas': instareas})
                 fichero = 'Informe_%s_%s.pdf' % (str(g_e.ronda.entidad.code), slugify(inspector.gauser.get_full_name()))
                 general = False
 
-            texto_html = render_to_string('informe_personal2pdf.html', {'instareas': instareas, 'fecha_fin': fecha_fin,
+            texto_html = render_to_string('informe_personal2pdf.html', {'datos': datos, 'fecha_fin': fecha_fin,
                                                                         'fecha_inicio': fecha_inicio,
                                                                         'es_informe_general': general})
             ruta = MEDIA_INSPECCION + '%s/' % g_e.ronda.entidad.code
