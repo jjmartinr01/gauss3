@@ -304,4 +304,31 @@
             </table>
         </div>
     </div>
+    {% if instarea.tarea.fileattachedti_set.all|length > 0 %}
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Archivos adjuntos a la tarea</b></label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12">
+                <table>
+                    <tbody id="tbody_gauss_file{{ instarea.tarea.id }}">
+                    {% for f in instarea.tarea.fileattachedti_set.all %}
+                        <tr id="gauss_file{{ f.id }}">
+                            <td><a class="descarga_gauss_file" data-id="{{ f.id }}">{{ f.fich_name }}</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Esta tarea no tiene archivos adjuntos</b></label>
+            </div>
+        </div>
+    {% endif %}
 {% endif %}

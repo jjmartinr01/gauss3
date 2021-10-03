@@ -244,6 +244,7 @@ def tareas_ie(request):
                     tarea = itarea.tarea
                     tarea.pk = None
                     tarea.asunto = tarea.asunto + ' (Copia)'
+                    tarea.creador = g_e
                     tarea.save()
                     itarea_nueva = InspectorTarea.objects.create(inspector=g_e, tarea=tarea, rol='1', permiso='rwx')
                     html = render_to_string('tareas_ie_accordion.html',
