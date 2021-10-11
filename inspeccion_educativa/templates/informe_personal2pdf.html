@@ -31,24 +31,23 @@
         {# Las siguientes tres líneas de estilo son para conseguir que la cabecera de la tabla no se solape #}
         {# con el texto de la primera fila de cada página. Esta información ha sido obtenida de: #}
         {# https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2367 #}
-        thead {
-            display: table-header-group
-        }
-
-        tfoot {
-            display: table-row-group
-        }
-
-        tr {
-            page-break-inside: avoid
-        }
+        {#thead { #}
+        {#    display: table-header-group#}
+        {# }#}
+{##}
+{#        tfoot { #}
+{#            display: table-row-group#}
+{#        }#}
+{##}
+{#        tr {#}
+{#            page-break-inside: avoid#}
+{#        }#}
     </style>
 </head>
 <body>
 
 <table style="width: 100%">
     {% for dato in datos %}
-        <thead>
         <tr>
             <td colspan="10" style="border: 1px solid black; border-collapse: collapse;">
                 <table style="width: 100%">
@@ -64,7 +63,7 @@
                 </table>
             </td>
         </tr>
-        </thead>
+
         <thead>
         <tr>
             <th>Fecha</th>
