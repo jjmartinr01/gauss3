@@ -1034,8 +1034,10 @@ def datos_entidad(request):
         form = EntidadForm(instance=entidad)
 
     try:
-        sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
-        docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+        # sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+        # docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+        cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+        docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
     except:
         docentes = []
     return render(request, "datos_entidad.html",

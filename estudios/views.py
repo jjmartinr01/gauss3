@@ -9,7 +9,7 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 
 from autenticar.control_acceso import permiso_required
-from entidades.models import Subentidad, Gauser_extra, Ronda, CargaMasiva, Dependencia
+from entidades.models import Subentidad, Gauser_extra, Ronda, CargaMasiva, Dependencia, Cargo
 from entidades.tasks import carga_masiva_from_excel
 from estudios.models import Curso, Materia, ETAPAS, Grupo, Matricula
 from gauss.funciones import usuarios_de_gauss, usuarios_ronda, human_readable_list, html_to_pdf
@@ -182,8 +182,10 @@ def configura_grupos(request):
             grupo = Grupo.objects.get(id=request.POST['id'], ronda=g_e.ronda)
             rondas = Ronda.objects.filter(entidad=g_e.ronda.entidad)
             cursos = Curso.objects.filter(ronda=g_e.ronda)
-            sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
-            docentes = usuarios_ronda(g_e.ronda, subentidades=[sub_docentes])
+            # sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+            # docentes = usuarios_ronda(g_e.ronda, subentidades=[sub_docentes])
+            cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+            docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
             ds = Dependencia.objects.filter(entidad=g_e.ronda.entidad, es_aula=True)
             html = render_to_string('configura_grupos_formulario_content.html',
                                     {'grupo': grupo, 'dependencias': ds, 'cursos': cursos, 'docentes': docentes})

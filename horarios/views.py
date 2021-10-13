@@ -345,7 +345,7 @@ def horario_subentidad(request):
     #         horario.save()
     #         logger.info('Existen varios horarios predeterminados. Se reconvierten para dejar uno solo.')
     grupos = Grupo.objects.filter(ronda=g_e.ronda)
-    grupos_id = horario.sesion_set.all().values_list('grupo__id', flat=True).distinct()
+    grupos_id = SesionExtra.objects.filter(sesion__horario=horario).values_list('grupo__id', flat=True).distinct()
     grupos_horario = grupos.filter(id__in=grupos_id)
     try:
         grupo = grupos[0]
@@ -358,29 +358,33 @@ def horario_subentidad(request):
         crear_aviso(request, False, 'No existen grupos. Debes crearlos antes.')
         return redirect('/configura_grupos/')
 
-    sesiones_grupo = horario.sesion_set.filter(grupo=grupo)
-    dias = sesiones_grupo.values_list('dia', flat=True).order_by('dia').distinct()
-    nombre_dias = {1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 7: 'Domingo'}
-    horas_grupo = horario.horas_grupo(grupo)
-    sesiones = []
-    for d in dias:
-        sesiones_dia = sesiones_grupo.filter(dia=d).order_by('inicio')
-        info_dia = {'dia_num': d, 'dia_nombre': nombre_dias[d], 'sesiones_dia': []}
-        for hora in horas_grupo:
-            sesiones_hora = sesiones_dia.filter(inicio=hora['inicio'])
-            if sesiones_hora.count() > 0:
-                info_dia['sesiones_dia'].append(sesiones_hora)
-        sesiones.append(info_dia)
+    # sesiones_grupo = horario.sesion_set.filter(grupo=grupo)
+    # dias = sesiones_grupo.values_list('dia', flat=True).order_by('dia').distinct()
+    # nombre_dias = {1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 7: 'Domingo'}
+    # horas_grupo = horario.horas_grupo(grupo)
+    # sesiones = []
+    # for d in dias:
+    #     sesiones_dia = sesiones_grupo.filter(dia=d).order_by('inicio')
+    #     info_dia = {'dia_num': d, 'dia_nombre': nombre_dias[d], 'sesiones_dia': []}
+    #     for hora in horas_grupo:
+    #         sesiones_hora = sesiones_dia.filter(inicio=hora['inicio'])
+    #         if sesiones_hora.count() > 0:
+    #             info_dia['sesiones_dia'].append(sesiones_hora)
+    #     sesiones.append(info_dia)
+
+    horario_grupo = horario.get_horario_grupo(grupo)
+    tabla_horario = render_to_string('horario_grupo.html', {'horario': horario_grupo, 'grupo': grupo})
 
     respuesta = {
         'formname': 'horario_grupos',
         'horario': horario,
         'grupos': grupos,
         'grupo': grupo,
-        'sesiones': sesiones,
-        'horas_grupo': horas_grupo,
+        # 'sesiones': sesiones,
+        # 'horas_grupo': horas_grupo,
         'horario_selected': horario,
         'horarios': horarios,
+        'tabla_horario': tabla_horario,
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
     }
     return render(request, "horario_grupos.html", respuesta)
@@ -801,22 +805,28 @@ def horarios_ajax(request):
 
         elif action == 'carga_horario_grupo':
             grupo = Grupo.objects.get(id=request.POST['grupo'], ronda=g_e.ronda)
-            horario = Horario.objects.get(id=request.POST['horario'], ronda=g_e.ronda)
-            sesiones_grupo = horario.sesion_set.filter(grupo=grupo)
-            dias = sesiones_grupo.values_list('dia', flat=True).order_by('dia').distinct()
-            nombre_dias = {1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado',
-                           7: 'Domingo'}
-            horas_grupo = horario.horas_grupo(grupo)
-            sesiones = []
-            for d in dias:
-                sesiones_dia = sesiones_grupo.filter(dia=d).order_by('inicio')
-                info_dia = {'dia_num': d, 'dia_nombre': nombre_dias[d], 'sesiones_dia': []}
-                for hora in horas_grupo:
-                    sesiones_hora = sesiones_dia.filter(inicio=hora['inicio'])
-                    if sesiones_hora.count() > 0:
-                        info_dia['sesiones_dia'].append(sesiones_hora)
-                sesiones.append(info_dia)
-            html = render_to_string('horario_grupos_content.html', {'horas_grupo': horas_grupo, 'sesiones': sesiones})
+            # horario = Horario.objects.get(id=request.POST['horario'], ronda=g_e.ronda)
+
+            horario = Horario.objects.get(ronda=g_e.ronda, predeterminado=True)
+            # sesiones_grupo = horario.sesion_set.filter(grupo=grupo)
+            # dias = sesiones_grupo.values_list('dia', flat=True).order_by('dia').distinct()
+            # nombre_dias = {1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado',
+            #                7: 'Domingo'}
+            # horas_grupo = horario.horas_grupo(grupo)
+            # sesiones = []
+            # for d in dias:
+            #     sesiones_dia = sesiones_grupo.filter(dia=d).order_by('inicio')
+            #     info_dia = {'dia_num': d, 'dia_nombre': nombre_dias[d], 'sesiones_dia': []}
+            #     for hora in horas_grupo:
+            #         sesiones_hora = sesiones_dia.filter(inicio=hora['inicio'])
+            #         if sesiones_hora.count() > 0:
+            #             info_dia['sesiones_dia'].append(sesiones_hora)
+            #     sesiones.append(info_dia)
+
+            horario_grupo = horario.get_horario_grupo(grupo)
+            tabla_horario = render_to_string('horario_grupo.html', {'horario': horario_grupo, 'grupo': grupo})
+            # html = render_to_string('horario_grupos_content.html', {'horas_grupo': horas_grupo, 'sesiones': sesiones})
+            html = render_to_string('horario_grupos_content.html', {'tabla_horario': tabla_horario})
             return JsonResponse({'ok': True, 'html': html})
 
         elif action == 'buscar_aulas_libres':
@@ -1224,10 +1234,12 @@ def xml_racima(xml_file, request):
                 grupo.cursos.add(curso)
                 logger.warning('Se ha creado el grupo "%s", con código %s' % (nombre, grupo_codigo))
 
-    sub_docentes = Subentidad.objects.filter(Q(entidad=g_e.ronda.entidad), Q(fecha_expira__gt=datetime.today()),
-                                             Q(nombre__icontains='docente') | Q(nombre__icontains='profesor') | Q(
-                                                 nombre__icontains='maestro'))
-    docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, subentidades__in=sub_docentes)
+    # sub_docentes = Subentidad.objects.filter(Q(entidad=g_e.ronda.entidad), Q(fecha_expira__gt=datetime.today()),
+    #                                          Q(nombre__icontains='docente') | Q(nombre__icontains='profesor') | Q(
+    #                                              nombre__icontains='maestro'))
+    # docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, subentidades__in=sub_docentes)
+    cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+    docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
     nombres_docentes = [(d.id, d.gauser.get_full_name()) for d in docentes]
     for elemento in xml_file.findall(".//grupo_datos[@seq='EMPLEADOS']/grupo_datos"):
         profesor_nombre = elemento.find('dato[@nombre_dato="NOMBRE"]').text or ''

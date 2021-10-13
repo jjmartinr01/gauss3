@@ -1,0 +1,64 @@
+{% load entidades_extras %}
+<table style="width: 100%">
+    <thead>
+    <tr>
+        <th colspan="6" style="text-align: center">{{ grupo }}</th>
+    </tr>
+    <tr>
+        <th></th>
+        <th>Lunes</th>
+        <th>Martes</th>
+        <th>Miércoles</th>
+        <th>Jueves</th>
+        <th>Viernes</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for tramo, sesiones_en_tramo in horario.items %}
+        <tr>
+            <td>{{ tramo }}</td>
+            {% for dia, sesion in sesiones_en_tramo.items %}
+                {% if sesion.sesionextra_set.all.0.materia %}
+                    <td title="{{ sesion.sesionextra_set.all.0.materia.curso.nombre }} ({{ sesion.sesionextra_set.all.0.actividad.nombre }})"
+                        class="{{ sesion.clase_horario }} mwx198" data-m="{{ sesion.clase_horario }}">
+                        {{ sesion.sesionextra_set.all.0.materia.nombre }}<br>
+{#                    {% for sext in sesion.sesionextra_set.all %}#}
+{#                        <span class="grupo_horario grupo_usado" data-grupo="{{ sext.grupo.id }}">#}
+{#                            {{ sext.grupo.nombre }}#}
+{#                        </span>#}
+{#                    {% endfor %}#}
+                        <span class="grupo_horario grupo_usado" data-g_e="{{ sesion.g_e.id }}">
+                            {{ sesion.g_e.gauser.get_full_name }}
+                        </span>
+                        <br><span
+                            style="color:lightseagreen">{{ sesion.sesionextra_set.all.0.dependencia.nombre }}</span>
+                    </td>
+                {% else %}
+                    <td class="{{ sesion.clase_horario }} mwx198" data-m="{{ sesion.clase_horario }}"
+                        style="color:mediumvioletred">{{ sesion.sesionextra_set.all.0.actividad.nombre }}<br>
+{#                    {% for sext in sesion.sesionextra_set.all %}#}
+{#                        <span class="grupo_horario grupo_usado" data-grupo="{{ sext.grupo.id }}">#}
+{#                            {{ sext.grupo.nombre }}#}
+{#                        </span>#}
+{#                    {% endfor %}#}
+                    <span class="grupo_horario grupo_usado" data-g_e="{{ sesion.g_e.id }}">
+                            {{ sesion.g_e.gauser.get_full_name }}
+                        </span>
+                    </td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    $('body').on('mouseover', '.mwx198', function () {
+        var mId = $(this).data('m');
+        $('.' + mId).css('background-color', 'lightgoldenrodyellow');
+    });
+    $('body').on('mouseout', '.mwx198', function () {
+        var mId = $(this).data('m');
+        $('.' + mId).css('background-color', '');
+    });
+</script>

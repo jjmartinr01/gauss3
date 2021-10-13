@@ -1,21 +1,24 @@
-<div class="dia_horario" id="horas">
-    {% for hora in horas_grupo %}
-        <div class="horas" style="top:{{ hora.top }}px;"><b>{{ hora.inicio }}-{{ hora.fin }}</b></div>
-    {% endfor %}
+{#<div class="dia_horario" id="horas">#}
+{#    {% for hora in horas_grupo %}#}
+{#        <div class="horas" style="top:{{ hora.top }}px;"><b>{{ hora.inicio }}-{{ hora.fin }}</b></div>#}
+{#    {% endfor %}#}
+{#</div>#}
+{#{% for info_dia in sesiones %}#}
+{#    <div class="dia_horario" id="dia{{ info_dia.dia_num }}">#}
+{#        <b>{{ info_dia.dia_nombre }}</b>#}
+{#        {% for sesiones_hora in info_dia.sesiones_dia %}#}
+{#            <div class="div_cell_sesion"#}
+{#                 style="z-index: {{ sesiones_hora.0.top }}; top:{{ sesiones_hora.0.top }}px;max-height: {{ sesiones_hora.0.height }}px;min-height: {{ sesiones_hora.0.height }}px;">#}
+{#                {% for s in sesiones_hora %}#}
+{#                    <span class="dependencia">{{ s.dependencia.nombre }}</span><br>#}
+{#                    <span class="materia">{{ s.materia.nombre }}</span><br>#}
+{#                    <span class="profesor">{{ s.g_e.gauser.get_full_name }}</span>#}
+{#                    {% if not forloop.last %}<br><span class="materia">-------</span><br>{% endif %}#}
+{#                {% endfor %}#}
+{#            </div>#}
+{#        {% endfor %}#}
+{#    </div>#}
+{#{% endfor %}#}
+<div id="tabla_horario_grupo">
+    {{ tabla_horario }}
 </div>
-{% for info_dia in sesiones %}
-    <div class="dia_horario" id="dia{{ info_dia.dia_num }}">
-        <b>{{ info_dia.dia_nombre }}</b>
-        {% for sesiones_hora in info_dia.sesiones_dia %}
-            <div class="div_cell_sesion"
-                 style="z-index: {{ sesiones_hora.0.top }}; top:{{ sesiones_hora.0.top }}px;max-height: {{ sesiones_hora.0.height }}px;min-height: {{ sesiones_hora.0.height }}px;">
-                {% for s in sesiones_hora %}
-                    <span class="dependencia">{{ s.dependencia.nombre }}</span><br>
-                    <span class="materia">{{ s.materia.nombre }}</span><br>
-                    <span class="profesor">{{ s.g_e.gauser.get_full_name }}</span>
-                    {% if not forloop.last %}<br><span class="materia">-------</span><br>{% endif %}
-                {% endfor %}
-            </div>
-        {% endfor %}
-    </div>
-{% endfor %}

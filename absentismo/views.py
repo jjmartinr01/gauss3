@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.utils.text import slugify
-from entidades.models import Gauser_extra, Subentidad
+from entidades.models import Gauser_extra, Subentidad, Cargo
 from gauss.funciones import usuarios_de_gauss, get_dce
 from gauss.rutas import *
 from absentismo.models import Actuacion, ExpedienteAbsentismo
@@ -90,8 +90,11 @@ def ajax_absentismo(request):
             data = render_to_string('absentismo_accordion.html', {'expediente': expediente})
             return JsonResponse({'html': data, 'ok': True})
         elif request.POST['action'] == 'open_accordion':
-            sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
-            docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+            # sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+            # docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+            cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+            docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
+
             expediente = ExpedienteAbsentismo.objects.get(expedientado__ronda=g_e.ronda, id=request.POST['expediente'])
             data = render_to_string('absentismo_accordion_content.html',
                                     {'expediente': expediente, 'g_e': g_e, 'docentes': docentes})

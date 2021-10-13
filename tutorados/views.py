@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django import forms
 from django.forms import ModelForm
-from entidades.models import Gauser_extra, Subentidad
+from entidades.models import Gauser_extra, Subentidad, Cargo
 from gauss.funciones import usuarios_de_gauss, get_dce
 from gauss.rutas import *
 from tutorados.models import Pregunta, Informe_seguimiento, Respuesta, Fichero_tarea, Informe_tareas, Tarea_propuesta
@@ -72,15 +72,17 @@ def informes_seguimiento(request):
 def ajax_informe_seguimiento(request):
     g_e = request.session['gauser_extra']
     if request.is_ajax():
-        logger.info(u'%s, %s' % (g_e, request.POST['action']))
+        logger.info('%s, %s' % (g_e, request.POST['action']))
         if request.POST['action'] == 'buscar_usuarios_destino':
             q = request.POST['q'].split()
             Q_total = Q(gauser__isnull=False)
             for texto in q:
                 Q_parcial = Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)
                 Q_total = Q_total & Q_parcial
-            sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
-            usuarios = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+            # sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+            # usuarios = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+            cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+            usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
             filtrados = usuarios.filter(Q_total)
             options = []
             for u in filtrados:
@@ -156,8 +158,10 @@ def ajax_informe_seguimiento(request):
             else:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'open_accordion':
-            sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
-            docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+            # sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+            # docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+            cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+            docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
             informe = Informe_seguimiento.objects.get(usuario__ronda=g_e.ronda, id=request.POST['informe'])
             data = render_to_string('informe_seguimiento_accordion_content.html',
                                     {'informe': informe, 'g_e': g_e, 'docentes': docentes, 'preguntas': preguntas_base})
@@ -325,15 +329,17 @@ def informes_tareas(request):
 def ajax_informe_tareas(request):
     g_e = request.session['gauser_extra']
     if request.is_ajax():
-        logger.info(u'%s, %s' % (g_e, request.POST['action']))
+        logger.info('%s, %s' % (g_e, request.POST['action']))
         if request.POST['action'] == 'buscar_usuarios_destino':
             q = request.POST['q'].split()
             Q_total = Q(gauser__isnull=False)
             for texto in q:
                 Q_parcial = Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)
                 Q_total = Q_total & Q_parcial
-            sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
-            usuarios = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+            # sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+            # usuarios = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+            cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+            usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
             filtrados = usuarios.filter(Q_total)
             options = []
             for u in filtrados:

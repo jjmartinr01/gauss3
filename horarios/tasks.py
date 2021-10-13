@@ -6,7 +6,7 @@ from lxml import etree as ElementTree
 from difflib import get_close_matches
 from django.db.models import Q
 from django.utils.timezone import datetime, timedelta
-from entidades.models import CargaMasiva, Gauser_extra, Dependencia, Subentidad, Entidad, Organization
+from entidades.models import CargaMasiva, Gauser_extra, Dependencia, Subentidad, Entidad, Organization, Cargo
 from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios, EtapaEscolar
 from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia
 from cupo.models import PlantillaXLS, PlantillaOrganica, LogCarga
@@ -375,12 +375,14 @@ def carga_masiva_from_file():
                         grupo.cursos.add(curso)
                         logger.warning('Se ha creado el grupo "%s", con código %s' % (nombre, grupo_codigo))
 
-            sub_docentes = Subentidad.objects.filter(Q(entidad=carga.ronda.entidad),
-                                                     Q(fecha_expira__gt=datetime.today()),
-                                                     Q(nombre__icontains='docente') | Q(
-                                                         nombre__icontains='profesor') | Q(
-                                                         nombre__icontains='maestro'))
-            docentes = Gauser_extra.objects.filter(subentidades__in=sub_docentes, ronda=carga.ronda)
+            # sub_docentes = Subentidad.objects.filter(Q(entidad=carga.ronda.entidad),
+            #                                          Q(fecha_expira__gt=datetime.today()),
+            #                                          Q(nombre__icontains='docente') | Q(
+            #                                              nombre__icontains='profesor') | Q(
+            #                                              nombre__icontains='maestro'))
+            # docentes = Gauser_extra.objects.filter(subentidades__in=sub_docentes, ronda=carga.ronda)
+            cargo = Cargo.objects.get(entidad=carga.ronda.entidad, clave_cargo='g_docente')
+            docentes = Gauser_extra.objects.filter(ronda=carga.ronda, cargos__in=[cargo])
             nombres_docentes = [(d.id, d.gauser.get_full_name()) for d in docentes]
             for elemento in xml_file.findall(".//grupo_datos[@seq='EMPLEADOS']/grupo_datos"):
                 profesor_nombre = elemento.find('dato[@nombre_dato="NOMBRE"]').text

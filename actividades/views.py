@@ -15,7 +15,7 @@ from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from horarios.models import Tramo_horario
 from estudios.models import  Grupo, Gauser_extra_estudios
-from entidades.models import Entidad, Gauser_extra, Subentidad
+from entidades.models import Entidad, Gauser_extra, Subentidad, Cargo
 # from autenticar.models import Gauser_extra, Perfil
 from gauss.funciones import pass_generator, usuarios_de_gauss, get_dce
 from actividades.models import Actividad, File_actividad
@@ -114,8 +114,10 @@ def gestionar_actividades(request):
                 'fecha_inicio')
             fichero = 'memoria_extraescolares_' + str(g_e.ronda.entidad.code) + '.pdf'
             profesores = []
-            sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
-            docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+            # sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+            # docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+            cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+            docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
 
             for docente in docentes:
                 organizaciones_actividad = actividades.filter(organizador=docente).distinct()
@@ -445,8 +447,10 @@ def ajax_actividades(request):
         elif request.method == 'GET':
             if request.GET['action'] == 'busca_profesor':
                 texto = request.GET['q']
-                sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
-                usuarios = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+                # sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+                # usuarios = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+                cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+                usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
                 usuarios_contain_texto = usuarios.filter(
                     Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)).values_list('id',
                                                                                                                 'gauser__last_name',

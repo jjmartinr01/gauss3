@@ -324,11 +324,13 @@ def sancionar_conductas_ajax(request):
                 except Exception as e:
                     return JsonResponse({'ok': False, 'mensaje': str(e)})
                 Informe_sancionador.objects.filter(sancionado=sancionado, fichero='').delete()
-                try:
-                    sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
-                except Exception as e:
-                    return JsonResponse({'ok': False, 'mensaje': str(e)})
-                docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+                # try:
+                #     sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+                # except Exception as e:
+                #     return JsonResponse({'ok': False, 'mensaje': str(e)})
+                # docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+                cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+                docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
                 inf_actual = Informe_sancionador.objects.create(sancionado=sancionado, sancionador=g_e,
                                                                 fecha_incidente=date.today())
                 html = render_to_string('sancionar_conductas_datos_sancionado.html',
@@ -338,8 +340,10 @@ def sancionar_conductas_ajax(request):
                 return JsonResponse({'ok': False, 'mensaje': str(e)})
         elif action == 'cargar_informe':
             try:
-                sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
-                docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+                # sub_docentes = Subentidad.objects.get(entidad=g_e.ronda.entidad, clave_ex='docente')
+                # docentes = usuarios_de_gauss(g_e.ronda.entidad, subentidades=[sub_docentes])
+                cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
+                docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
                 inf_actual = Informe_sancionador.objects.get(id=request.POST['informe'], sancionado__ronda=g_e.ronda)
                 html = render_to_string('sancionar_conductas_datos_sancionado.html',
                                         {'inf_actual': inf_actual, 'docentes': docentes, 'g_e': g_e})
