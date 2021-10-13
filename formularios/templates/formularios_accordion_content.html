@@ -74,21 +74,33 @@
             <a class="respuesta_booleana" id="multiple{{ gform.id }}" data-campo="multiple" data-gform="{{ gform.id }}">No</a>
         {% endif %}
     </div>
-    <div class="columns large-3">
+    <div class="columns large-4">
         <label title="Elegir si este formulario puede ser rellenado por los usuarios de {{ gform.propietario.ronda.entidad.name }} o por todos los usuarios de {{ gform.propietario.ronda.entidad.organization.organization }}"><b>Rellenable
-            por usuarios de:</b>
+            por:</b>
             <select class="destinatarios" data-gform="{{ gform.id }}">
-                <option value="ENT" {% if gform.destinatarios == 'ENT' %}selected{% endif %}>{{ gform.propietario.ronda.entidad.name }}</option>
-                <option value="ORG" {% if gform.destinatarios == 'ORG' %}selected{% endif %}>{{ gform.propietario.ronda.entidad.organization.organization }}</option>
+                <option value="ENT"
+                        {% if gform.destinatarios == 'ENT' %}selected{% endif %}>{{ gform.propietario.ronda.entidad.name }}</option>
+                <option value="ORG"
+                        {% if gform.destinatarios == 'ORG' %}selected{% endif %}>{{ gform.propietario.ronda.entidad.organization.organization }}</option>
             </select> </label>
     </div>
+    {#    <div class="columns large-2">#}
+    {#        <label title="Elegir si este formulario va a ser evaluado por los usuarios de {{ gform.propietario.ronda.entidad.name }} o por todos los usuarios de {{ gform.propietario.ronda.entidad.organization.organization }}"><b>Evaluable#}
+    {#            por:</b>#}
+    {#            <select class="destinatarios" data-gform="{{ gform.id }}">#}
+    {#                <option value="ENT"#}
+    {#                        {% if gform.destinatarios == 'ENT' %}selected{% endif %}>{{ gform.propietario.ronda.entidad.name }}</option>#}
+    {#                <option value="ORG"#}
+    {#                        {% if gform.destinatarios == 'ORG' %}selected{% endif %}>{{ gform.propietario.ronda.entidad.organization.organization }}</option>#}
+    {#            </select> </label>#}
+    {#    </div>#}
     <div class="columns large-1">
         <label><b>Ver</b><br>
             <a href="/ver_gform/{{ gform.id }}/{{ gform.identificador }}/" target="_blank"
             ><i class="fa fa-eye fa-2x"></i></a>
         </label>
     </div>
-    <div class="columns large-4">
+    <div class="columns large-3">
         <label><b>Copiar enlace</b><br>
             <a class="button tiny copy_url_gform" data-url="/rellena_gform/{{ gform.id }}/{{ gform.identificador }}/"
                title="Haz click sobre el botón para copiar el enlace al formulario" style="font-weight: bold;">
@@ -115,6 +127,83 @@
 <div class="row">
     <div class="columns large-12">
         <select name="colaboradores{{ gform.id }}" class="colaboradores" data-gform="{{ gform.id }}"></select>
+    </div>
+</div>
+<p>&nbsp;</p>
+
+<div class="row">
+    <div class="columns large-11">
+        <label><b>Personas destinadas a rellenar este formulario:</b> <a class="ayuda_usuarios_destinatarios">
+            <i class="fa fa-question-circle"></i></a>
+        </label>
+    </div>
+    <div class="columns large-1">
+        <label title="Cargar los destinatarios y correctores desde un archivo excel">
+            <a class="cargar_gform_destinatarios"><i class="fa fa-cloud-upload"></i></a>
+        </label>
+    </div>
+</div>
+<div id="div_carga_archivo_destinatarios{{ gform.id }}" class="panel callout" style="display: none;">
+    <div class="row">
+        <p>Debe ser un archivo Excel con las siguientes columnas:</p>
+        <p><ol>
+        <li>Columna A: DNI del destinatario</li>
+        <li>Columna B: No se usa</li>
+        <li>Columna C: Apellidos del destinatario</li>
+        <li>Columna D: Nombre del destinatario</li>
+        <li>Columna E: No se usa</li>
+        <li>Columna F: No se usa</li>
+        <li>Columna G: No se usa</li>
+        <li>Columna H: No se usa</li>
+        <li>Columna I: Código de centro/entidad del destinatario</li>
+        <li>Columna J: No se usa</li>
+        <li>Columna K: DNI del evaluador</li>
+        <li>Columna L: Código de centro/entidad del evaluador</li>
+        <li>Columna M: Apellidos del evaluador</li>
+        <li>Columna N: Nombre del evaluador</li>
+
+    </ol></p>
+    </div>
+    <div class="row" style="padding-bottom: 2px;">
+        <div class="columns large-8">
+            <label><input type="file" id="input_gauss_file{{ gform.id }}"></label>
+        </div>
+        <div class="columns large-4">
+            <a class="button tiny subir_gauss_file" data-id="{{ gform.id }}"><i class="fa fa-cloud-upload"></i>
+                Cargar archivos</a>
+        </div>
+    </div>
+</div>
+
+<div class="row" style="padding-bottom: 2px;">
+    <div class="columns large-12" id="div_usuarios_destinatarios{{ gform.id }}">
+        <table style="width: 100%;">
+            <thead>
+            <tr>
+                <th>Persona que debe rellenar</th>
+                <th>Persona encargada de evaluar</th>
+                <th>Elegir acción</th>
+            </tr>
+            </thead>
+            <tbody id="tbody_gform_destinatarios{{ gform.id }}">
+            <tr>
+                <td>
+                    <select id="select_destinatario_gform{{ gform.id }}" class="select_destinatario_gform"></select>
+                </td>
+                <td>
+                    <select id="select_corrector_gform{{ gform.id }}" class="select_corrector_gform"></select>
+                </td>
+                <td>
+                    <a class="add_gform_destinatario" data-gform="{{ gform.id }}">
+                        <i class="fa fa-plus"></i> Añadir
+                    </a>
+                </td>
+            </tr>
+            {% for gd in gform.gformdestinatario_set.all %}
+                {% include "formularios_accordion_content_destinatario.html" %}
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 <p>&nbsp;</p>

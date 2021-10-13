@@ -1,0 +1,13 @@
+<tr id="gformdestinatario{{ gd.id }}">
+    <td>
+        {{ gd.destinatario.gauser.last_name }}, {{ gd.destinatario.gauser.first_name }}
+    </td>
+    <td>
+        {{ gd.corrector.gauser.last_name }}, {{ gd.corrector.gauser.first_name }}
+    </td>
+    <td>
+        <a class="del_gform_destinatario"  data-gd="{{ gd.id }}">
+            <i class="fa fa-trash"></i> Borrar
+        </a>
+    </td>
+</tr>

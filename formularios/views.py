@@ -42,7 +42,8 @@ def gfs_id_orden(gform):
 # @login_required()
 def formularios(request):
     g_e = request.session["gauser_extra"]
-    gforms = Gform.objects.filter(Q(propietario__gauser=g_e.gauser) | Q(colaboradores__gauser__in=[g_e.gauser])).distinct()
+    gforms = Gform.objects.filter(
+        Q(propietario__gauser=g_e.gauser) | Q(colaboradores__gauser__in=[g_e.gauser])).distinct()
     paginator = Paginator(gforms, 15)
     formularios = paginator.page(1)
     if request.method == 'POST' and request.is_ajax():
@@ -195,7 +196,36 @@ def formularios(request):
                     return JsonResponse({'ok': False, 'msg': 'Un colaborador solo puede borrarlo el propietario'})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'add_gform_destinatario':
+            try:
+                gform = Gform.objects.get(id=request.POST['gform'])
+                if gform.is_propietario_o_colaborador(g_e):
+                    des = Gauser_extra.objects.get(id=int(request.POST['destinatario'][1:]),
+                                                   ronda__entidad__organization=g_e.ronda.entidad.organization)
+                    cor = Gauser_extra.objects.get(id=int(request.POST['corrector'][1:]),
+                                                   ronda__entidad__organization=g_e.ronda.entidad.organization)
+                    gd, c = GformDestinatario.objects.get_or_create(gform=gform, destinatario=des, corrector=cor)
+                    if c:
+                        html = render_to_string('formularios_accordion_content_destinatario.html', {'gd': gd})
+                        return JsonResponse({'ok': True, 'gform': gform.id, 'html': html})
+                    else:
+                        return JsonResponse({'ok': False, 'gform': gform.id, 'msg': 'Ya cargados anteriormente'})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permiso para añadir destinatarios'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
 
+        elif request.POST['action'] == 'del_gform_destinatario':
+            try:
+                gd = GformDestinatario.objects.get(id=request.POST['gd'])
+                if gd.gform.is_propietario_o_colaborador(g_e):
+                    gd_id=gd.id
+                    gd.delete()
+                    return JsonResponse({'ok': True, 'gd': gd_id})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permiso para borrar destinatarios'})
+            except:
+                return JsonResponse({'ok': False})
         # Posibles operaciones en una sección:
         # update_texto_gfs, add_gfsi_after_gfs, copy_gfs, add_gfs_after_gfs, del_gfs
         elif request.POST['action'] == 'update_texto_gfs':  # actualiza title y description
@@ -563,7 +593,6 @@ def formularios(request):
                   })
 
 
-
 @login_required()
 def ver_gform(request, id, identificador):
     g_e = request.session["gauser_extra"]
@@ -634,7 +663,7 @@ def mis_formularios(request):
                 gform = Gform.objects.get(id=request.POST['gform'])
                 gfr = GformResponde.objects.create(gform=gform, g_e=g_e)
                 url = '/rellena_gform/%s/%s/%s/' % (gform.id, gform.identificador, gfr.identificador)
-                return JsonResponse({'ok': True , 'url': url})
+                return JsonResponse({'ok': True, 'url': url})
                 # return redirect('/rellena_gform/%s/%s/%s/' % (gform.id, gform.identificador, gfr.identificador))
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -834,6 +863,7 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
                       'gformresponde': gformresponde,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
+
 
 def formularios_disponibles(request):
     g_e = request.session["gauser_extra"]

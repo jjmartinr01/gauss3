@@ -50,7 +50,8 @@
         <p>Un colaborador contribuye al desarrollo del formulario añadiendo nuevas preguntas. Puede:</p>
         <ol>
             <li>Cambiar aspectos de la configuración: activar/desactivar el formulario, cambiar la fecha límite
-                de rellenado, ...</li>
+                de rellenado, ...
+            </li>
             <li>Modificar el título y descripción de las secciones, así como borrarlas o añadir nuevas.</li>
             <li>Copiar preguntas ya existentes en el formulario.</li>
             <li>Añadir preguntas en cualquier posición.</li>
@@ -61,6 +62,14 @@
             <li>Cambiar el nombre del formulario.</li>
             <li>Modificar o borrar preguntas de otros usuarios.</li>
         </ol>
+    </div>
+
+    <div id="info_usuarios_destinatarios" style="display: none;">
+        <p>Si no se incluye a nadie en esta lista, cualquier persona perteneciente a tu entidad, o a tu organización,
+            según se marque el campo "<i>Rellenable por usuarios de:</i>", podrá rellenar el formulario.</p>
+        <p>Si deseas que únicamente una persona, o grupo de personas, rellene el formulario, debes incluirlos en
+            esta lista. De esta forma, únicamente los usuarios de esta lista tendrán acceso al formulario.</p>
+        <p>Cuando esta lista existe, es posible asignar un corrector a cada usuario.</p>
     </div>
 {% endblock %}
 
@@ -186,6 +195,22 @@
                                         $('#gform').val(id);
                                         constructInlineEditorInstances();
                                         $(".colaboradores").select2(
+                                            conf_select2({
+                                                'url': '/selectgcs_organization/',
+                                                'gcs': 'gcs',
+                                                'format_g': '{0}, {1}',
+                                                'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
+                                            })
+                                        );
+                                        $(".select_destinatario_gform").select2(
+                                            conf_select2({
+                                                'url': '/selectgcs_organization/',
+                                                'gcs': 'gcs',
+                                                'format_g': '{0}, {1}',
+                                                'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
+                                            })
+                                        );
+                                        $(".select_corrector_gform").select2(
                                             conf_select2({
                                                 'url': '/selectgcs_organization/',
                                                 'gcs': 'gcs',
@@ -346,6 +371,50 @@
                     }
                 });
         });
+
+        {# ########################################################################################### #}
+        {# Añadir y borrar destinatarios del gform y los correspondientes evaluadores #}
+        {# ########################################################################################### #}
+
+        $('body').on('click', '.add_gform_destinatario', function (e) {
+            var gform = $(this).data('gform');
+            var destinatario = $('#select_destinatario_gform' + gform).val();
+            var corrector = $('#select_corrector_gform' + gform).val();
+            $.post("/formularios/", {
+                    action: 'add_gform_destinatario',
+                    gform: gform,
+                    destinatario: destinatario,
+                    corrector: corrector
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#tbody_gform_destinatarios" + data.gform).append(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    $('#select_destinatario_gform' + data.gform).val(null).trigger('change');
+                    $('#select_corrector_gform' + data.gform).val(null).trigger('change');
+                });
+        });
+
+
+        $('body').on('click', '.del_gform_destinatario', function (e) {
+            var gd = $(this).data('gd');
+            $.post("/formularios/", {
+                    action: 'del_gform_destinatario',
+                    gd: gd
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#gformdestinatario" + data.gd).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
         {# ########################################################################################### #}
         {# Funciones para reordenar las secciones y las preguntas: #}
         {# gfsi_id_orden, gfs_id_orden  #}
@@ -760,10 +829,30 @@
             })
         });
 
+        $('body').on('click', '.ayuda_usuarios_destinatarios', function (e) {
+            e.preventDefault();
+            var info_usuarios_destinatarios = $('#info_usuarios_destinatarios').html();
+            show_mensajes({
+                title: '<i class="fa fa-question-circle"></i> ¿Para qué es esta lista de personas?',
+                texto: info_usuarios_destinatarios
+            })
+        });
+
+        {#$('body').on('click', '.ayuda_colaboradores', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var info_colaboradores = $('#info_colaboradores').html();#}
+        {#    show_mensajes({#}
+        {#        title: '<i class="fa fa-question-circle"></i> ¿Qué hace un colaborador?',#}
+        {#        texto: info_colaboradores#}
+        {#    })#}
+        {# });#}
+
         $('body').on('click', '.copy_url_gform', function () {
             var url = $(this).data('url');
-            var protocol = window.location.protocol; {# http: o https: #}
-            var host = window.location.host; {# Por ejemplo: gaumentada.es:5656   (proporciona dominio + puerto) #}
+            var protocol = window.location.protocol;
+            {# http: o https: #}
+            var host = window.location.host;
+            {# Por ejemplo: gaumentada.es:5656   (proporciona dominio + puerto) #}
             {#var c = copiar_al_portapapeles(protocol + '//' + host + '/logincas/?nexturl=' + url)#}
             var c = copiar_al_portapapeles(protocol + '//' + host + url)
             if (c) {
