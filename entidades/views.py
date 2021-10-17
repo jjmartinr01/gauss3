@@ -7,6 +7,7 @@ import re
 import logging
 import xlwt
 import pdfkit
+from time import sleep
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -2739,3 +2740,56 @@ def decode_select_allges(coded_ids, ronda):
     ss_ids = [int(idx[1:]) for idx in coded_ids if idx.startswith('s')]
     ges = usuarios_ronda(ronda)
     return ges.filter(Q(id__in=ges_ids) | Q(cargos__id__in=cs_ids) | Q(subentidades__id__in=ss_ids)).distinct()
+
+#############################################################################
+####################### API llamadas desde otro dominio #####################
+#############################################################################
+
+dic = {'first_name': '', 'last_name': '', 'address': '', 'sexo': '',
+                  'email': '', 'telfij': '', 'telmov': '',
+                  'nacimiento': '', 'dni': '',
+                  'first_name_tutor1': '', 'dni_tutor1': '',
+                  'last_name_tutor1': '',
+                  'telfij_tutor1': '',
+                  'telmov_tutor1': '', 'email_tutor1': '',
+                  'first_name_tutor2': '', 'dni_tutor2': '',
+                  'last_name_tutor2': '',
+                  'telfij_tutor2': '',
+                  'telmov_tutor2': '', 'email_tutor2': '',
+                  'observaciones': '', 'num_cuenta_bancaria': ''}
+
+dic_arvutur = {'first_name': '', 'last_name': '', 'address': '', 'sexo': '',
+                  'email': '', 'telfij': '', 'telmov': '',
+                  'nacimiento': '', 'dni': '',
+                  'observaciones': '', 'num_cuenta_bancaria': ''}
+
+def postnewreserva(request, entidad_code):
+    sleep(3)
+    try:
+        entidad = Entidad.objects.get(code=entidad_code)
+        errores = ''
+        campos = ConfiguraReservaPlaza.objects.filter(entidad=entidad)
+        for campo in campos:
+            if campo.required:
+                if request.POST[campo.campo] == '' or request.POST[campo.campo] == None:
+                    errores += '<p>El campo "%s" es obligatorio</p>' % campo.get_campo_display()
+        if errores == '':
+            reserva = Reserva_plaza.objects.create(entidad=entidad)
+            form = Reserva_plazaForm(request.GET, instance=reserva)
+            form.save()
+            gauss = Gauser_extra.objects.get(ronda=entidad.ronda, gauser__username='gauss')
+            permiso = Permiso.objects.get(code_nombre='recibe_aviso_reserva')
+            receptores_id = Gauser_extra.objects.filter(ronda=entidad.ronda, permisos__in=[permiso]).values_list(
+                'gauser__id', flat=True)
+            receptores = Gauser.objects.filter(id__in=receptores_id)
+            mensaje = render_to_string('mensaje_reserva_grabada.html',
+                                       {'crps': campos, 'reserva': reserva, 'mail': True})
+            encolar_mensaje(emisor=gauss, receptores=receptores, asunto='Solicitud de plaza en %s' % entidad.name,
+                            html=mensaje, etiqueta='reservas%s' % entidad.id)
+            ok = True
+        else:
+            ok = False
+        return HttpResponse('informa_reserva(%s)' % json.dumps({'ok': ok, 'mensaje': errores}))
+    except:
+        data = {'id': None, 'token': 'error'}
+        return HttpResponse('informa_reserva(%s)' % json.dumps(data))

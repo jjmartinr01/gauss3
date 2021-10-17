@@ -35,4 +35,5 @@ urlpatterns = [
     path('selectgcs/', views.selectgcs),
     path('selectgcs_organization/', views.selectgcs_organization),
     path('doc_configuration/', views.doc_configuration),
+    path('postnewreserva/<int:entidad_code>/', views.postnewreserva),
 ]
