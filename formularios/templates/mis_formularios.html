@@ -3,13 +3,16 @@
 
 {% block head %}
     <style>
-.del_gformresponde {
-    background-color: #008CBA; text-align: center; cursor: pointer;
-    color: white!important;
-}
-.del_gformresponde:hover {
-    background-color: #007095;
-}
+        .del_gformresponde {
+            background-color: #008CBA;
+            text-align: center;
+            cursor: pointer;
+            color: white !important;
+        }
+
+        .del_gformresponde:hover {
+            background-color: #007095;
+        }
     </style>
 {% endblock %}
 
@@ -19,14 +22,37 @@
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
         <input type="hidden" name="gformresponde" id="gformresponde" value="">
+        <h4 style="text-align: center;color: #008CBA;"><strong> Lista de mis cuestionarios que ...</strong>
+        </h4>
+        <ul class="tabs" data-tab role="tablist">
+            <li class="tab-title active" role="presentation" data-id="0">
+                <a href="#tab0" role="tab" tabindex="0" aria-selected="true" aria-controls="tab0">
+                    <b id="texto0" style="color:#008CBA;" class="texto_tab">Que debo rellenar</b></a>
+            </li>
+            <li class="tab-title" role="presentation" data-id="1">
+                <a href="#tab1" role="tab" tabindex="0" aria-selected="false" aria-controls="tab1">
+                    <b id="texto1" style="color:#ffffff;" class="texto_tab">Que he rellenado</b></a>
+            </li>
+            <li class="tab-title" role="presentation" data-id="2">
+                <a href="#tab2" role="tab" tabindex="0" aria-selected="false" aria-controls="tab2">
+                    <b id="texto2" style="color:#ffffff;" class="texto_tab">Que debo evaluar</b></a>
+            </li>
+        </ul>
+        <div class="tabs-content">
+            <section role="tabpanel" aria-hidden="false" class="content active" id="tab0" data-tab="dr">
+                <div id="listado_misformularios_dr" class="listado_misformularios">
+                    {% include 'mis_formularios_accordion.html' %}
+                </div>
+            </section>
+            <section role="tabpanel" aria-hidden="true" class="content" id="tab1" data-tab="hr">
+                <div id="listado_misformularios_hr" class="listado_misformularios">
+                </div>
 
-        <div class="">
-            <h4 id="title_page" style="text-align: center;color: #008CBA;">
-                <strong>Mis Formularios</strong></h4>
-        </div>
-
-        <div id="listado_misformularios">
-            {% include 'mis_formularios_accordion.html' %}
+            </section>
+            <section role="tabpanel" aria-hidden="true" class="content" id="tab2" data-tab="dc">
+                <div id="listado_misformularios_dc" class="listado_misformularios">
+                </div>
+            </section>
         </div>
     </form>
 
@@ -35,6 +61,30 @@
 
 {% block final %}
     <script>
+        {# ########################################################################################### #}
+        {# Operaciones directas Mis formularios: #}
+        {# select_tab,   #}
+        {# ########################################################################################### #}
+        $(document).foundation({
+            tab: {
+                callback: function (tab) {
+                    var id = $(tab[0]).data('id');
+                    $('.texto_tab').css('color', '#ffffff');
+                    $('#texto' + id).css('color', '#008CBA');
+                    var tab = $('#tab' + id).data('tab');
+                    $.post("/mis_formularios/", {action: 'change_tab', 'tab': tab},
+                        function (data) {
+                            if (data.ok) {
+                                $('.listado_misformularios').empty();
+                                $('#listado_misformularios_' + data.tab).html(data.html);
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }
+        });
 
         {# ########################################################################################### #}
         {# Operaciones directas Mis formularios: #}
@@ -67,6 +117,7 @@
             }
         });
 
+
         $('body').on('click', '.del_gformresponde', function (e) {
             e.preventDefault();
             $('#gformresponde').val($(this).data('gformresponde'));
@@ -79,13 +130,13 @@
                         var gformresponde = $('#gformresponde').val();
                         $.post("/mis_formularios/", {action: 'del_gformresponde', gformresponde: gformresponde},
                             function (data) {
-                            if (data.ok) {
-                                $('#tr' + gformresponde).remove();
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $("#update_error").show().delay(1500).fadeOut();
-                            }
-                        });
+                                if (data.ok) {
+                                    $('#tr' + gformresponde).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
                     },
                     "Cancelar": function () {
                         hide_mensajes();
@@ -98,14 +149,14 @@
             e.preventDefault();
             var gform = $(this).data('gform');
             $.post("/mis_formularios/", {action: 'get_another_gform', gform: gform},
-                            function (data) {
-                            if (data.ok) {
-                                $("#update_ok").show().delay(1500).fadeOut();
-                                window.location.href = data.url;
-                            } else {
-                                $("#update_error").show().delay(1500).fadeOut();
-                            }
-                        });
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        window.location.href = data.url;
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
 
         });
 

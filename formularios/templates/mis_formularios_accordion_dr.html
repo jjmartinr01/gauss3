@@ -14,9 +14,9 @@
         <a class="listado_normal right"><span class="label rounded">Volver al listado normal</span></a>
     {% endif %}
 {% endif %}
-<dl class="accordion" data-accordion id="list_formularios">
+<dl class="accordion" data-accordion id="list_formularios_dr">
     {% for gform in gforms %}
-        <input type="hidden" name="formularios_seleccionados" value="{{ gform.id }}">
+        <input type="hidden" name="formularios_seleccionados_dr" value="{{ gform.id }}">
 
         <dd class="accordion-navigation" id="accordion{{ gform.id }}"
             style="border-bottom: dotted 1px black">
