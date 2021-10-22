@@ -31,27 +31,27 @@
             <textarea id="descripcionweb{{ vivienda.id }}">{{ vivienda.descripcionweb }}</textarea></label>
     </div>
 </div>
-<div class="row">
-    <div class="columns large-6">
-        <label><span><b>Introduce los precios: <a href="#" data-reveal-id="div_help_precios"><i
-                class="fa fa-question-circle"></i></a></b></span></label>
-        <input type="text" class="campo_char" data-campo="preciosweb" data-id="{{ vivienda.id }}"
-               value="{{ vivienda.preciosweb }}">
-    </div>
-    <div class="columns large-6">
-        <label><span><b>Cuenta bancaria para realizar cobros: <a href="#" data-reveal-id="div_help_iban"><i
-                class="fa fa-question-circle"></i></a></b></span></label>
-        <input type="text" class="campo_char" data-campo="iban" data-id="{{ vivienda.id }}"
-               value="{{ vivienda.iban }}">
-    </div>
-</div>
-<div id="calendario{{ vivienda.id }}" style="padding-top: 60px;">
-    <div class="row">
-        <div class="columns large-12">
-            <div id='calendar{{ vivienda.id }}'></div>
-        </div>
-    </div>
-</div>
+{#<div class="row">#}
+{#    <div class="columns large-6">#}
+{#        <label><span><b>Introduce los precios: <a href="#" data-reveal-id="div_help_precios"><i#}
+{#                class="fa fa-question-circle"></i></a></b></span></label>#}
+{#        <input type="text" class="campo_char" data-campo="preciosweb" data-id="{{ vivienda.id }}"#}
+{#               value="{{ vivienda.preciosweb }}">#}
+{#    </div>#}
+{#    <div class="columns large-6">#}
+{#        <label><span><b>Cuenta bancaria para realizar cobros: <a href="#" data-reveal-id="div_help_iban"><i#}
+{#                class="fa fa-question-circle"></i></a></b></span></label>#}
+{#        <input type="text" class="campo_char" data-campo="iban" data-id="{{ vivienda.id }}"#}
+{#               value="{{ vivienda.iban }}">#}
+{#    </div>#}
+{#</div>#}
+{#<div id="calendario{{ vivienda.id }}" style="padding-top: 60px;">#}
+{#    <div class="row">#}
+{#        <div class="columns large-12">#}
+{#            <div id='calendar{{ vivienda.id }}'></div>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
 <div id="fotos_web{{ vivienda.id }}">
     <div class="row">
         <div class="columns large-12">
@@ -221,62 +221,62 @@
     {# Líneas de codigo para el fullCalendar #}
 
 
-    var calendarEl{{ vivienda.id }} = document.getElementById('calendar{{ vivienda.id }}');
+    {#var calendarEl{{ vivienda.id }} = document.getElementById('calendar{{ vivienda.id }}');#}
 
-    calendar[{{ vivienda.id }}] = new FullCalendar.Calendar(calendarEl{{ vivienda.id }}, {
-        validRange: {
-            start: new Date(),
-        },
-        plugins: ['interaction', 'dayGrid', 'timeGrid', 'list'],
-        header: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
-        },
-        defaultDate: new Date(),
-        locale: 'es',
-        selectOverlap: false,
-        buttonIcons: true,
-        navLinks: true, // can click day/week names to navigate views
-        businessHours: false,
-        editable: true,
-        eventClick: function (info) {
-            alert('Event: ' + info.event.title + 'vivienda: ' + info.event.extendedProps['vivienda']);
-
-            // change the border color just for fun
-            info.el.style.borderColor = 'red';
-        },
-        selectable: true,
-        {#selectMirror: true,#}
-        select: function (arg) {
-            var d = arg.start;
-            var fecha0 = [d.getFullYear(), pad(d.getMonth() + 1), pad(d.getDate())].join('-');
-            if (!$(".fc-day[data-date='" + fecha0 + "']").hasClass('date-blocked')) {
-                var fecha = d.toLocaleString();
-                $('#reveal_web_calendar_precios').val('{{ vivienda.preciosweb }}')
-                    .data('vivienda', '{{ vivienda.id }}')
-                    .data('fecha', fecha0);
-                $('#reveal_web_calendar_bloquear').data('vivienda', '{{ vivienda.id }}').data('fecha', fecha0);
-                $('#reveal_web_calendar_fecha').html(fecha);
-                $('#reveal_web_calendar').foundation('reveal', 'open');
-            } else {
-                alert('Día bloqueado');
-            }
-
-            calendar[{{ vivienda.id }}].unselect()
-        },
-        events: {% autoescape off %}{{ vivienda|reservas2eventos }}{% endautoescape %},
-    });
-
-    calendar[{{ vivienda.id }}].render();
-
-    calendar[{{ vivienda.id }}].addEvent({
-        title: 'Prueba',
-        start: '2019-07-30',
-        end: '2019-07-23',
-        className: 'date-blocked'
-        {#rendering: 'background',#}
-    });
+    {#calendar[{{ vivienda.id }}] = new FullCalendar.Calendar(calendarEl{{ vivienda.id }}, {#}
+    {#    validRange: {#}
+    {#        start: new Date(),#}
+    {#    },#}
+    {#    plugins: ['interaction', 'dayGrid', 'timeGrid', 'list'],#}
+    {#    header: {#}
+    {#        left: 'prev,next today',#}
+    {#        center: 'title',#}
+    {#        right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'#}
+    {#    },#}
+    {#    defaultDate: new Date(),#}
+    {#    locale: 'es',#}
+    {#    selectOverlap: false,#}
+    {#    buttonIcons: true,#}
+    {#    navLinks: true, // can click day/week names to navigate views#}
+    {#    businessHours: false,#}
+    {#    editable: true,#}
+    {#    eventClick: function (info) {#}
+    {#        alert('Event: ' + info.event.title + 'vivienda: ' + info.event.extendedProps['vivienda']);#}
+{##}
+{#            // change the border color just for fun#}
+{#            info.el.style.borderColor = 'red';#}
+{#        },#}
+{#        selectable: true,#}
+{#        // selectMirror: true,#}
+{#        select: function (arg) {#}
+{#            var d = arg.start;#}
+{#            var fecha0 = [d.getFullYear(), pad(d.getMonth() + 1), pad(d.getDate())].join('-');#}
+{#            if (!$(".fc-day[data-date='" + fecha0 + "']").hasClass('date-blocked')) {#}
+{#                var fecha = d.toLocaleString();#}
+{#                $('#reveal_web_calendar_precios').val('{{ vivienda.preciosweb }}')#}
+{#                    .data('vivienda', '{{ vivienda.id }}')#}
+{#                    .data('fecha', fecha0);#}
+{#                $('#reveal_web_calendar_bloquear').data('vivienda', '{{ vivienda.id }}').data('fecha', fecha0);#}
+{#                $('#reveal_web_calendar_fecha').html(fecha);#}
+{#                $('#reveal_web_calendar').foundation('reveal', 'open');#}
+{#            } else {#}
+{#                alert('Día bloqueado');#}
+{#            }#}
+{##}
+{#            calendar[{{ vivienda.id }}].unselect()#}
+{#        },#}
+{#        events: {% autoescape off %}{{ vivienda|reservas2eventos }}{% endautoescape %},#}
+{#    });#}
+{##}
+{#    calendar[{{ vivienda.id }}].render();#}
+{##}
+{#    calendar[{{ vivienda.id }}].addEvent({#}
+{#        title: 'Prueba',#}
+{#        start: '2019-07-30',#}
+{#        end: '2019-07-23',#}
+{#        className: 'date-blocked'#}
+{#        //rendering: 'background',#}
+    {# });#}
 
     {#$('td').css('border', '1px solid #cccccc');#}
     var fecha = '';

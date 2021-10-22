@@ -6,13 +6,13 @@
                 <figcaption><span id="captionfoto{{ foto.id }}">{{ foto.caption }}</span></figcaption>
             </figure>
         </div>
-        <div class="columns large-3"><label>Etiquetar/Texto: <input type="text" class="campo_foto"
+        <div class="columns large-6"><label>Etiquetar/Texto: <input type="text" class="campo_foto"
                                                                     data-id="{{ foto.id }}"
                                                                     value="{{ foto.caption }}"
                                                                     data-campo="caption"></label>
         </div>
-        <div class="columns large-3"><label>URL para copiar: <input type="text" value="{{ foto.foto.url }}"></label>
-        </div>
+{#        <div class="columns large-3"><label>URL para copiar: <input type="text" value="{{ foto.foto.url }}"></label>#}
+{#        </div>#}
         <div class="columns large-1"><label>Orden: <input type="text" class="campo_foto" data-id="{{ foto.id }}"
                                                           value="{{ foto.orden }}" data-campo="orden"></label>
         </div>

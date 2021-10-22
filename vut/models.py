@@ -132,8 +132,31 @@ class Vivienda(models.Model):
 
     def __str__(self):
         borrada = ['', ' -- Vivienda borrada'][self.borrada]
-        return u'%s - %s (%s)%s' % (self.nombre, self.gpropietario.get_full_name(), self.municipio, borrada)
+        return '%s - %s (%s)%s' % (self.nombre, self.gpropietario.get_full_name(), self.municipio, borrada)
 
+
+COMMODITIES = (('coci', 'Cocina'), ('bath', 'Cuarto de baño'), ('come', 'Comedor'), ('sofa', 'Sofá cama'),
+               ('seca', 'Secador de pelo'), ('wifi', 'WiFi'), ('airc', 'Aire acondicionado'), ('cale', 'Calefacción'),
+               ('lava', 'Lavadora'),)
+
+
+class ViviendaCommodities(models.Model):
+    vivienda = models.ForeignKey(Vivienda, on_delete=models.CASCADE)
+    commodity = models.CharField('Elemento de la vivienda', max_length=5, choices=COMMODITIES, default='dorm')
+    num = models.IntegerField('Número de elementos', default=1)
+    observaciones = models.TextField('Observaciones al elemento', blank=True, null=True, default='')
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.vivienda, self.commodity, self.num)
+
+class ViviendaPrecio(models.Model):
+    vivienda = models.ForeignKey(Vivienda, on_delete=models.CASCADE)
+    precio = models.FloatField('Precio por noche', default=100)
+    numper = models.IntegerField('Número de personas incluidas en el precio', default=1)
+    fecha = models.DateField('Fecha en la que es válido el precio', blank=True, null=True)
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.vivienda, self.precio, self.numper)
 
 PORTALES = (('BOO', 'Booking'), ('AIR', 'Airbnb'), ('HOM', 'Homeaway'), ('REN', 'Rentalia'), ('NIU', 'Niumba'),
             ('OAP', 'Only Apartments'), ('WIM', 'Wimdu'), ('TRI', 'TripAdvisor'), ('OTR', 'Otros/Privado'))
@@ -524,7 +547,6 @@ class ContratoVUT(models.Model):
             return True
         else:
             return False
-
 
 
 ###################################################################################################
