@@ -3239,7 +3239,14 @@ def getvuts(request, entidad_code):
                          'pers': vut.inquilinos, 'loc': vut.municipio, 'prov': vut.provincia, 'obs': vut.observaciones,
                          'nreg': vut.nregistro, 'nomweb': vut.nombreweb, 'subnomweb': vut.subnombreweb,
                          'desweb': vut.descripcionweb, 'precioweb': vut.preciosweb, 'commodities':commodities})
-        return HttpResponse('getdatavuts(%s)' % json.dumps(data))
+        try:
+            s = request.GET['server']
+            if s == "yes":
+                return HttpResponse(json.dumps(data))
+            else:
+                return HttpResponse('getdatavuts(%s)' % json.dumps(data))
+        except:
+            return HttpResponse('getdatavuts(%s)' % json.dumps(data))
     except:
         data = {'id': None, 'token': 'error'}
         return HttpResponse('getdatavuts(%s)' % json.dumps(data))
