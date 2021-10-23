@@ -102,7 +102,7 @@
 
     <div id="div_help_fotos" class="reveal-modal large" data-reveal>
         <h3>¿Para qué sirve subir fotos?</h3>
-{#        <p>Puedes subir las fotos que desees. Estas fotos se mostrarán en tu web particular de GAUSS.</p>#}
+        {#        <p>Puedes subir las fotos que desees. Estas fotos se mostrarán en tu web particular de GAUSS.</p>#}
         <p>Puedes subir las fotos que desees. Estas fotos se mostrarán en la web de la entidad.</p>
         <p>Las fotos se mostrarán en el orden que indiques en la casilla "Orden", con las siguientes
             peculiariedades:</p>
@@ -111,10 +111,10 @@
             <li>La foto con orden igual a "1" se entenderá que es la portada.</li>
             <li>Las fotos con orden mayor que "1" se mostrarán con su etiqueta asociada, en el orden indicado.</li>
         </ol>
-{#        <p>También es importante saber que GAUSS asignará una URL a cada foto, por ejemplo#}
-{#            "/media/vut/3/1/fotosweb/IMzjvU.png". Esta URL la puedes utilizar para insertar fotos en la#}
-{#            descripción de la vivienda; basta con hacer click en <i class="fa fa-image"></i> y pegar la susodicha#}
-{#            URL en el formulario que aparece.</p>#}
+        {#        <p>También es importante saber que GAUSS asignará una URL a cada foto, por ejemplo#}
+        {#            "/media/vut/3/1/fotosweb/IMzjvU.png". Esta URL la puedes utilizar para insertar fotos en la#}
+        {#            descripción de la vivienda; basta con hacer click en <i class="fa fa-image"></i> y pegar la susodicha#}
+        {#            URL en el formulario que aparece.</p>#}
 
         <a class="close-reveal-modal">&#215;</a>
     </div>
@@ -652,7 +652,7 @@
                 var protocol = window.location.protocol;
                 var port = window.location.port;
                 var domain = window.location.hostname;
-                $('#protocol_domain').val( protocol + '//' + domain + ':' + port);
+                $('#protocol_domain').val(protocol + '//' + domain + ':' + port);
                 document.getElementById('{{formname}}').submit();
             });
         {% endif %}
@@ -688,7 +688,7 @@
                     if (data.ok) {
                         $('#fieldset' + propuesta).hide();
                         $("#update_ok").show().delay(1500).fadeOut();
-                        if (data.recarga){
+                        if (data.recarga) {
                             location.reload();
                         }
                     } else {
@@ -766,7 +766,56 @@
             console.log('fafafa5');
         });
 
+        {# ####################################################### #}
+        {# ############## COMMODITIES ############################ #}
+        {# ####################################################### #}
 
+        function update_commodity(vivienda, commodity, campo, valor) {
+            $.post("/ajax_viviendas/", {
+                    action: 'update_commodity',
+                    vivienda: vivienda,
+                    commodity: commodity,
+                    campo: campo,
+                    valor: valor
+                },
+                function (data) {
+                    if (data.ok) {
+                        if (data.n > 0) {
+                            $('#commodity_' + data.v + '_' + data.c).prop('checked', true);
+                        } else {
+                            $('#commodity_' + data.v + '_' + data.c).prop('checked', false);
+                        }
+                         $('#num_commodity_' + data.v + '_' + data.c).val(data.n);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                }, 'json');
+        }
+
+        $('body').on('click', '.commodity', function () {
+            var vivienda = $(this).data('vut');
+            var commodity = $(this).data('com');
+            var campo = 'commodity';
+            if ($(this).is(':checked')) {
+                var checked = true;
+            } else {
+                var checked = false;
+            }
+            update_commodity(vivienda, commodity, campo, checked);
+        });
+        $('body').on('change', '.num_commodity', function () {
+            var vivienda = $(this).data('vut');
+            var commodity = $(this).data('com');
+            var campo = 'num';
+            update_commodity(vivienda, commodity, campo, $(this).val());
+        });
+        $('body').on('keyup', '.obs_commodity', function () {
+            var vivienda = $(this).data('vut');
+            var commodity = $(this).data('com');
+            var campo = 'observaciones';
+            update_commodity(vivienda, commodity, campo, $(this).val());
+        });
     </script>
 
 {% endblock %}

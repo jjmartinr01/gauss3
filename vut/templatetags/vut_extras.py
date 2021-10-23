@@ -3,13 +3,34 @@ from django.template import Library
 from datetime import datetime, timedelta
 from django.utils import timezone
 from autenticar.models import Permiso
-from vut.models import Vivienda, ContabilidadVUT, PartidaVUT, RegistroPolicia, Reserva
+from vut.models import Vivienda, ContabilidadVUT, PartidaVUT, RegistroPolicia, Reserva, ViviendaCommodities
 import json
 
 from vut.views import viviendas_autorizado
 
 register = Library()
 
+@register.filter
+def check_commodity(vivienda, commodity):
+    try:
+        ViviendaCommodities.objects.get(vivienda=vivienda, commodity=commodity)
+        return 'checked'
+    except:
+        return ''
+
+@register.filter
+def num_commodity(vivienda, commodity):
+    try:
+        return ViviendaCommodities.objects.get(vivienda=vivienda, commodity=commodity).num
+    except:
+        return 0
+
+@register.filter
+def obs_commodity(vivienda, commodity):
+    try:
+        return ViviendaCommodities.objects.get(vivienda=vivienda, commodity=commodity).obs
+    except:
+        return ''
 
 @register.filter
 def number_viviendas_same_propietario(g_e):

@@ -31,6 +31,43 @@
             <textarea id="descripcionweb{{ vivienda.id }}">{{ vivienda.descripcionweb }}</textarea></label>
     </div>
 </div>
+<br>
+<div class="row">
+    <div class="columns large-12">
+        <label>
+            <b>Elmentos que aportan confortabilidad a tu vivienda:</b></label>
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="columns large-5">
+        <label>¿Tu vivienda tiene ...?</label>
+    </div>
+    <div class="columns large-1">
+        <label>Cantidad</label>
+    </div>
+    <div class="columns large-6">
+        <label>Observaciones</label>
+    </div>
+</div>
+{% for c in COMMODITIES %}
+    <div class="row">
+        <div class="columns large-5">
+            <label><input type="checkbox" class="commodity" data-vut="{{ vivienda.id }}" data-com="{{ c.0 }}"
+                    {{ vivienda|check_commodity:c.0 }} id="commodity_{{ vivienda.id }}_{{ c.0 }}"> {{ c.1 }}</label>
+        </div>
+        <div class="columns large-1">
+            <label><input type="number" min="0" max="12" data-vut="{{ vivienda.id }}" class="num_commodity"
+                          data-com="{{ c.0 }}" value="{{ vivienda|num_commodity:c.0 }}"
+                          id="num_commodity_{{ vivienda.id }}_{{ c.0 }}"></label>
+        </div>
+        <div class="columns large-6">
+            <label><input type="text" class="obs_commodity" data-vut="{{ vivienda.id }}" data-com="{{ c.0 }}"
+                          placeholder="Este texto es opcional" value="{{ vivienda|obs_commodity:c.0 }}"></label>
+        </div>
+    </div>
+{% endfor %}
+
 {#<div class="row">#}
 {#    <div class="columns large-6">#}
 {#        <label><span><b>Introduce los precios: <a href="#" data-reveal-id="div_help_precios"><i#}
@@ -74,16 +111,16 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="columns large-12">
-        <ul class="button-group right">
-            <li><a href="/web_vut_id/{{ vivienda.id }}/" target="_blank" class="button"><i
-                    class="fa fa-window-maximize"></i> Ver tu anuncio</a></li>
-            <li><a href="/web_vut/?e={{ vivienda.entidad.id }}" target="_blank" class="button"><i
-                    class="fa fa-sitemap"></i> Ver todos los anuncios</a></li>
-        </ul>
-    </div>
-</div>
+{#<div class="row">#}
+{#    <div class="columns large-12">#}
+{#        <ul class="button-group right">#}
+{#            <li><a href="/web_vut_id/{{ vivienda.id }}/" target="_blank" class="button"><i#}
+{#                    class="fa fa-window-maximize"></i> Ver tu anuncio</a></li>#}
+{#            <li><a href="/web_vut/?e={{ vivienda.entidad.id }}" target="_blank" class="button"><i#}
+{#                    class="fa fa-sitemap"></i> Ver todos los anuncios</a></li>#}
+{#        </ul>#}
+{#    </div>#}
+{#</div>#}
 
 {#<div style="position: absolute;top:-1000px;left:-1000px;z-index: 1000;min-width: 300px;" id="plus-icon">#}
 {#    <a data-dropdown="drop-web{{ vivienda.id }}" aria-controls="drop-web{{ vivienda.id }}" aria-expanded="false"><i#}
@@ -242,40 +279,40 @@
     {#    editable: true,#}
     {#    eventClick: function (info) {#}
     {#        alert('Event: ' + info.event.title + 'vivienda: ' + info.event.extendedProps['vivienda']);#}
-{##}
-{#            // change the border color just for fun#}
-{#            info.el.style.borderColor = 'red';#}
-{#        },#}
-{#        selectable: true,#}
-{#        // selectMirror: true,#}
-{#        select: function (arg) {#}
-{#            var d = arg.start;#}
-{#            var fecha0 = [d.getFullYear(), pad(d.getMonth() + 1), pad(d.getDate())].join('-');#}
-{#            if (!$(".fc-day[data-date='" + fecha0 + "']").hasClass('date-blocked')) {#}
-{#                var fecha = d.toLocaleString();#}
-{#                $('#reveal_web_calendar_precios').val('{{ vivienda.preciosweb }}')#}
-{#                    .data('vivienda', '{{ vivienda.id }}')#}
-{#                    .data('fecha', fecha0);#}
-{#                $('#reveal_web_calendar_bloquear').data('vivienda', '{{ vivienda.id }}').data('fecha', fecha0);#}
-{#                $('#reveal_web_calendar_fecha').html(fecha);#}
-{#                $('#reveal_web_calendar').foundation('reveal', 'open');#}
-{#            } else {#}
-{#                alert('Día bloqueado');#}
-{#            }#}
-{##}
-{#            calendar[{{ vivienda.id }}].unselect()#}
-{#        },#}
-{#        events: {% autoescape off %}{{ vivienda|reservas2eventos }}{% endautoescape %},#}
-{#    });#}
-{##}
-{#    calendar[{{ vivienda.id }}].render();#}
-{##}
-{#    calendar[{{ vivienda.id }}].addEvent({#}
-{#        title: 'Prueba',#}
-{#        start: '2019-07-30',#}
-{#        end: '2019-07-23',#}
-{#        className: 'date-blocked'#}
-{#        //rendering: 'background',#}
+    {##}
+    {#            // change the border color just for fun#}
+    {#            info.el.style.borderColor = 'red';#}
+    {#        },#}
+    {#        selectable: true,#}
+    {#        // selectMirror: true,#}
+    {#        select: function (arg) {#}
+    {#            var d = arg.start;#}
+    {#            var fecha0 = [d.getFullYear(), pad(d.getMonth() + 1), pad(d.getDate())].join('-');#}
+    {#            if (!$(".fc-day[data-date='" + fecha0 + "']").hasClass('date-blocked')) {#}
+    {#                var fecha = d.toLocaleString();#}
+    {#                $('#reveal_web_calendar_precios').val('{{ vivienda.preciosweb }}')#}
+    {#                    .data('vivienda', '{{ vivienda.id }}')#}
+    {#                    .data('fecha', fecha0);#}
+    {#                $('#reveal_web_calendar_bloquear').data('vivienda', '{{ vivienda.id }}').data('fecha', fecha0);#}
+    {#                $('#reveal_web_calendar_fecha').html(fecha);#}
+    {#                $('#reveal_web_calendar').foundation('reveal', 'open');#}
+    {#            } else {#}
+    {#                alert('Día bloqueado');#}
+    {#            }#}
+    {##}
+    {#            calendar[{{ vivienda.id }}].unselect()#}
+    {#        },#}
+    {#        events: {% autoescape off %}{{ vivienda|reservas2eventos }}{% endautoescape %},#}
+    {#    });#}
+    {##}
+    {#    calendar[{{ vivienda.id }}].render();#}
+    {##}
+    {#    calendar[{{ vivienda.id }}].addEvent({#}
+    {#        title: 'Prueba',#}
+    {#        start: '2019-07-30',#}
+    {#        end: '2019-07-23',#}
+    {#        className: 'date-blocked'#}
+    {#        //rendering: 'background',#}
     {# });#}
 
     {#$('td').css('border', '1px solid #cccccc');#}

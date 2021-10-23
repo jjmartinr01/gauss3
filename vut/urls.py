@@ -22,4 +22,5 @@ urlpatterns = [
     path('contratos_vut/', views.contratos_vut),
     path('firconvut/<str:secret_id>/<str:n>/', views.firconvut),
     # path('web_vut_id/', views.web_vut_id),
+    path('getvuts/<int:entidad_code>/', views.getvuts),
 ]

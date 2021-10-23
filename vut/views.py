@@ -9,6 +9,7 @@ import csv
 import base64
 import os, string
 import sys
+import simplejson as json
 from time import sleep
 import requests
 import xlrd
@@ -44,7 +45,7 @@ from autenticar.models import Permiso, Gauser
 from mensajes.views import encolar_mensaje, crear_aviso
 from vut.models import Vivienda, Ayudante, Reserva, Viajero, RegistroPolicia, PAISES, Autorizado, CalendarioVivienda, \
     ContabilidadVUT, PartidaVUT, AsientoVUT, AutorizadoContabilidadVut, PORTALES, DomoticaVUT, FotoWebVivienda, \
-    DayWebVivienda, PropuestaPropietario, ContratoVUT
+    DayWebVivienda, PropuestaPropietario, ContratoVUT, ViviendaCommodities, COMMODITIES
 from vut.tasks import comunica_viajero2PNGC
 import locale
 
@@ -163,7 +164,8 @@ def ajax_viviendas(request):
                     if vivienda in viviendas_autorizado(g_e):
                         usuarios = usuarios_ronda(g_e.ronda)
                         html = render_to_string('vivienda_accordion_content.html',
-                                                {'vivienda': vivienda, 'g_e': g_e, 'usuarios': usuarios})
+                                                {'vivienda': vivienda, 'g_e': g_e, 'usuarios': usuarios,
+                                                 'COMMODITIES': COMMODITIES})
                         return JsonResponse({'ok': True, 'html': html})
                     else:
                         return JsonResponse({'ok': False})
@@ -322,6 +324,29 @@ def ajax_viviendas(request):
                         return JsonResponse({'ok': False, 'mensaje': "No tienes permisos para editar el calendario."})
                 except:
                     return JsonResponse({'ok': False})
+            elif request.POST['action'] == 'update_commodity':
+                try:
+                    vivienda = Vivienda.objects.get(id=request.POST['vivienda'])
+                    permiso = Permiso.objects.get(code_nombre='edita_viviendas')
+                    if has_permiso_on_vivienda(g_e, vivienda, permiso):
+                        commodity=request.POST['commodity']
+                        valor = request.POST['valor']
+                        campo = request.POST['campo']
+                        com, c = ViviendaCommodities.objects.get_or_create(vivienda=vivienda, commodity=commodity)
+                        num = com.num
+                        if (campo == 'commodity' and valor == 'false') or (campo == 'num' and valor == '0'):
+                            com.delete()
+                            num = 0
+                        else:
+                            if campo != 'commodity':
+                                setattr(com, campo, valor)
+                                com.save()
+                                num = com.num
+                        return JsonResponse({'ok': True, 'v': vivienda.id, 'c': commodity, 'n': num})
+                    else:
+                        return JsonResponse({'ok': False, 'mensaje': "Sin permiso para editar la vivienda."})
+                except:
+                    return JsonResponse({'ok': False, 'mensaje': "Error al tratar de editar la vivienda."})
             elif request.POST['action'] == 'add_autorizado_vut':
                 try:
                     vivienda = Vivienda.objects.get(id=request.POST['vivienda'])
@@ -3197,3 +3222,24 @@ def firconvut(request, secret_id, n):
                       })
     except:
         return redirect('/')
+
+###########################################################################
+
+def getvuts(request, entidad_code):
+    sleep(3)
+    try:
+        vuts = Vivienda.objects.filter(entidad__code=entidad_code, publicarweb=True, nregistro__isnull=False)
+        data = []
+        for vut in vuts:
+            commodities = []
+            for c in vut.viviendacommodities_set.all():
+                commodities.append({'scommodity': c.commodity, 'commodity': c.get_commodity_display(), 'num': c.num,
+                                    'obs': c.observaciones})
+            data.append({'nombre': vut.nombre, 'address': vut.address, 'habs': vut.habitaciones, 'camas': vut.camas,
+                         'pers': vut.inquilinos, 'loc': vut.municipio, 'prov': vut.provincia, 'obs': vut.observaciones,
+                         'nreg': vut.nregistro, 'nomweb': vut.nombreweb, 'subnomweb': vut.subnombreweb,
+                         'desweb': vut.descripcionweb, 'precioweb': vut.preciosweb, 'commodities':commodities})
+        return HttpResponse('getdatavuts(%s)' % json.dumps(data))
+    except:
+        data = {'id': None, 'token': 'error'}
+        return HttpResponse('getdatavuts(%s)' % json.dumps(data))
