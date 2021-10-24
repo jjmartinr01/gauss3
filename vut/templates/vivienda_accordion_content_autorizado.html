@@ -106,4 +106,9 @@
                {% if autorizado|has_permiso_vut:'autorizado_ver_viajeros' %}checked{% endif %}
                data-code="autorizado_ver_viajeros"> Puede ver registros de viajeros
     </div>
+    <div class="columns large-4">
+        <input type="checkbox" class="permiso_autorizado_vut" data-id="{{ autorizado.id }}"
+               {% if autorizado|has_permiso_vut:'edita_viviendas' %}checked{% endif %}
+               data-code="edita_viviendas"> Puede editar los datos de la vivienda
+    </div>
 </div>
