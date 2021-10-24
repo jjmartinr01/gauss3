@@ -13,7 +13,7 @@
                 <td>{% autoescape off %}{{ gfsi.labelmin }}{% endautoescape %}</td>
                 {% for i in gfsi|elvalues %}
                     <td><input type="radio" name="radiotd{{ gfsi.id }}" class="gfr_el" data-gfsi="{{ gfsi.id }}"
-                               value="{{ i }}" checked="{{ gfsi|get_el_value:gformresponde|checked_if_igual_a:i }}"></td>
+                               value="{{ i }}" {{ gfsi|get_el_value:gformresponde|checked_if_igual_a:i }}></td>
                 {% endfor %}
                 <td>{% autoescape off %}{{ gfsi.labelmax }}{% endautoescape %}</td>
             </tr>

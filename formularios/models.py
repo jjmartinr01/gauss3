@@ -95,6 +95,7 @@ class GformDestinatario(models.Model):
     destinatario = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True, related_name='get_destinatarios')
     corrector = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True, related_name='get_correctores')
 
+
     def __str__(self):
         return '%s -- Dest: %s Corr: %s' % (self.gform, self.destinatario, self.corrector)
 

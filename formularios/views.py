@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 import pdfkit
+import xlrd
 from django.contrib.auth import login
 import simplejson as json
 import pexpect
@@ -208,7 +209,7 @@ def formularios(request):
                     GformResponde.objects.create(gform=gform, g_e=des)
                     gd, c = GformDestinatario.objects.get_or_create(gform=gform, destinatario=des, corrector=cor)
                     if c:
-                        html = render_to_string('formularios_accordion_content_destinatario.html', {'gd': gd})
+                        html = render_to_string('formularios_accordion_content_destinatarios_tr.html', {'gd': gd})
                         return JsonResponse({'ok': True, 'gform': gform.id, 'html': html})
                     else:
                         return JsonResponse({'ok': False, 'gform': gform.id, 'msg': 'Ya cargados anteriormente'})
@@ -571,7 +572,7 @@ def formularios(request):
             response = HttpResponse(xlsfile, content_type='application/vnd.ms-excel')
             response['Content-Disposition'] = 'attachment; filename=%s' % (fichero_xls)
             return response
-        if request.POST['action'] == 'pdf_gform':
+        elif request.POST['action'] == 'pdf_gform':
             dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
             try:
                 gform = Gform.objects.get(id=request.POST['gform'])
@@ -583,6 +584,33 @@ def formularios(request):
             except Exception as msg:
                 aviso = 'Se ha producido un error en el procesamiento de la platilla que debes corregir: %s' % str(msg)
                 crear_aviso(request, False, aviso)
+        elif request.POST['action'] == 'upload_archivo_xhr':
+            try:
+                errores = {}
+                gform = Gform.objects.get(id=request.POST['gform'])
+                n_files = int(request.POST['n_files'])
+                for i in range(n_files):
+                    fichero = request.FILES['archivo_xhr' + str(i)]
+                    wb = xlrd.open_workbook(file_contents=fichero.read())
+                    sheet = wb.sheet_by_index(0)
+                    for row_index in range(1, sheet.nrows):
+                        try:
+                            entidad_destinatario = Entidad.objects.get(code=sheet.cell_value(row_index, 0))
+                            destinatario = Gauser_extra.objects.get(gauser__dni=sheet.cell_value(row_index, 1),
+                                                                    ronda=entidad_destinatario.ronda)
+                            entidad_corrector = Entidad.objects.get(code=sheet.cell_value(row_index, 2))
+                            corrector = Gauser_extra.objects.get(gauser__dni=sheet.cell_value(row_index, 3),
+                                                                 ronda=entidad_corrector.ronda)
+                            GformDestinatario.objects.get_or_create(gform=gform, destinatario=destinatario,
+                                                                    corrector=corrector)
+                            GformResponde.objects.get_or_create(gform=gform, g_e=destinatario)
+                        except Exception as msg:
+                            errores[row_index] = {'msg': str(msg), 'des': sheet.cell_value(row_index, 1),
+                                                  'cor': sheet.cell_value(row_index, 3)}
+                html = render_to_string("formularios_accordion_content_destinatarios.html", {'gform': gform})
+                return JsonResponse({'ok': True, 'errores': errores, 'html': html, 'gform': gform.id})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
 
     return render(request, "formularios.html",
                   {
@@ -646,9 +674,6 @@ def mis_formularios(request):
     organization = g_e.ronda.entidad.organization
     gfrs = GformResponde.objects.filter(g_e__gauser=g_e.gauser, g_e__ronda__entidad__organization=organization)
 
-
-
-
     # gforms_dr = paginator_dr.page(1)
     # gforms_hr = paginator_hr.page(1)
     # gforms_dc = paginator_dc.page(1)
@@ -658,11 +683,11 @@ def mis_formularios(request):
                 # gform = Gform.objects.get(id=request.POST['id'])
                 # html = render_to_string('mis_formularios_accordion_hr_content.html', {'gform': gform, 'gfrs': gfrs})
                 tab = request.POST['tab']
-                if tab == 'dr': #debo_rellenar
+                if tab == 'dr':  # debo_rellenar
                     gfs = Gform.objects.filter(id__in=gfrs.filter(respondido=False).values_list('gform__id')).distinct()
-                elif tab == 'hr': #he_rellenado
+                elif tab == 'hr':  # he_rellenado
                     gfs = Gform.objects.filter(id__in=gfrs.filter(respondido=True).values_list('gform__id')).distinct()
-                else: #debo_corregir
+                else:  # debo_corregir
                     gfcorr_id = GformDestinatario.objects.filter(corrector__ronda__entidad__organization=organization,
                                                                  corrector__gauser=g_e.gauser).values_list('gform__id')
                     gfs = Gform.objects.filter(id__in=gfcorr_id).distinct()
@@ -676,7 +701,17 @@ def mis_formularios(request):
         elif request.POST['action'] == 'open_accordion':
             try:
                 gform = Gform.objects.get(id=request.POST['id'])
-                html = render_to_string('mis_formularios_accordion_hr_content.html', {'gform': gform, 'gfrs': gfrs})
+                gtab = request.POST['gtab']
+                if gtab == 'debo_evaluar':
+                    gfds = GformDestinatario.objects.filter(gform=gform, corrector__gauser=g_e.gauser)
+                    for gfd in gfds:
+                        if GformResponde.objects.filter(gform=gform, g_e=gfd.destinatario).count() == 0:
+                            GformResponde.objects.create(gform=gform, g_e=gfd.destinatario)
+                else:
+                    gfds = GformDestinatario.objects.none()
+
+                html = render_to_string('mis_formularios_accordion_content.html', {'gform': gform, 'gfrs': gfrs,
+                                                                                   'gtab': gtab, 'gfds': gfds})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -695,6 +730,81 @@ def mis_formularios(request):
                 # return redirect('/rellena_gform/%s/%s/%s/' % (gform.id, gform.identificador, gfr.identificador))
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+    elif request.method == 'POST' and request.POST['action'] == 'gfd_pdf':
+        dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
+        try:
+            tipo = request.POST['tipo']
+            if tipo == 'general':
+                gform = Gform.objects.get(id=request.POST['gform'])
+                gfds = gform.gformdestinatario_set.filter(corrector__gauser=g_e.gauser)
+            else:
+                gfds = GformDestinatario.objects.filter(id=request.POST['gfd'])
+            c = render_to_string('mis_formularios_accordion_content_gfd2pdf.html', {'gfds': gfds})
+            fich = pdfkit.from_string(c, False, dce.get_opciones)
+            response = HttpResponse(fich, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=%s_eval.pdf' % slugify(gfds[0].gform.nombre)
+            return response
+        except Exception as msg:
+            aviso = 'Se ha producido un error en el procesamiento de la platilla que debes corregir: %s' % str(msg)
+            crear_aviso(request, False, aviso)
+    elif request.method == 'POST' and request.POST['action'] == 'gfd_excel':
+        tipo = request.POST['tipo']
+        if tipo == 'general':
+            gform = Gform.objects.get(id=request.POST['gform'])
+            gfds = gform.gformdestinatario_set.filter(corrector__gauser=g_e.gauser)
+        else:
+            gfds = GformDestinatario.objects.filter(id=request.POST['gfd'])
+        ruta = MEDIA_FORMULARIOS + str(g_e.ronda.entidad.code) + '/' + str(gform.id) + '/'
+        if not os.path.exists(ruta):
+            os.makedirs(ruta)
+        fichero_xls = '%s.xls' % slugify(gform.nombre)
+        wb = xlwt.Workbook()
+        for gfd in gfds:
+            gform = gfd.gform
+            gfsis = GformSectionInput.objects.filter(gformsection__gform=gform)
+            gfrs = gform.gformresponde_set.filter(g_e=gfd.destinatario, respondido=True)
+            wf = wb.add_sheet('%s' % gfd.destinatario.gauser.get_full_name())
+            estilo = xlwt.XFStyle()
+            font = xlwt.Font()
+            font.bold = True
+            estilo.font = font
+            wf.write(0, 0, 'Hora de entrega', style=estilo)
+            wf.write(1, 0, 'Nombre usuario', style=estilo)
+            wf.write(2, 0, 'Nombre entidad', style=estilo)
+            fila = 3
+            col_0_with = [5000]
+            col_1_with = [10000]
+            for gfsi in gfsis:
+                pregunta = BeautifulSoup(gfsi.pregunta, features='lxml').get_text()
+                wf.write(fila, 0, pregunta, style=estilo)
+                col_0_with.append(len(pregunta) * 278)  # Dejamos 278 de ancho por cada caracter
+                fila += 1
+            for gfr in gfrs:
+                wf.write(0, 1, str(gfr.modificado))
+                wf.write(1, 1, gfr.g_e.gauser.get_full_name())
+                wf.write(2, 1, gfr.g_e.ronda.entidad.name)
+                fila = 3
+                for gfri in gfr.gformrespondeinput_set.all():
+                    if gfri.gfsi.tipo == 'EL':
+                        respuesta = gfri.respuesta
+                    elif gfri.gfsi.tipo == 'FI':
+                        respuesta = '; '.join([gfri.rfirma_nombre, gfri.rfirma_cargo])
+                    else:
+                        respuesta = BeautifulSoup(gfri.respuesta, features='lxml').get_text().strip().replace('\n', '')
+                    wf.write(fila, 1, respuesta)
+                    fila += 1
+                    col_1_with.append(len(str(respuesta)) * 278)
+            wf.col(0).width = min(max(col_0_with), 14000)
+            wf.col(1).width = min(max(col_1_with), 30000)
+
+        # wf.write(fila_excel_cuestionario, 3, Formula("SUM(D2:D%s)" % (fila_excel_cuestionario)), style=estilo)
+
+        wb.save(ruta + fichero_xls)
+
+        xlsfile = open(ruta + '/' + fichero_xls, 'rb')
+        response = HttpResponse(xlsfile, content_type='application/vnd.ms-excel')
+        response['Content-Disposition'] = 'attachment; filename=%s' % (fichero_xls)
+        return response
 
     gfs = Gform.objects.filter(id__in=gfrs.filter(respondido=False).values_list('gform__id')).distinct()
     return render(request, "mis_formularios.html",
@@ -705,9 +815,6 @@ def mis_formularios(request):
                            ),
                       'formname': 'mis_formularios',
                       'gforms': Paginator(gfs, 15).page(1),
-                      # 'gforms_dr': paginator_dr.page(1),
-                      # 'gforms_hr': paginator_hr.page(1),
-                      # 'gforms_dc': paginator_dc.page(1),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 

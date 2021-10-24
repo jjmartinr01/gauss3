@@ -139,14 +139,14 @@
     </div>
     <div class="columns large-1">
         <label title="Cargar los destinatarios y correctores desde un archivo excel">
-            <a class="cargar_gform_destinatarios"><i class="fa fa-cloud-upload"></i></a>
+            <a class="ver_cargar_gform_destinatarios" data-gform="{{ gform.id }}"><i class="fa fa-cloud-upload"></i></a>
         </label>
     </div>
 </div>
 <div id="div_carga_archivo_destinatarios{{ gform.id }}" class="panel callout" style="display: none;">
-    <div class="row">
+    <div class="row" style="display: none;">
         <p>Debe ser un archivo Excel con las siguientes columnas:</p>
-        <p><ol>
+        <ol>
         <li>Columna A: DNI del destinatario</li>
         <li>Columna B: No se usa</li>
         <li>Columna C: Apellidos del destinatario</li>
@@ -161,9 +161,9 @@
         <li>Columna L: Código de centro/entidad del evaluador</li>
         <li>Columna M: Apellidos del evaluador</li>
         <li>Columna N: Nombre del evaluador</li>
-
-    </ol></p>
+    </ol>
     </div>
+
     <div class="row" style="padding-bottom: 2px;">
         <div class="columns large-8">
             <label><input type="file" id="input_gauss_file{{ gform.id }}"></label>
@@ -177,33 +177,7 @@
 
 <div class="row" style="padding-bottom: 2px;">
     <div class="columns large-12" id="div_usuarios_destinatarios{{ gform.id }}">
-        <table style="width: 100%;">
-            <thead>
-            <tr>
-                <th>Persona que debe rellenar</th>
-                <th>Persona encargada de evaluar</th>
-                <th>Elegir acción</th>
-            </tr>
-            </thead>
-            <tbody id="tbody_gform_destinatarios{{ gform.id }}">
-            <tr>
-                <td>
-                    <select id="select_destinatario_gform{{ gform.id }}" class="select_destinatario_gform"></select>
-                </td>
-                <td>
-                    <select id="select_corrector_gform{{ gform.id }}" class="select_corrector_gform"></select>
-                </td>
-                <td>
-                    <a class="add_gform_destinatario" data-gform="{{ gform.id }}">
-                        <i class="fa fa-plus"></i> Añadir
-                    </a>
-                </td>
-            </tr>
-            {% for gd in gform.gformdestinatario_set.all %}
-                {% include "formularios_accordion_content_destinatario.html" %}
-            {% endfor %}
-            </tbody>
-        </table>
+        {% include "formularios_accordion_content_destinatarios.html" %}
     </div>
 </div>
 <p>&nbsp;</p>

@@ -22,18 +22,22 @@
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
         <input type="hidden" name="gformresponde" id="gformresponde" value="">
+        <input type="hidden" name="gtab" id="gtab" value="debo_rellenar">
+        <input type="hidden" name="gform" id="gform" value="">
+        <input type="hidden" name="gfd" id="gfd" value="">
+        <input type="hidden" name="tipo" id="tipo" value="">
         <h4 style="text-align: center;color: #008CBA;"><strong> Lista de mis cuestionarios que ...</strong>
         </h4>
         <ul class="tabs" data-tab role="tablist">
-            <li class="tab-title active" role="presentation" data-id="0">
+            <li class="tab-title active" role="presentation" data-id="0" data-gtab="debo_rellenar">
                 <a href="#tab0" role="tab" tabindex="0" aria-selected="true" aria-controls="tab0">
                     <b id="texto0" style="color:#008CBA;" class="texto_tab">Que debo rellenar</b></a>
             </li>
-            <li class="tab-title" role="presentation" data-id="1">
+            <li class="tab-title" role="presentation" data-id="1" data-gtab="he_rellenado">
                 <a href="#tab1" role="tab" tabindex="0" aria-selected="false" aria-controls="tab1">
                     <b id="texto1" style="color:#ffffff;" class="texto_tab">Que he rellenado</b></a>
             </li>
-            <li class="tab-title" role="presentation" data-id="2">
+            <li class="tab-title" role="presentation" data-id="2" data-gtab="debo_evaluar">
                 <a href="#tab2" role="tab" tabindex="0" aria-selected="false" aria-controls="tab2">
                     <b id="texto2" style="color:#ffffff;" class="texto_tab">Que debo evaluar</b></a>
             </li>
@@ -69,6 +73,7 @@
             tab: {
                 callback: function (tab) {
                     var id = $(tab[0]).data('id');
+                    $('#gtab').val($(tab[0]).data('gtab'));
                     $('.texto_tab').css('color', '#ffffff');
                     $('#texto' + id).css('color', '#008CBA');
                     var tab = $('#tab' + id).data('tab');
@@ -95,11 +100,13 @@
                 callback: function (accordion) {
                     if (accordion.hasClass('accordion-gform')) {
                         var id = accordion.data('id');
+                        var gtab = $('#gtab').val();
+                        console.log(gtab)
                         if ($('#circle' + id).hasClass('fa-plus-circle')) {
                             $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
                             window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post("/mis_formularios/", {action: 'open_accordion', id: id},
+                            $.post("/mis_formularios/", {action: 'open_accordion', id: id, gtab: gtab},
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
@@ -158,6 +165,32 @@
                     }
                 });
 
+        });
+
+        $('body').on('click', '.gfd_pdf', function (e) {
+            e.preventDefault();
+            var tipo = $(this).data('tipo')
+            $('#tipo').val(tipo);
+            if (tipo == 'general') {
+                $('#gform').val($(this).data('gform'))
+            } else {
+                $('#gfd').val($(this).data('gfd'))
+            }
+            $('#action').val('gfd_pdf');
+            document.getElementById("{{ formname }}").submit();
+        });
+
+        $('body').on('click', '.gfd_excel', function (e) {
+            e.preventDefault();
+            var tipo = $(this).data('tipo')
+            $('#tipo').val(tipo);
+            if (tipo == 'general') {
+                $('#gform').val($(this).data('gform'))
+            } else {
+                $('#gfd').val($(this).data('gfd'))
+            }
+            $('#action').val('gfd_excel');
+            document.getElementById("{{ formname }}").submit();
         });
 
     </script>

@@ -415,6 +415,64 @@
                 });
         });
 
+        $('body').on('click', '.ver_cargar_gform_destinatarios', function (e) {
+            e.preventDefault();
+            var gform = $(this).data('gform');
+            $('#div_carga_archivo_destinatarios' + gform).toggle();
+        });
+
+        $('body').on('click', '.subir_gauss_file', function () {
+            var id = $(this).data('id');
+            var input_files = document.getElementById('input_gauss_file' + id).files;
+            $('#span_spin').show();
+            $('.span_porcentage').show();
+
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('archivo_xhr' + i, input_files[i], slugify_filename(input_files[i].name));
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'upload_archivo_xhr');
+            formData.append('gform', id);
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        console.log(xhr.responseText);
+                        {#var b = xhr.responseText;#}
+                        var data = JSON.parse(xhr.responseText);
+                        $('#div_usuarios_destinatarios' + data.gform).html(data.html);
+                        $(".select_destinatario_gform").select2(
+                            conf_select2({
+                                'url': '/selectgcs_organization/',
+                                'gcs': 'gcs',
+                                'format_g': '{0}, {1}',
+                                'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
+                            })
+                        );
+                        $(".select_corrector_gform").select2(
+                            conf_select2({
+                                'url': '/selectgcs_organization/',
+                                'gcs': 'gcs',
+                                'format_g': '{0}, {1}',
+                                'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
+                            })
+                        );
+                        $('#span_spin').hide();
+                        $('#span_porcentage').hide();
+                    }
+                }
+            };
+            xhr.open('POST', "/formularios/", true);
+            xhr.send(formData);
+        });
+
         {# ########################################################################################### #}
         {# Funciones para reordenar las secciones y las preguntas: #}
         {# gfsi_id_orden, gfs_id_orden  #}

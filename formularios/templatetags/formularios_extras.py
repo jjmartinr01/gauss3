@@ -79,11 +79,11 @@ def get_el_value(gfsi, gformresponde):
 def checked_if_igual_a(a, b):
     try:
         if int(a) == int(b):
-            return 'true'
+            return 'checked=checked'
         else:
-            return 'false'
+            return ''
     except:
-        return 'false'
+        return ''
 
 
 @register.filter
@@ -100,6 +100,15 @@ def get_fic(gfsi, gformresponde):
         return GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).rfirma_cargo
     except:
         return ''
+
+
+
+@register.filter
+def get_gfrs_eval(gfd):
+    gfrs = GformResponde.objects.filter(g_e=gfd.destinatario, gform=gfd.gform)
+    if gfrs.count() == 0:
+        gfrs = [GformResponde.objects.create(g_e=gfd.destinatario, gform=gfd.gform)]
+    return gfrs
 
 
 @register.filter

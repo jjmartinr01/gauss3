@@ -1,0 +1,99 @@
+{% load formularios_extras %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es" lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Documento generado por cuestionarios de GAUSS</title>
+    <style>
+
+        html {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 8pt;
+            text-align: justify;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+
+        .pagebreak {
+            page-break-before: always;
+        }
+
+        {# Las siguientes tres líneas de estilo son para conseguir que la cabecera de la tabla no se solape #}
+        {# con el texto de la primera fila de cada página. Esta información ha sido obtenida de: #}
+        {# https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2367 #}
+        thead {
+            display: table-header-group
+        }
+
+        tfoot {
+            display: table-row-group
+        }
+
+        tr {
+            page-break-inside: avoid
+        }
+    </style>
+</head>
+<body>
+{% if gfds|length > 1 %}
+    <h1 style="text-align: center;">Informe pdf de {{ gfds|length }} cuestionarios</h1>
+    <h2 style="text-align: center;">{{ gfds.0.gform.nombre }}</h2>
+    <table style="width: 100%;">
+        <thead>
+        <tr>
+            <th>Destinatario</th>
+            <th>Entidad</th>
+            <th>Respondido</th>
+            <th>Última modificación</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for gfd in gfds %}
+            {% for gfr in gfd|get_gfrs_eval %}
+                <tr id="tr{{ gfr.id }}">
+                    <td>{{ gfd.destinatario.gauser.get_full_name }}</td>
+                    <td>{{ gfd.destinatario.ronda.entidad.name }}</td>
+                    <td>{% if gfr.respondido %}
+                        <b>Sí</b> <span style="color:green;"><i class="fa fa-thumbs-up"></i></span>
+                    {% else %}
+                        <b>No</b>
+                    {% endif %}</td>
+                    <td>{{ gfr.modificado|date }}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+    <span class="pagebreak">&nbsp;</span>
+    {% for gfd in gfds %}
+        {% for gfr in gfd|get_gfrs_eval %}
+            <h3><b>{{ gfd.destinatario.gauser.get_full_name }} - {{ gfd.destinatario.ronda.entidad.name }}</b></h3>
+            {% autoescape off %}
+                {{ gfr.template_procesado }}
+            {% endautoescape %}
+            {% if not forloop.last %}
+            <span class="pagebreak">&nbsp;</span>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+{% else %}
+    <h1 style="text-align: center;">{{ gfds.0.gform.nombre }}</h1>
+    {% for gfd in gfds %}
+        {% for gfr in gfd|get_gfrs_eval %}
+            <p><b>{{ gfd.destinatario.gauser.get_full_name }} - {{ gfd.destinatario.ronda.entidad.name }}</b></p>
+            {% autoescape off %}
+                {{ gfr.template_procesado }}
+            {% endautoescape %}
+            {% if not forloop.last %}
+            <span class="pagebreak">&nbsp;</span>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+{% endif %}
+</body>
+</html>
+

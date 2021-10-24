@@ -1,0 +1,27 @@
+<table style="width: 100%;">
+    <thead>
+    <tr>
+        <th>Persona que debe rellenar</th>
+        <th>Persona encargada de evaluar</th>
+        <th>Elegir acción</th>
+    </tr>
+    </thead>
+    <tbody id="tbody_gform_destinatarios{{ gform.id }}">
+    <tr>
+        <td>
+            <select id="select_destinatario_gform{{ gform.id }}" class="select_destinatario_gform"></select>
+        </td>
+        <td>
+            <select id="select_corrector_gform{{ gform.id }}" class="select_corrector_gform"></select>
+        </td>
+        <td>
+            <a class="add_gform_destinatario" data-gform="{{ gform.id }}">
+                <i class="fa fa-plus"></i> Añadir
+            </a>
+        </td>
+    </tr>
+    {% for gd in gform.gformdestinatario_set.all %}
+        {% include "formularios_accordion_content_destinatarios_tr.html" %}
+    {% endfor %}
+    </tbody>
+</table>

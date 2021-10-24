@@ -24,51 +24,98 @@
     </div>
 </div>
 
-{% if gform.multiple and gform.accesible %}
-    <div class="row">
-        <div class="columns large-10">
-            <p style="color: grey;">Este formulario admite ser rellenado varias veces. A continuación se muestra un
-                listado con las
-                distintas respuestas que has ido rellenando.</p>
+{% if gtab != 'debo_evaluar' %}
+    {% if gform.multiple and gform.accesible %}
+        <div class="row">
+            <div class="columns large-10">
+                <p style="color: grey;">Este formulario admite ser rellenado varias veces. A continuación se muestra un
+                    listado con las distintas respuestas que has ido rellenando.</p>
+            </div>
+            <div class="columns large-2" title="Haz click aquí si quieres rellenar otra vez este formulario.">
+                <a class="button get_another_gform" data-gform="{{ gform.id }}"><i class="fa fa-plus"></i> Nuevo</a>
+            </div>
         </div>
-        <div class="columns large-2" title="Haz click aquí si quieres rellenar otra vez este formulario.">
-            <a class="button get_another_gform" data-gform="{{ gform.id }}"><i class="fa fa-plus"></i> Nuevo</a>
-        </div>
-    </div>
-{% endif %}
+    {% endif %}
 
-<table style="width: 100%;">
-    <thead>
-    <tr>
-        <th>Respondido</th>
-        <th>Última modificación</th>
-        <th>Enlace al formulario/Ver tus respuestas</th>
-        <th>Borrar</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for gformresponde in gfrs|get_gfrs:gform %}
-        <tr id="tr{{ gformresponde.id }}">
-            <td>{% if gformresponde.respondido %}
-                <b>Sí</b> <span style="color:green;"><i class="fa fa-thumbs-up"></i></span>
-            {% else %}
-                <b>No</b>
-            {% endif %}</td>
-            <td>{{ gformresponde.modificado|date }}</td>
-        {% if gformresponde.gform.accesible %}
-            <td><a href="/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/{{ gformresponde.identificador }}/">
-                <i class="fa fa-pencil-square-o"></i>
-                Haz click para abrir el formulario
-            </a></td>
-            <td class="del_gformresponde" data-gformresponde="{{ gformresponde.id }}"><i class="fa fa-trash"></i></td>
-        {% else %}
-            <td><a style="color: grey;" href="#"><i class="fa fa-pencil-square-o"></i>
-                Este formulario no está activo
-            </a></td>
-            <td style="color: grey;background-color: lightgrey;text-align: center;"><i class="fa fa-trash"></i></td>
-        {% endif %}
-
+    <table style="width: 100%;">
+        <thead>
+        <tr>
+            <th>Respondido</th>
+            <th>Última modificación</th>
+            <th>Enlace al formulario/Ver tus respuestas</th>
+            <th>Borrar</th>
         </tr>
-    {% endfor %}
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        {% for gformresponde in gfrs|get_gfrs:gform %}
+            <tr id="tr{{ gformresponde.id }}">
+                <td>{% if gformresponde.respondido %}
+                    <b>Sí</b> <span style="color:green;"><i class="fa fa-thumbs-up"></i></span>
+                {% else %}
+                    <b>No</b>
+                {% endif %}</td>
+                <td>{{ gformresponde.modificado|date }}</td>
+                {% if gformresponde.gform.accesible %}
+                    <td>
+                        <a href="/rellena_gform/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/{{ gformresponde.identificador }}/">
+                            <i class="fa fa-pencil-square-o"></i>
+                            Haz click para abrir el formulario
+                        </a></td>
+                    <td class="del_gformresponde" data-gformresponde="{{ gformresponde.id }}"><i
+                            class="fa fa-trash"></i></td>
+                {% else %}
+                    <td><a style="color: grey;" href="#"><i class="fa fa-pencil-square-o"></i>
+                        Este formulario no está activo
+                    </a></td>
+                    <td style="color: grey;background-color: lightgrey;text-align: center;"><i class="fa fa-trash"></i>
+                    </td>
+                {% endif %}
+
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="row">
+    <div class="columns large-12">
+        <ul class="button-group right">
+                <li><a class="button gfd_excel" data-gform="{{ gform.id }}" data-tipo="general"
+                       title="Generar un EXCEL con todas las respuestas"><i class="fa fa-file-excel-o"></i> Excel</a>
+                </li>
+                <li><a class="button gfd_pdf" data-gform="{{ gform.id }}" data-tipo="general"
+                       title="Generar un PDF con todas las respuestas"><i class="fa fa-file-pdf-o"></i> PDF</a>
+                </li>
+            </ul>
+    </div>
+    </div>
+    <table style="width: 100%;">
+        <thead>
+        <tr>
+            <th>Destinatario</th>
+            <th>Entidad</th>
+            <th>Respondido</th>
+            <th>Última modificación</th>
+            <th>PDF</th>
+            <th>Excel</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for gfd in gfds %}
+            {% for gformresponde in gfd|get_gfrs_eval %}
+                <tr id="tr{{ gformresponde.id }}">
+                    <td>{{ gfd.destinatario.gauser.get_full_name }}</td>
+                    <td>{{ gfd.destinatario.ronda.entidad.name }}</td>
+                    <td>{% if gformresponde.respondido %}
+                        <b>Sí</b> <span style="color:green;"><i class="fa fa-thumbs-up"></i></span>
+                    {% else %}
+                        <b>No</b>
+                    {% endif %}</td>
+                    <td>{{ gformresponde.modificado|date }}</td>
+                    <td><a class="gfd_pdf" data-gfd="{{ gfd.id }}" data-tipo="individual"><i class="fa fa-file-pdf-o"></i> </a></td>
+                    <td><a class="gfd_excel" data-gfd="{{ gfd.id }}" data-tipo="individual"><i class="fa fa-file-excel-o"></i> </a></td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
