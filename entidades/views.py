@@ -2764,6 +2764,30 @@ dic_arvutur = {'first_name': '', 'last_name': '', 'address': '', 'sexo': '',
                   'observaciones': '', 'num_cuenta_bancaria': ''}
 
 def postnewreserva(request, entidad_code):
+    entidad = Entidad.objects.get(code=entidad_code)
+    errores = ''
+    campos = ConfiguraReservaPlaza.objects.filter(entidad=entidad)
+    for campo in campos:
+        if campo.required:
+            if request.POST[campo.campo] == '' or request.POST[campo.campo] == None:
+                errores += '<p>El campo "%s" es obligatorio</p>' % campo.get_campo_display()
+    if errores == '':
+        reserva = Reserva_plaza.objects.create(entidad=entidad)
+        form = Reserva_plazaForm(request.GET, instance=reserva)
+        form.save()
+        gauss = Gauser_extra.objects.get(ronda=entidad.ronda, gauser__username='gauss')
+        permiso = Permiso.objects.get(code_nombre='recibe_aviso_reserva')
+        receptores_id = Gauser_extra.objects.filter(ronda=entidad.ronda, permisos__in=[permiso]).values_list(
+            'gauser__id', flat=True)
+        receptores = Gauser.objects.filter(id__in=receptores_id)
+        mensaje = render_to_string('mensaje_reserva_grabada.html',
+                                   {'crps': campos, 'reserva': reserva, 'mail': True})
+        encolar_mensaje(emisor=gauss, receptores=receptores, asunto='Solicitud de plaza en %s' % entidad.name,
+                        html=mensaje, etiqueta='reservas%s' % entidad.id)
+        ok = True
+    else:
+        ok = False
+    return HttpResponse('informa_reserva(%s)' % json.dumps({'ok': ok, 'mensaje': errores}))
     sleep(3)
     try:
         entidad = Entidad.objects.get(code=entidad_code)

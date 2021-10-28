@@ -1,0 +1,81 @@
+{% load entidades_extras %}
+{% load my_templatetags %}
+{% if buscadas %}
+    {% if exc_max %}
+        <b>Se han encontrado <span style="color:red;">{{ num_act }}</span> actuaciones que coinciden con la
+            búsqueda.</b> <b style="color:red;">Solo
+        se muestran resultados con un número de coincidencias inferior a {{ max }}.</b>
+    {% else %}
+        {% if num_act == 1 %}
+            <b>Se ha encontrado {{ num_act }} actuación que coincide con la búsqueda</b>
+        {% else %}
+            <b>Se han encontrado {{ num_act }} actuaciones que coinciden con la búsqueda</b>
+        {% endif %}
+        <a class="listado_normal right"><span class="label rounded">Volver al listado normal</span></a>
+    {% endif %}
+{% endif %}
+<dl class="accordion" data-accordion id="list_formularios">
+    {% for gform in formularios %}
+        <input type="hidden" name="formularios_seleccionados" value="{{ gform.id }}">
+
+        <dd class="accordion-navigation" id="accordion{{ gform.id }}"
+            style="border-bottom: dotted 1px black">
+            <a href="#panel{{ gform.id }}">
+                <i id="circle{{ gform.id }}" class="fa fa-plus-circle circle_icon"></i>
+                <b id="nombre{{ gform.id }}">{% if not gform.nombre %}
+                    <span style="color:red">Nuevo formulario</span>
+                {% else %}{{ gform.nombre }}{% endif %}</b> -- <span
+                    id="fecha_max_rellenado{{ gform.id }}">Accesible hasta: {{ gform.fecha_max_rellenado|date:"d-m-Y" }}
+            </span> (<span id="fecha{{ gform.id }}">Creado: {{ gform.creado|date:"d-m-Y" }}</span>)
+                {% if gform.num_respuestas == 1 %}
+                    -- <span id="respuestas{{ gform.id }}">1 respuesta recibida</span>
+                {% else %}
+                    -- <span id="respuestas{{ gform.id }}">{{ gform.num_respuestas }} respuestas recibidas</span>
+                {% endif %}
+                {% if buscadas %}
+                    <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
+                {% endif %}
+            </a>
+
+            <div id="panel{{ gform.id }}" class="content accordion-gform" data-id="{{ gform.id }}">
+            </div>
+        </dd>
+    {% endfor %}
+</dl>
+
+{% if pag %}
+    {% if formularios.paginator.num_pages > 1 %}
+        <br>
+        <div class="row">
+            <div class="columns large-12">
+                <ul class="pagination" role="menubar" aria-label="Pagination">
+                    {% if formularios.has_previous %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ formularios.previous_page_number }}">&laquo; Anterior</a>
+                        </li>
+                    {% else %}
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">&laquo; Anterior</a>
+                        </li>
+                    {% endif %}
+                    {% for page in formularios.paginator.num_pages|number_range %}
+                        {% if page == formularios.number %}
+                            <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
+                        {% else %}
+                            <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if formularios.has_next %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ formularios.next_page_number }}">Siguiente &raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">Siguiente &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
