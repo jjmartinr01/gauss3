@@ -32,45 +32,19 @@
           xmlns="http://www.w3.org/1999/html">
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
-        <input type="hidden" name="gform" id="gform" value="">
-        <input type="hidden" name="gfs" id="gfs" value="">
-        <input type="hidden" name="gfsi" id="gfsi" value="">
+        <input type="hidden" name="pefp" id="pefp" value="">
 
         <div class="">
             <h4 id="title_page" style="text-align: center;color: #008CBA;"><strong>
-                Formularios {{ request.session.gauser_extra.ronda.entidad.name }}</strong></h4>
+                Procesos de evaluación funcionarios en prácticas</strong></h4>
         </div>
 
-        <div id="listado_formularios">
-            {% include 'formularios_accordion.html' %}
+        <div id="listado_pefps">
+            {% include 'procesos_evaluacion_funcpract_accordion.html' %}
         </div>
     </form>
 
-    <div id="info_colaboradores" style="display: none;">
-        <p>Un colaborador contribuye al desarrollo del formulario añadiendo nuevas preguntas. Puede:</p>
-        <ol>
-            <li>Cambiar aspectos de la configuración: activar/desactivar el formulario, cambiar la fecha límite
-                de rellenado, ...
-            </li>
-            <li>Modificar el título y descripción de las secciones, así como borrarlas o añadir nuevas.</li>
-            <li>Copiar preguntas ya existentes en el formulario.</li>
-            <li>Añadir preguntas en cualquier posición.</li>
-        </ol>
-        <p>Sin embargo, no puede realizar algunas operaciones que están reservadas únicamente para el propietario
-            del formulario. Por ejemplo:</p>
-        <ol>
-            <li>Cambiar el nombre del formulario.</li>
-            <li>Modificar o borrar preguntas de otros usuarios.</li>
-        </ol>
-    </div>
 
-    <div id="info_usuarios_destinatarios" style="display: none;">
-        <p>Si no se incluye a nadie en esta lista, cualquier persona perteneciente a tu entidad, o a tu organización,
-            según se marque el campo "<i>Rellenable por usuarios de:</i>", podrá rellenar el formulario.</p>
-        <p>Si deseas que únicamente una persona, o grupo de personas, rellene el formulario, debes incluirlos en
-            esta lista. De esta forma, únicamente los usuarios de esta lista tendrán acceso al formulario.</p>
-        <p>Cuando esta lista existe, es posible asignar un corrector a cada usuario.</p>
-    </div>
 {% endblock %}
 
 
@@ -121,12 +95,16 @@
 
         $('body').on('keyup', '.update_observaciones', function () {
             var element = $(this);
-            var gform = element.data('gform');
+            var pefp = element.data('pefp');
             var antiguo_texto = element.html();
             setTimeout(function () {
                 var nuevo_texto = element.html();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/formularios/", {action: 'update_observaciones', gform: gform, texto: nuevo_texto},
+                    $.post("/procesos_evaluacion_funcpract/", {
+                            action: 'update_observaciones',
+                            pefp: pefp,
+                            texto: nuevo_texto
+                        },
                         function (data) {
                             if (data.ok) {
                                 $("#update_ok").show().delay(1500).fadeOut();
@@ -140,12 +118,16 @@
 
         $('body').on('keyup', '.update_template', function () {
             var element = $(this);
-            var gform = element.data('gform');
+            var pefp = element.data('pefp');
             var antiguo_texto = element.html();
             setTimeout(function () {
                 var nuevo_texto = element.html();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/formularios/", {action: 'update_template', gform: gform, texto: nuevo_texto},
+                    $.post("/procesos_evaluacion_funcpract/", {
+                            action: 'update_template',
+                            pefp: pefp,
+                            texto: nuevo_texto
+                        },
                         function (data) {
                             if (data.ok) {
                                 $("#update_ok").show().delay(1500).fadeOut();
@@ -160,16 +142,16 @@
 
         {# ########################################################################################### #}
         {# Operaciones directas sobre el modelo Gform: #}
-        {# crea_formulario, open_accordion, del_gform, copy_gform, update_nombre  #}
+        {# crea_pefp, open_accordion, del_gform, copy_gform, update_nombre  #}
         {# ########################################################################################### #}
 
-        {% if request.session.gauser_extra|has_permiso:'crea_formularios' %}
+        {% if request.session.gauser_extra|has_permiso:'acceso_procesos_evalpract' %}
             habilita(['s_plus']);
             $('#plus_sign').click(function (event) {
                 event.preventDefault();
-                $.post("/formularios/", {action: 'crea_formulario'}, function (data) {
+                $.post("/procesos_evaluacion_funcpract/", {action: 'crea_pefp'}, function (data) {
                     if (data.ok) {
-                        $('#listado_formularios').prepend(data.html);
+                        $('#listado_pefps').prepend(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
@@ -182,17 +164,17 @@
         $(document).foundation({
             accordion: {
                 callback: function (accordion) {
-                    if (accordion.hasClass('accordion-gform')) {
+                    if (accordion.hasClass('accordion-pefp')) {
                         var id = accordion.data('id');
                         if ($('#circle' + id).hasClass('fa-plus-circle')) {
                             $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
                             window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post("/formularios/", {action: 'open_accordion', id: id},
+                            $.post("/procesos_evaluacion_funcpract/", {action: 'open_accordion', id: id},
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
-                                        $('#gform').val(id);
+                                        $('#pefp').val(id);
                                         constructInlineEditorInstances();
                                         $(".colaboradores").select2(
                                             conf_select2({
@@ -232,19 +214,19 @@
             }
         });
 
-        $('body').on('click', '.del_gform', function (e) {
+        $('body').on('click', '.del_pefp', function (e) {
             e.preventDefault();
-            $('#gform').val($(this).data('gform'));
+            $('#pefp').val($(this).data('pefp'));
             show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar el formulario?',
-                texto: 'Si eliminas el formulario, también se borrarán todas las respuestas de los usuarios.',
+                title: '<i class="fa fa-warning"></i> ¿Borrar el proceso de evaluación de funcionarios en prácticas?',
+                texto: 'Si eliminas el proceso, también se borrarán todas las respuestas de los usuarios.',
                 buttons: {
                     "Eliminar": function () {
                         hide_mensajes();
-                        var gform = $('#gform').val();
-                        $.post("/formularios/", {action: 'del_gform', gform: gform}, function (data) {
+                        var pefp = $('#pefp').val();
+                        $.post("/procesos_evaluacion_funcpract/", {action: 'del_pefp', pefp: pefp}, function (data) {
                             if (data.ok) {
-                                $('#accordion' + gform).remove();
+                                $('#accordion' + pefp).remove();
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $("#update_error").show().delay(1500).fadeOut();
@@ -258,40 +240,40 @@
             });
         });
 
-        $('body').on('click', '.copy_gform', function () {
-            var gform = $(this).data('gform');
-            $.post("/formularios/", {action: 'copy_gform', gform: gform},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $('#listado_formularios').prepend(data.html);
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
+        {#$('body').on('click', '.copy_gform', function () {#}
+        {#    var pefp = $(this).data('pefp');#}
+        {#    $.post("/procesos_evaluacion_funcpract/", {action: 'copy_gform', pefp: pefp},#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#                $('#listado_pefps').prepend(data.html);#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
 
-        $('body').on('click', '.excel_gform', function (e) {
-            e.preventDefault();
-            $('#action').val('excel_gform');
-            document.getElementById("{{ formname }}").submit();
-        });
+        {#$('body').on('click', '.excel_gform', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    $('#action').val('excel_gform');#}
+        {#    document.getElementById("{{ formname }}").submit();#}
+        {# });#}
 
-        $('body').on('click', '.pdf_gform', function (e) {
-            e.preventDefault();
-            $('#action').val('pdf_gform');
-            document.getElementById("{{ formname }}").submit();
-        });
+        {#$('body').on('click', '.pdf_gform', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    $('#action').val('pdf_gform');#}
+        {#    document.getElementById("{{ formname }}").submit();#}
+        {# });#}
 
         $('body').on('keyup', '.update_nombre', function () {
             var element = $(this);
-            var gform = element.data('gform');
+            var pefp = element.data('pefp');
             var antiguo_texto = element.val();
-            $('#nombre' + gform).html(antiguo_texto);
+            $('#nombre' + pefp).html(antiguo_texto);
             setTimeout(function () {
                 var nuevo_texto = element.val();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/formularios/", {action: 'update_nombre', gform: gform, texto: nuevo_texto},
+                    $.post("/procesos_evaluacion_funcpract/", {action: 'update_nombre', pefp: pefp, texto: nuevo_texto},
                         function (data) {
                             if (data.ok) {
                                 $("#update_ok").show().delay(1500).fadeOut();
@@ -303,29 +285,14 @@
             }, 750);
         });
 
-
-        $('body').on('click', '.respuesta_booleana', function (e) {
-            var gform = $(this).data('gform');
+        $('body').on('change', '.update_fecha_limite', function (e) {
+            e.preventDefault();
+            console.log('fecha')
+            var pefp = $(this).data('pefp');
             var campo = $(this).data('campo');
-            $.post("/formularios/", {
-                    action: 'respuesta_booleana',
-                    gform: gform,
-                    campo: campo
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#' + campo + gform).html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('change', '.destinatarios', function () {
-            var gform = $(this).data('gform');
-            var valor = $(this).val();
-            $.post("/formularios/", {action: 'update_destinatarios', gform: gform, valor: valor},
+            var fecha = $(this).val();
+            $.post("/procesos_evaluacion_funcpract/",
+                {action: 'update_fecha_limite', pefp: pefp, fecha: fecha, campo: campo},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -335,90 +302,67 @@
                 });
         });
 
-        $('body').on('change.select2', '.colaboradores', function (e) {
-            var gform = $(this).data('gform');
-            var ge = $(this).val();
-            $.post("/formularios/", {
-                    action: 'update_colaboradores',
-                    gform: gform,
-                    ge: ge
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#div_colaboradores" + data.gform).append(data.html_span);
-                        $(".colaboradores").empty();
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
 
-        $('body').on('click', '.del_colaborador', function (e) {
-            var gform = $(this).data('gform');
-            var colaborador = $(this).data('colaborador');
-            $.post("/formularios/", {
-                    action: 'del_colaborador',
-                    gform: gform,
-                    colaborador: colaborador
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#colaborador" + data.gform + '_' + data.colaborador).remove();
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
+        {#$('body').on('change', '.destinatarios', function () {#}
+        {#    var pefp = $(this).data('pefp');#}
+        {#    var valor = $(this).val();#}
+        {#    $.post("/procesos_evaluacion_funcpract/", {action: 'update_destinatarios', pefp: pefp, valor: valor},#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
 
         {# ########################################################################################### #}
-        {# Añadir y borrar destinatarios del gform y los correspondientes evaluadores #}
+        {# Añadir y borrar destinatarios del pefp y los correspondientes evaluadores #}
         {# ########################################################################################### #}
 
-        $('body').on('click', '.add_gform_destinatario', function (e) {
-            var gform = $(this).data('gform');
-            var destinatario = $('#select_destinatario_gform' + gform).val();
-            var corrector = $('#select_corrector_gform' + gform).val();
-            $.post("/formularios/", {
-                    action: 'add_gform_destinatario',
-                    gform: gform,
-                    destinatario: destinatario,
-                    corrector: corrector
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#tbody_gform_destinatarios" + data.gform).append(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                    $('#select_destinatario_gform' + data.gform).val(null).trigger('change');
-                    $('#select_corrector_gform' + data.gform).val(null).trigger('change');
-                });
-        });
+        {#$('body').on('click', '.add_gform_destinatario', function (e) {#}
+        {#    var pefp = $(this).data('pefp');#}
+        {#    var destinatario = $('#select_destinatario_gform' + pefp).val();#}
+        {#    var corrector = $('#select_corrector_gform' + pefp).val();#}
+        {#    $.post("/procesos_evaluacion_funcpract/", {#}
+        {#            action: 'add_gform_destinatario',#}
+        {#            pefp: pefp,#}
+        {#            destinatario: destinatario,#}
+        {#            corrector: corrector#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#tbody_gform_destinatarios" + data.pefp).append(data.html);#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $("#update_error").show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#            $('#select_destinatario_gform' + data.pefp).val(null).trigger('change');#}
+        {#            $('#select_corrector_gform' + data.pefp).val(null).trigger('change');#}
+        {#        });#}
+        {# });#}
 
 
-        $('body').on('click', '.del_gform_destinatario', function (e) {
-            var gd = $(this).data('gd');
-            $.post("/formularios/", {
-                    action: 'del_gform_destinatario',
-                    gd: gd
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#gformdestinatario" + data.gd).remove();
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
+        {#$('body').on('click', '.del_gform_destinatario', function (e) {#}
+        {#    var gd = $(this).data('gd');#}
+        {#    $.post("/procesos_evaluacion_funcpract/", {#}
+        {#            action: 'del_gform_destinatario',#}
+        {#            gd: gd#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#gformdestinatario" + data.gd).remove();#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $("#update_error").show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
 
-        $('body').on('click', '.ver_cargar_gform_destinatarios', function (e) {
+        $('body').on('click', '.ver_cargar_pefp_destinatarios', function (e) {
             e.preventDefault();
-            var gform = $(this).data('gform');
-            $('#div_carga_archivo_destinatarios' + gform).toggle();
+            var pefp = $(this).data('pefp');
+            $('#div_carga_archivo_destinatarios' + pefp).toggle();
         });
 
         $('body').on('click', '.subir_gauss_file', function () {
@@ -437,7 +381,7 @@
             }
             formData.append('n_files', input_files.length);
             formData.append('action', 'upload_archivo_xhr');
-            formData.append('gform', id);
+            formData.append('pefp', id);
             formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
             var xhr = new XMLHttpRequest();
             {#xhr.upload.addEventListener("progress", updateProgress, false);#}
@@ -447,7 +391,7 @@
                         console.log(xhr.responseText);
                         {#var b = xhr.responseText;#}
                         var data = JSON.parse(xhr.responseText);
-                        $('#div_usuarios_destinatarios' + data.gform).html(data.html);
+                        $('#div_usuarios_destinatarios' + data.pefp).html(data.html);
                         $(".select_destinatario_gform").select2(
                             conf_select2({
                                 'url': '/selectgcs_organization/',
@@ -469,77 +413,16 @@
                     }
                 }
             };
-            xhr.open('POST', "/formularios/", true);
+            xhr.open('POST', "/procesos_evaluacion_funcpract/", true);
             xhr.send(formData);
         });
 
-        {# ########################################################################################### #}
-        {# Funciones para reordenar las secciones y las preguntas: #}
-        {# gfsi_id_orden, gfs_id_orden  #}
-        {# ########################################################################################### #}
 
-        function gfsi_id_orden(datos) {
-            var gfsi_nos = datos[0];
-            var gfsi_count = datos[1];
-            for (var i = 0; i < gfsi_nos.length; i++) {
-                let legend = 'Pregunta ' + gfsi_nos[i].orden + ' de ' + gfsi_count;
-                $('#legendgfsi' + gfsi_nos[i].id).html(legend);
-            }
-        }
-
-        function gfs_id_orden(datos) {
-            var gfs_nos = datos[0];
-            var gfs_count = datos[1];
-            for (var i = 0; i < gfs_nos.length; i++) {
-                let legend = 'Sección ' + gfs_nos[i].orden + ' de ' + gfs_count;
-                $('#legendgfs' + gfs_nos[i].id).html(legend);
-            }
-        }
-
-        {# ########################################################################################### #}
-        {# Posibles operaciones en una sección: #}
-        {# update_texto_gfs, add_gfsi_after_gfs, copy_gfs, add_gfs_after_gfs, del_gfs  #}
-        {# ########################################################################################### #}
-
-        $('body').on('keyup', '.update_texto_gfs', function () {
-            var element = $(this);
-            var gfs = element.data('gfs');
-            var campo = element.data('campo');
-            var antiguo_texto = element.html();
-            setTimeout(function () {
-                var nuevo_texto = element.html();
-                if (antiguo_texto === nuevo_texto) {
-                    $.post("/formularios/", {action: 'update_texto_gfs', gfs: gfs, texto: nuevo_texto, campo: campo},
-                        function (data) {
-                            if (data.ok) {
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $('#update_error').show().delay(1500).fadeOut();
-                            }
-                        });
-                }
-            }, 750);
-        });
-
-        $('body').on('change', '.update_fecha_limite', function (e) {
-            e.preventDefault();
-            console.log('fecha')
-            var gform = $(this).data('gform');
-            var fecha = $(this).val();
-            $.post("/formularios/", {action: 'update_fecha_limite', gform: gform, fecha: fecha},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
 
         $('body').on('click', '.add_gfsi_after_gfs', function (e) {
             e.preventDefault();
             var gfs = $(this).data('gfs');
-            $.post("/formularios/", {action: 'add_gfsi_after_gfs', gfs: gfs},
+            $.post("/procesos_evaluacion_funcpract/", {action: 'add_gfsi_after_gfs', gfs: gfs},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -554,7 +437,7 @@
         $('body').on('click', '.copy_gfs', function (e) {
             e.preventDefault();
             var gfs = $(this).data('gfs');
-            $.post("/formularios/", {action: 'copy_gfs', gfs: gfs},
+            $.post("/procesos_evaluacion_funcpract/", {action: 'copy_gfs', gfs: gfs},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -569,7 +452,7 @@
         $('body').on('click', '.add_gfs_after_gfs', function (e) {
             e.preventDefault();
             var gfs = $(this).data('gfs');
-            $.post("/formularios/", {action: 'add_gfs_after_gfs', gfs: gfs},
+            $.post("/procesos_evaluacion_funcpract/", {action: 'add_gfs_after_gfs', gfs: gfs},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -584,7 +467,7 @@
         $('body').on('click', '.gfsi_requerida', function (e) {
             e.preventDefault();
             var gfsi = $(this).data('gfsi');
-            $.post("/formularios/", {action: 'update_gfsi_requerida', gfsi: gfsi},
+            $.post("/procesos_evaluacion_funcpract/", {action: 'update_gfsi_requerida', gfsi: gfsi},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -605,7 +488,7 @@
                     "Eliminar": function () {
                         hide_mensajes();
                         var gfs = $('#gfs').val();
-                        $.post("/formularios/", {action: 'del_gfs', gfs: gfs},
+                        $.post("/procesos_evaluacion_funcpract/", {action: 'del_gfs', gfs: gfs},
                             function (data) {
                                 if (data.ok) {
                                     $("#update_ok").show().delay(1500).fadeOut();
@@ -637,7 +520,7 @@
             setTimeout(function () {
                 var nuevo_texto = element.html();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/formularios/", {
+                    $.post("/procesos_evaluacion_funcpract/", {
                             action: 'update_gfsi_label',
                             gfsi: gfsi,
                             texto: nuevo_texto,
@@ -679,7 +562,7 @@
                         }
                     }
                     if (correcto) {
-                        $.post("/formularios/", {
+                        $.post("/procesos_evaluacion_funcpract/", {
                                 action: 'update_gfsi_el',
                                 gfsi: gfsi,
                                 texto: nuevo_texto,
@@ -714,7 +597,11 @@
             setTimeout(function () {
                 var nuevo_texto = element.html();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/formularios/", {action: 'update_gfsio_opcion', gfsio: gfsio, texto: nuevo_texto},
+                    $.post("/procesos_evaluacion_funcpract/", {
+                            action: 'update_gfsio_opcion',
+                            gfsio: gfsio,
+                            texto: nuevo_texto
+                        },
                         function (data) {
                             if (data.ok) {
                                 $("#update_ok").show().delay(1500).fadeOut();
@@ -733,7 +620,11 @@
             setTimeout(function () {
                 var nuevo_texto = element.html();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/formularios/", {action: 'update_gfsi_pregunta', gfsi: gfsi, texto: nuevo_texto},
+                    $.post("/procesos_evaluacion_funcpract/", {
+                            action: 'update_gfsi_pregunta',
+                            gfsi: gfsi,
+                            texto: nuevo_texto
+                        },
                         function (data) {
                             if (data.ok) {
                                 $("#update_ok").show().delay(1500).fadeOut();
@@ -748,7 +639,7 @@
         $('body').on('change', '.select_tipo_gfsi', function () {
             var gfsi = $(this).data('gfsi');
             var tipo = $(this).val();
-            $.post("/formularios/", {action: 'select_tipo_gfsi', gfsi: gfsi, tipo: tipo},
+            $.post("/procesos_evaluacion_funcpract/", {action: 'select_tipo_gfsi', gfsi: gfsi, tipo: tipo},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -761,7 +652,7 @@
 
         $('body').on('click', '.add_gfsio', function () {
             var gfsi = $(this).data('gfsi');
-            $.post("/formularios/", {action: 'add_gfsio', gfsi: gfsi},
+            $.post("/procesos_evaluacion_funcpract/", {action: 'add_gfsio', gfsi: gfsi},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -774,7 +665,7 @@
 
         $('body').on('click', '.del_gfsio', function () {
             var gfsio = $(this).data('gfsio');
-            $.post("/formularios/", {action: 'del_gfsio', gfsio: gfsio},
+            $.post("/procesos_evaluacion_funcpract/", {action: 'del_gfsio', gfsio: gfsio},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -788,7 +679,7 @@
         $('body').on('click', '.add_gfsi_after_gfsi', function (e) {
             e.preventDefault();
             var gfsi = $(this).data('gfsi');
-            $.post("/formularios/", {action: 'add_gfsi_after_gfsi', gfsi: gfsi},
+            $.post("/procesos_evaluacion_funcpract/", {action: 'add_gfsi_after_gfsi', gfsi: gfsi},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -803,7 +694,7 @@
         $('body').on('click', '.copy_gfsi', function (e) {
             e.preventDefault();
             var gfsi = $(this).data('gfsi');
-            $.post("/formularios/", {action: 'copy_gfsi', gfsi: gfsi},
+            $.post("/procesos_evaluacion_funcpract/", {action: 'copy_gfsi', gfsi: gfsi},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -818,7 +709,7 @@
         $('body').on('click', '.add_gfs_after_gfsi', function (e) {
             e.preventDefault();
             var gfsi = $(this).data('gfsi');
-            $.post("/formularios/", {action: 'add_gfs_after_gfsi', gfsi: gfsi},
+            $.post("/procesos_evaluacion_funcpract/", {action: 'add_gfs_after_gfsi', gfsi: gfsi},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -840,7 +731,7 @@
                     "Eliminar": function () {
                         hide_mensajes();
                         var gfsi = $('#gfsi').val();
-                        $.post("/formularios/", {action: 'del_gfsi', gfsi: gfsi}, function (data) {
+                        $.post("/procesos_evaluacion_funcpract/", {action: 'del_gfsi', gfsi: gfsi}, function (data) {
                             if (data.ok) {
                                 $('#gfsi' + gfsi).remove();
                                 gfsi_id_orden(data.gfsi_id_orden);
@@ -874,7 +765,7 @@
             e.preventDefault();
             show_mensajes({
                 title: 'Borrado no permitido',
-                texto: '<p>La primera sección de un formulario no puede ser borrada.</p>'
+                texto: '<p>La primera sección de un pefp no puede ser borrada.</p>'
             })
         });
 
@@ -916,7 +807,7 @@
             if (c) {
                 show_mensajes({
                     title: 'Enlace copiado',
-                    texto: 'Se ha copiado en el portapapeles el enlace para rellenar el formulario'
+                    texto: 'Se ha copiado en el portapapeles el enlace para rellenar el pefp'
                 });
             }
         });

@@ -1,13 +1,19 @@
-<tr id="gformdestinatario{{ gd.id }}">
+<tr id="pefpdestinatario{{ efpa.id }}" title="{{ efpa.docente.ronda.entidad.name }}">
     <td>
-        {{ gd.destinatario.gauser.last_name }}, {{ gd.destinatario.gauser.first_name }}  ({{ gd.destinatario.ronda.entidad.name }})
+        {{ efpa.docente.gauser.last_name }}, {{ efpa.docente.gauser.first_name }}
     </td>
     <td>
-        {{ gd.corrector.gauser.last_name }}, {{ gd.corrector.gauser.first_name }}  ({{ gd.corrector.ronda.entidad.name }})
+        {{ efpa.tutor.gauser.last_name }}, {{ efpa.tutor.gauser.first_name }}
     </td>
     <td>
-        <a class="del_gform_destinatario"  data-gd="{{ gd.id }}">
-            <i class="fa fa-trash"></i> Borrar
-        </a>
+        {{ efpa.director.gauser.last_name }}, {{ efpa.director.gauser.first_name }}
     </td>
+    <td>
+        {{ efpa.inspector.gauser.last_name }}, {{ efpa.inspector.gauser.first_name }}
+    </td>
+{#    <td>#}
+{#        <a class="del_pefp_destinatario"  data-efpa="{{ efpa.id }}">#}
+{#            <i class="fa fa-trash"></i> Borrar#}
+{#        </a>#}
+{#    </td>#}
 </tr>

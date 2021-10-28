@@ -4,24 +4,24 @@
 <div class="row">
     <div class="columns large-12">
         <ul class="button-group right">
-            {% if gform.propietario.gauser == g_e.gauser or g_e|has_permiso:'borra_formularios' %}
-                <li><a class="button alert del_gform" data-gform="{{ gform.id }}">
+            {% if pefp.g_e.gauser == g_e.gauser or g_e|has_permiso:'borra_pefps' %}
+                <li><a class="button alert del_pefp" data-pefp="{{ pefp.id }}">
                     <i class="fa fa-trash-o"></i> Borrar</a></li>
             {% else %}
-                <li><a class="button secondary" title="No tienes permisos para borrar el formulario">
+                <li><a class="button secondary" title="No tienes permisos para borrar el proceso de evaluación">
                     <i class="fa fa-trash-o"></i> Borrar</a></li>
             {% endif %}
-            <li><a class="button copy_gform" data-gform="{{ gform.id }}"
-                   title="Hacer una copia (un duplicado) de este cuestionario"><i class="fa fa-copy"></i> Copiar</a>
-            </li>
-            <li><a class="button excel_gform" data-id="{{ gform.id }}"
+{#            <li><a class="button copy_gform" data-pefp="{{ pefp.id }}"#}
+{#                   title="Hacer una copia (un duplicado) de este proceso"><i class="fa fa-copy"></i> Copiar</a>#}
+{#            </li>#}
+            <li><a class="button excel_gform" data-id="{{ pefp.id }}"
                    title="EXCEL con los datos enviados por los usuarios"><i class="fa fa-file-excel-o"></i> Excel</a>
             </li>
-            <li><a class="button pdf_gform" data-id="{{ gform.id }}"
+            <li><a class="button pdf_gform" data-id="{{ pefp.id }}"
                    title="PDF con los datos enviados por los usuarios"><i class="fa fa-file-pdf-o"></i> PDF</a>
             </li>
-            <li><a class="button" data-id="{{ gform.id }}"
-                   href="/ver_resultados/{{ gform.id }}/{{ gform.identificador }}/"
+            <li><a class="button" data-id="{{ pefp.id }}"
+                   href="/ver_resultados/{{ pefp.id }}/{{ pefp.identificador }}/"
                    target="_blank" title="Resumen de las respuestas"><i class="fa fa-bar-chart"></i> Respuestas</a>
             </li>
         </ul>
@@ -31,7 +31,7 @@
     <div class="columns large-12">
         <label><b>Nombre/Título del formulario:</b>
             <input type="text" class="update_nombre" data-campo="nombre"
-                   data-gform="{{ gform.id }}" value="{{ gform.nombre }}"
+                   data-pefp="{{ pefp.id }}" value="{{ pefp.nombre }}"
                    placeholder="Introduce aquí el nombre del formulario"></label>
     </div>
 </div>
@@ -43,141 +43,95 @@
 </div>
 <div class="row">
     <div class="columns large-12">
-        <div contenteditable="true" class="ckeditor update_observaciones" data-gform="{{ gform.id }}"
-             data-campo="observaciones" id="observaciones{{ gform.id }}"
-        >{% autoescape off %}{{ gform.observaciones }}{% endautoescape %}</div>
+        <div contenteditable="true" class="ckeditor update_observaciones" data-pefp="{{ pefp.id }}"
+             data-campo="observaciones" id="observaciones{{ pefp.id }}"
+        >{% autoescape off %}{{ pefp.observaciones }}{% endautoescape %}</div>
     </div>
 </div>
 
 <br>
 <div class="row">
-    <div class="columns large-2">
+    <div class="columns large-3">
+        <label title="Fecha de inicio para rellenar el cuestionario"><b>Fecha inicio:</b>
+            <input value="{{ pefp.fecha_min|date:'Y-m-d' }}" type="date" name="fecha_min"
+                   class="update_fecha_limite" data-pefp={{ pefp.id }} data-campo="fecha_min"></label>
+    </div>
+    <div class="columns large-3">
         <label title="Fecha límite para rellenar el formulario"><b>Fecha límite:</b>
-            <input value="{{ gform.fecha_max_rellenado|date:'Y-m-d' }}" type="date" name="fecha_max_rellenado"
-                   class="update_fecha_limite" data-gform={{ gform.id }}></label>
+            <input value="{{ pefp.fecha_max|date:'Y-m-d' }}" type="date" name="fecha_max"
+                   class="update_fecha_limite" data-pefp={{ pefp.id }} data-campo="fecha_max"></label>
     </div>
-    <div class="columns large-1">
-        <label><b>¿Activo?</b></label>
-        {% if gform.activo %}
-            <a class="respuesta_booleana" id="activo{{ gform.id }}" data-campo="activo"
-               data-gform="{{ gform.id }}">Sí</a>
-        {% else %}
-            <a class="respuesta_booleana" id="activo{{ gform.id }}" data-campo="activo"
-               data-gform="{{ gform.id }}">No</a>
-        {% endif %}
-    </div>
-    <div class="columns large-1">
-        <label title="¿Admite múltiples respuestas por un mismo usuario?"><b>¿Múltiple?</b></label>
-        {% if gform.multiple %}
-            <a class="respuesta_booleana" id="multiple{{ gform.id }}" data-campo="multiple" data-gform="{{ gform.id }}">Sí</a>
-        {% else %}
-            <a class="respuesta_booleana" id="multiple{{ gform.id }}" data-campo="multiple" data-gform="{{ gform.id }}">No</a>
-        {% endif %}
-    </div>
-    <div class="columns large-4">
-        <label title="Elegir si este formulario puede ser rellenado por los usuarios de {{ gform.propietario.ronda.entidad.name }} o por todos los usuarios de {{ gform.propietario.ronda.entidad.organization.organization }}"><b>Rellenable
-            por:</b>
-            <select class="destinatarios" data-gform="{{ gform.id }}">
-                <option value="ENT"
-                        {% if gform.destinatarios == 'ENT' %}selected{% endif %}>{{ gform.propietario.ronda.entidad.name }}</option>
-                <option value="ORG"
-                        {% if gform.destinatarios == 'ORG' %}selected{% endif %}>{{ gform.propietario.ronda.entidad.organization.organization }}</option>
-            </select> </label>
-    </div>
-    {#    <div class="columns large-2">#}
-    {#        <label title="Elegir si este formulario va a ser evaluado por los usuarios de {{ gform.propietario.ronda.entidad.name }} o por todos los usuarios de {{ gform.propietario.ronda.entidad.organization.organization }}"><b>Evaluable#}
-    {#            por:</b>#}
-    {#            <select class="destinatarios" data-gform="{{ gform.id }}">#}
-    {#                <option value="ENT"#}
-    {#                        {% if gform.destinatarios == 'ENT' %}selected{% endif %}>{{ gform.propietario.ronda.entidad.name }}</option>#}
-    {#                <option value="ORG"#}
-    {#                        {% if gform.destinatarios == 'ORG' %}selected{% endif %}>{{ gform.propietario.ronda.entidad.organization.organization }}</option>#}
-    {#            </select> </label>#}
-    {#    </div>#}
+
+
     <div class="columns large-1">
         <label><b>Ver</b><br>
-            <a href="/ver_gform/{{ gform.id }}/{{ gform.identificador }}/" target="_blank"
+            <a href="/ver_gform/{{ pefp.id }}/{{ pefp.identificador }}/" target="_blank"
             ><i class="fa fa-eye fa-2x"></i></a>
         </label>
     </div>
     <div class="columns large-3">
-        <label><b>Copiar enlace</b><br>
-            <a class="button tiny copy_url_gform" data-url="/rellena_gform/{{ gform.id }}/{{ gform.identificador }}/"
-               title="Haz click sobre el botón para copiar el enlace al formulario" style="font-weight: bold;">
-                Haz click sobre este botón
+        <label title="Haz click sobre el botón para copiar el enlace al formulario"><b>Copiar enlace</b><br>
+            <a class="button tiny copy_url_gform" data-url="/rellena_gform/{{ pefp.id }}/{{ pefp.identificador }}/"
+               style="font-weight: bold;">Haz click sobre este botón
             </a>
         </label>
-    </div>
-</div>
-
-<div class="row">
-    <div class="columns large-12">
-        <label><b>Personas que colaboran en el desarrollo este formulario:</b> <a class="ayuda_colaboradores">
-            <i class="fa fa-question-circle"></i></a>
-        </label>
-    </div>
-</div>
-<div class="row" style="padding-bottom: 2px;">
-    <div class="columns large-12" id="div_colaboradores{{ gform.id }}">
-        {% for colaborador in gform.colaboradores.all %}
-            {% include "formularios_accordion_content_colaborador.html" %}
-        {% endfor %}
-    </div>
-</div>
-<div class="row">
-    <div class="columns large-12">
-        <select name="colaboradores{{ gform.id }}" class="colaboradores" data-gform="{{ gform.id }}"></select>
     </div>
 </div>
 <p>&nbsp;</p>
 
 <div class="row">
-    <div class="columns large-11">
+    <div class="columns large-9">
         <label><b>Personas destinadas a rellenar este formulario:</b> <a class="ayuda_usuarios_destinatarios">
             <i class="fa fa-question-circle"></i></a>
+
+        </label>
+    </div>
+    <div class="columns large-2">
+        <label title="Número total de docentes en prácticas que deben ser evaluados">
+            ({{ pefp.evalfunpractact_set.all|length }} docentes)
         </label>
     </div>
     <div class="columns large-1">
         <label title="Cargar los destinatarios y correctores desde un archivo excel">
-            <a class="ver_cargar_gform_destinatarios" data-gform="{{ gform.id }}"><i class="fa fa-cloud-upload"></i></a>
+            <a class="ver_cargar_gform_destinatarios" data-pefp="{{ pefp.id }}"><i class="fa fa-cloud-upload"></i></a>
         </label>
     </div>
 </div>
-<div id="div_carga_archivo_destinatarios{{ gform.id }}" class="panel callout" style="display: none;">
+<div id="div_carga_archivo_destinatarios{{ pefp.id }}" class="panel callout" style="display: none;">
     <div class="row" style="display: none;">
         <p>Debe ser un archivo Excel con las siguientes columnas:</p>
         <ol>
-        <li>Columna A: DNI del destinatario</li>
-        <li>Columna B: No se usa</li>
-        <li>Columna C: Apellidos del destinatario</li>
-        <li>Columna D: Nombre del destinatario</li>
-        <li>Columna E: No se usa</li>
-        <li>Columna F: No se usa</li>
-        <li>Columna G: No se usa</li>
-        <li>Columna H: No se usa</li>
-        <li>Columna I: Código de centro/entidad del destinatario</li>
-        <li>Columna J: No se usa</li>
-        <li>Columna K: DNI del evaluador</li>
-        <li>Columna L: Código de centro/entidad del evaluador</li>
-        <li>Columna M: Apellidos del evaluador</li>
-        <li>Columna N: Nombre del evaluador</li>
-    </ol>
+            <li>Columna A: DNI del destinatario</li>
+            <li>Columna B: No se usa</li>
+            <li>Columna C: Apellidos del destinatario</li>
+            <li>Columna D: Nombre del destinatario</li>
+            <li>Columna E: No se usa</li>
+            <li>Columna F: No se usa</li>
+            <li>Columna G: No se usa</li>
+            <li>Columna H: No se usa</li>
+            <li>Columna I: Código de centro/entidad del destinatario</li>
+            <li>Columna J: No se usa</li>
+            <li>Columna K: DNI del evaluador</li>
+            <li>Columna L: Código de centro/entidad del evaluador</li>
+            <li>Columna M: Apellidos del evaluador</li>
+            <li>Columna N: Nombre del evaluador</li>
+        </ol>
     </div>
 
     <div class="row" style="padding-bottom: 2px;">
         <div class="columns large-8">
-            <label><input type="file" id="input_gauss_file{{ gform.id }}"></label>
+            <label><input type="file" id="input_gauss_file{{ pefp.id }}"></label>
         </div>
         <div class="columns large-4">
-            <a class="button tiny subir_gauss_file" data-id="{{ gform.id }}"><i class="fa fa-cloud-upload"></i>
+            <a class="button tiny subir_gauss_file" data-id="{{ pefp.id }}"><i class="fa fa-cloud-upload"></i>
                 Cargar archivos</a>
         </div>
     </div>
 </div>
 
 <div class="row" style="padding-bottom: 2px;">
-    <div class="columns large-12" id="div_usuarios_destinatarios{{ gform.id }}">
-        {% include "formularios_accordion_content_destinatarios.html" %}
+    <div class="columns large-12" id="div_usuarios_destinatarios{{ pefp.id }}">
+        {% include "procesos_evaluacion_funcpract_accordion_content_destinatarios.html" %}
     </div>
 </div>
 <p>&nbsp;</p>
@@ -188,15 +142,15 @@
 </div>
 <div class="row">
     <div class="columns large-12">
-        <div contenteditable="true" class="ckeditor update_template" data-gform="{{ gform.id }}" data-campo="template"
-             id="template{{ gform.id }}">{% autoescape off %}{{ gform.template }}{% endautoescape %}
+        <div contenteditable="true" class="ckeditor update_template" data-pefp="{{ pefp.id }}" data-campo="template"
+             id="template{{ pefp.id }}">{% autoescape off %}{{ pefp.template }}{% endautoescape %}
         </div>
     </div>
 </div>
 
-<div id="gformsections{{ gform.id }}">
-    {% for gfs in gform.gformsection_set.all %}
-        {% include "formularios_accordion_content_gfs.html" %}
-        {% include "formularios_accordion_content_ginputs.html" %}
-    {% endfor %}
-</div>
+{#<div id="gformsections{{ pefp.id }}">#}
+{#    {% for gfs in pefp.gformsection_set.all %}#}
+{#        {% include "formularios_accordion_content_gfs.html" %}#}
+{#        {% include "formularios_accordion_content_ginputs.html" %}#}
+{#    {% endfor %}#}
+{#</div>#}

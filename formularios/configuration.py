@@ -33,6 +33,21 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 2,
      'parent': 'acceso_cuestionarios'
+     },
+    {'code_menu': 'acceso_funcionarios_practicas',
+     'texto_menu': 'Funcionarios en prácticas',
+     'href': '',
+     'nivel': 1,
+     'tipo': 'Accesible',
+     'pos': 1
+     },
+    {'code_menu': 'acceso_procesos_evalpract',
+     'texto_menu': 'Procesos de Evaluación',
+     'href': 'procesos_evaluacion_funcpract',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 1,
+     'parent': 'acceso_funcionarios_practicas'
      }
 ]
 # Se añaden otros permisos para el usuario
@@ -41,11 +56,11 @@ PERMISOS = [{'code_nombre': 'crea_formularios',
              'nombre': 'Tiene permiso para crear formularios para la entidad',
              'menu': 'acceso_formularios'
              },
-{'code_nombre': 'copia_formularios',
+            {'code_nombre': 'copia_formularios',
              'nombre': 'Tiene permiso para copiar otros formularios para la entidad',
              'menu': 'acceso_formularios'
              },
-{'code_nombre': 'borra_formularios',
+            {'code_nombre': 'borra_formularios',
              'nombre': 'Tiene permiso para borrar formularios de la entidad',
              'menu': 'acceso_formularios'
              },

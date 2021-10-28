@@ -11,4 +11,7 @@ urlpatterns = [
     path('ver_gform/<int:id>/<str:identificador>/', views.ver_gform),
     path('ver_resultados/<int:id>/<str:identificador>/', views.ver_resultados),
     path('formularios_disponibles/', views.formularios_disponibles),
+    # path('carga_cuestionarios_funcionario_practicas/', views.carga_cuestionarios_funcionario_practicas),
+    path('procesos_evaluacion_funcpract/', views.procesos_evaluacion_funcpract),
+    path('recufunprac/', views.recufunprac),
 ]
