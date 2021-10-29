@@ -48,6 +48,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 1,
      'parent': 'acceso_funcionarios_practicas'
+     },
+    {'code_menu': 'acceso_mis_evalpract',
+     'texto_menu': 'Mis evaluaciones',
+     'href': 'mis_evalpract',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 1,
+     'parent': 'acceso_funcionarios_practicas'
      }
 ]
 # Se añaden otros permisos para el usuario

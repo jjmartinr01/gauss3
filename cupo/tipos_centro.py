@@ -739,7 +739,7 @@ TC = {
             },
         },
     },
-'C.E.E. - Centro de Educación Especial': {
+    'C.E.E. - Centro de Educación Especial': {
         'Infantil': {
             '1º': {
                 'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='3') & Q(
@@ -842,4 +842,9 @@ TC = {
             },
         },
     },
+    'C.E.M. - Conservatorio Elemental de Música': {},
+    'C.I.P.F.P. - Centro Público Integrado de Formación Profesional': {},
+    'E.I.P.C. - Escuela Infantil': {},
+    'E.O.I. - Escuela Oficial de Idiomas': {},
+    'C.P.M. - Conservatorio Profesional de Música': {}
 }

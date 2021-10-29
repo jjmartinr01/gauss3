@@ -36,11 +36,11 @@
 
         <div class="">
             <h4 id="title_page" style="text-align: center;color: #008CBA;"><strong>
-                Procesos de evaluación funcionarios en prácticas</strong></h4>
+                Mis procesos de evaluación</strong></h4>
         </div>
 
         <div id="listado_pefps">
-            {% include 'procesos_evaluacion_funcpract_accordion.html' %}
+            {% include 'mis_evalpract_accordion.html' %}
         </div>
     </form>
 
@@ -343,21 +343,21 @@
         {# });#}
 
 
-        $('body').on('click', '.del_pefp_destinatario', function (e) {
-            var efpa = $(this).data('efpa');
-            $.post("/procesos_evaluacion_funcpract/", {
-                    action: 'del_pefp_destinatario',
-                    efpa: efpa
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#pefpdestinatario" + data.efpa).remove();
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-         });
+        {#$('body').on('click', '.del_gform_destinatario', function (e) {#}
+        {#    var gd = $(this).data('gd');#}
+        {#    $.post("/procesos_evaluacion_funcpract/", {#}
+        {#            action: 'del_gform_destinatario',#}
+        {#            gd: gd#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $("#gformdestinatario" + data.gd).remove();#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $("#update_error").show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
 
         $('body').on('click', '.ver_cargar_pefp_destinatarios', function (e) {
             e.preventDefault();
@@ -392,22 +392,22 @@
                         {#var b = xhr.responseText;#}
                         var data = JSON.parse(xhr.responseText);
                         $('#div_usuarios_destinatarios' + data.pefp).html(data.html);
-                        {#$(".select_destinatario_gform").select2(#}
-                        {#    conf_select2({#}
-                        {#        'url': '/selectgcs_organization/',#}
-                        {#        'gcs': 'gcs',#}
-                        {#        'format_g': '{0}, {1}',#}
-                        {#        'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'#}
-                        {#    })#}
-                        {# );#}
-                        {#$(".select_corrector_gform").select2(#}
-                        {#    conf_select2({#}
-                        {#        'url': '/selectgcs_organization/',#}
-                        {#        'gcs': 'gcs',#}
-                        {#        'format_g': '{0}, {1}',#}
-                        {#        'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'#}
-                        {#    })#}
-                        {# );#}
+                        $(".select_destinatario_gform").select2(
+                            conf_select2({
+                                'url': '/selectgcs_organization/',
+                                'gcs': 'gcs',
+                                'format_g': '{0}, {1}',
+                                'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
+                            })
+                        );
+                        $(".select_corrector_gform").select2(
+                            conf_select2({
+                                'url': '/selectgcs_organization/',
+                                'gcs': 'gcs',
+                                'format_g': '{0}, {1}',
+                                'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
+                            })
+                        );
                         $('#span_spin').hide();
                         $('#span_porcentage').hide();
                     }

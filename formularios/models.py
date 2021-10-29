@@ -354,6 +354,18 @@ class EvalFunPract(models.Model):  # Evaluación Funcionarios en Prácticas
     observaciones_dir = models.TextField('Observaciones para el director', blank=True, null=True, default='')
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
+    @property
+    def num_dim(self):
+        return self.evalfunpractdim_set.all().count()
+
+    @property
+    def num_subdim(self):
+        return EvalFunPractDimSub.objects.filter(evalfunpractdim__evalfunpract=self).count()
+
+    @property
+    def num_cuestiones(self):
+        return EvalFunPractDimSubCue.objects.filter(evalfunpractdimsub__evalfunpractdim__evalfunpract=self).count()
+
     class Meta:
         ordering = ['pk', ]
 
@@ -436,7 +448,7 @@ class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas A
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
     class Meta:
-        ordering = ['procesoevalfunpract', 'inspector']
+        ordering = ['procesoevalfunpract', 'docente__ronda__entidad']
 
     # @property
     # def template_procesado(self):
@@ -453,7 +465,7 @@ class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas A
     #     return template.render(context)
 
     def __str__(self):
-        return '%s - %s' % (self.curso, self.inspector.gauser.get_full_name())
+        return '%s - %s' % (self.procesoevalfunpract, self.inspector.gauser.get_full_name())
 
 
 class EvalFunPractRes(models.Model):  # Evaluación Funcionarios en Prácticas Respuestas

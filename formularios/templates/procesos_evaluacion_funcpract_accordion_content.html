@@ -11,13 +11,13 @@
                 <li><a class="button secondary" title="No tienes permisos para borrar el proceso de evaluación">
                     <i class="fa fa-trash-o"></i> Borrar</a></li>
             {% endif %}
-{#            <li><a class="button copy_gform" data-pefp="{{ pefp.id }}"#}
+{#            <li><a class="button copy_pefp" data-pefp="{{ pefp.id }}"#}
 {#                   title="Hacer una copia (un duplicado) de este proceso"><i class="fa fa-copy"></i> Copiar</a>#}
 {#            </li>#}
-            <li><a class="button excel_gform" data-id="{{ pefp.id }}"
+            <li><a class="button excel_pefp" data-id="{{ pefp.id }}"
                    title="EXCEL con los datos enviados por los usuarios"><i class="fa fa-file-excel-o"></i> Excel</a>
             </li>
-            <li><a class="button pdf_gform" data-id="{{ pefp.id }}"
+            <li><a class="button pdf_pefp" data-id="{{ pefp.id }}"
                    title="PDF con los datos enviados por los usuarios"><i class="fa fa-file-pdf-o"></i> PDF</a>
             </li>
             <li><a class="button" data-id="{{ pefp.id }}"
@@ -29,10 +29,10 @@
 </div>
 <div class="row">
     <div class="columns large-12">
-        <label><b>Nombre/Título del formulario:</b>
+        <label><b>Nombre/Título del proceso:</b>
             <input type="text" class="update_nombre" data-campo="nombre"
                    data-pefp="{{ pefp.id }}" value="{{ pefp.nombre }}"
-                   placeholder="Introduce aquí el nombre del formulario"></label>
+                   placeholder="Nombre del proceso de evaluación de funcionarios en prácticas"></label>
     </div>
 </div>
 
@@ -65,13 +65,13 @@
 
     <div class="columns large-1">
         <label><b>Ver</b><br>
-            <a href="/ver_gform/{{ pefp.id }}/{{ pefp.identificador }}/" target="_blank"
+            <a href="/ver_pefp/{{ pefp.id }}/{{ pefp.identificador }}/" target="_blank"
             ><i class="fa fa-eye fa-2x"></i></a>
         </label>
     </div>
     <div class="columns large-3">
         <label title="Haz click sobre el botón para copiar el enlace al formulario"><b>Copiar enlace</b><br>
-            <a class="button tiny copy_url_gform" data-url="/rellena_gform/{{ pefp.id }}/{{ pefp.identificador }}/"
+            <a class="button tiny copy_url_pefp" data-url="/rellena_pefp/{{ pefp.id }}/{{ pefp.identificador }}/"
                style="font-weight: bold;">Haz click sobre este botón
             </a>
         </label>
@@ -93,7 +93,7 @@
     </div>
     <div class="columns large-1">
         <label title="Cargar los destinatarios y correctores desde un archivo excel">
-            <a class="ver_cargar_gform_destinatarios" data-pefp="{{ pefp.id }}"><i class="fa fa-cloud-upload"></i></a>
+            <a class="ver_cargar_pefp_destinatarios" data-pefp="{{ pefp.id }}"><i class="fa fa-cloud-upload"></i></a>
         </label>
     </div>
 </div>
@@ -148,8 +148,8 @@
     </div>
 </div>
 
-{#<div id="gformsections{{ pefp.id }}">#}
-{#    {% for gfs in pefp.gformsection_set.all %}#}
+{#<div id="pefpsections{{ pefp.id }}">#}
+{#    {% for gfs in pefp.pefpsection_set.all %}#}
 {#        {% include "formularios_accordion_content_gfs.html" %}#}
 {#        {% include "formularios_accordion_content_ginputs.html" %}#}
 {#    {% endfor %}#}

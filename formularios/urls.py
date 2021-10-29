@@ -14,4 +14,5 @@ urlpatterns = [
     # path('carga_cuestionarios_funcionario_practicas/', views.carga_cuestionarios_funcionario_practicas),
     path('procesos_evaluacion_funcpract/', views.procesos_evaluacion_funcpract),
     path('recufunprac/', views.recufunprac),
+path('mis_evalpract/', views.mis_evalpract),
 ]

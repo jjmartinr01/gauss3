@@ -1,0 +1,89 @@
+{% load entidades_extras %}
+{% load my_templatetags %}
+<dl class="accordion" data-accordion id="list_pefps">
+    {% for pefp in pefps %}
+        <dd class="accordion-navigation" id="accordion{{ pefp.id }}"
+            style="border-bottom: dotted 1px black">
+            <a href="#panel{{ pefp.id }}">
+                <i id="circle{{ pefp.id }}" class="fa fa-plus-circle circle_icon"></i>
+                <b id="nombre{{ pefp.id }}">
+                    {% if not pefp.nombre %}
+                        <span style="color:red">Nuevo proceso de evaluación</span>
+                    {% else %}
+                        {{ pefp.nombre }}
+                    {% endif %}
+                </b>
+                {% if not pefp.fecha_min and not pefp.fecha_max %}
+                    <span id="fecha_min_rellenado{{ pefp.id }}" style="color:green;"
+                          title="Fecha en la que será posible comenzar a rellenar el formulario.">
+                        {% if pefp.fecha_min %}
+                            {{ pefp.fecha_min|date:"d-m-Y" }}
+                        {% else %}
+                            <span style="color: red;">fecha sin definir</span>
+                        {% endif %}
+                    </span>
+                    <-->
+                    <span id="fecha_max_rellenado{{ pefp.id }}" style="color:green;"
+                          title="Fecha límite para rellenar el cuestionario.">
+                        {% if pefp.fecha_max %}
+                            {{ pefp.fecha_max|date:"d-m-Y" }}
+                        {% else %}
+                            <span style="color: red;">fecha sin definir</span>
+                        {% endif %}
+                    </span>
+                {% endif %}
+                (<span id="fecha{{ pefp.id }}">Últ. modificación: {{ pefp.modificado|date:"d-m-Y" }}</span>)
+                {% if pefp.num_respuestas %}
+                    {% if pefp.num_respuestas == 1 %}
+                        -- <span id="respuestas{{ pefp.id }}">1 respuesta recibida</span>
+                    {% else %}
+                        -- <span id="respuestas{{ pefp.id }}">{{ pefp.num_respuestas }} respuestas recibidas</span>
+                    {% endif %}
+                    {% if buscadas %}
+                        <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
+                    {% endif %}
+                {% endif %}
+            </a>
+
+            <div id="panel{{ pefp.id }}" class="content accordion-pefp" data-id="{{ pefp.id }}">
+            </div>
+        </dd>
+    {% endfor %}
+</dl>
+
+{% if pag %}
+    {% if pefps.paginator.num_pages > 1 %}
+        <br>
+        <div class="row">
+            <div class="columns large-12">
+                <ul class="pagination" role="menubar" aria-label="Pagination">
+                    {% if pefps.has_previous %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ pefps.previous_page_number }}">&laquo; Anterior</a>
+                        </li>
+                    {% else %}
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">&laquo; Anterior</a>
+                        </li>
+                    {% endif %}
+                    {% for page in pefps.paginator.num_pages|number_range %}
+                        {% if page == pefps.number %}
+                            <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
+                        {% else %}
+                            <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if pefps.has_next %}
+                        <li class="arrow">
+                            <a class="go_page" data-page="{{ pefps.next_page_number }}">Siguiente &raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="arrow unavailable" aria-disabled="true">
+                            <a class="go_page">Siguiente &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}

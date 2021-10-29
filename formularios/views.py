@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
+# from datetime import datetime
 import pdfkit
 import xlrd
 from django.contrib.auth import login
@@ -10,6 +10,7 @@ import logging
 import xlwt
 from xlwt import Formula
 from time import sleep
+from django.utils.timezone import datetime, timedelta
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Q
@@ -22,6 +23,7 @@ from django.template.loader import render_to_string
 from django.utils.text import slugify
 
 from autenticar.control_acceso import permiso_required
+from autenticar.models import Permiso
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from formularios.models import *
@@ -1063,7 +1065,8 @@ def carga_cuestionarios_funcionario_practicas(request):
                                                          responde_doc_tutor=preg['docente-tutor'],
                                                          responde_dir=preg['director'])
 
-def procesos_evaluacion_funcpract(request): #procesos_evaluacion_funcionarios_en_prácticas
+
+def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_en_prácticas
     g_e = request.session["gauser_extra"]
     pefps = ProcesoEvalFunPract.objects.filter(g_e__ronda__entidad=g_e.ronda.entidad)
 
@@ -1122,6 +1125,60 @@ def procesos_evaluacion_funcpract(request): #procesos_evaluacion_funcionarios_en
                     return JsonResponse({'ok': False, 'msg': 'No tienes permiso para hacer el cambio'})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'del_pefp_destinatario':
+            try:
+                efpa = EvalFunPractAct.objects.get(id=request.POST['efpa'])
+                if efpa.procesoevalfunpract.g_e == g_e:
+                    efpa_id = efpa.id
+                    efpa.delete()
+                    return JsonResponse({'ok': True, 'efpa': efpa_id})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permiso para borrar destinatarios'})
+            except:
+                return JsonResponse({'ok': False})
+    elif request.method == 'POST':
+        if request.POST['action'] == 'upload_archivo_xhr':
+            try:
+                errores = {}
+                pefp = ProcesoEvalFunPract.objects.get(id=request.POST['pefp'])
+                code_permisos = ['acceso_funcionarios_practicas', 'acceso_mis_evalpract']
+                permisos = Permiso.objects.filter(code_nombre__in=code_permisos)
+                n_files = int(request.POST['n_files'])
+                for i in range(n_files):
+                    fichero = request.FILES['archivo_xhr' + str(i)]
+                    wb = xlrd.open_workbook(file_contents=fichero.read())
+                    sheet = wb.sheet_by_index(0)
+                    for row_index in range(1, sheet.nrows):
+                        try:
+                            code_centro = int(sheet.cell_value(row_index, 1))
+                            entidad_funcionario = Entidad.objects.get(code=code_centro)
+                            docente = Gauser_extra.objects.get(gauser__dni=sheet.cell_value(row_index, 3),
+                                                                    ronda=entidad_funcionario.ronda)
+                            director = Gauser_extra.objects.get(gauser__dni=sheet.cell_value(row_index, 5),
+                                                               ronda=entidad_funcionario.ronda)
+                            tutor = Gauser_extra.objects.get(gauser__dni=sheet.cell_value(row_index, 7),
+                                                               ronda=entidad_funcionario.ronda)
+                            entidad_inspeccion = Entidad.objects.get(name__icontains='inspecc')
+                            # entidad_inspeccion = entidad_funcionario
+                            inspector = Gauser_extra.objects.get(gauser__dni=sheet.cell_value(row_index, 9),
+                                                                 ronda=entidad_inspeccion.ronda)
+                            efpa, c = EvalFunPractAct.objects.get_or_create(procesoevalfunpract=pefp,
+                                                                  inspector=inspector, tutor=tutor,
+                                                                  director=director, docente=docente)
+                            if c:
+                                docente.permisos.add(*permisos)
+                                director.permisos.add(*permisos)
+                                tutor.permisos.add(*permisos)
+                                inspector.permisos.add(*permisos)
+                        except Exception as msg:
+                            errores[row_index] = {'msg': str(msg), 'fila': row_index,
+                                                  'centro': sheet.cell_value(row_index, 1),
+                                                  'docente': sheet.cell_value(row_index, 3)}
+                html = render_to_string("procesos_evaluacion_funcpract_accordion_content_destinatarios.html",
+                                        {'pefp': pefp})
+                return JsonResponse({'ok': True, 'errores': errores, 'html': html, 'pefp': pefp.id})
+            except:
+                return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
 
     return render(request, "procesos_evaluacion_funcpract.html",
                   {
@@ -1134,5 +1191,37 @@ def procesos_evaluacion_funcpract(request): #procesos_evaluacion_funcionarios_en
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
-def recufunprac(request): #rellenar_cuestionario_funcionario_practicas
+
+def mis_evalpract(request):  # mis_evaluaciones_prácticas
+    g_e = request.session["gauser_extra"]
+    fecha_min = datetime.now().date() + timedelta(days=60)
+    fecha_max = datetime.now().date() - timedelta(days=200)
+    evfpas_activas = EvalFunPractAct.objects.filter(procesoevalfunpract__fecha_min__lt=fecha_min,
+                                                    procesoevalfunpract__fecha_max__gt=fecha_max)
+    filtro_usuarios = Q(inspector__gauser=g_e.gauser) | Q(tutor__gauser=g_e.gauser) | Q(
+        docente__gauser=g_e.gauser) | Q(director__gauser=g_e.gauser)
+    evfpas = evfpas_activas.filter(filtro_usuarios)
+    pefps = ProcesoEvalFunPract.objects.filter(
+        id__in=evfpas.values_list('procesoevalfunpract__id', flat=True)).distinct()
+    evfpas_ins = evfpas.filter(inspector__gauser=g_e.gauser)
+    evfpas_tut = evfpas.filter(tutor__gauser=g_e.gauser)
+    evfpas_doc = evfpas.filter(docente__gauser=g_e.gauser)
+    evfpas_dir = evfpas.filter(director__gauser=g_e.gauser)
+    return render(request, "mis_evalpract.html",
+                  {
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Añadir',
+                            'permiso': 'acceso_procesos_evalpract', 'title': 'Crear un nuevo proceso de evaluación'},
+                           ),
+                      'formname': 'procesos_evaluacion_funcpract',
+                      'pefps': pefps,
+                      'evfpas_ins': evfpas_ins,
+                      'evfpas_tut': evfpas_tut,
+                      'evfpas_doc': evfpas_doc,
+                      'evfpas_dir': evfpas_dir,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+
+def recufunprac(request):  # rellenar_cuestionario_funcionario_practicas
     pass
