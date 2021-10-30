@@ -50,116 +50,6 @@
 
 {% block final %}
     <script>
-        {# ########################################################################################### #}
-        {# Operaciones relacionadas con la plantilla del PDF a generar con las respuestas: #}
-        {# constructInlineEditorInstances,   #}
-        {# ########################################################################################### #}
-
-        config = {
-            removePlugins: 'exportpdf',
-            toolbar: [
-                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
-                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
-                {
-                    name: 'basicstyles',
-                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
-                },
-                {
-                    name: 'paragraph',
-                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
-                },
-                '/',
-                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
-                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
-                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
-                {name: 'colors', items: ['TextColor', 'BGColor']},
-                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
-                {name: 'document', items: ['Source']},
-                {name: 'about', items: ['About', 'generapdfbutton']}
-            ],
-            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
-        }
-
-        function constructInlineEditorInstances() {
-            $(".ckeditor").each(function (index) {
-                var element = $(this);
-                var id = element.attr('id');
-                var editor = CKEDITOR.inline(id, config);
-                var anchura = element.width() + 2;
-                setTimeout(function () {
-                    $('#cke_' + id).css('width', anchura + 'px');
-                    {# Este es el id del ckeditor creado #}
-                }, 200);
-            });
-        }
-
-        $('body').on('keyup', '.update_observaciones', function () {
-            var element = $(this);
-            var pefp = element.data('pefp');
-            var antiguo_texto = element.html();
-            setTimeout(function () {
-                var nuevo_texto = element.html();
-                if (antiguo_texto === nuevo_texto) {
-                    $.post("/procesos_evaluacion_funcpract/", {
-                            action: 'update_observaciones',
-                            pefp: pefp,
-                            texto: nuevo_texto
-                        },
-                        function (data) {
-                            if (data.ok) {
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $('#update_error').show().delay(1500).fadeOut();
-                            }
-                        });
-                }
-            }, 750);
-        });
-
-        $('body').on('keyup', '.update_template', function () {
-            var element = $(this);
-            var pefp = element.data('pefp');
-            var antiguo_texto = element.html();
-            setTimeout(function () {
-                var nuevo_texto = element.html();
-                if (antiguo_texto === nuevo_texto) {
-                    $.post("/procesos_evaluacion_funcpract/", {
-                            action: 'update_template',
-                            pefp: pefp,
-                            texto: nuevo_texto
-                        },
-                        function (data) {
-                            if (data.ok) {
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $('#update_error').show().delay(1500).fadeOut();
-                            }
-                        });
-                }
-            }, 750);
-        });
-
-
-        {# ########################################################################################### #}
-        {# Operaciones directas sobre el modelo Gform: #}
-        {# crea_pefp, open_accordion, del_gform, copy_gform, update_nombre  #}
-        {# ########################################################################################### #}
-
-        {% if request.session.gauser_extra|has_permiso:'acceso_procesos_evalpract' %}
-            habilita(['s_plus']);
-            $('#plus_sign').click(function (event) {
-                event.preventDefault();
-                $.post("/procesos_evaluacion_funcpract/", {action: 'crea_pefp'}, function (data) {
-                    if (data.ok) {
-                        $('#listado_pefps').prepend(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                    $(document).scrollTop($('#title_page').offset().top - 150);
-                });
-            });
-        {% endif %}
 
         $(document).foundation({
             accordion: {
@@ -170,36 +60,11 @@
                             $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
                             window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post("/procesos_evaluacion_funcpract/", {action: 'open_accordion', id: id},
+                            $.post("/mis_evalpract/", {action: 'open_accordion', id: id},
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
                                         $('#pefp').val(id);
-                                        constructInlineEditorInstances();
-                                        $(".colaboradores").select2(
-                                            conf_select2({
-                                                'url': '/selectgcs_organization/',
-                                                'gcs': 'gcs',
-                                                'format_g': '{0}, {1}',
-                                                'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
-                                            })
-                                        );
-                                        $(".select_destinatario_gform").select2(
-                                            conf_select2({
-                                                'url': '/selectgcs_organization/',
-                                                'gcs': 'gcs',
-                                                'format_g': '{0}, {1}',
-                                                'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
-                                            })
-                                        );
-                                        $(".select_corrector_gform").select2(
-                                            conf_select2({
-                                                'url': '/selectgcs_organization/',
-                                                'gcs': 'gcs',
-                                                'format_g': '{0}, {1}',
-                                                'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
-                                            })
-                                        );
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $("#update_error").show().delay(1500).fadeOut();
@@ -214,35 +79,9 @@
             }
         });
 
-        $('body').on('click', '.del_pefp', function (e) {
-            e.preventDefault();
-            $('#pefp').val($(this).data('pefp'));
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar el proceso de evaluación de funcionarios en prácticas?',
-                texto: 'Si eliminas el proceso, también se borrarán todas las respuestas de los usuarios.',
-                buttons: {
-                    "Eliminar": function () {
-                        hide_mensajes();
-                        var pefp = $('#pefp').val();
-                        $.post("/procesos_evaluacion_funcpract/", {action: 'del_pefp', pefp: pefp}, function (data) {
-                            if (data.ok) {
-                                $('#accordion' + pefp).remove();
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $("#update_error").show().delay(1500).fadeOut();
-                            }
-                        });
-                    },
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    }
-                }
-            });
-        });
-
         {#$('body').on('click', '.copy_gform', function () {#}
         {#    var pefp = $(this).data('pefp');#}
-        {#    $.post("/procesos_evaluacion_funcpract/", {action: 'copy_gform', pefp: pefp},#}
+        {#    $.post("/mis_evalpract/", {action: 'copy_gform', pefp: pefp},#}
         {#        function (data) {#}
         {#            if (data.ok) {#}
         {#                $("#update_ok").show().delay(1500).fadeOut();#}
@@ -273,7 +112,7 @@
             setTimeout(function () {
                 var nuevo_texto = element.val();
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/procesos_evaluacion_funcpract/", {action: 'update_nombre', pefp: pefp, texto: nuevo_texto},
+                    $.post("/mis_evalpract/", {action: 'update_nombre', pefp: pefp, texto: nuevo_texto},
                         function (data) {
                             if (data.ok) {
                                 $("#update_ok").show().delay(1500).fadeOut();
@@ -291,7 +130,7 @@
             var pefp = $(this).data('pefp');
             var campo = $(this).data('campo');
             var fecha = $(this).val();
-            $.post("/procesos_evaluacion_funcpract/",
+            $.post("/mis_evalpract/",
                 {action: 'update_fecha_limite', pefp: pefp, fecha: fecha, campo: campo},
                 function (data) {
                     if (data.ok) {
@@ -300,452 +139,6 @@
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
-        });
-
-
-        {#$('body').on('change', '.destinatarios', function () {#}
-        {#    var pefp = $(this).data('pefp');#}
-        {#    var valor = $(this).val();#}
-        {#    $.post("/procesos_evaluacion_funcpract/", {action: 'update_destinatarios', pefp: pefp, valor: valor},#}
-        {#        function (data) {#}
-        {#            if (data.ok) {#}
-        {#                $("#update_ok").show().delay(1500).fadeOut();#}
-        {#            } else {#}
-        {#                $('#update_error').show().delay(1500).fadeOut();#}
-        {#            }#}
-        {#        });#}
-        {# });#}
-
-        {# ########################################################################################### #}
-        {# Añadir y borrar destinatarios del pefp y los correspondientes evaluadores #}
-        {# ########################################################################################### #}
-
-        {#$('body').on('click', '.add_gform_destinatario', function (e) {#}
-        {#    var pefp = $(this).data('pefp');#}
-        {#    var destinatario = $('#select_destinatario_gform' + pefp).val();#}
-        {#    var corrector = $('#select_corrector_gform' + pefp).val();#}
-        {#    $.post("/procesos_evaluacion_funcpract/", {#}
-        {#            action: 'add_gform_destinatario',#}
-        {#            pefp: pefp,#}
-        {#            destinatario: destinatario,#}
-        {#            corrector: corrector#}
-        {#        },#}
-        {#        function (data) {#}
-        {#            if (data.ok) {#}
-        {#                $("#tbody_gform_destinatarios" + data.pefp).append(data.html);#}
-        {#                $("#update_ok").show().delay(1500).fadeOut();#}
-        {#            } else {#}
-        {#                $("#update_error").show().delay(1500).fadeOut();#}
-        {#            }#}
-        {#            $('#select_destinatario_gform' + data.pefp).val(null).trigger('change');#}
-        {#            $('#select_corrector_gform' + data.pefp).val(null).trigger('change');#}
-        {#        });#}
-        {# });#}
-
-
-        {#$('body').on('click', '.del_gform_destinatario', function (e) {#}
-        {#    var gd = $(this).data('gd');#}
-        {#    $.post("/procesos_evaluacion_funcpract/", {#}
-        {#            action: 'del_gform_destinatario',#}
-        {#            gd: gd#}
-        {#        },#}
-        {#        function (data) {#}
-        {#            if (data.ok) {#}
-        {#                $("#gformdestinatario" + data.gd).remove();#}
-        {#                $("#update_ok").show().delay(1500).fadeOut();#}
-        {#            } else {#}
-        {#                $("#update_error").show().delay(1500).fadeOut();#}
-        {#            }#}
-        {#        });#}
-        {# });#}
-
-        $('body').on('click', '.ver_cargar_pefp_destinatarios', function (e) {
-            e.preventDefault();
-            var pefp = $(this).data('pefp');
-            $('#div_carga_archivo_destinatarios' + pefp).toggle();
-        });
-
-        $('body').on('click', '.subir_gauss_file', function () {
-            var id = $(this).data('id');
-            var input_files = document.getElementById('input_gauss_file' + id).files;
-            $('#span_spin').show();
-            $('.span_porcentage').show();
-
-            for (var i = 0; i < input_files.length; i++) {
-                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
-            }
-
-            var formData = new FormData();
-            for (var i = 0; i < input_files.length; i++) {
-                formData.append('archivo_xhr' + i, input_files[i], slugify_filename(input_files[i].name));
-            }
-            formData.append('n_files', input_files.length);
-            formData.append('action', 'upload_archivo_xhr');
-            formData.append('pefp', id);
-            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
-            var xhr = new XMLHttpRequest();
-            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
-            xhr.onload = function () {
-                if (xhr.readyState === xhr.DONE) {
-                    if (xhr.status === 200) {
-                        console.log(xhr.responseText);
-                        {#var b = xhr.responseText;#}
-                        var data = JSON.parse(xhr.responseText);
-                        $('#div_usuarios_destinatarios' + data.pefp).html(data.html);
-                        $(".select_destinatario_gform").select2(
-                            conf_select2({
-                                'url': '/selectgcs_organization/',
-                                'gcs': 'gcs',
-                                'format_g': '{0}, {1}',
-                                'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
-                            })
-                        );
-                        $(".select_corrector_gform").select2(
-                            conf_select2({
-                                'url': '/selectgcs_organization/',
-                                'gcs': 'gcs',
-                                'format_g': '{0}, {1}',
-                                'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
-                            })
-                        );
-                        $('#span_spin').hide();
-                        $('#span_porcentage').hide();
-                    }
-                }
-            };
-            xhr.open('POST', "/procesos_evaluacion_funcpract/", true);
-            xhr.send(formData);
-        });
-
-
-
-        $('body').on('click', '.add_gfsi_after_gfs', function (e) {
-            e.preventDefault();
-            var gfs = $(this).data('gfs');
-            $.post("/procesos_evaluacion_funcpract/", {action: 'add_gfsi_after_gfs', gfs: gfs},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $("#gfs" + gfs).after(data.html);
-                        gfsi_id_orden(data.gfsi_id_orden);
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.copy_gfs', function (e) {
-            e.preventDefault();
-            var gfs = $(this).data('gfs');
-            $.post("/procesos_evaluacion_funcpract/", {action: 'copy_gfs', gfs: gfs},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $("#gfs" + gfs).after(data.html);
-                        gfs_id_orden(data.gfs_id_orden);
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.add_gfs_after_gfs', function (e) {
-            e.preventDefault();
-            var gfs = $(this).data('gfs');
-            $.post("/procesos_evaluacion_funcpract/", {action: 'add_gfs_after_gfs', gfs: gfs},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $("#gfs" + gfs).after(data.html);
-                        gfs_id_orden(data.gfs_id_orden);
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.gfsi_requerida', function (e) {
-            e.preventDefault();
-            var gfsi = $(this).data('gfsi');
-            $.post("/procesos_evaluacion_funcpract/", {action: 'update_gfsi_requerida', gfsi: gfsi},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $("#gfsi_requerida" + gfsi).text(data.texto);
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.del_gfs', function (e) {
-            e.preventDefault();
-            $('#gfs').val($(this).data('gfs'));
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar la sección del cuestionario?',
-                texto: 'Las preguntas de esta sección pasarán a formar parte de la sección anterior.',
-                buttons: {
-                    "Eliminar": function () {
-                        hide_mensajes();
-                        var gfs = $('#gfs').val();
-                        $.post("/procesos_evaluacion_funcpract/", {action: 'del_gfs', gfs: gfs},
-                            function (data) {
-                                if (data.ok) {
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                    $("#gfs" + gfs).remove();
-                                    gfs_id_orden(data.gfs_id_orden);
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
-                    },
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    }
-                }
-            });
-        });
-
-        {# ########################################################################################### #}
-        {# Posibles operaciones en una pregunta: #}
-        {# update_gfsi_pregunta, select_tipo_gfsi, add_gfsio, del_gfsio, add_gfsi_after_gfsi, copy_gfsi, #}
-        {# add_gfs_after_gfsi, del_gfsi  #}
-        {# ########################################################################################### #}
-
-        $('body').on('keyup', '.update_gfsi_label', function () {
-            var element = $(this);
-            var gfsi = element.data('gfsi');
-            var campo = element.data('campo');
-            var antiguo_texto = element.html();
-            setTimeout(function () {
-                var nuevo_texto = element.html();
-                if (antiguo_texto === nuevo_texto) {
-                    $.post("/procesos_evaluacion_funcpract/", {
-                            action: 'update_gfsi_label',
-                            gfsi: gfsi,
-                            texto: nuevo_texto,
-                            campo: campo
-                        },
-                        function (data) {
-                            if (data.ok) {
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $('#update_error').show().delay(1500).fadeOut();
-                            }
-                        });
-                }
-            }, 750);
-        });
-
-        var se_ha_avisado_valores_maximo_minimo = false;
-        $('body').on('keyup', '.update_gfsi_el', function () {
-            var element = $(this);
-            var gfsi = element.data('gfsi');
-            var campo = element.data('campo');
-            var antiguo_texto = element.html();
-            setTimeout(function () {
-                var nuevo_texto = element.html();
-                var correcto = true;
-                if (antiguo_texto === nuevo_texto) {
-                    if (campo == 'elmin') {
-                        if (!(parseInt(nuevo_texto) > -1 && parseInt(nuevo_texto) < 2)) {
-                            correcto = false;
-                        } else {
-                            nuevo_texto = parseInt(nuevo_texto);
-                        }
-                    }
-                    if (campo == 'elmax') {
-                        if (!(parseInt(nuevo_texto) > 1 && parseInt(nuevo_texto) < 11)) {
-                            correcto = false;
-                        } else {
-                            nuevo_texto = parseInt(nuevo_texto);
-                        }
-                    }
-                    if (correcto) {
-                        $.post("/procesos_evaluacion_funcpract/", {
-                                action: 'update_gfsi_el',
-                                gfsi: gfsi,
-                                texto: nuevo_texto,
-                                campo: campo
-                            },
-                            function (data) {
-                                if (data.ok) {
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                    $('#respuesta' + gfsi).html(data.html);
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
-                    } else {
-                        if (!se_ha_avisado_valores_maximo_minimo) {
-                            var texto = 'El valor mínimo debe estar entre 0 y 1. El valor máximo entre 2 y 10';
-                            show_mensajes({title: 'Error en los valores', texto: texto})
-                            se_ha_avisado_valores_maximo_minimo = true;
-                        } else {
-                            $('#update_error').show().delay(1500).fadeOut();
-                        }
-
-                    }
-                }
-            }, 750);
-        });
-
-        $('body').on('keyup', '.update_gfsio_opcion', function () {
-            var element = $(this);
-            var gfsio = element.data('gfsio');
-            var antiguo_texto = element.html();
-            setTimeout(function () {
-                var nuevo_texto = element.html();
-                if (antiguo_texto === nuevo_texto) {
-                    $.post("/procesos_evaluacion_funcpract/", {
-                            action: 'update_gfsio_opcion',
-                            gfsio: gfsio,
-                            texto: nuevo_texto
-                        },
-                        function (data) {
-                            if (data.ok) {
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $('#update_error').show().delay(1500).fadeOut();
-                            }
-                        });
-                }
-            }, 750);
-        });
-
-        $('body').on('keyup', '.update_gfsi_pregunta', function () {
-            var element = $(this);
-            var gfsi = element.data('gfsi');
-            var antiguo_texto = element.html();
-            setTimeout(function () {
-                var nuevo_texto = element.html();
-                if (antiguo_texto === nuevo_texto) {
-                    $.post("/procesos_evaluacion_funcpract/", {
-                            action: 'update_gfsi_pregunta',
-                            gfsi: gfsi,
-                            texto: nuevo_texto
-                        },
-                        function (data) {
-                            if (data.ok) {
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $('#update_error').show().delay(1500).fadeOut();
-                            }
-                        });
-                }
-            }, 750);
-        });
-
-        $('body').on('change', '.select_tipo_gfsi', function () {
-            var gfsi = $(this).data('gfsi');
-            var tipo = $(this).val();
-            $.post("/procesos_evaluacion_funcpract/", {action: 'select_tipo_gfsi', gfsi: gfsi, tipo: tipo},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $("#respuesta" + gfsi).html(data.html);
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.add_gfsio', function () {
-            var gfsi = $(this).data('gfsi');
-            $.post("/procesos_evaluacion_funcpract/", {action: 'add_gfsio', gfsi: gfsi},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $("#opciones" + gfsi).append(data.html);
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.del_gfsio', function () {
-            var gfsio = $(this).data('gfsio');
-            $.post("/procesos_evaluacion_funcpract/", {action: 'del_gfsio', gfsio: gfsio},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $("#gfsio" + gfsio).remove();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.add_gfsi_after_gfsi', function (e) {
-            e.preventDefault();
-            var gfsi = $(this).data('gfsi');
-            $.post("/procesos_evaluacion_funcpract/", {action: 'add_gfsi_after_gfsi', gfsi: gfsi},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $("#gfsi" + gfsi).after(data.html);
-                        gfsi_id_orden(data.gfsi_id_orden);
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.copy_gfsi', function (e) {
-            e.preventDefault();
-            var gfsi = $(this).data('gfsi');
-            $.post("/procesos_evaluacion_funcpract/", {action: 'copy_gfsi', gfsi: gfsi},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $("#gfsi" + gfsi).after(data.html);
-                        gfsi_id_orden(data.gfsi_id_orden);
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.add_gfs_after_gfsi', function (e) {
-            e.preventDefault();
-            var gfsi = $(this).data('gfsi');
-            $.post("/procesos_evaluacion_funcpract/", {action: 'add_gfs_after_gfsi', gfsi: gfsi},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $("#gfsi" + gfsi).after(data.html);
-                        gfs_id_orden(data.gfs_id_orden);
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.del_gfsi', function (e) {
-            e.preventDefault();
-            $('#gfsi').val($(this).data('gfsi'));
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar la pregunta del cuestionario?',
-                texto: 'Si eliminas la cuestión, se borrará por completo de la base de datos.',
-                buttons: {
-                    "Eliminar": function () {
-                        hide_mensajes();
-                        var gfsi = $('#gfsi').val();
-                        $.post("/procesos_evaluacion_funcpract/", {action: 'del_gfsi', gfsi: gfsi}, function (data) {
-                            if (data.ok) {
-                                $('#gfsi' + gfsi).remove();
-                                gfsi_id_orden(data.gfsi_id_orden);
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $("#update_error").show().delay(1500).fadeOut();
-                            }
-                        });
-                    },
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    }
-                }
-            });
         });
 
         {# ########################################################################################### #}
@@ -761,55 +154,32 @@
             })
         });
 
-        $('body').on('click', '.primer_gfs', function (e) {
-            e.preventDefault();
-            show_mensajes({
-                title: 'Borrado no permitido',
-                texto: '<p>La primera sección de un pefp no puede ser borrada.</p>'
-            })
-        });
-
-        $('body').on('click', '.ayuda_colaboradores', function (e) {
-            e.preventDefault();
-            var info_colaboradores = $('#info_colaboradores').html();
-            show_mensajes({
-                title: '<i class="fa fa-question-circle"></i> ¿Qué hace un colaborador?',
-                texto: info_colaboradores
-            })
-        });
-
-        $('body').on('click', '.ayuda_usuarios_destinatarios', function (e) {
-            e.preventDefault();
-            var info_usuarios_destinatarios = $('#info_usuarios_destinatarios').html();
-            show_mensajes({
-                title: '<i class="fa fa-question-circle"></i> ¿Para qué es esta lista de personas?',
-                texto: info_usuarios_destinatarios
-            })
-        });
-
-        {#$('body').on('click', '.ayuda_colaboradores', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    var info_colaboradores = $('#info_colaboradores').html();#}
-        {#    show_mensajes({#}
-        {#        title: '<i class="fa fa-question-circle"></i> ¿Qué hace un colaborador?',#}
-        {#        texto: info_colaboradores#}
-        {#    })#}
-        {# });#}
-
-        $('body').on('click', '.copy_url_gform', function () {
-            var url = $(this).data('url');
+        $('body').on('click', '.rellenar_cuestionario', function () {
+            var efpa = $(this).data('efpa');
+            var actor = $(this).data('actor');
             var protocol = window.location.protocol;
             {# http: o https: #}
             var host = window.location.host;
+            console.log(host);
             {# Por ejemplo: gaumentada.es:5656   (proporciona dominio + puerto) #}
-            {#var c = copiar_al_portapapeles(protocol + '//' + host + '/logincas/?nexturl=' + url)#}
-            var c = copiar_al_portapapeles(protocol + '//' + host + url)
-            if (c) {
-                show_mensajes({
-                    title: 'Enlace copiado',
-                    texto: 'Se ha copiado en el portapapeles el enlace para rellenar el pefp'
+            var url = protocol + '//' + host + '/recufunprac/' + efpa + '/' + actor;
+            console.log(url);
+            window.open(url, '_blank');
+        });
+
+        $('body').on('click', '.perfil_docente', function () {
+            var efpa = $(this).data('efpa');
+            var docente_tutor = $('#docente_tutor' + efpa).prop('checked');
+            var docente_jefe = $('#docente_jefe' + efpa).prop('checked');
+            $.post("/mis_evalpract/", {action: 'perfil_docente', efpa: efpa,
+                    docente_jefe: docente_jefe, docente_tutor: docente_tutor},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
                 });
-            }
         });
 
 

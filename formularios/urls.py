@@ -13,6 +13,6 @@ urlpatterns = [
     path('formularios_disponibles/', views.formularios_disponibles),
     # path('carga_cuestionarios_funcionario_practicas/', views.carga_cuestionarios_funcionario_practicas),
     path('procesos_evaluacion_funcpract/', views.procesos_evaluacion_funcpract),
-    path('recufunprac/', views.recufunprac),
-path('mis_evalpract/', views.mis_evalpract),
+    path('recufunprac/<int:id>/<str:actor>/', views.recufunprac),
+    path('mis_evalpract/', views.mis_evalpract),
 ]

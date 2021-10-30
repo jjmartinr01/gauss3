@@ -1,0 +1,372 @@
+{% extends "base_formularios.html" %}
+{% load formularios_extras %}
+{% block head %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+            font-weight: 800;
+        }
+
+        .ckeditor {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+
+        /* Some CSS styling */
+        .sketchpadapp {
+            /* Prevent nearby text being highlighted when accidentally dragging mouse outside confines of the canvas */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .sketchpad {
+            margin: auto;
+            display: block;
+            width: 400px;
+            height: 300px;
+            position: relative;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border: 2px solid #888;
+            margin-bottom: 10px;
+        }
+
+        #logo_general {
+            display: none;
+            width: 100px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+
+        #logo_gobierno {
+            display: none;
+            width: 100px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+
+        #nombre_docente {
+            width: 400px;
+            text-align: right;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: grey;
+            font-weight: bold;
+        }
+
+        p, li {
+            text-align: justify;
+        }
+    </style>
+{% endblock %}
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}"
+          xmlns="http://www.w3.org/1999/html">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="efpa" id="efpa" value="{{ efpa.id }}">
+        <input type="hidden" name="actor" id="actor" value="{{ actor }}">
+        <img id="logo_general" src="/static/images/logo_gauss_acceso.png">
+        <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.png">
+        <span id="nombre_docente">Docente:<br>{{ efpa.docente.gauser.get_full_name }}</span>
+
+        <div class="">
+            <h4 id="title_page"><strong>{{ efpa.procesoevalfunpract.nombre }}</strong></h4>
+        </div>
+        {% if efpa.respondido %}
+            <div class="row">
+                <div class="columns large-12">
+                    <div data-alert class="alert-box alert radius">
+                        <h3 style="color: white;font-weight: bold;"><i class="fa fa-warning"></i> No se pueden cambiar
+                            las respuestas</h3>
+                        <p>Este formulario ya está respondido y no se admiten cambios en las respuestas.</p>
+                        <a href="#" class="close">&times;</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        <div class="row">
+            <div class="columns large-12 text-right">
+                <a class="button info close_efpa" title="Cerrar el cuestionario de evaluación y guardar las respuestas">
+                    <i class="fa fa-times"></i> Cerrar este cuestionario</a>
+            </div>
+        </div>
+        <div class="row" style="background-color: #eeffff">
+            <div class="columns large-12">
+                <h3 style="text-align: center;">INFORMACIÓN ACERCA DE ESTE CUESTIONARIO</h3>
+                <p>
+                    La Resolución de 16 de enero de 2021, de la Consejería de Educación, Cultura, Deporte y Juventud,
+                    para el ingreso y accesos a los cuerpos de profesores de enseñanza secundaria; profesores técnicos
+                    de formación profesional; profesores de escuelas oficiales de idiomas; profesores de música y artes
+                    escénicas; y profesores de artes plásticas y diseño; y procedimiento para la adquisición de nuevas
+                    especialidades por los funcionarios de los mencionados cuerpos, indica en su apartado 12.4.2 que
+                    para la evaluación de los docentes funcionarios en prácticas la Inspección Técnica Educativa
+                    analizará dos dimensiones, así como una serie de subdimensiones.
+                </p>
+                <p>
+                    Este cuestionario permite la valoración del cumplimiento de las citadas dimensiones, siendo las
+                    puntuaciones que se van a otorgar las siguientes:
+                </p>
+
+                <h4>Dedicación al centro (10 puntos)</h4>
+                <ul>
+                    <li>Participación en los órganos colegiados y de coordinación docente, así como en iniciativas para
+                        mejorar
+                        la práctica docente y el trabajo en equipo (2 puntos).
+                    </li>
+                    <li>Colaboración y puesta en marcha de actividades extraescolares y de cualesquiera otras que
+                        dinamicen la
+                        vida del centro y contribuyan al aprovechamiento de los recursos del entorno (4 puntos).
+                    </li>
+                    <li>Atención a padres y alumnos y, en su caso, ejercicio de la tutoría (4 puntos).</li>
+                </ul>
+                <h4>Actividad docente dentro del aula (30 puntos)</h4>
+                <ul>
+                    <li>Preparación de la clase y de los materiales didácticos en el marco de las decisiones adoptadas
+                        en la
+                        programación (6 puntos).
+                    </li>
+                    <li>Utilización de una metodología de enseñanza adecuada para promover el aprendizaje significativo
+                        de los
+                        contenidos escolares (6 puntos).
+                    </li>
+                    <li>Procedimiento de evaluación de los aprendizajes e información sobre los mismos que se da a los
+                        alumnos y
+                        a sus familias (6 puntos).
+                    </li>
+                    <li>Utilización de medidas ordinarias y extraordinarias para atender a la diversidad de capacidades,
+                        intereses y motivaciones de los alumnos, especialmente de aquéllos con mayores dificultades de
+                        aprendizaje (6 puntos).
+                    </li>
+                    <li>Organización del trabajo en el aula para favorecer la adecuada marcha de la clase y la
+                        participación e
+                        implicación del alumnado en su proceso de aprendizaje (6 puntos).
+                    </li>
+                </ul>
+                <h4>Puntuación total y valoración positiva</h4>
+                <p>La suma total de las valoraciones da un total de 40 puntos. En todo caso, la valoración de la función
+                    docente será positiva cuando el docente alcance o supere la mitad de la puntuación total indicada
+                    para
+                    el conjunto de dimensiones (20 puntos).</p>
+                <p>Hay que indicar que el valor de una subdimensión no se reparte equitativamente entre los indicadores
+                    (cuestiones) que ésta abarca; el valor máximo de la subdimensión puede alcanzarse independientemente
+                    del
+                    número de sus indicadores que se consideren.</p>
+
+                <h4>Significado de las valoraciones en cada una de las preguntas</h4>
+                <ul>
+                    <li>0: Actitud negativa ante el aspecto evaluado</li>
+                    <li>1: No cumple en absoluto el aspecto evaluado</li>
+                    <li>2: No cumple suficientemente el aspecto evaluado</li>
+                    <li>3: Cumple suficientemente el aspecto evaluado</li>
+                    <li>4: Cumple bien el aspecto evaluado</li>
+                    <li>5: Cumple excelentemente el aspecto evaluado</li>
+                </ul>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            {% if actor == 'docente' %}
+                <p>Docente en prácticas a evaluar: <b>{{ efpa.docente.gauser.get_full_name }}</b></p>
+                <p>Vas a proceder a rellenar un cuestionario para evaluar tu periodo de prácticas.</p>
+            {% elif actor == 'director' %}
+                <p>Docente en prácticas a evaluar: <b>{{ efpa.docente.gauser.get_full_name }}</b></p>
+                <p>Vas a proceder a rellenar un cuestionario para evaluar el periodo de prácticas de
+                    {{ efpa.docente.gauser.get_full_name }} en calidad de director/a del
+                    {{ efpa.docente.ronda.entidad.name }}.</p>
+            {% elif actor == 'tutor' %}
+                <p>Docente en prácticas a evaluar: <b>{{ efpa.docente.gauser.get_full_name }}</b></p>
+                <p>Vas a proceder a rellenar un cuestionario para evaluar el periodo de prácticas de
+                    {{ efpa.docente.gauser.get_full_name }} en calidad de tutor/a del docente en
+                    practicas del centro {{ efpa.docente.ronda.entidad.name }}.</p>
+            {% elif actor == 'inspector' %}
+                <p>Docente en prácticas a evaluar: <b>{{ efpa.docente.gauser.get_full_name }}</b></p>
+                <p>Vas a proceder a rellenar un cuestionario para evaluar el periodo de prácticas de
+                    {{ efpa.docente.gauser.get_full_name }} en calidad de inspector/a del
+                    docente con destino actual en el centro {{ efpa.docente.ronda.entidad.name }}.</p>
+            {% endif %}
+        </div>
+        <hr>
+        <div id="div_cuestiones{{ efpa.id }}" class="row">
+            {% for efpr in efprs %}
+                <div style="background-color: #ffeeff;">
+                    {% ifchanged efpr.evalfunpractdimsubcue.evalfunpractdimsub.evalfunpractdim %}
+                        <h2 style="font-weight: bold;">{{ efpr.evalfunpractdimsubcue.evalfunpractdimsub.evalfunpractdim.dimension }}</h2>
+                    {% endifchanged %}
+                    {% ifchanged efpr.evalfunpractdimsubcue.evalfunpractdimsub %}
+                        <h3>{{ efpr.evalfunpractdimsubcue.evalfunpractdimsub.subdimension }}</h3>
+                    {% endifchanged %}
+                </div>
+                <hr>
+                <fieldset style="border: none;">
+                    <legend style="color:gray;">Pregunta {{ forloop.counter }}</legend>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <p>{% autoescape off %}{{ efpr.evalfunpractdimsubcue.pregunta }}{% endautoescape %}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="columns large-12" id="respuesta{{ efpr.id }}">
+                            <div class="row">
+                                <div class="columns large-12">
+                                    <table style="text-align: center;margin-left: auto; margin-right: auto;">
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                            <td>{{ 0 }}</td>
+                                            <td>{{ 1 }}</td>
+                                            <td>{{ 2 }}</td>
+                                            <td>{{ 3 }}</td>
+                                            <td>{{ 4 }}</td>
+                                            <td>{{ 5 }}</td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Actitud negativa</td>
+                                            <td><input type="radio" class="radio_efpr" data-efpr="{{ efpr.id }}"
+                                                       name="efpr{{ efpr.id }}"
+                                                    {{ efpr|respuesta:actor|checked_if_igual_a:0 }} value="0">
+                                            <td><input type="radio" class="radio_efpr" data-efpr="{{ efpr.id }}"
+                                                       name="efpr{{ efpr.id }}"
+                                                    {{ efpr|respuesta:actor|checked_if_igual_a:1 }} value="1">
+                                            <td><input type="radio" class="radio_efpr" data-efpr="{{ efpr.id }}"
+                                                       name="efpr{{ efpr.id }}"
+                                                    {{ efpr|respuesta:actor|checked_if_igual_a:2 }} value="2">
+                                            <td><input type="radio" class="radio_efpr" data-efpr="{{ efpr.id }}"
+                                                       name="efpr{{ efpr.id }}"
+                                                    {{ efpr|respuesta:actor|checked_if_igual_a:3 }} value="3">
+                                            <td><input type="radio" class="radio_efpr" data-efpr="{{ efpr.id }}"
+                                                       name="efpr{{ efpr.id }}"
+                                                    {{ efpr|respuesta:actor|checked_if_igual_a:4 }} value="4">
+                                            <td><input type="radio" class="radio_efpr" data-efpr="{{ efpr.id }}"
+                                                       name="efpr{{ efpr.id }}"
+                                                    {{ efpr|respuesta:actor|checked_if_igual_a:5 }} value="5">
+                                            </td>
+                                            <td>Cumple excelentemente</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            {% endfor %}
+        </div>
+        <hr>
+        {% if respondido %}
+            <div class="row">
+                <div class="columns large-12" style="text-align: center;">
+                    <p>Tus respuestas ya han sido enviadas a la Inspección Técnica Educativa.
+                        No obstante, dentro del plazo establecido para rellenar este cuestionario, puedes seguir
+                        modificando tus respuestas si lo consideras necesario. Las respuestas enviadas anteriormente se
+                        modificarán automáticamente y se trasladarán a la Inspección Técnica Educativa.</p>
+                    <a class="button secondary">Entregar cuestionario</a>
+                </div>
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="columns large-12" style="text-align: center;">
+                    <p>Si pulsas en "Entregar cuestionario", tus respuestas se enviarán a la Inspección Técnica
+                        Educativa.
+                        No obstante, dentro del plazo establecido para rellenar este cuestionario, podrás seguir
+                        modificando tus
+                        respuestas si lo consideras necesario.</p>
+                    <a class="button" id="terminar_efpa">Entregar cuestionario</a>
+                </div>
+            </div>
+        {% endif %}
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script type="text/javascript">
+
+        {# ########################################################################################### #}
+        {# Función en el caso de que se produzca un error #}
+        {# #}
+        {# ########################################################################################### #}
+
+        function show_error(data) {
+            show_mensajes({
+                'title': '<i class="fa fa-warning"></i> Se ha producido un error',
+                'texto': data.msg
+            });
+        }
+
+        recufunprac = "/recufunprac/{{ efpa.id }}/{{ actor }}/"
+
+        $('body').on('change', '.radio_efpr', function () {
+            var element = $(this);
+            var efpr = element.data('efpr');
+            var valor = element.val();
+            $.post(recufunprac,
+                {action: 'update_radio_efpr', efpr: efpr, valor: valor},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                        show_error(data);
+                    }
+                });
+        });
+
+        {# ########################################################################################### #}
+        {# Código necesario para generar Cerrar el formulario, generar PDF y salir #}
+        {#  go_seccion_anterior, go_seccion_siguiente  #}
+        {# ########################################################################################### #}
+
+        $('body').on('click', '.close_efpa', function (e) {
+            e.preventDefault();
+            $('body').css('opacity', 0.3);
+            location.href = '/mis_evalpract/'
+        });
+
+        {#$('body').on('click', '.genera_pdf', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    $('#action').val('genera_pdf');#}
+        {#    document.getElementById('{{ formname }}').submit();#}
+        {# });#}
+
+        $('body').on('click', '#terminar_efpa', function (e) {
+            e.preventDefault();
+            $.post(recufunprac,
+                {action: 'terminar_efpa', efpa:$('#efpa').val(), actor: $('#actor').val()},
+                function (data) {
+                    if (data.ok) {
+                        location.href = '/mis_evalpract/'
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                        show_error(data.msg);
+                    }
+                });
+        });
+
+        {# ########################################################################################### #}
+        {# Código necesario para ver el logo de Gobierno o el general de forma fija en el formulario #}
+        {#    #}
+        {# ########################################################################################### #}
+
+        setTimeout(function () {
+            var regex3 = /larioja/;
+            var url = window.location.href;
+            if (regex3.test(url)) {
+                $('#logo_general').hide();
+                $('#logo_gobierno').show();
+            } else {
+                $('#logo_general').show();
+                $('#logo_gobierno').hide();
+            }
+        }, 50);
+    </script>
+
+{% endblock %}

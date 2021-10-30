@@ -74,6 +74,9 @@ def get_el_value(gfsi, gformresponde):
     except:
         return ''
 
+@register.filter
+def respuesta(efpr, actor):
+    return getattr(efpr, actor)
 
 @register.filter
 def checked_if_igual_a(a, b):

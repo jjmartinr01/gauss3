@@ -355,6 +355,14 @@ class EvalFunPract(models.Model):  # Evaluación Funcionarios en Prácticas
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
     @property
+    def cuestiones(self):
+        return EvalFunPractDimSubCue.objects.filter(evalfunpractdimsub__evalfunpractdim__evalfunpract=self)
+
+    @property
+    def efpdscs(self):
+        return EvalFunPractDimSubCue.objects.filter(evalfunpractdimsub__evalfunpractdim__evalfunpract=self)
+
+    @property
     def num_dim(self):
         return self.evalfunpractdim_set.all().count()
 
@@ -414,7 +422,7 @@ class EvalFunPractDimSubCue(models.Model):  # Cuestion
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
     class Meta:
-        ordering = ['evalfunpractdimsub']
+        ordering = ['evalfunpractdimsub', 'pk']
 
     def __str__(self):
         return '%s -> ins: %s, doc:%s, tut:%s, dir:%s' % (self.pregunta[:50], self.responde_ins, self.responde_doc,
@@ -430,8 +438,17 @@ class ProcesoEvalFunPract(models.Model):
     fecha_max = models.DateField('Fecha final para rellenar', null=True, blank=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
+    @property
+    def is_activo(self):
+        hoy = now().date()
+        if (hoy >= self.fecha_min) and (hoy <= self.fecha_max):
+            return True
+        else:
+            return False
+
     def __str__(self):
         return '%s -> %s' % (self.nombre, self.evalfunpract)
+
 
 class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas Actores
     procesoevalfunpract = models.ForeignKey(ProcesoEvalFunPract, on_delete=models.CASCADE, null=True, blank=True)
@@ -446,6 +463,59 @@ class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas A
     respondido_tut = models.BooleanField('¿Este cuestionario está respondido por el tutor?', default=False)
     respondido_dir = models.BooleanField('¿Este cuestionario está respondido por el director?', default=False)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    def cuestiones(self, destinatario):
+        cs = self.procesoevalfunpract.evalfunpract.efpdscs
+        if destinatario == 'docente':
+            if self.docente_tutor and self.docente_jefe:
+                return cs.filter(models.Q(responde_doc_tutor=True) | models.Q(responde_doc_jefe=True)).distinct()
+            elif self.docente_tutor:
+                return cs.filter(responde_doc_tutor=True)
+            elif self.docente_jefe:
+                return cs.filter(responde_doc_jefe=True)
+            else:
+                return cs.filter(responde_doc=True)
+        elif destinatario == 'tutor':
+            return cs.filter(responde_tut=True)
+        elif destinatario == 'director':
+            return cs.filter(responde_dir=True)
+        elif destinatario == 'inspector':
+            return cs.filter(responde_ins=True)
+        else:
+            return EvalFunPractDimSubCue.objects.none()
+
+    def efprs(self, destinatario):
+        cs = self.cuestiones(destinatario)
+        efprs_id = []
+        for c in cs:
+            efpr, creado = EvalFunPractRes.objects.get_or_create(evalfunpractact=self, evalfunpractdimsubcue=c)
+            efprs_id.append(efpr.id)
+        return EvalFunPractRes.objects.filter(id__in=efprs_id)
+
+    def cal_efpr(self, efpr):
+        return efpr.calificacion
+
+    def cal_subdim(self, subdim):
+        subdim_efprs = self.efprs('docente').filter(evalfunpractdimsubcue__evalfunpractdimsub=subdim)
+        calificacion = 0
+        calificacion_maxima = 0
+        for subdim_efpr in subdim_efprs:
+            calificacion += self.cal_efpr(subdim_efpr)
+            calificacion_maxima += 5
+        return calificacion / calificacion_maxima * subdim.valor
+
+    def cal_dim(self, dim):
+        calificacion = 0
+        for subdim in dim.evalfunpractdimsub_set.all():
+            calificacion += self.cal_subdim(subdim)
+        return calificacion
+
+    @property
+    def cal_total(self):
+        calificacion = 0
+        for dim in self.procesoevalfunpract.evalfunpract.evalfunpractdim_set.all():
+            calificacion += self.cal_dim(dim)
+        return round(calificacion, 2)
 
     class Meta:
         ordering = ['procesoevalfunpract', 'docente__ronda__entidad']
@@ -471,11 +541,33 @@ class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas A
 class EvalFunPractRes(models.Model):  # Evaluación Funcionarios en Prácticas Respuestas
     evalfunpractact = models.ForeignKey(EvalFunPractAct, on_delete=models.CASCADE)
     evalfunpractdimsubcue = models.ForeignKey(EvalFunPractDimSubCue, on_delete=models.CASCADE)
-    respuesta_ins = models.IntegerField('Respuesta del inspector', null=True, blank=True, default=0)
-    respuesta_doc = models.IntegerField('Respuesta del docente', null=True, blank=True, default=0)
-    respuesta_tut = models.IntegerField('Respuesta del tutor', null=True, blank=True, default=0)
-    respuesta_dir = models.IntegerField('Respuesta del director', null=True, blank=True, default=0)
+    respuesta_ins = models.IntegerField('Respuesta del inspector', null=True, blank=True, default=-1)
+    respuesta_doc = models.IntegerField('Respuesta del docente', null=True, blank=True, default=-1)
+    respuesta_tut = models.IntegerField('Respuesta del tutor', null=True, blank=True, default=-1)
+    respuesta_dir = models.IntegerField('Respuesta del director', null=True, blank=True, default=-1)
+    inspector = models.IntegerField('Respuesta del inspector', null=True, blank=True, default=-1)
+    docente = models.IntegerField('Respuesta del docente', null=True, blank=True, default=-1)
+    tutor = models.IntegerField('Respuesta del tutor', null=True, blank=True, default=-1)
+    director = models.IntegerField('Respuesta del director', null=True, blank=True, default=-1)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    @property
+    def calificacion(self):
+        num_actores = 0  # Partimos de la suposición de que nadie ha respondido
+        cal = 0  # La calificación inicial es 0
+        if self.inspector > -1:
+            num_actores += 1
+            cal += self.inspector
+        if self.docente > -1:
+            num_actores += 1
+            cal += self.docente
+        if self.tutor > -1:
+            num_actores += 1
+            cal += self.tutor
+        if self.director > -1:
+            num_actores += 1
+            cal += self.director
+        return cal / num_actores
 
     class Meta:
         ordering = ['evalfunpractact', 'evalfunpractdimsubcue']

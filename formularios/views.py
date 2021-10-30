@@ -1149,22 +1149,28 @@ def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_
                     wb = xlrd.open_workbook(file_contents=fichero.read())
                     sheet = wb.sheet_by_index(0)
                     for row_index in range(1, sheet.nrows):
+                        doc, dir, tut, insp = False, False, False, False
                         try:
                             code_centro = int(sheet.cell_value(row_index, 1))
                             entidad_funcionario = Entidad.objects.get(code=code_centro)
-                            docente = Gauser_extra.objects.get(gauser__dni=sheet.cell_value(row_index, 3),
-                                                                    ronda=entidad_funcionario.ronda)
-                            director = Gauser_extra.objects.get(gauser__dni=sheet.cell_value(row_index, 5),
+                            docente = Gauser_extra.objects.get(gauser__dni=str(sheet.cell_value(row_index, 3)).strip(),
                                                                ronda=entidad_funcionario.ronda)
-                            tutor = Gauser_extra.objects.get(gauser__dni=sheet.cell_value(row_index, 7),
-                                                               ronda=entidad_funcionario.ronda)
+                            doc = True
+                            director = Gauser_extra.objects.get(gauser__dni=str(sheet.cell_value(row_index, 5)).strip(),
+                                                                ronda=entidad_funcionario.ronda)
+                            dir = True
+                            tutor = Gauser_extra.objects.get(gauser__dni=str(sheet.cell_value(row_index, 7)).strip(),
+                                                             ronda=entidad_funcionario.ronda)
+                            tut = True
                             entidad_inspeccion = Entidad.objects.get(name__icontains='inspecc')
                             # entidad_inspeccion = entidad_funcionario
-                            inspector = Gauser_extra.objects.get(gauser__dni=sheet.cell_value(row_index, 9),
-                                                                 ronda=entidad_inspeccion.ronda)
+                            inspector = Gauser_extra.objects.get(
+                                gauser__dni=str(sheet.cell_value(row_index, 9)).strip(),
+                                ronda=entidad_inspeccion.ronda)
+                            insp = True
                             efpa, c = EvalFunPractAct.objects.get_or_create(procesoevalfunpract=pefp,
-                                                                  inspector=inspector, tutor=tutor,
-                                                                  director=director, docente=docente)
+                                                                            inspector=inspector, tutor=tutor,
+                                                                            director=director, docente=docente)
                             if c:
                                 docente.permisos.add(*permisos)
                                 director.permisos.add(*permisos)
@@ -1173,7 +1179,11 @@ def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_
                         except Exception as msg:
                             errores[row_index] = {'msg': str(msg), 'fila': row_index,
                                                   'centro': sheet.cell_value(row_index, 1),
-                                                  'docente': sheet.cell_value(row_index, 3)}
+                                                  'docente': str(sheet.cell_value(row_index, 3)).strip(),
+                                                  'tutor': str(sheet.cell_value(row_index, 7)).strip(),
+                                                  'inspector': str(sheet.cell_value(row_index, 9)).strip(),
+                                                  'director': str(sheet.cell_value(row_index, 5)).strip(),
+                                                  'doc': doc, 'dir': dir, 'tut': tut, 'insp': insp}
                 html = render_to_string("procesos_evaluacion_funcpract_accordion_content_destinatarios.html",
                                         {'pefp': pefp})
                 return JsonResponse({'ok': True, 'errores': errores, 'html': html, 'pefp': pefp.id})
@@ -1196,6 +1206,40 @@ def mis_evalpract(request):  # mis_evaluaciones_prácticas
     g_e = request.session["gauser_extra"]
     fecha_min = datetime.now().date() + timedelta(days=60)
     fecha_max = datetime.now().date() - timedelta(days=200)
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'open_accordion':
+            try:
+                pefp = ProcesoEvalFunPract.objects.get(id=request.POST['id'], fecha_min__lt=fecha_min,
+                                                       fecha_max__gt=fecha_max)
+                evfpas_ins = pefp.evalfunpractact_set.filter(inspector__gauser=g_e.gauser)
+                evfpas_tut = pefp.evalfunpractact_set.filter(tutor__gauser=g_e.gauser)
+                evfpas_doc = pefp.evalfunpractact_set.filter(docente__gauser=g_e.gauser)
+                evfpas_dir = pefp.evalfunpractact_set.filter(director__gauser=g_e.gauser)
+                html = render_to_string('mis_evalpract_accordion_content.html',
+                                        {'pefp': pefp, 'evfpas_ins': evfpas_ins, 'evfpas_tut': evfpas_tut, 'g_e': g_e,
+                                         'evfpas_doc': evfpas_doc, 'evfpas_dir': evfpas_dir})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'perfil_docente':
+            try:
+                efpa = EvalFunPractAct.objects.get(id=request.POST['efpa'])
+                if efpa.director == g_e or efpa.inspector == g_e:
+                    respuesta = {'true': True, 'false': False}
+                    efpa.docente_jefe = respuesta[request.POST['docente_jefe']]
+                    efpa.docente_tutor = respuesta[request.POST['docente_tutor']]
+                    efpa.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_cal_total':
+            try:
+                efpa = EvalFunPractAct.objects.get(id=request.POST['efpa'])
+                return JsonResponse({'valor': efpa.cal_total})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+
+
     evfpas_activas = EvalFunPractAct.objects.filter(procesoevalfunpract__fecha_min__lt=fecha_min,
                                                     procesoevalfunpract__fecha_max__gt=fecha_max)
     filtro_usuarios = Q(inspector__gauser=g_e.gauser) | Q(tutor__gauser=g_e.gauser) | Q(
@@ -1203,10 +1247,6 @@ def mis_evalpract(request):  # mis_evaluaciones_prácticas
     evfpas = evfpas_activas.filter(filtro_usuarios)
     pefps = ProcesoEvalFunPract.objects.filter(
         id__in=evfpas.values_list('procesoevalfunpract__id', flat=True)).distinct()
-    evfpas_ins = evfpas.filter(inspector__gauser=g_e.gauser)
-    evfpas_tut = evfpas.filter(tutor__gauser=g_e.gauser)
-    evfpas_doc = evfpas.filter(docente__gauser=g_e.gauser)
-    evfpas_dir = evfpas.filter(director__gauser=g_e.gauser)
     return render(request, "mis_evalpract.html",
                   {
                       'iconos':
@@ -1215,13 +1255,133 @@ def mis_evalpract(request):  # mis_evaluaciones_prácticas
                            ),
                       'formname': 'procesos_evaluacion_funcpract',
                       'pefps': pefps,
-                      'evfpas_ins': evfpas_ins,
-                      'evfpas_tut': evfpas_tut,
-                      'evfpas_doc': evfpas_doc,
-                      'evfpas_dir': evfpas_dir,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
 
-def recufunprac(request):  # rellenar_cuestionario_funcionario_practicas
-    pass
+def recufunprac(request, id, actor):  # rellenar_cuestionario_funcionario_practicas
+    g_e = request.session["gauser_extra"]
+    if request.method == 'POST' and request.is_ajax():
+        if request.POST['action'] == 'update_radio_efpr':
+            try:
+                efpr = EvalFunPractRes.objects.get(id=request.POST['efpr'])
+                ge_actor = getattr(efpr.evalfunpractact, actor)
+                if ge_actor.gauser == g_e.gauser:
+                    setattr(efpr, actor, int(request.POST['valor']))
+                    efpr.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos para modificar este cuestionario.'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'terminar_efpa':
+            try:
+                efpa = EvalFunPractAct.objects.get(id=request.POST['efpa'])
+                if actor == 'docente':
+                    efpa.respondido_doc = True
+                elif actor == 'director':
+                    efpa.respondido_dir = True
+                elif actor == 'inspector':
+                    efpa.respondido_ins = True
+                elif actor == 'tutor':
+                    efpa.respondido_tut = True
+                efpa.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+    try:
+        filtro_fechas = Q(procesoevalfunpract__fecha_min__lt=datetime.now().date() + timedelta(days=60)) & Q(
+            procesoevalfunpract__fecha_max__gt=datetime.now().date() - timedelta(days=200))
+        efpa = EvalFunPractAct.objects.get(Q(id=id), filtro_fechas)
+        efprs = EvalFunPractRes.objects.none()
+        respondido = False
+        if getattr(efpa, actor) == g_e:
+            efprs = efpa.efprs(actor)
+            actores = {'docente': 'respondido_doc', 'inspector': 'respondido_ins', 'director': 'respondido_dir',
+                       'tutor': 'respondido_tut'}
+            respondido = getattr(efpa, actores[actor])
+        return render(request, "recufunprac.html",
+                      {
+                          'formname': 'recufunprac',
+                          'efpa': efpa,
+                          'efprs': efprs,
+                          'actor': actor,
+                          'respondido': respondido
+                      })
+    except Exception as msg:
+        sleep(3)
+        return render(request, "recufunprac_no_existe.html", {'error': True, 'msg': str(msg)})
+
+
+errores = {"2": {"msg": "Gauser_extra matching query does not exist.",
+                 "fila": 2, "centro": 26003088.0, "docente": "16588713D"},
+           "9": {"msg": "Gauser_extra matching query does not exist.",
+                 "fila": 9, "centro": 26003088.0, "docente": "16573619A"},
+           "10": {"msg": "Gauser_extra matching query does not exist.",
+                  "fila": 10, "centro": 26008219.0, "docente": "16557167L"},
+           "11": {"msg": "Gauser_extra matching query does not exist.",
+                  "fila": 11, "centro": 26008219.0, "docente": "16810280V"},
+           "12": {"msg": "Gauser_extra matching query does not exist.",
+                  "fila": 12, "centro": 26008219.0, "docente": "16545913N"},
+           "14": {"msg": "Gauser_extra matching query does not exist.", "fila": 14, "centro": 26008219.0,
+                  "docente": "72891277E"},
+           "15": {"msg": "Gauser_extra matching query does not exist.", "fila": 15, "centro": 26008219.0,
+                  "docente": "30236936D"},
+           "16": {"msg": "Gauser_extra matching query does not exist.", "fila": 16, "centro": 26008219.0,
+                  "docente": "72798036T"},
+           "17": {"msg": "Gauser_extra matching query does not exist.", "fila": 17, "centro": 26008219.0,
+                  "docente": "72278096S"},
+           "18": {"msg": "Gauser_extra matching query does not exist.", "fila": 18, "centro": 26008219.0,
+                  "docente": "16596736M"},
+           "33": {"msg": "Gauser_extra matching query does not exist.", "fila": 33, "centro": "26000579",
+                  "docente": "16585145Y"},
+           "39": {"msg": "Gauser_extra matching query does not exist.", "fila": 39, "centro": 26001134.0,
+                  "docente": "16554732E"},
+           "41": {"msg": "Gauser_extra matching query does not exist.", "fila": 41, "centro": 26001134.0,
+                  "docente": "16557943J"},
+           "51": {"msg": "Gauser_extra matching query does not exist.", "fila": 51, "centro": "26001559",
+                  "docente": "73220500T"},
+           "58": {"msg": "Gauser_extra matching query does not exist.", "fila": 58, "centro": "26001560",
+                  "docente": "08113180E"},
+           "64": {"msg": "Gauser_extra matching query does not exist.", "fila": 64, "centro": "26001560",
+                  "docente": "32787439L"},
+           "65": {"msg": "Gauser_extra matching query does not exist.", "fila": 65, "centro": "26001560",
+                  "docente": "16059799A"},
+           "68": {"msg": "Gauser_extra matching query does not exist.", "fila": 68, "centro": "26001596",
+                  "docente": "02640625H"},
+           "78": {"msg": "Gauser_extra matching query does not exist.", "fila": 78, "centro": "26001596",
+                  "docente": "16611860H"},
+           "80": {"msg": "Gauser_extra matching query does not exist.", "fila": 80, "centro": "26001638",
+                  "docente": "16550467N"},
+           "81": {"msg": "Gauser_extra matching query does not exist.", "fila": 81, "centro": "26001638",
+                  "docente": "13152390R"},
+           "93": {"msg": "Gauser_extra matching query does not exist.", "fila": 93, "centro": "26001638",
+                  "docente": "16604192D\t"},
+           "94": {"msg": "Gauser_extra matching query does not exist.", "fila": 94, "centro": "26001845",
+                  "docente": "44429735Z"},
+           "120": {"msg": "Gauser_extra matching query does not exist.", "fila": 120, "centro": "26003091",
+                   "docente": "18088578K"},
+           "121": {"msg": "Gauser_extra matching query does not exist.", "fila": 121, "centro": "26003091",
+                   "docente": "16583196N"},
+           "122": {"msg": "Gauser_extra matching query does not exist.", "fila": 122, "centro": "26003091",
+                   "docente": "16611358E"},
+           "123": {"msg": "Gauser_extra matching query does not exist.", "fila": 123, "centro": "26003091",
+                   "docente": "44675337E"},
+           "124": {"msg": "Gauser_extra matching query does not exist.", "fila": 124, "centro": "26003091",
+                   "docente": "X5831086B"},
+           "125": {"msg": "Gauser_extra matching query does not exist.", "fila": 125, "centro": "26003209",
+                   "docente": "70904315F"},
+           "136": {"msg": "Gauser_extra matching query does not exist.", "fila": 136, "centro": "26003441",
+                   "docente": "16595254H"},
+           "140": {"msg": "Gauser_extra matching query does not exist.", "fila": 140, "centro": "26003507",
+                   "docente": "72786358Y"},
+           "154": {"msg": "Gauser_extra matching query does not exist.", "fila": 154, "centro": "26008475",
+                   "docente": "72778155Z"},
+           "158": {"msg": "Gauser_extra matching query does not exist.", "fila": 158, "centro": "26008475",
+                   "docente": "75788540K"},
+           "159": {"msg": "Gauser_extra matching query does not exist.", "fila": 159, "centro": "26008773",
+                   "docente": "16618555C"},
+           "173": {"msg": "Gauser_extra matching query does not exist.", "fila": 173, "centro": "26700073",
+                   "docente": "\t71949455G"},
+           "176": {"msg": "Gauser_extra matching query does not exist.", "fila": 176, "centro": "26700073",
+                   "docente": "\t16603762Q"}}

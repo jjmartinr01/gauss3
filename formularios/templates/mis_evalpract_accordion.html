@@ -13,7 +13,7 @@
                         {{ pefp.nombre }}
                     {% endif %}
                 </b>
-                {% if not pefp.fecha_min and not pefp.fecha_max %}
+                {% if pefp.fecha_min and pefp.fecha_max %}
                     <span id="fecha_min_rellenado{{ pefp.id }}" style="color:green;"
                           title="Fecha en la que será posible comenzar a rellenar el formulario.">
                         {% if pefp.fecha_min %}
@@ -33,16 +33,6 @@
                     </span>
                 {% endif %}
                 (<span id="fecha{{ pefp.id }}">Últ. modificación: {{ pefp.modificado|date:"d-m-Y" }}</span>)
-                {% if pefp.num_respuestas %}
-                    {% if pefp.num_respuestas == 1 %}
-                        -- <span id="respuestas{{ pefp.id }}">1 respuesta recibida</span>
-                    {% else %}
-                        -- <span id="respuestas{{ pefp.id }}">{{ pefp.num_respuestas }} respuestas recibidas</span>
-                    {% endif %}
-                    {% if buscadas %}
-                        <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
-                    {% endif %}
-                {% endif %}
             </a>
 
             <div id="panel{{ pefp.id }}" class="content accordion-pefp" data-id="{{ pefp.id }}">

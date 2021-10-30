@@ -1,0 +1,157 @@
+{% load entidades_extras %}
+{% load formularios_extras %}
+
+{#<div class="row">#}
+{#    <div class="columns large-12">#}
+{#        <ul class="button-group right">#}
+{#            {% if pefp.g_e.gauser == g_e.gauser or g_e|has_permiso:'borra_pefps' %}#}
+{#                <li><a class="button alert del_pefp" data-pefp="{{ pefp.id }}">#}
+{#                    <i class="fa fa-trash-o"></i> Borrar</a></li>#}
+{#            {% else %}#}
+{#                <li><a class="button secondary" title="No tienes permisos para borrar el proceso de evaluación">#}
+{#                    <i class="fa fa-trash-o"></i> Borrar</a></li>#}
+{#            {% endif %}#}
+{#            <li><a class="button excel_pefp" data-id="{{ pefp.id }}"#}
+{#                   title="EXCEL con los datos enviados por los usuarios"><i class="fa fa-file-excel-o"></i> Excel</a>#}
+{#            </li>#}
+{#            <li><a class="button pdf_pefp" data-id="{{ pefp.id }}"#}
+{#                   title="PDF con los datos enviados por los usuarios"><i class="fa fa-file-pdf-o"></i> PDF</a>#}
+{#            </li>#}
+{#            <li><a class="button" data-id="{{ pefp.id }}"#}
+{#                   href="/ver_resultados/{{ pefp.id }}/{{ pefp.identificador }}/"#}
+{#                   target="_blank" title="Resumen de las respuestas"><i class="fa fa-bar-chart"></i> Respuestas</a>#}
+{#            </li>#}
+{#        </ul>#}
+{#    </div>#}
+{#</div>#}
+
+<br>
+<div class="row">
+    <div class="columns large-12">
+        <b>Los cuestionarios asociados a este proceso de evaluación deben rellenarse entre el
+            {{ pefp.fecha_min|date:'d-m-Y' }} y el {{ pefp.fecha_max|date:'d-m-Y' }}</b>
+    </div>
+</div>
+<br>
+
+<p>&nbsp;</p>
+
+<div class="row">
+    <div class="columns large-10">
+        <label><b>Personas destinadas a rellenar este formulario:</b></label>
+    </div>
+    <div class="columns large-2">
+        <label title="Número total de docentes en prácticas que deben ser evaluados">
+            ({{ pefp.evalfunpractact_set.all|length }} docentes)
+        </label>
+    </div>
+</div>
+
+<div class="row" style="padding-bottom: 2px;">
+    <div class="columns large-12" id="div_usuarios_destinatarios{{ pefp.id }}">
+        <table style="width: 100%;">
+            <thead>
+            <tr>
+                <th>Docente</th>
+                <th>Tutor/a</th>
+                <th>Director/a</th>
+                <th>Inspector/a</th>
+                <th>Valoración</th>
+            </tr>
+            </thead>
+            <tbody id="tbody_pefp_destinatarios{{ pefp.id }}">
+            {% for efpa in pefp.evalfunpractact_set.all %}
+                <tr id="pefpdestinatario{{ efpa.id }}" title="{{ efpa.docente.ronda.entidad.name }}">
+                    <td>
+                        {{ efpa.docente.gauser.last_name }}, {{ efpa.docente.gauser.first_name }}
+                        {% if efpa.respondido_doc %}<i class="fa fa-check" style="color:green;"></i> {% endif %}
+                        {% if efpa.director == g_e or efpa.inspector == g_e %}<br>
+                            <span title="Selecciona si el docente es tutor de un grupo de alumnos">
+                            <input type="checkbox" data-efpa="{{ efpa.id }}" class="perfil_docente"
+                                   id="docente_jefe{{ efpa.id }}" {% if efpa.docente_jefe %}checked{% endif %}>
+                                <span style="color:#ff7722">Jefe/Coordinador</span>
+                            </span>
+                            <span title="Selecciona si el docente es jefe de departamento o coordinador de ciclo">
+                            <input type="checkbox" data-efpa="{{ efpa.id }}" class="perfil_docente"
+                                   id="docente_tutor{{ efpa.id }}" {% if efpa.docente_tutor %}checked{% endif %}>
+                                <span style="color:#ff7722">Tutor</span>
+                            </span>
+                        {% elif efpa.docente == g_e %}<br>
+                            <a class="rellenar_cuestionario" data-efpa="{{ efpa.id }}" data-actor="docente"
+                               title="Rellenar el cuestionario">
+                                <span class="label"><i class="fa fa-pencil"></i> </span>
+                            </a>
+                        {% else %}<br>
+                            <span title="Rellenar el cuestionario">
+                                <span class="label secondary"><i class="fa fa-pencil"></i> </span>
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ efpa.tutor.gauser.last_name }}, {{ efpa.tutor.gauser.first_name }}
+                        {% if efpa.respondido_tut %}<i class="fa fa-check" style="color:green;"></i> {% endif %}
+                        {% if efpa.docente == g_e %}<br>
+                            <a class="rellenar_cuestionario" data-efpa="{{ efpa.id }}" data-actor="tutor"
+                               title="Rellenar el cuestionario">
+                                <span class="label"><i class="fa fa-pencil"></i> </span>
+                            </a>
+                        {% else %}<br>
+                            <span title="Rellenar el cuestionario">
+                                <span class="label secondary"><i class="fa fa-pencil"></i> </span>
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ efpa.director.gauser.last_name }}, {{ efpa.director.gauser.first_name }}
+                        {% if efpa.respondido_dir %}<i class="fa fa-check" style="color:green;"></i> {% endif %}
+                        {% if efpa.director == g_e %}<br>
+                            <a class="rellenar_cuestionario" data-efpa="{{ efpa.id }}" data-actor="director"
+                               title="Rellenar el cuestionario">
+                                <span class="label"><i class="fa fa-pencil"></i> </span>
+                            </a>
+                        {% else %}<br>
+                            <span title="Rellenar el cuestionario">
+                                <span class="label secondary"><i class="fa fa-pencil"></i> </span>
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ efpa.inspector.gauser.last_name }}, {{ efpa.inspector.gauser.first_name }}
+                        {% if efpa.respondido_ins %}<i class="fa fa-check" style="color:green;"></i> {% endif %}
+                        {% if efpa.inspector == g_e %}<br>
+                            <a class="rellenar_cuestionario" data-efpa="{{ efpa.id }}" data-actor="inspector"
+                               title="Rellenar el cuestionario">
+                                <span class="label"><i class="fa fa-pencil"></i> </span>
+                            </a>
+                            <a class="informe_cuestionario" data-efpa="{{ efpa.id }}" title="Generar informe">
+                                <span class="label"><i class="fa fa-file-text-o"></i> </span>
+                            </a>
+                        {% else %}<br>
+                            <span title="Rellenar el cuestionario">
+                                <span class="label secondary"><i class="fa fa-pencil"></i> </span>
+                            </span>
+                            <span title="Generar informe">
+                                <span class="label secondary"><i class="fa fa-file-text-o"></i> </span>
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td id="cal_total{{ efpa.id }}" style="text-align: center;">
+                        <i class="fa fa-circle-o-notch fa-spin fa-fw"></i>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    setTimeout(function () {
+        {% for efpa in pefp.evalfunpractact_set.all %}
+            $.post("/mis_evalpract/", {action: 'update_cal_total', efpa: {{ efpa.id }}},
+                function (data) {
+                    $('#cal_total{{ efpa.id }}').html(data.valor)
+                });
+        {% endfor %}
+    }, 200);
+</script>

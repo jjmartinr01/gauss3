@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html style="overflow:hidden">
+<head>
+    <title>GAUSS - No existe el cuestionario</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" type="image/x-icon" href="/static/images/favicon.png">
+    <link rel="stylesheet" href="/static/css/gauss_inicio.css" type="text/css">
+</head>
+
+<body class="noacceso" style="text-align:center;">
+<h1>El cuestionario solicitado no existe o no tienes acceso</h1>
+<img style="padding-top:100px;" src="/static/images/logo_gauss_acceso.png" width="200"/>
+{% if error %}
+    <h3>Se ha producido un rechazo al tratar de acceder al cuestionario solicitado.</h3>
+    <h3>Por favor, informa al autor del formulario si consideras que este mensaje es un error.</h3>
+{% else %}
+    <META HTTP-EQUIV="Refresh" Content="5; URL=/">
+{% endif %}
+</body>
+</html>
