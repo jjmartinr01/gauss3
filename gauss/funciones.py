@@ -231,7 +231,7 @@ def html_to_pdf_dce(html, docconf, media, filename=''):
 
 
 # Generador de contraseñas
-def pass_generator(size=6, chars=string.ascii_letters + string.digits):
+def pass_generator(size=9, chars=string.ascii_letters + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
 # Obtención de los usuarios de la entidad que no están de baja:

@@ -75,6 +75,34 @@ def recarga_captcha(request):
 ##########################################################################
 ###############  FUNCIONES RELACIONADAS CON USUARIO GAUSS
 @gauss_required
+def carga_docentes_general(request):
+    #Esta función carga los docentes de los centros a través del archivo xls obtenido de:
+    # Racima -> Gestión -> Seguimiento -> Catálogo de consultas -> Módulo: Empleados -> Consulta: Plantillas orgánicas
+    g_e = request.session['gauser_extra']
+    if g_e.gauser.username == 'gauss':
+        if request.method == 'POST':
+            action = request.POST['action']
+            if action == 'carga_masiva_docentes_racima':
+                if 'excel' in request.FILES['file_masivo'].content_type:
+                    carga = CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo'], tipo='DOCENTES_RACIMA')
+                    # from entidades.tasks import carga_masiva_tipo_DOCENTES_RACIMA
+                    # carga_masiva_tipo_DOCENTES_RACIMA(carga)
+                    carga_masiva_from_excel.apply_async(expires=300)
+                    crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+            else:
+                crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.')
+
+    return render(request, "carga_masiva_docentes_racima.html",
+                  {
+                      'iconos': ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
+                                  'title': 'Subir el archivo a GAUSS',
+                                  'permiso': 'acceso_carga_masiva'}, {}),
+                      'formname': 'carga_masiva_docentes_racima',
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+
+@gauss_required
 def borrar_entidades(request):
     g_e = request.session['gauser_extra']
     if g_e.gauser.username == 'gauss':

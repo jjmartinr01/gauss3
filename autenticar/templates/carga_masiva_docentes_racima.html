@@ -1,0 +1,64 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Carga masiva de docentes a través de Racima</strong>
+            </h4>
+        </div>
+
+        {% if request.session.gauser_extra|has_permiso:'carga_masiva_racima' %}
+            <div class="panel callout">
+                <input type="hidden" name="action" value="carga_masiva_docentes_racima">
+                <div class="row">
+                    <div class="large-12 columns">
+                        <p>Este formulario sirve para un archivo xls obtenido de Racima con los datos de todos
+                            los docentes de todos los centros educativos.</p>
+                        <p style="font-weight: bold;">Este archivo se obtiene de:</p>
+                        <p>Racima <i class="fa fa-long-arrow-right"></i> Gestión
+                            <i class="fa fa-long-arrow-right"></i> Seguimiento
+                            <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                            <i class="fa fa-long-arrow-right"></i>Módulo: Empleados
+                            <i class="fa fa-long-arrow-right"></i>Consulta: Plantillas orgáncias en centros
+                            <i class="fa fa-long-arrow-right"></i>Seleccionar un centro o todos ellos
+                            <i class="fa fa-long-arrow-right"></i> Exportar datos (XLS)</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="large-4 columns">
+                        <b>Archivo xls (Racima):</b>
+                    </div>
+                    <div class="large-8 columns">
+                        <input type="file" name="file_masivo" id="file_masivo"/></strong>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </form>
+
+{% endblock %}
+
+
+{% block final %}
+    <script>
+
+        habilita(['s_check']);
+        $('#check_sign').click(function (e) {
+            e.preventDefault();
+            if ($('#file_masivo').val()) {
+                document.getElementById("{{ formname }}").submit();
+            } else {
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> No has cargado un archivo', texto: 'Para ' +
+                        'subir un archivo primero debes cargarlo pulsando en "Examinar..."'
+                })
+            }
+        });
+
+
+    </script>
+{% endblock %}

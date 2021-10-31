@@ -25,4 +25,5 @@ urlpatterns = [
     path('logincas/', views.logincas),
     path('getloginlink/<int:entidad_code>/<str:usuario>/<str:passusuario>/', views.getloginlink),
     path('loginlink/<str:id>/<str:token>/', views.loginlink),
+    path('carga_docentes_general/', views.carga_docentes_general),
 ]

@@ -4,7 +4,7 @@
 {% endif %}
 {% for ci in cis %}
     <div class="row">
-        <div class="columns large-5"><label>Centro:</label><b>{{ ci.centro.name }}</b> ({{ ci.centro.localidad }})</div>
+        <div class="columns large-5"><label>Centro: {{ ci.centro.code }}</label><b>{{ ci.centro.name }}</b> ({{ ci.centro.localidad }})</div>
         <div class="columns large-3"><label>Zona asignada:
             <select name="zona{{ ci.id }}" id="texto_zonai{{ ci.id }}"
                     class="campo" data-campo="zonai" data-ci="{{ ci.id }}">

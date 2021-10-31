@@ -383,6 +383,7 @@
             formData.append('action', 'upload_archivo_xhr');
             formData.append('pefp', id);
             formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            $('#ajax-loader').show();
             var xhr = new XMLHttpRequest();
             {#xhr.upload.addEventListener("progress", updateProgress, false);#}
             xhr.onload = function () {
@@ -392,24 +393,9 @@
                         {#var b = xhr.responseText;#}
                         var data = JSON.parse(xhr.responseText);
                         $('#div_usuarios_destinatarios' + data.pefp).html(data.html);
-                        {#$(".select_destinatario_gform").select2(#}
-                        {#    conf_select2({#}
-                        {#        'url': '/selectgcs_organization/',#}
-                        {#        'gcs': 'gcs',#}
-                        {#        'format_g': '{0}, {1}',#}
-                        {#        'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'#}
-                        {#    })#}
-                        {# );#}
-                        {#$(".select_corrector_gform").select2(#}
-                        {#    conf_select2({#}
-                        {#        'url': '/selectgcs_organization/',#}
-                        {#        'gcs': 'gcs',#}
-                        {#        'format_g': '{0}, {1}',#}
-                        {#        'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'#}
-                        {#    })#}
-                        {# );#}
                         $('#span_spin').hide();
                         $('#span_porcentage').hide();
+                        $('#ajax-loader').hide();
                     }
                 }
             };

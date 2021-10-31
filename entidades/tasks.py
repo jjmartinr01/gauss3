@@ -5,18 +5,21 @@ import string
 import xlrd
 from difflib import get_close_matches
 from celery import shared_task
+from django.utils.text import slugify
 from django.utils.timezone import timedelta, datetime, now
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils.encoding import smart_text
 from estudios.models import Grupo, Gauser_extra_estudios, Materia, Matricula
 from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva, Entidad, EntidadExtra, \
-    EntidadExtraExpediente, EntidadExtraExpedienteOferta, Ronda, Menu
+    EntidadExtraExpediente, EntidadExtraExpedienteOferta, Ronda, Menu, GE_extra_field
 from entidades.menus_entidades import Menus_Centro_Educativo
 from autenticar.models import Gauser, Permiso, Menu_default
 from gauss.constantes import PROVINCIAS, CODE_CONTENEDOR
 from bancos.views import asocia_banco_ge
 from mensajes.models import Aviso
+from gauss.funciones import pass_generator
+from django.http import HttpResponse, JsonResponse
 
 logger = logging.getLogger('django')
 
@@ -572,6 +575,61 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
             g_e_entidad.permisos.add(*permisos_director)
 
 
+def carga_masiva_tipo_DOCENTES_RACIMA(carga):
+    gauss = Gauser.objects.get(username='gauss')
+    errores = {}
+    f = carga.fichero.read()
+    book = xlrd.open_workbook(file_contents=f)
+    sheet = book.sheet_by_index(0)
+    # Get the keys from line 5 of excel file:
+    dict_names = {}
+    for col_index in range(sheet.ncols):
+        dict_names[sheet.cell(4, col_index).value] = col_index
+    for row_index in range(5, sheet.nrows):
+        try:
+            code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
+            entidad = Entidad.objects.get(code=code_entidad)
+            try:
+                cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
+            except:
+                cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_docente', borrable=False, cargo='Docente')
+            dni = str(sheet.cell(row_index, dict_names['DNI']).value).strip()
+            nombre = sheet.cell(row_index, dict_names['Nombre docente']).value
+            apellidos = sheet.cell(row_index, dict_names['Apellidos docente']).value
+            email = sheet.cell(row_index, dict_names['Correo-e']).value
+            try:
+                try:
+                    gauser = Gauser.objects.get(dni=dni)
+                    gauser.email = email
+                except:
+                    gauser = Gauser.objects.get(email=email)
+            except:
+                try:
+                    gauser = Gauser.objects.create_user(email.split('@')[0], email=email, last_login=now(),
+                                                        password=pass_generator(size=9))
+                except:
+                    usuario = crear_nombre_usuario(nombre, apellidos)
+                    gauser = Gauser.objects.create_user(usuario, email=email, last_login=now(),
+                                                        password=pass_generator(size=9))
+            if 'larioja.edu.es' in email.split('@')[1]:
+                gauser.username = email.split('@')[0]
+            gauser.first_name = nombre
+            gauser.last_name = apellidos
+            gauser.dni = dni
+            gauser.save()
+            gauser_extra = Gauser_extra.objects.get_or_create(ronda=entidad.ronda, gauser=gauser)
+            gauser_extra.clave_ex = str(sheet.cell(row_index, dict_names['X_DOCENTE']).value).strip()
+            gauser_extra.activo = True
+            gauser_extra.puesto = str(sheet.cell(row_index, dict_names['Puesto']).value).strip()
+            gauser_extra.tipo_personal = str(sheet.cell(row_index, dict_names['Tipo personal']).value).strip()
+            gauser_extra.jornada_contratada = str(sheet.cell(row_index, dict_names['Jornada contratada']).value).strip()
+            gauser_extra.cargos.add(cargo)
+            gauser_extra.save()
+        except Exception as msg:
+            apellidos = slugify(sheet.cell(row_index, dict_names['Apellidos docente']).value)
+            errores[row_index]={'error': str(msg), 'apellidos': apellidos}
+    return HttpResponse(errores)
+
 @shared_task
 def carga_masiva_from_excel():
     cargas_necesarias = CargaMasiva.objects.filter(cargado=False)
@@ -583,6 +641,8 @@ def carga_masiva_from_excel():
                 carga_masiva_tipo_PENDIENTES(carga)
             elif carga.tipo == 'CENTROSRACIMA':
                 carga_masiva_tipo_CENTROSRACIMA(carga)
+            elif carga.tipo == 'DOCENTES_RACIMA':
+                carga_masiva_tipo_DOCENTES_RACIMA(carga)
             elif carga.tipo == 'EXCELMDB':
                 pass
         except:

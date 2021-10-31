@@ -541,6 +541,9 @@ class Gauser_extra(models.Model):
     consentimiento = models.BooleanField('Consentimiento datos en gauss', default=False)
     fecha_consentimiento = models.DateTimeField('Fecha y hora firma de consentimiento', blank=True, null=True)
     uso_imagenes = models.BooleanField('Autoriza al uso de imágenes', default=False)
+    puesto = models.CharField("Puesto", max_length=175, null=True, blank=True)
+    tipo_personal = models.CharField("Tipo de personal", max_length=75, null=True, blank=True)
+    jornada_contratada = models.CharField("Tipo de personal", max_length=8, null=True, blank=True)
     creado = models.DateTimeField('Fecha de creación', auto_now_add=True, null=True)
 
     # tutor_entidad1 = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
