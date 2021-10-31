@@ -582,6 +582,7 @@ CUE = [
      'subdims': [
          {
              'subdim': 'Participación en los órganos colegiados y de coordinación del docente, así como en iniciativas para mejorar la práctica docente y el trabajo en equipo.',
+             'valor': 2,
              'pregs': [
                  {'subsub': 'Participación en los órganos de gobierno',
                   'preg': 'Se interesa por lo tratado en el consejo escolar, pidiendo información y haciendo propuestas a sus representantes y al equipo directivo.',
@@ -739,6 +740,7 @@ CUE = [
              ]},
          {
              'subdim': 'Colaboración y puesta en marcha de actividades extraescolares y de cualesquiera otras que dinamicen la vida del centro y que contribuyan al aprovechamiento de los recursos del entorno.',
+             'valor': 4,
              'pregs': [
                  {'subsub': '',
                   'preg': 'Presenta propuestas y participa en la organización de la biblioteca escolar, en colaboración con la jefatura de estudios.',
@@ -778,6 +780,7 @@ CUE = [
                   }
              ]},
          {'subdim': 'Atención a padres y alumnos y, en su caso, ejercicio de la tutoría.',
+          'valor': 4,
           'pregs': [
               {'subsub': '',
                'preg': 'Se muestra disponible para atender las demandas de los alumnos, incluso fuera de clase.',
@@ -983,6 +986,7 @@ CUE = [
      'subdims': [
          {
              'subdim': 'Preparación de la clase y de los materiales didácticos en el marco de las decisiones  adoptadas en la programación didáctica.',
+             'valor': 6,
              'pregs': [
                  {'subsub': '',
                   'preg': 'Planifica el desarrollo de las unidades didácticas o de programación, organizándolas a lo largo del curso con una distribución adecuada, incluyendo actividades que se ajusten a las características de cada grupo (nivel de conocimientos previos, sus intereses, etc.).',
@@ -1032,6 +1036,7 @@ CUE = [
              ]},
          {
              'subdim': 'Utilización de una metodología de enseñanza adecuada para promover el aprendizaje significativo de los contenidos escolares.',
+             'valor': 6,
              'pregs': [
                  {'subsub': '',
                   'preg': 'Presenta un plan de trabajo a los alumnos, antes de cada unidad didáctica o de programación y, en general, cuida de que no se pierda el contexto ni la visión de conjunto en cada sesión.',
@@ -1108,6 +1113,7 @@ CUE = [
              ]},
          {
              'subdim': 'Procedimientos de evaluación de los aprendizajes e información sobre los mismos que se da a los alumnos y a sus familias.',
+             'valor': 6,
              'pregs': [
                  {'subsub': ' Procedimientos de evaluación',
                   'preg': 'Solicita, a comienzo de curso,  información sobre sus alumnos al tutor del curso anterior, así como a aquellos profesores que puedan disponer de información relevante sobre los mismos.',
@@ -1220,6 +1226,7 @@ CUE = [
              ]},
          {
              'subdim': 'Utilización de medidas ordinarias y extraordinarias para atender a la diversidad de capacidades, intereses y motivaciones de los alumnos, especialmente de aquéllos con mayores dificultades de aprendizaje.',
+             'valor': 6,
              'pregs': [
                  {'subsub': '',
                   'preg': 'Adopta medidas de apoyo a las deficiencias de aprendizaje, tanto preventivas como de corrección o ayuda, hace el seguimiento y evalúa los resultados.',
@@ -1296,6 +1303,7 @@ CUE = [
              ]},
          {
              'subdim': 'Organización del trabajo en el aula para favorecer la adecuada marcha de la clase y la participación e implicación del alumnado en su proceso de aprendizaje.',
+             'valor': 6,
              'pregs': [
                  {'subsub': '',
                   'preg': 'Consigue que las relaciones entre los alumnos dentro del aula y de éstos con el profesor, sean correctas y fluidas, y se plantean desde una perspectiva no discriminatoria.',

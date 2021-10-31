@@ -1051,7 +1051,8 @@ def carga_cuestionarios_funcionario_practicas(request):
         for dim in CUE:
             efpd = EvalFunPractDim.objects.create(evalfunpract=efp, dimension=dim['dim'])
             for subdim in dim['subdims']:
-                efpds = EvalFunPractDimSub.objects.create(evalfunpractdim=efpd, subdimension=subdim['subdim'])
+                efpds = EvalFunPractDimSub.objects.create(evalfunpractdim=efpd, subdimension=subdim['subdim'],
+                                                          valor=subdim['valor'])
                 for preg in subdim['pregs']:
                     if preg['subsub']:
                         p = '<b>%s</b><br>%s' % (preg['subsub'], preg['preg'])
@@ -1238,6 +1239,64 @@ def mis_evalpract(request):  # mis_evaluaciones_prácticas
                 return JsonResponse({'valor': efpa.cal_total})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+    elif request.method == 'POST':
+        if request.POST['action'] == 'excel_cuestionario':
+            efpa = EvalFunPractAct.objects.get(id=request.POST['efpa'])
+            efprs = efpa.efprs('docente')
+            ronda_slug = slugify(g_e.ronda.nombre)
+            ruta = '%s%s/funcionarios_practicas/%s/' %(MEDIA_FORMULARIOS, str(g_e.ronda.entidad.code), ronda_slug)
+            if not os.path.exists(ruta):
+                os.makedirs(ruta)
+            docente_slug = slugify(efpa.docente.gauser.get_full_name())
+            fichero_xls = '%s_%s.xls' % (slugify(efpa.procesoevalfunpract.nombre), docente_slug)
+            wb = xlwt.Workbook()
+            wf = wb.add_sheet('%s' % efpa.docente.gauser.get_full_name())
+            estilo = xlwt.XFStyle()
+            font = xlwt.Font()
+            font.bold = True
+            estilo.font = font
+            wf.write(0, 0, 'Dimensión', style=estilo)
+            wf.write(0, 1, 'Sub-Dimensión', style=estilo)
+            wf.write(0, 2, 'Total', style=estilo)
+            wf.write(0, 3, 'Pregunta', style=estilo)
+            wf.write(0, 4, 'Punt. Docente', style=estilo)
+            wf.write(0, 5, 'Punt. Tutor', style=estilo)
+            wf.write(0, 6, 'Punt. Director', style=estilo)
+            wf.write(0, 7, 'Punt. Inspector', style=estilo)
+            wf.col(0).width = 5000
+            wf.col(1).width = 10000
+            wf.col(3).width = 15000
+            fila = 1
+            def calc_valor(valor):
+                if valor > -1:
+                    return valor
+                else:
+                    return ' '
+
+            for efpr in efprs:
+                cue = efpr.evalfunpractdimsubcue
+                subdim = cue.evalfunpractdimsub
+                dim = subdim.evalfunpractdim
+                wf.write(fila, 0, BeautifulSoup(dim.dimension, features='lxml').get_text(), style=estilo)
+                wf.write(fila, 1, BeautifulSoup(subdim.subdimension, features='lxml').get_text(), style=estilo)
+                wf.write(fila, 2, dim.valor, style=estilo)
+                wf.write(fila, 3, BeautifulSoup(cue.pregunta, features='html').get_text(), style=estilo)
+                wf.write(fila, 4, calc_valor(efpr.docente), style=estilo)
+                wf.write(fila, 5, calc_valor(efpr.tutor), style=estilo)
+                wf.write(fila, 6, calc_valor(efpr.director), style=estilo)
+                wf.write(fila, 7, calc_valor(efpr.inspector), style=estilo)
+                fila += 1
+
+
+
+            # wf.write(fila_excel_cuestionario, 3, Formula("SUM(D2:D%s)" % (fila_excel_cuestionario)), style=estilo)
+
+            wb.save(ruta + fichero_xls)
+
+            xlsfile = open(ruta + '/' + fichero_xls, 'rb')
+            response = HttpResponse(xlsfile, content_type='application/vnd.ms-excel')
+            response['Content-Disposition'] = 'attachment; filename=%s' % (fichero_xls)
+            return response
 
 
     evfpas_activas = EvalFunPractAct.objects.filter(procesoevalfunpract__fecha_min__lt=fecha_min,

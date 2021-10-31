@@ -33,6 +33,7 @@
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
         <input type="hidden" name="pefp" id="pefp" value="">
+        <input type="hidden" name="efpa" id="efpa" value="">
 
         <div class="">
             <h4 id="title_page" style="text-align: center;color: #008CBA;"><strong>
@@ -92,11 +93,12 @@
         {#        });#}
         {# });#}
 
-        {#$('body').on('click', '.excel_gform', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    $('#action').val('excel_gform');#}
-        {#    document.getElementById("{{ formname }}").submit();#}
-        {# });#}
+        $('body').on('click', '.excel_cuestionario', function (e) {
+            e.preventDefault();
+            $('#efpa').val($(this).data('efpa'));
+            $('#action').val('excel_cuestionario');
+            document.getElementById("{{ formname }}").submit();
+         });
 
         {#$('body').on('click', '.pdf_gform', function (e) {#}
         {#    e.preventDefault();#}
