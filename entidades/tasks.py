@@ -617,7 +617,7 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
             gauser.last_name = apellidos
             gauser.dni = dni
             gauser.save()
-            gauser_extra = Gauser_extra.objects.get_or_create(ronda=entidad.ronda, gauser=gauser)
+            gauser_extra, c = Gauser_extra.objects.get_or_create(ronda=entidad.ronda, gauser=gauser)
             gauser_extra.clave_ex = str(sheet.cell(row_index, dict_names['X_DOCENTE']).value).strip()
             gauser_extra.activo = True
             gauser_extra.puesto = str(sheet.cell(row_index, dict_names['Puesto']).value).strip()
@@ -645,8 +645,9 @@ def carga_masiva_from_excel():
                 carga_masiva_tipo_DOCENTES_RACIMA(carga)
             elif carga.tipo == 'EXCELMDB':
                 pass
-        except:
+        except Exception as msg:
             logger.info('Carga masiva xls se produce error con carga.id=%s' % carga.id)
+            logger.info('El mensaje de error es: %s' % str(msg))
             carga.error = True
             carga.cargado = True
             carga.save()

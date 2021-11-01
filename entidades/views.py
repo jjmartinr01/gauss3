@@ -274,7 +274,7 @@ def usuarios_entidad_ajax(request):
             elif request.POST['action'] == 'baja_socio':
                 if g_e.has_permiso('baja_usuarios'):
                     g_e_selected = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
-                    obs = u'<br>(Autor: %s) Con fecha %s se ha dado de baja a %s.' % (g_e.gauser.get_full_name(),
+                    obs = '<br>(Autor: %s) Con fecha %s se ha dado de baja a %s.' % (g_e.gauser.get_full_name(),
                                                                                       datetime.now().strftime(
                                                                                           "%d-%m-%Y"),
                                                                                       g_e_selected.gauser.get_full_name())
@@ -292,10 +292,10 @@ def usuarios_entidad_ajax(request):
                     if not baja.observaciones: baja.observaciones = ''
                     baja.observaciones = baja.observaciones + obs
                     baja.save()
-                    mensaje = u'<p>Se ha dado de baja al usuario <strong> %s </strong>.</p> <p> Es posible recuperarlo a través del administrador del sistema.</p>' % g_e_selected.gauser.get_full_name()
+                    mensaje = '<p>Se ha dado de baja al usuario <strong> %s </strong>.</p> <p> Es posible recuperarlo a través del administrador del sistema.</p>' % g_e_selected.gauser.get_full_name()
                     return JsonResponse({'ok': True, 'mensaje': mensaje})
                 else:
-                    mensaje = u'<p>No tienes permisos para dar de baja a los socios.</p>'
+                    mensaje = '<p>No tienes permisos para dar de baja a los socios.</p>'
                     return JsonResponse({'ok': True, 'mensaje': mensaje})
     else:
         if request.method == 'POST':
@@ -695,7 +695,7 @@ def buscar_usuarios_cargos_subentidades(request):
     #  {"id": 28816, "last_name": "Nieto Garc\u00eda", "first_name": "Juan", "perfiles": "Secci\u00f3n de Logro\u00f1o"}]
 
     a = {}
-    a = dict([('usuario__id', x)])
+    a = dict([('usuario__id', 'fafasdfasfadsfa')])
     keys = ('usuario__id', 'last_name', 'first_name', 'perfiles')
     cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad)
     cargos_contain_texto = cargos.filter(cargo__icontains=texto).values_list('id', 'cargo')
@@ -799,8 +799,8 @@ def rondas_entidad(request):
                 ronda = Ronda.objects.get(id=request.POST['ronda'], entidad=g_e.ronda.entidad)
                 request.session["ronda"] = ronda
             except:
-                crear_aviso(request, False, u'Tienes prohibido el acceso a la ronda solicitada')
-                logger.warning(u'%s Intento de acceso a ronda con id=%s' % (g_e, request.GET['r']))
+                crear_aviso(request, False, 'Tienes prohibido el acceso a la ronda solicitada')
+                logger.warning('%s Intento de acceso a ronda con id=%s' % (g_e, request.GET['r']))
 
     return render(request, "rondas_entidad.html",
                   {
@@ -919,8 +919,8 @@ def configura_rondas(request):
                 ronda = Ronda.objects.get(id=request.POST['ronda'], entidad=g_e.ronda.entidad)
                 request.session["ronda"] = ronda
             except:
-                crear_aviso(request, False, u'Tienes prohibido el acceso a la ronda solicitada')
-                logger.warning(u'%s Intento de acceso a ronda con id=%s' % (g_e, request.GET['r']))
+                crear_aviso(request, False, 'Tienes prohibido el acceso a la ronda solicitada')
+                logger.warning('%s Intento de acceso a ronda con id=%s' % (g_e, request.GET['r']))
 
     return render(request, "configura_rondas.html",
                   {
@@ -1480,26 +1480,26 @@ def bajas_usuarios(request):
                 for n_a in nuevas_altas:
                     n_a.fecha_baja = None
                     if not n_a.observaciones: n_a.observaciones = ''
-                    n_a.observaciones = n_a.observaciones + u'<br>Con fecha %s se ha dado de alta a %s (%s).<br>' % (
+                    n_a.observaciones = n_a.observaciones + '<br>Con fecha %s se ha dado de alta a %s (%s).<br>' % (
                         datetime.now().strftime("%d-%m-%Y"), n_a.gauser.get_full_name(), n_a.entidad)
                     n_a.fecha_alta = datetime.now().date()
                     n_a.save()
                     try:
                         g_e_selected = Gauser_extra.objects.get(gauser=n_a.gauser, ronda=n_a.entidad.ronda)
-                        crear_aviso(request, False, u'Se ha recuperado al socio %s' % (g_e_selected))
+                        crear_aviso(request, False, 'Se ha recuperado al socio %s' % (g_e_selected))
                     except:
                         g_e_selected = Gauser_extra.objects.create(gauser=n_a.gauser, ronda=n_a.entidad.ronda)
                         crear_aviso(request, False,
-                                    u'Se ha recuperado al socio %s creando un usuario para esta ronda. Es necesario asignar perfiles manualmente.' % (
+                                    'Se ha recuperado al socio %s creando un usuario para esta ronda. Es necesario asignar perfiles manualmente.' % (
                                         g_e_selected))
                     g_e_selected.activo = True
                     if not g_e_selected.observaciones: g_e_selected.observaciones = ''
-                    obs = u'<br>Con fecha %s se ha dado de alta de nuevo a %s.' % (
+                    obs = '<br>Con fecha %s se ha dado de alta de nuevo a %s.' % (
                         datetime.now().strftime("%d-%m-%Y"), g_e_selected.gauser.get_full_name())
                     g_e_selected.observaciones = g_e_selected.observaciones + obs
                     g_e_selected.save()
             else:
-                crear_aviso(request, False, u'No tienes permiso para dar de alta a los socios')
+                crear_aviso(request, False, 'No tienes permiso para dar de alta a los socios')
 
         if request.POST['action'] == 'borrar_bajas2':
             permiso_borrar = g_e.has_permiso('borrar_datos_socios')
@@ -1657,7 +1657,7 @@ def organigrama(request):
 
 class MiModelChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
-        return u'%s' % (obj.nombre)
+        return '%s' % (obj.nombre)
 
 
 class SubentidadForm(ModelForm):
@@ -1677,7 +1677,7 @@ def subentidades(request):
     ronda = request.session['ronda']
     if request.method == 'POST':
         action = request.POST['action']
-        logger.info(u'%s post %s' % (g_e, action))
+        logger.info('%s post %s' % (g_e, action))
         # if action == 'formulario_subentidad' and request.is_ajax():
         #     if request.POST['id']:
         #         subentidad = Subentidad.objects.get(id=request.POST['id'])
@@ -1713,10 +1713,10 @@ def subentidades(request):
                     ge.subentidades.add(subentidad)
                 error = None
                 crear_aviso(request, True,
-                            u'Modificación/Creación del subentidad: <strong>%s</strong>' % subentidad.nombre)
+                            'Modificación/Creación del subentidad: <strong>%s</strong>' % subentidad.nombre)
             else:
                 crear_aviso(request, True,
-                            u'Error en la modificación/mreación del subentidad: <strong>%s</strong>' % subentidad.nombre)
+                            'Error en la modificación/mreación del subentidad: <strong>%s</strong>' % subentidad.nombre)
                 error = form.errors
             data = render_to_string("list_subentidades.html",
                                     {'subentidades': Subentidad.objects.filter(entidad=g_e.ronda.entidad,

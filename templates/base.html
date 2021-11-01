@@ -103,14 +103,17 @@
                     </div>
                     <div class="row" style="margin-top: -10px;">
                         <p class="cabecera" title="Datos de la entidad">
-                            <a class="cabecera" href="{{ request.session.gauser_extra.ronda.entidad.web }}">
+                            <a class="cabecera" style="color:white;"
+                               href="{{ request.session.gauser_extra.ronda.entidad.web }}">
                                 <i class="fa fa-info-circle pulsar"></i>
                                 {{ request.session.gauser_extra.ronda.entidad.name }}
                                 {% if request.session.gauser_extra.ronda.entidad.code < 10000 %}
                                     ({{ request.session.gauser_extra.ronda.entidad.code }}) {% endif %}
                                 - {{ request.session.gauser_extra.ronda.nombre }}
+                                <span style="color:white;">- {{ request.session.gauser_extra.ronda.entidad.code }}</span>
                                 {% if request.session.gauser_extra.ronda.entidad.ronda != request.session.ronda %}
-                                    <span style="color:red;font-weight: 800;"> <i class="fa fa-long-arrow-right"></i> {{ request.session.ronda.nombre }}</span>
+                                    <span style="color:red;font-weight: 800;"> <i
+                                            class="fa fa-long-arrow-right"></i> {{ request.session.ronda.nombre }}</span>
                                 {% endif %}
                             </a></p>
                     </div>
@@ -143,11 +146,11 @@
             </ul>
 
             <section class="top-bar-section">
-{#                <ul class="title-area">#}
-{#                    <li class="name spinner" id="ajax-loader" style="display:none;">#}
-{#                        <h1 style="color: white;">Procesando&nbsp;<i class="fa fa-spinner fa-pulse"></i></h1>#}
-{#                    </li>#}
-{#                </ul>#}
+                {#                <ul class="title-area">#}
+                {#                    <li class="name spinner" id="ajax-loader" style="display:none;">#}
+                {#                        <h1 style="color: white;">Procesando&nbsp;<i class="fa fa-spinner fa-pulse"></i></h1>#}
+                {#                    </li>#}
+                {#                </ul>#}
                 <!-- Right Nav Section -->
                 <ul class="right">
                     <li class="divider"></li>
@@ -214,6 +217,8 @@
                             &nbsp;&nbsp;Crea entidad</a></li>
                         <li><a class="menu_nivel2" href="/ejecutar_query/">
                             &nbsp;&nbsp;Ejecutar query</a></li>
+                        <li><a class="menu_nivel2" href="/carga_docentes_general/">
+                            &nbsp;&nbsp;Carga masiva de docentes</a></li>
                     {% endif %}
                     {% for menu in g_e.ronda.entidad|menus %}
                         {% if g_e|has_permiso:menu.menu_default.code_menu %}
@@ -265,6 +270,11 @@
                                     <a href="/ejecutar_query/" class="">
                                         <div class="menu_element">
                                             Ejecutar query
+                                        </div>
+                                    </a>
+                                    <a href="/carga_docentes_general/" class="">
+                                        <div class="menu_element">
+                                            Carga masiva de docentes
                                         </div>
                                     </a>
                                 </div>
@@ -415,14 +425,14 @@
 
 
     $(document)
-            .foundation({
-                abide: {
-                    patterns: {
-                        dashes_only: /^[0-9-]*$/,
-                        ip_address: /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/
-                    }
+        .foundation({
+            abide: {
+                patterns: {
+                    dashes_only: /^[0-9-]*$/,
+                    ip_address: /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/
                 }
-            });
+            }
+        });
 
 
     $('.disabled').on('click', function () {
