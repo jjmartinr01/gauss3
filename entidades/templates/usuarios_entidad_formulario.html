@@ -413,32 +413,33 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="columns large-12">
-        <h5><strong>Otra información sobre este usuario:</strong></h5>
+{% if gauser_extra_selected.puesto %}
+    <div class="row">
+        <div class="columns large-12">
+            <h5><strong>Otra información sobre este usuario:</strong></h5>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="columns large-12">
-        <table style="width: 100%">
-            <thead>
-            <tr>
-                <th>Puesto</th>
-            <th>Tipo de personal</th>
-            <th>Jornada contratada</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>{{ gauser_extra_selected.puesto }}</td>
-                <td>{{ gauser_extra_selected.tipo_personal }}</td>
-                <td>{{ gauser_extra_selected.jornada_contratada }}</td>
-            </tr>
-            </tbody>
-        </table>
+    <div class="row">
+        <div class="columns large-12">
+            <table style="width: 100%">
+                <thead>
+                <tr>
+                    <th>Puesto</th>
+                    <th>Tipo de personal</th>
+                    <th>Jornada contratada</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>{{ gauser_extra_selected.puesto }}</td>
+                    <td>{{ gauser_extra_selected.tipo_personal }}</td>
+                    <td>{{ gauser_extra_selected.jornada_contratada }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
-
+{% endif %}
 <div class="row formulario_socio">
     <div class="columns large-12">
         <h5><i class="fa fa-hand-o-up"></i> <strong>Selecciona perfiles/cargos vinculados a este
