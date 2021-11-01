@@ -396,6 +396,10 @@
                         $('#span_spin').hide();
                         $('#span_porcentage').hide();
                         $('#ajax-loader').hide();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    }else{
+                        $('#ajax-loader').hide();
+                        $('#update_error').show().delay(1500).fadeOut();
                     }
                 }
             };

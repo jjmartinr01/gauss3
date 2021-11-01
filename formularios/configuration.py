@@ -72,4 +72,8 @@ PERMISOS = [{'code_nombre': 'crea_formularios',
              'nombre': 'Tiene permiso para borrar formularios de la entidad',
              'menu': 'acceso_formularios'
              },
+            {'code_nombre': 've_todas_efpas',
+             'nombre': 'Tiene permiso para ver todas las evaluaciones de funcionarios en prácticas',
+             'menu': 'acceso_funcionarios_practicas'
+             },
             ]

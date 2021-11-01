@@ -38,11 +38,11 @@
 
 <div class="row">
     <div class="columns large-10">
-        <label><b>Personas destinadas a rellenar este formulario:</b></label>
+        <label><b>Personas que deben rellenar este cuestionario:</b></label>
     </div>
     <div class="columns large-2">
         <label title="Número total de docentes en prácticas que deben ser evaluados">
-            ({{ pefp.evalfunpractact_set.all|length }} docentes)
+            ({{ efpas|length }} de {{ pefp.evalfunpractact_set.all|length }} docentes)
         </label>
     </div>
 </div>
@@ -60,7 +60,7 @@
             </tr>
             </thead>
             <tbody id="tbody_pefp_destinatarios{{ pefp.id }}">
-            {% for efpa in pefp.evalfunpractact_set.all %}
+            {% for efpa in efpas %}
                 <tr id="pefpdestinatario{{ efpa.id }}" title="{{ efpa.docente.ronda.entidad.name }}">
                     <td>
                         {{ efpa.docente.gauser.last_name }}, {{ efpa.docente.gauser.first_name }}
@@ -158,12 +158,12 @@
 </div>
 
 <script>
+    {% for efpa in efpas %}
     setTimeout(function () {
-        {% for efpa in pefp.evalfunpractact_set.all %}
             $.post("/mis_evalpract/", {action: 'update_cal_total', efpa: {{ efpa.id }}},
                 function (data) {
                     $('#cal_total{{ efpa.id }}').html(data.valor)
                 });
-        {% endfor %}
-    }, 200);
+    }, {{ forloop.counter }}00);
+    {% endfor %}
 </script>

@@ -1212,13 +1212,19 @@ def mis_evalpract(request):  # mis_evaluaciones_prácticas
             try:
                 pefp = ProcesoEvalFunPract.objects.get(id=request.POST['id'], fecha_min__lt=fecha_min,
                                                        fecha_max__gt=fecha_max)
-                evfpas_ins = pefp.evalfunpractact_set.filter(inspector__gauser=g_e.gauser)
-                evfpas_tut = pefp.evalfunpractact_set.filter(tutor__gauser=g_e.gauser)
-                evfpas_doc = pefp.evalfunpractact_set.filter(docente__gauser=g_e.gauser)
-                evfpas_dir = pefp.evalfunpractact_set.filter(director__gauser=g_e.gauser)
+                if g_e.has_permiso('ve_todas_efpas'):
+                    efpas = pefp.evalfunpractact_set.all()
+                else:
+                    q = Q(inspector__gauser=g_e.gauser) | Q(tutor__gauser=g_e.gauser) | Q(
+                        docente__gauser=g_e.gauser) | Q(director__gauser=g_e.gauser)
+                    efpas = pefp.evalfunpractact_set.filter(q)
+
+                # evfpas_ins = pefp.evalfunpractact_set.filter(inspector__gauser=g_e.gauser)
+                # evfpas_tut = pefp.evalfunpractact_set.filter(tutor__gauser=g_e.gauser)
+                # evfpas_doc = pefp.evalfunpractact_set.filter(docente__gauser=g_e.gauser)
+                # evfpas_dir = pefp.evalfunpractact_set.filter(director__gauser=g_e.gauser)
                 html = render_to_string('mis_evalpract_accordion_content.html',
-                                        {'pefp': pefp, 'evfpas_ins': evfpas_ins, 'evfpas_tut': evfpas_tut, 'g_e': g_e,
-                                         'evfpas_doc': evfpas_doc, 'evfpas_dir': evfpas_dir})
+                                        {'pefp': pefp, 'efpas': efpas, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -1324,13 +1330,18 @@ def recufunprac(request, id, actor):  # rellenar_cuestionario_funcionario_practi
         if request.POST['action'] == 'update_radio_efpr':
             try:
                 efpr = EvalFunPractRes.objects.get(id=request.POST['efpr'])
-                ge_actor = getattr(efpr.evalfunpractact, actor)
-                if ge_actor.gauser == g_e.gauser:
-                    setattr(efpr, actor, int(request.POST['valor']))
-                    efpr.save()
-                    return JsonResponse({'ok': True})
+                hoy = now().date()
+                pefp = efpr.evalfunpractact.procesoevalfunpract
+                if (pefp.fecha_min <= hoy) and (pefp.fecha_max >= hoy):
+                    ge_actor = getattr(efpr.evalfunpractact, actor)
+                    if ge_actor.gauser == g_e.gauser:
+                        setattr(efpr, actor, int(request.POST['valor']))
+                        efpr.save()
+                        return JsonResponse({'ok': True})
+                    else:
+                        return JsonResponse({'ok': False, 'msg': 'No tienes permisos para modificar el cuestionario.'})
                 else:
-                    return JsonResponse({'ok': False, 'msg': 'No tienes permisos para modificar este cuestionario.'})
+                    return JsonResponse({'ok': False, 'msg': 'En esta fecha no es posible la modificación.'})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'terminar_efpa':
