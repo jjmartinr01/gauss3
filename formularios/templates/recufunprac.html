@@ -83,18 +83,6 @@
         <div class="">
             <h4 id="title_page"><strong>{{ efpa.procesoevalfunpract.nombre }}</strong></h4>
         </div>
-        {% if efpa.respondido %}
-            <div class="row">
-                <div class="columns large-12">
-                    <div data-alert class="alert-box alert radius">
-                        <h3 style="color: white;font-weight: bold;"><i class="fa fa-warning"></i> No se pueden cambiar
-                            las respuestas</h3>
-                        <p>Este formulario ya está respondido y no se admiten cambios en las respuestas.</p>
-                        <a href="#" class="close">&times;</a>
-                    </div>
-                </div>
-            </div>
-        {% endif %}
         <div class="row">
             <div class="columns large-8">
                 <span style="font-weight: bold">Rellenable entre el {{ efpa.procesoevalfunpract.fecha_min|date:'d-m-Y' }} y
@@ -262,6 +250,13 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="columns large-12" id="respuesta{{ efpr.id }}">
+                            <textarea placeholder="Si lo deseas puedes añadir observaciones a tu respuesta." rows="3"
+                                      id="observaciones{{ efpr.id }}" data-efpr="{{ efpr.id }}"
+                                      class="obsefpr">{{ efpr|efpr_observaciones:actor }}</textarea>
+                        </div>
+                    </div>
                 </fieldset>
             {% endfor %}
         </div>
@@ -306,6 +301,11 @@
             });
         }
 
+        {# ########################################################################################### #}
+        {# Detección de los eventos de modificación de respuestas #}
+        {# #}
+        {# ########################################################################################### #}
+
         recufunprac = "/recufunprac/{{ efpa.id }}/{{ actor }}/"
 
         $('body').on('change', '.radio_efpr', function () {
@@ -322,6 +322,30 @@
                         show_error(data);
                     }
                 });
+        });
+
+        $('body').on('keyup', '.obsefpr', function () {
+            var element = $(this);
+            var efpr = element.data('efpr');
+            var antiguo_texto = element.val();
+            setTimeout(function () {
+                var nuevo_texto = element.val();
+                if (antiguo_texto === nuevo_texto) {
+                    $.post(recufunprac, {
+                            action: 'update_observaciones',
+                            efpr: efpr,
+                            texto: nuevo_texto
+                        },
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                                show_error(data);
+                            }
+                        });
+                }
+            }, 750);
         });
 
         {# ########################################################################################### #}
@@ -344,7 +368,7 @@
         $('body').on('click', '#terminar_efpa', function (e) {
             e.preventDefault();
             $.post(recufunprac,
-                {action: 'terminar_efpa', efpa:$('#efpa').val(), actor: $('#actor').val()},
+                {action: 'terminar_efpa', efpa: $('#efpa').val(), actor: $('#actor').val()},
                 function (data) {
                     if (data.ok) {
                         location.href = '/mis_evalpract/'

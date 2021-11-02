@@ -549,6 +549,10 @@ class EvalFunPractRes(models.Model):  # Evaluación Funcionarios en Prácticas R
     docente = models.IntegerField('Respuesta del docente', null=True, blank=True, default=-1)
     tutor = models.IntegerField('Respuesta del tutor', null=True, blank=True, default=-1)
     director = models.IntegerField('Respuesta del director', null=True, blank=True, default=-1)
+    obsdocente = models.TextField('Observaciones del docente', null=True, blank=True, default='')
+    obsdirector = models.TextField('Observaciones del director', null=True, blank=True, default='')
+    obstutor = models.TextField('Observaciones del tutor', null=True, blank=True, default='')
+    obsinspector = models.TextField('Observaciones del inspector', null=True, blank=True, default='')
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
     @property

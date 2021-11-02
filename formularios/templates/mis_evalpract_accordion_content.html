@@ -96,7 +96,7 @@
                     <td>
                         {{ efpa.tutor.gauser.last_name }}, {{ efpa.tutor.gauser.first_name }}
                         {% if efpa.respondido_tut %}<i class="fa fa-check" style="color:green;"></i> {% endif %}
-                        {% if efpa.docente == g_e %}<br>
+                        {% if efpa.tutor == g_e %}<br>
                             <a class="rellenar_cuestionario" data-efpa="{{ efpa.id }}" data-actor="tutor"
                                title="Rellenar el cuestionario">
                                 <span class="label"><i class="fa fa-pencil"></i> </span>

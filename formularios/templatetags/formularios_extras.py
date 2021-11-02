@@ -75,6 +75,10 @@ def get_el_value(gfsi, gformresponde):
         return ''
 
 @register.filter
+def efpr_observaciones(efpr, actor):
+    return getattr(efpr, 'obs%s' % actor)
+
+@register.filter
 def respuesta(efpr, actor):
     return getattr(efpr, actor)
 

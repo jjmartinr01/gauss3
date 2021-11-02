@@ -1088,6 +1088,15 @@ def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_
         elif request.POST['action'] == 'open_accordion':
             try:
                 pefp = ProcesoEvalFunPract.objects.get(id=request.POST['id'])
+                # Líneas borrables en próximas cargas:
+                code_permisos = ['acceso_funcionarios_practicas', 'acceso_mis_evalpract']
+                permisos = Permiso.objects.filter(code_nombre__in=code_permisos)
+                for efpa in pefp.evalfunpractact_set.all():
+                    efpa.inspector.permisos.add(*permisos)
+                    efpa.tutor.permisos.add(*permisos)
+                    efpa.director.permisos.add(*permisos)
+                    efpa.docente.permisos.add(*permisos)
+                # Fin de líneas borrables
                 html = render_to_string('procesos_evaluacion_funcpract_accordion_content.html',
                                         {'pefp': pefp, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
@@ -1269,9 +1278,11 @@ def mis_evalpract(request):  # mis_evaluaciones_prácticas
             wf.write(0, 5, 'Punt. Tutor', style=estilo)
             wf.write(0, 6, 'Punt. Director', style=estilo)
             wf.write(0, 7, 'Punt. Inspector', style=estilo)
+            wf.write(0, 8, 'Observaciones', style=estilo)
             wf.col(0).width = 5000
             wf.col(1).width = 10000
             wf.col(3).width = 15000
+            wf.col(8).width = 15000
             fila = 1
             def calc_valor(valor):
                 if valor > -1:
@@ -1291,6 +1302,14 @@ def mis_evalpract(request):  # mis_evaluaciones_prácticas
                 wf.write(fila, 5, calc_valor(efpr.tutor), style=estilo)
                 wf.write(fila, 6, calc_valor(efpr.director), style=estilo)
                 wf.write(fila, 7, calc_valor(efpr.inspector), style=estilo)
+                observaciones = 'Docente: %s\nTutor: %s\nDirector: %s\nInspector: %s' % (efpr.obsdocente,
+                                                                                         efpr.obstutor,
+                                                                                         efpr.obsdirector,
+                                                                                         efpr.obsinspector)
+                wf.write(fila, 8, observaciones)
+                if len(observaciones) > 50:
+                    wf.row(fila).height_mismatch = True
+                    wf.row(fila).height = 256 * 4
                 fila += 1
 
 
@@ -1347,18 +1366,41 @@ def recufunprac(request, id, actor):  # rellenar_cuestionario_funcionario_practi
         elif request.POST['action'] == 'terminar_efpa':
             try:
                 efpa = EvalFunPractAct.objects.get(id=request.POST['efpa'])
-                if actor == 'docente':
-                    efpa.respondido_doc = True
-                elif actor == 'director':
-                    efpa.respondido_dir = True
-                elif actor == 'inspector':
-                    efpa.respondido_ins = True
-                elif actor == 'tutor':
-                    efpa.respondido_tut = True
-                efpa.save()
-                return JsonResponse({'ok': True})
+                hoy = now().date()
+                pefp = efpa.procesoevalfunpract
+                if (pefp.fecha_min <= hoy) and (pefp.fecha_max >= hoy):
+                    if actor == 'docente':
+                        efpa.respondido_doc = True
+                    elif actor == 'director':
+                        efpa.respondido_dir = True
+                    elif actor == 'inspector':
+                        efpa.respondido_ins = True
+                    elif actor == 'tutor':
+                        efpa.respondido_tut = True
+                    efpa.save()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'En esta fecha no es posible la modificación.'})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_observaciones':
+                try:
+                    efpr = EvalFunPractRes.objects.get(id=request.POST['efpr'])
+                    hoy = now().date()
+                    pefp = efpr.evalfunpractact.procesoevalfunpract
+                    if (pefp.fecha_min <= hoy) and (pefp.fecha_max >= hoy):
+                        ge_actor = getattr(efpr.evalfunpractact, actor)
+                        if ge_actor.gauser == g_e.gauser:
+                            setattr(efpr, 'obs%s' % actor, request.POST['texto'])
+                            efpr.save()
+                            return JsonResponse({'ok': True})
+                        else:
+                            return JsonResponse(
+                                {'ok': False, 'msg': 'No tienes permisos para modificar el cuestionario.'})
+                    else:
+                        return JsonResponse({'ok': False, 'msg': 'En esta fecha no es posible la modificación.'})
+                except Exception as msg:
+                    return JsonResponse({'ok': False, 'msg': str(msg)})
     try:
         filtro_fechas = Q(procesoevalfunpract__fecha_min__lt=datetime.now().date() + timedelta(days=60)) & Q(
             procesoevalfunpract__fecha_max__gt=datetime.now().date() - timedelta(days=200))
@@ -1370,14 +1412,19 @@ def recufunprac(request, id, actor):  # rellenar_cuestionario_funcionario_practi
             actores = {'docente': 'respondido_doc', 'inspector': 'respondido_ins', 'director': 'respondido_dir',
                        'tutor': 'respondido_tut'}
             respondido = getattr(efpa, actores[actor])
-        return render(request, "recufunprac.html",
-                      {
-                          'formname': 'recufunprac',
-                          'efpa': efpa,
-                          'efprs': efprs,
-                          'actor': actor,
-                          'respondido': respondido
-                      })
+        ge_actor = getattr(efpa, actor)
+        if ge_actor.gauser == g_e.gauser:
+            return render(request, "recufunprac.html",
+                          {
+                              'formname': 'recufunprac',
+                              'efpa': efpa,
+                              'efprs': efprs,
+                              'actor': actor,
+                              'respondido': respondido
+                          })
+        else:
+            sleep(3)
+            return render(request, "recufunprac_no_existe.html", {'error': True, 'msg': 'Sin permisos'})
     except Exception as msg:
         sleep(3)
         return render(request, "recufunprac_no_existe.html", {'error': True, 'msg': str(msg)})
