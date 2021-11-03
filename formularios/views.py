@@ -1066,10 +1066,10 @@ def carga_cuestionarios_funcionario_practicas(request):
                                                          responde_doc_tutor=preg['docente-tutor'],
                                                          responde_dir=preg['director'])
 
-
+@permiso_required('acceso_procesos_evalpract')
 def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_en_prácticas
     g_e = request.session["gauser_extra"]
-    pefps = ProcesoEvalFunPract.objects.filter(g_e__ronda__entidad=g_e.ronda.entidad)
+    pefps = ProcesoEvalFunPract.objects.filter(g_e__ronda__entidad=g_e.ronda.entidad, g_e__gauser=g_e.gauser)
 
     if request.method == 'POST' and request.is_ajax():
         if request.POST['action'] == 'crea_pefp':
@@ -1211,7 +1211,7 @@ def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
-
+@permiso_required('acceso_mis_evalpract')
 def mis_evalpract(request):  # mis_evaluaciones_prácticas
     g_e = request.session["gauser_extra"]
     fecha_min = datetime.now().date() + timedelta(days=60)
@@ -1297,7 +1297,7 @@ def mis_evalpract(request):  # mis_evaluaciones_prácticas
                 wf.write(fila, 0, BeautifulSoup(dim.dimension, features='lxml').get_text(), style=estilo)
                 wf.write(fila, 1, BeautifulSoup(subdim.subdimension, features='lxml').get_text(), style=estilo)
                 wf.write(fila, 2, dim.valor, style=estilo)
-                wf.write(fila, 3, BeautifulSoup(cue.pregunta, features='html').get_text(), style=estilo)
+                wf.write(fila, 3, BeautifulSoup(cue.pregunta, features='lxml').get_text(), style=estilo)
                 wf.write(fila, 4, calc_valor(efpr.docente), style=estilo)
                 wf.write(fila, 5, calc_valor(efpr.tutor), style=estilo)
                 wf.write(fila, 6, calc_valor(efpr.director), style=estilo)
@@ -1351,7 +1351,10 @@ def recufunprac(request, id, actor):  # rellenar_cuestionario_funcionario_practi
                 efpr = EvalFunPractRes.objects.get(id=request.POST['efpr'])
                 hoy = now().date()
                 pefp = efpr.evalfunpractact.procesoevalfunpract
-                if (pefp.fecha_min <= hoy) and (pefp.fecha_max >= hoy):
+                con1 = pefp.fecha_min <= hoy
+                con2 = pefp.fecha_max >= hoy
+                con3 = (pefp.fecha_max >= (hoy - timedelta(days=200))) and (actor == 'inspector')
+                if (con1 and con2) or (con1 and con3):
                     ge_actor = getattr(efpr.evalfunpractact, actor)
                     if ge_actor.gauser == g_e.gauser:
                         setattr(efpr, actor, int(request.POST['valor']))
@@ -1368,7 +1371,10 @@ def recufunprac(request, id, actor):  # rellenar_cuestionario_funcionario_practi
                 efpa = EvalFunPractAct.objects.get(id=request.POST['efpa'])
                 hoy = now().date()
                 pefp = efpa.procesoevalfunpract
-                if (pefp.fecha_min <= hoy) and (pefp.fecha_max >= hoy):
+                con1 = pefp.fecha_min <= hoy
+                con2 = pefp.fecha_max >= hoy
+                con3 = (pefp.fecha_max >= (hoy - timedelta(days=200))) and (actor == 'inspector')
+                if (con1 and con2) or (con1 and con3):
                     if actor == 'docente':
                         efpa.respondido_doc = True
                     elif actor == 'director':
@@ -1388,7 +1394,10 @@ def recufunprac(request, id, actor):  # rellenar_cuestionario_funcionario_practi
                     efpr = EvalFunPractRes.objects.get(id=request.POST['efpr'])
                     hoy = now().date()
                     pefp = efpr.evalfunpractact.procesoevalfunpract
-                    if (pefp.fecha_min <= hoy) and (pefp.fecha_max >= hoy):
+                    con1 = pefp.fecha_min <= hoy
+                    con2 = pefp.fecha_max >= hoy
+                    con3 = (pefp.fecha_max >= (hoy - timedelta(days=200))) and (actor == 'inspector')
+                    if (con1 and con2) or (con1 and con3):
                         ge_actor = getattr(efpr.evalfunpractact, actor)
                         if ge_actor.gauser == g_e.gauser:
                             setattr(efpr, 'obs%s' % actor, request.POST['texto'])

@@ -66,12 +66,12 @@
                         {{ efpa.docente.gauser.last_name }}, {{ efpa.docente.gauser.first_name }}
                         {% if efpa.respondido_doc %}<i class="fa fa-check" style="color:green;"></i> {% endif %}
                         {% if efpa.director == g_e or efpa.inspector == g_e %}<br>
-                            <span title="Selecciona si el docente es tutor de un grupo de alumnos">
+                            <span title="Selecciona si el docente es jefe de departamento o coordinador de ciclo">
                             <input type="checkbox" data-efpa="{{ efpa.id }}" class="perfil_docente"
                                    id="docente_jefe{{ efpa.id }}" {% if efpa.docente_jefe %}checked{% endif %}>
                                 <span style="color:#ff7722">Jefe/Coordinador</span>
                             </span>
-                            <span title="Selecciona si el docente es jefe de departamento o coordinador de ciclo">
+                            <span title="Selecciona si el docente es tutor de un grupo de alumnos">
                             <input type="checkbox" data-efpa="{{ efpa.id }}" class="perfil_docente"
                                    id="docente_tutor{{ efpa.id }}" {% if efpa.docente_tutor %}checked{% endif %}>
                                 <span style="color:#ff7722">Tutor</span>

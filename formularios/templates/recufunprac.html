@@ -367,16 +367,27 @@
 
         $('body').on('click', '#terminar_efpa', function (e) {
             e.preventDefault();
-            $.post(recufunprac,
-                {action: 'terminar_efpa', efpa: $('#efpa').val(), actor: $('#actor').val()},
-                function (data) {
-                    if (data.ok) {
-                        location.href = '/mis_evalpract/'
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                        show_error(data.msg);
-                    }
+            {# Número de preguntas totales: #}
+            var efprs = $('.radio_efpr') / 6;
+            {# Número de preguntas contestadas: #}
+            var efprs_contestadas = efprs.prop('checked', true).length / 6;
+            if (efprs === efprs_contestadas) {
+                $.post(recufunprac,
+                    {action: 'terminar_efpa', efpa: $('#efpa').val(), actor: $('#actor').val()},
+                    function (data) {
+                        if (data.ok) {
+                            location.href = '/mis_evalpract/'
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                            show_error(data.msg);
+                        }
+                    });
+            } else {
+                show_mensajes({
+                    title: 'Faltan preguntas por contestar',
+                    texto: 'Hay ' + efprs + 'cuestiones y has respondido a ' + efprs_contestadas + '.'
                 });
+            }
         });
 
         {# ########################################################################################### #}
