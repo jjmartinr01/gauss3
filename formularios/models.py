@@ -512,10 +512,13 @@ class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas A
 
     @property
     def cal_total(self):
-        calificacion = 0
-        for dim in self.procesoevalfunpract.evalfunpract.evalfunpractdim_set.all():
-            calificacion += self.cal_dim(dim)
-        return round(calificacion, 2)
+        try:
+            calificacion = 0
+            for dim in self.procesoevalfunpract.evalfunpract.evalfunpractdim_set.all():
+                calificacion += self.cal_dim(dim)
+            return round(calificacion, 2)
+        except:
+            return '---'
 
     class Meta:
         ordering = ['procesoevalfunpract', 'docente__ronda__entidad']
