@@ -2,7 +2,8 @@
 <table style="width: 100%">
     <thead>
     <tr>
-        <th colspan="6" style="text-align: center">{{ docente }}</th>
+        <th colspan="6" style="text-align: center" title="{{ docente.tipo_personal }} -- Jornada: {{ docente.jornada_contratada }}">
+            {{ docente.gauser.get_full_name }} -- {{ docente.ronda }} -- {{ docente.puesto|upper }}</th>
     </tr>
     <tr>
         <th></th>

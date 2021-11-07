@@ -397,6 +397,10 @@ class Sesion(models.Model):
     hora_inicio_cadena = models.CharField('Hora inicio periodo en formato H:i', max_length=8, blank=True, null=True)
     hora_fin_cadena = models.CharField('Hora fin periodo en formato H:i', max_length=8, blank=True, null=True)
 
+    @property
+    def minutos(self):
+        return self.hora_fin - self.hora_inicio
+
     class Meta:
         verbose_name_plural = "Sesiones"
         ordering = ['hora_inicio']

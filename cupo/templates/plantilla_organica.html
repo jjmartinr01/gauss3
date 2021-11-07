@@ -18,7 +18,7 @@
             cursor: s-resize;
         }
 
-        .dep_th:hover {
+        .edb_th:hover {
             cursor: help;
         }
 
@@ -88,13 +88,16 @@
             </div>
         </div>
 
-        {% if g_e|has_permiso:'carga_datos_sigpyn' %}
-        <div class="panel callout" id="panel_carga_archivo_sigpyn" style="display:none;">
+        {% if g_e|has_permiso:'carga_datos_casiopea' %}
+        <div class="panel callout" id="panel_carga_archivo_casiopea" style="display:none;">
             <div class="row">
                 <div class="large-12 columns">
                     <p style="font-weight: bold;color: #008CBA">La carga de datos para las plantillas se hace a través
-                        de un archivo
-                        tipo xls (Excel) obtenido de SIGPYN.</p>
+                        de un archivo tipo xls (Excel) obtenido del servidor Casiopea.</p>
+                    <p>Página web: <a href="https://casiopea.larioja.org/sgti/" target="_blank">
+                        https://casiopea.larioja.org/sgti/</a> </p>
+                    <p>Una vez en el servidor de Casiopea, el archivo excel se obtiene: "Consultas"
+                        <i class="fa fa-long-arrow-right"></i> "Plantilla".</p>
 {#                    <p>Este archivo se obtiene siguiendo la siguiente ruta:</p>#}
 {#                    <p>#}
                         {#                        Racima <i class="fa fa-long-arrow-right"></i> Módulo#}
@@ -111,13 +114,13 @@
 
             <div class="row">
                 <div class="large-3 columns">
-                    <b>Archivo xls (SIGPYN):</b>
+                    <b>Archivo xls (Casiopea):</b>
                 </div>
                 <div class="large-6 columns">
-                    <input type="file" name="file_masivo_xls_sigpyn" id="file_masivo_xls_sigpyn"/>
+                    <input type="file" name="file_masivo_xls_casiopea" id="file_masivo_xls_casiopea"/>
                 </div>
                 <div class="large-3 columns">
-                    <a class="button" id="archivo_xls_sigpyn">Cargar el archivo xls (SIGPYN)</a>
+                    <a class="button" id="archivo_xls_casiopea">Cargar el archivo xls (Casiopea)</a>
                 </div>
             </div>
         </div>
@@ -143,16 +146,16 @@
 {% block final %}
     <script>
         habilita(['s_cloud-upload']);
-        {% if g_e|has_permiso:'carga_datos_sigpyn' %}
+        {% if g_e|has_permiso:'carga_datos_casiopea' %}
             habilita(['s_upload']);
             $('#upload_sign').click(function (event) {
                 event.preventDefault();
-                $('#panel_carga_archivo_sigpyn').toggle();
+                $('#panel_carga_archivo_casiopea').toggle();
             });
 
-            $('#archivo_xls_sigpyn').click(function (e) {
+            $('#archivo_xls_casiopea').click(function (e) {
                 e.preventDefault();
-                if ($('#file_masivo_xls_sigpyn').val()) {
+                if ($('#file_masivo_xls_casiopea').val()) {
                     $('#action').val('carga_plantilla_organica_centros');
                     document.getElementById("{{ formname }}").submit();
                 } else {
@@ -221,18 +224,18 @@
             var ge = element.data('ge');
             var po = element.data('po');
             var codecol = element.data('codecol');
-            var departamento = element.data('departamento');
+            var edb = element.data('edb');
             var antiguo_texto = element.html();
             setTimeout(function () {
                 var nuevo_texto = element.html();
                 if (antiguo_texto === nuevo_texto) {
                     $.post("/plantilla_organica/", {
                             action: 'tdpdocente', ge: ge, valor: nuevo_texto, codecol: codecol, po: po,
-                            departamento: departamento
+                            edb: edb
                         },
                         function (data) {
                             if (data.ok) {
-                                $('#departamento' + departamento).html(data.html_departamento);
+                                $('#edb' + edb).html(data.html_edb);
                                 $('#horas_totales' + ge).html(data.horas_totales);
                                 $('#horas_basicas' + ge).html(data.horas_basicas);
                                 $("#update_ok").show().delay(1500).fadeOut();
@@ -282,18 +285,18 @@
         });
 
         {# ############################################################## #}
-        {# ############## Carga profesores del departamento ############# #}
+        {# # Carga profesores de una Especialidad Docente Básica (edb) # #}
         {# ############################################################## #}
 
-        function carga_profesores_departamento(departamento) {
-            var element = $('#tbody_departamento' + departamento);
+        function carga_profesores_edb(edb) {
+            var element = $('#tbody_edb' + edb);
             var contenido = element.html();
             if (!contenido) {
                 var po = $('#po').val();
-                $.post("/plantilla_organica/", {action: 'update_dep_th', departamento: departamento, po: po},
+                $.post("/plantilla_organica/", {action: 'update_edb_th', edb: edb, po: po},
                     function (data) {
                         if (data.ok) {
-                            $('#tbody_departamento' + departamento).html(data.html);
+                            $('#tbody_edb' + edb).html(data.html);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
@@ -302,19 +305,19 @@
             }
         }
 
-        $('body').on('mouseenter', '.dep_th', function (e) {
-            var departamento = $(this).data('departamento');
-            carga_profesores_departamento(departamento);
+        $('body').on('mouseenter', '.edb_th', function (e) {
+            var edb = $(this).data('edb');
+            carga_profesores_edb(edb);
         });
 
-        $('body').on('click', '.dep_th', function (e) {
+        $('body').on('click', '.edb_th', function (e) {
             {#var h = $('#cabecera_tabla_po').height();#}
             {#var top = $(this).offset().top;#}
             {#window.console.log(top);#}
             {#var element = $(this);#}
-            var departamento = $(this).data('departamento');
-            carga_profesores_departamento(departamento);
-            $('.docentes_dep' + departamento).toggle();
+            var edb = $(this).data('edb');
+            carga_profesores_edb(edb);
+            $('.docentes_edb' + edb).toggle();
             {#element.scrollTop(h);#}
             {#window.scrollTo(0, 50);#}
         });
@@ -407,7 +410,7 @@
                             for (var c = 0; c < data.data[o].columnas.length; c++) {
                                 $('#d' + data.data[o].departamento + '_' + data.data[o].columnas[c].codecol).html(data.data[o].columnas[c].periodos);
                             }
-                            $('#tbody_departamento' + data.data[o].departamento).html('');
+                            $('#tbody_edb' + data.data[o].departamento).html('');
                         }
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {

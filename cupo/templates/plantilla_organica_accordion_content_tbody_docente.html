@@ -1,7 +1,7 @@
 {% load cupo_extras %}
-{% for miembro in departamento.miembrodepartamento_set.all %}
+{% for miembro in edb.miembroedb_set.all %}
     {% with docente=miembro.g_e %}
-        <tr id="plantilladocente{{ docente.id }}" class="docentes_dep{{ departamento.id }}" style="display: none;">
+        <tr id="plantilladocente{{ docente.id }}" class="docentes_edb{{ edb.id }}" style="display: none;">
             <td>
                 <div class="nombre_horario" data-po="{{ po.id }}" data-docente="{{ docente.id }}">
                     <div class="docente">{{ docente.gauser.get_full_name }}</div>
@@ -13,11 +13,11 @@
             {% with horas=po|get_columnas_docente:docente %}
                 {% for columna in horas.columnas %}
                     <td data-codecol="{{ columna.codecol }}" contenteditable="true"
-                        data-departamento="{{ departamento.id }}"
+                        data-edb="{{ edb.id }}" title="Minutos: {{ columna.minutos }}"
                         data-ge="{{ docente.id }}" data-po="{{ po.id }}" class="tdpdocente">{{ columna.periodos }}</td>
                 {% endfor %}
 
-                <td id="horas_totales{{ docente.id }}"
+                <td id="horas_totales{{ docente.id }}" title="Minutos totales: {{ horas.minutos_totales }}"
                     style="font-weight: bold;text-align: center;">{{ horas.horas_totales }}</td>
                 <td id="horas_basicas{{ docente.id }}"
                     style="font-weight: bold;text-align: center;">{{ horas.horas_basicas }}</td>

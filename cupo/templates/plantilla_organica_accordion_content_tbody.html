@@ -4,7 +4,7 @@
         {% if forloop.first %}
             <thead>
             {% else %}
-            <thead class="docentes_dep{{ departamento.id }}" style="display: none;">
+            <thead class="docentes_edb{{ edb.id }}" style="display: none;">
         {% endif %}
     <tr>
         <th style="color: #1b75bb">&nbsp;</th>
@@ -18,18 +18,18 @@
     </thead>
 
         <thead>
-        <tr id="departamento{{ departamento.id }}">
-            {% include "plantilla_organica_accordion_content_tbody_departamento.html" %}
+        <tr id="edb{{ edb.id }}">
+            {% include "plantilla_organica_accordion_content_tbody_puesto.html" %}
         </tr>
         </thead>
-        <tbody id="tbody_departamento{{ departamento.id }}"></tbody>
+        <tbody id="tbody_edb{{ edb.id }}"></tbody>
     {% endfor %}
 {% else %}
-    {% for departamento in po.ronda_centro.get_departamentos.all %}
+    {% for edb in po.ronda_centro.especialidaddocentebasica_set.all %}
         {% if forloop.first %}
             <thead>
             {% else %}
-            <thead class="docentes_dep{{ departamento.id }}" style="display: none;">
+            <thead class="docentes_edb{{ edb.id }}" style="display: none;">
         {% endif %}
     <tr>
         <th style="color: #1b75bb">&nbsp;</th>
@@ -43,10 +43,10 @@
     </thead>
 
         <thead>
-        <tr id="departamento{{ departamento.id }}">
-            {% include "plantilla_organica_accordion_content_tbody_departamento.html" %}
+        <tr id="edb{{ edb.id }}">
+            {% include "plantilla_organica_accordion_content_tbody_puesto.html" %}
         </tr>
         </thead>
-        <tbody id="tbody_departamento{{ departamento.id }}"></tbody>
+        <tbody id="tbody_edb{{ edb.id }}"></tbody>
     {% endfor %}
 {% endif %}

@@ -9,7 +9,8 @@ from cupo.habilitar_permisos import Miembro_Equipo_Directivo
 from entidades.views import get_entidad_general
 from gauss.funciones import pass_generator
 from autenticar.models import Gauser, Permiso, Menu_default
-from entidades.models import Subentidad, Entidad, Ronda, Cargo, Gauser_extra, Dependencia, MiembroDepartamento, Menu
+from entidades.models import Subentidad, Entidad, Ronda, Cargo, Gauser_extra, Dependencia, MiembroDepartamento, Menu, \
+    EspecialidadDocenteBasica, MiembroEDB
 from entidades.models import Departamento as DepEntidad
 from entidades.menus_entidades import Menus_Centro_Educativo, TiposCentro
 from estudios.models import Materia, Curso, Grupo, EtapaEscolar
@@ -287,6 +288,7 @@ class PlantillaOrganica(models.Model):
     ronda_centro = models.ForeignKey(Ronda, on_delete=models.CASCADE, blank=True, null=True)
     horario = models.ForeignKey(Horario, on_delete=models.SET_NULL, blank=True, null=True)
     carga_completa = models.BooleanField('¿Se ha cargado completamente?', default=False)
+    minutos_periodo = models.IntegerField('Minutos de duración de clase docente', default=50)
     creado = models.DateTimeField("Fecha y hora creación de la PO", auto_now_add=True)
 
     class Meta:
@@ -438,8 +440,14 @@ class PlantillaOrganica(models.Model):
     def carga_puestos(self):
         puestos = self.plantillaxls_set.all().values('puesto', 'x_puesto').distinct()
         for p in puestos:
-            Cargo.objects.get_or_create(cargo=p['puesto'], clave_cargo=p['x_puesto'], borrable=False,
-                                        entidad=self.ronda_centro.entidad)
+            # Cargo.objects.get_or_create(cargo=p['puesto'], clave_cargo=p['x_puesto'], borrable=False,
+            #                             entidad=self.ronda_centro.entidad)
+            # edb, c = EspecialidadDocenteBasica.objects.get_or_create(ronda=self.ronda_centro, clave_ex=p['x_puesto'])
+            # edb.puesto = p['puesto']
+            # Decido no guardar x_puesto ya que genera varias especialidades iguales debido a diferencias de
+            # x_puesto entre maestros, catedráticos y profesores
+            edb, c = EspecialidadDocenteBasica.objects.get_or_create(ronda=self.ronda_centro, puesto=p['puesto'])
+            edb.save()
         return True
 
     ########################################################################
@@ -473,24 +481,29 @@ class PlantillaOrganica(models.Model):
     def carga_cargo_g_docente(self):
         egeneral, errores = get_entidad_general()
         cargo_data = Cargo.objects.get(clave_cargo='g_docente', entidad=egeneral).export_data()
-        cargo, c = Cargo.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_cargo=cargo_data['clave_cargo'],
-                                               borrable=False, cargo=cargo_data['cargo'])
+        cargo, c = Cargo.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_cargo='g_docente',
+                                               borrable=False)
+        cargo.cargo = 'Docente'
+        cargo.save()
         for code_nombre in cargo_data['permisos']:
             cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
         return cargo
 
-    def get_gex_docente(self, gauser, clave_ex, x_puesto, x_departamento, cargo):
+    def get_gex_docente(self, gauser, clave_ex, puesto, x_puesto, x_departamento, cargo):
         gex, c = Gauser_extra.objects.get_or_create(gauser=gauser, ronda=self.ronda_centro)
         gex.clave_ex = clave_ex
         gex.activo = True
+        gex.puesto = puesto
         gex.save()
+        edb = EspecialidadDocenteBasica.objects.get(ronda=self.ronda_centro, puesto=puesto)
+        MiembroEDB.objects.get_or_create(edb=edb, g_e=gex)
         gex.cargos.add(cargo)
-        try:
-            puesto = Cargo.objects.get(clave_cargo=x_puesto, entidad=self.ronda_centro.entidad)
-            gex.cargos.add(puesto)
-        except:
-            puesto = None
-            LogCarga.objects.create(g_e=gex, log='No encuentra puesto: %s' % x_puesto)
+        # try:
+        #     puesto = Cargo.objects.get(clave_cargo=x_puesto, entidad=self.ronda_centro.entidad)
+        #     gex.cargos.add(puesto)
+        # except:
+        #     puesto = None
+        #     LogCarga.objects.create(g_e=gex, log='No encuentra puesto: %s' % x_puesto)
         try:
             tipo_centro = self.ronda_centro.entidad.entidadextra.tipo_centro
             if 'C.E.I.P.' in tipo_centro or 'C.R.A.' in tipo_centro:
@@ -506,7 +519,7 @@ class PlantillaOrganica(models.Model):
         return gex
 
     def carga_docentes(self):
-        ges = self.plantillaxls_set.all().values('docente', 'x_docente', 'dni', 'email', 'x_puesto',
+        ges = self.plantillaxls_set.all().values('docente', 'x_docente', 'dni', 'email', 'puesto', 'x_puesto',
                                                  'x_departamento').distinct()
         x_docentes = []
         docentes = []
@@ -515,36 +528,32 @@ class PlantillaOrganica(models.Model):
             if not ge['x_docente'] in x_docentes:
                 x_docentes.append(ge['x_docente'])
                 last_name, first_name = ge['docente'].split(', ')
-                clave_ex, dni, x_puesto, x_departamento = ge['x_docente'], ge['dni'], ge['x_puesto'], ge[
-                    'x_departamento']
+                clave_ex, dni, puesto, x_puesto, x_departamento = ge['x_docente'], ge['dni'], ge['puesto'], ge[
+                    'x_puesto'], ge['x_departamento']
                 username, email = ge['email'].split('@')[0], ge['email']
                 try:
                     gauser = Gauser.objects.get(dni=dni)
-                    gauser.username = username
-                    gauser.first_name = first_name
-                    gauser.last_name = last_name
-                    gauser.email = email
-                    gauser.save()
-                    gex = self.get_gex_docente(gauser, clave_ex, x_puesto, x_departamento, cargo)
-                    docentes.append(gex)
                 except Exception as msg:
                     log = 'Error: %s. dni %s - username %s' % (str(msg), dni, username)
                     LogCarga.objects.create(g_e=self.g_e, log=log)
-                    # logger.warning('Error: %s. dni %s - username %s' % (str(msg), dni, username))
                     try:
                         gex = Gauser_extra.objects.get(clave_ex=clave_ex, ronda=self.ronda_centro)
+                        gauser = gex.gauser
+                        gauser.set_password(pass_generator(size=9))
                         log = 'Sin embargo existe usuario con clave_x: %s - %s' % (clave_ex, gex)
                         logger.warning(log)
                         LogCarga.objects.create(g_e=self.g_e, log=log)
                     except:
                         try:
                             gauser = Gauser.objects.get(email=email)
+                            gauser.set_password(pass_generator(size=9))
                             log = 'Sin embargo existe usuario con email: %s - %s' % (email, gauser)
                             logger.warning(log)
                             LogCarga.objects.create(g_e=self.g_e, log=log)
                         except:
                             try:
-                                Gauser.objects.get(username=username)
+                                gauser = Gauser.objects.get(username=username)
+                                gauser.set_password(pass_generator(size=9))
                                 log = 'Ya existe un usuario: %s' % username
                                 logger.warning(log)
                                 LogCarga.objects.create(g_e=self.g_e, log=log)
@@ -553,12 +562,14 @@ class PlantillaOrganica(models.Model):
                                                                     password=pass_generator(size=9))
                                 log = 'Creado usuario: %s' % (gauser)
                                 LogCarga.objects.create(g_e=self.g_e, log=log)
-                                gauser.first_name = first_name[0:29]
-                                gauser.last_name = last_name[0:29]
-                                gauser.dni = dni
-                                gauser.save()
-                                gex = self.get_gex_docente(gauser, clave_ex, x_puesto, x_departamento, cargo)
-                                docentes.append(gex)
+                gauser.username = username
+                gauser.dni = dni
+                gauser.first_name = first_name[0:29]
+                gauser.last_name = last_name[0:29]
+                gauser.email = email
+                gauser.save()
+                gex = self.get_gex_docente(gauser, clave_ex, puesto, x_puesto, x_departamento, cargo)
+                docentes.append(gex)
         return docentes
 
     ########################################################################
@@ -594,7 +605,8 @@ class PlantillaOrganica(models.Model):
                     grupo = None
                 try:
                     if p.x_dependencia != '-1':
-                        dependencia = Dependencia.objects.get(clave_ex=p.x_dependencia, entidad=self.ronda_centro.entidad)
+                        dependencia = Dependencia.objects.get(clave_ex=p.x_dependencia,
+                                                              entidad=self.ronda_centro.entidad)
                     else:
                         dependencia = None
                 except:
@@ -645,18 +657,19 @@ class PlantillaOrganica(models.Model):
 
     def carga_pdocente(self, gex):
         grexc = self.grupoexcluido_set.all().values_list('grupo__id', flat=True)
-        LogCarga.objects.create(g_e=gex, log=grexc.count())
+        # LogCarga.objects.create(g_e=gex, log='%s grupos excluidos en carga_pdocente %s' % (grexc.count(), gex))
         sextras = SesionExtra.objects.filter(sesion__horario=self.horario, sesion__g_e=gex)
-        LogCarga.objects.create(g_e=gex, log=sextras.count())
+        # LogCarga.objects.create(g_e=gex, log=sextras.count())
         sextras = sextras.filter(~Q(grupo__id__in=grexc))
-        LogCarga.objects.create(g_e=gex, log=sextras.count())
+        # LogCarga.objects.create(g_e=gex, log=sextras.count())
         pd, c = PDocente.objects.get_or_create(po=self, g_e=gex)
         for apartado in self.estructura_po:
             for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
                 pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'])
                 pdc.nombre = nombre_columna
-                pdc.periodos = sextras.filter(contenido_columna['q']).values_list('sesion',
-                                                                                  flat=True).distinct().count()
+                sesiones_id = sextras.filter(contenido_columna['q']).values_list('sesion__id', flat=True)
+                pdc.sesiones.add(*Sesion.objects.filter(id__in=sesiones_id))
+                pdc.periodos = pdc.sesiones.count()
                 pdc.save()
 
     def carga_pdocentes(self):
@@ -813,10 +826,23 @@ class PDocenteCol(models.Model):
     pd = models.ForeignKey(PDocente, on_delete=models.CASCADE)
     codecol = models.IntegerField('Código de identificación de la columna', default=0)
     nombre = models.CharField('Nombre de la columna', max_length=50)
-    periodos = models.IntegerField('Horas impartidas', default=0)
+    periodos = models.IntegerField('Periodos en horario impartidos', default=0)
+    sesiones = models.ManyToManyField(Sesion, blank=True)
+
+    @property
+    def num_sesiones(self):
+        return self.sesiones.count()
+
+    @property
+    def minutos(self):
+        num_minutos = 0
+        for s in self.sesiones.all():
+            num_minutos += s.minutos
+        return num_minutos
+
 
     def __str__(self):
-        return '%s - %s - (%s)' % (self.pd, self.nombre, self.periodos)
+        return '%s - %s - (%s periodos y %s minutos)' % (self.pd, self.nombre, self.periodos, self.minutos)
 
 
 class GrupoExcluido(models.Model):

@@ -1,0 +1,20 @@
+{% load cupo_extras %}
+{% if edb.puesto %}
+    <th style="color: #1b75bb" class="edb_th" data-edb="{{ edb.id }}" data-po="{{ po.id }}" data-cargado="false">{{ edb.puesto }}
+        <span style="font-size: small; font-weight: normal; color: gray;"
+              title="Número de docentes">({{ edb.miembroedb_set.all|length }} docentes)</span></th>
+{% else %}
+    <th style="color: #1b75bb" class="edb_th" data-edb="{{ edb.id }}" data-po="{{ po.id }}" data-cargado="false">Docentes sin especialidad
+        <span style="font-size: small; font-weight: normal; color: gray;"
+              title="Número de docentes">({{ edb.miembroedb_set.all|length }} docentes)</span></th>
+{% endif %}
+
+{% with horas=po|get_columnas_edb:edb %}
+    {% for columna in horas.columnas %}
+        <th id="d{{ edb.id }}_{{ columna.codecol }}" data-codecol="{{ columna.codecol }}">{{ columna.periodos }}</th>
+    {% endfor %}
+
+    <th id="d_horas_totales{{ edb.id }}" style="font-weight: bold;text-align: center;">{{ horas.horas_totales }}</th>
+    <th id="d_horas_basicas{{ edb.id }}" style="font-weight: bold;text-align: center;">{{ horas.horas_basicas }}</th>
+    <th id="d_horas_plantilla{{ edb.id }}" style="font-weight: bold;text-align: center;">{{ horas.horas_plantilla }}</th>
+{% endwith %}

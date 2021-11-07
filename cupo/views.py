@@ -28,7 +28,8 @@ from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, Especia
     CursoCupo, EtapaEscolarCupo, CupoPermisos, CargaPlantillaOrganicaCentros, EspecialidadPlantilla
 from cupo.models import PlantillaOrganica, PDocenteCol
 from cupo.habilitar_permisos import ESPECIALIDADES
-from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento, Especialidad_funcionario, Entidad
+from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento, Especialidad_funcionario, Entidad, \
+    EspecialidadDocenteBasica
 from entidades.models import Departamento as Depentidad
 from estudios.models import Curso, Materia, Grupo, EtapaEscolar
 from horarios.tasks import carga_masiva_from_file
@@ -1197,8 +1198,8 @@ def plantilla_organica(request):
             carga_masiva_from_file.delay()
             crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
         elif request.POST['action'] == 'carga_plantilla_organica_centros':
-            logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls_sigpyn'].content_type)
-            fichero = request.FILES['file_masivo_xls_sigpyn']
+            logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls_casiopea'].content_type)
+            fichero = request.FILES['file_masivo_xls_casiopea']
             f = fichero.read()
             book = xlrd.open_workbook(file_contents=f)
             sheet = book.sheet_by_index(0)
@@ -1247,15 +1248,12 @@ def plantilla_organica(request):
             carga_masiva_from_file.delay()
             crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
         elif request.POST['action'] == 'open_accordion' and request.is_ajax():
-            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
-            html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
-            return JsonResponse({'ok': True, 'html': html})
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
                 html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
-            except:
-                return JsonResponse({'ok': False})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'carga_parcial_plantilla' and request.is_ajax():
             po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
             funcion = request.POST['funcion']
@@ -1265,15 +1263,16 @@ def plantilla_organica(request):
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
                 ge = Gauser_extra.objects.get(ronda=po.ronda_centro, id=request.POST['ge'])
-                departamento = Depentidad.objects.get(ronda=po.ronda_centro, id=request.POST['departamento'])
+                edb = EspecialidadDocenteBasica.objects.get(ronda=po.ronda_centro, id=request.POST['edb'])
+                # departamento = Depentidad.objects.get(ronda=po.ronda_centro, id=request.POST['departamento'])
                 pdcol = PDocenteCol.objects.get(pd__po=po, pd__g_e=ge, codecol=request.POST['codecol'])
                 # Para evitar los caracteres no numéricos obtenidos del div contenteditable no basta con int():
                 pdcol.periodos = int("".join(filter(str.isdigit, request.POST['valor'])))
                 pdcol.save()
                 data = get_columnas_docente(po, ge)
-                html_departamento = render_to_string('plantilla_organica_accordion_content_tbody_departamento.html',
-                                                     {'departamento': departamento, 'po': po})
-                return JsonResponse({'ok': True, 'html_departamento': html_departamento,
+                html_edb = render_to_string('plantilla_organica_accordion_content_tbody_puesto.html',
+                                                     {'edb': edb, 'po': po})
+                return JsonResponse({'ok': True, 'html_edb': html_edb,
                                      'horas_basicas': data['horas_basicas'], 'horas_totales': data['horas_totales']})
             except:
                 return JsonResponse({'ok': False})
@@ -1331,12 +1330,15 @@ def plantilla_organica(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'update_dep_th':
+        elif request.POST['action'] == 'update_edb_th':
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
-                departamento = Depentidad.objects.get(id=request.POST['departamento'])
+                # departamento = Depentidad.objects.get(id=request.POST['departamento'])
+                # html = render_to_string('plantilla_organica_accordion_content_tbody_docente.html',
+                #                         {'po': po, 'departamento': departamento})
+                edb = EspecialidadDocenteBasica.objects.get(id=request.POST['edb'])
                 html = render_to_string('plantilla_organica_accordion_content_tbody_docente.html',
-                                        {'po': po, 'departamento': departamento})
+                                        {'po': po, 'edb': edb})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
@@ -1386,8 +1388,8 @@ def plantilla_organica(request):
                       'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos Racima',
                                   'title': 'Cargar datos a partir de archivo obtenido de Racima',
                                   'permiso': 'libre'},
-                                 {'tipo': 'button', 'nombre': 'upload', 'texto': 'Cargar datos SIGPYN',
-                                  'title': 'Cargar datos a partir de archivo obtenido de SIGPYN',
+                                 {'tipo': 'button', 'nombre': 'upload', 'texto': 'Cargar datos Casiopea',
+                                  'title': 'Cargar datos a partir de archivo obtenido de Casiopea',
                                   'permiso': 'libre'}, {}),
                       'formname': 'plantilla_organica',
                       'plantillas_o': plantillas_o,

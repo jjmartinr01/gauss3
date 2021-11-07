@@ -1,6 +1,3 @@
-from autenticar.models import Permiso
-from entidades.models import Cargo, Gauser_extra
-
 Miembro_Equipo_Directivo = ['acceso_configuracion', 'acceso_perfiles_permisos', 'asigna_perfiles', 'asigna_permisos',
                             'modifica_texto_menu', 'modifica_pos_menu', 'acceso_datos_entidad',
                             'modifica_datos_entidad', 'crea_dependencias', 'borra_dependencias', 'acceso_mensajes',
@@ -71,7 +68,15 @@ Miembro_Equipo_Directivo = ['acceso_configuracion', 'acceso_perfiles_permisos', 
                             'acceso_tutores_entidad', 'acceso_inspeccion_educativa', 'acceso_actas_firmadas',
                             'sube_actas_evaluacion']
 
-ESPECIALIDADES = (("001", "Filosofía", "590"),
+ESPECIALIDADES = (("031", "Educación Infantil", "597"),
+                  ("032", "Inglés", "597"),
+                  ("033", "Francés", "597"),
+                  ("034", "Educación Física", "597"),
+                  ("035", "Música", "597"),
+                  ("036", "Pedagogía Terapéutica", "597"),
+                  ("037", "Audición y Lenguaje", "597"),
+                  ("038", "Educación Primaria", "597"),
+                  ("001", "Filosofía", "590"),
                   ("002", "Griego", "590"),
                   ("003", "Latín", "590"),
                   ("004", "Lengua Castellana y Literatura", "590"),
@@ -373,12 +378,4 @@ ESPECIALIDADES = (("001", "Filosofía", "590"),
                   ("618", "Técnicas del Metal", "596"),
                   ("619", "Técnicas Murales", "596"),
                   ("620", "Técnicas Textiles", "596"),
-                  ("621", "Técnicas Vidrieras", "596"),
-                  ("031", "Educación Infantil", "597"),
-                  ("032", "Inglés", "597"),
-                  ("033", "Francés", "597"),
-                  ("034", "Educación Física", "597"),
-                  ("035", "Música", "597"),
-                  ("036", "Pedagogía Terapéutica", "597"),
-                  ("037", "Audición y Lenguaje", "597"),
-                  ("038", "Educación Primaria", "597"))
+                  ("621", "Técnicas Vidrieras", "596"),)

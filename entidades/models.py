@@ -14,6 +14,7 @@ from django.dispatch import receiver
 import os
 
 from bancos.views import get_banco_from_num_cuenta_bancaria
+from cupo.habilitar_permisos import ESPECIALIDADES
 from gauss.constantes import *
 from gauss.rutas import *
 from bancos.models import Banco
@@ -1359,13 +1360,39 @@ class MiembroDepartamento(models.Model):
         return '%s - dep: %s - puesto: %s' % (self.g_e, self.departamento.nombre, self.get_puesto())
 
 
-# class MiembroEspecialidad(models.Model):
-#     departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE)
-#     g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
-#     especialidad = models.ForeignKey(Especialidad_funcionario, on_delete=models.CASCADE, blank=True, null=True)
-#
-#     def get_puesto(self):
-#         return Cargo.objects.get(entidad=self.departamento.ronda.entidad, clave_cargo=self.puesto)
-#
-#     def __str__(self):
-#         return '%s - dep: %s - puesto: %s' % (self.g_e, self.departamento.nombre, self.get_puesto())
+class EspecialidadDocenteBasica(models.Model):
+    ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE)
+    puesto = models.CharField('Denominación puesto', max_length=310)
+    clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
+    orden = models.IntegerField("Orden en el listado de departamentos", default=100)
+
+    def save(self, *args, **kwargs):
+        posiciones = {a[1]: int(a[0]) for a in ESPECIALIDADES}
+        # Se obtiene una lista del tipo:
+        # posiciones = {'Griego': 2, 'Orientación Educativa': 20, 'Tecnología': 14, 'Educación Física': 13,
+        #               'Filosofía': 1, 'Geografía e Historia': 5, 'Inglés': 11, 'Formación y Orientación Laboral': 17,
+        #               'Lengua Castellana y Literatura': 4, 'Ciencias Naturales': 8, 'Latín': 3, 'Artes Plásticas': 9,
+        #               'Física y Química': 7, 'Música': 16, 'Economía': 15, 'Cultura Clásica': 16, 'Francés': 10,
+        #               'Dibujo': 9, 'Biología y Geología': 8, 'Alemán': 12, 'Apoyo al Área de Ciencias o Tecnología': 60,
+        #               'Apoyo al Área de Lengua y Ciencias Sociales': 61, 'Pedagogía Terapéutica': 36, 'Italiano': 13,
+        #               'Audición y Lenguaje': 37, 'Educación Infantil': 31, 'Educación Primaria': 32, 'Matemáticas': 6}
+        nombre_especialidad = get_close_matches(self.puesto, posiciones, 1)
+        if len(nombre_especialidad) > 0:
+            self.orden = posiciones[nombre_especialidad[0]]
+        else:
+            self.orden = 800
+        super(EspecialidadDocenteBasica, self).save(*args, **kwargs)
+
+    class Meta:
+        verbose_name_plural = "Especialidades docentes básicas"
+        ordering = ['orden', 'puesto']
+
+    def __str__(self):
+        return '%s - %s - %s' % (self.clave_ex, self.puesto, self.ronda)
+
+class MiembroEDB(models.Model):
+    edb = models.ForeignKey(EspecialidadDocenteBasica, on_delete=models.CASCADE)
+    g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '%s - g_e: %s' % (self.edb, self.g_e)
