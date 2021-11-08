@@ -23,7 +23,8 @@ from django.template.loader import render_to_string
 from django.utils.text import slugify
 
 from autenticar.control_acceso import permiso_required
-from autenticar.models import Permiso
+from autenticar.models import Permiso, Menu_default
+from autenticar.views import crea_menu_from_default
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from formularios.models import *
@@ -1097,6 +1098,9 @@ def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_
                     efpa.tutor.permisos.add(*permisos)
                     efpa.director.permisos.add(*permisos)
                     efpa.docente.permisos.add(*permisos)
+                    menu_default = Menu_default.objects.get(code_menu='acceso_mis_evalpract')
+                    crea_menu_from_default(menu_default.parent, efpa.director.ronda.entidad)
+                    crea_menu_from_default(menu_default, efpa.director.ronda.entidad)
                 # Fin de líneas borrables
                 html = render_to_string('procesos_evaluacion_funcpract_accordion_content.html',
                                         {'pefp': pefp, 'g_e': g_e})
