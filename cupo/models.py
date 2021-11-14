@@ -673,22 +673,25 @@ class PlantillaOrganica(models.Model):
     ############ Cálculos para cada docente:
 
     def carga_pdocente(self, gex):
-        grexc = self.grupoexcluido_set.all().values_list('grupo__id', flat=True)
-        # LogCarga.objects.create(g_e=gex, log='%s grupos excluidos en carga_pdocente %s' % (grexc.count(), gex))
-        sextras = SesionExtra.objects.filter(sesion__horario=self.horario, sesion__g_e=gex)
-        # LogCarga.objects.create(g_e=gex, log=sextras.count())
-        sextras = sextras.filter(~Q(grupo__id__in=grexc))
-        # LogCarga.objects.create(g_e=gex, log=sextras.count())
-        pd, c = PDocente.objects.get_or_create(po=self, g_e=gex)
-        for apartado in self.estructura_po:
-            for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
-                pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'],
-                                                           periodos_base=contenido_columna['horas_base'])
-                pdc.nombre = nombre_columna
-                sesiones_id = sextras.filter(contenido_columna['q']).values_list('sesion__id', flat=True)
-                pdc.sesiones.add(*Sesion.objects.filter(id__in=sesiones_id))
-                pdc.periodos = pdc.sesiones.count()
-                pdc.save()
+        try:
+            grexc = self.grupoexcluido_set.all().values_list('grupo__id', flat=True)
+            # LogCarga.objects.create(g_e=gex, log='%s grupos excluidos en carga_pdocente %s' % (grexc.count(), gex))
+            sextras = SesionExtra.objects.filter(sesion__horario=self.horario, sesion__g_e=gex)
+            # LogCarga.objects.create(g_e=gex, log=sextras.count())
+            sextras = sextras.filter(~Q(grupo__id__in=grexc))
+            # LogCarga.objects.create(g_e=gex, log=sextras.count())
+            pd, c = PDocente.objects.get_or_create(po=self, g_e=gex)
+            for apartado in self.estructura_po:
+                for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
+                    pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'],
+                                                               periodos_base=contenido_columna['horas_base'])
+                    pdc.nombre = nombre_columna
+                    sesiones_id = sextras.filter(contenido_columna['q']).values_list('sesion__id', flat=True)
+                    pdc.sesiones.add(*Sesion.objects.filter(id__in=sesiones_id))
+                    pdc.periodos = pdc.sesiones.count()
+                    pdc.save()
+        except Exception as msg:
+            LogCarga.objects.create(g_e=gex, log=str(msg))
 
     def carga_pdocentes(self):
         cargo_docente = Cargo.objects.get(entidad=self.ronda_centro.entidad, clave_cargo='g_docente')
