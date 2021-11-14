@@ -538,11 +538,18 @@ class PlantillaOrganica(models.Model):
                 last_name, first_name = ge['docente'].split(', ')
                 clave_ex, dni, puesto, x_puesto, x_departamento = ge['x_docente'], ge['dni'], ge['puesto'], ge[
                     'x_puesto'], ge['x_departamento']
+                dni_inicial = dni
                 if len(dni) == 8:
                     dni = '0%s' % dni
                 username, email = ge['email'].split('@')[0], ge['email']
                 try:
-                    gauser = Gauser.objects.get(dni=dni)
+                    if len(dni_inicial) == 8:
+                        try:
+                            gauser = Gauser.objects.get(dni=dni_inicial)
+                        except:
+                            gauser = Gauser.objects.get(dni=dni)
+                    else:
+                        gauser = Gauser.objects.get(dni=dni)
                 except Exception as msg:
                     log = 'Error: %s. dni %s - username %s' % (str(msg), dni, username)
                     LogCarga.objects.create(g_e=self.g_e, log=log)
