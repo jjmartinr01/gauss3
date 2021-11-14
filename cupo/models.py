@@ -275,6 +275,10 @@ class EspecialidadPlantilla(models.Model):
     def cod_especialidad(self):
         return self.code[3:]
 
+    @property
+    def jornadas_incompletas(self):
+        return self.code[3:]
+
     class Meta:
         verbose_name_plural = 'Especialidades en Plantilla Orgánica'
         ordering = ['-cpoc__creado']
@@ -447,7 +451,7 @@ class PlantillaOrganica(models.Model):
             # Decido no guardar x_puesto ya que genera varias especialidades iguales debido a diferencias de
             # x_puesto entre maestros, catedráticos y profesores
             edb, c = EspecialidadDocenteBasica.objects.get_or_create(ronda=self.ronda_centro, puesto=p['puesto'])
-            edb.save()
+            # edb.save()
         return True
 
     ########################################################################
@@ -481,8 +485,12 @@ class PlantillaOrganica(models.Model):
     def carga_cargo_g_docente(self):
         egeneral, errores = get_entidad_general()
         cargo_data = Cargo.objects.get(clave_cargo='g_docente', entidad=egeneral).export_data()
-        cargo, c = Cargo.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_cargo='g_docente',
-                                               borrable=False)
+        try:
+            cargo, c = Cargo.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_cargo='g_docente',
+                                                   borrable=False)
+        except:
+            Cargo.objects.filter(entidad=self.ronda_centro.entidad, clave_cargo='g_docente').delete()
+            cargo = Cargo.objects.create(entidad=self.ronda_centro.entidad, clave_cargo='g_docente', borrable=False)
         cargo.cargo = 'Docente'
         cargo.save()
         for code_nombre in cargo_data['permisos']:
@@ -495,7 +503,7 @@ class PlantillaOrganica(models.Model):
         gex.activo = True
         gex.puesto = puesto
         gex.save()
-        edb = EspecialidadDocenteBasica.objects.get(ronda=self.ronda_centro, puesto=puesto)
+        edb, c = EspecialidadDocenteBasica.objects.get_or_create(ronda=self.ronda_centro, puesto=puesto)
         MiembroEDB.objects.get_or_create(edb=edb, g_e=gex)
         gex.cargos.add(cargo)
         # try:
@@ -530,6 +538,8 @@ class PlantillaOrganica(models.Model):
                 last_name, first_name = ge['docente'].split(', ')
                 clave_ex, dni, puesto, x_puesto, x_departamento = ge['x_docente'], ge['dni'], ge['puesto'], ge[
                     'x_puesto'], ge['x_departamento']
+                if len(dni) == 8:
+                    dni = '0%s' % dni
                 username, email = ge['email'].split('@')[0], ge['email']
                 try:
                     gauser = Gauser.objects.get(dni=dni)
@@ -665,7 +675,8 @@ class PlantillaOrganica(models.Model):
         pd, c = PDocente.objects.get_or_create(po=self, g_e=gex)
         for apartado in self.estructura_po:
             for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
-                pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'])
+                pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'],
+                                                           periodos_base=contenido_columna['horas_base'])
                 pdc.nombre = nombre_columna
                 sesiones_id = sextras.filter(contenido_columna['q']).values_list('sesion__id', flat=True)
                 pdc.sesiones.add(*Sesion.objects.filter(id__in=sesiones_id))
@@ -818,6 +829,49 @@ class PDocente(models.Model):
     def horas_totales(self):
         return sum(self.pdocentecol_set.all().values_list('periodos', flat=True))
 
+    @property
+    def num_sesiones(self):
+        p = 0
+        for pdcol in self.pdocentecol_set.all():
+            p += pdcol.sesiones.all().count()
+        return p
+
+    @property
+    def minutos_periodo(self):
+        tipo_centro = self.g_e.ronda.entidad.entidadextra.tipo_centro
+        if 'I.E.S.' in tipo_centro:
+            mins_periodo = 55
+        elif 'C.E.P.A' in tipo_centro:
+            mins_periodo = 45
+        elif 'C.E.I.P.' in tipo_centro:
+            mins_periodo = 60
+        elif 'C.R.A.' in tipo_centro:
+            mins_periodo = 60
+        elif self.g_e.jornada_contratada in ['23:00', '24:00', '25:00', '16:40', '8:20']:
+            mins_periodo = 60
+        else:
+            mins_periodo = 55
+        return mins_periodo
+
+    @property
+    def num_minutos_docencia(self):
+        minutos = 0
+        for pdcol in self.pdocentecol_set.all():
+            minutos += pdcol.minutos
+        return minutos
+
+    @property
+    def num_periodos_docencia(self):
+        return int(self.num_minutos_docencia / self.minutos_periodo)
+
+    @property
+    def num_periodos_basicos(self):
+        minutos = 0
+        for pdcol in self.pdocentecol_set.all():
+            if pdcol.periodos_base:
+                minutos += pdcol.minutos
+        return int(minutos / self.minutos_periodo)
+
     def __str__(self):
         return '%s - %s' % (self.po, self.g_e)
 
@@ -828,18 +882,37 @@ class PDocenteCol(models.Model):
     nombre = models.CharField('Nombre de la columna', max_length=50)
     periodos = models.IntegerField('Periodos en horario impartidos', default=0)
     sesiones = models.ManyToManyField(Sesion, blank=True)
+    periodos_base = models.BooleanField('¿Son periodos básicos contados para plantilla?', default=True)
+    periodos_added = models.IntegerField('Periodos en pantalla', default=0)
 
     @property
     def num_sesiones(self):
         return self.sesiones.count()
 
     @property
+    def num_periodos_sesiones(self):
+        num_minutos = 0
+        for s in self.sesiones.all():
+            num_minutos += s.minutos
+        return int(num_minutos / self.pd.minutos_periodo)
+
+    @property
     def minutos(self):
         num_minutos = 0
         for s in self.sesiones.all():
             num_minutos += s.minutos
-        return num_minutos
+        return num_minutos + self.periodos_added * self.pd.minutos_periodo
 
+    @property
+    def num_periodos(self):
+        return int(self.minutos / self.pd.minutos_periodo)
+
+    class Meta:
+        ordering = ['codecol',]
+
+    def save(self, *args, **kwargs):
+        self.periodos = self.num_periodos
+        super(PDocenteCol, self).save(*args, **kwargs)
 
     def __str__(self):
         return '%s - %s - (%s periodos y %s minutos)' % (self.pd, self.nombre, self.periodos, self.minutos)

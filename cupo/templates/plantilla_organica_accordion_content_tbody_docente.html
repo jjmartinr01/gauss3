@@ -4,25 +4,42 @@
         <tr id="plantilladocente{{ docente.id }}" class="docentes_edb{{ edb.id }}" style="display: none;">
             <td>
                 <div class="nombre_horario" data-po="{{ po.id }}" data-docente="{{ docente.id }}">
-                    <div class="docente">{{ docente.gauser.get_full_name }}</div>
+                    <div class="docente"><b>{{ docente.gauser.get_full_name }}</b><br>
+                        Jornada: <i>{{ docente.jornada_contratada }}</i><br>
+                        {{ docente.tipo_personal }}</div>
                     <div class="div_get_horario"><a class="get_horario"><i class="fa fa-calendar"></i></a></div>
                 </div>
                 <div class="materias_docente" id="materias_docente{{ docente.id }}"></div>
             </td>
 
-            {% with horas=po|get_columnas_docente:docente %}
-                {% for columna in horas.columnas %}
-                    <td data-codecol="{{ columna.codecol }}" contenteditable="true"
-                        data-edb="{{ edb.id }}" title="Minutos: {{ columna.minutos }}"
-                        data-ge="{{ docente.id }}" data-po="{{ po.id }}" class="tdpdocente">{{ columna.periodos }}</td>
+            {% with pdocente=po|get_pdocente:docente %}
+                {% for pdcol in pdocente.pdocentecol_set.all %}
+                    <td data-codecol="{{ pdcol.codecol }}" contenteditable="true"
+                        data-edb="{{ edb.id }}" title="Minutos: {{ pdcol.minutos }}"
+                        data-ge="{{ docente.id }}" data-po="{{ po.id }}"
+                        class="tdpdocente">{{ pdcol.periodos }}</td>
                 {% endfor %}
-
-                <td id="horas_totales{{ docente.id }}" title="Minutos totales: {{ horas.minutos_totales }}"
-                    style="font-weight: bold;text-align: center;">{{ horas.horas_totales }}</td>
+                <td id="horas_totales{{ docente.id }}" class="has-tip tip-top" data-tooltip aria-haspopup="true"
+                    title="Minutos totales: {{ pdocente.num_minutos_docencia }}<br>Minutos por periodo: {{ pdocente.minutos_periodo }}<br>Periodos de {{ pdocente.minutos_periodo }}: {{ pdocente.num_periodos_docencia }}"
+                    style="font-weight: bold;text-align: center;">{{ pdocente.num_periodos_docencia }}</td>
                 <td id="horas_basicas{{ docente.id }}"
-                    style="font-weight: bold;text-align: center;">{{ horas.horas_basicas }}</td>
+                    style="font-weight: bold;text-align: center;">{{ pdocente.num_periodos_basicos }}</td>
                 <td></td>
             {% endwith %}
+            {#            {% with horas=po|get_columnas_docente:docente %}#}
+            {#                {% for columna in horas.columnas %}#}
+            {#                    <td data-codecol="{{ columna.codecol }}" contenteditable="true"#}
+            {#                        data-edb="{{ edb.id }}" title="Minutos: {{ columna.minutos }}"#}
+            {#                        data-ge="{{ docente.id }}" data-po="{{ po.id }}" class="tdpdocente">{{ columna.periodos }}</td>#}
+            {#                {% endfor %}#}
+            {##}
+            {#                <td id="horas_totales{{ docente.id }}" class="has-tip tip-top" data-tooltip aria-haspopup="true"#}
+            {#                    title="Minutos totales: {{ horas.minutos_totales }}<br>Minutos por periodo: {{ horas.mins_periodo }}<br>Periodos de {{ horas.mins_periodo }}: {{ horas.horas }}"#}
+            {#                    style="font-weight: bold;text-align: center;">{{ horas.horas_totales }}</td>#}
+            {#                <td id="horas_basicas{{ docente.id }}"#}
+            {#                    style="font-weight: bold;text-align: center;">{{ horas.horas_basicas }}</td>#}
+            {#                <td></td>#}
+            {#            {% endwith %}#}
         </tr>
     {% endwith %}
 {% endfor %}

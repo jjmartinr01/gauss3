@@ -1,10 +1,25 @@
 # -*- coding: utf-8 -*-
 from django.template import Library
 from autenticar.models import Permiso
-from entidades.models import Subentidad, Gauser_extra
+from entidades.models import Subentidad, Gauser_extra, Cargo
 from estudios.models import Gauser_extra_estudios
 
 register = Library()
+
+@register.filter
+def profesorado(entidad):
+    cargos = Cargo.objects.filter(entidad=entidad, clave_cargo='g_docente')
+    return Gauser_extra.objects.filter(ronda=entidad.ronda, cargos__in=cargos)
+
+@register.filter
+def puestos_especialidad(entidad):
+    cargos = Cargo.objects.filter(entidad=entidad, clave_cargo='g_docente')
+    return set(Gauser_extra.objects.filter(ronda=entidad.ronda, cargos__in=cargos).values_list('puesto', flat=True))
+
+@register.filter
+def profesorado_puestos_especialidad(entidad, puesto):
+    cargos = Cargo.objects.filter(entidad=entidad, clave_cargo='g_docente')
+    return Gauser_extra.objects.filter(ronda=entidad.ronda, cargos__in=cargos, puesto=puesto)
 
 
 @register.filter

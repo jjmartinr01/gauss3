@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+from difflib import get_close_matches
 from django.template import Library
 from django.db.models import Q, Sum
-from cupo.models import PlantillaXLS, PDocenteCol, CargaPlantillaOrganicaCentros, EspecialidadPlantilla
+from cupo.models import PlantillaXLS, PDocenteCol, CargaPlantillaOrganicaCentros, EspecialidadPlantilla, PDocente
+from entidades.models import Cargo, Gauser_extra
 from programaciones.models import Departamento
 from estudios.models import Grupo
 
@@ -15,13 +17,57 @@ def departamentos(cupo):
 
 ##########################################
 @register.filter
-def get_plazas(po):
+def get_plazas_puesto_incompletas(objeto, puesto):
+    completas = ['18:00', '19:00', '20:00', '21:00', '22:00', '23:00', '24:00']
+    if objeto.__class__.__name__ == 'Entidad':
+        centro = objeto  # El objeto es del tipo Entidad
+    else:
+        centro = objeto.ronda_centro.entidad  # El objeto es del tipo PlantillaOrganica
+    ges_totales = Gauser_extra.objects.filter(ronda=centro.ronda, puesto=puesto)
+    ges_completas = ges_totales.filter(jornada_contratada__in=completas)
+    return ges_totales.count() - ges_completas.count()
+
+
+@register.filter
+def get_plazas_puesto_completas(objeto, puesto):
+    completas = ['18:00', '19:00', '20:00', '21:00', '22:00', '23:00', '24:00']
+    if objeto.__class__.__name__ == 'Entidad':
+        centro = objeto  # El objeto es del tipo Entidad
+    else:
+        centro = objeto.ronda_centro.entidad  # El objeto es del tipo PlantillaOrganica
+    ges_totales = Gauser_extra.objects.filter(ronda=centro.ronda, puesto=puesto)
+    ges_completas = ges_totales.filter(jornada_contratada__in=completas)
+    return ges_completas.count()
+
+
+@register.filter
+def get_plazas_puesto(objeto, puesto):
     cpoc = CargaPlantillaOrganicaCentros.objects.all().last()
-    return EspecialidadPlantilla.objects.filter(cpoc=cpoc, centro=po.ronda_centro.entidad)
+    if objeto.__class__.__name__ == 'Entidad':
+        centro = objeto  # El objeto es del tipo Entidad
+    else:
+        centro = objeto.ronda_centro.entidad  # El objeto es del tipo PlantillaOrganica
+    eps = EspecialidadPlantilla.objects.filter(cpoc=cpoc, centro=centro)
+    nombres = eps.values_list('nombre', flat=True)
+    # return get_close_matches(puesto.upper(), nombres, 1)
+    return eps.filter(nombre__in=get_close_matches(puesto.upper(), nombres, 1))
+
+
+@register.filter
+def get_plazas(objeto):
+    cpoc = CargaPlantillaOrganicaCentros.objects.all().last()
+    if objeto.__class__.__name__ == 'Entidad':
+        entidad = objeto  # El objeto es del tipo Entidad
+        return EspecialidadPlantilla.objects.filter(cpoc=cpoc, centro=entidad)
+    else:
+        po = objeto  # El objeto es del tipo PlantillaOrganica
+        return EspecialidadPlantilla.objects.filter(cpoc=cpoc, centro=po.ronda_centro.entidad)
+
 
 @register.filter
 def get_fecha_plazas(po):
     return CargaPlantillaOrganicaCentros.objects.all().last().creado
+
 
 @register.filter
 def get_apartados(po):
@@ -44,16 +90,19 @@ def get_columnas(po):
             columnas.append(nombre_columna)
     return columnas
 
+
 def calcula_plantilla_organica_edb(edb, horas_basicas):
     def num_profesores_calculados(min_num_horas, intervalo_horas, horas):
         if horas < min_num_horas:
             return 0
         else:
             return int((horas - min_num_horas) / intervalo_horas) + 1
+
     if edb.puesto == 'Música' or 'astellana' in edb.puesto:
         return num_profesores_calculados(10, 15, horas_basicas)
     else:
         return num_profesores_calculados(12, 16, horas_basicas)
+
 
 def calcula_plantilla_organica(departamento, horas_basicas):
     def num_profesores_calculados(min_num_horas, intervalo_horas, horas):
@@ -61,6 +110,7 @@ def calcula_plantilla_organica(departamento, horas_basicas):
             return 0
         else:
             return int((horas - min_num_horas) / intervalo_horas) + 1
+
     if departamento.nombre == 'Música' or 'astellana' in departamento.nombre:
         return num_profesores_calculados(10, 15, horas_basicas)
     else:
@@ -77,6 +127,29 @@ def calcula_plantilla_organica(departamento, horas_basicas):
     #     if horas_basicas >= plantilla[0] and horas_basicas <= plantilla[1]:
     #         plantilla_organica = plantilla[2]
     # return plantilla_organica
+
+
+# @register.filter
+# def get_columnas_edb(po, edb):
+#     horas_totales, horas_basicas, columnas = 0, 0, []
+#     miembros_edb = edb.miembroedb_set.all().values_list('g_e', flat=True)
+#     pdcols = PDocenteCol.objects.filter(pd__po=po, pd__g_e__id__in=miembros_edb)
+#     for apartado in po.estructura_po:
+#         for nombre_columna, contenido_columna in po.estructura_po[apartado].items():
+#             pdcs = pdcols.filter(codecol=contenido_columna['codecol']) #.aggregate(Sum('periodos'))['periodos__sum']
+#             # pdcols = pdocentes.pdocentecol_set.filter(codecol=contenido_columna['codecol'])
+#             periodos = 0
+#             for pdcol in pdcols:
+#                 num_periodos = pdcol.num_periodos
+#                 periodos += num_periodos
+#                 horas_totales += num_periodos
+#                 if pdcol.periodos_base:
+#                     horas_basicas += num_periodos
+#             columnas.append({'codecol': contenido_columna['codecol'],
+#                              'periodos': periodos})
+#     hp = calcula_plantilla_organica_edb(edb, horas_basicas)
+#     return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales,
+#             'horas_plantilla': hp}
 
 @register.filter
 def get_columnas_edb(po, edb):
@@ -96,6 +169,7 @@ def get_columnas_edb(po, edb):
     hp = calcula_plantilla_organica_edb(edb, horas_basicas)
     return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales,
             'horas_plantilla': hp, 'departamento': edb.id}
+
 
 @register.filter
 def get_columnas_edb2(po, edb):
@@ -120,6 +194,7 @@ def get_columnas_edb2(po, edb):
     hp = calcula_plantilla_organica_edb(edb, horas_basicas)
     return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales,
             'horas_plantilla': hp, 'minutos_totales': minutos_totales}
+
 
 @register.filter
 def get_columnas_departamento(po, departamento):
@@ -155,8 +230,28 @@ def get_columnas_docente2(po, docente):
                              'periodos': periodos})
     return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales}
 
+
+@register.filter
+def get_pdocente(po, docente):
+    return PDocente.objects.get(po=po, g_e=docente)
+# def get_pdcol(docente, po):
+#     return PDocenteCol.objects.filter(pd__po=po, pd__g_e=docente)
+
 @register.filter
 def get_columnas_docente(po, docente):
+    tipo_centro = docente.ronda.entidad.entidadextra.tipo_centro
+    if 'I.E.S.' in tipo_centro:
+        mins_periodo = 50
+    elif 'C.E.P.A' in tipo_centro:
+        mins_periodo = 45
+    elif 'C.E.I.P.' in tipo_centro:
+        mins_periodo = 60
+    elif 'C.R.A.' in tipo_centro:
+        mins_periodo = 60
+    elif docente.jornada_contratada in ['23:00', '24:00', '25:00', '16:40', '8:20']:
+        mins_periodo = 60
+    else:
+        mins_periodo = 50
     minutos_totales, horas_totales, horas_basicas, columnas = 0, 0, 0, []
     pdcols = PDocenteCol.objects.filter(pd__po=po, pd__g_e=docente)
     for apartado in po.estructura_po:
@@ -172,11 +267,13 @@ def get_columnas_docente(po, docente):
             columnas.append({'codecol': contenido_columna['codecol'],
                              'periodos': periodos, 'minutos': minutos})
     return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales,
-            'minutos_totales': minutos_totales}
+            'minutos_totales': minutos_totales, 'horas': minutos_totales / mins_periodo, 'mins_periodo': mins_periodo}
+
 
 @register.filter
 def get_grupos(po):
     return Grupo.objects.filter(ronda=po.ronda_centro)
+
 
 ############################################
 

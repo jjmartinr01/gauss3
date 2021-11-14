@@ -15,6 +15,7 @@ from django.template import RequestContext
 
 from autenticar.control_acceso import permiso_required
 from cupo.templatetags.cupo_extras import get_columnas_docente, get_columnas_departamento
+from entidades.templatetags.entidades_extras import puestos_especialidad
 from gauss.funciones import html_to_pdf
 from gauss.rutas import *
 from django.http import HttpResponse, FileResponse
@@ -25,11 +26,11 @@ from horarios.models import SesionExtra, Horario, Sesion
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from cupo.models import Cupo, Materia_cupo, Profesores_cupo, FiltroCupo, EspecialidadCupo, Profesor_cupo, GrupoExcluido, \
-    CursoCupo, EtapaEscolarCupo, CupoPermisos, CargaPlantillaOrganicaCentros, EspecialidadPlantilla
+    CursoCupo, EtapaEscolarCupo, CupoPermisos, CargaPlantillaOrganicaCentros, EspecialidadPlantilla, PDocente
 from cupo.models import PlantillaOrganica, PDocenteCol
 from cupo.habilitar_permisos import ESPECIALIDADES
 from entidades.models import CargaMasiva, Gauser_extra, MiembroDepartamento, Especialidad_funcionario, Entidad, \
-    EspecialidadDocenteBasica
+    EspecialidadDocenteBasica, Cargo, MiembroEDB
 from entidades.models import Departamento as Depentidad
 from estudios.models import Curso, Materia, Grupo, EtapaEscolar
 from horarios.tasks import carga_masiva_from_file
@@ -1188,6 +1189,30 @@ def edit_cupo(request, cupo_id):
         return redirect('/cupo/')
 
 
+################################################################################
+
+codes_conservatorios = [26002928, 26003076, 26003520]
+codes_eois = [26003313, 26008724, 26003091]
+codes_edir = [26008219, ]
+def crea_plantilla_organica_manual(entidad, g_e):
+    # entidad = Entidad.objects.get(code=code_centro)
+    po = PlantillaOrganica.objects.create(g_e=g_e, ronda_centro=entidad.ronda, carga_completa=True)
+    cargo_docente = Cargo.objects.get(entidad=po.ronda_centro.entidad, clave_cargo='g_docente')
+    docentes = Gauser_extra.objects.filter(cargos__in=[cargo_docente])
+    for p in puestos_especialidad(entidad):
+        edb, c = EspecialidadDocenteBasica.objects.get_or_create(ronda=po.ronda_centro, puesto=p)
+        gexs = docentes.filter(puesto=p)
+        for gex in gexs:
+            MiembroEDB.objects.get_or_create(edb=edb, g_e=gex)
+    for docente in docentes:
+        pd, c = PDocente.objects.get_or_create(po=po, g_e=docente)
+        for apartado in po.estructura_po:
+            for nombre_columna, contenido_columna in po.estructura_po[apartado].items():
+                pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'])
+                pdc.nombre = nombre_columna
+                pdc.periodos = 0
+                pdc.save()
+
 # @permiso_required('acceso_carga_masiva_horarios')
 def plantilla_organica(request):
     g_e = request.session["gauser_extra"]
@@ -1267,7 +1292,7 @@ def plantilla_organica(request):
                 # departamento = Depentidad.objects.get(ronda=po.ronda_centro, id=request.POST['departamento'])
                 pdcol = PDocenteCol.objects.get(pd__po=po, pd__g_e=ge, codecol=request.POST['codecol'])
                 # Para evitar los caracteres no numéricos obtenidos del div contenteditable no basta con int():
-                pdcol.periodos = int("".join(filter(str.isdigit, request.POST['valor'])))
+                pdcol.periodos_added = int("".join(filter(str.isdigit, request.POST['valor']))) - pdcol.num_periodos_sesiones
                 pdcol.save()
                 data = get_columnas_docente(po, ge)
                 html_edb = render_to_string('plantilla_organica_accordion_content_tbody_puesto.html',
@@ -1381,8 +1406,13 @@ def plantilla_organica(request):
                 return JsonResponse({'ok': True, 'tabla': tabla, 'h': h.id, 'd': docente.id})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'cargar_po_no_racima':
+            entidad = Entidad.objects.get(id=request.POST['centro_no_racima'])
+            crea_plantilla_organica_manual(entidad, g_e)
+
 
     plantillas_o = PlantillaOrganica.objects.filter(g_e=g_e)
+    centros_no_racima = [26002928, 26003076, 26003520, 26003313, 26008724, 26003091, 26008219]
     return render(request, "plantilla_organica.html",
                   {
                       'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos Racima',
@@ -1394,5 +1424,7 @@ def plantilla_organica(request):
                       'formname': 'plantilla_organica',
                       'plantillas_o': plantillas_o,
                       'g_e': g_e,
+                      'centros_no_racima': Entidad.objects.filter(code__in=centros_no_racima),
+                      'esdir': Entidad.objects.get(code=26008219),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })

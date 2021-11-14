@@ -1,10 +1,31 @@
 {% load cupo_extras %}
 {% if edb.puesto %}
-    <th style="color: #1b75bb" class="edb_th" data-edb="{{ edb.id }}" data-po="{{ po.id }}" data-cargado="false">{{ edb.puesto }}
+    <th style="color: #1b75bb" class="edb_th has-tip tip-top" data-tooltip aria-haspopup="true"
+        title="{% with eps=edb.ronda.entidad|get_plazas_puesto:edb.puesto %}
+        {% if eps|length > 0 %}
+{% for ep in eps %}
+        <div class='row'>
+        <div class='columns large-2'><span class='verticalText'>Plantilla actual</span></div>
+        <div class='columns large-2'><span class='verticalText'>Plazas ocupadas</span></div>
+        <div class='columns large-2'><span class='verticalText'>Plazas vacantes</span></div>
+        <div class='columns large-2'><span class='verticalText'>Tipo de plaza</span></div>
+        <div class='columns large-2'><span class='verticalText'>Jornadas incompletas</span></div>
+        <div class='columns large-2'><span class='verticalText'>Jornadas completas</span></div>
+        </div>
+        <div class='row'>
+        <div class='columns large-2'><span>{{ ep.plazas }}</span></div>
+        <div class='columns large-2'><span>{{ ep.ocupadas }}</span></div>
+        <div class='columns large-2'><span>{{ ep.vacantes }}</span></div>
+        <div class='columns large-2'><span>{{ ep.tipo }}</span></div>
+        <div class='columns large-2'><span>{{ edb.ronda.entidad|get_plazas_puesto_incompletas:edb.puesto }}</span></div>
+        <div class='columns large-2'><span>{{ edb.ronda.entidad|get_plazas_puesto_completas:edb.puesto }}</span></div>
+        </div>{% endfor %}{% else %}No hay datos sobre esta especialidad{% endif %}{% endwith %}"
+        data-edb="{{ edb.id }}" data-po="{{ po.id }}" data-cargado="false">{{ edb.puesto }}
         <span style="font-size: small; font-weight: normal; color: gray;"
               title="Número de docentes">({{ edb.miembroedb_set.all|length }} docentes)</span></th>
 {% else %}
-    <th style="color: #1b75bb" class="edb_th" data-edb="{{ edb.id }}" data-po="{{ po.id }}" data-cargado="false">Docentes sin especialidad
+    <th style="color: #1b75bb" class="edb_th" data-edb="{{ edb.id }}" data-po="{{ po.id }}" data-cargado="false">
+        Docentes sin especialidad
         <span style="font-size: small; font-weight: normal; color: gray;"
               title="Número de docentes">({{ edb.miembroedb_set.all|length }} docentes)</span></th>
 {% endif %}
@@ -16,5 +37,6 @@
 
     <th id="d_horas_totales{{ edb.id }}" style="font-weight: bold;text-align: center;">{{ horas.horas_totales }}</th>
     <th id="d_horas_basicas{{ edb.id }}" style="font-weight: bold;text-align: center;">{{ horas.horas_basicas }}</th>
-    <th id="d_horas_plantilla{{ edb.id }}" style="font-weight: bold;text-align: center;">{{ horas.horas_plantilla }}</th>
+    <th id="d_horas_plantilla{{ edb.id }}"
+        style="font-weight: bold;text-align: center;">{{ horas.horas_plantilla }}</th>
 {% endwith %}

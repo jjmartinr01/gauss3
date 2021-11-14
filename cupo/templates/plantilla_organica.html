@@ -53,14 +53,14 @@
         </div>
 
         <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="centro_no_racima" id="centro_no_racima" value="">
         <input type="hidden" name="accordion_id" id="accordion_id" value="">
         <input type="hidden" name="po" id="po" value="">
         <div class="panel callout" id="panel_carga_archivo" style="display:none;">
             <div class="row">
                 <div class="large-12 columns">
-                    <p style="font-weight: bold;color: #008CBA">La carga de datos para las plantillas se hace a través
-                        de un archivo
-                        tipo xls (Excel) obtenido de Racima.</p>
+                    <p style="font-weight: bold;color: #008CBA">La carga de datos para las plantillas de los IES, CRAs y
+                        CEOs se hace a través de un archivo tipo xls (Excel) obtenido de Racima.</p>
                     <p>Este archivo se obtiene siguiendo la siguiente ruta:</p>
                     <p>
                         Racima <i class="fa fa-long-arrow-right"></i> Módulo
@@ -74,7 +74,6 @@
                     </p>
                 </div>
             </div>
-
             <div class="row">
                 <div class="large-3 columns">
                     <b>Archivo xls (Racima):</b>
@@ -86,20 +85,46 @@
                     <a class="button" id="archivo_xls">Cargar el archivo xls</a>
                 </div>
             </div>
-        </div>
-
-        {% if g_e|has_permiso:'carga_datos_casiopea' %}
-        <div class="panel callout" id="panel_carga_archivo_casiopea" style="display:none;">
+            <hr>
             <div class="row">
                 <div class="large-12 columns">
-                    <p style="font-weight: bold;color: #008CBA">La carga de datos para las plantillas se hace a través
-                        de un archivo tipo xls (Excel) obtenido del servidor Casiopea.</p>
-                    <p>Página web: <a href="https://casiopea.larioja.org/sgti/" target="_blank">
-                        https://casiopea.larioja.org/sgti/</a> </p>
-                    <p>Una vez en el servidor de Casiopea, el archivo excel se obtiene: "Consultas"
-                        <i class="fa fa-long-arrow-right"></i> "Plantilla".</p>
-{#                    <p>Este archivo se obtiene siguiendo la siguiente ruta:</p>#}
-{#                    <p>#}
+                    <p style="font-weight: bold;color: #008CBA">La carga de datos en conservatorios, ESDIR y EOIs es
+                        limitada ya que Racima no almacena los horarios de estos centros. Es por ello que no es posible
+                        cargar datos y únicamente se dispone de una pequeña cantidad de información.</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-9">
+                    <label>Selecciona el centro del que deseas calcular la plantilla orgánica y después pulsa en
+                        <span class="label">Cargar</span>
+                        <select id="centros_no_racima">
+                            <option value="">---------</option>
+                            {% for centro in centros_no_racima %}
+                                <option value="{{ centro.id }}">{{ centro.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+                <div class="columns large-3">
+                    <a class="button" id="cargar_po_no_racima">Cargar</a>
+                </div>
+            </div>
+        </div>
+
+
+        {% if g_e|has_permiso:'carga_datos_casiopea' %}
+            <div class="panel callout" id="panel_carga_archivo_casiopea" style="display:none;">
+                <div class="row">
+                    <div class="large-12 columns">
+                        <p style="font-weight: bold;color: #008CBA">La carga de datos para las plantillas se hace a
+                            través
+                            de un archivo tipo xls (Excel) obtenido del servidor Casiopea.</p>
+                        <p>Página web: <a href="https://casiopea.larioja.org/sgti/" target="_blank">
+                            https://casiopea.larioja.org/sgti/</a></p>
+                        <p>Una vez en el servidor de Casiopea, el archivo excel se obtiene: "Consultas"
+                            <i class="fa fa-long-arrow-right"></i> "Plantilla".</p>
+                        {#                    <p>Este archivo se obtiene siguiendo la siguiente ruta:</p>#}
+                        {#                    <p>#}
                         {#                        Racima <i class="fa fa-long-arrow-right"></i> Módulo#}
                         {#                        de Gestión#}
                         {#                        <i class="fa fa-long-arrow-right"></i> Seguimiento#}
@@ -108,31 +133,89 @@
                         {#                        <i class="fa fa-long-arrow-right"></i> <i>Elegir consulta "Horario del profesorado#}
                         {#                        del centro con sus materias"</i>#}
                         {#                        <i class="fa fa-long-arrow-right"></i> Exportar datos (XLS)#}
-{#                    </p>#}
+                        {#                    </p>#}
+                    </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="large-3 columns">
-                    <b>Archivo xls (Casiopea):</b>
-                </div>
-                <div class="large-6 columns">
-                    <input type="file" name="file_masivo_xls_casiopea" id="file_masivo_xls_casiopea"/>
-                </div>
-                <div class="large-3 columns">
-                    <a class="button" id="archivo_xls_casiopea">Cargar el archivo xls (Casiopea)</a>
+                <div class="row">
+                    <div class="large-3 columns">
+                        <b>Archivo xls (Casiopea):</b>
+                    </div>
+                    <div class="large-6 columns">
+                        <input type="file" name="file_masivo_xls_casiopea" id="file_masivo_xls_casiopea"/>
+                    </div>
+                    <div class="large-3 columns">
+                        <a class="button" id="archivo_xls_casiopea">Cargar el archivo xls (Casiopea)</a>
+                    </div>
                 </div>
             </div>
-        </div>
         {% endif %}
 
-        <div id="listado_plantillas_o">
-            <br><br>
-            <dl class="accordion" data-accordion id="list_plantillas_o">
-                {% include 'plantilla_organica_accordion.html' %}
-            </dl>
+
+        {#        <ul class="tabs" data-tab role="tablist">#}
+        {#            <li class="tab-title active" role="presentation" data-id="0" data-gtab="debo_rellenar">#}
+        {#                <a href="#tab0" role="tab" tabindex="0" aria-selected="true" aria-controls="tab0">#}
+        {#                    <b id="texto0" style="color:#008CBA;" class="texto_tab">Platillas IES</b></a>#}
+        {#            </li>#}
+        {#            <li class="tab-title" role="presentation" data-id="1" data-gtab="he_rellenado">#}
+        {#                <a href="#tab1" role="tab" tabindex="0" aria-selected="false" aria-controls="tab1">#}
+        {#                    <b id="texto1" style="color:#ffffff;" class="texto_tab">Platillas CRA</b></a>#}
+        {#            </li>#}
+        {#            <li class="tab-title" role="presentation" data-id="2" data-gtab="debo_evaluar">#}
+        {#                <a href="#tab2" role="tab" tabindex="0" aria-selected="false" aria-controls="tab2">#}
+        {#                    <b id="texto2" style="color:#ffffff;" class="texto_tab">Plantillas Conservatorios</b></a>#}
+        {#            </li>#}
+        {#            <li class="tab-title" role="presentation" data-id="3" data-gtab="g_esdir">#}
+        {#                <a href="#tab3" role="tab" tabindex="0" aria-selected="false" aria-controls="tab3">#}
+        {#                    <b id="texto3" style="color:#ffffff;" class="texto_tab">Plantilla ESDIR</b></a>#}
+        {#            </li>#}
+        {#        </ul>#}
+
+        {#        <div class="tabs-content">#}
+        {#            <section role="tabpanel" aria-hidden="false" class="content active" id="tab0" data-tab="dr">#}
+        {#                <div id="listado_plantillas_ies" class="listado_misplantillas">#}
+        {#                    <div id="listado_plantillas_o">#}
+        {#                        <br><br>#}
+        {#                        <dl class="accordion" data-accordion id="list_plantillas_o">#}
+        {#                            {% include 'plantilla_organica_accordion.html' %}#}
+        {#                        </dl>#}
+        {#                    </div>#}
+        {#        <div id="docentes_container"></div>#}
+        {#                </div>#}
+        {#            </section>#}
+        {#            <section role="tabpanel" aria-hidden="true" class="content" id="tab1" data-tab="hr">#}
+        {#                <div id="listado_plantillas_cra" class="listado_misplantillas">#}
+        {#                </div>#}
+        {##}
+        {#            </section>#}
+        {#            <section role="tabpanel" aria-hidden="true" class="content" id="tab2" data-tab="dc">#}
+        {#                <div id="listado_plantillas_conservatorios" class="listado_misplantillas">#}
+        {#                    <br><br>#}
+        {#                    <dl class="accordion" data-accordion id="list_plantillas_cons">#}
+        {#                        {% include 'plantilla_organica_accordion_cons.html' %}#}
+        {#                    </dl>#}
+        {#                </div>#}
+        {#            </section>#}
+        {#            <section role="tabpanel" aria-hidden="true" class="content" id="tab3" data-tab="esdir">#}
+        {#                <div id="listado_plantillas_esdir" class="listado_misplantillas">#}
+        {#                    <br><br>#}
+        {#                    <dl class="accordion" data-accordion id="list_plantillas_esdir">#}
+        {#                        {% include 'plantilla_organica_accordion_esdir.html' %}#}
+        {#                    </dl>#}
+        {#                </div>#}
+        {#            </section>#}
+        {#        </div>#}
+
+        <div id="listado_plantillas_ies" class="listado_misplantillas">
+            <div id="listado_plantillas_o">
+                <br><br>
+                <dl class="accordion" data-accordion id="list_plantillas_o">
+                    {% include 'plantilla_organica_accordion.html' %}
+                </dl>
+            </div>
+            {#        <div id="docentes_container"></div>#}
         </div>
-        <div id="docentes_container"></div>
+
     </form>
     <div id="horarioModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true"
          role="dialog">
@@ -184,6 +267,36 @@
             }
         });
 
+        {# ########################################################################################### #}
+        {# Operaciones directas Mis formularios: #}
+        {# select_tab,   #}
+        {# ########################################################################################### #}
+        $(document).foundation({
+            tab: {
+                callback: function (tab) {
+                    var id = $(tab[0]).data('id');
+                    $('#gtab').val($(tab[0]).data('gtab'));
+                    $('.texto_tab').css('color', '#ffffff');
+                    $('#texto' + id).css('color', '#008CBA');
+                    var tab = $('#tab' + id).data('tab');
+                    {#$.post("/mis_formularios/", {action: 'change_tab', 'tab': tab},#}
+                    {#    function (data) {#}
+                    {#        if (data.ok) {#}
+                    {#$('.listado_misformularios').empty();#}
+                    {#$('#listado_misformularios_' + data.tab).html(data.html);#}
+                    {#$("#update_ok").show().delay(1500).fadeOut();#}
+                    {# } else {#}
+                    {#    $("#update_error").show().delay(1500).fadeOut();#}
+                    {# }#}
+                    {# });#}
+                }
+            }
+        });
+
+        {# ########################################################################################### #}
+        {# Operaciones directas Mis formularios: #}
+        {# open_accordion,   #}
+        {# ########################################################################################### #}
 
         function carga_contenido_accordion() {
             var id = $('#accordion_id').val();
@@ -191,6 +304,9 @@
                 function (data) {
                     if (data.ok) {
                         $('#panel' + id).html(data.html);
+                        setTimeout(function () {
+                            $(document).foundation('tooltip', 'reflow');
+                        }, 200)
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
@@ -297,6 +413,9 @@
                     function (data) {
                         if (data.ok) {
                             $('#tbody_edb' + edb).html(data.html);
+                            setTimeout(function () {
+                                $(document).foundation('tooltip', 'reflow');
+                            }, 200)
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
@@ -436,6 +555,15 @@
         $('body').on('click', '.borrar_grupoex', function (e) {
             var grupo = $(this).data('grupo');
             update_grupos_excluidos(grupo, 'remove');
+        });
+
+        {# ############################################################## #}
+
+        $('body').on('click', '#cargar_po_no_racima', function (e) {
+            var centro_no_racima = $('#centros_no_racima').val();
+            $('#centro_no_racima').val(centro_no_racima);
+            $('#action').val('cargar_po_no_racima');
+            document.getElementById("{{ formname }}").submit();
         });
 
     </script>

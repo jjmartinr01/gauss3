@@ -1,0 +1,90 @@
+{% load entidades_extras %}
+{% load cupo_extras %}
+{% for conservatorio in conservatorios %}
+    <input type="hidden" name="conservatorios" value="{{ conservatorio.id }}">
+
+    <dd class="accordion-navigation" id="accordion{{ conservatorio.id }}"
+        style="border-bottom: dotted 1px black">
+        <a href="#panel{{ conservatorio.id }}">
+            <i id="circle{{ conservatorio.id }}" class="fa fa-plus-circle circle_icon"></i>
+            <b id="asunto{{ conservatorio.id }}">Plantilla Orgánica: {{ conservatorio.ronda }}</b> -- <span
+                style="color: green; padding-right: 20px;"><i
+                class="fa fa-user"></i> {{ conservatorio.g_e.gauser.get_full_name }}</span>
+            ({{ conservatorio.creado|date:"d-m-Y H:i" }})
+
+            {% if buscadas %}
+                <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
+            {% endif %}
+        </a>
+
+        <div id="panel{{ conservatorio.id }}" class="content accordion-conservatorio" data-id="{{ conservatorio.id }}">
+            <table style="width: 100%;position: relative;">
+                <thead id="cabecera_tabla_vacantes">
+                <tr>
+                    <th colspan="7" style="color: #1b75bb;text-align: center;width: {{ po.anchura_cols.0 }}%;">Plazas de
+                        plantilla
+                        orgánica actualizadas a {{ conservatorio|get_fecha_plazas }}</th>
+                </tr>
+                <tr>
+                    <th>Especialidad</th>
+                    <th>Cuerpo</th>
+                    <th>Código</th>
+                    <th>Tipo</th>
+                    <th>Plazas</th>
+                    <th>Ocupadas</th>
+                    <th>Vacantes</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for plaza in conservatorio|get_plazas %}
+                    <tr>
+                        <td>{{ plaza.nombre }}</td>
+                        <td>{{ plaza.cod_cuerpo }}</td>
+                        <td>{{ plaza.cod_especialidad }}</td>
+                        <td {% if plaza.tipo == 'ord' %}title="Plaza ordinaria"
+                            {% elif plaza.tipo == 'com' %}title="Plaza compartida con otros centros de la misma localidad"
+                            {% elif plaza.tipo == 'iti' %}title="Plaza con carácter itinerante entre diferentes localidades"
+                            {% else %}title="Plaza bilingüe"{% endif %}>{{ plaza.get_tipo_display }}</td>
+                        <td>{{ plaza.plazas }}</td>
+                        <td>{{ plaza.ocupadas }}</td>
+                        <td>{{ plaza.vacantes }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+
+{#            <table style="width: 100%;position: relative;">#}
+{#                <thead id="cabecera_tabla_po_entidad{{ conservatorio.id }}">#}
+{#                <tr>#}
+{#                    <th style="color: #1b75bb;text-align: center;width: {{ po.anchura_cols.0 }}%;">Especialidades y#}
+{#                        Docentes#}
+{#                    </th>#}
+{#                    {% for apartado in po|get_apartados %}#}
+{#                        <th style="color: #1b75bb;text-align: center;width: {{ apartado.width }}%"#}
+{#                            colspan="{{ apartado.colspan }}">#}
+{#                            {{ apartado.nombre }}#}
+{#                        </th>#}
+{#                    {% endfor %}#}
+{#                    <th style="color: #1b75bb;text-align: center;width: {{ po.anchura_cols.2 }}%;" colspan="3">Horas#}
+{#                        calculadas#}
+{#                    </th>#}
+{#                </tr>#}
+{#                </thead>#}
+{#                <tbody id="tbody_docente{{ po.id }}">#}
+{#                {% include "plantilla_organica_accordion_content_tbody.html" %}#}
+{#                </tbody>#}
+{#            </table>#}
+            <table>
+                {% for puesto in conservatorio|puestos_especialidad %}
+                    <tr>
+                    <td>{{ puesto }}</td>
+{#                        <td>{{ conservatorio|get_vacantes:puesto }}</td>#}
+                        <td>{{ profe.puesto }}</td>
+                        <td>{{ profe.jornada_contratada }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </dd>
+{% endfor %}

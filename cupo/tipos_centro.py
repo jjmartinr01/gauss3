@@ -639,32 +639,32 @@ TC = {
                     materia__curso__etapa_escolar__clave_ex='24') & ~Q(
                     materia__curso__clave_ex__in=['222074', '222075']) & ~Q(materia__nombre__icontains='mbito'),
                 'horas_base': True,
-                'codecol': 60005
+                'codecol': 60230
             },
             'Específicas': {
                 'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
                     materia__grupo_materias__icontains='espec'),
                 'horas_base': True,
-                'codecol': 60010
+                'codecol': 60235
             },
             'Libre Conf. Aut.': {
                 'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
                     materia__grupo_materias__icontains='libre conf') & ~Q(
                     materia__curso__clave_ex__in=['222074', '222075']) & ~Q(materia__nombre__icontains='mbito'),
                 'horas_base': True,
-                'codecol': 60015
+                'codecol': 60240
             },
             'Rel./Val. Éticos': {
                 'q': Q(actividad__clave_ex='1') & Q(materia__curso__etapa_escolar__clave_ex='24') & Q(
                     materia__grupo_materias__icontains='Rel. y Aten.'),
                 'horas_base': True,
-                'codecol': 60020
+                'codecol': 60245
             },
             'Desdobles ESO': {
                 'q': (Q(actividad__clave_ex='539') | Q(actividad__clave_ex='400') | Q(actividad__clave_ex='522')) & Q(
                     materia__curso__etapa_escolar__clave_ex='24'),
                 'horas_base': True,
-                'codecol': 60025
+                'codecol': 60250
             },
         },
         'Atención a la Diversidad y otras horas': {
@@ -672,70 +672,70 @@ TC = {
                 'q': Q(actividad__clave_ex='1') & Q(materia__nombre__icontains='mbito') & Q(
                     materia__curso__clave_ex='170506'),
                 'horas_base': False,
-                'codecol': 60065
+                'codecol': 60255
             },
             'PMAR1': {
                 'q': Q(actividad__clave_ex='1') & Q(materia__nombre__icontains='mbito') & Q(
                     materia__curso__clave_ex='101324'),
                 'horas_base': False,
-                'codecol': 60070
+                'codecol': 60260
             },
             'PMAR2': {
                 'q': Q(actividad__clave_ex='1') & Q(materia__nombre__icontains='mbito') & Q(
                     materia__curso__clave_ex='101325'),
                 'horas_base': False,
-                'codecol': 60075
+                'codecol': 60265
             },
             'Tutorías': {
                 'q': Q(actividad__clave_ex='519') | Q(actividad__clave_ex='2') | Q(actividad__clave_ex='376'),
                 'horas_base': True,
-                'codecol': 60085
+                'codecol': 60270
             },
             'Jefatura Depart./CCP': {
                 'q': Q(actividad__clave_ex='547') | Q(actividad__clave_ex='545'),
                 'horas_base': True,
-                'codecol': 60090
+                'codecol': 60275
             },
             'Mayor 55 años': {
                 'q': Q(actividad__clave_ex='176'),
                 'horas_base': False,
-                'codecol': 60095
+                'codecol': 60280
             },
             'Horas TIC': {
                 'q': Q(actividad__clave_ex='542') | Q(actividad__clave_ex='512') | Q(actividad__clave_ex='528') | Q(
                     actividad__clave_ex='506') | Q(actividad__clave_ex='507') | Q(actividad__clave_ex='552'),
                 'horas_base': False,
-                'codecol': 60096
+                'codecol': 60285
             },
             'Apoyo': {
                 'q': Q(actividad__clave_ex='522'),
                 'horas_base': True,
-                'codecol': 60230
+                'codecol': 60290
             },
             'Atención ACNEE AL': {
                 'q': Q(actividad__clave_ex='563'),
                 'horas_base': True,
-                'codecol': 60235
+                'codecol': 60295
             },
             'Atención ACNEE PT': {
                 'q': Q(actividad__clave_ex='562'),
                 'horas_base': True,
-                'codecol': 60240
+                'codecol': 60300
             },
             'Coordinador Ciclo': {
                 'q': Q(actividad__clave_ex='116'),
                 'horas_base': True,
-                'codecol': 60245
+                'codecol': 60305
             },
             'Coor. Comedor/Transporte': {
                 'q': Q(actividad__clave_ex='527'),
                 'horas_base': True,
-                'codecol': 60250
+                'codecol': 60310
             },
             'Dirección/Jefatura/Secretaría': {
                 'q': Q(actividad__clave_ex__in=['529', '530', '532']),
                 'horas_base': True,
-                'codecol': 60255
+                'codecol': 60315
             },
         },
     },
@@ -842,9 +842,142 @@ TC = {
             },
         },
     },
-    'C.E.M. - Conservatorio Elemental de Música': {},
     'C.I.P.F.P. - Centro Público Integrado de Formación Profesional': {},
     'E.I.P.C. - Escuela Infantil': {},
-    'E.O.I. - Escuela Oficial de Idiomas': {},
-    'C.P.M. - Conservatorio Profesional de Música': {}
+    'E.S.D. - Escuela Superior de Diseño': {
+        'Horas de dedicación y reducciones': {
+            'Horas especialidad': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': True,
+                'codecol': 78005
+            },
+            'Horas música de cámara': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': True,
+                'codecol': 78010
+            },
+            'Jefatura Depart./CCP': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': True,
+                'codecol': 78015
+            },
+            'Mayor 55 años': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': False,
+                'codecol': 78020
+            },
+            'Horas TIC': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': False,
+                'codecol': 78025
+            },
+        },
+    },
+    'E.O.I. - Escuela Oficial de Idiomas': {
+        'Horas de dedicación y reducciones': {
+            'Horas especialidad': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': True,
+                'codecol': 76005
+            },
+            'Horas música de cámara': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': True,
+                'codecol': 76010
+            },
+            'Jefatura Depart./CCP': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': True,
+                'codecol': 76015
+            },
+            'Mayor 55 años': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': False,
+                'codecol': 76020
+            },
+            'Horas TIC': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': False,
+                'codecol': 76025
+            },
+        },
+    },
+    'C.E.M. - Conservatorio Elemental de Música': {
+        'Horas de dedicación y reducciones': {
+            'Horas especialidad': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': True,
+                'codecol': 75005
+            },
+            'Horas música de cámara': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': True,
+                'codecol': 75010
+            },
+            'Jefatura Depart./CCP': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': True,
+                'codecol': 75015
+            },
+            'Mayor 55 años': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': False,
+                'codecol': 75020
+            },
+            'Horas TIC': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': False,
+                'codecol': 75025
+            },
+        },
+    },
+    'C.P.M. - Conservatorio Profesional de Música': {
+        'Horas de dedicación y reducciones': {
+            'Horas especialidad': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': True,
+                'codecol': 75045
+            },
+            'Horas música de cámara': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': True,
+                'codecol': 75050
+            },
+            'Jefatura Depart./CCP': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': True,
+                'codecol': 75055
+            },
+            'Mayor 55 años': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': False,
+                'codecol': 75060
+            },
+            'Horas TIC': {
+                'clase': 'EspecialidadPlantilla',
+                'q': '',
+                'horas_base': False,
+                'codecol': 75065
+            },
+        },
+    }
 }
