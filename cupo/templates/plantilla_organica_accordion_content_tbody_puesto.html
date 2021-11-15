@@ -1,9 +1,8 @@
 {% load cupo_extras %}
 {% if edb.puesto %}
-    <th style="color: #1b75bb" class="edb_th has-tip tip-top" data-tooltip aria-haspopup="true"
+    <th style="color: #1b75bb" class="edb_th has-tip tip-top" data-tooltip aria-haspopup="true" colspan="2"
         title="{% with eps=edb.ronda.entidad|get_plazas_puesto:edb.puesto %}
         {% if eps|length > 0 %}
-{% for ep in eps %}
         <div class='row'>
         <div class='columns large-2'><span class='verticalText'>Plantilla actual</span></div>
         <div class='columns large-2'><span class='verticalText'>Plazas ocupadas</span></div>
@@ -12,6 +11,7 @@
         <div class='columns large-2'><span class='verticalText'>Jornadas incompletas</span></div>
         <div class='columns large-2'><span class='verticalText'>Jornadas completas</span></div>
         </div>
+{% for ep in eps %}
         <div class='row'>
         <div class='columns large-2'><span>{{ ep.plazas }}</span></div>
         <div class='columns large-2'><span>{{ ep.ocupadas }}</span></div>

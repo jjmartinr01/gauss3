@@ -618,11 +618,16 @@ class PlantillaOrganica(models.Model):
         for p in psxls:
             try:
                 g_e = Gauser_extra.objects.get(clave_ex=p.x_docente, ronda=self.ronda_centro)
+                if p.localidad:
+                    localidad = p.localidad
+                else:
+                    localidad = self.ronda_centro.entidad.localidad
                 sesion, c = Sesion.objects.get_or_create(horario=horario, dia=int(float(p.dia)), g_e=g_e,
                                                          hora_inicio=int(float(p.hora_inicio)),
                                                          hora_fin=int(float(p.hora_fin)),
                                                          hora_inicio_cadena=p.hora_inicio_cadena,
-                                                         hora_fin_cadena=p.hora_fin_cadena)
+                                                         hora_fin_cadena=p.hora_fin_cadena,
+                                                         localidad=localidad)
                 try:
                     grupo = Grupo.objects.get(clave_ex=p.x_unidad, ronda=self.ronda_centro)
                 except:
@@ -689,25 +694,28 @@ class PlantillaOrganica(models.Model):
             sextras = sextras.filter(~Q(grupo__id__in=grexc))
             # LogCarga.objects.create(g_e=gex, log=sextras.count())
             pd, c = PDocente.objects.get_or_create(po=self, g_e=gex)
+            pd.calcula_minutos_periodo()
             for apartado in self.estructura_po:
                 for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
-                    LogCarga.objects.create(g_e=gex, log='Inicio carga PDocenteCol %s - %s'% (contenido_columna['codecol'], contenido_columna['horas_base']))
-                    try:
-                        pdc = PDocenteCol.objects.get(pd=pd, codecol=contenido_columna['codecol'],
-                                                          periodos_base=contenido_columna['horas_base'])
-                        LogCarga.objects.create(g_e=gex, log='existe PDocenteCol %s' % contenido_columna['codecol'])
-                    except:
-                        pdc = PDocenteCol.objects.create(pd=pd, codecol=contenido_columna['codecol'],
-                                                          periodos_base=contenido_columna['horas_base'])
-                        LogCarga.objects.create(g_e=gex, log='Creado PDocenteCol %s' % contenido_columna['codecol'])
-                    # pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'],
-                    #                                            periodos_base=contenido_columna['horas_base'])
-                    pdc.nombre = nombre_columna
-                    sesiones_id = sextras.filter(contenido_columna['q']).values_list('sesion__id', flat=True)
-                    pdc.sesiones.add(*Sesion.objects.filter(id__in=sesiones_id))
-                    LogCarga.objects.create(g_e=gex, log='Added sesiones a PDocenteCol')
-                    # pdc.periodos = pdc.sesiones.count() # pdc.periodos se calcula automáticamente en pdc.save()
-                    pdc.save()
+                    for localidad in pd.localidades:
+                        LogCarga.objects.create(g_e=gex, log='Inicio carga PDocenteCol %s - %s'% (contenido_columna['codecol'], contenido_columna['horas_base']))
+                        try:
+                            pdc = PDocenteCol.objects.get(pd=pd, codecol=contenido_columna['codecol'],
+                                                              periodos_base=contenido_columna['horas_base'])
+                            LogCarga.objects.create(g_e=gex, log='existe PDocenteCol %s' % contenido_columna['codecol'])
+                        except:
+                            pdc = PDocenteCol.objects.create(pd=pd, codecol=contenido_columna['codecol'],
+                                                              periodos_base=contenido_columna['horas_base'])
+                            LogCarga.objects.create(g_e=gex, log='Creado PDocenteCol %s' % contenido_columna['codecol'])
+                        # pdc, c = PDocenteCol.objects.get_or_create(pd=pd, codecol=contenido_columna['codecol'],
+                        #                                            periodos_base=contenido_columna['horas_base'])
+                        pdc.nombre = nombre_columna
+                        sesiones_id = sextras.filter(contenido_columna['q']).values_list('sesion__id', flat=True)
+                        pdc.sesiones.add(*Sesion.objects.filter(id__in=sesiones_id, localidad=localidad))
+                        pdc.localidad = localidad
+                        LogCarga.objects.create(g_e=gex, log='Added sesiones a PDocenteCol')
+                        # pdc.periodos = pdc.sesiones.count() # pdc.periodos se calcula automáticamente en pdc.save()
+                        pdc.save()
         except Exception as msg:
             LogCarga.objects.create(g_e=gex, log=str(msg))
 
@@ -825,6 +833,7 @@ class PlantillaXLS(models.Model):
 
     unidad = models.CharField('Nombre del grupo', max_length=20, blank=True, null=True)
     x_unidad = models.CharField('Código del grupo en Racima', max_length=11, blank=True, null=True)
+    localidad = models.CharField('Localidad asociada al grupo', max_length=48, blank=True, null=True)
     materia = models.CharField('Nombre de la materia', max_length=118, blank=True, null=True)
     x_materiaomg = models.CharField('Código de la materia en Racima', max_length=11, blank=True, null=True)
     curso = models.CharField('Nombre largo del curso', max_length=119, blank=True, null=True)
@@ -852,6 +861,7 @@ class PDocente(models.Model):
              (220, 235, 14), (236, 251, 15), (252, 267, 16), (268, 283, 17), (284, 299, 18), (300, 235, 19))
     po = models.ForeignKey(PlantillaOrganica, on_delete=models.CASCADE, blank=True, null=True)
     g_e = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
+    minutos_periodo = models.IntegerField('Número de minutos de trabajo por cada periodo', default=55)
 
     @property
     def horas_totales(self):
@@ -865,21 +875,42 @@ class PDocente(models.Model):
         return p
 
     @property
-    def minutos_periodo(self):
-        tipo_centro = self.g_e.ronda.entidad.entidadextra.tipo_centro
-        if 'I.E.S.' in tipo_centro:
-            mins_periodo = 55
-        elif 'C.E.P.A' in tipo_centro:
-            mins_periodo = 45
-        elif 'C.E.I.P.' in tipo_centro:
-            mins_periodo = 60
-        elif 'C.R.A.' in tipo_centro:
-            mins_periodo = 60
-        elif self.g_e.jornada_contratada in ['23:00', '24:00', '25:00', '16:40', '8:20']:
-            mins_periodo = 60
+    def localidades(self):
+        ls = set(Sesion.objects.filter(horario=self.po.horario, g_e=self.g_e).values_list('localidad', flat=True))
+        if len(ls) == 0:
+            return [self.po.ronda_centro.entidad.localidad]
         else:
-            mins_periodo = 55
-        return mins_periodo
+            return [l for l in ls if l]
+
+    # @property
+    # def minutos_periodo(self):
+    #     tipo_centro = self.g_e.ronda.entidad.entidadextra.tipo_centro
+    #     if 'I.E.S.' in tipo_centro:
+    #         mins_periodo = 55
+    #     elif 'C.E.P.A' in tipo_centro:
+    #         mins_periodo = 45
+    #     elif 'C.E.I.P.' in tipo_centro:
+    #         mins_periodo = 60
+    #     elif 'C.R.A.' in tipo_centro:
+    #         mins_periodo = 60
+    #     elif self.g_e.jornada_contratada in ['23:00', '24:00', '25:00', '16:40', '8:20']:
+    #         mins_periodo = 60
+    #     else:
+    #         mins_periodo = 55
+    #     return mins_periodo
+
+    def calcula_minutos_periodo(self):
+        minutos = 0
+        for s in Sesion.objects.filter(g_e=self.g_e, horario=self.po.horario):
+            if s.minutos > minutos:
+                minutos = s.minutos
+        if minutos == 30:
+            self.minutos_periodo = 60
+        else:
+            self.minutos_periodo = minutos
+        return True
+
+
 
     @property
     def num_minutos_docencia(self):
@@ -912,6 +943,7 @@ class PDocenteCol(models.Model):
     sesiones = models.ManyToManyField(Sesion, blank=True)
     periodos_base = models.BooleanField('¿Son periodos básicos contados para plantilla?', default=True)
     periodos_added = models.IntegerField('Periodos en pantalla', default=0)
+    localidad = models.CharField('Localidad asociada al grupo', max_length=48, blank=True, null=True)
 
     @property
     def num_sesiones(self):
@@ -939,12 +971,13 @@ class PDocenteCol(models.Model):
         ordering = ['codecol',]
 
     def save(self, *args, **kwargs):
-        if self.sesiones.all().count() > 0:
-            self.periodos = self.num_periodos
+        if self.pk:
+            if self.sesiones.all().count() > 0:
+                self.periodos = self.num_periodos
         super(PDocenteCol, self).save(*args, **kwargs)
 
     def __str__(self):
-        return '%s - %s - (%s periodos y %s minutos)' % (self.pd, self.nombre, self.periodos, self.minutos)
+        return '%s - %s - (%s periodos y %s minutos)' % (self.pd, self.nombre, self.num_periodos, self.minutos)
 
 
 class GrupoExcluido(models.Model):

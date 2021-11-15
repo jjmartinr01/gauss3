@@ -32,7 +32,7 @@
             <thead class="docentes_edb{{ edb.id }}" style="display: none;">
         {% endif %}
     <tr>
-        <th style="color: #1b75bb">&nbsp;</th>
+        <th style="color: #1b75bb" colspan="2">&nbsp;</th>
         {% for columna in po|get_columnas %}
             <th><span class="verticalText">{{ columna }}</span></th>
         {% endfor %}

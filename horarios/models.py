@@ -396,6 +396,7 @@ class Sesion(models.Model):
     hora_fin = models.IntegerField('Hora fin periodo en minutos', default=0)
     hora_inicio_cadena = models.CharField('Hora inicio periodo en formato H:i', max_length=8, blank=True, null=True)
     hora_fin_cadena = models.CharField('Hora fin periodo en formato H:i', max_length=8, blank=True, null=True)
+    localidad = models.CharField('Localidad', max_length=48, blank=True, null=True)
 
     @property
     def minutos(self):

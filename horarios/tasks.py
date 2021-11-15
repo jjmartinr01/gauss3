@@ -529,7 +529,7 @@ def carga_masiva_from_file():
                     "X_DEPARTAMENTO": "x_departamento", "FECHA INICIO": "fecha_inicio", "FECHA FIN": "fecha_fin",
                     "DÍA": "dia", "HORA INICIO": "hora_inicio", "AÑO": "year",
                     "HORA FIN": "hora_fin", "HORA INICIO CADENA": "hora_inicio_cadena",
-                    "HORA FIN CADENA": "hora_fin_cadena", "X_ACTIVIDAD": "x_actividad",
+                    "HORA FIN CADENA": "hora_fin_cadena", "X_ACTIVIDAD": "x_actividad", "Localidad Unidad": 'localidad',
                     "ACTIVIDAD": "actividad", "L_REQUNIDAD": "l_requnidad", "DOCENCIA": "docencia",
                     "MINUTOS": "minutos", "X_DEPENDENCIA": "x_dependencia", "X_OFERTAMATRIG": "x_curso",
                     "C_CODDEP": "c_coddep", "X_DEPENDENCIA2": "x_dependencia2", "C_CODDEP2": "c_coddep2",
