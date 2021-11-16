@@ -900,36 +900,47 @@ class PDocente(models.Model):
     #     return mins_periodo
 
     def calcula_minutos_periodo(self):
-        minutos = 0
-        for s in Sesion.objects.filter(g_e=self.g_e, horario=self.po.horario):
-            if s.minutos > minutos:
-                minutos = s.minutos
-        if minutos == 30:
+        tipo_centro = self.g_e.ronda.entidad.entidadextra.tipo_centro
+        if 'C.E.P.A' in tipo_centro:
+            self.minutos_periodo = 45
+        elif 'C.E.I.P.' in tipo_centro or 'C.R.A.' in tipo_centro:
+            self.minutos_periodo = 60
+        elif self.g_e.jornada_contratada in ['23:00', '24:00', '25:00', '16:40', '8:20']:
             self.minutos_periodo = 60
         else:
-            self.minutos_periodo = minutos
-        return True
-
-
+            minutos = 0
+            for s in Sesion.objects.filter(g_e=self.g_e, horario=self.po.horario):
+                if s.minutos > minutos:
+                    minutos = s.minutos
+            if minutos == 30:
+                self.minutos_periodo = 60
+            else:
+                self.minutos_periodo = minutos
+            return True
+        self.save()
 
     @property
     def num_minutos_docencia(self):
         minutos = 0
         for pdcol in self.pdocentecol_set.all():
-            minutos += pdcol.minutos
+            minutos += pdcol.minutos + pdcol.periodos_added * self.minutos_periodo
         return minutos
 
     @property
     def num_periodos_docencia(self):
-        return int(self.num_minutos_docencia / self.minutos_periodo)
+        periodos = 0
+        for pdcol in self.pdocentecol_set.all():
+            periodos += pdcol.periodos
+        return periodos
+        # return int(self.num_minutos_docencia / self.minutos_periodo)
 
     @property
     def num_periodos_basicos(self):
-        minutos = 0
+        periodos = 0
         for pdcol in self.pdocentecol_set.all():
             if pdcol.periodos_base:
-                minutos += pdcol.minutos
-        return int(minutos / self.minutos_periodo)
+                periodos += pdcol.periodos
+        return periodos
 
     def __str__(self):
         return '%s - %s' % (self.po, self.g_e)
@@ -972,8 +983,7 @@ class PDocenteCol(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk:
-            if self.sesiones.all().count() > 0:
-                self.periodos = self.num_periodos
+            self.periodos = self.num_periodos
         super(PDocenteCol, self).save(*args, **kwargs)
 
     def __str__(self):

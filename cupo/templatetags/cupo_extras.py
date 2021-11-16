@@ -258,7 +258,8 @@ def get_columnas_docente(po, docente):
         for nombre_columna, contenido_columna in po.estructura_po[apartado].items():
             periodos, minutos = 0, 0
             for pdc in pdcols.filter(codecol=contenido_columna['codecol']):
-                periodos += pdc.num_sesiones
+                # periodos += pdc.num_sesiones
+                periodos += pdc.periodos
                 minutos += pdc.minutos
             horas_totales += periodos
             minutos_totales += minutos
