@@ -129,28 +129,6 @@ def calcula_plantilla_organica(departamento, horas_basicas):
     # return plantilla_organica
 
 
-# @register.filter
-# def get_columnas_edb(po, edb):
-#     horas_totales, horas_basicas, columnas = 0, 0, []
-#     miembros_edb = edb.miembroedb_set.all().values_list('g_e', flat=True)
-#     pdcols = PDocenteCol.objects.filter(pd__po=po, pd__g_e__id__in=miembros_edb)
-#     for apartado in po.estructura_po:
-#         for nombre_columna, contenido_columna in po.estructura_po[apartado].items():
-#             pdcs = pdcols.filter(codecol=contenido_columna['codecol']) #.aggregate(Sum('periodos'))['periodos__sum']
-#             # pdcols = pdocentes.pdocentecol_set.filter(codecol=contenido_columna['codecol'])
-#             periodos = 0
-#             for pdcol in pdcols:
-#                 num_periodos = pdcol.num_periodos
-#                 periodos += num_periodos
-#                 horas_totales += num_periodos
-#                 if pdcol.periodos_base:
-#                     horas_basicas += num_periodos
-#             columnas.append({'codecol': contenido_columna['codecol'],
-#                              'periodos': periodos})
-#     hp = calcula_plantilla_organica_edb(edb, horas_basicas)
-#     return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales,
-#             'horas_plantilla': hp}
-
 @register.filter
 def get_columnas_edb(po, edb):
     horas_totales, horas_basicas, columnas = 0, 0, []
@@ -169,31 +147,6 @@ def get_columnas_edb(po, edb):
     hp = calcula_plantilla_organica_edb(edb, horas_basicas)
     return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales,
             'horas_plantilla': hp, 'departamento': edb.id}
-
-
-@register.filter
-def get_columnas_edb2(po, edb):
-    minutos_totales, horas_totales, horas_basicas, columnas = 0, 0, 0, []
-    miembros_edb = edb.miembroedb_set.all().values_list('g_e', flat=True)
-    pdcols = PDocenteCol.objects.filter(pd__po=po, pd__g_e__id__in=miembros_edb)
-    for apartado in po.estructura_po:
-        for nombre_columna, contenido_columna in po.estructura_po[apartado].items():
-            # periodos = pdcols.filter(codecol=contenido_columna['codecol']).aggregate(Sum('periodos'))['periodos__sum']
-            periodos, minutos = 0, 0
-            for pdc in pdcols.filter(codecol=contenido_columna['codecol']):
-                periodos += pdc.num_sesiones
-                minutos += pdc.minutos
-            # if not periodos:
-            #     periodos = 0
-            horas_totales += periodos
-            minutos_totales += minutos
-            if contenido_columna['horas_base']:
-                horas_basicas += periodos
-            columnas.append({'codecol': contenido_columna['codecol'],
-                             'periodos': periodos, 'minutos': minutos})
-    hp = calcula_plantilla_organica_edb(edb, horas_basicas)
-    return {'columnas': columnas, 'horas_basicas': horas_basicas, 'horas_totales': horas_totales,
-            'horas_plantilla': hp, 'minutos_totales': minutos_totales}
 
 
 @register.filter
@@ -236,29 +189,21 @@ def get_pdocente(po, docente):
     return PDocente.objects.get(po=po, g_e=docente)
 # def get_pdcol(docente, po):
 #     return PDocenteCol.objects.filter(pd__po=po, pd__g_e=docente)
+@register.filter
+def pdocentecolset(pdocente, localidad):
+    return pdocente.pdocentecol_set.filter(localidad=localidad)
+
 
 @register.filter
 def get_columnas_docente(po, docente):
-    tipo_centro = docente.ronda.entidad.entidadextra.tipo_centro
-    if 'I.E.S.' in tipo_centro:
-        mins_periodo = 50
-    elif 'C.E.P.A' in tipo_centro:
-        mins_periodo = 45
-    elif 'C.E.I.P.' in tipo_centro:
-        mins_periodo = 60
-    elif 'C.R.A.' in tipo_centro:
-        mins_periodo = 60
-    elif docente.jornada_contratada in ['23:00', '24:00', '25:00', '16:40', '8:20']:
-        mins_periodo = 60
-    else:
-        mins_periodo = 50
     minutos_totales, horas_totales, horas_basicas, columnas = 0, 0, 0, []
+    pd = PDocente.objects.get(po=po, g_e=docente)
+    mins_periodo = pd.calcula_minutos_periodo()
     pdcols = PDocenteCol.objects.filter(pd__po=po, pd__g_e=docente)
     for apartado in po.estructura_po:
         for nombre_columna, contenido_columna in po.estructura_po[apartado].items():
             periodos, minutos = 0, 0
             for pdc in pdcols.filter(codecol=contenido_columna['codecol']):
-                # periodos += pdc.num_sesiones
                 periodos += pdc.periodos
                 minutos += pdc.minutos
             horas_totales += periodos

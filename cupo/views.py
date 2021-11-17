@@ -1395,12 +1395,25 @@ def plantilla_organica(request):
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'get_horario':
+
+            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
+            docente = Gauser_extra.objects.get(id=request.POST['docente'], ronda=po.ronda_centro)
+            # h = Horario.objects.get(ronda=docente.ronda, clave_ex=po.pk)
+            h = po.horario
+            horario = h.get_horario(docente)
+            # horario = h.get_horario2(docente)
+            tabla = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario,
+                                                                                 'docente': docente})
+            return JsonResponse({'ok': True, 'tabla': tabla, 'h': h.id, 'd': docente.id})
+
+
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
                 docente = Gauser_extra.objects.get(id=request.POST['docente'], ronda=po.ronda_centro)
                 # h = Horario.objects.get(ronda=docente.ronda, clave_ex=po.pk)
                 h = po.horario
-                horario = h.get_horario(docente)
+                # horario = h.get_horario(docente)
+                horario = h.get_horario2(docente)
                 tabla = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario,
                                                                                      'docente': docente})
                 return JsonResponse({'ok': True, 'tabla': tabla, 'h': h.id, 'd': docente.id})

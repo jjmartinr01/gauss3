@@ -6,6 +6,11 @@ from estudios.models import Gauser_extra_estudios
 
 register = Library()
 
+
+@register.filter
+def get_height(sesion):
+    return (sesion.hora_fin - sesion.hora_inicio)*2
+
 @register.filter
 def profesorado(entidad):
     cargos = Cargo.objects.filter(entidad=entidad, clave_cargo='g_docente')

@@ -2,7 +2,8 @@
 <table style="width: 100%">
     <thead>
     <tr>
-        <th colspan="6" style="text-align: center" title="{{ docente.tipo_personal }} -- Jornada: {{ docente.jornada_contratada }}">
+        <th colspan="6" style="text-align: center"
+            title="{{ docente.tipo_personal }} -- Jornada: {{ docente.jornada_contratada }}">
             {{ docente.gauser.get_full_name }} -- {{ docente.ronda }} -- {{ docente.puesto|upper }}</th>
     </tr>
     <tr>
@@ -23,22 +24,22 @@
                     <td title="{{ sesion.sesionextra_set.all.0.materia.curso.nombre }} ({{ sesion.sesionextra_set.all.0.actividad.nombre }})"
                         class="{{ sesion.clase_horario }} mwx198" data-m="{{ sesion.clase_horario }}">
                         {{ sesion.sesionextra_set.all.0.materia.nombre }}<br>
-                    {% for sext in sesion.sesionextra_set.all %}
-                        <span class="grupo_horario grupo_usado" data-grupo="{{ sext.grupo.id }}">
+                        {% for sext in sesion.sesionextra_set.all %}
+                            <span class="grupo_horario grupo_usado" data-grupo="{{ sext.grupo.id }}">
                             {{ sext.grupo.nombre }}
                         </span>
-                    {% endfor %}
+                        {% endfor %}
                         <br><span
                             style="color:lightseagreen">{{ sesion.sesionextra_set.all.0.dependencia.nombre }}</span>
                     </td>
                 {% else %}
                     <td class="{{ sesion.clase_horario }} mwx198" data-m="{{ sesion.clase_horario }}"
                         style="color:mediumvioletred">{{ sesion.sesionextra_set.all.0.actividad.nombre }}<br>
-                    {% for sext in sesion.sesionextra_set.all %}
-                        <span class="grupo_horario grupo_usado" data-grupo="{{ sext.grupo.id }}">
+                        {% for sext in sesion.sesionextra_set.all %}
+                            <span class="grupo_horario grupo_usado" data-grupo="{{ sext.grupo.id }}">
                             {{ sext.grupo.nombre }}
                         </span>
-                    {% endfor %}
+                        {% endfor %}
                     </td>
                 {% endif %}
             {% endfor %}
@@ -46,6 +47,61 @@
     {% endfor %}
     </tbody>
 </table>
+
+
+{#<table style="width: 100%">#}
+{#    <thead>#}
+{#    <tr>#}
+{#        <th colspan="6" style="text-align: center"#}
+{#            title="{{ docente.tipo_personal }} -- Jornada: {{ docente.jornada_contratada }}">#}
+{#            {{ docente.gauser.get_full_name }} -- {{ docente.ronda }} -- {{ docente.puesto|upper }}</th>#}
+{#    </tr>#}
+{#    <tr>#}
+{#        <th></th>#}
+{#        <th>Lunes</th>#}
+{#        <th>Martes</th>#}
+{#        <th>Miércoles</th>#}
+{#        <th>Jueves</th>#}
+{#        <th>Viernes</th>#}
+{#    </tr>#}
+{#    </thead>#}
+{#    <tbody>#}
+{#    <tr>#}
+{#        <td>fsdf</td>#}
+{#        {% for dia, sesiones in horario.items %}#}
+{#            <td>#}
+{#                {% for sesion in sesiones %}#}
+{#                    {% if sesion.sesionextra_set.all.0.materia %}#}
+{#                    <div style="border: 1px solid grey;height: {{ sesion|get_height }}px"#}
+{#                         title="{{ sesion.sesionextra_set.all.0.materia.curso.nombre }} ({{ sesion.sesionextra_set.all.0.actividad.nombre }})"#}
+{#                         class="{{ sesion.clase_horario }} mwx198" data-m="{{ sesion.clase_horario }}">#}
+{#                        {{ sesion.sesionextra_set.all.0.materia.nombre }}#}
+{#                        {% for sext in sesion.sesionextra_set.all %}#}
+{#                            <span class="grupo_horario grupo_usado" data-grupo="{{ sext.grupo.id }}">#}
+{#                            {{ sext.grupo.nombre }}#}
+{#                        </span>#}
+{#                        {% endfor %}#}
+{#                        <br><span#}
+{#                            style="color:lightseagreen">{{ sesion.sesionextra_set.all.0.dependencia.nombre }}</span>#}
+{#                    </div>#}
+{#                    {% else %}#}
+{#                        <div style="border: 1px solid grey;height: {{ sesion|get_height }}px"#}
+{#                             class="{{ sesion.clase_horario }} mwx198" data-m="{{ sesion.clase_horario }}"#}
+{#                        style="color:mediumvioletred">{{ sesion.sesionextra_set.all.0.actividad.nombre }}<br>#}
+{#                        {% for sext in sesion.sesionextra_set.all %}#}
+{#                            <span class="grupo_horario grupo_usado" data-grupo="{{ sext.grupo.id }}">#}
+{#                            {{ sext.grupo.nombre }}#}
+{#                        </span>#}
+{#                        {% endfor %}#}
+{#                    </div>#}
+{#                    {% endif %}#}
+{#                {% endfor %}#}
+{#            </td>#}
+{#        {% endfor %}#}
+{#    </tr>#}
+{#    </tbody>#}
+{#</table>#}
+
 
 <script>
     $('body').on('mouseover', '.mwx198', function () {
