@@ -2777,8 +2777,12 @@ def postnewreserva(request, entidad_code):
                     errores += '<p>El campo "%s" es obligatorio</p>' % campo.get_campo_display()
         if errores == '':
             reserva = Reserva_plaza.objects.create(entidad=entidad)
-            form = Reserva_plazaForm(request.GET, instance=reserva)
-            form.save()
+            for campo in campos:
+                if campo.campo in request.GET:
+                    setattr(reserva, campo.campo, request.GET[campo.campo])
+            # form = Reserva_plazaForm(request.GET, instance=reserva)
+            # form.save()
+            reserva.save()
             gauss = Gauser_extra.objects.get(ronda=entidad.ronda, gauser__username='gauss')
             permiso = Permiso.objects.get(code_nombre='recibe_aviso_reserva')
             receptores_id = Gauser_extra.objects.filter(ronda=entidad.ronda, permisos__in=[permiso]).values_list(
