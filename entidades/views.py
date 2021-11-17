@@ -2769,14 +2769,12 @@ def postnewreserva(request, entidad_code):
         errores = ''
         campos = ConfiguraReservaPlaza.objects.filter(entidad=entidad)
         for campo in campos:
-            errores += campo.campo + ' '
             if campo.required:
                 if campo.campo in request.GET:
                     if request.GET[campo.campo] == '' or request.GET[campo.campo] == None:
                         errores += '<p>El campo "%s" es obligatorio</p>' % campo.get_campo_display()
                 else:
                     errores += '<p>El campo "%s" es obligatorio</p>' % campo.get_campo_display()
-        return HttpResponse('informa_reserva(%s)' % json.dumps({'ok': True, 'mensaje': errores}))
         if errores == '':
             reserva = Reserva_plaza.objects.create(entidad=entidad)
             form = Reserva_plazaForm(request.GET, instance=reserva)
