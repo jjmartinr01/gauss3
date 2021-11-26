@@ -393,7 +393,6 @@ def horario_subentidad(request):
 # @permiso_required('acceso_horario_usuarios')
 @login_required()
 def horario_ge(request):
-    # Las siguientes líneas indican si el usuario podrá hacer modificaciones en el horario:
     g_e = request.session["gauser_extra"]
     horarios = Horario.objects.filter(ronda=g_e.ronda)
     try:
@@ -401,28 +400,6 @@ def horario_ge(request):
     except:
         id_horario = None
     horario = get_horario(horarios, id_horario=id_horario)
-    # if horarios.count() == 0:
-    #     logger.info('No existen horarios. Redireccionado para crear un horario.')
-    #     crear_aviso(request, False, 'Para ver un horario, antes debes crearlo.')
-    #     return redirect('/define_horario/')
-    # try:
-    #     horario = horarios.get(id=id_horario)
-    #     logger.info('Ha solicitado el horario "%s"' % horario.descripcion[:90])
-    # except:
-    #     try:
-    #         horario = horarios.get(predeterminado=True)
-    #         logger.info('Se autoselecciona el horario predeterminado')
-    #     except ObjectDoesNotExist:
-    #         horario = horarios[0]
-    #         horario.predeterminado = True
-    #         horario.save()
-    #         logger.info('No existe horario predeterminado. Se crea uno.')
-    #     except MultipleObjectsReturned:
-    #         horarios.update(predeterminado=False)
-    #         horario = horarios[0]
-    #         horario.predeterminado = True
-    #         horario.save()
-    #         logger.info('Existen varios horarios predeterminados. Se reconvierten para dejar uno solo.')
     g_es_id = horario.sesion_set.all().values_list('g_e__id', flat=True).distinct()
     g_es = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=g_es_id)
     try:
@@ -433,23 +410,6 @@ def horario_ge(request):
         except:
             ge = None if g_es.count() == 0 else g_es[0]
 
-    sesiones_ge = horario.sesion_set.filter(g_e=ge)
-    dias = sesiones_ge.values_list('dia', flat=True).order_by('dia').distinct()
-    nombre_dias = {1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 7: 'Domingo'}
-    horas_ge = horario.horas_ge(ge)
-    sesiones = []
-    for d in dias:
-        sesiones_dia = sesiones_ge.filter(dia=d).order_by('hora_inicio')
-        info_dia = {'dia_num': d, 'dia_nombre': nombre_dias[d], 'sesiones_dia': []}
-        for hora in horas_ge:
-            sesiones_hora = sesiones_dia.filter(hora_inicio=hora['inicio'])
-            if sesiones_hora.count() > 0:
-                info_dia['sesiones_dia'].append(sesiones_hora)
-        sesiones.append(info_dia)
-
-    horario_docente = horario.get_horario(ge)
-    tabla_horario = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario_docente,
-                                                                                 'docente': ge})
 
     respuesta = {
         'iconos':
@@ -464,9 +424,6 @@ def horario_ge(request):
         'horario': horario,
         'g_es': g_es,
         'gauser_extra': ge,
-        'sesiones': sesiones,
-        'tabla_horario': tabla_horario,
-        'horas_ge': horas_ge,
         'grupos': Grupo.objects.filter(ronda=g_e.ronda),
         'dependencias': Dependencia.objects.filter(entidad=g_e.ronda.entidad),
         # 'materias': Materia.objects.filter(curso__entidad=g_e.ronda.entidad),
@@ -757,6 +714,14 @@ def horarios_ajax(request):
         elif action == 'carga_horario_usuario':
             ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
             horario = Horario.objects.get(id=request.POST['horario'], ronda=g_e.ronda)
+            sesiones = horario.sesion_set.filter(g_e=ge)
+            try:
+                tabla_horario = render_to_string('plantilla_organica_horario_docente.html', {'sesiones': sesiones,
+                                                                                             'docente': ge})
+                return JsonResponse({'ok': True, 'tabla_horario': tabla_horario, 'h': horario.id, 'd': ge.id})
+            except:
+                return JsonResponse({'ok': False})
+            ############## POSIBILIDAD ORIGINAL ##############################
             # sesiones_ge = horario.sesion_set.filter(g_e=ge)
             # dias = sesiones_ge.values_list('dia', flat=True).order_by('dia').distinct()
             # nombre_dias = {1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado',
@@ -775,13 +740,15 @@ def horarios_ajax(request):
             #                         {'horas_ge': horas_ge, 'sesiones': sesiones, 'gauser_extra': ge,
             #                          'request': request})
             # return JsonResponse({'ok': True, 'html': html})
-            try:
-                horario_docente = horario.get_horario(ge)
-                tabla_horario = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario_docente,
-                                                                                             'docente': ge})
-                return JsonResponse({'ok': True, 'tabla_horario': tabla_horario, 'h': horario.id, 'd': ge.id})
-            except:
-                return JsonResponse({'ok': False})
+
+            ############# OTRA POSIBILIDAD
+            # try:
+            #     horario_docente = horario.get_horario(ge)
+            #     tabla_horario = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario_docente,
+            #                                                                                  'docente': ge})
+            #     return JsonResponse({'ok': True, 'tabla_horario': tabla_horario, 'h': horario.id, 'd': ge.id})
+            # except:
+            #     return JsonResponse({'ok': False})
 
         elif action == 'carga_horario_aula':
             aula = Dependencia.objects.get(id=request.POST['aula'], entidad=g_e.ronda.entidad)

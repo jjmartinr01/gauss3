@@ -696,14 +696,17 @@ class PlantillaOrganica(models.Model):
             pd, c = PDocente.objects.get_or_create(po=self, g_e=gex)
             if c:
                 pd.calcula_minutos_periodo()
+            sesiones_utilizadas = []
             for apartado in self.estructura_po:
                 for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
+                    sesiones_id = sextras.filter(~Q(sesion_id__in=sesiones_utilizadas), contenido_columna['q']).values_list('sesion__id', flat=True)
+                    sesiones_utilizadas += list(sesiones_id)
+                    sesiones = Sesion.objects.filter(id__in=sesiones_id)
                     for localidad in pd.localidades:
                         pdc, c = PDocenteCol.objects.get_or_create(pd=pd, periodos_base=contenido_columna['horas_base'],
                                                                    codecol=contenido_columna['codecol'],
                                                                    localidad=localidad, nombre=nombre_columna)
-                        sesiones_id = sextras.filter(contenido_columna['q']).values_list('sesion__id', flat=True)
-                        pdc.sesiones.add(*Sesion.objects.filter(id__in=sesiones_id, localidad=localidad))
+                        pdc.sesiones.add(*sesiones.filter(localidad=localidad))
                         LogCarga.objects.create(g_e=gex, log='Added sesiones a PDocenteCol')
                         pdc.save()
         except Exception as msg:

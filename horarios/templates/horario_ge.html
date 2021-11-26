@@ -110,7 +110,6 @@
                         {% endfor %}
                     </select></strong></h5>
                 </div>
-
             </div>
         {% else %}
             <div class="">
@@ -119,46 +118,7 @@
             </div>
         {% endif %}
         <input type="hidden" name="horario" id="horario" value="{{ horario.id }}">
-
-        {#        <div class="row">#}
-        {#            <div class="columns large-4">#}
-        {#                {% if request.session.gauser_extra|has_permiso:"crea_horarios2" %}#}
-        {#                    <select name="horario" id="horario">#}
-        {#                        <option value="{{ horario.id }}">{{ horario.descripcion|truncatechars:90 }}</option>#}
-        {#                        {% for h in horarios %}#}
-        {#                            <option value="{{ h.id }}">{{ h.descripcion|truncatechars:90 }}</option>#}
-        {#                        {% endfor %}#}
-        {#                    </select>#}
-        {#                {% else %}#}
-        {#                    &nbsp;<input type="hidden" name="horario" id="horario" value="{{ horario.id }}">#}
-        {#                {% endif %}#}
-        {#            </div>#}
-        {##}
-        {#            <div class="columns large-4">#}
-        {#                {% if request.session.gauser_extra|has_permiso:"crea_horarios_usuarios2" %}#}
-        {#                    Usuarios sin horario: <input type="checkbox">#}
-        {##}
-        {#                {% else %}#}
-        {#                    &nbsp;&nbsp;#}
-        {#                {% endif %}#}
-        {#            </div>#}
-        {##}
-        {#            <div class="columns large-4 end">#}
-        {#                <select name="gauser_extra" id="gauser_extra">#}
-        {#                    {% for g in g_es %}#}
-        {#                        <option value="{{ g.id }}"#}
-        {#                                {% if g.id == gauser_extra.id %}selected{% endif %}>{{ g.gauser.get_full_name }}</option>#}
-        {#                    {% endfor %}#}
-        {#                </select>#}
-        {#            </div>#}
-        {#        </div>#}
-
-
-        {#        {% if gauser_extra %}#}
-        <div class="horario" id="div_horario_usuario">
-            {% include "horario_ge_content.html" %}
-        </div>
-
+        <div id="tabla_horario_docente"></div>
 
         <div id="copy_cal" class="reveal-modal text-center medium" data-reveal aria-hidden="true" role="dialog">
             <div class="row">
@@ -293,7 +253,6 @@
                 </div>
             </div>
         </div>
-        {#        {% endif %}#}
     </form>
 
 {% endblock %}
@@ -306,20 +265,22 @@
         $('#dependencia').select2();
         $('#actividad').select2();
 
-        $('body').on('change', '#gauser_extra', function (e) {
-            var ge = $(this).val();
-            var h = $('#horario').val();
-            show_mensajes({title: 'Cargando horario', texto: 'En unos segundos se cargará el horario ...'});
+        function carga_horario_usuario(h, ge){
             $.post("/horarios_ajax/", {action: 'carga_horario_usuario', horario: h, ge: ge}, function (data) {
                 hide_mensajes();
                 if (data.ok) {
                     $("#update_ok").show().delay(1500).fadeOut();
-                    {#$('#div_horario_usuario').html(data.html);#}
                     $('#tabla_horario_docente').html(data.tabla_horario);
                 } else {
                     $("#update_error").show().delay(1500).fadeOut();
                 }
             });
+        }
+        $('body').on('change', '#gauser_extra', function (e) {
+            var ge = $(this).val();
+            var h = $('#horario').val();
+            show_mensajes({title: 'Cargando horario', texto: 'En unos segundos se cargará el horario ...'});
+            carga_horario_usuario(h, ge);
         });
 
 
@@ -633,6 +594,10 @@
                 $('.div_cell_sesion').removeClass('show_complete_cell');
             }
         });
-
+            show_mensajes({title: 'Cargando horario', texto: 'En unos segundos se cargará el horario ...'});
+            carga_horario_usuario($('#horario').val(), $('#gauser_extra').val());
+        {#setTimeout(function () {#}
+        {#    $('#plantilla_calendario_semanal').scrollTop(975);#}
+        {# }, 500);#}
     </script>
 {% endblock %}

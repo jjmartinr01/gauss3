@@ -39,6 +39,10 @@ class Curso(models.Model):
     edad = models.IntegerField("Edad con la que puede iniciarse este curso", blank=True, null=True)
     clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
 
+    @property
+    def grupos(self):
+        return Grupo.objects.filter(cursos__in=[self])
+
     class Meta:
         ordering = ['etapa', 'tipo', 'nombre']
 

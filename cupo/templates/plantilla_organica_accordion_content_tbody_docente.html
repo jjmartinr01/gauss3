@@ -22,7 +22,7 @@
                     <td data-codecol="{{ pdcol.codecol }}" contenteditable="true"
                         data-edb="{{ edb.id }}" title="Minutos: {{ pdcol.minutos }}"
                         data-ge="{{ docente.id }}" data-po="{{ po.id }}"
-                        class="tdpdocente">{{ pdcol.periodos }}</td>
+                        class="tdpdocente" data-pdcol="{{ pdcol.id }}">{{ pdcol.periodos }}</td>
                 {% endfor %}
             {% if forloop.first %}
                 <td id="horas_totales{{ docente.id }}" class="has-tip tip-top" data-tooltip aria-haspopup="true"

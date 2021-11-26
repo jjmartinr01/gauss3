@@ -1400,9 +1400,12 @@ def plantilla_organica(request):
             docente = Gauser_extra.objects.get(id=request.POST['docente'], ronda=po.ronda_centro)
             # h = Horario.objects.get(ronda=docente.ronda, clave_ex=po.pk)
             h = po.horario
-            horario = h.get_horario(docente)
-            # horario = h.get_horario2(docente)
-            tabla = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario,
+            # horario = h.get_horario(docente)
+            horario = h.get_horario2(docente)
+            sesiones = h.sesion_set.filter(g_e=docente)
+            # tabla = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario,
+            #                                                                      'docente': docente})
+            tabla = render_to_string('plantilla_organica_horario_docente.html', {'sesiones': sesiones,
                                                                                  'docente': docente})
             return JsonResponse({'ok': True, 'tabla': tabla, 'h': h.id, 'd': docente.id})
 
@@ -1426,6 +1429,7 @@ def plantilla_organica(request):
 
     plantillas_o = PlantillaOrganica.objects.filter(g_e=g_e)
     centros_no_racima = [26002928, 26003076, 26003520, 26003313, 26008724, 26003091, 26008219]
+    ejemplo_sesiones=Sesion.objects.filter(g_e__id=45740, horario__id=128)
     return render(request, "plantilla_organica.html",
                   {
                       'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos Racima',
@@ -1440,4 +1444,6 @@ def plantilla_organica(request):
                       'centros_no_racima': Entidad.objects.filter(code__in=centros_no_racima),
                       'esdir': Entidad.objects.get(code=26008219),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                      'ejemplo_sesiones': ejemplo_sesiones,
+                      'docente': g_e,
                   })

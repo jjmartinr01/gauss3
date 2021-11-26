@@ -123,6 +123,21 @@
     <script>
         $('#select_grupoex{{ po.id }}').select2();
     </script>
+{#    <div class="row">#}
+{#    <div class="columns-12">#}
+    <label>Selecciona la especialidad que quieres analizar:
+        <select class="especialidad_docente" id="especialidad_docente{{ po.id }}">
+            <option value="">-----------</option>
+        {% for edb in po.ronda_centro.especialidaddocentebasica_set.all %}
+                <option value="{{ edb.id }}">{{ edb.puesto }}</option>
+            {% endfor %}
+        </select>
+    </label>
+{#    </div>#}
+{#    </div>#}
+    <div id="materias_edb{{ po.id }}">
+{% include "plantilla_organica_accordion_content_materias_edb.html" %}
+    </div>
 {% else %}
     <h4 style="text-align: center;color: #008CBA;"><strong>Cargando la información
         <i class="fa fa-spinner fa-pulse fa-2x"></i></strong></h4>

@@ -461,14 +461,16 @@ class Sesion(models.Model):
         hi = self.horario.hora_inicio_ge(self.g_e)
         offset = self.horario.pixels_offset
         pixels_minuto = self.horario.pixels_minuto
-        return (self.hora_inicio - hi) * pixels_minuto + offset
+        # return (self.hora_inicio - hi) * pixels_minuto + offset
+        return self.hora_inicio * 2
 
     @property
     def height(self):
         hi = self.horario.hora_inicio
         hf = self.horario.hora_fin
         pixels_minuto = self.horario.pixels_minuto
-        return (hf - hi) * pixels_minuto
+        # return (hf - hi) * pixels_minuto
+        return (self.hora_fin - self.hora_inicio) * 2
 
     class Meta:
         ordering=['hora_inicio']
