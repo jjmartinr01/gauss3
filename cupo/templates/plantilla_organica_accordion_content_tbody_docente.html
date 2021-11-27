@@ -20,7 +20,7 @@
                 {% endif %}
                 {% for pdcol in pdocente|pdocentecolset:localidad %}
                     <td data-codecol="{{ pdcol.codecol }}" contenteditable="true"
-                        data-edb="{{ edb.id }}" title="Minutos: {{ pdcol.minutos }}"
+                        data-edb="{{ edb.id }}" title="Minutos: {{ pdcol.minutos }}{% for s in pdcol.sesiones.all %}{% for sext in s.sesionextra_set.all %}&#10;{{ sext.materia.nombre }}-{{ sext.materia.curso.nombre }}{% endfor %}{% endfor %}"
                         data-ge="{{ docente.id }}" data-po="{{ po.id }}"
                         class="tdpdocente" data-pdcol="{{ pdcol.id }}">{{ pdcol.periodos }}</td>
                 {% endfor %}
