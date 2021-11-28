@@ -7,6 +7,15 @@ from estudios.models import Gauser_extra_estudios
 register = Library()
 
 
+
+@register.filter
+def get_dependencias(sesion):
+    deps = set([s.dependencia.nombre for s in sesion.sesionextra_set.all() if s.dependencia])
+    if deps:
+        return deps
+    else:
+        return ["No hay asignada ninguna dependencia",]
+
 @register.filter
 def get_height(sesion):
     return (sesion.hora_fin - sesion.hora_inicio)*2

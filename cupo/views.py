@@ -14,7 +14,8 @@ from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 
 from autenticar.control_acceso import permiso_required
-from cupo.templatetags.cupo_extras import get_columnas_docente, get_columnas_departamento
+from cupo.templatetags.cupo_extras import get_columnas_docente, get_columnas_departamento, get_apartados, get_columnas, \
+    get_columnas_edb
 from entidades.templatetags.entidades_extras import puestos_especialidad
 from gauss.funciones import html_to_pdf
 from gauss.rutas import *
@@ -1222,6 +1223,56 @@ def plantilla_organica(request):
             CargaMasiva.objects.create(g_e=g_e, fichero=request.FILES['file_masivo_xls'], tipo='PLANTILLAXLS')
             carga_masiva_from_file.delay()
             crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+        elif request.POST['action'] == 'excel_po':
+            try:
+                po = PlantillaOrganica.objects.get(id=request.POST['po'])
+                ruta = '%s%s/%s' % (MEDIA_CUPO, slugify(po.ronda_centro.entidad.code), slugify(po.ronda_centro.nombre))
+                if not os.path.exists(ruta):
+                    os.makedirs(ruta)
+                fichero_xls = 'PO_%s_%s.xls' % (slugify(po.ronda_centro.entidad.name), po.creado.strftime('%Y-%d-%m-%H-%I'))
+                wb = xlwt.Workbook()
+                ws = wb.add_sheet('Plantilla Orgánica')
+                estilo_ortogonal = xlwt.easyxf('align: rotation 90; font: bold on')
+                estilo = xlwt.XFStyle()
+                font = xlwt.Font()
+                font.bold = True
+                estilo.font = font
+                ini_column_merged = 1
+                fin_column_merged = 0
+                ws.write(0, 0, 'Especialidad', estilo)
+                ws.col(0).width = 9000
+                for apartado in get_apartados(po):
+                    fin_column_merged += apartado['colspan']
+                    ws.write_merge(0, 0, ini_column_merged, fin_column_merged, apartado['nombre'], estilo)
+                    ini_column_merged = fin_column_merged + 1
+                ws.write_merge(0, 0, ini_column_merged, ini_column_merged + 2, 'Horas calculadas', estilo)
+
+                ws.write(1, 0, ' ')
+                ws.row(1).height = 3000
+                for indx, columna in enumerate(get_columnas(po)):
+                    ws.write(1, indx + 1, columna, estilo_ortogonal)
+                    ws.col(indx + 1).width = 1100
+                ws.write(1, indx + 2, 'Horas totales', estilo_ortogonal)
+                ws.col(indx + 2).width = 1100
+                ws.write(1, indx + 3, 'Horas básicas', estilo_ortogonal)
+                ws.col(indx + 3).width = 1100
+                ws.write(1, indx + 4, 'Plantilla orgánica', estilo_ortogonal)
+                ws.col(indx + 4).width = 1100
+                for indx, edb in enumerate(po.ronda_centro.especialidaddocentebasica_set.all()):
+                    ws.write(indx + 2, 0, edb.puesto, estilo)
+                    horas = get_columnas_edb(po, edb)
+                    for c, columna in enumerate(horas['columnas']):
+                        ws.write(indx + 2, c + 1, columna['periodos'])
+                    ws.write(indx + 2, c + 2, horas['horas_totales'])
+                    ws.write(indx + 2, c + 3, horas['horas_basicas'])
+                    ws.write(indx + 2, c + 4, horas['horas_plantilla'], estilo)
+                wb.save(ruta + fichero_xls)
+                xlsfile = open(ruta + fichero_xls, 'rb')
+                response = FileResponse(xlsfile, content_type='application/vnd.ms-excel')
+                response['Content-Disposition'] = 'attachment; filename=%s' % fichero_xls
+                return response
+            except Exception as msg:
+                crear_aviso(request, False, str(msg))
         elif request.POST['action'] == 'carga_plantilla_organica_centros':
             logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls_casiopea'].content_type)
             fichero = request.FILES['file_masivo_xls_casiopea']
@@ -1253,24 +1304,6 @@ def plantilla_organica(request):
 
                 EspecialidadPlantilla.objects.create(cpoc=cpoc, centro=centro, code=str(int(keys['ESP'])), tipo=tipo,
                                                      nombre=keys['DESPEC'], plazas=plazas, ocupadas=ocupadas)
-            crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
-        elif request.POST['action'] == 'genera_xls':
-            wboriginal = xlrd.open_workbook("/home/juanjo/Descargas/borrar/plantilla_organica.xls")
-            shsec = wboriginal.sheet_by_index(0)
-            shdiv = wboriginal.sheet_by_index(1)
-            shcon = wboriginal.sheet_by_index(2)
-            shcra = wboriginal.sheet_by_index(3)
-            wbgenerado = xlwt.Workbook()
-            shsecgen = wbgenerado.add_sheet('IES CIEPF HOJA 1', cell_overwrite_ok=True)
-            shdivgen = wbgenerado.add_sheet('A. Diversidad HOJA 2', cell_overwrite_ok=True)
-            shcongen = wbgenerado.add_sheet('CONSERVATORIOS', cell_overwrite_ok=True)
-            shcragen = wbgenerado.add_sheet('CRA', cell_overwrite_ok=True)
-            for r in range(shsec.nrows):
-                for c in range(shsec.ncols):
-                    shsecgen.write(r, c, shsec.cell(r, c).value)
-            logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls'].content_type)
-            CargaMasiva.objects.create(g_e=g_e, fichero=request.FILES['file_masivo_xls'], tipo='PLANTILLAXLS')
-            carga_masiva_from_file.delay()
             crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
         elif request.POST['action'] == 'open_accordion' and request.is_ajax():
             try:

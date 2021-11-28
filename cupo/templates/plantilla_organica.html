@@ -376,6 +376,12 @@
                 });
         });
 
+        $('body').on('click', '.excel_po', function () {
+            $('#action').val('excel_po');
+            $('#po').val($(this).data('id'));
+            document.getElementById("{{ formname }}").submit();
+        });
+
         $('body').on('click', '.borrar_po', function () {
             id = $(this).data('id');
             show_mensajes({
