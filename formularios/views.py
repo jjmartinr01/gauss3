@@ -1045,9 +1045,9 @@ def formularios_disponibles(request):
 
 def carga_cuestionarios_funcionario_practicas(request):
     g_e = request.session["gauser_extra"]
-    from formularios.models import CUE
-    efp, c = EvalFunPract.objects.get_or_create(nombre='Evaluación funcionarios en prácticas',
-                                                entidad=g_e.ronda.entidad)
+    from formularios.evalfunpract_preguntas import CUE
+    nombre = 'Evaluación funcionarios en prácticas (versión: %s)' % datetime.today().strftime('%Y%m%d-%H%M')
+    efp, c = EvalFunPract.objects.get_or_create(nombre=nombre, entidad=g_e.ronda.entidad)
     if c:
         for dim in CUE:
             efpd = EvalFunPractDim.objects.create(evalfunpract=efp, dimension=dim['dim'])
@@ -1060,15 +1060,30 @@ def carga_cuestionarios_funcionario_practicas(request):
                     else:
                         p = '%s' % preg['preg']
                     EvalFunPractDimSubCue.objects.create(evalfunpractdimsub=efpds, pregunta=p,
-                                                         responde_ins=preg['inspector'],
                                                          responde_doc=preg['docente'],
                                                          responde_doc_jefe=preg['docente-jefe'],
-                                                         responde_tut=preg['tutor'],
                                                          responde_doc_tutor=preg['docente-tutor'],
+                                                         responde_doc_orientador=preg['orientador'],
+                                                         responde_ins=preg['inspector'],
+                                                         responde_tut=preg['tutor'],
                                                          responde_dir=preg['director'])
 
+def activa_permisos(efpa):
+    # Activamos permisos a las personas implicadas en la evaluación
+    code_permisos = ['acceso_funcionarios_practicas', 'acceso_mis_evalpract']
+    permisos = Permiso.objects.filter(code_nombre__in=code_permisos)
+    efpa.docente.permisos.add(*permisos)
+    efpa.director.permisos.add(*permisos)
+    efpa.tutor.permisos.add(*permisos)
+    efpa.inspector.permisos.add(*permisos)
 
-@permiso_required('acceso_procesos_evalpract')
+def activa_cuestiones(efpa):
+    cs_totales = efpa.procesoevalfunpract.evalfunpract.efpdscs  # Cuestiones totales disponibles
+    for c in cs_totales:
+        EvalFunPractRes.objects.get_or_create(evalfunpractact=efpa, evalfunpractdimsubcue=c)
+
+
+# @permiso_required('acceso_procesos_evalpract')
 def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_en_prácticas
     g_e = request.session["gauser_extra"]
     pefps = ProcesoEvalFunPract.objects.filter(g_e__ronda__entidad=g_e.ronda.entidad, g_e__gauser=g_e.gauser)
@@ -1135,9 +1150,28 @@ def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_
                     fecha = datetime.strptime(request.POST['fecha'], '%Y-%m-%d')
                     setattr(pefp, request.POST['campo'], fecha)
                     pefp.save()
+                    for efpa in pefp.evalfunpractact_set.all():
+                        setattr(efpa, request.POST['campo'], fecha)
+                        efpa.save()
                     return JsonResponse({'ok': True})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tienes permiso para hacer el cambio'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_efp':
+            try:
+                pefp = ProcesoEvalFunPract.objects.get(id=request.POST['pefp'])
+                evalfunpract = EvalFunPract.objects.get(id=request.POST['efp'])
+                if pefp.g_e.gauser == g_e.gauser and pefp.fecha_min > now().date():
+                    pefp.evalfunpract = evalfunpract
+                    pefp.save()
+                    EvalFunPractRes.objects.filter(evalfunpractact__procesoevalfunpract=pefp).delete()
+                    for efpa in pefp.evalfunpractact_set.all():
+                        activa_cuestiones(efpa)
+                    return JsonResponse({'ok': True})
+                else:
+                    msg = 'Las cuestiones solo pueden ser cambiadas por el propietario y antes de la fecha de comienzo'
+                    return JsonResponse({'ok': False, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'del_pefp_destinatario':
@@ -1151,13 +1185,44 @@ def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_
                     return JsonResponse({'ok': False, 'msg': 'No tienes permiso para borrar destinatarios'})
             except:
                 return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'update_nombre_destinatario_reveal':
+            try:
+                user = request.POST['user']
+                ges = Gauser_extra.objects.filter(gauser__dni=request.POST['dni'])
+                for ge in ges:
+                    if ge.ronda == ge.ronda.entidad.ronda:
+                        return JsonResponse({'ok': True, 'nombre': ge.gauser.get_full_name(), 'user': user})
+                return JsonResponse({'ok': False, 'nombre': 'No detectado usuario con ese DNI', 'user': user})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_destinatarios_carga_manual':
+            try:
+                director = Gauser_extra.objects.get(id=request.POST['director'])
+                inspector = Gauser_extra.objects.get(id=request.POST['inspector'])
+                tutor = Gauser_extra.objects.get(id=request.POST['tutor'])
+                docente = Gauser_extra.objects.get(id=request.POST['docente'])
+                pefp = ProcesoEvalFunPract.objects.get(id=request.POST['pefp'])
+                efpa, c = EvalFunPractAct.objects.get_or_create(procesoevalfunpract=pefp,
+                                                                inspector=inspector, tutor=tutor,
+                                                                director=director, docente=docente,
+                                                                fecha_max=pefp.fecha_max,
+                                                                fecha_min=pefp.fecha_min)
+                if c:
+                    activa_permisos(efpa)
+                    activa_cuestiones(efpa)
+                html = render_to_string("procesos_evaluacion_funcpract_accordion_content_destinatarios.html",
+                                        {'pefp': pefp})
+                return JsonResponse({'ok': True, 'html': html, 'pefp': pefp.id})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+
     elif request.method == 'POST':
         if request.POST['action'] == 'upload_archivo_xhr':
             try:
                 errores = {}
                 pefp = ProcesoEvalFunPract.objects.get(id=request.POST['pefp'])
-                code_permisos = ['acceso_funcionarios_practicas', 'acceso_mis_evalpract']
-                permisos = Permiso.objects.filter(code_nombre__in=code_permisos)
+                # code_permisos = ['acceso_funcionarios_practicas', 'acceso_mis_evalpract']
+                # permisos = Permiso.objects.filter(code_nombre__in=code_permisos)
                 n_files = int(request.POST['n_files'])
                 for i in range(n_files):
                     fichero = request.FILES['archivo_xhr' + str(i)]
@@ -1185,12 +1250,16 @@ def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_
                             insp = True
                             efpa, c = EvalFunPractAct.objects.get_or_create(procesoevalfunpract=pefp,
                                                                             inspector=inspector, tutor=tutor,
-                                                                            director=director, docente=docente)
+                                                                            director=director, docente=docente,
+                                                                            fecha_max=pefp.fecha_max,
+                                                                            fecha_min=pefp.fecha_min)
                             if c:
-                                docente.permisos.add(*permisos)
-                                director.permisos.add(*permisos)
-                                tutor.permisos.add(*permisos)
-                                inspector.permisos.add(*permisos)
+                                activa_permisos(efpa)
+                                activa_cuestiones(efpa)
+                                # docente.permisos.add(*permisos)
+                                # director.permisos.add(*permisos)
+                                # tutor.permisos.add(*permisos)
+                                # inspector.permisos.add(*permisos)
                         except Exception as msg:
                             errores[row_index] = {'msg': str(msg), 'fila': row_index,
                                                   'centro': sheet.cell_value(row_index, 1),
@@ -1205,6 +1274,7 @@ def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
 
+    cargo_inspector = Cargo.objects.filter(entidad=g_e.ronda.entidad, clave_cargo='g_inspector_educacion')
     return render(request, "procesos_evaluacion_funcpract.html",
                   {
                       'iconos':
@@ -1213,6 +1283,7 @@ def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_
                            ),
                       'formname': 'procesos_evaluacion_funcpract',
                       'pefps': pefps,
+                      'inspectores': Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=cargo_inspector),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
@@ -1250,6 +1321,7 @@ def mis_evalpract(request):  # mis_evaluaciones_prácticas
                     respuesta = {'true': True, 'false': False}
                     efpa.docente_jefe = respuesta[request.POST['docente_jefe']]
                     efpa.docente_tutor = respuesta[request.POST['docente_tutor']]
+                    efpa.docente_orientador = respuesta[request.POST['docente_orientador']]
                     efpa.save()
                 return JsonResponse({'ok': True})
             except Exception as msg:
@@ -1419,6 +1491,34 @@ def recufunprac(request, id, actor):  # rellenar_cuestionario_funcionario_practi
                     return JsonResponse({'ok': False, 'msg': 'En esta fecha no es posible la modificación.'})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+
+
+
+
+
+    filtro_fechas = Q(procesoevalfunpract__fecha_min__lt=datetime.now().date() + timedelta(days=60)) & Q(
+        procesoevalfunpract__fecha_max__gt=datetime.now().date() - timedelta(days=200))
+    efpa = EvalFunPractAct.objects.get(Q(id=id), filtro_fechas)
+    efprs = EvalFunPractRes.objects.none()
+    respondido = False
+    if getattr(efpa, actor) == g_e:
+        efprs = efpa.efprs(actor)
+        actores = {'docente': 'respondido_doc', 'inspector': 'respondido_ins', 'director': 'respondido_dir',
+                   'tutor': 'respondido_tut'}
+        respondido = getattr(efpa, actores[actor])
+    ge_actor = getattr(efpa, actor)
+    if ge_actor.gauser == g_e.gauser:
+        return render(request, "recufunprac.html",
+                      {
+                          'formname': 'recufunprac',
+                          'efpa': efpa,
+                          'efprs': efprs,
+                          'actor': actor,
+                          'respondido': respondido
+                      })
+
+
+
     try:
         filtro_fechas = Q(procesoevalfunpract__fecha_min__lt=datetime.now().date() + timedelta(days=60)) & Q(
             procesoevalfunpract__fecha_max__gt=datetime.now().date() - timedelta(days=200))

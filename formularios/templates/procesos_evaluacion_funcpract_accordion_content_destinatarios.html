@@ -9,19 +9,6 @@
     </tr>
     </thead>
     <tbody id="tbody_pefp_destinatarios{{ pefp.id }}">
-{#    <tr>#}
-{#        <td>#}
-{#            <select id="select_destinatario_pefp{{ pefp.id }}" class="select_destinatario_pefp"></select>#}
-{#        </td>#}
-{#        <td>#}
-{#            <select id="select_corrector_pefp{{ pefp.id }}" class="select_corrector_pefp"></select>#}
-{#        </td>#}
-{#        <td>#}
-{#            <a class="add_pefp_destinatario" data-pefp="{{ pefp.id }}">#}
-{#                <i class="fa fa-plus"></i> Añadir#}
-{#            </a>#}
-{#        </td>#}
-{#    </tr>#}
     {% for efpa in pefp.evalfunpractact_set.all %}
         {% include "procesos_evaluacion_funcpract_accordion_content_destinatarios_tr.html" %}
     {% endfor %}

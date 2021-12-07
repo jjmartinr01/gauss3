@@ -11,9 +11,9 @@
                 <li><a class="button secondary" title="No tienes permisos para borrar el proceso de evaluación">
                     <i class="fa fa-trash-o"></i> Borrar</a></li>
             {% endif %}
-{#            <li><a class="button copy_pefp" data-pefp="{{ pefp.id }}"#}
-{#                   title="Hacer una copia (un duplicado) de este proceso"><i class="fa fa-copy"></i> Copiar</a>#}
-{#            </li>#}
+            {#            <li><a class="button copy_pefp" data-pefp="{{ pefp.id }}"#}
+            {#                   title="Hacer una copia (un duplicado) de este proceso"><i class="fa fa-copy"></i> Copiar</a>#}
+            {#            </li>#}
             <li><a class="button excel_pefp" data-id="{{ pefp.id }}"
                    title="EXCEL con los datos enviados por los usuarios"><i class="fa fa-file-excel-o"></i> Excel</a>
             </li>
@@ -51,36 +51,47 @@
 
 <br>
 <div class="row">
-    <div class="columns large-3">
+    <div class="columns large-2">
         <label title="Fecha de inicio para rellenar el cuestionario"><b>Fecha inicio:</b>
             <input value="{{ pefp.fecha_min|date:'Y-m-d' }}" type="date" name="fecha_min"
-                   class="update_fecha_limite" data-pefp={{ pefp.id }} data-campo="fecha_min"></label>
+                   class="update_fecha_limite" data-pefp="{{ pefp.id }}" data-campo="fecha_min"></label>
     </div>
-    <div class="columns large-3">
+    <div class="columns large-2">
         <label title="Fecha límite para rellenar el formulario"><b>Fecha límite:</b>
             <input value="{{ pefp.fecha_max|date:'Y-m-d' }}" type="date" name="fecha_max"
-                   class="update_fecha_limite" data-pefp={{ pefp.id }} data-campo="fecha_max"></label>
+                   class="update_fecha_limite" data-pefp="{{ pefp.id }}" data-campo="fecha_max"></label>
     </div>
-
-
-    <div class="columns large-1">
-        <label><b>Ver</b><br>
-            <a href="/ver_pefp/{{ pefp.id }}/{{ pefp.identificador }}/" target="_blank"
-            ><i class="fa fa-eye fa-2x"></i></a>
+    <div class="columns large-8">
+        <label title="Selecciona el cuestionario de preguntas que se aplicará"><b>Cuestionario:</b>
+            <select data-pefp="{{ pefp.id }}" class="update_efp">
+                <option value="">---------</option>
+                {% for efp in pefp|get_efps %}
+                    <option value="{{ efp.id }}" {% if pefp.evalfunpract == efp %}selected{% endif %}>
+                        {{ efp.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
         </label>
     </div>
-    <div class="columns large-3">
-        <label title="Haz click sobre el botón para copiar el enlace al formulario"><b>Copiar enlace</b><br>
-            <a class="button tiny copy_url_pefp" data-url="/rellena_pefp/{{ pefp.id }}/{{ pefp.identificador }}/"
-               style="font-weight: bold;">Haz click sobre este botón
-            </a>
-        </label>
-    </div>
+
+    {#    <div class="columns large-1">#}
+    {#        <label><b>Ver</b><br>#}
+    {#            <a href="/ver_pefp/{{ pefp.id }}/{{ pefp.identificador }}/" target="_blank"#}
+    {#            ><i class="fa fa-eye fa-2x"></i></a>#}
+    {#        </label>#}
+    {#    </div>#}
+    {#    <div class="columns large-3">#}
+    {#        <label title="Haz click sobre el botón para copiar el enlace al formulario"><b>Copiar enlace</b><br>#}
+    {#            <a class="button tiny copy_url_pefp" data-url="/rellena_pefp/{{ pefp.id }}/{{ pefp.identificador }}/"#}
+    {#               style="font-weight: bold;">Haz click sobre este botón#}
+    {#            </a>#}
+    {#        </label>#}
+    {#    </div>#}
 </div>
 <p>&nbsp;</p>
 
 <div class="row">
-    <div class="columns large-9">
+    <div class="columns large-8">
         <label><b>Personas destinadas a rellenar este formulario:</b> <a class="ayuda_usuarios_destinatarios">
             <i class="fa fa-question-circle"></i></a>
 
@@ -91,10 +102,12 @@
             ({{ pefp.evalfunpractact_set.all|length }} docentes)
         </label>
     </div>
-    <div class="columns large-1">
-        <label title="Cargar los destinatarios y correctores desde un archivo excel">
-            <a class="ver_cargar_pefp_destinatarios" data-pefp="{{ pefp.id }}"><i class="fa fa-cloud-upload"></i></a>
-        </label>
+    <div class="columns large-2 text-right">
+        <a title="Cargar los destinatarios y correctores desde un archivo excel" class="ver_cargar_pefp_destinatarios"
+           data-pefp="{{ pefp.id }}"><i class="fa fa-cloud-upload"></i></a>
+        <a title="Cargar de manera manual un/a destinatario/a y corrector/a" href="#"
+           data-reveal-id="reveal_carga_manual_pefp_destinatario" class="carga_manual_pefp_destinatario"
+           data-pefp="{{ pefp.id }}"><i class="fa fa-user-plus"></i></a>
     </div>
 </div>
 <div id="div_carga_archivo_destinatarios{{ pefp.id }}" class="panel callout" style="display: none;">
@@ -147,10 +160,3 @@
         </div>
     </div>
 </div>
-
-{#<div id="pefpsections{{ pefp.id }}">#}
-{#    {% for gfs in pefp.pefpsection_set.all %}#}
-{#        {% include "formularios_accordion_content_gfs.html" %}#}
-{#        {% include "formularios_accordion_content_ginputs.html" %}#}
-{#    {% endfor %}#}
-{#</div>#}

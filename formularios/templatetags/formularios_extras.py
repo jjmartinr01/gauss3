@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 from django.template import Library
-from formularios.models import GSITIPOS, GformSection, GformSectionInput, GformResponde, GformRespondeInput
+from formularios.models import GSITIPOS, GformSection, GformSectionInput, GformResponde, GformRespondeInput, \
+    EvalFunPract
 
 register = Library()
 
+@register.filter
+def get_efps(pefp):
+    return EvalFunPract.objects.filter(entidad=pefp.evalfunpract.entidad)
 
 @register.filter
 def cuestiones_grupo(ginputs, grupo):

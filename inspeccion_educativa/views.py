@@ -64,8 +64,8 @@ def cargar_centros_mdb(request):
 
 def todos_lunes(ronda):
     d = ronda.inicio
-    dias_sumar = 7 - d.weekday() if (
-                                            7 - d.weekday()) < 7 else 0  # Días a sumar para obtener el primer lunes de la ronda
+    # Días a sumar para obtener el primer lunes de la ronda:
+    dias_sumar = 7 - d.weekday() if (7 - d.weekday()) < 7 else 0
     lunes = d + timedelta(days=dias_sumar)  # First lunes
     fechas_lunes = []
     while lunes < ronda.fin:
@@ -253,7 +253,7 @@ def tareas_ie(request):
                 else:
                     return JsonResponse({'ok': False, 'msg': 'No tiene permiso para crear tareas'})
             except Exception as msg:
-                return JsonResponse({'ok': False, 'msg':str(msg)})
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'busca_tareas_ie':
             try:
                 try:
@@ -345,13 +345,15 @@ def tareas_ie(request):
             if request.POST['inspector_informe'] == 'general':
                 instareas = InspectorTarea.objects.filter(inspector__ronda__entidad=g_e.ronda.entidad,
                                                           tarea__fecha__gte=fecha_inicio,
-                                                          tarea__fecha__lte=fecha_fin).order_by('inspector', 'tarea__fecha')
+                                                          tarea__fecha__lte=fecha_fin).order_by('inspector',
+                                                                                                'tarea__fecha')
                 fichero_xls = 'Informe_general_%s.xls' % str(g_e.ronda.entidad.code)
             else:
                 inspector = inspectores.get(id=request.POST['inspector_informe'])
                 instareas = InspectorTarea.objects.filter(inspector=inspector, tarea__fecha__gte=fecha_inicio,
                                                           tarea__fecha__lte=fecha_fin).order_by('tarea__fecha')
-                fichero_xls = 'Informe_%s_%s.xls' % (str(g_e.ronda.entidad.code), slugify(inspector.gauser.get_full_name()))
+                fichero_xls = 'Informe_%s_%s.xls' % (
+                str(g_e.ronda.entidad.code), slugify(inspector.gauser.get_full_name()))
             ruta = MEDIA_INSPECCION + str(g_e.ronda.entidad.code) + '/'
             if not os.path.exists(ruta):
                 os.makedirs(ruta)
@@ -900,6 +902,7 @@ def plantillas_ie(request):
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
     })
 
+
 def get_puntos_inspector(inspectores):
     resultados = {}
     for inspector in inspectores:
@@ -908,6 +911,7 @@ def get_puntos_inspector(inspectores):
         except:
             resultados[0] = 0
     return resultados
+
 
 # @permiso_required('acceso_asignar_centros_inspeccion')
 def asignar_centros_inspeccion(request):
@@ -940,7 +944,7 @@ def asignar_centros_inspeccion(request):
                     insp_antiguo = ia.inspector
                     ia.inspector = inspectores.get(id=request.POST['valor'])
                     ia.save()
-                    puntos= get_puntos_inspector([ia.inspector, insp_antiguo])
+                    puntos = get_puntos_inspector([ia.inspector, insp_antiguo])
                     return JsonResponse({'ok': True, 'puntos': puntos})
                 elif request.POST['campo'] == 'etapa':
                     ia.etapa = request.POST['valor']
@@ -961,15 +965,17 @@ def asignar_centros_inspeccion(request):
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'busca_ci':
             try:
-                logica = '' # Puede ser OR o AND
+                logica = ''  # Puede ser OR o AND
                 if logica == 'OR':
                     palabras = request.POST['texto'].split()
                     cis_ronda = CentroInspeccionado.objects.filter(ronda=g_e.ronda)
                     cis = CentroInspeccionado.objects.none()
                     for palabra in palabras:
-                        q1 = Q(centro__name__icontains=palabra) | Q(zonai__icontains=palabra) | Q(puntos__icontains=palabra) | Q(clasificado__icontains=palabra)
+                        q1 = Q(centro__name__icontains=palabra) | Q(zonai__icontains=palabra) | Q(
+                            puntos__icontains=palabra) | Q(clasificado__icontains=palabra)
                         cis = cis.union(cis_ronda.filter(q1))
-                        q2 = Q(etapa__icontains=palabra[:3]) | Q(inspector__gauser__first_name__icontains=palabra) | Q(inspector__gauser__last_name__icontains=palabra)
+                        q2 = Q(etapa__icontains=palabra[:3]) | Q(inspector__gauser__first_name__icontains=palabra) | Q(
+                            inspector__gauser__last_name__icontains=palabra)
                         ias = InspectorAsignado.objects.filter(q2).values_list('cenins__id', flat=True)
                         cis = cis.union(cis_ronda.filter(id__in=ias))
                 else:
@@ -986,7 +992,6 @@ def asignar_centros_inspeccion(request):
                         resultados.append(cis1.union(cis2))
                     cis_ids = cis_ronda.values_list('id', flat=True).intersection(*resultados)
                     cis = cis_ronda.filter(id__in=cis_ids)
-
 
                 html = render_to_string('asignar_centros_inspector_buscar.html', {'cis': cis, 'buscar': True,
                                                                                   'inspectores': inspectores})

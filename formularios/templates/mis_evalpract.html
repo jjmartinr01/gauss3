@@ -173,8 +173,9 @@
             var efpa = $(this).data('efpa');
             var docente_tutor = $('#docente_tutor' + efpa).prop('checked');
             var docente_jefe = $('#docente_jefe' + efpa).prop('checked');
+            var docente_orientador = $('#docente_orientador' + efpa).prop('checked');
             $.post("/mis_evalpract/", {action: 'perfil_docente', efpa: efpa,
-                    docente_jefe: docente_jefe, docente_tutor: docente_tutor},
+                    docente_jefe: docente_jefe, docente_tutor: docente_tutor, docente_orientador: docente_orientador},
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();

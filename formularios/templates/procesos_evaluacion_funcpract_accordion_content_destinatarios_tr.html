@@ -1,14 +1,14 @@
-<tr id="pefpdestinatario{{ efpa.id }}" title="{{ efpa.docente.ronda.entidad.name }}">
-    <td>
+<tr id="pefpdestinatario{{ efpa.id }}">
+    <td title="{{ efpa.docente.ronda.entidad.name }}">
         {{ efpa.docente.gauser.last_name }}, {{ efpa.docente.gauser.first_name }}
     </td>
-    <td>
+    <td title="{{ efpa.tutor.ronda.entidad.name }}">
         {{ efpa.tutor.gauser.last_name }}, {{ efpa.tutor.gauser.first_name }}
     </td>
-    <td>
+    <td title="{{ efpa.director.ronda.entidad.name }}">
         {{ efpa.director.gauser.last_name }}, {{ efpa.director.gauser.first_name }}
     </td>
-    <td>
+    <td title="{{ efpa.inspector.ronda.entidad.name }}">
         {{ efpa.inspector.gauser.last_name }}, {{ efpa.inspector.gauser.first_name }}
     </td>
     <td>

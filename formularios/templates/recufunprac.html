@@ -277,8 +277,7 @@
                     <p>Si pulsas en "Entregar cuestionario", tus respuestas se enviarán a la Inspección Técnica
                         Educativa.
                         No obstante, dentro del plazo establecido para rellenar este cuestionario, podrás seguir
-                        modificando tus
-                        respuestas si lo consideras necesario.</p>
+                        modificando tus respuestas si lo consideras necesario.</p>
                     <a class="button" id="terminar_efpa">Entregar cuestionario</a>
                 </div>
             </div>
@@ -368,9 +367,9 @@
         $('body').on('click', '#terminar_efpa', function (e) {
             e.preventDefault();
             {# Número de preguntas totales: #}
-            var efprs = $('.radio_efpr') / 6;
+            var efprs = $('.radio_efpr').length / 6;
             {# Número de preguntas contestadas: #}
-            var efprs_contestadas = efprs.prop('checked', true).length / 6;
+            var efprs_contestadas = $('.radio_efpr:checked').length;
             if (efprs === efprs_contestadas) {
                 $.post(recufunprac,
                     {action: 'terminar_efpa', efpa: $('#efpa').val(), actor: $('#actor').val()},
@@ -379,13 +378,13 @@
                             location.href = '/mis_evalpract/'
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
-                            show_error(data.msg);
+                            show_error(data);
                         }
                     });
             } else {
                 show_mensajes({
                     title: 'Faltan preguntas por contestar',
-                    texto: 'Hay ' + efprs + 'cuestiones y has respondido a ' + efprs_contestadas + '.'
+                    texto: 'Hay ' + efprs + ' cuestiones y has respondido a ' + efprs_contestadas + '.'
                 });
             }
         });

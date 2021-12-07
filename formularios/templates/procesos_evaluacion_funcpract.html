@@ -24,6 +24,11 @@
         .disabled {
             opacity: 0.4;
         }
+
+        .span_nombres {
+            font-size: small;
+            color: grey;
+        }
     </style>
 {% endblock %}
 
@@ -44,12 +49,106 @@
         </div>
     </form>
 
-
+    <div id="reveal_carga_manual_pefp_destinatario" class="reveal-modal" data-reveal>
+        <div class="row">
+            <div class="columns large-12"><h3>Carga manual de funcionario/a en prácticas</h3></div>
+        </div>
+        <div class="row">
+            <div class="columns large-3"><label>Nombre del docente
+                <select id="nombre_docente_efpa">
+                    <option value="">------</option>
+                </select></label>
+            </div>
+            <div class="columns large-3"><label>Nombre del tutor/a
+                <select id="nombre_tutor_efpa">
+                    <option value="">------</option>
+                </select></label>
+            </div>
+            <div class="columns large-3"><label>Nombre del director/a
+                <select id="nombre_director_efpa">
+                    <option value="">------</option>
+                </select></label>
+            </div>
+            <div class="columns large-3"><label>Nombre del inspector/a
+                <select id="nombre_inspector_efpa">
+                    <option value="">------</option>
+                    {% for inspector in inspectores %}
+                        <option value="{{ inspector.id }}">{{ inspector.gauser.get_full_name }}</option>
+                    {% endfor %}
+                </select></label>
+            </div>
+        </div>
+        <a class="close-reveal-modal reveal_modal_aviso">&#215;</a>
+        <div class="row">
+            <br>
+            <div class="columns large-12"><a id="aceptar_reveal_carga_manual_pefp_destinatario"
+                                             class="button secondary">Aceptar</a>
+            </div>
+        </div>
+    </div>
 {% endblock %}
-
 
 {% block final %}
     <script>
+        $('body').on('click', '.carga_manual_pefp_destinatario', function () {
+            setTimeout(function () {
+                $('#nombre_docente_efpa').select2(
+                    conf_select2({
+                        'url': '/selectgcs_organization/',
+                        'gcs': 'gcs',
+                        'format_g': '{0}, {1}',
+                        'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
+                    })
+                );
+                $('#nombre_tutor_efpa').select2(
+                    conf_select2({
+                        'url': '/selectgcs_organization/',
+                        'gcs': 'gcs',
+                        'format_g': '{0}, {1}',
+                        'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
+                    })
+                );
+                $('#nombre_director_efpa').select2(
+                    conf_select2({
+                        'url': '/selectgcs_organization/',
+                        'gcs': 'gcs',
+                        'format_g': '{0}, {1}',
+                        'placeholder': 'Escribe parte del nombre del colaborador para buscarlo'
+                    })
+                );
+                $('#nombre_inspector_efpa').select2();
+            }, 200);
+        });
+
+        $('body').on('click', '#aceptar_reveal_carga_manual_pefp_destinatario', function (e) {
+            e.preventDefault();
+            var docente = $('#nombre_docente_efpa').val().substring(1, 10);
+            var tutor = $('#nombre_tutor_efpa').val().substring(1, 10);
+            var director = $('#nombre_director_efpa').val().substring(1, 10);
+            var inspector = $('#nombre_inspector_efpa').val()
+            if (docente && tutor && director && inspector) {
+                $.post("/procesos_evaluacion_funcpract/", {
+                        action: 'update_destinatarios_carga_manual',
+                        docente: docente,
+                        tutor: tutor,
+                        director: director,
+                        inspector: inspector,
+                        pefp: $('#pefp').val()
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#div_usuarios_destinatarios' + data.pefp).html(data.html);
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            } else {
+                var texto = 'Todos los DNIs deben ser válidos para poder cargar los datos.'
+                show_mensajes({title: '<i class="fa fa-warning"></i> No es posible la carga', texto: texto})
+            }
+        });
+
         {# ########################################################################################### #}
         {# Operaciones relacionadas con la plantilla del PDF a generar con las respuestas: #}
         {# constructInlineEditorInstances,   #}
@@ -141,8 +240,8 @@
 
 
         {# ########################################################################################### #}
-        {# Operaciones directas sobre el modelo Gform: #}
-        {# crea_pefp, open_accordion, del_gform, copy_gform, update_nombre  #}
+        {#  #}
+        {# crea_pefp, open_accordion, update_nombre  #}
         {# ########################################################################################### #}
 
         {% if request.session.gauser_extra|has_permiso:'acceso_procesos_evalpract' %}
@@ -277,6 +376,21 @@
                 });
         });
 
+        $('body').on('change', '.update_efp', function (e) {
+            e.preventDefault();
+            var efp = $(this).val();
+            var pefp = $(this).data('pefp');
+            $.post("/procesos_evaluacion_funcpract/",
+                {action: 'update_efp', pefp: pefp, efp: efp},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
         $('body').on('click', '.del_pefp_destinatario', function (e) {
             var efpa = $(this).data('efpa');
             $.post("/procesos_evaluacion_funcpract/", {
@@ -291,7 +405,7 @@
                         $("#update_error").show().delay(1500).fadeOut();
                     }
                 });
-         });
+        });
 
         $('body').on('click', '.ver_cargar_pefp_destinatarios', function (e) {
             e.preventDefault();
@@ -331,7 +445,7 @@
                         $('#span_porcentage').hide();
                         $('#ajax-loader').hide();
                         $("#update_ok").show().delay(1500).fadeOut();
-                    }else{
+                    } else {
                         $('#ajax-loader').hide();
                         $('#update_error').show().delay(1500).fadeOut();
                     }
@@ -340,10 +454,6 @@
             xhr.open('POST', "/procesos_evaluacion_funcpract/", true);
             xhr.send(formData);
         });
-
-
-
-
 
 
     </script>
