@@ -37,11 +37,11 @@
 <p>&nbsp;</p>
 
 <div class="row">
-    <div class="columns large-10">
+    <div class="columns large-9">
         <label><b>Personas que deben rellenar este cuestionario:</b></label>
     </div>
-    <div class="columns large-2">
-        <label title="Número total de docentes en prácticas que deben ser evaluados">
+    <div class="columns large-3">
+        <label style="text-align: right" title="Número total de docentes en prácticas que deben ser evaluados">
             ({{ efpas|length }} de {{ pefp.evalfunpractact_set.all|length }} docentes)
         </label>
     </div>
@@ -66,20 +66,20 @@
                         {{ efpa.docente.gauser.last_name }}, {{ efpa.docente.gauser.first_name }}
                         {% if efpa.respondido_doc %}<i class="fa fa-check" style="color:green;"></i> {% endif %}
                         {% if efpa.director == g_e or efpa.inspector == g_e %}<br>
-                            <span title="Selecciona si el docente es jefe de departamento o coordinador de ciclo">
+                            <span title="Selecciona si el/la docente es jefe de departamento o coordinador de ciclo">
                             <input type="checkbox" data-efpa="{{ efpa.id }}" class="perfil_docente"
                                    id="docente_jefe{{ efpa.id }}" {% if efpa.docente_jefe %}checked{% endif %}>
                                 <span style="color:#ff7722">Jefe Dep./Coordin. Ciclo</span>
                             </span><br>
-                            <span title="Selecciona si el docente es tutor de un grupo de alumnos">
+                            <span title="Selecciona si el/la docente es tutor/a de un grupo de alumnos">
                             <input type="checkbox" data-efpa="{{ efpa.id }}" class="perfil_docente"
                                    id="docente_tutor{{ efpa.id }}" {% if efpa.docente_tutor %}checked{% endif %}>
-                                <span style="color:#ff7722">Tutor</span>
+                                <span style="color:#ff7722">Tutor/a</span>
                             </span><br>
-                            <span title="Selecciona si el docente es orientador">
+                            <span title="Selecciona si el docente es orientador/a">
                             <input type="checkbox" data-efpa="{{ efpa.id }}" class="perfil_docente"
                                    id="docente_orientador{{ efpa.id }}" {% if efpa.docente_orientador %}checked{% endif %}>
-                                <span style="color:#ff7722">Orientador</span>
+                                <span style="color:#ff7722">Orientador/a</span>
                             </span>
                         {% elif efpa.docente == g_e %}<br>
                             <a class="rellenar_cuestionario" data-efpa="{{ efpa.id }}" data-actor="docente"
