@@ -1,0 +1,64 @@
+{% load entidades_extras %}
+{% load formularios_extras %}
+<p></p>
+<p style="text-align: justify;">Realizada la evaluación del funcionario/de la funcionaria en prácticas
+    D./Dª {{ efpa.docente.gauser.get_full_name }}, esta Inspección emite el siguiente</p>
+<h3 style="text-align: center;">INFORME</h3>
+<p style="text-align: justify;">Las calificaciones obtenidas en cada una de las dimensiones y subdimensiones indicadas
+    en la base 12.4.2 de la
+    Resolución de 16 de enero de 2021, de la Consejería de Educación, Cultura,
+    Deporte y Juventud por la que se convocan procedimientos selectivos para ingreso
+    y accesos a los cuerpos de profesores de enseñanza secundaria; profesores
+    técnicos de formación profesional; profesores de escuelas oficiales de idiomas;
+    profesores de música y artes escénicas; y profesores de artes plásticas y diseño;
+    y procedimiento para la adquisición de nuevas especialidades por los funcionarios
+    de los mencionados cuerpos, según los criterios de valoración marcados por esta Inspección Educativa, publicados
+    en el apartado de Recursos Humanos de la página www.educarioja.org son:
+</p>
+
+<table style="width: 100%;font-size: small;text-align: justify;">
+    {% for dim in efpa.procesoevalfunpract.evalfunpract.evalfunpractdim_set.all %}
+        <tr>
+            <td colspan="8">
+                    <span style="font-weight: bold;">
+                        {{ dim.dimension }}
+                    </span>
+                <span style="color: gray;">
+                        ({{ dim.valor }} puntos)
+                    </span>
+            </td>
+            <td>&nbsp;</td>
+            <td>
+                {{ efpa|get_cal_dim:dim|floatformat:"-2" }}
+            </td>
+        </tr>
+        {% for subdim in dim.evalfunpractdimsub_set.all %}
+            <tr>
+                <td>&nbsp;</td>
+                <td colspan="7">
+                    <span style="font-size: x-small;">
+                        {{ subdim.subdimension }}
+                    <span style="color: gray;">
+                        ({{ subdim.valor }} puntos)
+                    </span>
+                        </span>
+                </td>
+                <td>
+                    <span style="color: darkgray;font-size: x-small;">
+                    {{ efpa|get_cal_subdim:subdim|floatformat:"-2" }}
+                    </span>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+        {% endfor %}
+    {% endfor %}
+    <tr>
+        <td colspan="9" style="text-align: right;">Puntuación total obtenida:</td>
+        <td><span style="font-weight: bold;">{{ efpa.cal_total }}</span></td>
+    </tr>
+</table>
+
+<p style="text-align: justify;">Obtenida la puntuación de {{ efpa.cal_total }} puntos, sobre un máximo
+    de {{ efpa.calificacion_maxima_posible }},
+    esta Inspección considera APTO/NO APTO al funcionario/funcionaria en prácticas D./Dª
+    {{ efpa.docente.gauser.get_full_name }}.</p>

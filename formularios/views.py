@@ -25,6 +25,7 @@ from django.utils.text import slugify
 from autenticar.control_acceso import permiso_required
 from autenticar.models import Permiso, Menu_default
 from autenticar.views import crea_menu_from_default
+from inspeccion_educativa.models import InformeInspeccion
 from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from formularios.models import *
@@ -1333,7 +1334,29 @@ def mis_evalpract(request):  # mis_evaluaciones_prácticas
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
     elif request.method == 'POST':
-        if request.POST['action'] == 'excel_cuestionario':
+        if request.POST['action'] == 'pdf_efpa':
+            dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
+            try:
+                efpa = EvalFunPractAct.objects.get(id=request.POST['efpa'])
+                # Datos para la creación del informe de Inspección:
+                title = 'Informe de evaluación de %s' % efpa.docente.gauser.get_full_name()
+                ie, c = InformeInspeccion.objects.get_or_create(title=title)
+                ie.inspector = efpa.inspector
+                ie.asunto = 'Informe de evaluación de %s' % efpa.docente.gauser.get_full_name()
+                ie.destinatario = '<p>COMISIÓN DE EVALUACIÓN</p>'
+                ie.texto = render_to_string('mis_evalpract_accordion_content_informe_INSP.html', {'efpa': efpa})
+                ie.save()
+                # Datos para la creación del documento de valoración:
+                c = render_to_string('mis_evalpract_accordion_content_informe.html', {'efpa': efpa})
+                fich = pdfkit.from_string(c, False, dce.get_opciones)
+                response = HttpResponse(fich, content_type='application/pdf')
+                nombre = slugify(efpa.docente.gauser.get_full_name())
+                response['Content-Disposition'] = 'attachment; filename=Evaluacion_%s.pdf' % nombre
+                return response
+            except Exception as msg:
+                aviso = 'Se ha producido un error en el procesamiento de la evaluación: %s' % str(msg)
+                crear_aviso(request, False, aviso)
+        elif request.POST['action'] == 'excel_cuestionario':
             efpa = EvalFunPractAct.objects.get(id=request.POST['efpa'])
             efprs = efpa.efprs('docente')
             ronda_slug = slugify(g_e.ronda.nombre)

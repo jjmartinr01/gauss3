@@ -5,6 +5,15 @@ from formularios.models import GSITIPOS, GformSection, GformSectionInput, GformR
 
 register = Library()
 
+
+@register.filter
+def get_cal_dim(efpa, dim):
+    return efpa.cal_dim(dim)
+
+@register.filter
+def get_cal_subdim(efpa, subdim):
+    return efpa.cal_subdim(subdim)
+
 @register.filter
 def get_efps(pefp):
     return EvalFunPract.objects.filter(entidad=pefp.evalfunpract.entidad)

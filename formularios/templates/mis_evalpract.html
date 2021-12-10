@@ -100,6 +100,13 @@
             document.getElementById("{{ formname }}").submit();
          });
 
+        $('body').on('click', '.informe_cuestionario', function (e) {
+            e.preventDefault();
+            $('#efpa').val($(this).data('efpa'));
+            $('#action').val('pdf_efpa');
+            document.getElementById("{{ formname }}").submit();
+         });
+
         {#$('body').on('click', '.pdf_gform', function (e) {#}
         {#    e.preventDefault();#}
         {#    $('#action').val('pdf_gform');#}

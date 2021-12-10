@@ -476,6 +476,23 @@ class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas A
         else:
             return False
 
+    @property
+    def efprs_docente(self):
+        evalfprs_totales = self.evalfunpractres_set.all()
+        if self.docente_orientador:
+            evalfprs = evalfprs_totales.filter(evalfunpractdimsubcue__responde_doc_orientador=True)
+        elif self.docente_tutor and self.docente_jefe:
+            q = models.Q(evalfunpractdimsubcue__responde_doc_tutor=True) | models.Q(
+                evalfunpractdimsubcue__responde_doc_jefe=True)
+            evalfprs = evalfprs_totales.filter(q).distinct()
+        elif self.docente_tutor:
+            evalfprs = evalfprs_totales.filter(evalfunpractdimsubcue__responde_doc_tutor=True)
+        elif self.docente_jefe:
+            evalfprs = evalfprs_totales.filter(evalfunpractdimsubcue__responde_doc_jefe=True)
+        else:
+            evalfprs = evalfprs_totales.filter(evalfunpractdimsubcue__responde_doc=True)
+        return evalfprs
+
     def efprs(self, destinatario):
         evalfprs_totales = self.evalfunpractres_set.all()
         if self.docente_orientador:
@@ -501,6 +518,13 @@ class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas A
         else:
             return EvalFunPractDimSubCue.objects.none()
 
+    @property
+    def calificacion_maxima_posible(self):
+        cal_max_pos = 0
+        for dim in self.procesoevalfunpract.evalfunpract.evalfunpractdim_set.all():
+            cal_max_pos += dim.valor
+        return cal_max_pos
+
     def cal_efpr(self, efpr):
         return efpr.calificacion
 
@@ -514,7 +538,7 @@ class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas A
         try:
             return calificacion / calificacion_maxima * subdim.valor
         except:
-            return 0
+            return -1
 
     def cal_dim(self, dim):
         calificacion = 0
@@ -574,25 +598,43 @@ class EvalFunPractRes(models.Model):  # Evaluación Funcionarios en Prácticas R
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
     @property
+    def num_cues_subdim(self):
+        efpa = self.evalfunpractact
+        subdim = self.evalfunpractdimsubcue.evalfunpractdimsub
+        return efpa.efprs('docente').filter(evalfunpractdimsubcue__evalfunpractdimsub=subdim).count()
+
+    @property
     def calificacion(self):
-        num_actores = 0  # Partimos de la suposición de que nadie ha respondido
+        num_actores = 0  # Partimos de la suposición de que no ha respondido ninguno de los actores
         cal = 0  # La calificación inicial es 0
-        if self.inspector > -1:
-            num_actores += 1
-            cal += self.inspector
+        if self.evalfunpractdimsubcue.responde_dir:
+            if self.director > -1:
+                num_actores += 1
+                cal += self.director
+        if self.evalfunpractdimsubcue.responde_ins:
+            if self.inspector > -1:
+                num_actores += 1
+                cal += self.inspector
+        if self.evalfunpractdimsubcue.responde_tut:
+            if self.tutor > -1:
+                num_actores += 1
+                cal += self.tutor
         if self.docente > -1:
             num_actores += 1
             cal += self.docente
-        if self.tutor > -1:
-            num_actores += 1
-            cal += self.tutor
-        if self.director > -1:
-            num_actores += 1
-            cal += self.director
         try:
             return cal / num_actores
         except:
-            return 0
+            return -1
+
+    @property
+    def calificacion_relativa(self):
+        subdim = self.evalfunpractdimsubcue.evalfunpractdimsub
+        cal_max_cues = 5
+        try:
+            return self.calificacion / cal_max_cues * subdim.valor / self.num_cues_subdim
+        except:
+            return '---'
 
     class Meta:
         ordering = ['evalfunpractact', 'evalfunpractdimsubcue']
