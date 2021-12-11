@@ -14,9 +14,10 @@
     p {
         font-size: 9pt;
     }
+
     .pagebreak {
-            page-break-before: always;
-        }
+        page-break-before: always;
+    }
 </style>
 <h1>Resultados de la evaluación de {{ efpa.docente.gauser.get_full_name }} </h1>
 <h2>Funcionario/a en prácticas</h2>
@@ -30,20 +31,24 @@
 
 <table style="width: 100%;font-size: small;text-align: justify;">
     {% for dim in efpa.procesoevalfunpract.evalfunpract.evalfunpractdim_set.all %}
-            <tr>
-                <td colspan="8">
+        <tr>
+            <td colspan="8">
                     <span style="font-weight: bold;">
                         {{ dim.dimension }}
                     </span>
-                    <span style="color: gray;">
+                <span style="color: gray;">
                         ({{ dim.valor }} puntos)
                     </span>
-                </td>
-                <td>&nbsp;</td>
-                <td>
+            </td>
+            <td>&nbsp;</td>
+            <td>
+                {% if efpa|get_cal_dim:dim < 0 %}
+                    &#9867;
+                {% else %}
                     {{ efpa|get_cal_dim:dim|floatformat:"-2" }}
-                </td>
-            </tr>
+                {% endif %}
+            </td>
+        </tr>
         {% for subdim in dim.evalfunpractdimsub_set.all %}
             <tr>
                 <td>&nbsp;</td>
@@ -55,19 +60,27 @@
                     </span>
                         </span>
                 </td>
-                <td>
-                    <span style="color: darkgray;font-size: x-small;">
-                    {{ efpa|get_cal_subdim:subdim|floatformat:"-2" }}
-                    </span>
+                <td style="color: darkgray;font-size: x-small;">
+                    {% if efpa|get_cal_subdim:subdim < 0 %}
+                        &#9867;
+                    {% else %}
+                        {{ efpa|get_cal_subdim:subdim|floatformat:"-2" }}
+                    {% endif %}
                 </td>
                 <td>&nbsp;</td>
             </tr>
         {% endfor %}
     {% endfor %}
-<tr>
-    <td colspan="9" style="text-align: right;">Puntuación total obtenida:</td>
-    <td><span style="font-weight: bold;">{{ efpa.cal_total }}</span> </td>
-</tr>
+    <tr>
+        <td colspan="9" style="text-align: right;">Puntuación total obtenida:</td>
+        <td style="font-weight: bold;">
+            {% if efpa.cal_total == '---' %}
+                &#9867;
+            {% else %}
+                {{ efpa.cal_total }}
+            {% endif %}
+        </td>
+    </tr>
 </table>
 
 <div class="pagebreak"></div>
@@ -77,61 +90,77 @@
         {% ifchanged efpr.evalfunpractdimsubcue.evalfunpractdimsub.evalfunpractdim %}
             <h3 style="font-weight: bold;">{{ efpr.evalfunpractdimsubcue.evalfunpractdimsub.evalfunpractdim.dimension }}
                 <span style="color: gray; font-size: small;">
-                (Valoración máxima: {{ efpr.evalfunpractdimsubcue.evalfunpractdimsub.evalfunpractdim.valor }})
-            </span>
+                    (Valoración máxima: {{ efpr.evalfunpractdimsubcue.evalfunpractdimsub.evalfunpractdim.valor }})
+                </span>
             </h3>
             <span style="color: gray;font-weight: bold;font-size: x-small;">Calificación obtenida en esta dimensión:
-            {{ efpa|get_cal_dim:efpr.evalfunpractdimsubcue.evalfunpractdimsub.evalfunpractdim|floatformat:"-2" }}
+                {% if efpa|get_cal_dim:efpr.evalfunpractdimsubcue.evalfunpractdimsub.evalfunpractdim < 0 %}
+                    ---
+                {% else %}
+                    {{ efpa|get_cal_dim:efpr.evalfunpractdimsubcue.evalfunpractdimsub.evalfunpractdim|floatformat:"-2" }}
+                {% endif %}
             </span>
         {% endifchanged %}
         {% ifchanged efpr.evalfunpractdimsubcue.evalfunpractdimsub %}
             <h4>{{ efpr.evalfunpractdimsubcue.evalfunpractdimsub.subdimension }}
                 <span style="color: gray; font-size: small;">
-                (Valoración máxima: {{ efpr.evalfunpractdimsubcue.evalfunpractdimsub.valor }})
-            </span>
+                    (Valoración máxima: {{ efpr.evalfunpractdimsubcue.evalfunpractdimsub.valor }})
+                </span>
             </h4>
             <span style="color: gray;font-weight: bold;font-size: x-small;">Calificación obtenida en esta subdimensión:
-            {{ efpa|get_cal_subdim:efpr.evalfunpractdimsubcue.evalfunpractdimsub|floatformat:"-2" }}
+                {% if efpa|get_cal_subdim:efpr.evalfunpractdimsubcue.evalfunpractdimsub < 0 %}
+                    ---
+                {% else %}
+                    {{ efpa|get_cal_subdim:efpr.evalfunpractdimsubcue.evalfunpractdimsub|floatformat:"-2" }}
+                {% endif %}
             </span>
         {% endifchanged %}
     </div>
     <hr>
-    <p><span style="color:gray;">Pregunta {{ forloop.counter }}: </span>
+    <p>
+        <span style="color:gray;">Pregunta {{ forloop.counter }}: </span>
         {% autoescape off %}{{ efpr.evalfunpractdimsubcue.pregunta }}{% endautoescape %}
         <span style="color:gray;font-weight: bold">
-        (Calificación aportada:
+                (Calificación aportada:
             {% if efpr.calificacion > -1 %}
                 {{ efpr.calificacion|floatformat:"-2" }} / 5 * {{ efpr.evalfunpractdimsubcue.evalfunpractdimsub.valor }}
                 /
                 {{ efpr.num_cues_subdim }} = {{ efpr.calificacion_relativa|floatformat:"-2" }}
             {% else %}---{% endif %})
-    </span>
+            </span>
     </p>
 
     {% if efpr.docente > -1 %}
-        <p><span style="color:gray;font-weight: bold;">{{ efpa.docente.gauser.get_full_name }} (docente): </span>
-            {{ efpr.docente }}</p>
+        <p>
+            <span style="color:gray;font-weight: bold;">{{ efpa.docente.gauser.get_full_name }} (docente): </span>
+            {{ efpr.docente }}
+        </p>
         {% if efpr.obsdocente %}<p>{{ efpr.obsdocente }}</p>{% endif %}
     {% endif %}
     {% if efpr.evalfunpractdimsubcue.responde_tut %}
         {% if efpr.tutor > -1 %}
-            <p><span style="color:gray;font-weight: bold;">{{ efpa.tutor.gauser.get_full_name }} (tutor): </span>
-                {{ efpr.tutor }}</p>
+            <p>
+                <span style="color:gray;font-weight: bold;">{{ efpa.tutor.gauser.get_full_name }} (tutor): </span>
+                {{ efpr.tutor }}
+            </p>
             {% if efpr.obstutor %}<p>{{ efpr.obstutor }}</p>{% endif %}
         {% endif %}
     {% endif %}
     {% if efpr.director > -1 %}
         {% if efpr.evalfunpractdimsubcue.responde_dir %}
-            <p><span style="color:gray;font-weight: bold;">{{ efpa.director.gauser.get_full_name }} (director): </span>
-                {{ efpr.director }}</p>
+            <p>
+                <span style="color:gray;font-weight: bold;">{{ efpa.director.gauser.get_full_name }} (director): </span>
+                {{ efpr.director }}
+            </p>
             {% if efpr.obsdirector %}<p>{{ efpr.obsdirector }}</p>{% endif %}
         {% endif %}
     {% endif %}
     {% if efpr.evalfunpractdimsubcue.responde_ins %}
         {% if efpr.inspector > -1 %}
-            <p><span
-                    style="color:gray;font-weight: bold;">{{ efpa.inspector.gauser.get_full_name }} (inspector): </span>
-                {{ efpr.inspector }}</p>
+            <p>
+                <span style="color:gray;font-weight: bold;">{{ efpa.inspector.gauser.get_full_name }} (inspector): </span>
+                {{ efpr.inspector }}
+            </p>
             {% if efpr.obsinspector %}<p>{{ efpr.obsinspector }}</p>{% endif %}
         {% endif %}
     {% endif %}

@@ -29,7 +29,11 @@
             </td>
             <td>&nbsp;</td>
             <td>
-                {{ efpa|get_cal_dim:dim|floatformat:"-2" }}
+                {% if efpa|get_cal_dim:dim < 0 %}
+                    &#9867;
+                {% else %}
+                    {{ efpa|get_cal_dim:dim|floatformat:"-2" }}
+                {% endif %}
             </td>
         </tr>
         {% for subdim in dim.evalfunpractdimsub_set.all %}
@@ -45,7 +49,11 @@
                 </td>
                 <td>
                     <span style="color: darkgray;font-size: x-small;">
-                    {{ efpa|get_cal_subdim:subdim|floatformat:"-2" }}
+                        {% if efpa|get_cal_subdim:subdim < 0 %}
+                            &#9867;
+                        {% else %}
+                            {{ efpa|get_cal_subdim:subdim|floatformat:"-2" }}
+                        {% endif %}
                     </span>
                 </td>
                 <td>&nbsp;</td>
@@ -58,7 +66,22 @@
     </tr>
 </table>
 
-<p style="text-align: justify;">Obtenida la puntuación de {{ efpa.cal_total }} puntos, sobre un máximo
-    de {{ efpa.calificacion_maxima_posible }},
-    esta Inspección considera APTO/NO APTO al funcionario/funcionaria en prácticas D./Dª
-    {{ efpa.docente.gauser.get_full_name }}.</p>
+{#<p style="text-align: justify;">Obtenida la puntuación de {{ efpa.cal_total }} puntos, sobre un máximo#}
+{#    de {{ efpa.calificacion_maxima_posible }},#}
+{#    esta Inspección considera APTO/NO APTO al funcionario/funcionaria en prácticas D./Dª#}
+{#    {{ efpa.docente.gauser.get_full_name }}.</p>#}
+
+<p style="text-align: justify;">Atendiendo al apartado Tercero.4 de la
+    Resolución 55/2021, de 13 de septiembre, de la Dirección General de Gestión
+    Educativa, por la que se regula la fase de prácticas de los aspirantes seleccionados
+    en los procedimiento selectivos convocados por Resolución de 16 de enero de
+    2021, de la Consejería de Educación, Cultura, Deporte y Juventud, para el ingreso
+    y accesos a los cuerpos de profesores de enseñanza secundaria; profesores
+    técnicos de formación profesional; profesores de escuelas oficiales de idiomas;
+    profesores de música y artes escénicas; y profesores de artes plásticas y diseño;
+    y procedimiento para la adquisición de nuevas especialidades por los funcionarios
+    de los mencionados cuerpos, esta Inspección traslada a la comisión de evaluación que
+    <b>el funcionario/funcionaria en prácticas D./Dª{{ efpa.docente.gauser.get_full_name }}
+        ha obtenido una puntuación de {{ efpa.cal_total }} puntos, sobre un máximo
+        de {{ efpa.calificacion_maxima_posible }}</b> .
+</p>
