@@ -3232,8 +3232,8 @@ def check_conection(request):
         ip = x_forwarded_for.split(',')[-1].strip()
     else:
         ip = request.META.get('REMOTE_ADDR')
-    current_path = request.get_full_path()
-    RemoteConection.objects.create(ip=ip, url=current_path)
+    current_path = request.build_absolute_uri()
+    RemoteConection.objects.create(ip2=ip, url2=current_path, creado=datetime.now())
 
 def getvuts(request, entidad_code):
     check_conection(request)

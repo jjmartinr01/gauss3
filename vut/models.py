@@ -85,9 +85,12 @@ PAISES = (('A9401AAAAA', 'AFGANISTAN'), ('A9399AAAAA', 'AFRICA'), ('A9102AAAAA',
 class RemoteConection(models.Model):
     ip = models.URLField('URL desde la que se hace la conexión', blank=True, null=True)
     url = models.GenericIPAddressField('IP desde la que se hace la conexión', blank=True, null=True)
+    ip2 = models.CharField('URL desde la que se hace la conexión', blank=True, null=True, max_length=30)
+    url2 = models.CharField('IP desde la que se hace la conexión', blank=True, null=True, max_length=150)
+    creado = models.DateTimeField("Fecha y hora en la que se produce la conexión", blank=True, null=True)
 
     def __str__(self):
-        return '%s -- %s' % (self.ip, self.url)
+        return '%s -- %s -- %s' % (self.creado, self.ip2, self.url2)
 
 
 class Vivienda(models.Model):
