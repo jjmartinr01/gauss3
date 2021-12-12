@@ -82,6 +82,13 @@ PAISES = (('A9401AAAAA', 'AFGANISTAN'), ('A9399AAAAA', 'AFRICA'), ('A9102AAAAA',
           ('A9430AAAAA', 'VIETNAM'), ('A9434AAAAA', 'YEMEN'), ('A9132AAAAD', 'YUGOSLAVIA'), ('A9382AAAAA', 'ZAMBIA'),
           ('A9357AAAAA', 'ZIMBABWE'))
 
+class RemoteConection(models.Model):
+    ip = models.URLField('URL desde la que se hace la conexión', blank=True, null=True)
+    url = models.GenericIPAddressField('IP desde la que se hace la conexión', blank=True, null=True)
+
+    def __str__(self):
+        return '%s -- %s' % (self.ip, self.url)
+
 
 class Vivienda(models.Model):
     POL = (('PN', 'Policía Nacional'), ('GC', 'Guardia Civil'))

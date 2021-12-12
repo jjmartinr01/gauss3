@@ -45,7 +45,7 @@ from autenticar.models import Permiso, Gauser
 from mensajes.views import encolar_mensaje, crear_aviso
 from vut.models import Vivienda, Ayudante, Reserva, Viajero, RegistroPolicia, PAISES, Autorizado, CalendarioVivienda, \
     ContabilidadVUT, PartidaVUT, AsientoVUT, AutorizadoContabilidadVut, PORTALES, DomoticaVUT, FotoWebVivienda, \
-    DayWebVivienda, PropuestaPropietario, ContratoVUT, ViviendaCommodities, COMMODITIES
+    DayWebVivienda, PropuestaPropietario, ContratoVUT, ViviendaCommodities, COMMODITIES, RemoteConection
 from vut.tasks import comunica_viajero2PNGC
 import locale
 
@@ -3226,7 +3226,17 @@ def firconvut(request, secret_id, n):
 
 ###########################################################################
 
+def check_conection(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[-1].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    current_path = request.get_full_path()
+    RemoteConection.objects.create(ip=ip, url=current_path)
+
 def getvuts(request, entidad_code):
+    check_conection(request)
     sleep(3)
     try:
         vuts = Vivienda.objects.filter(entidad__code=entidad_code, publicarweb=True, nregistro__isnull=False)
