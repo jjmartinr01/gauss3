@@ -329,7 +329,7 @@ def ajax_viviendas(request):
                     vivienda = Vivienda.objects.get(id=request.POST['vivienda'])
                     permiso = Permiso.objects.get(code_nombre='edita_viviendas')
                     if has_permiso_on_vivienda(g_e, vivienda, permiso):
-                        commodity=request.POST['commodity']
+                        commodity = request.POST['commodity']
                         valor = request.POST['valor']
                         campo = request.POST['campo']
                         com, c = ViviendaCommodities.objects.get_or_create(vivienda=vivienda, commodity=commodity)
@@ -3178,7 +3178,7 @@ def genera_pdf_contrato(contrato):
                                 <body>"""
     if contrato_vut.hay_firmas:
         firmas = render_to_string('contratos_vut_accordion_content_texto_firmas.html',
-                              {'contrato': contrato_vut})
+                                  {'contrato': contrato_vut})
     else:
         firmas = ''
     final = "</body></html>"
@@ -3223,6 +3223,7 @@ def firconvut(request, secret_id, n):
     except:
         return redirect('/')
 
+
 ###########################################################################
 
 def getvuts(request, entidad_code):
@@ -3231,6 +3232,10 @@ def getvuts(request, entidad_code):
         vuts = Vivienda.objects.filter(entidad__code=entidad_code, publicarweb=True, nregistro__isnull=False)
         data = []
         for vut in vuts:
+            contactos = []
+            for p in vut.propietarios.all():
+                contactos.append({'nombre': p.get_full_name(), 'telfij': p.telfij, 'telmov': p.telmov,
+                                  'email': p.email})
             commodities = []
             for c in vut.viviendacommodities_set.all():
                 commodities.append({'scommodity': c.commodity, 'commodity': c.get_commodity_display(), 'num': c.num,
@@ -3241,8 +3246,9 @@ def getvuts(request, entidad_code):
                               'orden': f.orden})
             data.append({'nombre': vut.nombre, 'address': vut.address, 'habs': vut.habitaciones, 'camas': vut.camas,
                          'pers': vut.inquilinos, 'loc': vut.municipio, 'prov': vut.provincia, 'obs': vut.observaciones,
-                         'nreg': vut.nregistro, 'nomweb': vut.nombreweb, 'subnomweb': vut.subnombreweb, 'fotos': fotos,
-                         'desweb': vut.descripcionweb, 'precioweb': vut.preciosweb, 'commodities':commodities})
+                         'nreg': vut.nregistro, 'nomweb': vut.nombreweb, 'subnomweb': vut.subnombreweb,
+                         'desweb': vut.descripcionweb, 'precioweb': vut.preciosweb, 'commodities': commodities,
+                         'fotos': fotos, 'contactos': contactos})
         try:
             s = request.GET['server']
             if s == "yes":
