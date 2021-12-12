@@ -3235,9 +3235,13 @@ def getvuts(request, entidad_code):
             for c in vut.viviendacommodities_set.all():
                 commodities.append({'scommodity': c.commodity, 'commodity': c.get_commodity_display(), 'num': c.num,
                                     'obs': c.observaciones})
+            fotos = []
+            for f in vut.fotowebvivienda_set.all():
+                fotos.append({'url': f.foto.url, 'caption': f.caption, 'content_type': f.content_type,
+                              'orden': f.orden})
             data.append({'nombre': vut.nombre, 'address': vut.address, 'habs': vut.habitaciones, 'camas': vut.camas,
                          'pers': vut.inquilinos, 'loc': vut.municipio, 'prov': vut.provincia, 'obs': vut.observaciones,
-                         'nreg': vut.nregistro, 'nomweb': vut.nombreweb, 'subnomweb': vut.subnombreweb,
+                         'nreg': vut.nregistro, 'nomweb': vut.nombreweb, 'subnomweb': vut.subnombreweb, 'fotos': fotos,
                          'desweb': vut.descripcionweb, 'precioweb': vut.preciosweb, 'commodities':commodities})
         try:
             s = request.GET['server']

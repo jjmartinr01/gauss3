@@ -2799,3 +2799,13 @@ def postnewreserva(request, entidad_code):
         return HttpResponse('informa_reserva(%s)' % json.dumps({'ok': ok, 'mensaje': errores}))
     except Exception as msg:
         return HttpResponse('informa_reserva(%s)' % json.dumps({'ok': False, 'mensaje': str(msg)}))
+
+
+def arreglar_dnis(request):
+    '''
+    Los DNIs deberían tener 8 números y una letra (9 caracteres). Racima devuelve DNIs
+    con 8 caracteres cuando la primera cifra es un 0. Esto genera problemas al identificar
+    los usuarios a través de su DNI.
+    Este problema fue detectado al importar datos para evaluar funcionarios en prácticas.
+    '''
+    Gauser.objects.extra(where=["CHAR_LENGTH(dni) = 8"])
