@@ -507,16 +507,16 @@ class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas A
             evalfprs = evalfprs_totales.filter(evalfunpractdimsubcue__responde_doc_jefe=True)
         else:
             evalfprs = evalfprs_totales.filter(evalfunpractdimsubcue__responde_doc=True)
-        if destinatario == 'docente':
-            return evalfprs
-        elif destinatario == 'tutor':
+        # if destinatario == 'docente':
+        #     return evalfprs
+        if destinatario == 'tutor':
             return evalfprs.filter(evalfunpractdimsubcue__responde_tut=True)
         elif destinatario == 'director':
             return evalfprs.filter(evalfunpractdimsubcue__responde_dir=True)
         elif destinatario == 'inspector':
             return evalfprs.filter(evalfunpractdimsubcue__responde_ins=True)
         else:
-            return EvalFunPractDimSubCue.objects.none()
+            return evalfprs
 
     @property
     def calificacion_maxima_posible(self):
