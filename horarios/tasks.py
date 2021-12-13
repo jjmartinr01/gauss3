@@ -12,10 +12,10 @@ from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asi
 from cupo.models import PlantillaXLS, PlantillaOrganica, LogCarga
 from programaciones.models import Especialidad_entidad, Gauser_extra_programaciones, Departamento, \
     Especialidad_funcionario, crea_departamentos
+from formularios.models import EvalFunPractAct, EvalFunPractRes
 from gauss.rutas import MEDIA_FILES
 
 logger = logging.getLogger('django')
-
 
 def get_coincidente(texto, lista_ids_textos):  # Devuelve el id del gauser_extra coincidente
     lista_textos = [n[1] for n in lista_ids_textos]
@@ -31,6 +31,17 @@ def get_coincidente(texto, lista_ids_textos):  # Devuelve el id del gauser_extra
 
 @shared_task
 def carga_masiva_from_file():
+    # Las siguientes líneas son para solucionar de manera temporal la carga de cuestionarios de
+    # funcionarios en prácticas. Deberían tener su propia función y tarea para correr en celery
+    efpas = EvalFunPractAct.objects.filter(actualiza_efprs=True)
+    for efpa in efpas:
+        cs_totales = efpa.procesoevalfunpract.evalfunpract.efpdscs  # Cuestiones totales disponibles
+        for c in cs_totales:
+            EvalFunPractRes.objects.get_or_create(evalfunpractact=efpa, evalfunpractdimsubcue=c)
+        efpa.actualiza_efprs = False
+        efpa.save()
+    # Fin de las líneas de código para cargra funcionarios en prácticas y sus cuestiones
+
     cargas_necesarias = CargaMasiva.objects.filter(cargado=False)
     for carga in cargas_necesarias:
         if carga.tipo == 'PLUMIER':

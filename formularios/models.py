@@ -466,6 +466,7 @@ class EvalFunPractAct(models.Model):  # Evaluación Funcionarios en Prácticas A
     respondido_dir = models.BooleanField('¿Este cuestionario está respondido por el director?', default=False)
     fecha_min = models.DateField('Fecha inicio para rellenar', null=True, blank=True)
     fecha_max = models.DateField('Fecha final para rellenar', null=True, blank=True)
+    actualiza_efprs = models.BooleanField('¿Se deben actualizar las efprs?', default=False)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
     @property

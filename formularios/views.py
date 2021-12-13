@@ -32,6 +32,7 @@ from formularios.models import *
 from gauss.rutas import *
 from gauss.funciones import get_dce
 from entidades.models import Gauser_extra
+from horarios.tasks import carga_masiva_from_file
 
 
 def gfsi_id_orden(gform):
@@ -1168,7 +1169,11 @@ def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_
                     pefp.save()
                     EvalFunPractRes.objects.filter(evalfunpractact__procesoevalfunpract=pefp).delete()
                     for efpa in pefp.evalfunpractact_set.all():
-                        activa_cuestiones(efpa)
+                        efpa.actualiza_efprs = True
+                        efpa.save()
+                        # activa_cuestiones(efpa) # Esta función requiere demasiado tiempo, así que
+                        # se debe definir una tarea en segundo plano:
+                    carga_masiva_from_file.delay()
                     return JsonResponse({'ok': True})
                 else:
                     msg = 'Las cuestiones solo pueden ser cambiadas por el propietario y antes de la fecha de comienzo'
