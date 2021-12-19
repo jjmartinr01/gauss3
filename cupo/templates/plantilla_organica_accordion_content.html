@@ -88,7 +88,9 @@
     <table style="width: 100%;position: relative;table-layout: fixed;">
         <thead id="cabecera_tabla_po">
         <tr>
-        <th style="color: #1b75bb;text-align: center;width: {{ po.anchura_cols.0 }}%;" colspan="2">Especialidades y Docentes</th>
+            <th style="color: #1b75bb;text-align: center;width: {{ po.anchura_cols.0 }}%;" colspan="2">Especialidades y
+                Docentes
+            </th>
             {% for apartado in po|get_apartados %}
                 <th style="color: #1b75bb;text-align: center;width: {{ apartado.width }}%"
                     colspan="{{ apartado.colspan }}">
@@ -123,21 +125,73 @@
     <script>
         $('#select_grupoex{{ po.id }}').select2();
     </script>
-{#    <div class="row">#}
-{#    <div class="columns-12">#}
+    {#    <div class="row">#}
+    {#    <div class="columns-12">#}
     <label>Selecciona la especialidad que quieres analizar:
         <select class="especialidad_docente" id="especialidad_docente{{ po.id }}">
             <option value="">-----------</option>
-        {% for edb in po.ronda_centro.especialidaddocentebasica_set.all %}
+            {% for edb in po.ronda_centro.especialidaddocentebasica_set.all %}
                 <option value="{{ edb.id }}">{{ edb.puesto }}</option>
             {% endfor %}
         </select>
     </label>
-{#    </div>#}
-{#    </div>#}
-    <div id="materias_edb{{ po.id }}">
-{% include "plantilla_organica_accordion_content_materias_edb.html" %}
-    </div>
+    {#    </div>#}
+    {#    </div>#}
+    {#    <div id="materias_edb{{ po.id }}">#}
+    {#{% include "plantilla_organica_accordion_content_materias_edb.html" %}#}
+    {#    </div>#}
+    <hr>
+    <table style="width: 100%">
+        <thead>
+        <tr>
+            <th colspan="12" style="text-align: center"><b>Estudio de los apoyos en Primaria
+                ({{ po.ronda_centro.entidad.name }})</b></th>
+        </tr>
+        <tr>
+            <th>&nbsp;</th>
+            {# La primera columna está destinada a los grupos #}
+            <th>LCL</th>
+            {# 168607 170306 168625 170325 168644 170344 #}
+            <th>LCRM</th>
+            {# 168606 170305 168624 170324 168643 170343 #}
+            <th>Matem.</th>
+            {# 168608 170307 168626 170326 168645 170345 #}
+            <th>CCSS</th>
+            {# 168604 170303 168622 170322 168641 170341 #}
+            <th>CCNN</th>
+            {# 168605 170304 168623 170323 168642 170342 #}
+            <th>Inglés</th>
+            {# 168615 170314 168633 170333 168652 170352 #}
+            <th>EF</th>
+            {# 168612 170311 168630 170330 168649 170349 #}
+            <th>Música</th>
+            {# 168610 170309 168628 170328 168647 170347 #}
+            <th>Plástica</th>
+            {# 168611 170310 168629 170329 168648 170348 #}
+            <th>Valores</th>
+            {# 168660 170321 168640 170340 168659 170359 #}
+            <th title="Número total de apoyos por grupo">Apoyos</th>
+        </tr>
+        </thead>
+        {% for grupo_dic in po|get_apoyos %}
+            <tr>
+                {% for td_key, td_value in grupo_dic.items %}
+                    {% if forloop.first %}
+                        <td><b>{{ td_value.nombre }}</b></td>
+                    {% elif forloop.last %}
+                        <td class="num_apoyos_grupo{{ po.id }}" style="font-weight: bold;">{{ td_value }}</td>
+                    {% else %}
+                        <td title="
+                                {% for s in td_value %}{{ s.sesion.g_e.gauser.get_full_name }} - {{ s.sesion.g_e.puesto }}&#10;{% endfor %}">{{ td_value|length }}</td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="11" style="text-align: right;font-weight: bold;">Número total de apoyos en Primaria:</td>
+            <td id="num_apoyos_total{{ po.id }}" style="font-weight: bold;"></td>
+        </tr>
+    </table>
 {% else %}
     <h4 style="text-align: center;color: #008CBA;"><strong>Cargando la información
         <i class="fa fa-spinner fa-pulse fa-2x"></i></strong></h4>
@@ -145,3 +199,13 @@
     <h5 style="text-align: center;color: #008CBA;"><strong>Cierra este "acordeón" y vuélvelo a abrir en un
         rato.</strong></h5>
 {% endif %}
+
+<script>
+    setTimeout(function () {
+        var suma = 0;
+        $('.num_apoyos_grupo{{ po.id }}').each(function () {
+            suma += parseFloat($(this).text());
+        });
+        $('#num_apoyos_total{{ po.id }}').html(suma);
+    }, 300);
+</script>

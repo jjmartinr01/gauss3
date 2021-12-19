@@ -348,7 +348,10 @@ def horario_subentidad(request):
     grupos_id = SesionExtra.objects.filter(sesion__horario=horario).values_list('grupo__id', flat=True).distinct()
     grupos_horario = grupos.filter(id__in=grupos_id)
     try:
-        grupo = grupos[0]
+        for g in grupos:
+            if g.nombre:
+                grupo = g
+                break
         try:
             grupos_horario[0]
         except:
@@ -409,7 +412,6 @@ def horario_ge(request):
             ge = g_es.get(id=g_e.id)
         except:
             ge = None if g_es.count() == 0 else g_es[0]
-
 
     respuesta = {
         'iconos':
@@ -710,7 +712,6 @@ def horarios_ajax(request):
             return HttpResponse(json.dumps(
                 [dict(zip(keys, (row[0], '%s (%s)' % (row[1], row[2])))) for row in
                  materias_contain_texto]))
-
         elif action == 'carga_horario_usuario':
             ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
             horario = Horario.objects.get(id=request.POST['horario'], ronda=g_e.ronda)
@@ -772,7 +773,22 @@ def horarios_ajax(request):
 
         elif action == 'carga_horario_grupo':
             grupo = Grupo.objects.get(id=request.POST['grupo'], ronda=g_e.ronda)
-            # horario = Horario.objects.get(id=request.POST['horario'], ronda=g_e.ronda)
+            horario = Horario.objects.get(id=request.POST['horario'], ronda=g_e.ronda)
+            sesex = SesionExtra.objects.filter(grupo=grupo, sesion__horario=horario)
+            sesiones_ = horario.sesion_set.filter(id__in=sesex.values_list('sesion__id', flat=True))
+            sesiones = {}
+            for s in sesiones_:
+                try:
+                    sesiones['%s-%s-%s' % (s.dia, s.hora_inicio, s.hora_fin)].append(s)
+                except:
+                    sesiones['%s-%s-%s' % (s.dia, s.hora_inicio, s.hora_fin)] = []
+                    sesiones['%s-%s-%s' % (s.dia, s.hora_inicio, s.hora_fin)].append(s)
+            try:
+                tabla_horario = render_to_string('horario_grupo.html', {'sesiones': sesiones, 'grupo': grupo})
+                return JsonResponse({'ok': True, 'tabla_horario': tabla_horario, 'h': horario.id, 'g': grupo.id,
+                                     'sesiones': len(sesiones), 'sesiones_': sesiones_.count(), 'sesex': sesex.count()})
+            except:
+                return JsonResponse({'ok': False})
 
             horario = Horario.objects.get(ronda=g_e.ronda, predeterminado=True)
             # sesiones_grupo = horario.sesion_set.filter(grupo=grupo)
@@ -1413,7 +1429,7 @@ def guardias_horario(request):
     usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[docente])
     # usuarios = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=id_usuarios).distinct()
     tramos = horario.sesion_set.all().values_list('horario', 'hora_inicio_cadena',
-                                                                'hora_fin_cadena').distinct().order_by('hora_inicio')
+                                                  'hora_fin_cadena').distinct().order_by('hora_inicio')
 
     return render(request, "guardias_horario.html",
                   {
@@ -1860,7 +1876,7 @@ def seguimiento_educativo(request):
             except Exception as e:
                 fila_excel_incidencias += 1
                 aviso = 'Error al grabar el alumno %s - %s' % (
-                sa.alumno.ge.gauser.get_full_name(), sa.alumno.grupo.nombre)
+                    sa.alumno.ge.gauser.get_full_name(), sa.alumno.grupo.nombre)
                 wi.write(fila_excel_incidencias, 0, aviso)
         profesores_id = PlataformaDistancia.objects.filter(profesor__ronda=g_e.ronda).values_list('profesor__id',
                                                                                                   flat=True).distinct()

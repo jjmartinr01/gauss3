@@ -4,6 +4,7 @@ from django.template import Library
 from django.db.models import Q, Sum
 from cupo.models import PlantillaXLS, PDocenteCol, CargaPlantillaOrganicaCentros, EspecialidadPlantilla, PDocente
 from entidades.models import Cargo, Gauser_extra
+from horarios.models import SesionExtra
 from programaciones.models import Departamento
 from estudios.models import Grupo
 
@@ -13,6 +14,38 @@ register = Library()
 @register.filter
 def departamentos(cupo):
     return Departamento.objects.filter(ronda=cupo.ronda)
+
+
+##########################################
+@register.filter
+def get_apoyos(po):
+    "{'grupo': Grupo.objects.none(), 'LCL': sesiones, 'LCRM': sesiones, ...}"
+    apoyos = []
+    num_apoyos_total = 0
+    areas = {'LCL': [168607, 170306, 168625, 170325, 168644, 170344],
+             'LCRM': [168606, 170305, 168624, 170324, 168643, 170343],
+             'Matem.': [168608, 170307, 168626, 170326, 168645, 170345],
+             'CCSS': [168604, 170303, 168622, 170322, 168641, 170341],
+             'CCNN': [168605, 170304, 168623, 170323, 168642, 170342],
+             'Inglés': [168615, 170314, 168633, 170333, 168652, 170352],
+             'EF': [168612, 170311, 168630, 170330, 168649, 170349],
+             'Música': [168610, 170309, 168628, 170328, 168647, 170347],
+             'Plástica': [168611, 170310, 168629, 170329, 168648, 170348],
+             'Valores': [168660, 170321, 168640, 170340, 168659, 170359]}
+
+    grupos = Grupo.objects.filter(ronda=po.ronda_centro)
+    sextras_apoyo = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex='522')
+    for grupo in grupos:
+        dic = {'grupo': grupo}
+        num_apoyos = 0
+        for materia, claves_extra in areas.items():
+            dic[materia] = sextras_apoyo.filter(materia__clave_ex__in=claves_extra, grupo=grupo)
+            num_apoyos += dic[materia].count()
+        dic['n'] = num_apoyos
+        num_apoyos_total += num_apoyos
+        if num_apoyos > 0:
+            apoyos.append(dic)
+    return apoyos
 
 
 ##########################################
@@ -187,6 +220,8 @@ def get_columnas_docente2(po, docente):
 @register.filter
 def get_pdocente(po, docente):
     return PDocente.objects.get(po=po, g_e=docente)
+
+
 # def get_pdcol(docente, po):
 #     return PDocenteCol.objects.filter(pd__po=po, pd__g_e=docente)
 @register.filter

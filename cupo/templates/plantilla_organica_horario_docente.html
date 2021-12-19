@@ -340,7 +340,7 @@
                 {% if s.sesionextra_set.all.0.materia %}
                     <div class="{{ s.clase_horario }} mwx198 div-dia div-{{ s.dia }}" data-m="{{ s.clase_horario }}"
 {#                         title="{{ s.hora_inicio_cadena }} - {{ s.hora_fin_cadena }}&#10;Curso/s: {% for sext in s.sesionextra_set.all %}{{ sext.materia.curso.nombre }}; {% endfor %}&#10;Grupo/s: {% for sext in s.sesionextra_set.all %}{{ sext.grupo.nombre }}; {% endfor %}&#10;{{ s.sesionextra_set.all.0.actividad.nombre }}&#10;{{ s.sesionextra_set.all.0.dependencia.nombre }}&#10;{{ s.localidad }}"#}
-                            title="{{ s.hora_inicio_cadena }} - {{ s.hora_fin_cadena }}&#10;Curso/s: {% for sext in s.sesionextra_set.all %}{{ sext.materia.curso.nombre }}; {% endfor %}&#10;Grupo/s: {% for sext in s.sesionextra_set.all %}{{ sext.grupo.nombre }}; {% endfor %}&#10;{{ s.sesionextra_set.all.0.actividad.nombre }}&#10;Aula: {% for d in s|get_dependencias %}{{ d }} {% endfor %}&#10;{{ s.localidad }}"
+                            title="{{ s.hora_inicio_cadena }} - {{ s.hora_fin_cadena }}&#10;Curso/s: {% for sext in s.sesionextra_set.all %}{{ sext.materia.curso.nombre }}; {% endfor %}&#10;Grupo/s: {% for sext in s.sesionextra_set.all %}{{ sext.grupo.nombre }}; {% endfor %}&#10;{{ s.sesionextra_set.all.0.actividad.nombre }}&#10;Aula: {% for d in s|get_dependencias %}{{ d }} {% endfor %}&#10;{% if s.localidad %}{{ s.localidad }}{% else %}{{ docente.ronda.entidad.localidad }}{% endif %}"
                          style="top:{{ s.top }}px; height: {{ s.height }}px;">
                         {{ s.sesionextra_set.all.0.materia.nombre }}
                         {% for sext in s.sesionextra_set.all %}
@@ -353,7 +353,7 @@
                     </div>
                 {% else %}
                     <div class="{{ s.clase_horario }} mwx198 div-dia div-{{ s.dia }}" data-m="{{ s.clase_horario }}"
-                         title="{{ s.hora_inicio_cadena }} - {{ s.hora_fin_cadena }}&#10;{{ s.sesionextra_set.all.0.actividad.nombre }}&#10;{{ s.localidad }}"
+                         title="{{ s.hora_inicio_cadena }} - {{ s.hora_fin_cadena }}&#10;{{ s.sesionextra_set.all.0.actividad.nombre }}&#10;{% if s.localidad %}{{ s.localidad }}{% else %}{{ docente.ronda.entidad.localidad }}{% endif %}"
                          style="top:{{ s.top }}px; height: {{ s.height }}px">
                         {{ s.sesionextra_set.all.0.actividad.nombre }}<br>
                         {% for sext in s.sesionextra_set.all %}

@@ -96,53 +96,34 @@
             </div>
         {% endif %}
         <input type="hidden" name="horario" id="horario" value="{{ horario.id }}">
-        {% if grupo %}
-            <div class="horario" id="div_horario_grupo">
-            {% include "horario_grupos_content.html" %}
-{#                <div class="dia_horario" id="horas">#}
-{#                    {% for hora in horas_grupo %}#}
-{#                        <div class="horas" style="top:{{ hora.top }}px;"><b>{{ hora.inicio }}-{{ hora.fin }}</b></div>#}
-{#                    {% endfor %}#}
-{#                </div>#}
-{#                {% for info_dia in sesiones %}#}
-{#                    <div class="dia_horario" id="dia{{ info_dia.dia_num }}">#}
-{#                        <b>{{ info_dia.dia_nombre }}</b>#}
-{#                        {% for sesiones_hora in info_dia.sesiones_dia %}#}
-{#                            <div class="div_cell_sesion"#}
-{#                                 style="z-index: {{ sesiones_hora.0.top }}; top:{{ sesiones_hora.0.top }}px;max-height: {{ sesiones_hora.0.height }}px;min-height: {{ sesiones_hora.0.height }}px;">#}
-{#                                {% for s in sesiones_hora %}#}
-{#                                    <span class="dependencia">{{ s.dependencia.nombre }}</span><br>#}
-{#                                    <span class="materia">{{ s.materia.nombre }}</span><br>#}
-{#                                    <span class="profesor">{{ s.g_e.gauser.get_full_name }}</span>#}
-{#                                    {% if not forloop.last %}<br><span class="materia">-------</span><br>{% endif %}#}
-{#                                {% endfor %}#}
-{#                            </div>#}
-{#                        {% endfor %}#}
-{#                    </div>#}
-{#                {% endfor %}#}
-            </div>
-        {% endif %}
+
+{#            <div class="horario" id="div_horario_grupo">#}
+                {#            {% include "horario_grupos_content.html" %}#}
+            <div id="div_horario_grupo"></div>
     </form>
 
 {% endblock %}
 
 {% block final %}
     <script>
-        $('#grupo').select2();
-        $('body').on('change', '#grupo', function (e) {
-            var grupo = $(this).val();
-            $.post("/horarios_ajax/", {
-                action: 'carga_horario_grupo',
-                grupo: grupo,
-                horario: $('#horario').val()
-            }, function (data) {
+        function carga_horario_grupo(h, grupo) {
+            $.post("/horarios_ajax/", {action: 'carga_horario_grupo', horario: h, grupo: grupo}, function (data) {
+                hide_mensajes();
                 if (data.ok) {
                     $("#update_ok").show().delay(1500).fadeOut();
-                    $('#div_horario_grupo').html(data.html);
+                    $('#div_horario_grupo').html(data.tabla_horario);
                 } else {
                     $("#update_error").show().delay(1500).fadeOut();
                 }
             });
+        }
+
+        $('#grupo').select2();
+        $('body').on('change', '#grupo', function (e) {
+            var grupo = $(this).val();
+            var h = $('#horario').val();
+            show_mensajes({title: 'Cargando horario', texto: 'En unos segundos se cargará el horario ...'});
+            carga_horario_grupo(h, grupo);
         });
 
         $('#Contenido').on('click', '.div_cell_sesion', function () {
@@ -154,5 +135,8 @@
                 $('.div_cell_sesion').removeClass('show_complete_cell');
             }
         });
+
+        show_mensajes({title: 'Cargando horario', texto: 'En unos segundos se cargará el horario ...'});
+        carga_horario_grupo($('#horario').val(), $('#grupo').val());
     </script>
 {% endblock %}

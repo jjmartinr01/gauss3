@@ -18,6 +18,17 @@ register = Library()
 #     return cursos_entidad
 
 @register.filter
+def get_mat_prof_dep(sesiones):
+    mat_prof_dep =[]
+    for s in sesiones:
+        for sext in s.sesionextra_set.all():
+            t = (sext.materia, sext.sesion.g_e, sext.dependencia)
+            if not t in mat_prof_dep:
+                mat_prof_dep.append(t)
+    return mat_prof_dep
+
+
+@register.filter
 def filtrar_pds(pds, campo):
     if campo == 'profesor':
         return set([(pd.profesor.id, pd.profesor.gauser.get_full_name()) for pd in pds])
