@@ -163,6 +163,14 @@
                                                 {% include "rellena_gform_gfsi_EL.html" %}
                                             {% elif gfsi.tipo == 'FI' %}
                                                 {% include "rellena_gform_gfsi_FI.html" %}
+                                            {% elif gfsi.tipo == 'EN' %}
+                                                <div class="row">
+                                                    <div class="columns large-12">
+                                                        <input data-gfsi="{{ gfsi.id }}" class="gfr_en" type="text"
+                                                               value="{{ gfsi|get_rentero:gformresponde }}"
+                                                               placeholder="Escribe aquí tu respuesta. Solo números.">
+                                                    </div>
+                                                </div>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -250,6 +258,31 @@
             }, 750);
         });
 
+        $('body').on('keyup', '.gfr_en', function () {
+            var element = $(this);
+            var valor = element.val();
+            console.log(valor);
+            valor = valor.replace(/\D/g,'');
+            console.log(valor);
+            $(this).val(valor);
+            var gfsi = element.data('gfsi');
+            var antiguo_texto = element.val();
+            setTimeout(function () {
+                var nuevo_texto = element.val();
+                if (antiguo_texto === nuevo_texto && nuevo_texto.length > 0) {
+                    $.post(rellena_gform_url,
+                        {action: 'update_gfr_rentero', gfsi: gfsi, rentero: nuevo_texto},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                                show_error(data);
+                            }
+                        });
+                }
+            }, 750);
+        });
         {# ########################################################################################### #}
         {# Operaciones relacionadas con responder a las preguntas largas: tipo RL #}
         {# constructInlineEditorInstances,   #}
@@ -532,6 +565,9 @@
             var orden_gfs_nueva = ordengfs - 1;
             $('#gfsorden' + orden_gfs_nueva).show();
             $(document).scrollTop($('#title_page').offset().top - 150);
+            setTimeout(function (){
+                constructInlineEditorInstances();
+            }, 300);
         });
         $('body').on('click', '.go_seccion_siguiente', function (e) {
             e.preventDefault();
@@ -540,6 +576,9 @@
             var orden_gfs_nueva = ordengfs + 1;
             $('#gfsorden' + orden_gfs_nueva).show();
             $(document).scrollTop($('#title_page').offset().top - 150);
+            setTimeout(function (){
+                constructInlineEditorInstances();
+            }, 300);
         });
 
         {# ########################################################################################### #}

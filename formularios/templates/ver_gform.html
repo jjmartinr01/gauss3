@@ -143,6 +143,13 @@
                                                 {% include "ver_gform_gfsi_EL.html" %}
                                             {% elif gfsi.tipo == 'FI' %}
                                                 {% include "ver_gform_gfsi_FI.html" %}
+                                            {% elif gfsi.tipo == 'EN' %}
+                                                <div class="row">
+                                                    <div class="columns large-12">
+                                                        <input data-gfsi="{{ gfsi.id }}" value="" type="number"
+                                                               placeholder="Escribe aquí tu respuesta">
+                                                    </div>
+                                                </div>
                                             {% endif %}
                                         </div>
                                     </div>

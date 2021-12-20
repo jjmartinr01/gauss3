@@ -560,7 +560,7 @@ def formularios(request):
                 wf.write(fila_excel_cuestionario, 2, gfr.g_e.ronda.entidad.name)
                 col = 3
                 for gfri in gfr.gformrespondeinput_set.all():
-                    if gfri.gfsi.tipo == 'EL':
+                    if gfri.gfsi.tipo == 'EL' or gfri.gfsi.tipo == 'EN':
                         respuesta = gfri.respuesta
                     elif gfri.gfsi.tipo == 'FI':
                         respuesta = '; '.join([gfri.rfirma_nombre, gfri.rfirma_cargo])
@@ -882,6 +882,15 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
                 return JsonResponse({'ok': True})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_gfr_rentero':
+            try:
+                gfsi = gfsis.get(id=request.POST['gfsi'])
+                gfri, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
+                gfri.rentero = int(request.POST['rentero'])
+                gfri.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'update_gfr_op':
             try:
                 gfsi = gfsis.get(id=request.POST['gfsi'])
@@ -956,7 +965,8 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
                     cond4 = gfri.gfsi.tipo == 'EL' and not str(gfri.rentero).isdigit()
                     cond5 = gfri.gfsi.tipo == 'FI' and (len(gfri.rfirma_nombre) < 5 or len(gfri.rfirma) < 1000)
                     cond6 = gfri.gfsi.tipo == 'SA' and not gfri.rarchivo
-                    if cond1 or cond2 or cond3 or cond4 or cond5 or cond6:
+                    cond7 = gfri.gfsi.tipo == 'EN' and not str(gfri.rentero).isdigit()
+                    if cond1 or cond2 or cond3 or cond4 or cond5 or cond6 or cond7:
                         no_respondidas.append(str(gfri.gfsi.orden))
                 if len(no_respondidas) == 0:
                     gformresponde.respondido = True

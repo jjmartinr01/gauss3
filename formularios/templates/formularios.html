@@ -485,6 +485,9 @@
                 let legend = 'Pregunta ' + gfsi_nos[i].orden + ' de ' + gfsi_count;
                 $('#legendgfsi' + gfsi_nos[i].id).html(legend);
             }
+            setTimeout(function () {
+                constructInlineEditorInstances();
+            }, 300);
         }
 
         function gfs_id_orden(datos) {

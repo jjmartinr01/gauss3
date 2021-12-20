@@ -181,8 +181,7 @@
                     {% elif forloop.last %}
                         <td class="num_apoyos_grupo{{ po.id }}" style="font-weight: bold;">{{ td_value }}</td>
                     {% else %}
-                        <td title="
-                                {% for s in td_value %}{{ s.sesion.g_e.gauser.get_full_name }} - {{ s.sesion.g_e.puesto }}&#10;{% endfor %}">{{ td_value|length }}</td>
+                        <td title="{% for s in td_value %}{{ s.sesion.g_e.gauser.get_full_name }} - {{ s.sesion.g_e.puesto }}&#10;{% endfor %}">{{ td_value|length }}</td>
                     {% endif %}
                 {% endfor %}
             </tr>

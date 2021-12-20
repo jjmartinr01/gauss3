@@ -129,7 +129,7 @@ class GformSection(models.Model):
 
 GSITIPOS = (('RC', 'Respuesta corta'), ('RL', 'Respuesta larga'), ('EM', 'Elección múltiple'),
             ('SC', 'Seleccionar casillas'), ('SO', 'Seleccionar opción'), ('SA', 'Subir archivo'),
-            ('EL', 'Escala lineal'), ('FI', 'Firma del usuario'))
+            ('EL', 'Escala lineal'), ('FI', 'Firma del usuario'), ('EN', 'Número entero'))
 
 
 class GformSectionInput(models.Model):
@@ -239,6 +239,8 @@ class GformRespondeInput(models.Model):
         elif self.gfsi.tipo == 'SA':
             return self.rarchivo.name.rpartition('/')[2]
         elif self.gfsi.tipo == 'EL':
+            return self.rentero
+        elif self.gfsi.tipo == 'EN':
             return self.rentero
         elif self.gfsi.tipo == 'FI':
             template = """{% autoescape off %}

@@ -52,6 +52,13 @@ def get_rfirma(gfsi, gformresponde):
 
 
 @register.filter
+def get_rentero(gfsi, gformresponde):
+    try:
+        return GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).rentero
+    except:
+        return 0
+
+@register.filter
 def get_rtexto(gfsi, gformresponde):
     try:
         return GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).rtexto
