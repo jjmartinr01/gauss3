@@ -15,4 +15,5 @@ urlpatterns = [
     path('procesos_evaluacion_funcpract/', views.procesos_evaluacion_funcpract),
     path('recufunprac/<int:id>/<str:actor>/', views.recufunprac),
     path('mis_evalpract/', views.mis_evalpract),
+path('crea_gfris_no_creadas/', views.crea_gfris_no_creadas),
 ]

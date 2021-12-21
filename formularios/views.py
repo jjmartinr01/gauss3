@@ -50,7 +50,7 @@ def formularios(request):
     g_e = request.session["gauser_extra"]
     gforms = Gform.objects.filter(
         Q(propietario__gauser=g_e.gauser) | Q(colaboradores__gauser__in=[g_e.gauser])).distinct()
-    paginator = Paginator(gforms, 15)
+    paginator = Paginator(gforms, 25)
     formularios = paginator.page(1)
     if request.method == 'POST' and request.is_ajax():
         if request.POST['action'] == 'crea_formulario':
@@ -868,6 +868,8 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
             sleep(3)
             return render(request, "gform_no_existe.html", {'error': True, 'msg': str(msg)})
     gfsis = GformSectionInput.objects.filter(gformsection__gform=gformresponde.gform)
+    for gfsi in gfsis: # Creamos todas las respuestas vacías
+        GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
     if request.method == 'POST' and request.is_ajax():
         if gformresponde.respondido:
             return JsonResponse({'ok': False, 'msg': 'Este formulario ya está respondido. No se admiten cambios.'})
@@ -1658,3 +1660,12 @@ errores = {"2": {"msg": "Gauser_extra matching query does not exist.",
                    "docente": "\t71949455G"},
            "176": {"msg": "Gauser_extra matching query does not exist.", "fila": 176, "centro": "26700073",
                    "docente": "\t16603762Q"}}
+
+def crea_gfris_no_creadas(request):
+    gform = Gform.objects.get(id=36)
+    gfrs = GformResponde.objects.filter(gform=gform)
+    gfsis = GformSectionInput.objects.filter(gformsection__gform=gform)
+    for gfr in gfrs:
+        for gfsi in gfsis:  # Creamos todas las respuestas vacías
+            GformRespondeInput.objects.get_or_create(gformresponde=gfr, gfsi=gfsi)
+    return HttpResponse('Hecho')
