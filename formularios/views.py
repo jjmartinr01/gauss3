@@ -45,15 +45,21 @@ def gfs_id_orden(gform):
     return [{'id': gfs.id, 'orden': gfs.orden} for gfs in gfss], gfss.count()
 
 
-# @login_required()
+@permiso_required('acceso_formularios')
 def formularios(request):
     g_e = request.session["gauser_extra"]
-    gforms = Gform.objects.filter(
-        Q(propietario__gauser=g_e.gauser) | Q(colaboradores__gauser__in=[g_e.gauser])).distinct()
-    paginator = Paginator(gforms, 25)
-    formularios = paginator.page(1)
     if request.method == 'POST' and request.is_ajax():
-        if request.POST['action'] == 'crea_formulario':
+        if request.POST['action'] == 'update_page':
+            try:
+                gforms = Gform.objects.filter(
+                    Q(propietario__gauser=g_e.gauser) | Q(colaboradores__gauser__in=[g_e.gauser])).distinct()
+                paginator = Paginator(gforms, 15)
+                formularios = paginator.page(int(request.POST['page']))
+                html = render_to_string('formularios_accordion.html', {'formularios': formularios, 'pag': True})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'crea_formulario':
             if g_e.has_permiso('crea_formularios'):
                 gform = Gform.objects.create(propietario=g_e)
                 gfs = GformSection.objects.create(gform=gform, orden=1, description='Descripción')
@@ -617,6 +623,10 @@ def formularios(request):
             except:
                 return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
 
+    gforms = Gform.objects.filter(
+        Q(propietario__gauser=g_e.gauser) | Q(colaboradores__gauser__in=[g_e.gauser])).distinct()
+    paginator = Paginator(gforms, 15)
+    formularios = paginator.page(1)
     return render(request, "formularios.html",
                   {
                       'iconos':
@@ -625,6 +635,7 @@ def formularios(request):
                            ),
                       'formname': 'formularios',
                       'formularios': formularios,
+                      'pag': 1,
                       # 'id_gform': id_gform,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
@@ -1661,11 +1672,11 @@ errores = {"2": {"msg": "Gauser_extra matching query does not exist.",
            "176": {"msg": "Gauser_extra matching query does not exist.", "fila": 176, "centro": "26700073",
                    "docente": "\t16603762Q"}}
 
-def crea_gfris_no_creadas(request):
-    gform = Gform.objects.get(id=36)
-    gfrs = GformResponde.objects.filter(gform=gform)
-    gfsis = GformSectionInput.objects.filter(gformsection__gform=gform)
-    for gfr in gfrs:
-        for gfsi in gfsis:  # Creamos todas las respuestas vacías
-            GformRespondeInput.objects.get_or_create(gformresponde=gfr, gfsi=gfsi)
-    return HttpResponse('Hecho')
+# def crea_gfris_no_creadas(request):
+#     gform = Gform.objects.get(id=36)
+#     gfrs = GformResponde.objects.filter(gform=gform)
+#     gfsis = GformSectionInput.objects.filter(gformsection__gform=gform)
+#     for gfr in gfrs:
+#         for gfsi in gfsis:  # Creamos todas las respuestas vacías
+#             GformRespondeInput.objects.get_or_create(gformresponde=gfr, gfsi=gfsi)
+#     return HttpResponse('Hecho')

@@ -913,7 +913,7 @@ def get_puntos_inspector(inspectores):
     return resultados
 
 
-# @permiso_required('acceso_asignar_centros_inspeccion')
+@permiso_required('acceso_asignar_centros_inspeccion')
 def asignar_centros_inspeccion(request):
     g_e = request.session["gauser_extra"]
     inspectores = get_inspectores(request)

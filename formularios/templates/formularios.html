@@ -924,7 +924,21 @@
             }
         });
 
-
+        $('body').on('click', '.go_page', function (e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            if (page) {
+                $.post("/formularios/", {action: 'update_page', 'page': page},
+                    function (data) {
+                        if (data.ok) {
+                            $('#listado_formularios').html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        });
     </script>
 
 {% endblock %}

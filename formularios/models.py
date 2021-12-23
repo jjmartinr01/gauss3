@@ -45,7 +45,7 @@ class Gform(models.Model):
         return True if (con1 or con2) else False
 
     class Meta:
-        ordering = ['propietario__ronda', 'id']
+        ordering = ['-creado']
 
     @property
     def accesible(self):

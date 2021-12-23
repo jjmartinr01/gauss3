@@ -16,11 +16,18 @@
     </div>
 </div>
 <div class="row">
-    <div class="columns large-12">
+    <div class="columns large-7">
         <label title="Sub-Título o texto bajo nombre que se mostrará en la web debajo del título">
             <b>Texto para el subtítulo de la web:</b>
             <input type="text" class="campo_char" data-campo="subnombreweb" data-id="{{ vivienda.id }}"
                    value="{{ vivienda.subnombreweb }}">
+        </label>
+    </div>
+    <div class="columns large-5">
+        <label title="Precio más bajo por el que se puede contratar una noche tu vivienda. Esto será meramente informativo para los posibles clientes.">
+            <b>Precio más bajo por cada noche:</b>
+            <input type="text" class="campo_char" data-campo="preciosweb" data-id="{{ vivienda.id }}"
+               value="{{ vivienda.preciosweb }}">
         </label>
     </div>
 </div>
@@ -35,7 +42,7 @@
 <div class="row">
     <div class="columns large-12">
         <label>
-            <b>Elmentos que aportan confortabilidad a tu vivienda:</b></label>
+            <b>Elementos que aportan confortabilidad a tu vivienda:</b></label>
     </div>
 </div>
 <br>

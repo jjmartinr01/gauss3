@@ -140,7 +140,7 @@
                                                         </table>
                                                     </div>
                                                 </div>
-                                            {% elif gfsi.tipo == 'EL' %}
+                                            {% elif gfsi.tipo in 'EL EN' %}
                                                 <canvas id="barChart{{ gfsi.id }}" width="400"></canvas>
                                                 <script>
                                                     setTimeout(function () {
