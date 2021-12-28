@@ -572,5 +572,55 @@
             document.getElementById("{{ formname }}").submit();
         });
 
+
+    {# ############################################################## #}
+        $('body').on('click', '.get_horario_docente_apoyos', function (e) {
+            var docente = $(this).data('docente');
+            var po = $(this).data('po');
+            $.post("/plantilla_organica/", {action: 'get_horario_docente_apoyos', po: po, docente: docente},
+                function (data) {
+                    if (data.ok) {
+                        $('#horario_docente').html(data.tabla);
+                        $('#horarioModal').foundation('reveal', 'open');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+    {# ############################################################## #}
+        $('body').on('click', '.get_horario_grupo_apoyos', function (e) {
+            var grupo = $(this).data('grupo');
+            var po = $(this).data('po');
+            $.post("/plantilla_organica/", {action: 'get_horario_grupo_apoyos', po: po, grupo: grupo},
+                function (data) {
+                    if (data.ok) {
+                        $('#horario_docente').html(data.tabla);
+                        $('#horarioModal').foundation('reveal', 'open');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
+    {# ############################################################## #}
+        $('body').on('click', '.get_horario_curso_apoyos', function (e) {
+            var curso = $(this).data('curso');
+            var po = $(this).data('po');
+            $.post("/plantilla_organica/", {action: 'get_horario_curso_apoyos', po: po, curso: curso},
+                function (data) {
+                    if (data.ok) {
+                        $('#horario_docente').html(data.tabla);
+                        $('#horarioModal').foundation('reveal', 'open');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
     </script>
 {% endblock %}

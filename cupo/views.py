@@ -1428,21 +1428,6 @@ def plantilla_organica(request):
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'get_horario':
-
-            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
-            docente = Gauser_extra.objects.get(id=request.POST['docente'], ronda=po.ronda_centro)
-            # h = Horario.objects.get(ronda=docente.ronda, clave_ex=po.pk)
-            h = po.horario
-            # horario = h.get_horario(docente)
-            horario = h.get_horario2(docente)
-            sesiones = h.sesion_set.filter(g_e=docente)
-            # tabla = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario,
-            #                                                                      'docente': docente})
-            tabla = render_to_string('plantilla_organica_horario_docente.html', {'sesiones': sesiones,
-                                                                                 'docente': docente})
-            return JsonResponse({'ok': True, 'tabla': tabla, 'h': h.id, 'd': docente.id})
-
-
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
                 docente = Gauser_extra.objects.get(id=request.POST['docente'], ronda=po.ronda_centro)
@@ -1450,9 +1435,68 @@ def plantilla_organica(request):
                 h = po.horario
                 # horario = h.get_horario(docente)
                 horario = h.get_horario2(docente)
-                tabla = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario,
+                sesiones = h.sesion_set.filter(g_e=docente)
+                # tabla = render_to_string('plantilla_organica_horario_docente.html', {'horario': horario,
+                #                                                                      'docente': docente})
+                tabla = render_to_string('plantilla_organica_horario_docente.html', {'sesiones': sesiones,
                                                                                      'docente': docente})
                 return JsonResponse({'ok': True, 'tabla': tabla, 'h': h.id, 'd': docente.id})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'get_horario_docente_apoyos':
+            try:
+                po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
+                docente = Gauser_extra.objects.get(id=request.POST['docente'], ronda=po.ronda_centro)
+                sextras_apoyo = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex='522', sesion__g_e=docente)
+                sesiones = Sesion.objects.filter(id__in=sextras_apoyo.values_list('sesion', flat=True)).distinct()
+                tabla = render_to_string('plantilla_organica_horario_docente.html', {'sesiones': sesiones,
+                                                                                     'docente': docente})
+                return JsonResponse({'ok': True, 'tabla': tabla, 'po': po.id, 'd': docente.id})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'get_horario_grupo_apoyos':
+            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
+            grupo = Grupo.objects.get(id=request.POST['grupo'], ronda=po.ronda_centro)
+
+
+            sesex = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex='522', grupo=grupo)
+            sesiones_ = Sesion.objects.filter(id__in=sesex.values_list('sesion', flat=True)).distinct()
+            # tabla = render_to_string('plantilla_organica_horario_docente.html', {'sesiones': sesiones_,
+            #                                                                      'grupo': grupo})
+            # return JsonResponse({'ok': True, 'tabla': tabla, 'po': po.id, 'grupo': grupo.id})
+
+            sesiones = {}
+            for s in sesiones_:
+                try:
+                    sesiones['%s-%s-%s' % (s.dia, s.hora_inicio, s.hora_fin)].append(s)
+                except:
+                    sesiones['%s-%s-%s' % (s.dia, s.hora_inicio, s.hora_fin)] = []
+                    sesiones['%s-%s-%s' % (s.dia, s.hora_inicio, s.hora_fin)].append(s)
+            try:
+                tabla_horario = render_to_string('plantilla_organica_horario_grupo.html', {'sesiones': sesiones, 'grupo': grupo})
+                return JsonResponse({'ok': True, 'tabla': tabla_horario, 'h': po.horario.id, 'g': grupo.id,
+                                     'sesiones': len(sesiones), 'sesiones_': sesiones_.count(), 'sesex': sesex.count()})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'get_horario_curso_apoyos':
+            po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
+            curso = Curso.objects.get(id=request.POST['curso'], ronda=po.ronda_centro)
+
+
+            sesex = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex='522',
+                                               grupo__cursos__in=[curso])
+            sesiones_ = Sesion.objects.filter(id__in=sesex.values_list('sesion', flat=True)).distinct()
+            sesiones = {}
+            for s in sesiones_:
+                try:
+                    sesiones['%s-%s-%s' % (s.dia, s.hora_inicio, s.hora_fin)].append(s)
+                except:
+                    sesiones['%s-%s-%s' % (s.dia, s.hora_inicio, s.hora_fin)] = []
+                    sesiones['%s-%s-%s' % (s.dia, s.hora_inicio, s.hora_fin)].append(s)
+            try:
+                tabla_horario = render_to_string('plantilla_organica_horario_grupo.html', {'sesiones': sesiones, 'curso': curso})
+                return JsonResponse({'ok': True, 'tabla': tabla_horario, 'h': po.horario.id, 'c': curso.id,
+                                     'sesiones': len(sesiones), 'sesiones_': sesiones_.count(), 'sesex': sesex.count()})
             except:
                 return JsonResponse({'ok': False})
         elif request.POST['action'] == 'cargar_po_no_racima':

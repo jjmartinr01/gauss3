@@ -4,9 +4,9 @@ from django.template import Library
 from django.db.models import Q, Sum
 from cupo.models import PlantillaXLS, PDocenteCol, CargaPlantillaOrganicaCentros, EspecialidadPlantilla, PDocente
 from entidades.models import Cargo, Gauser_extra
-from horarios.models import SesionExtra
+from horarios.models import SesionExtra, Sesion
 from programaciones.models import Departamento
-from estudios.models import Grupo
+from estudios.models import Grupo, Curso
 
 register = Library()
 
@@ -18,32 +18,208 @@ def departamentos(cupo):
 
 ##########################################
 @register.filter
+def get_horas_minutos(minutos):
+    horas = int(minutos / 60)
+    minutos = minutos % 60
+    if horas == 0 and minutos == 0:
+        return '---'
+    elif horas == 0:
+        return '%s minutos' % minutos
+    elif minutos == 0:
+        if horas == 1:
+            return '1 hora'
+        else:
+            return '%s horas' % horas
+    elif horas == 1:
+        return '1 hora y %s minutos' % minutos
+    else:
+        return '%s horas y %s minutos' % (horas, minutos)
+
+
+@register.filter
+def get_sesiones_tiempo(sesiones):
+    minutos_apoyos = 0
+    for sesion in sesiones:
+        minutos_apoyos += sesion.minutos
+    return minutos_apoyos
+
+@register.filter
+def get_sextras_tiempo(sextras):
+    minutos_apoyos = 0
+    for sextra in sextras:
+        minutos_apoyos += sextra.sesion.minutos
+    return minutos_apoyos
+
+
+
+
+@register.filter
+def has_infantil_primaria(po):
+    centros_infantil_primaria = ['C.E.I.P. - Colegio de Educación Infantil y Primaria',
+                                 'C.R.A. - Colegio Rural Agrupado',
+                                 'C.E.O. - Centro de Educación Obligatoria',
+                                 'C.E.E. - Centro de Educación Especial',
+                                 'E.I.P.C. - Escuela Infantil']
+    if po.ronda_centro.entidad.entidadextra.tipo_centro in centros_infantil_primaria:
+        return True
+    else:
+        return False
+
+
+@register.filter
+def docentes_apoyo(po):
+    apoyos = []
+    # etapas = {'INF': 3, 'PRI': 12}
+    cursos = {'INF': [100304, 100305, 100306], 'PRI': [101317, 101318, 101319, 101320, 101321, 101322]}
+    # grupos = Grupo.objects.filter(ronda=po.ronda_centro)
+    sextras_apoyo = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex='522')
+    docentes = Gauser_extra.objects.filter(id__in=sextras_apoyo.values_list('sesion__g_e', flat=True))
+    for docente in docentes:
+        minutos_apoyo_infantil = 0
+        sextras_apoyo_infantil = sextras_apoyo.filter(sesion__g_e=docente, grupo__cursos__clave_ex__in=cursos['INF'])
+        ses_infantil = Sesion.objects.filter(id__in=sextras_apoyo_infantil.values_list('sesion', flat=True)).distinct()
+        for si in ses_infantil:
+            minutos_apoyo_infantil += si.minutos
+        minutos_apoyo_primaria = 0
+        sextras_apoyo_primaria = sextras_apoyo.filter(sesion__g_e=docente, grupo__cursos__clave_ex__in=cursos['PRI'])
+        ses_primaria = Sesion.objects.filter(id__in=sextras_apoyo_primaria.values_list('sesion', flat=True)).distinct()
+        for sp in ses_primaria:
+            minutos_apoyo_primaria += sp.minutos
+        apoyos.append({'docente':docente, 'infantil': minutos_apoyo_infantil, 'primaria': minutos_apoyo_primaria,
+                       'total': minutos_apoyo_infantil + minutos_apoyo_primaria, 'ses_primaria': ses_primaria,
+                       'ses_infantil': ses_infantil})
+    return apoyos
+
+
+@register.filter
 def get_apoyos(po):
     "{'grupo': Grupo.objects.none(), 'LCL': sesiones, 'LCRM': sesiones, ...}"
     apoyos = []
-    num_apoyos_total = 0
+    # num_apoyos_total = 0
+    minutos_apoyos_total = 0
     areas = {'LCL': [168607, 170306, 168625, 170325, 168644, 170344],
              'LCRM': [168606, 170305, 168624, 170324, 168643, 170343],
-             'Matem.': [168608, 170307, 168626, 170326, 168645, 170345],
+             'MAT': [168608, 170307, 168626, 170326, 168645, 170345],
              'CCSS': [168604, 170303, 168622, 170322, 168641, 170341],
              'CCNN': [168605, 170304, 168623, 170323, 168642, 170342],
-             'Inglés': [168615, 170314, 168633, 170333, 168652, 170352],
+             'ING': [168615, 170314, 168633, 170333, 168652, 170352],
              'EF': [168612, 170311, 168630, 170330, 168649, 170349],
-             'Música': [168610, 170309, 168628, 170328, 168647, 170347],
-             'Plástica': [168611, 170310, 168629, 170329, 168648, 170348],
-             'Valores': [168660, 170321, 168640, 170340, 168659, 170359]}
+             'MUS': [168610, 170309, 168628, 170328, 168647, 170347],
+             'PLA': [168611, 170310, 168629, 170329, 168648, 170348],
+             'VSC': [168660, 170321, 168640, 170340, 168659, 170359]}
 
     grupos = Grupo.objects.filter(ronda=po.ronda_centro)
     sextras_apoyo = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex='522')
     for grupo in grupos:
         dic = {'grupo': grupo}
-        num_apoyos = 0
+        minutos_apoyos = 0
         for materia, claves_extra in areas.items():
             dic[materia] = sextras_apoyo.filter(materia__clave_ex__in=claves_extra, grupo=grupo)
-            num_apoyos += dic[materia].count()
-        dic['n'] = num_apoyos
-        num_apoyos_total += num_apoyos
-        if num_apoyos > 0:
+            for sextra in dic[materia]:
+                minutos_apoyos += sextra.sesion.minutos
+        dic['n'] = minutos_apoyos
+        minutos_apoyos_total += minutos_apoyos
+        if minutos_apoyos > 0:
+            apoyos.append(dic)
+    return apoyos
+
+@register.filter
+def get_apoyos_grupos(po):
+    "{'grupo': Grupo.objects.none(), 'LCL': sesiones, 'LCRM': sesiones, ...}"
+    apoyos = []
+    minutos_apoyos_total = 0
+    areas = {'LCL': [168607, 170306, 168625, 170325, 168644, 170344],
+             'LCRM': [168606, 170305, 168624, 170324, 168643, 170343],
+             'MAT': [168608, 170307, 168626, 170326, 168645, 170345],
+             'CCSS': [168604, 170303, 168622, 170322, 168641, 170341],
+             'CCNN': [168605, 170304, 168623, 170323, 168642, 170342],
+             'ING': [168615, 170314, 168633, 170333, 168652, 170352],
+             'EF': [168612, 170311, 168630, 170330, 168649, 170349],
+             'MUS': [168610, 170309, 168628, 170328, 168647, 170347],
+             'PLA': [168611, 170310, 168629, 170329, 168648, 170348],
+             'VSC': [168660, 170321, 168640, 170340, 168659, 170359]}
+
+    grupos = Grupo.objects.filter(ronda=po.ronda_centro)
+    sextras_apoyo = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex='522')
+    for grupo in grupos:
+        dic = {'grupo': grupo}
+        minutos_apoyos = 0
+        for materia, claves_extra in areas.items():
+            # dic[materia] = sextras_apoyo.filter(materia__clave_ex__in=claves_extra, grupo=grupo)
+            # for sextra in dic[materia]:
+            #     minutos_apoyos += sextra.sesion.minutos
+
+            sextras = sextras_apoyo.filter(materia__clave_ex__in=claves_extra, grupo=grupo)
+            ses_ids = sextras.values_list('sesion__id', flat=True).distinct()
+            dic[materia] = Sesion.objects.filter(id__in=ses_ids)
+            for sesion in Sesion.objects.filter(id__in=ses_ids):
+                minutos_apoyos += sesion.minutos
+
+        dic['n'] = minutos_apoyos
+        minutos_apoyos_total += minutos_apoyos
+        if minutos_apoyos > 0:
+            apoyos.append(dic)
+    return apoyos
+
+@register.filter
+def get_apoyos_cursos(po):
+    apoyos = []
+    minutos_apoyos_total = 0
+    areas = {'LCL': [168607, 170306, 168625, 170325, 168644, 170344],
+             'LCRM': [168606, 170305, 168624, 170324, 168643, 170343],
+             'MAT': [168608, 170307, 168626, 170326, 168645, 170345],
+             'CCSS': [168604, 170303, 168622, 170322, 168641, 170341],
+             'CCNN': [168605, 170304, 168623, 170323, 168642, 170342],
+             'ING': [168615, 170314, 168633, 170333, 168652, 170352],
+             'EF': [168612, 170311, 168630, 170330, 168649, 170349],
+             'MUS': [168610, 170309, 168628, 170328, 168647, 170347],
+             'PLA': [168611, 170310, 168629, 170329, 168648, 170348],
+             'VSC': [168660, 170321, 168640, 170340, 168659, 170359]}
+
+    cursos_id = Grupo.objects.filter(ronda=po.ronda_centro).values_list('cursos', flat=True).distinct()
+    cursos = Curso.objects.filter(id__in=cursos_id)
+    sextras_apoyo = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex='522')
+    for curso in cursos:
+        dic = {'curso': curso}
+        minutos_apoyos = 0
+        for materia, claves_extra in areas.items():
+            sextras = sextras_apoyo.filter(materia__clave_ex__in=claves_extra, grupo__cursos__in=[curso])
+            ses_ids = sextras.values_list('sesion__id', flat=True).distinct()
+            # dic[materia] = sextras_apoyo.filter(materia__clave_ex__in=claves_extra, grupo__cursos__in=[curso])
+            dic[materia] = Sesion.objects.filter(id__in=ses_ids)
+            # for sextra in dic[materia]:
+            #     minutos_apoyos += sextra.sesion.minutos
+            for sesion in Sesion.objects.filter(id__in=ses_ids):
+                minutos_apoyos += sesion.minutos
+        dic['n'] = minutos_apoyos
+        minutos_apoyos_total += minutos_apoyos
+        if minutos_apoyos > 0:
+            apoyos.append(dic)
+    return apoyos
+
+
+@register.filter
+def get_apoyos_infantil(po):
+    apoyos = []
+    minutos_apoyos_total = 0
+    areas = {'CSMAP': [48053, 48066, 48080],
+             'LCR': [48052, 48065, 48079],
+             'CE': [48054, 48067, 48081],
+             'Inglés': [48057, 48071, 48085],
+             'AE': [48060, 48074, 48088],
+             'RC': [48061, 48075, 48089]}
+    grupos = Grupo.objects.filter(ronda=po.ronda_centro)
+    sextras_apoyo = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex='522')
+    for grupo in grupos:
+        dic = {'grupo': grupo}
+        minutos_apoyos = 0
+        for materia, claves_extra in areas.items():
+            dic[materia] = sextras_apoyo.filter(materia__clave_ex__in=claves_extra, grupo=grupo)
+            for sextra in dic[materia]:
+                minutos_apoyos += sextra.sesion.minutos
+        dic['n'] = minutos_apoyos
+        minutos_apoyos_total += minutos_apoyos
+        if minutos_apoyos > 0:
             apoyos.append(dic)
     return apoyos
 

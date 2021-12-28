@@ -176,10 +176,18 @@
     }
 </style>
 <div>
+{% if docente %}
     <div style="margin-left:50px;width: calc(100% - 50px);text-align: center;background-color: #F5F5F5;font-weight: bold;margin-bottom: 2px;"
          class="columns large-12" title="{{ docente.tipo_personal }} -- Jornada: {{ docente.jornada_contratada }}">
         {{ docente.gauser.get_full_name }} -- {{ docente.ronda }} -- {{ docente.puesto|upper }}
     </div>
+{% elif grupo %}
+    <div style="margin-left:50px;width: calc(100% - 50px);text-align: center;background-color: #F5F5F5;font-weight: bold;margin-bottom: 2px;"
+         class="columns large-12" title="{{ grupo.nombre }}-- {{ grupo.ronda.entidad }}">
+        {{ grupo.nombre }} -- {{ grupo.ronda }}
+    </div>
+{% else %}
+{% endif %}
     <div class="grid-dias">
         <div>Lunes</div>
         <div>Martes</div>

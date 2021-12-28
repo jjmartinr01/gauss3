@@ -1,0 +1,257 @@
+{% load entidades_extras %}
+{% load horarios_extras %}
+
+<style>
+    .grid-dias {
+        display: grid;
+        grid-template-columns: auto auto auto auto auto;
+        grid-gap: 10px;
+        background-color: #F5F5F5;
+        padding: 10px;
+        margin-left: 50px;
+        width: calc(100% - 50px);
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .div-dia {
+        display: inline-block;
+        width: calc((100% - 60px) / 5);
+        text-align: center;
+        background-color: #ffefaf;
+        border: solid 1px lightgrey;
+        border-radius: 4px;
+        position: absolute;
+        overflow: hidden;
+    }
+
+    .div-1 {
+        margin-left: 50px;
+    }
+
+    .div-2 {
+        left: calc((100% - 50px) / 5 + 50px);
+    }
+
+    .div-3 {
+        left: calc((100% - 50px) / 5 * 2 + 50px);
+    }
+
+    .div-4 {
+        left: calc((100% - 50px) / 5 * 3 + 50px);
+    }
+
+    .div-5 {
+        left: calc((100% - 50px) / 5 * 4 + 50px);
+    }
+
+    .horas_linea {
+        position: absolute;
+        top: -14px;
+        background-color: white;
+    }
+</style>
+
+<div>
+{% if grupo %}
+    <div style="margin-left:50px;width: calc(100% - 50px);text-align: center;background-color: #F5F5F5;font-weight: bold;margin-bottom: 2px;"
+         class="columns large-12" title="{{ grupo }}">
+        {{ grupo }}
+    </div>
+    {% else %}
+    <div style="margin-left:50px;width: calc(100% - 50px);text-align: center;background-color: #F5F5F5;font-weight: bold;margin-bottom: 2px;"
+         class="columns large-12" title="{{ curso }}">
+        {{ curso }}
+    </div>
+{% endif %}
+    <div class="grid-dias">
+        <div>Lunes</div>
+        <div>Martes</div>
+        <div>Miércoles</div>
+        <div>Jueves</div>
+        <div>Viernes</div>
+    </div>
+    <div id="plantilla_calendario_semanal"
+         style="height: 800px;overflow: hidden;overflow-y: scroll;position: relative;">
+
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;border-top: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">&nbsp;</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">00:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">01:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">01:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">02:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">02:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">03:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">03:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">04:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">04:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">05:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">05:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">06:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">06:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">07:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">07:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">08:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">08:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">09:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">09:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">10:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">10:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">11:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">11:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">12:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">12:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">13:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">13:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">14:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">14:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">15:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">15:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">16:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">16:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">17:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">17:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">18:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">18:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">19:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">19:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">20:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">20:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">21:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">21:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">22:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">22:30</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">23:00</span>
+        </div>
+        <div style="height: 60px; border-bottom: 1px lightgrey solid;position: relative;">
+            <span class="horas_linea">23:30</span>
+        </div>
+
+        <div id="sesiones_por_dia">
+            {% for key, ss in sesiones.items %}
+                <div class="{{ key }} {{ ss.0.clase_horario }} mwx198 div-dia div-{{ ss.0.dia }}"
+                     data-m="{{ ss.0.clase_horario }}" style="top:{{ ss.0.top }}px; height: {{ ss.0.height }}px;">
+                <span title="{{ ss.0.hora_inicio_cadena }} - {{ ss.0.hora_fin_cadena }}&#10;{{ ss.0.sesionextra_set.all.0.actividad.nombre }}&#10;{% for mpd in ss|get_mat_prof_dep %}&#10;-----&#10;{{ mpd.0 }}&#10;{{ mpd.1.gauser.get_full_name }}&#10;{{ mpd.2.nombre }}{% endfor %}">
+                    {% for mpd in ss|get_mat_prof_dep %}
+                                {% if not forloop.first %}<br>{% endif %}
+                                <span style="color:black;">{{ mpd.0.nombre }}</span>
+                                <br><span style="color:grey;font-size: small;">{{ mpd.1.gauser.get_full_name }}</span>
+                                <br><span style="color:lightseagreen;font-size: small;">{{ mpd.2.nombre }}</span>
+                        {% if not forloop.last %}<br><span style="color:grey;line-height: 1">-------</span>{% endif %}
+                    {% endfor %}
+                </span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    $('body').on('mouseover', '.mwx198', function () {
+        var mId = $(this).data('m');
+        $('.mwx198').css('opacity', '0.2')
+        {#$('.' + mId).css('background-color', 'lightgoldenrodyellow').css('overflow', 'visible').css('opacity', '1');#}
+        $('.' + mId).css('background-color', 'lightgoldenrodyellow').css('opacity', '1');
+    });
+    $('body').on('mouseout', '.mwx198', function () {
+        var mId = $(this).data('m');
+        $('.mwx198').css('opacity', '1')
+        $('.' + mId).css('background-color', '').css('overflow', 'hidden');
+    });
+    setTimeout(function () {
+        $('#plantilla_calendario_semanal').scrollTop(975);
+    }, 500);
+
+</script>
