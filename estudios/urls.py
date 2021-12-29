@@ -9,6 +9,7 @@ urlpatterns = [
     path('configura_grupos/', views.configura_grupos),
     path('evaluar_materias/', views.evaluar_materias),
     path('configura_materias_pendientes/', views.configura_materias_pendientes),
+path('configura_competencias/', views.configura_competencias),
 ]
 
 # url(r'^titulos/$', views.titulos, name='titulos'),

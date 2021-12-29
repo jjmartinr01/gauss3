@@ -11,7 +11,8 @@ from django.db.models import Q
 from autenticar.control_acceso import permiso_required
 from entidades.models import Subentidad, Gauser_extra, Ronda, CargaMasiva, Dependencia, Cargo
 from entidades.tasks import carga_masiva_from_excel
-from estudios.models import Curso, Materia, ETAPAS, Grupo, Matricula
+from estudios.models import Curso, Materia, ETAPAS, Grupo, Matricula, DescriptorOperativo, AreaMateria, \
+    CompetenciaEspecifica, CriterioEvaluacion, PerfilSalida, CompetenciaClave
 from gauss.funciones import usuarios_de_gauss, usuarios_ronda, human_readable_list, html_to_pdf
 from gauss.rutas import MEDIA_PENDIENTES
 from programaciones.models import Materia_programaciones
@@ -360,3 +361,76 @@ def evaluar_materias(request):
 #         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
 #     }
 #     return render(request, "define_materia.html", respuesta)
+
+
+#######################################################################################
+############################# EVALUACIÓN LOMLOE #######################################
+#######################################################################################
+
+# @permiso_required('acceso_evaluacion_competencias')
+def configura_competencias(request):
+    g_e = request.session['gauser_extra']
+    dos = DescriptorOperativo.objects.all()
+    ams = AreaMateria.objects.all()
+    cesps = CompetenciaEspecifica.objects.all()
+    cevas = CriterioEvaluacion.objects.all()
+
+
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'inserta_do':
+            try:
+                cc = CompetenciaClave.objects.get(id=request.POST['cc'])
+                do, c = DescriptorOperativo.objects.get_or_create(clave=request.POST['clave'], cc=cc)
+                do.texto = request.POST['texto']
+                do.save()
+                html = render_to_string('configura_competencias_do.html', {'do': do})
+                return JsonResponse({'html': html, 'ok': True, 'cc': cc.id})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': True})
+        elif action == 'inserta_cc':
+            try:
+                ps = PerfilSalida.objects.get(id=request.POST['ps'])
+                cc, c = CompetenciaClave.objects.get_or_create(siglas=request.POST['siglas'], ps=ps)
+                cc.texto = request.POST['texto']
+                cc.competencia = request.POST['competencia']
+                cc.save()
+                html = render_to_string('configura_competencias_cc.html', {'cc': cc})
+                return JsonResponse({'html': html, 'ok': True, 'ps': ps.id})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': True})
+        elif action == 'inserta_am':
+            try:
+                ps = PerfilSalida.objects.get(id=request.POST['ps'])
+                am, c = AreaMateria.objects.get_or_create(nombre=request.POST['nombre'], ps=ps)
+                am.texto = request.POST['texto']
+                am.save()
+                html = render_to_string('configura_competencias_am.html', {'am': am})
+                return JsonResponse({'html': html, 'ok': True, 'ps': ps.id})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': True})
+        elif action == 'inserta_cesp':
+            try:
+                am = AreaMateria.objects.get(id=request.POST['am'])
+                cesp, c = CompetenciaEspecifica.objects.get_or_create(orden=request.POST['orden'], nombre=request.POST['nombre'], am=am)
+                cesp.texto = request.POST['texto']
+                cesp.save()
+                html = render_to_string('configura_competencias_cesp.html', {'cesp': cesp})
+                return JsonResponse({'html': html, 'ok': True, 'am': am.id})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': True})
+        elif action == 'change_nota':
+            pass
+    elif request.method == 'POST' and not request.is_ajax():
+        if request.POST['action'] == 'cartas_examen':
+            pass
+    respuesta = {
+        'formname': 'configura_competencias',
+        'dos': dos,
+        'ams': ams,
+        'cesps': cesps,
+        'cevas': cevas,
+        'pss': PerfilSalida.objects.all(),
+        'ccs': CompetenciaClave.objects.all(),
+        'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)}
+    return render(request, "configura_competencias.html", respuesta)

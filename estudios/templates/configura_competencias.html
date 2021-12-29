@@ -1,0 +1,221 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+
+        <div class="">
+            <h4 style="text-align: center;color: #008CBA;"><strong> Configuración de Competencias/Evaluación</strong>
+            </h4>
+        </div>
+        <ul class="tabs" data-tab role="tablist">
+            <li class="tab-title active"><a href="#panel1" style="font-weight: bold;">Competencias clave</a></li>
+            <li class="tab-title"><a href="#panel2" style="font-weight: bold;">Criterios de evaluación</a></li>
+        </ul>
+        <div class="tabs-content">
+            <div class="content active" id="panel1">
+                {% for ps in pss %}
+                    <h5 style="font-weight: bold;">{{ ps }}</h5>
+                    <div data-ps="{{ ps.id }}" id="perfilsalida{{ ps.id }}">
+                        <div id="list_cc{{ ps.id }}">
+                            {% for cc in ps.competenciaclave_set.all %}
+                                {% include "configura_competencias_cc.html" %}
+                            {% endfor %}
+                        </div>
+                        <div class="row">
+                            <div class="columns large-12">
+                                <label style="font-weight: bold;">Formulario para crear competencias clave
+                                    para {{ ps.get_etapa_display }}</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-2">
+                                <label>Orden
+                                    <input type="text" value="" id="cc_orden{{ ps.id }}">
+                                </label>
+                            </div>
+                            <div class="columns large-2">
+                                <label>Siglas
+                                    <input type="text" value="" id="cc_siglas{{ ps.id }}">
+                                </label>
+                            </div>
+                            <div class="columns large-8">
+                                <label>Competencia
+                                    <input type="text" value="" id="cc_competencia{{ ps.id }}">
+                                </label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-10">
+                                <label>Descripción de la competencia
+                                    <textarea id="cc_texto{{ ps.id }}"></textarea></label>
+                            </div>
+                            <div class="columns large-2">
+                                <label>Añadir</label>
+                                <a class="button tiny inserta_cc" data-ps="{{ ps.id }}">
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="content" id="panel2">
+                {% for ps in pss %}
+                    <h5 style="font-weight: bold;">{{ ps }}</h5>
+                    <div data-ps="{{ ps.id }}" id="perfilsalida{{ ps.id }}">
+                        <div id="list_am{{ ps.id }}">
+                            {% for am in ps.areamateria_set.all %}
+                                {% include "configura_competencias_am.html" %}
+                            {% endfor %}
+                        </div>
+                        <div class="row">
+                            <div class="columns large-12">
+                                <label style="font-weight: bold;">Formulario para crear Áreas/Materias
+                                    en {{ ps.get_etapa_display }}</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-12">
+                                <label>Nombre
+                                    <input type="text" value="" id="am_nombre{{ ps.id }}">
+                                </label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="columns large-10">
+                                <label>Descripción del Área/Materia
+                                    <textarea id="am_texto{{ ps.id }}"></textarea></label>
+                            </div>
+                            <div class="columns large-2">
+                                <label>Añadir</label>
+                                <a class="button tiny inserta_am" data-ps="{{ ps.id }}">
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        $('body').on('click', '.inserta_cesp', function () {
+            var am = $(this).data('am');
+            var orden = $('#cesp_orden' + am).val();
+            var nombre = $('#cesp_nombre' + am).val();
+            var texto = $('#cesp_texto' + am).val();
+            $.post("/configura_competencias/", {
+                    action: 'inserta_cesp',
+                    am: am,
+                    orden: orden,
+                    nombre: nombre,
+                    texto: texto
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#list_cesp' + data.am).append(data.html);
+                        $('#cesp_orden' + data.am).val('');
+                        $('#cesp_nombre' + data.am).val('');
+                        $('#cesp_texto' + data.am).val('');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.inserta_am', function () {
+            var ps = $(this).data('ps');
+            var nombre = $('#am_nombre' + ps).val();
+            var texto = $('#am_texto' + ps).val();
+            $.post("/configura_competencias/", {
+                    action: 'inserta_am',
+                    ps: ps,
+                    nombre: nombre,
+                    texto: texto
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#list_am' + data.ps).append(data.html);
+                        $('#am_nombre' + data.ps).val('');
+                        $('#am_texto' + data.ps).val('');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.inserta_do', function () {
+            var cc = $(this).data('cc');
+            var clave = $('#do_clave' + cc).val();
+            var texto = $('#do_texto' + cc).val();
+            $.post("/configura_competencias/", {action: 'inserta_do', cc: cc, clave: clave, texto: texto},
+                function (data) {
+                    if (data.ok) {
+                        $('#list_do' + data.cc).append(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.inserta_cc', function () {
+            var ps = $(this).data('ps');
+            var orden = $('#cc_orden' + ps).val();
+            var siglas = $('#cc_siglas' + ps).val();
+            var competencia = $('#cc_competencia' + ps).val();
+            var texto = $('#cc_texto' + ps).val();
+            $.post("/configura_competencias/", {
+                    action: 'inserta_cc',
+                    ps: ps,
+                    orden: orden,
+                    siglas: siglas,
+                    competencia: competencia,
+                    texto: texto
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#list_cc' + data.ps).append(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('curso_pendientes')) {
+                        var id = accordion.data('curso');
+                        console.log(id);
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post("/configura_materias_pendientes/", {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#curso' + id).html(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#curso' + id).html('');
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

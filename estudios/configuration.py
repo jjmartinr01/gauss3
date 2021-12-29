@@ -41,7 +41,22 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 2,
      'parent': 'acceso_estudios_centro_educativo'
-     }
+     },
+{'code_menu': 'acceso_evaluacion_competencias',
+     'texto_menu': 'Evaluación por competencias',
+     'href': '',
+     'nivel': 1,
+     'tipo': 'Accesible',
+     'pos': 1
+     },
+    {'code_menu': 'acceso_configura_competencias',
+     'texto_menu': 'Configuración de competencias',
+     'href': 'configura_competencias',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 1,
+     'parent': 'acceso_evaluacion_competencias'
+     },
 ]
 
 # Se añaden otros permisos para el usuario

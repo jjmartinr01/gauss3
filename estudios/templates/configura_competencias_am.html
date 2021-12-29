@@ -1,0 +1,39 @@
+<fieldset>
+    <legend style="font-weight: bold;color: #0f74a8;">{{ am.ps.get_etapa_display }} - {{ am.nombre }}</legend>
+    <div id="list_cesp{{ am.id }}">
+        {% for cesp in am.competenciaespecifica_set.all %}
+            {% include "configura_competencias_cesp.html" %}
+        {% endfor %}
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label style="font-weight: bold;">Formulario para crear competencias específicas de
+                {{ am.nombre }}</label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-2">
+            <label>Orden
+                <input type="text" value="" id="cesp_orden{{ am.id }}">
+            </label>
+        </div>
+        <div class="columns large-10">
+            <label>Nombre
+                <input type="text" value="" id="cesp_nombre{{ am.id }}">
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-11">
+            <label>Descripción de la competencia específica asociada a {{ am.nombre }}
+                <textarea id="cesp_texto{{ am.id }}"></textarea>
+            </label>
+        </div>
+        <div class="columns large-1">
+            <label>Añadir</label>
+            <a class="button tiny inserta_cesp" data-am="{{ am.id }}">
+                <i class="fa fa-plus"></i>
+            </a>
+        </div>
+    </div>
+</fieldset>
