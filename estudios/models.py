@@ -202,6 +202,7 @@ class CriterioEvaluacion(models.Model):
     ce = models.ForeignKey(CompetenciaEspecifica, on_delete=models.CASCADE, blank=True, null=True)
     ciclo = models.CharField('Ciclo', choices=CICLOS, default='PRI1', max_length=5)
     materia = models.CharField('Nombre específico de la materia (opocional)', max_length=205, blank=True, null=True)
+    orden = models.IntegerField('Número del criterio de evaluación', default=0)
     texto = models.TextField('Descripción del criterio de evaluación', blank=True, null=True)
 
     def __str__(self):

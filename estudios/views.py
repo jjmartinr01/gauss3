@@ -419,6 +419,18 @@ def configura_competencias(request):
                 return JsonResponse({'html': html, 'ok': True, 'am': am.id})
             except Exception as msg:
                 return JsonResponse({'msg': str(msg), 'ok': True})
+        elif action == 'inserta_ceval':
+            try:
+                cesp = CompetenciaEspecifica.objects.get(id=request.POST['cesp'])
+                ceval, c = CriterioEvaluacion.objects.get_or_create(orden=request.POST['orden'],
+                                                                    ciclo=request.POST['ciclo'], ce=cesp)
+                ceval.texto = request.POST['texto']
+                ceval.materia = request.POST['materia']
+                ceval.save()
+                html = render_to_string('configura_competencias_cesp_ceval.html', {'ceval': ceval})
+                return JsonResponse({'html': html, 'ok': True, 'cesp': cesp.id})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': True})
         elif action == 'change_nota':
             pass
     elif request.method == 'POST' and not request.is_ajax():

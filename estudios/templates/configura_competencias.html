@@ -10,8 +10,9 @@
             </h4>
         </div>
         <ul class="tabs" data-tab role="tablist">
-            <li class="tab-title active"><a href="#panel1" style="font-weight: bold;">Competencias clave</a></li>
-            <li class="tab-title"><a href="#panel2" style="font-weight: bold;">Criterios de evaluación</a></li>
+            <li class="tab-title active"><a href="#panel1" style="font-weight: bold;">Competencias Clave y DOs</a></li>
+            <li class="tab-title"><a href="#panel2" style="font-weight: bold;">Áreas, Comp. Espec. y Crit. de Eval.</a>
+            </li>
         </ul>
         <div class="tabs-content">
             <div class="content active" id="panel1">
@@ -99,11 +100,83 @@
                 {% endfor %}
             </div>
         </div>
+        <div id="div_reveal_inserta_ceval" class="reveal-modal" data-reveal>
+            <input type="hidden" value="" id="id_cesp">
+            <div class="row">
+                <div class="columns large-12"><h3>Añadir Criterio de evaluación</h3></div>
+            </div>
+            <div class="row">
+                <div class="columns large-6">
+                    <label>Ciclo/Etapa
+                        <select id="ciclo_ceval">
+                            <option value="">----</option>
+                            <option value="PRI1">Primer Ciclo Primaria</option>
+                            <option value="PRI2">Segundo Ciclo Primaria</option>
+                            <option value="PRI3">Tercer Ciclo Primaria</option>
+                            <option value="SEC1">1º - 3º de ESO</option>
+                            <option value="SEC2">4º de ESO</option>
+                            <option value="BAC">Bachillerato</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="columns large-6"><label>Materia (opcional)
+                    <input type="text" value="" id="materia_ceval"></label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns large-2"><label>Orden
+                    <input type="number" value="" id="orden_ceval"></label>
+                </div>
+                <div class="columns large-10"><label>Texto del criterio de evaluación
+                    <input type="text" value="" id="texto_ceval"></label>
+                </div>
+            </div>
+            <a class="close-reveal-modal reveal_modal_aviso">&#215;</a>
+            <div class="row">
+                <br>
+                <div class="columns large-12"><a id="inserta_ceval"
+                                                 class="button secondary">Aceptar</a>
+                </div>
+            </div>
+        </div>
     </form>
 {% endblock %}
 
 {% block final %}
     <script>
+        $('body').on('click', '#inserta_ceval', function () {
+            var cesp = $('#id_cesp').val();
+            var ciclo = $('#ciclo_ceval').val();
+            var materia = $('#materia_ceval').val();
+            var orden = $('#orden_ceval').val();
+            var texto = $('#texto_ceval').val();
+            $.post("/configura_competencias/", {
+                    action: 'inserta_ceval',
+                    cesp: cesp,
+                    orden: orden,
+                    ciclo: ciclo,
+                    materia: materia,
+                    texto: texto
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#list_ceval' + data.cesp).append(data.html);
+                        $('#ciclo_ceval').val('');
+                        $('#materia_ceval').val('');
+                        $('#orden_ceval').val('');
+                        $('#texto_ceval').val('');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        $('body').on('click', '.reveal_inserta_ceval', function () {
+            var cesp = $(this).data('cesp');
+            $('#id_cesp').val(cesp);
+            $('#div_reveal_inserta_ceval').foundation('reveal', 'open');
+        });
+
         $('body').on('click', '.inserta_cesp', function () {
             var am = $(this).data('am');
             var orden = $('#cesp_orden' + am).val();
@@ -159,6 +232,8 @@
                 function (data) {
                     if (data.ok) {
                         $('#list_do' + data.cc).append(data.html);
+                        $('#do_clave' + data.cc).val('');
+                        $('#do_texto' + data.cc).val('');
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
@@ -183,6 +258,10 @@
                 function (data) {
                     if (data.ok) {
                         $('#list_cc' + data.ps).append(data.html);
+                        $('#cc_orden' + data.ps).val('');
+                        $('#cc_siglas' + data.ps).val('');
+                        $('#cc_competencia' + data.ps).val('');
+                        $('#cc_texto' + data.ps).val('');
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
