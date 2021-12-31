@@ -4,6 +4,20 @@
             <i class="fa fa-plus"></i> Añadir Criterios de Evaluación
         </a>
     </p>
+    <div class="row">
+        <div class="columns large-12">
+            <label>
+                Descriptores del perfil de salida asociados a la competencia específica número {{ cesp.orden }}
+            </label>
+            <select id="cesp_dos{{ cesp.id }}" multiple="multiple" data-cesp="{{ cesp.id }}" class="dos_select2">
+                {% for cc in cesp.am.ps.competenciaclave_set.all %}
+                    {% for do in cc.descriptoroperativo_set.all %}
+                        <option value="{{ do.id }}" {% if do in cesp.dos.all %}selected{% endif %}>{{ do.clave }}</option>
+                    {% endfor %}
+                {% endfor %}
+            </select>
+        </div>
+    </div>
     <div id="list_ceval{{ cesp.id }}">
         {% for ceval in cesp.criterioevaluacion_set.all %}
             {% include "configura_competencias_cesp_ceval.html" %}

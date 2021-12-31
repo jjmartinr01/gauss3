@@ -144,6 +144,28 @@
 
 {% block final %}
     <script>
+        setTimeout(function () {
+            $('.dos_select2').select2();
+            $('.select2-container').css('width', '100%');
+        }, 1200);
+
+        $('body').on('change', '.dos_select2', function () {
+            var dos = $(this).val();
+            var cesp = $(this).data('cesp');
+            $.post("/configura_competencias/", {
+                    action: 'inserta_cesp_dos',
+                    cesp: cesp,
+                    dos: dos
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
         $('body').on('click', '#inserta_ceval', function () {
             var cesp = $('#id_cesp').val();
             var ciclo = $('#ciclo_ceval').val();

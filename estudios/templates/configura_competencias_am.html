@@ -5,6 +5,13 @@
             {% include "configura_competencias_cesp.html" %}
         {% endfor %}
     </div>
+
+    <div class="row">
+        <div class="columns large-12">
+            <hr>
+        </div>
+    </div>
+
     <div class="row">
         <div class="columns large-12">
             <label style="font-weight: bold;">Formulario para crear competencias específicas de
@@ -24,29 +31,10 @@
         </div>
     </div>
     <div class="row">
-        <div class="columns large-12">
+        <div class="columns large-11">
             <label>Descripción de la competencia específica asociada a {{ am.nombre }}
                 <textarea id="cesp_texto{{ am.id }}"></textarea>
             </label>
-        </div>
-{#        <div class="columns large-1">#}
-{#            <label>Añadir</label>#}
-{#            <a class="button tiny inserta_cesp" data-am="{{ am.id }}">#}
-{#                <i class="fa fa-plus"></i>#}
-{#            </a>#}
-{#        </div>#}
-    </div>
-    <div class="row">
-        <div class="columns large-11">
-            <label>Descriptores del perfil de salida asociados a {{ am.nombre }}</label>
-                <select id="cesp_dos{{ am.id }}" multiple="multiple">
-                    {% for cc in am.ps.competenciaclave_set.all %}
-                        {% for do in cc.descriptoroperativo_set.all %}
-                            <option value="{{ do.id }}">{{ do.clave }}</option>
-                        {% endfor %}
-                    {% endfor %}
-                </select>
-
         </div>
         <div class="columns large-1">
             <label>Añadir</label>
@@ -55,11 +43,23 @@
             </a>
         </div>
     </div>
+{#    <div class="row">#}
+{#        <div class="columns large-11">#}
+{#            <label>Descriptores del perfil de salida asociados a {{ am.nombre }}</label>#}
+{#                <select id="cesp_dos{{ am.id }}" multiple="multiple" data-am="{{ am.id }}">#}
+{#                    {% for cc in am.ps.competenciaclave_set.all %}#}
+{#                        {% for do in cc.descriptoroperativo_set.all %}#}
+{#                            <option value="{{ do.id }}">{{ do.clave }}</option>#}
+{#                        {% endfor %}#}
+{#                    {% endfor %}#}
+{#                </select>#}
+{##}
+{#        </div>#}
+{#        <div class="columns large-1">#}
+{#            <label>Añadir</label>#}
+{#            <a class="button tiny inserta_cesp" data-am="{{ am.id }}">#}
+{#                <i class="fa fa-plus"></i>#}
+{#            </a>#}
+{#        </div>#}
+{#    </div>#}
 </fieldset>
-
-<script>
-    setTimeout(function (){
-        $('#cesp_dos{{ am.id }}').select2();
-        $('.select2-container').css('width', '100%');
-    }, 200);
-</script>

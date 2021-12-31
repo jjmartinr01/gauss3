@@ -431,6 +431,16 @@ def configura_competencias(request):
                 return JsonResponse({'html': html, 'ok': True, 'cesp': cesp.id})
             except Exception as msg:
                 return JsonResponse({'msg': str(msg), 'ok': True})
+        elif action == 'inserta_cesp_dos':
+            try:
+                cesp = CompetenciaEspecifica.objects.get(id=request.POST['cesp'])
+                dos = DescriptorOperativo.objects.filter(id__in=request.POST.getlist('dos[]'))
+                cesp.dos.clear()
+                cesp.dos.add(*dos)
+                return JsonResponse({'ok': True, 'cesp': cesp.id})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': True})
+
         elif action == 'change_nota':
             pass
     elif request.method == 'POST' and not request.is_ajax():
