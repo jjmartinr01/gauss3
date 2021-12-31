@@ -193,6 +193,9 @@ class CompetenciaEspecifica(models.Model):
     texto = models.TextField('Descripción de la competencia específica', blank=True, null=True)
     dos = models.ManyToManyField(DescriptorOperativo, blank=True)
 
+    class Meta:
+        ordering = ['orden',]
+
     def __str__(self):
         return '%s.- (%s) - %s' % (self.orden, self.am.nombre, self.nombre[:50])
 
@@ -204,6 +207,9 @@ class CriterioEvaluacion(models.Model):
     materia = models.CharField('Nombre específico de la materia (opocional)', max_length=205, blank=True, null=True)
     orden = models.IntegerField('Número del criterio de evaluación', default=0)
     texto = models.TextField('Descripción del criterio de evaluación', blank=True, null=True)
+
+    class Meta:
+        ordering = ['orden',]
 
     def __str__(self):
         if self.materia:

@@ -63,41 +63,49 @@
                 {% endfor %}
             </div>
             <div class="content" id="panel2">
-                {% for ps in pss %}
-                    <h5 style="font-weight: bold;">{{ ps }}</h5>
-                    <div data-ps="{{ ps.id }}" id="perfilsalida{{ ps.id }}">
-                        <div id="list_am{{ ps.id }}">
-                            {% for am in ps.areamateria_set.all %}
-                                {% include "configura_competencias_am.html" %}
-                            {% endfor %}
-                        </div>
-                        <div class="row">
-                            <div class="columns large-12">
-                                <label style="font-weight: bold;">Formulario para crear Áreas/Materias
-                                    en {{ ps.get_etapa_display }}</label>
+                <dl class="accordion" data-accordion>
+                    {% for ps in pss %}
+                        <dd class="accordion-navigation">
+                            <a href="#panelps{{ forloop.counter }}" style="font-weight: bold;">
+                                <span style="color:#008CBA">Áreas/Materias, Competencias Específicas y Criterios de Evaluación:</span> {{ ps }}</a>
+                            <div id="panelps{{ forloop.counter }}" class="content">
+{#                                <h5 style="font-weight: bold;">{{ ps }}</h5>#}
+                                <div data-ps="{{ ps.id }}" id="perfilsalida{{ ps.id }}">
+                                    <div id="list_am{{ ps.id }}">
+                                        {% for am in ps.areamateria_set.all %}
+                                            {% include "configura_competencias_am.html" %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="row">
+                                        <div class="columns large-12">
+                                            <label style="font-weight: bold;">Formulario para crear Áreas/Materias
+                                                en {{ ps.get_etapa_display }}</label>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="columns large-12">
+                                            <label>Nombre
+                                                <input type="text" value="" id="am_nombre{{ ps.id }}">
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="columns large-10">
+                                            <label>Descripción del Área/Materia
+                                                <textarea id="am_texto{{ ps.id }}"></textarea></label>
+                                        </div>
+                                        <div class="columns large-2">
+                                            <label>Añadir</label>
+                                            <a class="button tiny inserta_am" data-ps="{{ ps.id }}">
+                                                <i class="fa fa-plus"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="columns large-12">
-                                <label>Nombre
-                                    <input type="text" value="" id="am_nombre{{ ps.id }}">
-                                </label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="columns large-10">
-                                <label>Descripción del Área/Materia
-                                    <textarea id="am_texto{{ ps.id }}"></textarea></label>
-                            </div>
-                            <div class="columns large-2">
-                                <label>Añadir</label>
-                                <a class="button tiny inserta_am" data-ps="{{ ps.id }}">
-                                    <i class="fa fa-plus"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
+                        </dd>
+                    {% endfor %}
+                </dl>
             </div>
         </div>
         <div id="div_reveal_inserta_ceval" class="reveal-modal" data-reveal>
