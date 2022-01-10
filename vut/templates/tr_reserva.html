@@ -1,28 +1,28 @@
 {% load vut_extras %}
 <tr class="tr_reserva" data-reserva="{{ r.id }}" id="reserva{{ r.id }}">
-    <td>{{ r.vivienda.nombre }}<br><span class="label secondary round">{{ r.get_portal_display }}</span>
+    <td style="width:25%">{{ r.vivienda.nombre }}<br><span class="label secondary round">{{ r.get_portal_display }}</span>
         <a href="/reserva_vut_crea_recibo/{{ r.id }}" title="Haz click para crear un recibo de pago para el viajero"><i
                 class="fa fa-file-text-o"></i></a>
     </td>
     {% if r|contains_hoy %}
-        <td style="max-width: 225px;overflow:hidden;" title="{{ r.nombre }}"><a class="button small copy_url_viajero"
+        <td style="width: 25%;overflow:hidden;" title="{{ r.nombre }}"><a class="button small copy_url_viajero"
                                                                                 data-secret="{{ r.secret }}">{{ r.nombre }}<br><span
                 class="label secondary round">{{ r.code }}</span></a></td>
     {% else %}
-        <td style="max-width: 225px;overflow:hidden;" title="{{ r.nombre }}">
+        <td style="width: 25%;overflow:hidden;" title="{{ r.nombre }}">
             <a class="viajero_manual" data-secret="{{ r.secret }}" data-code="{{ r.code }}">{{ r.nombre }}</a><br><span
                 class="label secondary round">{{ r.code }}</span></td>
     {% endif %}
-    <td style="max-width: 40px;"><input class="num_viajeros" data-id="{{ r.id }}" value="{{ r.num_viajeros }}"></td>
+    <td style="width:8%"><input class="num_viajeros" data-id="{{ r.id }}" value="{{ r.num_viajeros }}"></td>
     {% if r.viajero_set.all|length > 0 %}
-        <td><a class="button viajeros_list tiny" data-id="{{ r.id }}"
+        <td style="width:8%"><a class="button viajeros_list tiny" data-id="{{ r.id }}"
                style="font-weight: 800;">{{ r.viajero_set.all|length }}</a></td>
     {% else %}
-        <td>0</td>
+        <td style="width:8%">0</td>
     {% endif %}
-    <td>{{ r.entrada|date:'d/m/Y' }}</td>
-    <td>{{ r.salida|date:'d/m/Y' }}</td>
-    <td class="td_total">{{ r.total }}</td>
-    <td class="text-center"><a class="delete_reserva" data-id="{{ r.id }}"><i class="fa fa-trash"></i></a></td>
+    <td style="width:10%">{{ r.entrada|date:'d/m/Y' }}</td>
+    <td style="width:10%">{{ r.salida|date:'d/m/Y' }}</td>
+    <td style="width:7%" class="td_total">{{ r.total }}</td>
+    <td style="width:7%" class="text-center"><a class="delete_reserva" data-id="{{ r.id }}"><i class="fa fa-trash"></i></a></td>
 </tr>
 <input type="hidden" class="num_noches" value="{{ r.noches }}">
