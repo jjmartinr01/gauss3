@@ -54,7 +54,10 @@ def get_rfirma(gfsi, gformresponde):
 @register.filter
 def get_rentero(gfsi, gformresponde):
     try:
-        return GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).rentero
+        if str(GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).rentero).isdigit():
+            return GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).rentero
+        else:
+            return 0
     except:
         return 0
 
@@ -174,7 +177,14 @@ def get_chartdatalinear(gfsi):
                             'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)']
     borderColor_list = ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)',
                         'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)']
-    labels = [i for i in range(gfsi.elmin, gfsi.elmax + 1)]
+    if gfsi.tipo == 'EL':
+        labels = [i for i in range(gfsi.elmin, gfsi.elmax + 1)]
+    else:
+        labels = list(set([respuesta.rentero for respuesta in gfsi.gformrespondeinput_set.all().order_by('rentero')]))
+        # labels = []
+        # valores = list(set([respuesta.rentero for respuesta in gfsi.gformrespondeinput_set.all().order_by('rentero')]))
+        # for valor in valores:
+        #     labels.append(valor)
     data = []
     backgroundColor = []
     borderColor = []
@@ -184,5 +194,5 @@ def get_chartdatalinear(gfsi):
         backgroundColor.append(backgroundColor_list[n % len(backgroundColor_list)])
         borderColor.append(borderColor_list[n % len(borderColor_list)])
         n += 1
-    return {'labels': labels, 'datasets': [{'label': '', 'data': data, 'backgroundColor': backgroundColor,
+    return {'labels': labels, 'datasets': [{'label': 'Respuestas a la pregunta %s' % gfsi.orden, 'data': data, 'backgroundColor': backgroundColor,
                                             'borderColor': borderColor, 'borderWidth': 1}]}

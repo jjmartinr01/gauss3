@@ -73,7 +73,8 @@
                                                         <table style="width: 100%">
                                                             {% for gfri in gfsi.gformrespondeinput_set.all %}
                                                                 <tr>
-                                                                    <td>{% autoescape off %}{{ gfri.rtexto }}{% endautoescape %}</td>
+                                                                    <td>{% autoescape off %}
+                                                                        {{ gfri.rtexto }}{% endautoescape %}</td>
                                                                 </tr>
                                                             {% endfor %}
                                                         </table>
@@ -149,6 +150,14 @@
                                                             type: 'bar',
                                                             data: {{ gfsi|get_chartdatalinear|safe }},
                                                             options: {
+                                                                {#tooltips: {#}
+                                                                {#    mode: 'index',#}
+                                                                {#    intersect: false#}
+                                                                {# },#}
+                                                                {#hover: {#}
+                                                                {#    mode: 'index',#}
+                                                                {#    intersect: false#}
+                                                                {# },#}
                                                                 scales: {
                                                                     yAxes: [{
                                                                         ticks: {
@@ -201,19 +210,19 @@
                         </div>
                     </div>
                     {% if forloop.last %}
-{#                        <div class="row">#}
-{#                            <div class="columns large-12 medium-12 text-center">#}
-{#                                <ul class="button-group">#}
-{#                                    <li>#}
-{#                                        <a class="button genera_pdf" data-gform="{{ gform.id }}">#}
-{#                                            <i class="fa fa-file-pdf-o"></i> PDF</a>#}
-{#                                    </li>#}
-{#                                    <li>#}
-{#                                        <a href="#" class="button alert"><i class="fa fa-sign-out"></i> Terminar</a>#}
-{#                                    </li>#}
-{#                                </ul>#}
-{#                            </div>#}
-{#                        </div>#}
+                        {#                        <div class="row">#}
+                        {#                            <div class="columns large-12 medium-12 text-center">#}
+                        {#                                <ul class="button-group">#}
+                        {#                                    <li>#}
+                        {#                                        <a class="button genera_pdf" data-gform="{{ gform.id }}">#}
+                        {#                                            <i class="fa fa-file-pdf-o"></i> PDF</a>#}
+                        {#                                    </li>#}
+                        {#                                    <li>#}
+                        {#                                        <a href="#" class="button alert"><i class="fa fa-sign-out"></i> Terminar</a>#}
+                        {#                                    </li>#}
+                        {#                                </ul>#}
+                        {#                            </div>#}
+                        {#                        </div>#}
                     {% endif %}
                 </div>
             {% endfor %}
