@@ -880,7 +880,10 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
             return render(request, "gform_no_existe.html", {'error': True, 'msg': str(msg)})
     gfsis = GformSectionInput.objects.filter(gformsection__gform=gformresponde.gform)
     for gfsi in gfsis: # Creamos todas las respuestas vacías
-        GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
+        g, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
+        if gfsi.tipo == 'EN' and c:
+            g.rentero = 0
+            g.save()
     if request.method == 'POST' and request.is_ajax():
         if gformresponde.respondido:
             return JsonResponse({'ok': False, 'msg': 'Este formulario ya está respondido. No se admiten cambios.'})
