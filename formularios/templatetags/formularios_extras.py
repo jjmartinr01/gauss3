@@ -180,7 +180,9 @@ def get_chartdatalinear(gfsi):
     if gfsi.tipo == 'EL':
         labels = [i for i in range(gfsi.elmin, gfsi.elmax + 1)]
     else:
-        labels = list(set([respuesta.rentero for respuesta in gfsi.gformrespondeinput_set.all().order_by('rentero')]))
+        gfris = gfsi.gformrespondeinput_set.all().order_by('rentero')
+        labels = list(set([gfri.rentero for gfri in gfris if str(gfri.rentero).isdigit()]))
+        # labels = list(set([gfri.rentero for gfri in gfsi.gformrespondeinput_set.all().order_by('rentero')]))
         # labels = []
         # valores = list(set([respuesta.rentero for respuesta in gfsi.gformrespondeinput_set.all().order_by('rentero')]))
         # for valor in valores:
