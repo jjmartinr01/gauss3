@@ -652,8 +652,10 @@ def update_calendarios_vut(viviendas):
                             if calviv.portal == 'AIR':
                                 if 'Reserved' in summary:
                                     description = c.get('DESCRIPTION')
-                                    code = description.split('code=')[1].split('\n')[0]
-                                    nombre = 'Anónimo Airbnb'
+                                    # code = description.split('code=')[1].split('\n')[0]
+                                    code = description.split('\n')[1].split('/')[1]
+                                    # nombre = 'Usuario de Airbnb'
+                                    nombre = description.split('\n')[2]
                                     reserva, creada = Reserva.objects.get_or_create(vivienda=v, code=code)
                                     if creada:
                                         reserva.nombre = nombre
