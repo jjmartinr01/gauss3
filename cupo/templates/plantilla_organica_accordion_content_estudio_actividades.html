@@ -1,0 +1,304 @@
+{% load entidades_extras %}
+{% load cupo_extras %}
+<table style="width: 100%">
+    <thead>
+    <tr>
+        <th title="Estudio realizado para {{ po.ronda_centro.entidad.name }}" colspan="12" style="text-align: center">
+            <b>Estudio en Primaria (por cursos) de:
+                {% for a in actividades %}
+                    {% if not forloop.last %}
+                        {{ a }},
+                    {% else %}
+                        {{ a }}
+                    {% endif %}
+                {% endfor %}
+            </b>
+        </th>
+    </tr>
+    <tr>
+        <th>&nbsp;</th>
+        {# La primera columna está destinada a los cursos #}
+        <th title="Lengua Castellana y Literatura">LCL</th>
+        {# 168607 170306 168625 170325 168644 170344 #}
+        <th title="Lectura Comprensiva y Razonamiento Matemático">LCRM</th>
+        {# 168606 170305 168624 170324 168643 170343 #}
+        <th title="Matemáticas">MAT</th>
+        {# 168608 170307 168626 170326 168645 170345 #}
+        <th title="Ciencias Sociales">CCSS</th>
+        {# 168604 170303 168622 170322 168641 170341 #}
+        <th title="Ciencias de la Naturaleza">CCNN</th>
+        {# 168605 170304 168623 170323 168642 170342 #}
+        <th title="Inglés">ING</th>
+        {# 168615 170314 168633 170333 168652 170352 #}
+        <th title="Educación Física">EF</th>
+        {# 168612 170311 168630 170330 168649 170349 #}
+        <th title="Música">MUS</th>
+        {# 168610 170309 168628 170328 168647 170347 #}
+        <th title="Plástica">PLA</th>
+        {# 168611 170310 168629 170329 168648 170348 #}
+        <th title="Valores Sociales y Cívicos">VSC</th>
+        {# 168660 170321 168640 170340 168659 170359 #}
+        <th title="Número total de actividades por grupo">Actividades</th>
+    </tr>
+    </thead>
+    {% for curso_dic in po|get_actividades_cursos:x_actividades %}
+        <tr>
+            {% for td_key, td_value in curso_dic.items %}
+                {% if forloop.first %}
+                    <td style="font-weight: bold;"><a class="get_horario_curso_actividades" data-po="{{ po.id }}"
+                                                      data-curso="{{ td_value.id }}">{{ td_value.nombre }}</a></td>
+                {% elif forloop.last %}
+                    <input type="hidden" value="{{ td_value }}" class="num_actividades_curso{{ po.id }}">
+                    <td style="font-weight: bold;">{{ td_value|get_horas_minutos }}</td>
+                {% else %}
+                    <td title="{{ td_key }}&#10;{% for s in td_value %}{{ s.g_e.gauser.get_full_name }} - {{ s.g_e.puesto }} ({{ s.minutos }} min) - {{ s.get_dia_display }}: {{ s.hora_inicio_cadena }}-{{ s.hora_fin_cadena }}&#10;{% endfor %}">{{ td_value|get_sesiones_tiempo }}</td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    <tr>
+        <td colspan="11" style="text-align: right;font-weight: bold;">Total de horas de {% for a in actividades %}
+                    {% if not forloop.last %}
+                        {{ a }},
+                    {% else %}
+                        {{ a }}
+                    {% endif %}
+                {% endfor %} en Primaria:</td>
+        <td id="num_actividades_curso_total{{ po.id }}" style="font-weight: bold;"></td>
+    </tr>
+</table>
+
+<table style="width: 100%">
+    <thead>
+    <tr>
+        <th title="Estudio realizado para {{ po.ronda_centro.entidad.name }}" colspan="12" style="text-align: center">
+            <b>Estudio en Primaria (por grupos) de:
+                {% for a in actividades %}
+                    {% if not forloop.last %}
+                        {{ a }},
+                    {% else %}
+                        {{ a }}
+                    {% endif %}
+                {% endfor %}
+            </b>
+        </th>
+    </tr>
+    <tr>
+        <th>&nbsp;</th>
+        {# La primera columna está destinada a los grupos #}
+        <th title="Lengua Castellana y Literatura">LCL</th>
+        {# 168607 170306 168625 170325 168644 170344 #}
+        <th title="Lectura Comprensiva y Razonamiento Matemático">LCRM</th>
+        {# 168606 170305 168624 170324 168643 170343 #}
+        <th title="Matemáticas">MAT</th>
+        {# 168608 170307 168626 170326 168645 170345 #}
+        <th title="Ciencias Sociales">CCSS</th>
+        {# 168604 170303 168622 170322 168641 170341 #}
+        <th title="Ciencias de la Naturaleza">CCNN</th>
+        {# 168605 170304 168623 170323 168642 170342 #}
+        <th title="Inglés">ING</th>
+        {# 168615 170314 168633 170333 168652 170352 #}
+        <th title="Educación Física">EF</th>
+        {# 168612 170311 168630 170330 168649 170349 #}
+        <th title="Música">MUS</th>
+        {# 168610 170309 168628 170328 168647 170347 #}
+        <th title="Plástica">PLA</th>
+        {# 168611 170310 168629 170329 168648 170348 #}
+        <th title="Valores Sociales y Cívicos">VSC</th>
+        {# 168660 170321 168640 170340 168659 170359 #}
+        <th title="Número total de actividades por grupo">Actividades</th>
+    </tr>
+    </thead>
+    {% for grupo_dic in po|get_actividades_grupos:x_actividades %}
+        <tr>
+            {% for td_key, td_value in grupo_dic.items %}
+                {% if forloop.first %}
+                    <td style="font-weight: bold;"><a class="get_horario_grupo_actividades" data-po="{{ po.id }}"
+                                                      data-grupo="{{ td_value.id }}">{{ td_value.nombre }}</a></td>
+                {% elif forloop.last %}
+                    <input type="hidden" value="{{ td_value }}" class="num_actividades_grupo{{ po.id }}">
+                    <td style="font-weight: bold;">{{ td_value|get_horas_minutos }}</td>
+                {% else %}
+                    <td title="{{ td_key }}&#10;{% for s in td_value %}{{ s.g_e.gauser.get_full_name }} - {{ s.g_e.puesto }} ({{ s.minutos }} min) - {{ s.get_dia_display }}: {{ s.hora_inicio_cadena }}-{{ s.hora_fin_cadena }}&#10;{% endfor %}">{{ td_value|get_sesiones_tiempo }}</td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    <tr>
+        <td colspan="11" style="text-align: right;font-weight: bold;">Total de horas de {% for a in actividades %}
+                    {% if not forloop.last %}
+                        {{ a }},
+                    {% else %}
+                        {{ a }}
+                    {% endif %}
+                {% endfor %} en Primaria:</td>
+        <td id="num_actividades_total{{ po.id }}" style="font-weight: bold;"></td>
+    </tr>
+</table>
+
+<table style="width: 100%">
+    <thead>
+    <tr>
+        <th title="Estudio realizado para {{ po.ronda_centro.entidad.name }}" colspan="8" style="text-align: center">
+            <b>Estudio en Infantil (por grupos) de:
+                {% for a in actividades %}
+                    {% if not forloop.last %}
+                        {{ a }},
+                    {% else %}
+                        {{ a }}
+                    {% endif %}
+                {% endfor %}
+            </b>
+        </th>
+    </tr>
+    <tr>
+        <th>&nbsp;</th>
+        {# La primera columna está destinada a los grupos #}
+        <th title="Conocimiento de sí mismo y autonomía personal">CSMAP</th>
+        {# 48053 48066 48080 #}
+        <th title="Lenguajes: Comunicación y Representación">LCR</th>
+        {# 48052 48065 48079 #}
+        <th title="Conocimiento del entorno">CE</th>
+        {# 48054 48067 48081 #}
+        <th title="Inglés">Inglés</th>
+        {# 48057 48071 48085 #}
+        <th title="Atención Educativa">AE</th>
+        {# 48060 48074 48088 #}
+        <th title="Religión Católica">RC</th>
+        {# 48061 48075 48089 #}
+        <th title="Número total de actividades por grupo">Actividades</th>
+    </tr>
+    </thead>
+    {% for grupo_dic in po|get_actividades_infantil:x_actividades %}
+        <tr>
+            {% for td_key, td_value in grupo_dic.items %}
+                {% if forloop.first %}
+                    <td style="font-weight: bold;"><a class="get_horario_grupo_actividades" data-po="{{ po.id }}"
+                                                      data-grupo="{{ td_value.id }}">{{ td_value.nombre }}</a></td>
+                {% elif forloop.last %}
+                    <input type="hidden" value="{{ td_value }}" class="num_actividades_infantil_grupo{{ po.id }}">
+                    <td style="font-weight: bold;">{{ td_value|get_horas_minutos }}</td>
+                {% else %}
+                    <td title="{{ td_key }}&#10;{% for s in td_value %}{{ s.sesion.g_e.gauser.get_full_name }} - {{ s.sesion.g_e.puesto }} ({{ s.sesion.minutos }} min)&#10;{% endfor %}">{{ td_value|get_sextras_tiempo }}</td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    <tr>
+        <td colspan="7" style="text-align: right;font-weight: bold;">Total de horas de {% for a in actividades %}
+                    {% if not forloop.last %}
+                        {{ a }},
+                    {% else %}
+                        {{ a }}
+                    {% endif %}
+                {% endfor %} en Infantil:</td>
+        <td id="num_actividades_infantil_total{{ po.id }}" style="font-weight: bold;"></td>
+    </tr>
+</table>
+
+<table style="width: 100%;">
+    <thead>
+    <tr>
+        <th colspan="5" style="text-align: center;font-weight: bold;">Docentes realizando:
+            {% for a in actividades %}
+                {% if not forloop.last %}
+                    {{ a }},
+                {% else %}
+                    {{ a }}
+                {% endif %}
+            {% endfor %}
+        </th>
+    </tr>
+    <tr>
+        <th>Docente</th>
+        <th>Especialidad</th>
+        <th>Horas en Infantil</th>
+        <th>Horas en Primaria</th>
+        <th>Total</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for actividad in po|get_docentes_actividad:x_actividades %}
+        <tr>
+            <td style="font-weight: bold;">
+                <a class="get_horario_docente_actividades" data-po="{{ po.id }}"
+                   data-docente="{{ actividad.docente.id }}">{{ actividad.docente.gauser.get_full_name }}</a>
+            </td>
+            <td>{{ actividad.docente.puesto }}</td>
+            <td>{{ actividad.infantil|get_horas_minutos }}</td>
+            <td>{{ actividad.primaria|get_horas_minutos }}</td>
+            <td>{{ actividad.total|get_horas_minutos }}</td>
+        </tr>
+        <input type="hidden" class="min_actividad_docente_infantil{{ po.id }}" value="{{ actividad.infantil }}"/>
+        <input type="hidden" class="min_actividad_docente_primaria{{ po.id }}" value="{{ actividad.primaria }}"/>
+        <input type="hidden" class="min_actividad_docente_inf_prim{{ po.id }}" value="{{ actividad.total }}"/>
+    {% endfor %}
+    <tr>
+        <td colspan="2" style="text-align: right;font-weight: bold;">Horas totales ({% for a in actividades %}
+                    {% if not forloop.last %}
+                        {{ a }},
+                    {% else %}
+                        {{ a }}
+                    {% endif %}
+                {% endfor %}):</td>
+        <td id="min_actividad_docente_infantil_total{{ po.id }}" style="font-weight: bold;"></td>
+        <td id="min_actividad_docente_primaria_total{{ po.id }}" style="font-weight: bold;"></td>
+        <td id="min_actividad_docente_inf_prim_total{{ po.id }}" style="font-weight: bold;"></td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    function calcula_actividades(columna) {
+        var clase_con_actividades = '';
+        var id_actividades_total = '';
+        if (columna === 'infantil') {
+            clase_con_actividades = '.num_actividades_infantil_grupo';
+            id_actividades_total = '#num_actividades_infantil_total';
+        } else if (columna === 'primaria') {
+            clase_con_actividades = '.num_actividades_grupo';
+            id_actividades_total = '#num_actividades_total';
+        } else if (columna === 'docente_infantil') {
+            clase_con_actividades = '.min_actividad_docente_infantil';
+            id_actividades_total = '#min_actividad_docente_infantil_total';
+        } else if (columna === 'docente_primaria') {
+            clase_con_actividades = '.min_actividad_docente_primaria';
+            id_actividades_total = '#min_actividad_docente_primaria_total';
+        } else if (columna === 'docente_inf_prim') {
+            clase_con_actividades = '.min_actividad_docente_inf_prim';
+            id_actividades_total = '#min_actividad_docente_inf_prim_total';
+        } else if (columna === 'actividades_curso') {
+            clase_con_actividades = '.num_actividades_curso';
+            id_actividades_total = '#num_actividades_curso_total';
+        }
+
+        var suma = 0;
+        $(clase_con_actividades + '{{ po.id }}').each(function () {
+            suma += parseFloat($(this).val());
+        });
+        var horas = parseInt(suma / 60);
+        var minutos = suma % 60;
+        var texto = '';
+        if (horas === 0) {
+            texto = minutos + ' minutos';
+        } else if (minutos === 0) {
+            if (horas === 1) {
+                texto = '1 hora';
+            } else {
+                texto = horas + ' horas';
+            }
+        } else if (horas === 1) {
+            texto = '1 hora y ' + minutos + ' minutos';
+        } else {
+            texto = horas + ' horas y ' + minutos + ' minutos';
+        }
+        $(id_actividades_total + '{{ po.id }}').html(texto);
+    }
+
+    setTimeout(calcula_actividades('primaria'), 300);
+    setTimeout(calcula_actividades('infantil'), 350);
+    setTimeout(calcula_actividades('docente_infantil'), 400);
+    setTimeout(calcula_actividades('docente_primaria'), 450);
+    setTimeout(calcula_actividades('docente_inf_prim'), 500);
+    setTimeout(calcula_actividades('actividades_curso'), 550);
+</script>

@@ -573,11 +573,37 @@
         });
 
 
-    {# ############################################################## #}
-        $('body').on('click', '.get_horario_docente_apoyos', function (e) {
+        {# ############################################################## #}
+        $('body').on('change', '.actividades_grupos', function (e) {
+            var po = $(this).data('po');
+            var actividades_checked = $('.actividades_grupos' + po + ':checked');
+            var x_actividades = actividades_checked.map(function () {
+                return $(this).val();
+            }).get();
+            var actividades = actividades_checked.map(function () {
+                return $(this).data('actividad');
+            }).get();
+            console.log(x_actividades);
+            $.post("/plantilla_organica/", {action: 'actividades_grupos', po: po, x_actividades: x_actividades,
+                actividades: actividades},
+                function (data) {
+                    if (data.ok) {
+                        $('#estudio_actividades' + data.po).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.get_horario_docente_actividades', function (e) {
             var docente = $(this).data('docente');
             var po = $(this).data('po');
-            $.post("/plantilla_organica/", {action: 'get_horario_docente_apoyos', po: po, docente: docente},
+            var x_actividades = $('.actividades_grupos' + po + ':checked').map(function () {
+                return $(this).val();
+            }).get();
+            $.post("/plantilla_organica/", {action: 'get_horario_docente_actividades', po: po, docente: docente,
+                                            x_actividades: x_actividades},
                 function (data) {
                     if (data.ok) {
                         $('#horario_docente').html(data.tabla);
@@ -589,12 +615,15 @@
                 });
         });
 
-
-    {# ############################################################## #}
-        $('body').on('click', '.get_horario_grupo_apoyos', function (e) {
+        {# ############################################################## #}
+        $('body').on('click', '.get_horario_grupo_actividades', function (e) {
             var grupo = $(this).data('grupo');
             var po = $(this).data('po');
-            $.post("/plantilla_organica/", {action: 'get_horario_grupo_apoyos', po: po, grupo: grupo},
+            var x_actividades = $('.actividades_grupos' + po + ':checked').map(function () {
+                return $(this).val();
+            }).get();
+            $.post("/plantilla_organica/", {action: 'get_horario_grupo_actividades', po: po, grupo: grupo,
+                                            x_actividades: x_actividades},
                 function (data) {
                     if (data.ok) {
                         $('#horario_docente').html(data.tabla);
@@ -607,11 +636,15 @@
         });
 
 
-    {# ############################################################## #}
-        $('body').on('click', '.get_horario_curso_apoyos', function (e) {
+        {# ############################################################## #}
+        $('body').on('click', '.get_horario_curso_actividades', function (e) {
             var curso = $(this).data('curso');
             var po = $(this).data('po');
-            $.post("/plantilla_organica/", {action: 'get_horario_curso_apoyos', po: po, curso: curso},
+            var x_actividades = $('.actividades_grupos' + po + ':checked').map(function () {
+                return $(this).val();
+            }).get();
+            $.post("/plantilla_organica/", {action: 'get_horario_curso_actividades', po: po, curso: curso,
+                                            x_actividades: x_actividades},
                 function (data) {
                     if (data.ok) {
                         $('#horario_docente').html(data.tabla);

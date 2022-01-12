@@ -617,8 +617,6 @@ def ajax_cupo(request):
 
                     # return JsonResponse({'ok': True,})
 
-
-
                     try:
                         ee = EtapaEscolarCupo.objects.get(cupo=cupo, clave_ex=cec_ex)
                     except:
@@ -1195,6 +1193,8 @@ def edit_cupo(request, cupo_id):
 codes_conservatorios = [26002928, 26003076, 26003520]
 codes_eois = [26003313, 26008724, 26003091]
 codes_edir = [26008219, ]
+
+
 def crea_plantilla_organica_manual(entidad, g_e):
     # entidad = Entidad.objects.get(code=code_centro)
     po = PlantillaOrganica.objects.create(g_e=g_e, ronda_centro=entidad.ronda, carga_completa=True)
@@ -1214,6 +1214,7 @@ def crea_plantilla_organica_manual(entidad, g_e):
                 pdc.periodos = 0
                 pdc.save()
 
+
 # @permiso_required('acceso_carga_masiva_horarios')
 def plantilla_organica(request):
     g_e = request.session["gauser_extra"]
@@ -1229,7 +1230,8 @@ def plantilla_organica(request):
                 ruta = '%s%s/%s' % (MEDIA_CUPO, slugify(po.ronda_centro.entidad.code), slugify(po.ronda_centro.nombre))
                 if not os.path.exists(ruta):
                     os.makedirs(ruta)
-                fichero_xls = 'PO_%s_%s.xls' % (slugify(po.ronda_centro.entidad.name), po.creado.strftime('%Y-%d-%m-%H-%I'))
+                fichero_xls = 'PO_%s_%s.xls' % (
+                    slugify(po.ronda_centro.entidad.name), po.creado.strftime('%Y-%d-%m-%H-%I'))
                 wb = xlwt.Workbook()
                 ws = wb.add_sheet('Plantilla Orgánica')
                 estilo_ortogonal = xlwt.easyxf('align: rotation 90; font: bold on')
@@ -1286,8 +1288,8 @@ def plantilla_organica(request):
             for row_index in range(1, sheet.nrows):
                 for col_index in range(sheet.ncols):
                     keys[keys_index[col_index]] = sheet.cell(row_index, col_index).value
-                if keys['CCENTRO'] == '26800109C': # 26800109C es el centro penitenciario
-                    centro = Entidad.objects.get(code=26002941) #Plus Ultra
+                if keys['CCENTRO'] == '26800109C':  # 26800109C es el centro penitenciario
+                    centro = Entidad.objects.get(code=26002941)  # Plus Ultra
                 else:
                     centro = Entidad.objects.get(code=int(keys['CCENTRO'][:-1]))
                 plazas, ocupadas = int(keys['TEORICAS']), int(keys['OCUPADAS'])
@@ -1325,11 +1327,12 @@ def plantilla_organica(request):
                 # departamento = Depentidad.objects.get(ronda=po.ronda_centro, id=request.POST['departamento'])
                 pdcol = PDocenteCol.objects.get(pd__po=po, pd__g_e=ge, codecol=request.POST['codecol'])
                 # Para evitar los caracteres no numéricos obtenidos del div contenteditable no basta con int():
-                pdcol.periodos_added = int("".join(filter(str.isdigit, request.POST['valor']))) - pdcol.num_periodos_sesiones
+                pdcol.periodos_added = int(
+                    "".join(filter(str.isdigit, request.POST['valor']))) - pdcol.num_periodos_sesiones
                 pdcol.save()
                 data = get_columnas_docente(po, ge)
                 html_edb = render_to_string('plantilla_organica_accordion_content_tbody_puesto.html',
-                                                     {'edb': edb, 'po': po})
+                                            {'edb': edb, 'po': po})
                 return JsonResponse({'ok': True, 'html_edb': html_edb,
                                      'horas_basicas': data['horas_basicas'], 'horas_totales': data['horas_totales']})
             except:
@@ -1443,28 +1446,38 @@ def plantilla_organica(request):
                 return JsonResponse({'ok': True, 'tabla': tabla, 'h': h.id, 'd': docente.id})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'get_horario_docente_apoyos':
+        elif request.POST['action'] == 'actividades_grupos':
+            try:
+                po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
+                x_actividades = request.POST.getlist('x_actividades[]')
+                if len(x_actividades) == 0:
+                    return JsonResponse({'ok': True, 'html': '', 'po': po.id})
+                actividades = request.POST.getlist('actividades[]')
+                html = render_to_string('plantilla_organica_accordion_content_estudio_actividades.html',
+                                        {'po': po, 'actividades': actividades, 'x_actividades': x_actividades})
+                return JsonResponse({'ok': True, 'html': html, 'po': po.id})
+            except:
+                return JsonResponse({'ok': False})
+        elif request.POST['action'] == 'get_horario_docente_actividades':
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
                 docente = Gauser_extra.objects.get(id=request.POST['docente'], ronda=po.ronda_centro)
-                sextras_apoyo = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex='522', sesion__g_e=docente)
+                x_actividades = request.POST.getlist('x_actividades[]')
+                sextras_apoyo = SesionExtra.objects.filter(sesion__horario=po.horario,
+                                                           actividad__clave_ex__in=x_actividades, sesion__g_e=docente)
                 sesiones = Sesion.objects.filter(id__in=sextras_apoyo.values_list('sesion', flat=True)).distinct()
                 tabla = render_to_string('plantilla_organica_horario_docente.html', {'sesiones': sesiones,
                                                                                      'docente': docente})
                 return JsonResponse({'ok': True, 'tabla': tabla, 'po': po.id, 'd': docente.id})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'get_horario_grupo_apoyos':
+        elif request.POST['action'] == 'get_horario_grupo_actividades':
             po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
             grupo = Grupo.objects.get(id=request.POST['grupo'], ronda=po.ronda_centro)
-
-
-            sesex = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex='522', grupo=grupo)
+            x_actividades = request.POST.getlist('x_actividades[]')
+            sesex = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex__in=x_actividades,
+                                               grupo=grupo)
             sesiones_ = Sesion.objects.filter(id__in=sesex.values_list('sesion', flat=True)).distinct()
-            # tabla = render_to_string('plantilla_organica_horario_docente.html', {'sesiones': sesiones_,
-            #                                                                      'grupo': grupo})
-            # return JsonResponse({'ok': True, 'tabla': tabla, 'po': po.id, 'grupo': grupo.id})
-
             sesiones = {}
             for s in sesiones_:
                 try:
@@ -1473,17 +1486,17 @@ def plantilla_organica(request):
                     sesiones['%s-%s-%s' % (s.dia, s.hora_inicio, s.hora_fin)] = []
                     sesiones['%s-%s-%s' % (s.dia, s.hora_inicio, s.hora_fin)].append(s)
             try:
-                tabla_horario = render_to_string('plantilla_organica_horario_grupo.html', {'sesiones': sesiones, 'grupo': grupo})
+                tabla_horario = render_to_string('plantilla_organica_horario_grupo.html',
+                                                 {'sesiones': sesiones, 'grupo': grupo})
                 return JsonResponse({'ok': True, 'tabla': tabla_horario, 'h': po.horario.id, 'g': grupo.id,
                                      'sesiones': len(sesiones), 'sesiones_': sesiones_.count(), 'sesex': sesex.count()})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'get_horario_curso_apoyos':
+        elif request.POST['action'] == 'get_horario_curso_actividades':
             po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
             curso = Curso.objects.get(id=request.POST['curso'], ronda=po.ronda_centro)
-
-
-            sesex = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex='522',
+            x_actividades = request.POST.getlist('x_actividades[]')
+            sesex = SesionExtra.objects.filter(sesion__horario=po.horario, actividad__clave_ex__in=x_actividades,
                                                grupo__cursos__in=[curso])
             sesiones_ = Sesion.objects.filter(id__in=sesex.values_list('sesion', flat=True)).distinct()
             sesiones = {}
@@ -1494,7 +1507,8 @@ def plantilla_organica(request):
                     sesiones['%s-%s-%s' % (s.dia, s.hora_inicio, s.hora_fin)] = []
                     sesiones['%s-%s-%s' % (s.dia, s.hora_inicio, s.hora_fin)].append(s)
             try:
-                tabla_horario = render_to_string('plantilla_organica_horario_grupo.html', {'sesiones': sesiones, 'curso': curso})
+                tabla_horario = render_to_string('plantilla_organica_horario_grupo.html',
+                                                 {'sesiones': sesiones, 'curso': curso})
                 return JsonResponse({'ok': True, 'tabla': tabla_horario, 'h': po.horario.id, 'c': curso.id,
                                      'sesiones': len(sesiones), 'sesiones_': sesiones_.count(), 'sesex': sesex.count()})
             except:
@@ -1503,10 +1517,9 @@ def plantilla_organica(request):
             entidad = Entidad.objects.get(id=request.POST['centro_no_racima'])
             crea_plantilla_organica_manual(entidad, g_e)
 
-
     plantillas_o = PlantillaOrganica.objects.filter(g_e=g_e)
     centros_no_racima = [26002928, 26003076, 26003520, 26003313, 26008724, 26003091, 26008219]
-    ejemplo_sesiones=Sesion.objects.filter(g_e__id=45740, horario__id=128)
+    ejemplo_sesiones = Sesion.objects.filter(g_e__id=45740, horario__id=128)
     return render(request, "plantilla_organica.html",
                   {
                       'iconos': ({'tipo': 'button', 'nombre': 'cloud-upload', 'texto': 'Cargar datos Racima',
