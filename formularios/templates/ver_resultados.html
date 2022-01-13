@@ -40,7 +40,7 @@
         </div>
         <div id="div_tabla_resultados">
             <table style="width: 100%; overflow-x: auto; white-space: nowrap;">
-                <thead>
+                <thead style="position: sticky;top:0">
                 <tr>
                     <th colspan="3" style="text-align: center;">Datos de entrega</th>
                     {% for gfs in gform.gformsection_set.all %}
@@ -68,7 +68,7 @@
                         <td>{{ gfr.modificado|date:"d-m-Y H:i" }}</td>
                         {% for gfri in gfr.gformrespondeinput_set.all %}
                             {% if gfri.gfsi.tipo == 'FI' %}
-                            <td title="{{ gfri.respuesta }}">{{ gfri.respuesta }}</td>
+                                <td title="{{ gfri.respuesta }}">{{ gfri.respuesta }}</td>
                             {% else %}
                                 <td title="{{ gfri.respuesta }}">{{ gfri.respuesta|truncatechars_html:20 }}</td>
                             {% endif %}
