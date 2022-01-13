@@ -258,28 +258,6 @@ class GformRespondeInput(models.Model):
                 {'rfirma': self.rfirma, 'rfirma_nombre': self.rfirma_nombre, 'rfirma_cargo': self.rfirma_cargo})
             return Template(template).render(ctx)
 
-    @property
-    def short_respuesta(self):
-        if self.gfsi.tipo in ['RC', 'RL']:
-            return Template(self.rtexto).render(Context())
-        elif self.gfsi.tipo in ['EM', 'SC', 'SO']:
-            texto = '; '.join([o.opcion for o in self.ropciones.all()])
-            return Template(texto).render(Context())
-        elif self.gfsi.tipo == 'SA':
-            return self.rarchivo.name.rpartition('/')[2]
-        elif self.gfsi.tipo == 'EL':
-            return self.rentero
-        elif self.gfsi.tipo == 'EN':
-            return self.rentero
-        elif self.gfsi.tipo == 'FI':
-            template = """{% autoescape off %}
-                               <table><tr><td><img src='{{ rfirma }}' style='width:120px;'></td></tr>
-                               <tr><td><p>{{ rfirma_nombre }}<br>{{ rfirma_cargo }}</p></td></tr></table>{% endautoescape %}
-                           """
-            ctx = Context(
-                {'rfirma': self.rfirma, 'rfirma_nombre': self.rfirma_nombre, 'rfirma_cargo': self.rfirma_cargo})
-            return Template(template).render(ctx)
-
     def __str__(self):
         return '%s - %s' % (self.gformresponde, self.gfsi)
 

@@ -55,7 +55,8 @@
                     <th>Fecha y hora</th>
                     {% for gfs in gform.gformsection_set.all %}
                         {% for gfsi in gfs.gformsectioninput_set.all %}
-                            <th>{{ gfsi.orden }}</th>
+                            <th data-tooltip aria-haspopup="true"
+                                class="has-tip tip-bottom" title="{{ gfsi.pregunta }}">{{ gfsi.orden }}</th>
                         {% endfor %}
                     {% endfor %}
                 </tr>
