@@ -13,6 +13,13 @@
         {% endif %}
         <a class="listado_normal right"><span class="label rounded">Volver al listado normal</span></a>
     {% endif %}
+    {% else %}
+    {% if gforms|length == 0 %}
+        <div data-alert class="alert-box info radius">
+  <h5 style="font-weight: bold;">No hay ningún cuestionario activo que debas rellenar</h5>
+  <a href="#" class="close">&times;</a>
+</div>
+        {% endif %}
 {% endif %}
 <dl class="accordion" data-accordion id="list_formularios">
     {% for gform in gforms %}

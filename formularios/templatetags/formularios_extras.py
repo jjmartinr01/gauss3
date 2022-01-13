@@ -68,6 +68,13 @@ def get_rtexto(gfsi, gformresponde):
     except:
         return ''
 
+@register.filter
+def get_rfirma(gfsi, gformresponde):
+    try:
+        return GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).rfirma
+    except:
+        return ''
+
 
 @register.filter
 def get_ifchecked(gfsio, gformresponde):
@@ -75,6 +82,17 @@ def get_ifchecked(gfsio, gformresponde):
     try:
         if gfsio in GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).ropciones.all():
             return 'checked'
+        else:
+            return ''
+    except:
+        return ''
+
+@register.filter
+def get_ifselected(gfsio, gformresponde):
+    gfsi = gfsio.gformsectioninput
+    try:
+        if gfsio in GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).ropciones.all():
+            return 'selected'
         else:
             return ''
     except:

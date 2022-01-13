@@ -1,0 +1,359 @@
+{% extends "base_formularios.html" %}
+{% load formularios_extras %}
+{% block head %}
+    <style>
+        #title_page {
+            text-align: center;
+            color: #008CBA;
+            font-weight: 800;
+        }
+
+        .ckeditor {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+
+        /* Some CSS styling */
+        .sketchpadapp {
+            /* Prevent nearby text being highlighted when accidentally dragging mouse outside confines of the canvas */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .sketchpad {
+            margin: auto;
+            display: block;
+            width: 400px;
+            height: 300px;
+            position: relative;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border: 2px solid #888;
+            margin-bottom: 10px;
+        }
+
+        #logo_general {
+            display: none;
+            width: 100px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+
+        #logo_gobierno {
+            display: none;
+            width: 100px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+    </style>
+{% endblock %}
+{% block contenido %}
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}"
+          xmlns="http://www.w3.org/1999/html">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="action" value="">
+        <input type="hidden" name="gform" id="gform" value="{{ gformresponde.gform.id }}">
+        <input type="hidden" name="gformresponde" id="gformresponde" value="{{ gformresponde.id }}">
+        <input type="hidden" name="gfsi" id="gfsi" value="">
+        <img id="logo_general" src="/static/images/logo_gauss_acceso.png">
+        <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.png">
+
+        <div class="">
+            <h4 id="title_page"><strong>{{ gformresponde.gform.nombre }}</strong></h4>
+        </div>
+        {% if gformresponde.respondido %}
+            <div class="row">
+                <div class="columns large-12">
+                    <div data-alert class="alert-box alert radius">
+                        <h3 style="color: white;font-weight: bold;"><i class="fa fa-warning"></i> No se pueden cambiar
+                            las respuestas</h3>
+                        <p>Este formulario ya está respondido y no se admiten cambios en las respuestas.</p>
+                        <a href="#" class="close">&times;</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        <div class="row">
+            <div class="columns large-12 text-right">
+                <a class="button info close_gform"><i class="fa fa-times"></i> Cerrar este formulario</a>
+            </div>
+        </div>
+        <div id="rellenagformsections{{ gformresponde.gform.id }}">
+            {% for gfs in gformresponde.gform.gformsection_set.all %}
+                <div id="gfsorden{{ gfs.orden }}"
+                     {% if forloop.first %}style="display:block"{% else %}style="display: none;"{% endif %}>
+                    <div class="row">
+                        <div class="columns large-12">
+                            <div class="row">
+                                <div class="columns large-12">
+                                    <h3>{% autoescape off %}{{ gfs.title }}{% endautoescape %}</h3>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="columns large-12">
+                                    {% autoescape off %}{{ gfs.description }}{% endautoescape %}
+                                </div>
+                            </div>
+
+                            {% for gfsi in gfs.gformsectioninput_set.all %}
+                                <hr>
+                                <fieldset style="border: none;">
+                                    <legend style="color:gray;">Pregunta {{ gfsi.orden }}
+                                        de {{ gfsi|totalgfsis }}</legend>
+                                    <div class="row">
+                                        <div class="columns large-12">
+                                            <p>{% autoescape off %}{{ gfsi.pregunta }}{% endautoescape %}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="columns large-12" id="respuesta{{ gfsi.id }}">
+                                            {% if gfsi.tipo == 'RC' %}
+                                                <div class="row">
+                                                    <div class="columns large-12">
+                                                        <input disabled type="text"
+                                                               value="{{ gfsi|get_rtexto:gformresponde }}">
+                                                    </div>
+                                                </div>
+                                            {% elif gfsi.tipo == 'RL' %}
+                                                <div class="row">
+                                                    <div class="columns large-12">
+                                                        {% autoescape off %}
+                                                            {{ gfsi|get_rtexto:gformresponde }}
+                                                        {% endautoescape %}
+                                                    </div>
+                                                </div>
+                                            {% elif gfsi.tipo == 'EM' %}
+                                                {% for gfsio in gfsi.gformsectioninputops_set.all %}
+                                                    <p><input type="radio" name="radio{{ gfsi.id }}"
+                                                              value="{{ gfsio.id }}" disabled
+                                                            {{ gfsio|get_ifchecked:gformresponde }}>
+                                                        {% autoescape off %}{{ gfsio.opcion }}{% endautoescape %}
+                                                    </p>
+                                                {% endfor %}
+                                            {% elif gfsi.tipo == 'SC' %}
+                                                {% for gfsio in gfsi.gformsectioninputops_set.all %}
+                                                    <p><input type="checkbox" value="{{ gfsio.id }}"
+                                                              name="checkbox{{ gfsi.id }}" disabled
+                                                            {{ gfsio|get_ifchecked:gformresponde }}>
+                                                        {% autoescape off %}{{ gfsio.opcion }}{% endautoescape %}
+                                                    </p>
+                                                {% endfor %}
+                                            {% elif gfsi.tipo == 'SO' %}
+                                                <select>
+                                                    <option value="">Selecciona una de las siguiente opciones</option>
+                                                    {% for gfsio in gfsi.gformsectioninputops_set.all %}
+                                                        <option value="{{ gfsio.id }}" disabled
+                                                                {{ gfsio|get_ifselected:gformresponde }}>
+                                                            {% autoescape off %}{{ gfsio.opcion }}{% endautoescape %}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            {% elif gfsi.tipo == 'SA' %}
+                                                <div class="row">
+                                                    <div class="columns large-12">
+                                                        <table>
+                                                            <tbody id="tbody_gauss_file{{ gfsi.id }}">
+                                                            {% if gfsi|get_fich_name:gformresponde %}
+                                                                <tr id="gauss_file{{ gfsi.id }}">
+                                                                    <td>
+                                                                        <a class="descarga_gauss_file"
+                                                                           data-gfsi="{{ gfsi.id }}">Archivo: {{ gfsi|get_fich_name:gformresponde }}</a>
+                                                                    </td>
+                                                                    <td><span style="color: grey;"><i
+                                                                            class="fa fa-trash"></i> Borrar</span></td>
+                                                                </tr>
+                                                            {% endif %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            {% elif gfsi.tipo == 'EL' %}
+                                                <div class="row">
+                                                    <div class="columns large-12">
+                                                        <table>
+                                                            <tr>
+                                                                <td>&nbsp;</td>
+                                                                {% for i in gfsi|elvalues %}
+                                                                    <td style="color: grey;">{{ i }}</td>
+                                                                {% endfor %}
+                                                                <td>&nbsp;</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>{% autoescape off %}
+                                                                    {{ gfsi.labelmin }}{% endautoescape %}</td>
+                                                                {% for i in gfsi|elvalues %}
+                                                                    <td><input type="radio" name="radiotd{{ gfsi.id }}"
+                                                                               value="{{ i }}" disabled
+                                                                            {{ gfsi|get_el_value:gformresponde|checked_if_igual_a:i }}>
+                                                                    </td>
+                                                                {% endfor %}
+                                                                <td>{% autoescape off %}
+                                                                    {{ gfsi.labelmax }}{% endautoescape %}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            {% elif gfsi.tipo == 'FI' %}
+                                                <div class="row">
+                                                    <div class="columns large-6 medium-12">
+                                                        <label>Nombre del firmante
+                                                            <input type="text" id="nombre_persona_firma{{ gfsi.id }}"
+                                                                   disabled value="{{ gfsi|get_fin:gformresponde }}">
+                                                        </label>
+                                                    </div>
+                                                    <div class="columns large-6 medium-12">
+                                                        <label>Cargo del firmante (si procede)
+                                                            <input type="text" id="cargo_persona_firma{{ gfsi.id }}"
+                                                                   disabled value="{{ gfsi|get_fic:gformresponde }}">
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div style="text-align: center">
+                                                    <label class="text-center">Firma manuscrita, o rúbrica, enviada:</label>
+                                                    <img src='{{ gfsi|get_rfirma:gformresponde }}' style='width:150px;'>
+                                                </div>
+                                            {% elif gfsi.tipo == 'EN' %}
+                                                <div class="row">
+                                                    <div class="columns large-12">
+                                                        <input disabled type="text" value="{{ gfsi|get_rentero:gformresponde }}">
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="columns large-6">
+                            {% if not forloop.first %}
+                                <a class="button secondary go_seccion_anterior" data-ordengfs="{{ gfs.orden }}">
+                                    <i class="fa fa-caret-left"></i> Sección anterior
+                                </a>
+                            {% else %}&nbsp;{% endif %}
+                        </div>
+                        <div class="columns large-6">
+                            {% if not forloop.last %}
+                                <a class="button secondary right go_seccion_siguiente" data-ordengfs="{{ gfs.orden }}">
+                                    Sección siguiente <i class="fa fa-caret-right"></i>
+                                </a>
+                            {% else %}&nbsp;{% endif %}
+                        </div>
+                    </div>
+                    {% if forloop.last %}
+                        <div class="row">
+                            <div class="columns large-12 medium-12 text-center">
+                                <ul class="button-group">
+                                    <li>
+                                        <a class="button genera_pdf" data-gform="{{ gformresponde.gform.id }}">
+                                            <i class="fa fa-file-pdf-o"></i> PDF</a>
+                                    </li>
+                                    <li>
+                                        <a href="/" class="button alert terminar_gform">
+                                            <i class="fa fa-sign-out"></i> Terminar</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script type="text/javascript">
+
+        {# ########################################################################################### #}
+        {# Función en el caso de que se produzca un error #}
+        {# #}
+        {# ########################################################################################### #}
+
+        function show_error(data) {
+            show_mensajes({
+                'title': '<i class="fa fa-warning"></i> Se ha producido un error',
+                'texto': data.msg
+            });
+        }
+
+        $('#Contenido').on('click', '.descarga_gauss_file', function (e) {
+            e.preventDefault();
+            $('#action').val('descarga_gauss_file');
+            $('#gfsi').val($(this).data('gfsi'));
+            document.getElementById('{{formname}}').submit();
+        });
+
+
+        {# ########################################################################################### #}
+        {#  go_seccion_anterior, go_seccion_siguiente  #}
+        {# ########################################################################################### #}
+
+        $('body').on('click', '.go_seccion_anterior', function (e) {
+            e.preventDefault();
+            var ordengfs = parseInt($(this).data('ordengfs'));
+            $('#gfsorden' + ordengfs).hide();
+            var orden_gfs_nueva = ordengfs - 1;
+            $('#gfsorden' + orden_gfs_nueva).show();
+            $(document).scrollTop($('#title_page').offset().top - 150);
+            setTimeout(function () {
+                constructInlineEditorInstances();
+            }, 300);
+        });
+        $('body').on('click', '.go_seccion_siguiente', function (e) {
+            e.preventDefault();
+            var ordengfs = parseInt($(this).data('ordengfs'));
+            $('#gfsorden' + ordengfs).hide();
+            var orden_gfs_nueva = ordengfs + 1;
+            $('#gfsorden' + orden_gfs_nueva).show();
+            $(document).scrollTop($('#title_page').offset().top - 150);
+            setTimeout(function () {
+                constructInlineEditorInstances();
+            }, 300);
+        });
+
+        {# ########################################################################################### #}
+        {# Código necesario para generar Cerrar el formulario, generar PDF y salir #}
+        {#  go_seccion_anterior, go_seccion_siguiente  #}
+        {# ########################################################################################### #}
+
+        $('body').on('click', '.close_gform', function (e) {
+            e.preventDefault();
+            $('body').css('opacity', 0.3);
+            location.href = '/mis_formularios/'
+        });
+
+        $('body').on('click', '.genera_pdf', function (e) {
+            e.preventDefault();
+            $('#action').val('genera_pdf');
+            document.getElementById('{{ formname }}').submit();
+        });
+
+        {# ########################################################################################### #}
+        {# Código necesario para ver el logo de Gobierno o el general de forma fija en el formulario #}
+        {#    #}
+        {# ########################################################################################### #}
+
+        setTimeout(function () {
+            var regex3 = /larioja/;
+            var url = window.location.href;
+            if (regex3.test(url)) {
+                $('#logo_general').hide();
+                $('#logo_gobierno').show();
+            } else {
+                $('#logo_general').show();
+                $('#logo_gobierno').hide();
+            }
+        }, 50);
+    </script>
+
+{% endblock %}

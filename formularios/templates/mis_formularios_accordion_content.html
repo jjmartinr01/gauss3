@@ -64,9 +64,10 @@
                     <td class="del_gformresponde" data-gformresponde="{{ gformresponde.id }}"><i
                             class="fa fa-trash"></i></td>
                 {% else %}
-                    <td><a style="color: grey;" href="#"><i class="fa fa-pencil-square-o"></i>
-                        Este formulario no está activo
-                    </a></td>
+                    <td><a href="/mis_respuestas/{{ gformresponde.gform.id }}/{{ gformresponde.gform.identificador }}/{{ gformresponde.identificador }}/">
+                            <i class="fa fa-pencil-square-o"></i>
+                            Haz click para ver tus respuestas
+                        </a></td>
                     <td style="color: grey;background-color: lightgrey;text-align: center;"><i class="fa fa-trash"></i>
                     </td>
                 {% endif %}

@@ -37,10 +37,12 @@
                 <a href="#tab1" role="tab" tabindex="0" aria-selected="false" aria-controls="tab1">
                     <b id="texto1" style="color:#ffffff;" class="texto_tab">Que he rellenado</b></a>
             </li>
+            {% comment %}
             <li class="tab-title" role="presentation" data-id="2" data-gtab="debo_evaluar">
                 <a href="#tab2" role="tab" tabindex="0" aria-selected="false" aria-controls="tab2">
                     <b id="texto2" style="color:#ffffff;" class="texto_tab">Que debo evaluar</b></a>
             </li>
+            {% endcomment %}
         </ul>
         <div class="tabs-content">
             <section role="tabpanel" aria-hidden="false" class="content active" id="tab0" data-tab="dr">
@@ -53,10 +55,12 @@
                 </div>
 
             </section>
+            {% comment %}
             <section role="tabpanel" aria-hidden="true" class="content" id="tab2" data-tab="dc">
                 <div id="listado_misformularios_dc" class="listado_misformularios">
                 </div>
             </section>
+            {% endcomment %}
         </div>
     </form>
 
@@ -142,6 +146,7 @@
                                     $("#update_ok").show().delay(1500).fadeOut();
                                 } else {
                                     $("#update_error").show().delay(1500).fadeOut();
+                                    show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg})
                                 }
                             });
                     },

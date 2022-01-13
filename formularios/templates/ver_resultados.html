@@ -38,6 +38,52 @@
         <div class="">
             <h4 id="title_page"><strong>{{ gform.nombre }}</strong></h4>
         </div>
+        <div id="div_tabla_resultados">
+            <table style="width: 100%; overflow-x: auto; white-space: nowrap;">
+                <thead>
+                <tr>
+                    <th colspan="3" style="text-align: center;">Datos de entrega</th>
+                    {% for gfs in gform.gformsection_set.all %}
+                        <th style="text-align: center;" colspan="{{ gfs.gformsectioninput_set.all|length }}">
+                            {{ gfs.title }}
+                        </th>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Entidad</th>
+                    <th>Fecha y hora</th>
+                    {% for gfs in gform.gformsection_set.all %}
+                        {% for gfsi in gfs.gformsectioninput_set.all %}
+                            <th>{{ gfsi.orden }}</th>
+                        {% endfor %}
+                    {% endfor %}
+                </tr>
+                </thead>
+                {% for gfr in gform.gformresponde_set.all %}
+                    <tr>
+                        <td>{{ gfr.g_e.gauser.get_full_name }}</td>
+                        <td>{{ gfr.g_e.ronda.entidad.name }}</td>
+                        <td>{{ gfr.modificado|date:"d-m-Y H:i" }}</td>
+                        {% for gfri in gfr.gformrespondeinput_set.all %}
+                            {% if gfri.gfsi.tipo == 'FI' %}
+                            <td title="{{ gfri.respuesta }}">{{ gfri.respuesta }}</td>
+                            {% else %}
+                                <td title="{{ gfri.respuesta }}">{{ gfri.respuesta|truncatechars_html:20 }}</td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <th colspan="3" style="text-align: right;">Totales:</th>
+                    {% for gfs in gform.gformsection_set.all %}
+                        {% for gfsi in gfs.gformsectioninput_set.all %}
+                            <th>{{ gfsi.suma_renteros }}</th>
+                        {% endfor %}
+                    {% endfor %}
+                </tr>
+            </table>
+        </div>
         <div id="div_cont_resultados">
             {% for gfs in gform.gformsection_set.all %}
                 <div id="gfsorden{{ gfs.orden }}"

@@ -700,7 +700,8 @@ def mis_formularios(request):
                 # html = render_to_string('mis_formularios_accordion_hr_content.html', {'gform': gform, 'gfrs': gfrs})
                 tab = request.POST['tab']
                 if tab == 'dr':  # debo_rellenar
-                    gfs = Gform.objects.filter(id__in=gfrs.filter(respondido=False).values_list('gform__id')).distinct()
+                    gfs = Gform.objects.filter(id__in=gfrs.filter(respondido=False).values_list('gform__id'),
+                                               fecha_max_rellenado__gte=datetime.now(), activo=True).distinct()
                 elif tab == 'hr':  # he_rellenado
                     gfs = Gform.objects.filter(id__in=gfrs.filter(respondido=True).values_list('gform__id')).distinct()
                 else:  # debo_corregir
@@ -733,8 +734,13 @@ def mis_formularios(request):
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'del_gformresponde':
             try:
-                GformResponde.objects.get(id=request.POST['gformresponde'], g_e=g_e).delete()
-                return JsonResponse({'ok': True})
+                gfr = GformResponde.objects.get(id=request.POST['gformresponde'], g_e=g_e)
+                if gfr.gform.fecha_max_rellenado.date() > datetime.now().date():
+                    gfr.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    msg = 'Este cuestionario ya no está activo y no es posible borrar tus respuestas.'
+                    return JsonResponse({'ok': False, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'get_another_gform':
@@ -822,7 +828,8 @@ def mis_formularios(request):
         response['Content-Disposition'] = 'attachment; filename=%s' % (fichero_xls)
         return response
 
-    gfs = Gform.objects.filter(id__in=gfrs.filter(respondido=False).values_list('gform__id')).distinct()
+    gfs = Gform.objects.filter(id__in=gfrs.filter(respondido=False).values_list('gform__id'),
+                               fecha_max_rellenado__gte=datetime.now(), activo=True).distinct()
     return render(request, "mis_formularios.html",
                   {
                       'iconos':
@@ -879,7 +886,7 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
             sleep(3)
             return render(request, "gform_no_existe.html", {'error': True, 'msg': str(msg)})
     gfsis = GformSectionInput.objects.filter(gformsection__gform=gformresponde.gform)
-    for gfsi in gfsis: # Creamos todas las respuestas vacías
+    for gfsi in gfsis:  # Creamos todas las respuestas vacías
         g, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
         if gfsi.tipo == 'EN' and c:
             g.rentero = 0
@@ -1039,6 +1046,60 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
+def mis_respuestas(request, id, identificador, gfr_identificador=''):
+    try:
+        gform = Gform.objects.get(id=id, identificador=identificador)
+    except:
+        sleep(3)
+        return render(request, "gform_no_existe.html")
+    try:
+        g_e = request.session["gauser_extra"]
+    except:
+        return redirect('/logincas/?nexturl=/rellena_gform/' + '/'.join([str(id), identificador, gfr_identificador]))
+    if gform.gformdestinatario_set.all().count() > 0:
+        if not gform.gformdestinatario_set.filter(destinatario__gauser=g_e.gauser).count() > 0:
+            sleep(3)
+            return render(request, "gform_no_existe.html", {'error': 'Usuario no destinatario del gform'})
+    if gfr_identificador:
+        try:
+            gformresponde = GformResponde.objects.get(gform=gform, g_e=g_e, identificador=gfr_identificador)
+        except:
+            sleep(3)
+            return render(request, "gform_no_existe.html", {'error': 'Identificador de usuario no válido'})
+    else:
+        sleep(3)
+        return render(request, "gform_no_existe.html", {'error': 'Identificador de usuario no válido'})
+
+    gfsis = GformSectionInput.objects.filter(gformsection__gform=gformresponde.gform)
+    for gfsi in gfsis:  # Creamos todas las respuestas vacías
+        g, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
+        if gfsi.tipo == 'EN' and c:
+            g.rentero = 0
+            g.save()
+    if request.method == 'POST':
+        if request.POST['action'] == 'genera_pdf':
+            dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
+            gfr = GformResponde.objects.get(id=request.POST['gformresponde'], g_e__gauser=g_e.gauser)
+            c = render_to_string('gform2pdf.html', {'gfrs': [gfr]})
+            fich = pdfkit.from_string(c, False, dce.get_opciones)
+            response = HttpResponse(fich, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gfr.gform.nombre)
+            return response
+        elif request.POST['action'] == 'descarga_gauss_file':
+            gfsi = gfsis.get(id=request.POST['gfsi'])
+            gfri = GformRespondeInput.objects.get(gformresponde=gformresponde, gfsi=gfsi)
+            fich = gfri.rarchivo
+            response = HttpResponse(fich, content_type='%s' % gfri.content_type)
+            filename = GformRespondeInput.objects.get(gfsi=gfsi, gformresponde=gformresponde).rarchivo.name
+            response['Content-Disposition'] = 'attachment; filename=%s' % filename.rpartition('/')[2]
+            return response
+
+    return render(request, "mis_respuestas.html",
+                  {
+                      'formname': 'mis_respuestas',
+                      'gformresponde': gformresponde,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
 
 def formularios_disponibles(request):
     g_e = request.session["gauser_extra"]
@@ -1096,6 +1157,7 @@ def carga_cuestionarios_funcionario_practicas(request):
                                                          responde_tut=preg['tutor'],
                                                          responde_dir=preg['director'])
 
+
 def activa_permisos(efpa):
     # Activamos permisos a las personas implicadas en la evaluación
     code_permisos = ['acceso_funcionarios_practicas', 'acceso_mis_evalpract']
@@ -1104,6 +1166,7 @@ def activa_permisos(efpa):
     efpa.director.permisos.add(*permisos)
     efpa.tutor.permisos.add(*permisos)
     efpa.inspector.permisos.add(*permisos)
+
 
 def activa_cuestiones(efpa):
     cs_totales = efpa.procesoevalfunpract.evalfunpract.efpdscs  # Cuestiones totales disponibles
@@ -1546,10 +1609,6 @@ def recufunprac(request, id, actor):  # rellenar_cuestionario_funcionario_practi
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
 
-
-
-
-
     filtro_fechas = Q(procesoevalfunpract__fecha_min__lt=datetime.now().date() + timedelta(days=60)) & Q(
         procesoevalfunpract__fecha_max__gt=datetime.now().date() - timedelta(days=200))
     efpa = EvalFunPractAct.objects.get(Q(id=id), filtro_fechas)
@@ -1570,8 +1629,6 @@ def recufunprac(request, id, actor):  # rellenar_cuestionario_funcionario_practi
                           'actor': actor,
                           'respondido': respondido
                       })
-
-
 
     try:
         filtro_fechas = Q(procesoevalfunpract__fecha_min__lt=datetime.now().date() + timedelta(days=60)) & Q(
