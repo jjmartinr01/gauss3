@@ -8,20 +8,24 @@
             font-weight: 800;
         }
 
+        #div_fixed_right_corner {
+            display: block;
+            width: 100px;
+            position: fixed;
+            top: 10px;
+            right: 20px;
+        }
+
         #logo_general {
             display: none;
             width: 100px;
-            position: fixed;
-            top: 20px;
-            right: 20px;
+        {#    position: fixed;#}{#    top: 20px;#}{#    right: 20px;#}
         }
 
         #logo_gobierno {
             display: none;
             width: 100px;
-            position: fixed;
-            top: 20px;
-            right: 20px;
+        {#            position: fixed;#}{#            top: 20px;#}{#            right: 20px;#}
         }
     </style>
 {% endblock %}
@@ -31,15 +35,20 @@
         {% csrf_token %}
         <input type="hidden" name="action" id="action" value="">
         <input type="hidden" name="gform" id="gform" value="{{ gform.id }}">
-
-        <img id="logo_general" src="/static/images/logo_gauss_acceso.png">
-        <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.png">
+        <div id="div_fixed_right_corner">
+            <img id="logo_general" src="/static/images/logo_gauss_acceso.png">
+            <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.png">
+            <a class="button tiny radius" download="{{ gform.nombre|slugify }}.xls" style="font-weight: bold;"
+               onclick="return ExcellentExport.excel(this, 'tabla_resultados', 'Sheet Name Here');"><i
+                    class="fa fa-file-excel-o"></i> Excel</a>
+        </div>
 
         <div class="">
             <h4 id="title_page"><strong>{{ gform.nombre }}</strong></h4>
         </div>
         <div id="div_tabla_resultados">
-            <table style="width: 100%; overflow-x: auto; white-space: nowrap;">
+            <p>&nbsp;</p>
+            <table id="tabla_resultados" style="width: 100%; overflow-x: auto; white-space: nowrap;">
                 <thead style="position: sticky;top:0">
                 <tr>
                     <th colspan="3" style="text-align: center;">Datos de entrega</th>
@@ -61,8 +70,8 @@
                                         title="{{ gfsi.pregunta }} - Valor: {{ op.opcion }}">{{ gfsi.orden }}.{{ forloop.counter }}</th>
                                 {% endfor %}
                             {% else %}
-                            <th data-tooltip aria-haspopup="true"
-                                class="has-tip tip-bottom" title="{{ gfsi.pregunta }}">{{ gfsi.orden }}</th>
+                                <th data-tooltip aria-haspopup="true"
+                                    class="has-tip tip-bottom" title="{{ gfsi.pregunta }}">{{ gfsi.orden }}</th>
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
@@ -347,5 +356,6 @@
             }
         }, 50);
     </script>
-
+    <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/excellentexport@3.4.3/dist/excellentexport.min.js"></script>
 {% endblock %}
