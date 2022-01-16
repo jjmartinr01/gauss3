@@ -10,99 +10,41 @@
             </h4>
         </div>
         <ul class="tabs" data-tab role="tablist">
-            <li class="tab-title active"><a href="#panel1" style="font-weight: bold;">Competencias Clave y DOs</a></li>
-            <li class="tab-title"><a href="#panel2" style="font-weight: bold;">Áreas, Comp. Espec. y Crit. de Eval.</a>
+            <li class="tab-title active"><a href="#tab1" style="font-weight: bold;">Competencias Clave y DOs</a></li>
+            <li class="tab-title"><a href="#tab2" style="font-weight: bold;">Áreas, Comp. Espec. y Crit. de Eval.</a>
             </li>
         </ul>
         <div class="tabs-content">
-            <div class="content active" id="panel1">
-                {% for ps in pss %}
-                    <h5 style="font-weight: bold;">{{ ps }}</h5>
-                    <div data-ps="{{ ps.id }}" id="perfilsalida{{ ps.id }}">
-                        <div id="list_cc{{ ps.id }}">
-                            {% for cc in ps.competenciaclave_set.all %}
-                                {% include "configura_competencias_cc.html" %}
-                            {% endfor %}
-                        </div>
-                        <div class="row">
-                            <div class="columns large-12">
-                                <label style="font-weight: bold;">Formulario para crear competencias clave
-                                    para {{ ps.get_etapa_display }}</label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="columns large-2">
-                                <label>Orden
-                                    <input type="text" value="" id="cc_orden{{ ps.id }}">
-                                </label>
-                            </div>
-                            <div class="columns large-2">
-                                <label>Siglas
-                                    <input type="text" value="" id="cc_siglas{{ ps.id }}">
-                                </label>
-                            </div>
-                            <div class="columns large-8">
-                                <label>Competencia
-                                    <input type="text" value="" id="cc_competencia{{ ps.id }}">
-                                </label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="columns large-10">
-                                <label>Descripción de la competencia
-                                    <textarea id="cc_texto{{ ps.id }}"></textarea></label>
-                            </div>
-                            <div class="columns large-2">
-                                <label>Añadir</label>
-                                <a class="button tiny inserta_cc" data-ps="{{ ps.id }}">
-                                    <i class="fa fa-plus"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
+            <div class="content active" id="tab1">
+                <dl class="accordion" data-accordion id="list_ce_dos">
+                    {% for ps in pss %}
+                        <dd class="accordion-navigation" id="accordion_ce_dos{{ ps.id }}"
+                            style="border-bottom: dotted 1px black">
+                            <a href="#panel_ce_dos{{ ps.id }}">
+                                <i id="circle_ce_dos{{ ps.id }}" class="fa fa-plus-circle circle_icon"></i>
+                                <span style="font-weight: bold;">{{ ps }}</span>
+                            </a>
+                            <div id="panel_ce_dos{{ ps.id }}" class="content accordion-ps" data-tipo="ce_dos"
+                                 data-id="{{ ps.id }}"></div>
+                        </dd>
+                    {% endfor %}
+                </dl>
             </div>
-            <div class="content" id="panel2">
+            <div class="content" id="tab2">
                 <dl class="accordion" data-accordion>
                     {% for ps in pss %}
-                        <dd class="accordion-navigation">
-                            <a href="#panelps{{ forloop.counter }}" style="font-weight: bold;">
-                                <span style="color:#008CBA">Áreas/Materias, Competencias Específicas y Criterios de Evaluación:</span> {{ ps }}</a>
-                            <div id="panelps{{ forloop.counter }}" class="content">
-{#                                <h5 style="font-weight: bold;">{{ ps }}</h5>#}
-                                <div data-ps="{{ ps.id }}" id="perfilsalida{{ ps.id }}">
-                                    <div id="list_am{{ ps.id }}">
-                                        {% for am in ps.areamateria_set.all %}
-                                            {% include "configura_competencias_am.html" %}
-                                        {% endfor %}
-                                    </div>
-                                    <div class="row">
-                                        <div class="columns large-12">
-                                            <label style="font-weight: bold;">Formulario para crear Áreas/Materias
-                                                en {{ ps.get_etapa_display }}</label>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="columns large-12">
-                                            <label>Nombre
-                                                <input type="text" value="" id="am_nombre{{ ps.id }}">
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="columns large-10">
-                                            <label>Descripción del Área/Materia
-                                                <textarea id="am_texto{{ ps.id }}"></textarea></label>
-                                        </div>
-                                        <div class="columns large-2">
-                                            <label>Añadir</label>
-                                            <a class="button tiny inserta_am" data-ps="{{ ps.id }}">
-                                                <i class="fa fa-plus"></i>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <dd class="accordion-navigation" id="accordion_am_ce_cev{{ ps.id }}"
+                            style="border-bottom: dotted 1px black">
+                            <a href="#panel_am_ce_cev{{ ps.id }}">
+                                <i id="circle_am_ce_cev{{ ps.id }}" class="fa fa-plus-circle circle_icon"></i>
+                                <span style="color:#008CBA">Áreas/Materias, Competencias Específicas y Criterios de Evaluación:</span> {{ ps }}
+                            </a>
+                            {#                        <dd class="accordion-navigation">#}
+                            {#                            <a href="#panelps{{ forloop.counter }}" style="font-weight: bold;">#}
+                            {#                                <span style="color:#008CBA">Áreas/Materias, Competencias Específicas y Criterios de Evaluación:</span> {{ ps }}#}
+                            {#                            </a>#}
+                            <div id="panel_am_ce_cev{{ ps.id }}" class="content accordion-ps" data-tipo="am_ce_cev"
+                                 data-id="{{ ps.id }}"></div>
                         </dd>
                     {% endfor %}
                 </dl>
@@ -152,6 +94,42 @@
 
 {% block final %}
     <script>
+        {# ########################################################### #}
+        setTimeout(function () {
+            $(document).foundation({
+                accordion: {
+                    callback: function (accordion) {
+                        if (accordion.hasClass('accordion-ps')) {
+                            var id = accordion.data('id');
+                            var tipo = accordion.data('tipo');
+                            var circle = $('#circle_' + tipo + id);
+                            var panel = $('#panel_' + tipo + id);
+                            if (circle.hasClass('fa-plus-circle')) {
+                                $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                                circle.removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                                window.scrollTo(0, $('#accordion_' + tipo + id).offset().top - 50);
+                                $.post("/configura_competencias/", {action: 'open_accordion', id: id, tipo: tipo},
+                                    function (data) {
+                                        if (data.ok) {
+                                            panel.html(data.html);
+                                            $('.dos_select2').select2();
+                                            $('.select2-container').css('width', '100%');
+                                            $("#update_ok").show().delay(1500).fadeOut();
+                                        } else {
+                                            $("#update_error").show().delay(1500).fadeOut();
+                                        }
+                                    });
+                            } else {
+                                circle.removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                                panel.html('');
+                            }
+                        }
+                    }
+                }
+            });
+        }, 400);
+
+        {# ########################################################### #}
         setTimeout(function () {
             $('.dos_select2').select2();
             $('.select2-container').css('width', '100%');
@@ -299,32 +277,32 @@
                 });
         });
 
-        $(document).foundation({
-            accordion: {
-                callback: function (accordion) {
-                    if (accordion.hasClass('curso_pendientes')) {
-                        var id = accordion.data('curso');
-                        console.log(id);
-                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
-                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
-                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
-                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post("/configura_materias_pendientes/", {action: 'open_accordion', id: id},
-                                function (data) {
-                                    if (data.ok) {
-                                        $('#curso' + id).html(data.html);
-                                        $("#update_ok").show().delay(1500).fadeOut();
-                                    } else {
-                                        $("#update_error").show().delay(1500).fadeOut();
-                                    }
-                                });
-                        } else {
-                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
-                            $('#curso' + id).html('');
-                        }
-                    }
-                }
-            }
-        });
+        {#$(document).foundation({#}
+        {#    accordion: {#}
+        {#        callback: function (accordion) {#}
+        {#            if (accordion.hasClass('curso_pendientes')) {#}
+        {#                var id = accordion.data('curso');#}
+        {#                console.log(id);#}
+        {#                if ($('#circle' + id).hasClass('fa-plus-circle')) {#}
+        {#                    $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');#}
+        {#                    $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');#}
+        {#                    window.scrollTo(0, $('#accordion' + id).offset().top - 50);#}
+        {#                    $.post("/configura_materias_pendientes/", {action: 'open_accordion', id: id},#}
+        {#                        function (data) {#}
+        {#                            if (data.ok) {#}
+        {#                                $('#curso' + id).html(data.html);#}
+        {#                                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#                            } else {#}
+        {#                                $("#update_error").show().delay(1500).fadeOut();#}
+        {#                            }#}
+        {#                        });#}
+        {#                } else {#}
+        {#                    $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');#}
+        {#                    $('#curso' + id).html('');#}
+        {#                }#}
+        {#            }#}
+        {#        }#}
+        {#    }#}
+        {# });#}
     </script>
 {% endblock %}

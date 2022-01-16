@@ -1,0 +1,45 @@
+{% load my_templatetags %}
+
+<h5 style="font-weight: bold;">{{ ps }}</h5>
+<div data-ps="{{ ps.id }}" id="perfilsalida{{ ps.id }}">
+    <div id="list_cc{{ ps.id }}">
+        {% for cc in ps.competenciaclave_set.all %}
+            {% include "configura_competencias_cc.html" %}
+        {% endfor %}
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label style="font-weight: bold;">Formulario para crear competencias clave
+                para {{ ps.get_etapa_display }}</label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-2">
+            <label>Orden
+                <input type="text" value="" id="cc_orden{{ ps.id }}">
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label>Siglas
+                <input type="text" value="" id="cc_siglas{{ ps.id }}">
+            </label>
+        </div>
+        <div class="columns large-8">
+            <label>Competencia
+                <input type="text" value="" id="cc_competencia{{ ps.id }}">
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-10">
+            <label>Descripción de la competencia
+                <textarea id="cc_texto{{ ps.id }}"></textarea></label>
+        </div>
+        <div class="columns large-2">
+            <label>Añadir</label>
+            <a class="button tiny inserta_cc" data-ps="{{ ps.id }}">
+                <i class="fa fa-plus"></i>
+            </a>
+        </div>
+    </div>
+</div>

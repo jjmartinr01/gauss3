@@ -378,7 +378,15 @@ def configura_competencias(request):
 
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
-        if action == 'inserta_do':
+        if action == 'open_accordion':
+            try:
+                ps = PerfilSalida.objects.get(id=request.POST['id'])
+                filename = 'configura_competencias_accordion_%s.html' % request.POST['tipo']
+                html = render_to_string(filename, {'ps': ps})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'inserta_do':
             try:
                 cc = CompetenciaClave.objects.get(id=request.POST['cc'])
                 do, c = DescriptorOperativo.objects.get_or_create(clave=request.POST['clave'], cc=cc)
