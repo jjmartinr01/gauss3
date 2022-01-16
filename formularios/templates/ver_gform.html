@@ -53,6 +53,49 @@
             top: 20px;
             right: 20px;
         }
+        {# CSS para la cuestión de captura de fechas a través de simplecalendar #}
+        .table-calendar {
+            width: 100%;
+        }
+
+        .monthtitle-simplecalendar {
+            text-align: center;
+        }
+
+        .day-title {
+            text-align: center;
+        }
+
+        .day {
+            border: 2px solid transparent;
+            padding: 2px;
+            text-align: center;
+            border-radius: 20%;
+        }
+
+        .day:hover {
+            border: 2px solid #6691CC;
+            cursor: pointer;
+        }
+
+        .day.today {
+            background: #6691CC;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .wrong-month {
+            color: grey;
+        }
+
+        .dayselected-simplecalendar {
+            background: #cd0a0a;
+            border: 2px solid #cd0a0a;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }
     </style>
 {% endblock %}
 {% block contenido %}
@@ -150,6 +193,8 @@
                                                                placeholder="Escribe aquí tu respuesta">
                                                     </div>
                                                 </div>
+                                            {% elif gfsi.tipo == 'CA' %}
+                                                {% include "ver_gform_gfsi_CA.html" %}
                                             {% endif %}
                                         </div>
                                     </div>
@@ -313,6 +358,100 @@
             e.preventDefault();
             $('#action').val('genera_pdf');
             document.getElementById('ver_gform').submit();
+        });
+
+        {# ########################################################################################### #}
+        {# Código necesario para las cuestiones de selección de fechas #}
+        {#    #}
+        {# ########################################################################################### #}
+
+
+        var months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+        var currentDate = new Date();
+        var selecteddates = {}
+
+        function updateHeader(date, calendar_id) {
+            var monthText = months[date.getMonth()];
+            monthText += ' <span class="year">' + date.getFullYear() + '</span>';
+            $('#month' + calendar_id).html(monthText);
+        }
+
+        function changeMonth(value, calendar_id) {
+            currentDate.setMonth(currentDate.getMonth() + value, 1);
+            buildCalendar(currentDate, calendar_id);
+            updateHeader(currentDate, calendar_id);
+            {#this.settings.onMonthChange(currentDate.getMonth(), currentDate.getFullYear());#}
+        }
+
+        function buildCalendar(fromDate, calendar_id) {
+            $('.day-month' + calendar_id).empty();
+            //setting current year and month
+            var y = fromDate.getFullYear(), m = fromDate.getMonth();
+            //first day of the month
+            var firstDay = new Date(y, m, 1);
+            //last day of the month
+            var lastDay = new Date(y, m + 1, 0);
+            // Start day of weeks
+            var startDayOfWeek = 1;
+
+            // If first day of month is different of startDayOfWeek
+            while (firstDay.getDay() !== startDayOfWeek) {
+                firstDay.setDate(firstDay.getDate() - 1);
+            }
+            // If last day of month is different of startDayOfWeek + 7
+            while (lastDay.getDay() !== ((startDayOfWeek + 6) % 7)) {
+                lastDay.setDate(lastDay.getDate() + 1);
+            }
+
+            //For firstDay to lastDay
+            var counter_day = 1;
+            for (var day = firstDay; day <= lastDay; day.setDate(day.getDate())) {
+                //For each row
+                for (var n = 0; n < 7; n++) {
+                    var string_date = day.toLocaleString('es-ES').split(' ')[0]
+                    var clases = 'day';
+                    if (string_date in selecteddates[calendar_id]) {
+                        clases = 'day dayselected-simplecalendar dayselected-simplecalendar' + calendar_id;
+                    }
+                    var $day = $('<div class="' + clases + '" data-date="' + string_date + '" data-simplecalendar="' + calendar_id + '">' + day.getDate() + '</div>');
+
+                    //if today is this day
+                    if (day.toDateString() === (new Date()).toDateString()) {
+                        $day.addClass('today');
+                    }
+
+                    //if day is not in this month
+                    if (day.getMonth() !== fromDate.getMonth()) {
+                        $day.addClass('wrong-month').removeClass('day');
+                    }
+
+                    $('#day-month' + calendar_id + '-' + counter_day).append($day);
+                    counter_day++;
+                    day.setDate(day.getDate() + 1);
+                }
+            }
+            updateHeader(fromDate, calendar_id);
+        }
+
+        function set_selecteddates(calendar_id) {
+            var lsd = $('#list_selected_days' + calendar_id);
+            lsd.empty();
+            for (const d in selecteddates[calendar_id]) {
+                let e = $('<span class="label round" style="font-weight: bold;">' + d + '</span> &nbsp;');
+                lsd.append(e);
+            }
+        }
+
+        $('.table-simplecalendar').on('click', '.btn-prev', function (e) {
+            e.preventDefault();
+            var calendar_id = $(this).data('simplecalendar');
+            changeMonth(-1, calendar_id);
+        });
+        //Click next month
+        $('.table-simplecalendar').on('click', '.btn-next', function (e) {
+            e.preventDefault();
+            var calendar_id = $(this).data('simplecalendar');
+            changeMonth(1, calendar_id);
         });
 
         {# ########################################################################################### #}

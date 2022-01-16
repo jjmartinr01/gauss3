@@ -666,6 +666,24 @@ def ver_gform(request, id, identificador):
 @login_required()
 def ver_resultados(request, id, identificador):
     g_e = request.session["gauser_extra"]
+
+    if request.is_ajax():
+        return JsonResponse({'ok': True, 'msg': 'No se realiza ninguna operación.'})
+    elif request.method == 'POST':
+        if request.POST['action'] == 'genera_pdf':
+            dce = get_dce(g_e.ronda.entidad, 'Configuración para cuestionarios')
+            gform = Gform.objects.get(id=request.POST['gform'])
+            c = render_to_string('gform2pdf.html', {'template': gform.template_procesado})
+            fich = pdfkit.from_string(c, False, dce.get_opciones)
+            response = HttpResponse(fich, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(gform.nombre)
+            return response
+    elif request.method == 'GET':
+        gform = Gform.objects.get(id=id, identificador=identificador)
+        return render(request, "ver_resultados.html", {'gform': gform})
+
+
+
     try:
         if request.is_ajax():
             return JsonResponse({'ok': True, 'msg': 'No se realiza ninguna operación.'})
@@ -961,6 +979,23 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
                 gfri, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
                 setattr(gfri, request.POST['campo'], request.POST['firmante'])
                 gfri.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif request.POST['action'] == 'update_gfr_ca':
+            try:
+                gfsi = gfsis.get(id=request.POST['gfsi'])
+                gfsios = []
+                for fecha_string in request.POST.getlist('selecteddates[]'):
+                    tstamp = int(datetime.strptime(fecha_string, '%d/%m/%Y').timestamp())
+                    try:
+                        gfsios.append(gfsi.gformsectioninputops_set.get(orden=tstamp, opcion=fecha_string))
+                    except:
+                        gfsios.append(GformSectionInputOps.objects.create(gformsectioninput=gfsi, orden=tstamp,
+                                                                    opcion=fecha_string))
+                gfri, c = GformRespondeInput.objects.get_or_create(gformresponde=gformresponde, gfsi=gfsi)
+                gfri.ropciones.clear()
+                gfri.ropciones.add(*gfsios)
                 return JsonResponse({'ok': True})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})

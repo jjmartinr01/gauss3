@@ -120,6 +120,16 @@ class GformSection(models.Model):
                        <span style='color:grey;'>{{description}}</span>{% endautoescape %}"""
         return Template(template).render(Context({'title': self.title, 'description': self.description}))
 
+    @property
+    def number_cells_results(self):
+        n = 0
+        for gfsi in self.gformsectioninput_set.all():
+            if gfsi.tipo in ['EM', 'SC', 'SO', 'CA']:
+                n += gfsi.gformsectioninputops_set.all().count()
+            else:
+                n += 1
+        return n
+
     class Meta:
         ordering = ['gform__id', 'orden']
 
@@ -129,7 +139,8 @@ class GformSection(models.Model):
 
 GSITIPOS = (('RC', 'Respuesta corta'), ('RL', 'Respuesta larga'), ('EM', 'Elección múltiple'),
             ('SC', 'Seleccionar casillas'), ('SO', 'Seleccionar opción'), ('SA', 'Subir archivo'),
-            ('EL', 'Escala lineal'), ('FI', 'Firma del usuario'), ('EN', 'Número entero'))
+            ('EL', 'Escala lineal'), ('FI', 'Firma del usuario'), ('EN', 'Número entero'),
+            ('CA', 'Fechas calendario'))
 
 
 class GformSectionInput(models.Model):
@@ -153,6 +164,15 @@ class GformSectionInput(models.Model):
     def suma_renteros(self):
         if self.tipo in 'EN EL':
             return sum([a for a in self.gformrespondeinput_set.all().values_list('rentero', flat=True) if a])
+        elif self.tipo in ['EM', 'SC', 'SO', 'CA']:
+            sumas = []
+            for op in self.gformsectioninputops_set.all():
+                suma = 0
+                for gfri in self.gformrespondeinput_set.all():
+                    if op in gfri.ropciones.all():
+                        suma += 1
+                sumas.append(suma)
+            return sumas
         else:
             return ''
 
@@ -240,7 +260,7 @@ class GformRespondeInput(models.Model):
     def respuesta(self):
         if self.gfsi.tipo in ['RC', 'RL']:
             return Template(self.rtexto).render(Context())
-        elif self.gfsi.tipo in ['EM', 'SC', 'SO']:
+        elif self.gfsi.tipo in ['EM', 'SC', 'SO', 'CA']:
             texto = '; '.join([o.opcion for o in self.ropciones.all()])
             return Template(texto).render(Context())
         elif self.gfsi.tipo == 'SA':
@@ -257,6 +277,33 @@ class GformRespondeInput(models.Model):
             ctx = Context(
                 {'rfirma': self.rfirma, 'rfirma_nombre': self.rfirma_nombre, 'rfirma_cargo': self.rfirma_cargo})
             return Template(template).render(ctx)
+
+    @property
+    def respuesta_array(self):
+        if self.gfsi.tipo in ['RC', 'RL']:
+            return [Template(self.rtexto).render(Context())]
+        elif self.gfsi.tipo in ['EM', 'SC', 'SO', 'CA']:
+            respuestas = []
+            for o in self.gfsi.gformsectioninputops_set.all():
+                if o in self.ropciones.all():
+                    respuestas.append(Template(o.opcion).render(Context()))
+                else:
+                    respuestas.append('')
+            return respuestas
+        elif self.gfsi.tipo == 'SA':
+            return [self.rarchivo.name.rpartition('/')[2]]
+        elif self.gfsi.tipo == 'EL':
+            return [self.rentero]
+        elif self.gfsi.tipo == 'EN':
+            return [self.rentero]
+        elif self.gfsi.tipo == 'FI':
+            template = """{% autoescape off %}
+                               <table><tr><td><img src='{{ rfirma }}' style='width:120px;'></td></tr>
+                               <tr><td><p>{{ rfirma_nombre }}<br>{{ rfirma_cargo }}</p></td></tr></table>{% endautoescape %}
+                           """
+            ctx = Context(
+                {'rfirma': self.rfirma, 'rfirma_nombre': self.rfirma_nombre, 'rfirma_cargo': self.rfirma_cargo})
+            return [Template(template).render(ctx)]
 
     def __str__(self):
         return '%s - %s' % (self.gformresponde, self.gfsi)

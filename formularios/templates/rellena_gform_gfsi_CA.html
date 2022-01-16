@@ -1,0 +1,131 @@
+{% load formularios_extras %}
+<div class="row">
+    <div class="columns large-5">
+        {% with calendar_id=gfsi.id %}
+            <div class="row">
+                <div class="columns large-12 medium-12 small-12">
+                    <table id="table-simplecalendar{{ calendar_id }}" class="table-simplecalendar"
+                           data-simplecalendar={{ calendar_id }}>
+                        <thead>
+                        <tr>
+                            <th><a class="simplecalendar-btn btn-prev" data-simplecalendar={{ calendar_id }}><i
+                                    class="fa fa-arrow-left"></i></a></th>
+                            <th class="monthtitle-simplecalendar" id="month{{ calendar_id }}" colspan="5"></th>
+                            <th><a class="simplecalendar-btn btn-next" data-simplecalendar={{ calendar_id }}><i
+                                    class="fa fa-arrow-right"></i></a></th>
+                        </tr>
+                        <tr>
+                            <th class="day-title" title="Lunes">L</th>
+                            <th class="day-title" title="Martes">M</th>
+                            <th class="day-title" title="Miércoles">X</th>
+                            <th class="day-title" title="Jueves">J</th>
+                            <th class="day-title" title="Viernes">V</th>
+                            <th class="day-title" title="Sábado">S</th>
+                            <th class="day-title" title="Domingo">D</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tbody-month{{ calendar_id }}">
+                        <tr>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-1"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-2"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-3"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-4"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-5"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-6"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-7"></td>
+                        </tr>
+                        <tr>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-8"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-9"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-10"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-11"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-12"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-13"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-14"></td>
+                        </tr>
+                        <tr>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-15"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-16"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-17"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-18"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-19"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-20"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-21"></td>
+                        </tr>
+                        <tr>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-22"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-23"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-24"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-25"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-26"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-27"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-28"></td>
+                        </tr>
+                        <tr>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-29"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-30"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-31"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-32"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-33"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-34"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-35"></td>
+                        </tr>
+                        <tr>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-36"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-37"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-38"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-39"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-40"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-41"></td>
+                            <td class="day-month{{ calendar_id }}" id="day-month{{ calendar_id }}-42"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endwith %}
+    </div>
+    <div class="columns large-7">
+        <p style="font-weight: bold">Fechas seleccionadas:</p>
+        <div id="list_selected_days{{ gfsi.id }}"></div>
+    </div>
+</div>
+
+<script>
+    setTimeout(function () {
+        {% autoescape off %}
+            let processedselecteddates = {{ gfsi|get_selecteddates:gformresponde }};
+        {% endautoescape %}
+        selecteddates[{{ gfsi.id }}] = processedselecteddates;
+
+        buildCalendar(new Date(), {{gfsi.id}});
+        set_selecteddates({{gfsi.id}});
+        {# Select a day of the calendar #}
+        $('#table-simplecalendar{{gfsi.id}}').on('click', '.day', function (e) {
+            e.preventDefault();
+            var simplecalendar = $(this).data('simplecalendar');
+            $(this).toggleClass('dayselected-simplecalendar' + simplecalendar).toggleClass('dayselected-simplecalendar');
+            let date = $(this).data('date');
+            if ($(this).hasClass('dayselected-simplecalendar')) {
+                selecteddates[{{ gfsi.id }}][date] = date;
+            } else {
+                delete selecteddates[{{ gfsi.id }}][date];
+            }
+            set_selecteddates(simplecalendar);
+
+            $.post(rellena_gform_url,
+                {
+                    action: 'update_gfr_ca', gfsi: {{ gfsi.id }},
+                    selecteddates: Object.values(selecteddates[{{ gfsi.id }}])
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                        show_error(data);
+                    }
+                });
+        });
+    }, 400);
+</script>

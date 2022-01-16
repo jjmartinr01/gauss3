@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import json
+
 from django.template import Library
 from formularios.models import GSITIPOS, GformSection, GformSectionInput, GformResponde, GformRespondeInput, \
     EvalFunPract
@@ -41,6 +43,14 @@ def totalgfsis(gfsi):
 @register.filter
 def elvalues(gfsi):
     return ['%s' % i for i in range(int(gfsi.elmin), int(gfsi.elmax + 1))]
+
+
+@register.filter
+def get_selecteddates(gfsi, gformresponde):
+    try:
+        return json.dumps({gfsio.opcion:gfsio.opcion for gfsio in GformRespondeInput.objects.get(gformresponde=gformresponde, gfsi=gfsi).ropciones.all()})
+    except:
+        return ''
 
 
 @register.filter

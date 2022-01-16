@@ -44,8 +44,8 @@
                 <tr>
                     <th colspan="3" style="text-align: center;">Datos de entrega</th>
                     {% for gfs in gform.gformsection_set.all %}
-                        <th style="text-align: center;" colspan="{{ gfs.gformsectioninput_set.all|length }}">
-                            {{ gfs.title }}
+                        <th style="text-align: center;" colspan="{{ gfs.number_cells_results }}">
+                            {% autoescape off %}{{ gfs.title }}{% endautoescape %}
                         </th>
                     {% endfor %}
                 </tr>
@@ -55,8 +55,15 @@
                     <th>Fecha y hora</th>
                     {% for gfs in gform.gformsection_set.all %}
                         {% for gfsi in gfs.gformsectioninput_set.all %}
+                            {% if gfsi.tipo in 'EM SC SO CA' %}
+                                {% for op in gfsi.gformsectioninputops_set.all %}
+                                    <th data-tooltip aria-haspopup="true" class="has-tip tip-bottom"
+                                        title="{{ gfsi.pregunta }} - Valor: {{ op.opcion }}">{{ gfsi.orden }}.{{ forloop.counter }}</th>
+                                {% endfor %}
+                            {% else %}
                             <th data-tooltip aria-haspopup="true"
                                 class="has-tip tip-bottom" title="{{ gfsi.pregunta }}">{{ gfsi.orden }}</th>
+                            {% endif %}
                         {% endfor %}
                     {% endfor %}
                 </tr>
@@ -69,6 +76,10 @@
                         {% for gfri in gfr.gformrespondeinput_set.all %}
                             {% if gfri.gfsi.tipo == 'FI' %}
                                 <td title="{{ gfri.respuesta }}">{{ gfri.respuesta }}</td>
+                            {% elif gfri.gfsi.tipo in 'EM SC SO CA' %}
+                                {% for respuesta in gfri.respuesta_array %}
+                                    <td title="{{ respuesta }}">{{ respuesta|truncatechars_html:20 }}</td>
+                                {% endfor %}
                             {% else %}
                                 <td title="{{ gfri.respuesta }}">{{ gfri.respuesta|truncatechars_html:20 }}</td>
                             {% endif %}
@@ -79,7 +90,13 @@
                     <th colspan="3" style="text-align: right;">Totales:</th>
                     {% for gfs in gform.gformsection_set.all %}
                         {% for gfsi in gfs.gformsectioninput_set.all %}
-                            <th>{{ gfsi.suma_renteros }}</th>
+                            {% if gfsi.tipo in 'EM SC SO CA' %}
+                                {% for suma in gfsi.suma_renteros %}
+                                    <th>{{ suma }}</th>
+                                {% endfor %}
+                            {% else %}
+                                <th>{{ gfsi.suma_renteros }}</th>
+                            {% endif %}
                         {% endfor %}
                     {% endfor %}
                 </tr>

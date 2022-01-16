@@ -1,6 +1,6 @@
 {% load my_templatetags %}
 {% load i18n %}
-<table align="center" width="100%" class="mes_calendario">
+<table style="text-align: center; width: 100%;" class="mes_calendario">
     <thead>
     <tr>
         <th colspan="7" style="text-align: center">{{ mes.0.6|date:'F \d\e Y' }}</th>
@@ -20,42 +20,44 @@
         <tr>
             {% for dia in semana %}
                 <td class="mes_calendario {% if dia|date:'n' == mes.0.6|date:'n' %}td_dia{% endif %}"
-                    data-fecha="{{ dia|date:'d/m/Y' }}"><span style="font-size: smaller;">
-                                {% if dia|date:'n' == mes.0.6|date:'n' %}
-                                    {{ dia|date:"j" }}
-                                    {% for vevent in vevents %}
-                                        {% if vevent.dtstart|fecha_eq:dia %}
-                                            {% if vevent.festivo %}
-                                                <br><a class="show_evento" style="color:red"
-                                                       data-id="{{ vevent.id }}"><b>Festivo</b>
-                                                </a>
-                                            {% else %}
-                                                <br><a class="show_evento"
-                                                       data-id="{{ vevent.id }}"><b>{{ vevent.dtstart|date:"H:i" }}</b> {{ vevent.summary }}
-                                                </a>
-                                            {% endif %}
-                                        {% elif vevent.dtstart|fecha_lt:dia and vevent.dtend|fecha_gt:dia %}
-                                            {% if vevent.festivo %}
-                                                <br><a class="show_evento" style="color:red"
-                                                       data-id="{{ vevent.id }}"><b>Festivo</b>
-                                            {% else %}
-                                                <br><a class="show_evento" data-id="{{ vevent.id }}"><b
-                                                    title="Continúa el evento {{ vevent.summary }}">Cont.</b> {{ vevent.summary }}
-                                                </a>
-                                            {% endif %}
-                                        {% elif vevent.dtend|fecha_eq:dia %}
-                                            {% if vevent.festivo %}
-                                                <br><a class="show_evento" style="color:red"
-                                                       data-id="{{ vevent.id }}"><b>Festivo</b>
-                                            {% else %}
-                                                <br><a class="show_evento" data-id="{{ vevent.id }}"><b
-                                                    title="Finaliza el evento {{ vevent.summary }}">{{ vevent.dtend|date:"H:i" }}
-                                            (Fin.)</b> {{ vevent.summary }}</a>
-                                            {% endif %}
-                                        {% endif %}
-                                    {% endfor %}
+                    data-fecha="{{ dia|date:'d/m/Y' }}">
+                    <span style="font-size: smaller;">
+                        {% if dia|date:'n' == mes.0.6|date:'n' %}
+                            {{ dia|date:"j" }}
+                            {% for vevent in vevents %}
+                                {% if vevent.dtstart|fecha_eq:dia %}
+                                    {% if vevent.festivo %}
+                                        <br><a class="show_evento" style="color:red"
+                                               data-id="{{ vevent.id }}"><b>Festivo</b>
+                                        </a>
+                                    {% else %}
+                                        <br><a class="show_evento"
+                                               data-id="{{ vevent.id }}"><b>{{ vevent.dtstart|date:"H:i" }}</b> {{ vevent.summary }}
+                                        </a>
+                                    {% endif %}
+                                {% elif vevent.dtstart|fecha_lt:dia and vevent.dtend|fecha_gt:dia %}
+                                    {% if vevent.festivo %}
+                                        <br><a class="show_evento" style="color:red"
+                                               data-id="{{ vevent.id }}"><b>Festivo</b></a>
+                                    {% else %}
+                                        <br><a class="show_evento" data-id="{{ vevent.id }}"><b
+                                            title="Continúa el evento {{ vevent.summary }}">Cont.</b> {{ vevent.summary }}
+                                        </a>
+                                    {% endif %}
+                                {% elif vevent.dtend|fecha_eq:dia %}
+                                    {% if vevent.festivo %}
+                                        <br><a class="show_evento" style="color:red"
+                                               data-id="{{ vevent.id }}"><b>Festivo</b></a>
+                                    {% else %}
+                                        <br><a class="show_evento" data-id="{{ vevent.id }}"><b
+                                            title="Finaliza el evento {{ vevent.summary }}">{{ vevent.dtend|date:"H:i" }}
+                                    (Fin.)</b> {{ vevent.summary }}</a>
+                                    {% endif %}
                                 {% endif %}
-                            </span></td>
+                            {% endfor %}
+                        {% endif %}
+                    </span>
+                </td>
             {% endfor %}
         </tr>
     {% endfor %}
