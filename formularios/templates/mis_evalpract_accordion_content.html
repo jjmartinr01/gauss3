@@ -140,6 +140,13 @@
                             <a class="excel_cuestionario" data-efpa="{{ efpa.id }}" title="Generar excel">
                                 <span class="label"><i class="fa fa-file-excel-o"></i> </span>
                             </a>
+                        {% elif g_e|has_permiso:'ve_todas_efpas' %}
+                            <a class="informe_cuestionario" data-efpa="{{ efpa.id }}" title="Generar informe">
+                                <span class="label"><i class="fa fa-file-text-o"></i> </span>
+                            </a>
+                            <a class="excel_cuestionario" data-efpa="{{ efpa.id }}" title="Generar excel">
+                                <span class="label"><i class="fa fa-file-excel-o"></i> </span>
+                            </a>
                         {% else %}<br>
                             <span title="Rellenar el cuestionario">
                                 <span class="label secondary"><i class="fa fa-pencil"></i> </span>
