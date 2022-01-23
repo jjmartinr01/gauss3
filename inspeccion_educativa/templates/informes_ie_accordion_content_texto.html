@@ -6,13 +6,14 @@
         width: 100%;
     }
 </style>
-{% if ie.get_variables|length > 0 %}
-    <div class="variables_texto2pdf{{ ie.id }}">
-        <div class="row" id="variables{{ ie.id }}">
+
+<div class="variables_texto2pdf{{ ie.id }}">
+    <div class="row" id="variables{{ ie.id }}">
+        {% if ie.get_variables|length > 0 %}
             {% include "informes_ie_accordion_content_texto_variables.html" %}
-        </div>
+        {% endif %}
     </div>
-{% endif %}
+</div>
 <div class="row" id="texto_informe_plantilla{{ ie.id }}">
     <div class="columns large-12">
         <label><b>Texto del informe editable:</b></label>
@@ -23,15 +24,13 @@
     </div>
 </div>
 
-{% if ie.get_variables|length > 0 %}
-    <div class="variables_texto2pdf{{ ie.id }}">
-        <div class="row">
-            <div class="columns large-12">
-                <label><b>Texto del informe (no editable):</b></label>
-                <div style="min-height: 100px;" id="texto_informe{{ ie.id }}">
-                    {% include "informes_ie_accordion_content_texto2pdf.html" %}
-                </div>
-            </div>
+
+<div class="variables_texto2pdf{{ ie.id }}">
+    <div class="row">
+        <div class="columns large-12" id="texto_informe{{ ie.id }}">
+            {% if ie.get_variables|length > 0 %}
+                {% include "informes_ie_accordion_content_texto2pdf.html" %}
+            {% endif %}
         </div>
     </div>
-{% endif %}
+</div>

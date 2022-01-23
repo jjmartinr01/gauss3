@@ -1311,9 +1311,18 @@ def plantilla_organica(request):
             try:
                 po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
                 html = render_to_string('plantilla_organica_accordion_content.html', {'po': po, 'g_e': g_e})
-                return JsonResponse({'ok': True, 'html': html})
+                return JsonResponse({'ok': True, 'html': html, 'carga_completa': po.carga_completa})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        # elif request.POST['action'] == 'check_carga_completa' and request.is_ajax():
+        #     try:
+        #         po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['id'])
+        #         if po.carga_completa:
+        #             return JsonResponse({'ok': True})
+        #         else:
+        #             return JsonResponse({'ok': False})
+        #     except Exception as msg:
+        #         return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.POST['action'] == 'carga_parcial_plantilla' and request.is_ajax():
             po = PlantillaOrganica.objects.get(g_e=g_e, id=request.POST['po'])
             funcion = request.POST['funcion']

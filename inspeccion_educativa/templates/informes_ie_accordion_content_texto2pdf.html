@@ -52,16 +52,19 @@
     </body>
     </html>
 {% else %}
-    <div class="informe_no_editable">
-        <table class="informe_no_editable">
-            <tr>
-                <td style="width: 109mm;">&nbsp;</td>
-                <td style="width: 101mm;" title="Destinatario del informe">
-                    {% autoescape off %}{{ ie.destinatario }}{% endautoescape %}</td>
-            </tr>
-        </table>
+    <label><b>Texto del informe (no editable):</b></label>
+    <div style="min-height: 100px;" >
+        <div class="informe_no_editable">
+            <table class="informe_no_editable">
+                <tr>
+                    <td style="width: 109mm;">&nbsp;</td>
+                    <td style="width: 101mm;" title="Destinatario del informe">
+                        {% autoescape off %}{{ ie.destinatario }}{% endautoescape %}</td>
+                </tr>
+            </table>
 
-        <p style="font-weight: bold" title="Asunto del informe">Asunto: {{ ie.asunto }}</p>
-        <div title="Contenido del informe">{% autoescape off %}{{ ie.texto_procesado }}{% endautoescape %}</div>
+            <p style="font-weight: bold" title="Asunto del informe">Asunto: {{ ie.asunto }}</p>
+            <div title="Contenido del informe">{% autoescape off %}{{ ie.texto_procesado }}{% endautoescape %}</div>
+        </div>
     </div>
 {% endif %}

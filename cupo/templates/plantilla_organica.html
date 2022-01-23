@@ -297,6 +297,13 @@
         {# Operaciones directas Mis formularios: #}
         {# open_accordion,   #}
         {# ########################################################################################### #}
+        var carga_completa = true;
+        setInterval(function (){
+            if (!carga_completa){
+                carga_contenido_accordion();
+                console.log('Intento de cargar la plantilla');
+            }
+        }, 3000);
 
         function carga_contenido_accordion() {
             var id = $('#accordion_id').val();
@@ -307,6 +314,7 @@
                         setTimeout(function () {
                             $(document).foundation('tooltip', 'reflow');
                         }, 200)
+                        carga_completa = data.carga_completa;
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
