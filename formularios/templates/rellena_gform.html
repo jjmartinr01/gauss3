@@ -244,10 +244,12 @@
                         <div class="row">
                             <div class="columns large-12 medium-12 text-center">
                                 <ul class="button-group">
+                                    {% if gformresponde.gform.template|length > 30 %}
                                     <li>
                                         <a class="button genera_pdf" data-gform="{{ gformresponde.gform.id }}">
                                             <i class="fa fa-file-pdf-o"></i> PDF</a>
                                     </li>
+                                    {% endif %}
                                     <li>
                                         <a href="/" class="button alert terminar_gform">
                                             <i class="fa fa-sign-out"></i> Terminar</a>

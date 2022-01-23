@@ -135,6 +135,8 @@
             $('.select2-container').css('width', '100%');
         }, 1200);
 
+        {% if request.session.gauser_extra|has_permiso:'puede_configurar_competencias' %}
+
         $('body').on('change', '.dos_select2', function () {
             var dos = $(this).val();
             var cesp = $(this).data('cesp');
@@ -276,7 +278,7 @@
                     }
                 });
         });
-
+        {% endif %}
         {#$(document).foundation({#}
         {#    accordion: {#}
         {#        callback: function (accordion) {#}

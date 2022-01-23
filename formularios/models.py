@@ -222,7 +222,7 @@ class GformResponde(models.Model):
 
         for r in self.gformrespondeinput_set.all():
             respuesta[r.gfsi.orden] = r.respuesta
-        context = Context({'respuesta': respuesta, 'gform': self.gform, 'pregunta': pregunta})
+        context = Context({'respuesta': respuesta, 'cuestionario': self, 'pregunta': pregunta})
         return template.render(context)
 
     def __str__(self):

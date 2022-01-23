@@ -93,6 +93,10 @@ PERMISOS = [
     {'code_nombre': 'evalua_cualquier_materia',
      'nombre': 'Tiene permiso para evaluar cualquier materia',
      'menu': 'acceso_evaluar_materias'
+     },
+    {'code_nombre': 'puede_configurar_competencias',
+     'nombre': 'Tiene permiso para configurar las competencias',
+     'menu': 'acceso_configura_competencias'
      }
     #             {'code_nombre': 'edita_programaciones_ccff',
     #              'nombre': 'Tiene permiso para editar cualquier programación de CCFF',
