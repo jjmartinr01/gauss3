@@ -1418,7 +1418,7 @@ def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_
                   })
 
 
-@permiso_required('acceso_mis_evalpract')
+# @permiso_required('acceso_mis_evalpract')
 def mis_evalpract(request):  # mis_evaluaciones_prácticas
     g_e = request.session["gauser_extra"]
     fecha_min = datetime.now().date() + timedelta(days=60)
@@ -1529,14 +1529,24 @@ def mis_evalpract(request):  # mis_evaluaciones_prácticas
                 wf.write(fila, 1, BeautifulSoup(subdim.subdimension, features='lxml').get_text(), style=estilo)
                 wf.write(fila, 2, dim.valor, style=estilo)
                 wf.write(fila, 3, BeautifulSoup(cue.pregunta, features='lxml').get_text(), style=estilo)
-                wf.write(fila, 4, calc_valor(efpr.docente), style=estilo)
-                wf.write(fila, 5, calc_valor(efpr.tutor), style=estilo)
-                wf.write(fila, 6, calc_valor(efpr.director), style=estilo)
-                wf.write(fila, 7, calc_valor(efpr.inspector), style=estilo)
-                observaciones = 'Docente: %s\nTutor: %s\nDirector: %s\nInspector: %s' % (efpr.obsdocente,
-                                                                                         efpr.obstutor,
-                                                                                         efpr.obsdirector,
-                                                                                         efpr.obsinspector)
+                # wf.write(fila, 4, calc_valor(efpr.docente), style=estilo)
+                # wf.write(fila, 5, calc_valor(efpr.tutor), style=estilo)
+                # wf.write(fila, 6, calc_valor(efpr.director), style=estilo)
+                # wf.write(fila, 7, calc_valor(efpr.inspector), style=estilo)
+                wf.write(fila, 4, calc_valor([-1, efpr.docente][efpr.evalfunpractact.respondido_doc]), style=estilo)
+                wf.write(fila, 5, calc_valor([-1, efpr.tutor][efpr.evalfunpractact.respondido_tut]), style=estilo)
+                wf.write(fila, 6, calc_valor([-1, efpr.director][efpr.evalfunpractact.respondido_dir]), style=estilo)
+                wf.write(fila, 7, calc_valor([-1, efpr.inspector][efpr.evalfunpractact.respondido_ins]), style=estilo)
+                # observaciones = 'Docente: %s\nTutor: %s\nDirector: %s\nInspector: %s' % (efpr.obsdocente,
+                #                                                                          efpr.obstutor,
+                #                                                                          efpr.obsdirector,
+                #                                                                          efpr.obsinspector)
+                obsdocente = ['', efpr.obsdocente][efpr.evalfunpractact.respondido_doc]
+                obstutor = ['', efpr.obstutor][efpr.evalfunpractact.respondido_tut]
+                obsdirector = ['', efpr.obsdirector][efpr.evalfunpractact.respondido_dir]
+                obsinspector = ['', efpr.obsinspector][efpr.evalfunpractact.respondido_ins]
+                observaciones = 'Docente: %s\nTutor: %s\nDirector: %s\nInspector: %s' % (obsdocente, obstutor,
+                                                                                         obsdirector, obsinspector)
                 wf.write(fila, 8, observaciones)
                 if len(observaciones) > 50:
                     wf.row(fila).height_mismatch = True
