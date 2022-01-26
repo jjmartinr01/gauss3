@@ -918,25 +918,26 @@ def asignar_centros_inspeccion(request):
     g_e = request.session["gauser_extra"]
     inspectores = get_inspectores(request)
     if request.method == 'POST':
-        if request.POST['action'] == 'update_campo':
+        tiene_permiso = g_e.has_permiso('update_campos_asignar_centros_inspección')
+        if request.POST['action'] == 'update_campo' and tiene_permiso:
             try:
                 ci = CentroInspeccionado.objects.get(ronda=g_e.ronda, id=request.POST['ci'])
                 if request.POST['campo'] == 'zonai':
                     ci.zonai = request.POST['valor']
                     ci.save()
                     return JsonResponse({'ok': True})
-                elif request.POST['campo'] == 'clasificado':
+                elif request.POST['campo'] == 'clasificado' and tiene_permiso:
                     ci.clasificado = request.POST['valor']
                     ci.save()
                     return JsonResponse({'ok': True})
-                elif request.POST['campo'] == 'puntos':
+                elif request.POST['campo'] == 'puntos' and tiene_permiso:
                     ci.puntos = request.POST['valor']
                     ci.save()
                     puntos = get_puntos_inspector([ci.inspectorasignado_set.all()[0].inspector])
                     return JsonResponse({'ok': True, 'puntos': puntos})
             except:
                 return JsonResponse({'ok': False})
-        elif request.POST['action'] == 'update_campoia':
+        elif request.POST['action'] == 'update_campoia' and tiene_permiso:
             try:
                 ci = CentroInspeccionado.objects.get(ronda=g_e.ronda, id=request.POST['ci'])
                 ia = ci.inspectorasignado_set.get(id=request.POST['ia'])
@@ -955,7 +956,7 @@ def asignar_centros_inspeccion(request):
         elif request.POST['action'] == 'update_observaciones':
             try:
                 ci = CentroInspeccionado.objects.get(ronda=g_e.ronda, id=request.POST['ci'])
-                if ci.inspectorasignado_set.filter(inspector=g_e).count() > 0:
+                if ci.inspectorasignado_set.filter(inspector=g_e).count() > 0 or tiene_permiso:
                     ci.observaciones = request.POST['texto']
                     ci.save()
                     return JsonResponse({'ok': True})

@@ -128,4 +128,8 @@ PERMISOS = [{'code_nombre': 'crea_tareas_ie',
              'nombre': 'Tiene permiso para descargar actas de evaluación',
              'menu': 'acceso_actas_firmadas'
              },
+            {'code_nombre': 'update_campos_asignar_centros_inspección',
+             'nombre': 'Tiene permiso para actualizar los campos de la asignación a centros a inspectores',
+             'menu': 'acceso_asignar_centros_inspeccion'
+             }
             ]
