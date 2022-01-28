@@ -1546,3 +1546,20 @@ def plantilla_organica(request):
                       'ejemplo_sesiones': ejemplo_sesiones,
                       'docente': g_e,
                   })
+
+def comprueba_dnis(request):
+    g_e = request.session["gauser_extra"]
+    info = {'errores': [], 'duplicados': []}
+    if g_e.gauser.username == 'gauss':
+        from autenticar.models import Gauser
+        from gauss.funciones import genera_nie
+        info = {'errores': [], 'duplicados': []}
+        gauser_all = Gauser.objects.all()
+        gauser_all_dnis = gauser_all.values_list('dni', flat=True)
+        for g in gauser_all:
+            dni = genera_nie(g.dni)
+            if g.dni != dni:
+                info['errores'].append('%s-%s -> %s' % (g.get_full_name(), g.dni, dni))
+                if dni in gauser_all_dnis:
+                    info['duplicados'].append('%s-%s -> %s' % (g.get_full_name(), g.dni, dni))
+    return JsonResponse(info)

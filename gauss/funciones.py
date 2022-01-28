@@ -5,6 +5,7 @@ import string
 import random
 import os
 import pdfkit
+import re
 from django.db.models import Q
 from django.template import Context, Template
 from django.template.loader import render_to_string
@@ -364,3 +365,29 @@ def get_dce(entidad, nombre):
         dce.editable = False
         dce.save()
     return dce
+
+def genera_nie(a=''):
+    if not a:
+        return ''
+    a = a.upper()
+    dni = re.sub('[^0-9]', '', a)
+    if a[0] in 'XYZ':
+        comienzo = a[0]
+        dni = dni[-7:] # Cadenas de más de 7 cifras eliminamos las primeras
+        # if len(dni) > 7:
+        #     return False
+        while len(dni) < 7:
+            dni = '0' + dni
+        # Para calcular letra nie, el comienzo X se sustituye por 0, el Y por 1 y Z por 2
+        comienzos = {'X': '0', 'Y': '1', 'Z': '2'}
+        dni = comienzos[comienzo] + dni
+        letra = 'TRWAGMYFPDXBNJZSQVHLCKE'[int(dni) % 23]
+        return comienzo + dni[1:] + letra
+    else:
+        dni = dni[-8:] # Cadenas de más de 8 cifras eliminamos las primeras
+        # if len(dni) > 8:
+        #     return False
+        while len(dni) < 8:
+            dni = '0' + dni
+        letra = 'TRWAGMYFPDXBNJZSQVHLCKE'[int(dni) % 23]
+        return dni + letra
