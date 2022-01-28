@@ -1564,13 +1564,17 @@ def comprueba_dnis(request):
                 if dni in gauser_all_dnis:
                     try:
                         g_bueno = gauser_all.get(dni=dni)
-                        ges_buenos = list(gauser_extra_all.filter(gauser=g_bueno).values_list('ronda__id', 'ronda__nombre'))
-                        ges_a_mover = list(gauser_extra_all.filter(gauser=g).values_list('ronda__id', 'ronda__nombre'))
+                        # ges_buenos = list(gauser_extra_all.filter(gauser=g_bueno).values_list('ronda__id', 'ronda__nombre'))
+                        # ges_a_mover = list(gauser_extra_all.filter(gauser=g).values_list('ronda__id', 'ronda__nombre'))
+                        ges_buenos = gauser_extra_all.filter(gauser=g_bueno)
+                        rondas_buenas = ges_buenos.values_list('ronda__id', flat=True)
+                        ges_buenos_id = ges_buenos.values_list('id', flat=True)
+                        ges_a_mover = gauser_extra_all.filter(gauser=g)
                         for ge_a_mover in ges_a_mover:
-                            if ge_a_mover in ges_buenos:
-                                info['errores'].append('Varios ges (%s) en la misma ronda: %s -- ges_buenos: %s' % (g_bueno.get_full_name(), ge_a_mover, str(ges_buenos)))
-                        info['duplicados'].append({'g_bueno': [g_bueno.id, g_bueno.last_name], 'ges_buenos': ges_buenos,
-                                                   'ges_a_mover': ges_a_mover})
+                            if ge_a_mover.ronda.id in rondas_buenas:
+                                info['errores'].append('Varios ges (%s) en la misma ronda: (%s, %s) -- ges_buenos: %s' % (g_bueno.get_full_name(), ge_a_mover.id, ge_a_mover.ronda.id, list(ges_buenos.values_list('id', 'ronda_id'))))
+                        info['duplicados'].append({'g_bueno': [g_bueno.id, g_bueno.last_name], 'ges_buenos': list(ges_buenos_id),
+                                                   'ges_a_mover': list(ges_a_mover.values_list('id', flat=True))})
                     except:
                         info['errores'].append('Varios gauser con dni %' % dni)
                     # gausers_duplicados = list(gauser_all.filter(dni=dni).values_list('id', 'last_name'))
