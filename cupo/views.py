@@ -1568,7 +1568,7 @@ def comprueba_dnis(request):
                         ges_a_mover = list(gauser_extra_all.filter(gauser=g).values_list('ronda__id', 'ronda__nombre'))
                         for ge_a_mover in ges_a_mover:
                             if ge_a_mover in ges_buenos:
-                                info['errores'].append('Varios ges (%s) en la misma ronda: %s' % (g_bueno.get_full_name(), ge_a_mover))
+                                info['errores'].append('Varios ges (%s) en la misma ronda: %s -- ges_buenos: %s' % (g_bueno.get_full_name(), ge_a_mover, str(ges_buenos)))
                         info['duplicados'].append({'g_bueno': [g_bueno.id, g_bueno.last_name], 'ges_buenos': ges_buenos,
                                                    'ges_a_mover': ges_a_mover})
                     except:
