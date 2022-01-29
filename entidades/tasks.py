@@ -18,7 +18,7 @@ from autenticar.models import Gauser, Permiso, Menu_default
 from gauss.constantes import PROVINCIAS, CODE_CONTENEDOR
 from bancos.views import asocia_banco_ge
 from mensajes.models import Aviso
-from gauss.funciones import pass_generator
+from gauss.funciones import pass_generator, genera_nie
 from django.http import HttpResponse, JsonResponse
 
 logger = logging.getLogger('django')
@@ -82,7 +82,7 @@ def crear_nombre_usuario(nombre, apellidos):
 
 
 def create_usuario(datos, carga, tipo):
-    dni = datos['dni' + tipo] if len(datos['dni' + tipo]) > 6 else 'DNI inventado para generar error en el try'
+    dni = genera_nie(datos['dni' + tipo]) if len(datos['dni' + tipo]) > 6 else 'DNI inventado generar error en el try'
     try:
         gauser = Gauser.objects.get(dni=dni)
         logger.info('Existe Gauser con dni %s' % dni)
@@ -135,11 +135,12 @@ def create_usuario(datos, carga, tipo):
             nombre = datos['nombre' + tipo]
             apellidos = datos['apellidos' + tipo]
             usuario = crear_nombre_usuario(nombre, apellidos)
+            dni = genera_nie(datos['dni' + tipo])
             gauser = Gauser.objects.create_user(usuario, email=datos['email' + tipo].lower(),
-                                                password=datos['dni' + tipo], last_login=now())
+                                                password=pass_generator(), last_login=now())
             gauser.first_name = string.capwords(nombre.title()[0:28])
             gauser.last_name = string.capwords(apellidos.title()[0:28])
-            gdata = {'dni': datos['dni' + tipo], 'telfij': datos['telefono_fijo' + tipo], 'sexo': datos['sexo' + tipo],
+            gdata = {'dni': dni, 'telfij': datos['telefono_fijo' + tipo], 'sexo': datos['sexo' + tipo],
                      'telmov': datos['telefono_movil' + tipo], 'localidad': datos['localidad' + tipo],
                      'address': datos['direccion' + tipo], 'provincia': get_provincia(datos['provincia' + tipo]),
                      'nacimiento': devuelve_fecha(datos['nacimiento' + tipo]), 'postalcode': datos['cp' + tipo],
@@ -593,7 +594,7 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
                 cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
             except:
                 cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_docente', borrable=False, cargo='Docente')
-            dni = str(sheet.cell(row_index, dict_names['DNI']).value).strip()
+            dni = genera_nie(str(sheet.cell(row_index, dict_names['DNI']).value))
             nombre = sheet.cell(row_index, dict_names['Nombre docente']).value
             apellidos = sheet.cell(row_index, dict_names['Apellidos docente']).value
             email = sheet.cell(row_index, dict_names['Correo-e']).value

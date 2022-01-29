@@ -1,9 +1,32 @@
 # -*- coding: utf-8 -*-
 from datetime import date
+import re
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from gauss.constantes import *
 from bancos.models import Banco
+
+def genera_nie(a=''):
+    a = a.upper()
+    dni = re.sub('[^0-9]', '', a)
+    if not dni:
+        return ''
+    if a[0] in 'XYZ':
+        comienzo = a[0]
+        dni = dni[-7:] # Cadenas de más de 7 cifras eliminamos las primeras
+        while len(dni) < 7:
+            dni = '0' + dni
+        # Para calcular letra nie, el comienzo X se sustituye por 0, el Y por 1 y Z por 2
+        comienzos = {'X': '0', 'Y': '1', 'Z': '2'}
+        dni = comienzos[comienzo] + dni
+        letra = 'TRWAGMYFPDXBNJZSQVHLCKE'[int(dni) % 23]
+        return comienzo + dni[1:] + letra
+    else:
+        dni = dni[-8:] # Cadenas de más de 8 cifras eliminamos las primeras
+        while len(dni) < 8:
+            dni = '0' + dni
+        letra = 'TRWAGMYFPDXBNJZSQVHLCKE'[int(dni) % 23]
+        return dni + letra
 
 TIPO = (('Gauss', 'Gauss'),
         ('Restringido', 'Restringido'),
@@ -84,6 +107,10 @@ class Gauser(AbstractUser):
     class Meta:
         verbose_name_plural = "Usuarios (Gauser)"
         ordering = ['pk']
+
+    def save(self, *args, **kwargs):
+        self.dni = genera_nie(self.dni)
+        super(Gauser, self).save(*args, **kwargs)
 
     def __str__(self):
         if self.email:

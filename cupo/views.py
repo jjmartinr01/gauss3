@@ -1572,7 +1572,7 @@ def comprueba_dnis(request):
                         ges_a_mover = gauser_extra_all.filter(gauser=g)
                         for ge_a_mover in ges_a_mover:
                             if ge_a_mover.ronda.id in rondas_buenas:
-                                info['errores'].append('Varios ges (%s) en la misma ronda: (%s, %s) -- ges_buenos: %s' % (g_bueno.get_full_name(), ge_a_mover.id, ge_a_mover.ronda.id, list(ges_buenos.values_list('id', 'ronda_id'))))
+                                info['errores'].append('Varios ges (%s - %s) en la misma ronda: (%s, %s) -- ges_buenos: %s %s' % (g.get_full_name(), g.dni, ge_a_mover.id, ge_a_mover.ronda.id, g_bueno.get_full_name(), list(ges_buenos.values_list('id', 'ronda_id'))))
                         info['duplicados'].append({'g_bueno': [g_bueno.id, g_bueno.last_name], 'ges_buenos': list(ges_buenos_id),
                                                    'ges_a_mover': list(ges_a_mover.values_list('id', flat=True))})
                     except:

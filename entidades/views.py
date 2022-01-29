@@ -152,8 +152,8 @@ def usuarios_entidad_ajax(request):
             if action == 'select_user':
                 items = []
                 texto = request.GET['search']
-                q = (Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto))
-                for u in usuarios_ronda(g_e.ronda, subentidades=False).filter(q):
+                q = Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)
+                for u in usuarios_ronda(g_e.ronda, subentidades=False).filter(q | Q(gauser__dni__icontains=texto)):
                     items.append({'id': u.id, 'text': '%s, %s' % (u.gauser.last_name, u.gauser.first_name)})
                 return JsonResponse({'ok': True, 'items': items})
         else:

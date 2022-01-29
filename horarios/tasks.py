@@ -13,6 +13,7 @@ from cupo.models import PlantillaXLS, PlantillaOrganica, LogCarga
 from programaciones.models import Especialidad_entidad, Gauser_extra_programaciones, Departamento, \
     Especialidad_funcionario, crea_departamentos
 from formularios.models import EvalFunPractAct, EvalFunPractRes
+from gauss.funciones import genera_nie
 from gauss.rutas import MEDIA_FILES
 
 logger = logging.getLogger('django')
@@ -557,7 +558,11 @@ def carga_masiva_from_file():
                     try:
                         # Al cargar un campo con valor '2', la hoja excel la devuelve como '2.0'
                         # para grabar exactamento '2' lo convertimos float -> int -> str :
-                        setattr(pxls, keys[column_header], str(int(float(sheet.cell(row_index, col_index).value))))
+                        if keys[column_header] == 'dni':
+                            dni = genera_nie(str(int(float(sheet.cell(row_index, col_index).value))))
+                            setattr(pxls, keys[column_header], dni)
+                        else:
+                            setattr(pxls, keys[column_header], str(int(float(sheet.cell(row_index, col_index).value))))
                     except:
                         setattr(pxls, keys[column_header], sheet.cell(row_index, col_index).value)
                 pxls.save()

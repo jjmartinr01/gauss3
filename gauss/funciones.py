@@ -367,10 +367,10 @@ def get_dce(entidad, nombre):
     return dce
 
 def genera_nie(a=''):
-    if not a:
-        return ''
     a = a.upper()
     dni = re.sub('[^0-9]', '', a)
+    if not dni:
+        return ''
     if a[0] in 'XYZ':
         comienzo = a[0]
         dni = dni[-7:] # Cadenas de más de 7 cifras eliminamos las primeras
