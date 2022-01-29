@@ -367,27 +367,30 @@ def get_dce(entidad, nombre):
     return dce
 
 def genera_nie(a=''):
-    a = a.upper()
-    dni = re.sub('[^0-9]', '', a)
-    if not dni:
-        return ''
-    if a[0] in 'XYZ':
-        comienzo = a[0]
-        dni = dni[-7:] # Cadenas de más de 7 cifras eliminamos las primeras
-        # if len(dni) > 7:
-        #     return False
-        while len(dni) < 7:
-            dni = '0' + dni
-        # Para calcular letra nie, el comienzo X se sustituye por 0, el Y por 1 y Z por 2
-        comienzos = {'X': '0', 'Y': '1', 'Z': '2'}
-        dni = comienzos[comienzo] + dni
-        letra = 'TRWAGMYFPDXBNJZSQVHLCKE'[int(dni) % 23]
-        return comienzo + dni[1:] + letra
+    if a:
+        a = a.upper()
+        dni = re.sub('[^0-9]', '', a)
+        if not dni:
+            return ''
+        if a[0] in 'XYZ':
+            comienzo = a[0]
+            dni = dni[-7:] # Cadenas de más de 7 cifras eliminamos las primeras
+            # if len(dni) > 7:
+            #     return False
+            while len(dni) < 7:
+                dni = '0' + dni
+            # Para calcular letra nie, el comienzo X se sustituye por 0, el Y por 1 y Z por 2
+            comienzos = {'X': '0', 'Y': '1', 'Z': '2'}
+            dni = comienzos[comienzo] + dni
+            letra = 'TRWAGMYFPDXBNJZSQVHLCKE'[int(dni) % 23]
+            return comienzo + dni[1:] + letra
+        else:
+            dni = dni[-8:] # Cadenas de más de 8 cifras eliminamos las primeras
+            # if len(dni) > 8:
+            #     return False
+            while len(dni) < 8:
+                dni = '0' + dni
+            letra = 'TRWAGMYFPDXBNJZSQVHLCKE'[int(dni) % 23]
+            return dni + letra
     else:
-        dni = dni[-8:] # Cadenas de más de 8 cifras eliminamos las primeras
-        # if len(dni) > 8:
-        #     return False
-        while len(dni) < 8:
-            dni = '0' + dni
-        letra = 'TRWAGMYFPDXBNJZSQVHLCKE'[int(dni) % 23]
-        return dni + letra
+        return ''
