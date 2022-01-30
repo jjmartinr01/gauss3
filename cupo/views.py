@@ -1588,7 +1588,6 @@ def arregla_duplicados(request):
     if g_e.gauser.username == 'gauss':
         from autenticar.models import Gauser
         from gauss.funciones import genera_nie
-        info = {'cambios': [], 'duplicados': []}
         gauser_all = Gauser.objects.all()
         gauser_all_dnis = gauser_all.values_list('dni', flat=True)
         gauser_extra_all = Gauser_extra.objects.all()
@@ -1612,8 +1611,8 @@ def arregla_duplicados(request):
                                 else:
                                     ge_a_mover.gauser = g_bueno
                                     ge_a_mover.save()
-                        except:
-                            info['errores'].append('Varios gauser con dni %s' % dni)
+                        except Exception as msg:
+                            info['errores'].append('Varios gauser con dni %s -- %s' % (dni, str(msg)))
                     else:
                         g.dni = dni
                         g.save()

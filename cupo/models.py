@@ -555,17 +555,21 @@ class PlantillaOrganica(models.Model):
                         logger.warning(log)
                         LogCarga.objects.create(g_e=self.g_e, log=log)
                     except:
-                        try:
-                            gauser = Gauser.objects.get(email=email)
-                            gauser.set_password(pass_generator(size=9))
-                            log = 'Sin embargo existe usuario con email: %s - %s' % (email, gauser)
-                            logger.warning(log)
-                            LogCarga.objects.create(g_e=self.g_e, log=log)
-                        except:
-                            gauser = Gauser.objects.create_user(pass_generator(size=9), email=email, last_login=now(),
-                                                                    password=pass_generator(size=9))
-                            log = 'Creado usuario: %s' % (gauser)
-                            LogCarga.objects.create(g_e=self.g_e, log=log)
+                        gauser = Gauser.objects.create_user(pass_generator(size=9), email=email, last_login=now(),
+                                                            password=pass_generator(size=9))
+                        log = 'Creado usuario: %s' % (gauser)
+                        LogCarga.objects.create(g_e=self.g_e, log=log)
+                        # try:
+                            # gauser = Gauser.objects.get(email=email)
+                            # gauser.set_password(pass_generator(size=9))
+                            # log = 'Sin embargo existe usuario con email: %s - %s' % (email, gauser)
+                            # logger.warning(log)
+                            # LogCarga.objects.create(g_e=self.g_e, log=log)
+                        # except:
+                            # gauser = Gauser.objects.create_user(pass_generator(size=9), email=email, last_login=now(),
+                            #                                         password=pass_generator(size=9))
+                            # log = 'Creado usuario: %s' % (gauser)
+                            # LogCarga.objects.create(g_e=self.g_e, log=log)
                 try:
                     gauser.dni = dni
                     gauser.first_name = first_name[0:29]
