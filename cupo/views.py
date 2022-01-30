@@ -1612,7 +1612,7 @@ def arregla_duplicados(request):
                                 ge_a_mover.gauser = g_bueno
                                 ge_a_mover.save()
                     except:
-                        info['errores'].append('Varios gauser con dni %' % dni)
+                        info['errores'].append('Varios gauser con dni %s' % dni)
                 else:
                     g.dni = dni
                     g.save()
