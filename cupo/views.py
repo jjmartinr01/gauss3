@@ -1595,7 +1595,6 @@ def arregla_duplicados(request):
             try:
                 dni = genera_nie(g.dni)
                 if g.dni != dni and dni:
-                    # info['errores'].append('%s-%s -> %s' % (g.get_full_name(), g.dni, dni))
                     if dni in gauser_all_dnis:
                         try:
                             g_bueno = gauser_all.get(dni=dni)
