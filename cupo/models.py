@@ -7,7 +7,7 @@ from django.utils.timezone import now
 
 from cupo.habilitar_permisos import Miembro_Equipo_Directivo
 from entidades.views import get_entidad_general
-from gauss.funciones import pass_generator
+from gauss.funciones import pass_generator, genera_nie
 from autenticar.models import Gauser, Permiso, Menu_default
 from entidades.models import Subentidad, Entidad, Ronda, Cargo, Gauser_extra, Dependencia, MiembroDepartamento, Menu, \
     EspecialidadDocenteBasica, MiembroEDB
@@ -540,28 +540,18 @@ class PlantillaOrganica(models.Model):
             if not ge['x_docente'] in x_docentes:
                 x_docentes.append(ge['x_docente'])
                 last_name, first_name = ge['docente'].split(', ')
-                clave_ex, dni, puesto, x_puesto, x_departamento = ge['x_docente'], ge['dni'], ge['puesto'], ge[
-                    'x_puesto'], ge['x_departamento']
-                dni_inicial = dni
-                if len(dni) == 8:
-                    dni = '0%s' % dni
-                username, email = ge['email'].split('@')[0], ge['email']
+                clave_ex, dni, puesto, x_puesto, x_departamento, email = ge['x_docente'], genera_nie(ge['dni']), ge[
+                    'puesto'], ge['x_puesto'], ge['x_departamento'], ge['email']
                 try:
-                    if len(dni_inicial) == 8:
-                        try:
-                            gauser = Gauser.objects.get(dni=dni_inicial)
-                        except:
-                            gauser = Gauser.objects.get(dni=dni)
-                    else:
-                        gauser = Gauser.objects.get(dni=dni)
+                    gauser = Gauser.objects.get(dni=dni)
                 except Exception as msg:
-                    log = 'Error: %s. dni %s - username %s' % (str(msg), dni, username)
+                    log = 'Error: %s. dni %s - email %s' % (str(msg), dni, email)
                     LogCarga.objects.create(g_e=self.g_e, log=log)
                     try:
                         gex = Gauser_extra.objects.get(clave_ex=clave_ex, ronda=self.ronda_centro)
                         gauser = gex.gauser
                         gauser.set_password(pass_generator(size=9))
-                        log = 'Sin embargo existe usuario con clave_x: %s - %s' % (clave_ex, gex)
+                        log = 'Sin embargo existe g_e con clave_x: %s - %s' % (clave_ex, gex)
                         logger.warning(log)
                         LogCarga.objects.create(g_e=self.g_e, log=log)
                     except:
@@ -572,19 +562,11 @@ class PlantillaOrganica(models.Model):
                             logger.warning(log)
                             LogCarga.objects.create(g_e=self.g_e, log=log)
                         except:
-                            try:
-                                gauser = Gauser.objects.get(username=username)
-                                gauser.set_password(pass_generator(size=9))
-                                log = 'Ya existe un usuario: %s' % username
-                                logger.warning(log)
-                                LogCarga.objects.create(g_e=self.g_e, log=log)
-                            except:
-                                gauser = Gauser.objects.create_user(username, email=email, last_login=now(),
+                            gauser = Gauser.objects.create_user(pass_generator(size=9), email=email, last_login=now(),
                                                                     password=pass_generator(size=9))
-                                log = 'Creado usuario: %s' % (gauser)
-                                LogCarga.objects.create(g_e=self.g_e, log=log)
+                            log = 'Creado usuario: %s' % (gauser)
+                            LogCarga.objects.create(g_e=self.g_e, log=log)
                 try:
-                    gauser.username = username
                     gauser.dni = dni
                     gauser.first_name = first_name[0:29]
                     gauser.last_name = last_name[0:29]
@@ -699,7 +681,8 @@ class PlantillaOrganica(models.Model):
             sesiones_utilizadas = []
             for apartado in self.estructura_po:
                 for nombre_columna, contenido_columna in self.estructura_po[apartado].items():
-                    sesiones_id = sextras.filter(~Q(sesion_id__in=sesiones_utilizadas), contenido_columna['q']).values_list('sesion__id', flat=True)
+                    sesiones_id = sextras.filter(~Q(sesion_id__in=sesiones_utilizadas),
+                                                 contenido_columna['q']).values_list('sesion__id', flat=True)
                     sesiones_utilizadas += list(sesiones_id)
                     sesiones = Sesion.objects.filter(id__in=sesiones_id)
                     for localidad in pd.localidades:

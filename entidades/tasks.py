@@ -598,37 +598,48 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
             nombre = sheet.cell(row_index, dict_names['Nombre docente']).value
             apellidos = sheet.cell(row_index, dict_names['Apellidos docente']).value
             email = sheet.cell(row_index, dict_names['Correo-e']).value
+            username = sheet.cell(row_index, dict_names['Usuario']).value
+            clave_ex = str(sheet.cell(row_index, dict_names['X_DOCENTE']).value).strip()
+            puesto = str(sheet.cell(row_index, dict_names['Puesto']).value).strip()
+            tipo_personal = str(sheet.cell(row_index, dict_names['Tipo personal']).value).strip()
+            jornada_contratada = str(sheet.cell(row_index, dict_names['Jornada contratada']).value).strip()
             try:
                 try:
                     gauser = Gauser.objects.get(dni=dni)
                     gauser.email = email
+                    gauser.username = username
                 except:
-                    gauser = Gauser.objects.get(email=email)
+                    gauser = Gauser.objects.get(username=username)
+                    gauser.email = email
+                    gauser.dni = dni
             except:
-                try:
-                    gauser = Gauser.objects.create_user(email.split('@')[0], email=email, last_login=now(),
-                                                        password=pass_generator(size=9))
-                except:
-                    usuario = crear_nombre_usuario(nombre, apellidos)
-                    gauser = Gauser.objects.create_user(usuario, email=email, last_login=now(),
-                                                        password=pass_generator(size=9))
-            if 'larioja.edu.es' in email.split('@')[1]:
-                gauser.username = email.split('@')[0]
+                gauser = Gauser.objects.create_user(username, email=email, last_login=now(), dni=dni,
+                                                    password=pass_generator(size=9))
+                # try:
+                #     gauser = Gauser.objects.create_user(username, email=email, last_login=now(),
+                #                                         password=pass_generator(size=9))
+                # except:
+                #     usuario = crear_nombre_usuario(nombre, apellidos)
+                #     gauser = Gauser.objects.create_user(usuario, email=email, last_login=now(),
+                #                                         password=pass_generator(size=9))
+            # if 'larioja.edu.es' in email.split('@')[1]:
+            #     gauser.username = email.split('@')[0]
             gauser.first_name = nombre
             gauser.last_name = apellidos
-            gauser.dni = dni
+            # gauser.dni = dni
             gauser.save()
             gauser_extra, c = Gauser_extra.objects.get_or_create(ronda=entidad.ronda, gauser=gauser)
-            gauser_extra.clave_ex = str(sheet.cell(row_index, dict_names['X_DOCENTE']).value).strip()
+            gauser_extra.clave_ex = clave_ex
             gauser_extra.activo = True
-            gauser_extra.puesto = str(sheet.cell(row_index, dict_names['Puesto']).value).strip()
-            gauser_extra.tipo_personal = str(sheet.cell(row_index, dict_names['Tipo personal']).value).strip()
-            gauser_extra.jornada_contratada = str(sheet.cell(row_index, dict_names['Jornada contratada']).value).strip()
+            gauser_extra.puesto = puesto
+            gauser_extra.tipo_personal = tipo_personal
+            gauser_extra.jornada_contratada = jornada_contratada
             gauser_extra.cargos.add(cargo)
             gauser_extra.save()
         except Exception as msg:
             apellidos = slugify(sheet.cell(row_index, dict_names['Apellidos docente']).value)
             errores[row_index]={'error': str(msg), 'apellidos': apellidos}
+            logger.info('Error carga general docentes %s -- %s' % (str(apellidos), msg))
     return HttpResponse(errores)
 
 @shared_task

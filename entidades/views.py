@@ -34,7 +34,7 @@ from mensajes.models import Aviso, Mensaje, Etiqueta
 from mensajes.views import crear_aviso
 from bancos.views import asocia_banco_entidad, num_cuenta2iban
 from gauss.rutas import *
-from gauss.funciones import usuarios_de_gauss, pass_generator, usuarios_ronda, usuarios_organization
+from gauss.funciones import usuarios_de_gauss, pass_generator, usuarios_ronda, genera_nie, usuarios_organization
 from datetime import date
 import simplejson as json
 from django.template.loader import render_to_string
@@ -1247,9 +1247,9 @@ def add_usuario(request):
 
     if request.method == 'POST':
         crear_aviso(request, True, request.META['PATH_INFO'] + ' POST')
-        dni = request.POST['dni']
+        dni = genera_nie(request.POST['dni'])
         try:
-            gauser = Gauser.objects.get(dni__icontains=dni)
+            gauser = Gauser.objects.get(dni=dni)
             crear_aviso(request, False, 'Un usuario con el mismo DNI ya existe. No se crea uno nuevo.')
         except:
             usuario = crear_nombre_usuario(nombre=request.POST['first_name'], apellidos=request.POST['last_name'])
@@ -1912,8 +1912,9 @@ def ajax_entidades(request):
             ahora = datetime.now()
             # try:
             reserva = Reserva_plaza.objects.get(id=request.POST['reserva'])
+            dni = genera_nie(reserva.dni)
             try:
-                g = Gauser.objects.get(dni=reserva.dni)
+                g = Gauser.objects.get(dni=dni)
             except:
                 try:
                     g = Gauser.objects.get(email=reserva.email)
@@ -1923,19 +1924,20 @@ def ajax_entidades(request):
                                                    first_name=reserva.first_name, last_name=reserva.last_name,
                                                    address=reserva.address, telfij=reserva.telfij,
                                                    telmov=reserva.telmov, sexo=reserva.sexo, last_login=ahora,
-                                                   nacimiento=reserva.nacimiento, dni=reserva.dni)
+                                                   nacimiento=reserva.nacimiento, dni=dni)
             cargos = Cargo.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('cargos[]'))
             subs = Subentidad.objects.filter(entidad=g_e.ronda.entidad, id__in=request.POST.getlist('subentidades[]'))
             if reserva.first_name_tutor1:
+                dni_tutor1 = genera_nie(reserva.dni_tutor1)
                 try:
-                    g1 = Gauser.objects.get(dni=reserva.dni_tutor1)
+                    g1 = Gauser.objects.get(dni=dni_tutor1)
                 except:
                     try:
                         g1 = Gauser.objects.get(email=reserva.email_tutor1)
                     except:
                         g1 = Gauser.objects.create_user(
                             crear_nombre_usuario(reserva.first_name_tutor1, reserva.last_name_tutor1),
-                            email=reserva.email_tutor1, password=pass_generator(), dni=reserva.dni_tutor1,
+                            email=reserva.email_tutor1, password=pass_generator(), dni=dni_tutor1,
                             first_name=reserva.first_name_tutor1, last_name=reserva.last_name_tutor1, last_login=ahora,
                             address=reserva.address, telfij=reserva.telfij_tutor1, telmov=reserva.telmov_tutor1)
                 try:
@@ -1949,15 +1951,16 @@ def ajax_entidades(request):
             else:
                 g1, g_e1, g1_name = None, None, None
             if reserva.first_name_tutor2:
+                dni_tutor2 = genera_nie(reserva.dni_tutor2)
                 try:
-                    g2 = Gauser.objects.get(dni=reserva.dni_tutor2)
+                    g2 = Gauser.objects.get(dni=dni_tutor2)
                 except:
                     try:
                         g2 = Gauser.objects.get(email=reserva.email_tutor2)
                     except:
                         g2 = Gauser.objects.create_user(
                             crear_nombre_usuario(reserva.first_name_tutor2, reserva.last_name_tutor2),
-                            email=reserva.email_tutor2, password=pass_generator(), dni=reserva.dni_tutor2,
+                            email=reserva.email_tutor2, password=pass_generator(), dni=dni_tutor2,
                             first_name=reserva.first_name_tutor2, last_name=reserva.last_name_tutor2, last_login=ahora,
                             address=reserva.address, telfij=reserva.telfij_tutor2, telmov=reserva.telmov_tutor2)
                 try:

@@ -32,7 +32,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.utils.encoding import smart_text
 from gauss.constantes import PROVINCIAS, GAUSER_COMODIN
-from gauss.funciones import pass_generator
+from gauss.funciones import pass_generator, genera_nie
 from gauss.settings import RUTA_BASE_SETTINGS
 from estudios.models import Gauser_extra_estudios
 from autenticar.models import Enlace, Permiso, Gauser, Menu_default
@@ -634,7 +634,7 @@ def get_provincia(p):  # Devuelve el código de la provincia cuyo nombre se pare
 
 def create_usuario(datos, request, tipo):
     g_e = request.session['gauser_extra']
-    dni = datos['dni' + tipo] if len(datos['dni' + tipo]) > 6 else 'DNI inventado para generar error en el try'
+    dni = genera_nie(datos['dni' + tipo]) if len(datos['dni' + tipo]) > 6 else 'DNI inventado generar error en el try'
     try:
         gauser = Gauser.objects.get(dni=dni)
         logger.info('Existe Gauser con dni %s' % (dni))
@@ -679,10 +679,10 @@ def create_usuario(datos, request, tipo):
             apellidos = datos['apellidos' + tipo]
             usuario = crear_nombre_usuario(nombre, apellidos)
             gauser = Gauser.objects.create_user(usuario, email=datos['email' + tipo].lower(),
-                                                password=datos['dni' + tipo], last_login=timezone.now())
+                                                password=pass_generator(), last_login=timezone.now())
             gauser.first_name = string.capwords(nombre.title()[0:28])
             gauser.last_name = string.capwords(apellidos.title()[0:28])
-            gdata = {'dni': datos['dni' + tipo], 'telfij': datos['telefono_fijo' + tipo], 'sexo': datos['sexo' + tipo],
+            gdata = {'dni': dni, 'telfij': datos['telefono_fijo' + tipo], 'sexo': datos['sexo' + tipo],
                      'telmov': datos['telefono_movil' + tipo], 'localidad': datos['localidad' + tipo],
                      'address': datos['direccion' + tipo], 'provincia': get_provincia(datos['provincia' + tipo]),
                      'nacimiento': devuelve_fecha(datos['nacimiento' + tipo]), 'postalcode': datos['cp' + tipo],
@@ -998,7 +998,7 @@ def logincas(request):
                 user = Gauser.objects.get(username=id)
             except:
                 try:
-                    user = Gauser.objects.get(dni=id)
+                    user = Gauser.objects.get(dni=genera_nie(id))
                 except:
                     return HttpResponse(id)
                     # return HttpResponse('Tu usuario en Gauss debe coincidir con el de Racima')

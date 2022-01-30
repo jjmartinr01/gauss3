@@ -1593,29 +1593,31 @@ def arregla_duplicados(request):
         gauser_all_dnis = gauser_all.values_list('dni', flat=True)
         gauser_extra_all = Gauser_extra.objects.all()
         for g in gauser_all:
-            dni = genera_nie(g.dni)
-            if g.dni != dni and dni:
-                # info['errores'].append('%s-%s -> %s' % (g.get_full_name(), g.dni, dni))
-                if dni in gauser_all_dnis:
-                    try:
-                        g_bueno = gauser_all.get(dni=dni)
-                        ges_buenos = gauser_extra_all.filter(gauser=g_bueno)
-                        rondas_buenas = ges_buenos.values_list('ronda__id', flat=True)
-                        ges_a_mover = gauser_extra_all.filter(gauser=g)
-                        if ges_a_mover.count() == 0:
-                            g.delete()
-                            info['duplicados'].append('Borrado Gauser sin GEs')
-                        for ge_a_mover in ges_a_mover:
-                            if ge_a_mover.ronda.id in rondas_buenas:
-                                ge_a_mover.delete()
-                            else:
-                                ge_a_mover.gauser = g_bueno
-                                ge_a_mover.save()
-                    except:
-                        info['errores'].append('Varios gauser con dni %s' % dni)
-                else:
-                    g.dni = dni
-                    g.save()
-                    info['duplicados'].append('%s' % g.dni)
-
+            try:
+                dni = genera_nie(g.dni)
+                if g.dni != dni and dni:
+                    # info['errores'].append('%s-%s -> %s' % (g.get_full_name(), g.dni, dni))
+                    if dni in gauser_all_dnis:
+                        try:
+                            g_bueno = gauser_all.get(dni=dni)
+                            ges_buenos = gauser_extra_all.filter(gauser=g_bueno)
+                            rondas_buenas = ges_buenos.values_list('ronda__id', flat=True)
+                            ges_a_mover = gauser_extra_all.filter(gauser=g)
+                            if ges_a_mover.count() == 0:
+                                g.delete()
+                                info['duplicados'].append('Borrado Gauser sin GEs')
+                            for ge_a_mover in ges_a_mover:
+                                if ge_a_mover.ronda.id in rondas_buenas:
+                                    ge_a_mover.delete()
+                                else:
+                                    ge_a_mover.gauser = g_bueno
+                                    ge_a_mover.save()
+                        except:
+                            info['errores'].append('Varios gauser con dni %s' % dni)
+                    else:
+                        g.dni = dni
+                        g.save()
+                        info['duplicados'].append('%s' % g.dni)
+            except:
+                info['errores'].append('Error con usuario %s' % g.id)
     return JsonResponse(info)
