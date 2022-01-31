@@ -1602,8 +1602,12 @@ def arregla_duplicados(request):
                             rondas_buenas = ges_buenos.values_list('ronda__id', flat=True)
                             ges_a_mover = gauser_extra_all.filter(gauser=g)
                             if ges_a_mover.count() == 0:
-                                g.delete()
-                                info['duplicados'].append('Borrado Gauser sin GEs')
+                                try:
+                                    g.delete()
+                                    info['duplicados'].append('Borrado Gauser sin GEs')
+                                except:
+                                    g.dni = ''
+                                    g.save()
                             for ge_a_mover in ges_a_mover:
                                 if ge_a_mover.ronda.id in rondas_buenas:
                                     ge_a_mover.delete()
