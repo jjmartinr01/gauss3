@@ -1587,7 +1587,7 @@ def arregla_duplicados(request):
     info = {'errores': [], 'duplicados': []}
     if g_e.gauser.username == 'gauss':
         from autenticar.models import Gauser
-        from gauss.funciones import genera_nie
+        from gauss.funciones import genera_nie, pass_generator
         gauser_all = Gauser.objects.all()
         gauser_all_dnis = gauser_all.values_list('dni', flat=True)
         gauser_extra_all = Gauser_extra.objects.all()
@@ -1607,6 +1607,7 @@ def arregla_duplicados(request):
                                     info['duplicados'].append('Borrado Gauser sin GEs')
                                 except:
                                     g.dni = ''
+                                    g.username = pass_generator(size=12)
                                     g.first_name = 'Borrado'
                                     g.last_name = 'por dni duplicado'
                                     g.save()
