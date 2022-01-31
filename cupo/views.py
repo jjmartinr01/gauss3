@@ -1582,7 +1582,7 @@ def comprueba_dnis(request):
                     # info['duplicados'].append({'g': [g.id, g.last_name], 'dup': gausers_duplicados})
     return JsonResponse(info)
 
-def arregla_duplicados(request):
+def arregla_duplicados_antiguo(request):
     g_e = request.session["gauser_extra"]
     info = {'errores': [], 'duplicados': []}
     if g_e.gauser.username == 'gauss':
@@ -1625,6 +1625,42 @@ def arregla_duplicados(request):
                         g.dni = dni
                         g.save()
                         info['duplicados'].append('%s' % g.dni)
+                else:
+                    gs = gauser_all.filter(dni=dni)
+                    num = gs.count()
+                    if num > 1:
+                        info['duplicados'].append('%s duplicado con dni %s' % (num, dni))
             except:
                 info['errores'].append('Error con usuario %s' % g.id)
+    return JsonResponse(info)
+
+def arregla_duplicados(request):
+    g_e = request.session["gauser_extra"]
+    info = {'errores': [], 'duplicados': []}
+    if g_e.gauser.username == 'gauss':
+        from autenticar.models import Gauser
+        from gauss.funciones import genera_nie, pass_generator
+        gauser_all = Gauser.objects.filter(dni_duplicado=True)
+        # gauser_all_dnis = gauser_all.values_list('dni', flat=True)
+        gauser_extra_all = Gauser_extra.objects.all()
+        for g in gauser_all:
+            # try:
+            if g.dni:
+                gs = gauser_all.filter(dni=g.dni)
+                num = gs.count()
+                if num > 1:
+                    ges = gauser_extra_all.filter(gauser=g)
+                    info['duplicados'].append('%s duplicado con dni %s. ges=%s' % (num, g.dni, ges.count()))
+                    if ges.count() == 0:
+                        g.dni = ''
+                        g.username = pass_generator(size=12)
+                        g.is_active = False
+                        g.first_name = 'Borrado'
+                        g.last_name = 'por dni duplicado'
+                        g.save()
+                else:
+                    g.dni_duplicado = False
+                    g.save()
+            # except:
+            #     info['errores'].append('Error con usuario %s' % g.id)
     return JsonResponse(info)

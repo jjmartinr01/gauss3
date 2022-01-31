@@ -101,6 +101,7 @@ class Gauser(AbstractUser):
     fecha_baja = models.DateField("Fecha de baja en la entidad", blank=True, null=True)
     ficticio = models.BooleanField("Este es un usuario ficticio?", default=False)
     educa_pk = models.CharField("pk en gauss_educa", max_length=12, blank=True, null=True)
+    dni_duplicado = models.BooleanField('¿DNI duplicado?', default=True)
 
     @property
     def has_mail(self):
