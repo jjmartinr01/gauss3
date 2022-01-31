@@ -1610,6 +1610,7 @@ def arregla_duplicados(request):
                                     g.username = pass_generator(size=12)
                                     g.first_name = 'Borrado'
                                     g.last_name = 'por dni duplicado'
+                                    g.is_active = False
                                     g.save()
                                     info['errores'].append('Gauser borrado por duplicado %s' % str(g.id))
                             for ge_a_mover in ges_a_mover:
