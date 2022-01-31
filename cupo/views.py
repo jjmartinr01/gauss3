@@ -1607,7 +1607,10 @@ def arregla_duplicados(request):
                                     info['duplicados'].append('Borrado Gauser sin GEs')
                                 except:
                                     g.dni = ''
+                                    g.first_name = 'Borrado'
+                                    g.last_name = 'por dni duplicado'
                                     g.save()
+                                    info['errores'].append('Gauser borrado por duplicado %s' % str(g.id))
                             for ge_a_mover in ges_a_mover:
                                 if ge_a_mover.ronda.id in rondas_buenas:
                                     ge_a_mover.delete()
