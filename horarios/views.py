@@ -1399,7 +1399,7 @@ def xml_penalara(xml_file, request):
                                   actividad=actividad, horario=horario)
 
 
-@permiso_required('acceso_guardias_horarios')
+# @permiso_required('acceso_guardias_horarios')
 def guardias_horario(request):
     g_e = request.session['gauser_extra']
     ronda = request.session['ronda']
