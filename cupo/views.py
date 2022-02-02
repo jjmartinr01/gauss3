@@ -1541,7 +1541,7 @@ def plantilla_organica(request):
                       'plantillas_o': plantillas_o,
                       'g_e': g_e,
                       'centros_no_racima': Entidad.objects.filter(code__in=centros_no_racima),
-                      'esdir': Entidad.objects.get(code=26008219),
+                      # 'esdir': Entidad.objects.get(code=26008219),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                       'ejemplo_sesiones': ejemplo_sesiones,
                       'docente': g_e,
