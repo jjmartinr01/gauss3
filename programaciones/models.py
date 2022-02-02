@@ -7,10 +7,16 @@ from django.db import models
 
 from gauss.rutas import MEDIA_PROGRAMACIONES
 from calendario.models import Vevent
-from estudios.models import Materia, Curso
+from estudios.models import Materia, Curso, AreaMateria, CompetenciaEspecifica, CriterioEvaluacion
 from entidades.models import Gauser_extra, Ronda, Entidad
 from horarios.models import Horario, Sesion
 from actividades.models import Actividad
+
+
+
+#############################################################################
+##################### PROGRAMACIONES ANTIGUAS  ##############################
+#############################################################################
 
 
 def update_aaee(instance, filename):
@@ -618,6 +624,97 @@ class Cont_unidad_modulo(models.Model):
     def __str__(self):
         return '%s - %s (%s horas)' % (self.unidad.nombre, self.contenido[:200], self.duracion)
 
+#############################################################################
+##################### PROGRAMACIONES LOMLOE  ################################
+#############################################################################
+
+class ProgSec(models.Model):
+    pga = models.ForeignKey(PGA, on_delete=models.CASCADE)
+    gep = models.ForeignKey(Gauser_extra_programaciones, blank=True, null=True, on_delete=models.CASCADE)
+    materia = models.ForeignKey(Materia_programaciones, blank=True, null=True, on_delete=models.CASCADE)
+    areamateria = models.ForeignKey(AreaMateria, on_delete=models.CASCADE, blank=True, null=True)
+    creado = models.DateField("Fecha de creación", auto_now_add=True)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+class PesoCev(models.Model):
+    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
+    cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
+    valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=0)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+def update_documentos_psec(instance, filename):
+    centro_code = str(instance.psec.pga.ronda.entidad.code)
+    ronda = slugify(instance.psec.pga.ronda.nombre)
+    curso = slugify(instance.psec.materia.curso.nombre)
+    materia = slugify(instance.psec.materia.nombre)
+    nombre = slugify(instance.nombre)
+    ext = filename.rpartition('.')[2]
+    return 'programaciones/%s/%s/materias/%s/%s/%s.%s' % (centro_code, ronda, curso, materia, nombre, ext)
+
+class LibroRecurso(models.Model):
+    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
+    nombre = models.CharField('Nombre del libro o recurso', blank=True, max_length=300)
+    isbn = models.CharField('ISBN', blank=True, max_length=20)
+    observaciones = models.TextField('Observaciones', blank=True)
+    doc_file = models.FileField("Libro o recurso asociado a la programación", upload_to=update_documentos_psec)
+    content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    @property
+    def filename(self):
+        return os.path.basename(self.doc_file.name)
+
+    def __str__(self):
+        return 'Libro-Recurso: %s' % (self.nombre)
+
+class ActExCom(models.Model):
+    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
+    nombre = models.CharField('Nombre de la actividad', blank=True, max_length=300)
+    observaciones = models.TextField('Observaciones', blank=True)
+    inicio = models.DateTimeField('Fecha y hora de comienzo', blank=True, null=True)
+    fin = models.DateTimeField('Fecha y hora de finalización', blank=True, null=True)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+
+class SaberBas(models.Model):
+    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
+    orden = models.IntegerField('Orden del saber básico dentro del conjunto de saberes', default=1)
+    parent = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
+    nombre = models.CharField('Nombre de la actividad', blank=True, max_length=300)
+    periodos = models.IntegerField('Número estimado de periodos lectivos para impartirlo', default=1)
+    librorecursos = models.ManyToManyField(LibroRecurso, blank=True)
+    actexcoms = models.ManyToManyField(ActExCom, blank=True)
+    ces = models.ManyToManyField(CompetenciaEspecifica, blank=True)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+class SitApren(models.Model):
+    sbas = models.ForeignKey(SaberBas, on_delete=models.CASCADE)
+    nombre = models.CharField('Nombre dado a la situación de aprendizaje', blank=True, max_length=300)
+
+class InstrEval(models.Model):
+    TIPOS = (('ESVAL', 'Escala de valoración'), ('LCONT', 'Lista de control'), ('RANEC', 'Registro anecdótico'),
+             ('CUADE', 'Revisión del cuaderno'), ('COMPO', 'Composición y/o ensayo'),
+             ('PRESC', 'Preguntas de respuesta corta'), ('PREEM', 'Preguntas de emparejamiento'),
+             ('PTINC', 'Preguntas de texto incompleto'), ('POMUL', 'Preguntas de opción múltiple'),
+             ('PRVOF', 'Preguntas de verdadero/falso justificadas'), ('PRAYD', 'Preguntas de analogías y diferencias'),
+             ('PRIEL', 'Preguntas de interpretación y/o elaboración de gráficos, tablas, mapas, ...'),
+             ('TMONO', 'Trabajo monográfico o de investigación'))
+    # sbas = models.ForeignKey(SaberBas, on_delete=models.CASCADE)
+    sapren = models.ForeignKey(SitApren, on_delete=models.CASCADE)
+    tipo = models.CharField('Tipo de instrumento', blank=True, max_length=10, choices=TIPOS)
+    nombre = models.CharField('Nombre dado al instrumento', blank=True, max_length=300)
+
+class SaberBasEval(models.Model):
+    ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
+    cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
+    peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=1)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+
+
+#############################################################################
+########################### OTRAS FUNCIONES  ################################
+#############################################################################
 
 def crea_cuerpos_especialidades():
     CUERPOS = (("590", "PROFESORES DE ENSEÑANZA SECUNDARIA"),
@@ -996,3 +1093,8 @@ modulos = [
     ("Tratamiento de la documentación contable", "Gestión Administrativa"),
     ("Tratamiento informático de la información", "Gestión Administrativa"),
 ]
+
+
+
+
+

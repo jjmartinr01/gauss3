@@ -118,6 +118,10 @@
                                data-horario="{{ horario.id }}"><i class="fa fa-plus-circle"></i> Añadir</a> </span>
                 <div id="g{{ t.tramo.1|slugify }}">
                     {% for g in guardias %}
+                        <input type="hidden" value="{{ g.sesion.hora_inicio_cadena }}" data-info="g.sesion.hora_inicio_cadena">
+                        <input type="hidden" value="{{t.tramo.1}}" data-info="t.tramo.1">
+                        <input type="hidden" value="{{ g.sesion.hora_fin_cadena }}" data-info="g.sesion.hora_fin_cadena">
+                        <input type="hidden" value="{{ t.tramo.2 }}" data-info="t.tramo.2">
                         {% if g.sesion.hora_inicio_cadena == t.tramo.1 and g.sesion.hora_fin_cadena == t.tramo.2 %}
                             {% include "guardias_horario_content.html" %}
                         {% endif %}
