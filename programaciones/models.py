@@ -636,6 +636,13 @@ class ProgSec(models.Model):
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
+
+class PesoCE(models.Model):
+    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
+    ce = models.ForeignKey(CompetenciaEspecifica, on_delete=models.CASCADE)
+    valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=0)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
 class PesoCev(models.Model):
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
     cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
@@ -690,6 +697,14 @@ class SaberBas(models.Model):
 class SitApren(models.Model):
     sbas = models.ForeignKey(SaberBas, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre dado a la situación de aprendizaje', blank=True, max_length=300)
+    objetivo = models.TextField('Descripción de la situación de aprendizaje y lo que pretende conseguir', blank=True)
+    ces = models.ManyToManyField(CompetenciaEspecifica, blank=True)
+
+class ActSitApren(models.Model):
+    sapren = models.ForeignKey(SitApren, on_delete=models.CASCADE)
+    nombre = models.CharField('Nombre dado a la situación de aprendizaje', blank=True, max_length=300)
+    description = models.TextField('Descripción de la actividad ligada a la situación de aprendizaje', blank=True)
+    producto = models.TextField('Producto o productos resultado de la situación de aprendizaje', blank=True)
 
 class InstrEval(models.Model):
     TIPOS = (('ESVAL', 'Escala de valoración'), ('LCONT', 'Lista de control'), ('RANEC', 'Registro anecdótico'),
@@ -701,6 +716,7 @@ class InstrEval(models.Model):
              ('TMONO', 'Trabajo monográfico o de investigación'))
     # sbas = models.ForeignKey(SaberBas, on_delete=models.CASCADE)
     sapren = models.ForeignKey(SitApren, on_delete=models.CASCADE)
+    asapren = models.ForeignKey(ActSitApren, on_delete=models.CASCADE, blank=True, null=True)
     tipo = models.CharField('Tipo de instrumento', blank=True, max_length=10, choices=TIPOS)
     nombre = models.CharField('Nombre dado al instrumento', blank=True, max_length=300)
 
@@ -710,6 +726,11 @@ class SaberBasEval(models.Model):
     peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=1)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
+class CriInstrEval(models.Model):
+    ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
+    cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
+    peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=1)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
 
 #############################################################################
