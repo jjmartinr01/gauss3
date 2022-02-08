@@ -720,11 +720,11 @@ class InstrEval(models.Model):
     tipo = models.CharField('Tipo de instrumento', blank=True, max_length=10, choices=TIPOS)
     nombre = models.CharField('Nombre dado al instrumento', blank=True, max_length=300)
 
-class SaberBasEval(models.Model):
-    ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
-    cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
-    peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=1)
-    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+# class SaberBasEval(models.Model):
+#     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
+#     cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
+#     peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=1)
+#     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
 class CriInstrEval(models.Model):
     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
