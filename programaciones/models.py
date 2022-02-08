@@ -636,6 +636,17 @@ class ProgSec(models.Model):
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
+class CEProgSec(models.Model):
+    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
+    ce = models.ForeignKey(CompetenciaEspecifica, on_delete=models.CASCADE)
+    valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=0)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+class CEvProgSec(models.Model):
+    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
+    cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
+    valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=0)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
 class PesoCE(models.Model):
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
@@ -691,7 +702,7 @@ class SaberBas(models.Model):
     periodos = models.IntegerField('Número estimado de periodos lectivos para impartirlo', default=1)
     librorecursos = models.ManyToManyField(LibroRecurso, blank=True)
     actexcoms = models.ManyToManyField(ActExCom, blank=True)
-    ces = models.ManyToManyField(CompetenciaEspecifica, blank=True)
+    # ces = models.ManyToManyField(CompetenciaEspecifica, blank=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
 class SitApren(models.Model):
@@ -699,6 +710,7 @@ class SitApren(models.Model):
     nombre = models.CharField('Nombre dado a la situación de aprendizaje', blank=True, max_length=300)
     objetivo = models.TextField('Descripción de la situación de aprendizaje y lo que pretende conseguir', blank=True)
     ces = models.ManyToManyField(CompetenciaEspecifica, blank=True)
+    ceps = models.ManyToManyField(CEProgSec, blank=True)
 
 class ActSitApren(models.Model):
     sapren = models.ForeignKey(SitApren, on_delete=models.CASCADE)
@@ -715,7 +727,7 @@ class InstrEval(models.Model):
              ('PRIEL', 'Preguntas de interpretación y/o elaboración de gráficos, tablas, mapas, ...'),
              ('TMONO', 'Trabajo monográfico o de investigación'))
     # sbas = models.ForeignKey(SaberBas, on_delete=models.CASCADE)
-    sapren = models.ForeignKey(SitApren, on_delete=models.CASCADE)
+    # sapren = models.ForeignKey(SitApren, on_delete=models.CASCADE)
     asapren = models.ForeignKey(ActSitApren, on_delete=models.CASCADE, blank=True, null=True)
     tipo = models.CharField('Tipo de instrumento', blank=True, max_length=10, choices=TIPOS)
     nombre = models.CharField('Nombre dado al instrumento', blank=True, max_length=300)
@@ -729,6 +741,7 @@ class InstrEval(models.Model):
 class CriInstrEval(models.Model):
     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
     cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
+    cevps = models.ForeignKey(CEvProgSec, on_delete=models.CASCADE, blank=True, null=True)
     peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=1)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
