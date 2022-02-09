@@ -648,17 +648,17 @@ class CEvProgSec(models.Model):
     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=0)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
-class PesoCE(models.Model):
-    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
-    ce = models.ForeignKey(CompetenciaEspecifica, on_delete=models.CASCADE)
-    valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=0)
-    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+# class PesoCE(models.Model):
+#     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
+#     ce = models.ForeignKey(CompetenciaEspecifica, on_delete=models.CASCADE)
+#     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=0)
+#     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
-class PesoCev(models.Model):
-    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
-    cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
-    valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=0)
-    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+# class PesoCev(models.Model):
+#     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
+#     cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
+#     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=0)
+#     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
 def update_documentos_psec(instance, filename):
     centro_code = str(instance.psec.pga.ronda.entidad.code)
@@ -709,7 +709,7 @@ class SitApren(models.Model):
     sbas = models.ForeignKey(SaberBas, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre dado a la situación de aprendizaje', blank=True, max_length=300)
     objetivo = models.TextField('Descripción de la situación de aprendizaje y lo que pretende conseguir', blank=True)
-    ces = models.ManyToManyField(CompetenciaEspecifica, blank=True)
+    # ces = models.ManyToManyField(CompetenciaEspecifica, blank=True)
     ceps = models.ManyToManyField(CEProgSec, blank=True)
 
 class ActSitApren(models.Model):
@@ -740,7 +740,7 @@ class InstrEval(models.Model):
 
 class CriInstrEval(models.Model):
     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
-    cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
+    # cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
     cevps = models.ForeignKey(CEvProgSec, on_delete=models.CASCADE, blank=True, null=True)
     peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=1)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
