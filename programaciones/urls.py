@@ -23,4 +23,6 @@ urlpatterns = [
     path('proyecto_educativo_centro/', views.proyecto_educativo_centro),
     path('pecjson/<int:code>/', views.pecjson),
     path('pgajson/<int:code>/', views.pgajson),
+    path('progsecundaria/', views.progsecundaria),
+path('progsecundaria_sb/<int:id>/', views.progsecundaria_sb),
 ]

@@ -1,0 +1,499 @@
+{% load entidades_extras %}
+<style>
+    p {
+        text-align: justify;
+    }
+
+    .span_periodos {
+        color: darkred;
+    }
+    {% comment %}
+    {% for sb in sap.saberbas_set.all %}
+        #row_sb_botones{{ sb.id }} {
+            display: none;
+            position: absolute;
+            top: 1px;
+            right: 35px;
+        }
+        #row_sb{{ sb.id }} {
+            position: relative;
+        }
+        #row_sb{{ sb.id }}:hover #row_sb_botones{{ sb.id }} {
+            display: block;
+        }
+        #row_sb{{ sb.id }}:hover {
+            border-top: 1px solid #ebccd1;
+        }
+        {% for sap in sb.sitapren_set.all %}
+            #row_sap_botones{{ sb.id }} {
+                display: none;
+                position: absolute;
+                top: 1px;
+                right: 35px;
+            }
+            #row_sap{{ sb.id }} {
+                position: relative;
+            }
+            #row_sap{{ sb.id }}:hover #row_sap_botones{{ sb.id }} {
+                display: block;
+            }
+            #row_sap{{ sb.id }}:hover {
+                border-top: 1px solid #ebccd1;
+            }
+        {% endfor %}
+    {% endfor %}
+{% endcomment %}
+
+</style>
+<div class="row">
+    <div class="columns large-12">
+        <ul class="button-group right">
+            {% if sap.inspector.gauser == g_e.gauser or g_e|has_permiso:'borra_informes_sap' %}
+                <li><a class="button alert borrar_sap tiny" data-id="{{ sap.id }}"
+                       title="Borrar completamente esta programación de la base de datos"><i class="fa fa-trash-o"></i>
+                    Borrar</a></li>
+            {% endif %}
+            <li><a class="button copiar_sap tiny" data-id="{{ sap.id }}"
+                   title="Hacer una copia (un duplicado) de este informe"><i class="fa fa-copy"></i> Copiar</a>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Nombre dado a la situación de aprendizaje: </b>
+            <input type="text" class="update_texto nombre" data-campo="nombre" data-id="{{ sap.id }}"
+                   id="input_nombre{{ sap.id }}" value="{{ sap.nombre }}"
+                   placeholder="Introduce aquí el nombre de la situación de aprendizaje"></label>
+    </div>
+</div>
+
+<div id="docentes_sap{{ sap.id }}">
+    <div class="row">
+        <div class="columns large-6">
+            <label><b>Departamento: </b>
+                <select id="departamento{{ sap.id }}" data-sap="{{ sap.id }}">
+                    <option value="">------</option>
+                    {% for d in departamentos %}
+                        <option value="{{ d.id }}">{{ d.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <div class="columns large-6">
+            <label><b>Jefe/a del departamento: </b>
+                <select id="jefe_departamento{{ sap.id }}" data-sap="{{ sap.id }}">
+                    <option value="">------</option>
+                    {% for d in docentes %}
+                        <option value="{{ d.id }}">{{ d.gauser.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label><b>Docentes del departamento usando esta programación (tendrán permiso para editarla): </b>
+                <select id="miembros_departamento{{ sap.id }}" data-sap="{{ sap.id }}" multiple="multiple">
+                    <option value="">------</option>
+                    {% for d in docentes %}
+                        <option value="{{ d.id }}">{{ d.gauser.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+</div>
+<br>
+
+<div id="contenido_sap{{ sap.id }}">
+    <div class="row">
+        <div class="columns large-12">
+            <div class="panel callout"><h3>1º Dar un peso a cada competencia específica</h3></div>
+            <p>La superación de {{ sap.areamateria.nombre }} implica la adquisición de una serie de competencias
+                específicas. Cada una de ellas contribuirá en parte a la calificación que finalmente obtendrán sus
+                alumunos. No obstante, es posible que su departamento considere que una competencia específica tenga más
+                importancia que otras en la calificación final. Esta importancia la puede fijar introduciendo un "peso"
+                a cada competencia específica; este peso se representa por un número asociado a dicha competencia.
+                Cuanto mayor es el peso (el número asignado) mayor es la importancia de la copetencia.</p>
+        </div>
+    </div>
+
+    {% for ce in sap.cesap_set.all %}
+        <div class="row">
+            <div class="columns large-10">
+                {{ ce.ce.nombre }}
+            </div>
+            <div class="columns large-2">
+                <input type="number" min="1" max="10" class="pesoce" data-ce="{{ ce.id }}" value="{{ ce.valor }}">
+            </div>
+        </div>
+    {% endfor %}
+
+    <div class="row">
+        <div class="columns large-12" style="text-align: center;">
+            <math style="font-family: Helvetica,serif; font-size: x-large;">
+                <mrow>
+                    <mi style="font-size: large;">calificación {{ sap.areamateria.nombre }}</mi>
+                    <mo>=</mo>
+                    <mfrac>
+                        <mrow>
+                            <mi>{% for ce in sap.cesap_set.all %}
+                                <span title="Calificación obtenida en la competencia específica {{ ce.ce.orden }}"
+                                >CE{{ ce.ce.orden }}</span>&nbsp;×&nbsp;<span class="valor_ce{{ ce.ce.orden }}"
+                                >{{ ce.valor }}</span>{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}</mi>
+                        </mrow>
+                        <mrow>
+                            <mn>{% for ce in sap.cesap_set.all %}
+                                <span class="valor_ce{{ ce.ce.orden }}">{{ ce.valor }}</span
+                                >{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}</mn>
+                        </mrow>
+                    </mfrac>
+                </mrow>
+            </math>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <p style="color: gray;">En la anterior fórmula, CE1 es la calificación que un alumno obtiene en la
+                competencia específica 1, ...
+                <br>CEn sería la calificación obtenida en la competencia específica "n".</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="columns large-12">
+            <div class="panel callout"><h3>2º Dar un peso a cada criterio de evaluación</h3></div>
+            <p>Para concretar el nivel de adquisición de cada competencia específica, usted utilizará una serie
+                de criterios de evaluación. Así pues, usted no evaluará las competencias específicas directamente,
+                sino que lo hará de forma indirecta al calificar los criterios de evaluación.</p>
+            <p>Cada criterio de evaluación puede tener a su vez un "peso" que determina
+                su contribución ponderada para la adquisición de la competencia específica. Por favor, introduzca el
+                peso asociado a cada criterio de evaluación:</p>
+        </div>
+    </div>
+
+    {% for ce in sap.cesap_set.all %}
+        <div class="row">
+            <div class="columns large-12">
+                <b>{{ ce.ce.nombre }}</b>
+            </div>
+        </div>
+        {% for cev in ce.cevsap_set.all %}
+            <div class="row">
+                <div class="columns large-10">
+                    {{ cev.cev.texto }}
+                </div>
+                <div class="columns large-2">
+                    <input type="number" min="1" max="10" class="pesocev" data-ce="{{ cev.id }}"
+                           value="{{ cev.valor }}">
+                </div>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row">
+        <div class="columns large-12 callout panel">
+            <h3>3º Libros o materiales van a ser utilizados para el desarrollo de la materia</h3>
+            {#            <p>Indique los libros/materiales que van utilizarse para desarrollar:</p>#}
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-9">
+            <label>Introduce nombre del libro/material:
+                <input type="text" data-sap="{{ sap.id }}" id="nombre_libro" value="" placeholder="Obligatorio">
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label>Introduce el ISBN:
+                <input type="text" data-sap="{{ sap.id }}" id="isbn_libro" value="" placeholder="Opcional">
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label>Introduce observaciones acerca del libro/material:
+                <textarea data-sap="{{ sap.id }}" id="observaciones_libro"
+                          placeholder="Texto opcional"></textarea>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-9">
+            <label>Cargar el archivo del libro/material (opcional):
+                <input type="file" name="archivo_libro" id="archivo_libro" data-sap="{{ sap.id }}">
+            </label>
+        </div>
+        <div class="columns large-3">
+            <a class="button right">Cargar libro/material</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="columns large-12">
+            <div class="panel callout">
+                <h3>4º Actividades extraescolares/complementarias que se van a llevar a cabo</h3>
+            </div>
+            {#            <p>Indique los libros/materiales que van utilizarse para desarrollar:</p>#}
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-8">
+            <label>Nombre de la actividad extraescolar/complementaria:
+                <input type="text" data-sap="{{ sap.id }}" id="nombre_actividad" value=""
+                       placeholder="Obligatorio">
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label>Inicio:
+                <input type="date" data-sap="{{ sap.id }}" id="inicio_actividad" value=""
+                       placeholder="Obligatorio">
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label>Fin:
+                <input type="date" data-sap="{{ sap.id }}" id="fin_actividad" value=""
+                       placeholder="Obligatorio">
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-9">
+            <label>Observaciones a la actividad extraescolar/complementaria:
+                <textarea data-sap="{{ sap.id }}" id="observaciones_actividad"
+                          placeholder="Texto opcional"></textarea>
+            </label>
+        </div>
+        <div class="columns large-3">
+            <label>&nbsp;<br>
+                <a class="button right">Cargar actividad</a>
+            </label>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="columns large-12">
+            <div class="panel callout">
+                <h3>5º Saberes básicos que se van a impartir</h3>
+            </div>
+            <p>Los saberes básicos constituyen los contenidos de la materia que se explican a los alumnos
+                a lo largo del curso y que les permiten adquirir las competencias específicas.</p>
+            <p>En este apartado debe secuenciar los contenidos asociados a su materia e indicar el número de periodos
+                lectivos que estima necesarios para impartir la docencia correspondiente.</p>
+        </div>
+    </div>
+
+    {% for sb in sap.saberbas_set.all %}
+        <div class="row" id="row_sb{{ sb.id }}">
+            <div class="columns large-12">
+                <p><b>{{ sb.orden }}.- {{ sb.nombre }} (<span class="span_periodos">{{ sb.periodos }} periodos</span>
+                    )</b></p>
+            </div>
+            <div id="row_sb_botones{{ sb.id }}">
+                <ul class="button-group right">
+                    <li><a class="button alert borrar_sb tiny" data-id="{{ sap.id }}"
+                           title="Borrar completamente este saber básico de la base de datos"><i
+                            class="fa fa-trash-o"></i>
+                        Borrar</a></li>
+                    <li><a class="button ordensube_sb tiny" data-id="{{ sap.id }}"
+                           title="Aumentar en 1 el orden de este saber básico"><i class="fa fa-arrow-up"></i></a>
+                    </li>
+                    <li><a class="button ordenbaja_sb tiny" data-id="{{ sap.id }}"
+                           title="Reducir en 1 el orden de este saber básico"><i class="fa fa-arrow-down"></i></a>
+                    </li>
+                    <li><a class="button add_sap tiny" data-id="{{ sap.id }}"
+                           title="Añadir una situación de aprendizaje a este saber básico"><i class="fa fa-plus"></i>
+                        SAP</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        {% for sap in sb.sitapren_set.all %}
+            <div class="row" id="row_sap{{ sap.id }}">
+                <div class="columns large-12">
+                    <p><b>{{ sap.nombre }}</b></p>
+                    <p style="color: darkblue;">{{ sap.objetivo }}</p>
+                </div>
+                <div id="row_sap_botones{{ sap.id }}">
+                    <ul class="button-group right">
+                        <li><a class="button alert borrar_sap tiny" data-id="{{ sap.id }}"
+                               title="Borrar completamente este saber básico de la base de datos"><i
+                                class="fa fa-trash-o"></i>
+                            Borrar</a></li>
+                        <li><a class="button add_asap tiny" data-id="{{ sap.id }}"
+                               title="Añadir una actividad asociada a esta situación de aprendizaje"><i
+                                class="fa fa-plus"></i>
+                            ASAP</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+
+
+
+    <div class="row">
+        <div class="columns large-1">
+            <label>Orden:
+                <input type="number" min="1" data-sap="{{ sap.id }}" class="saberbas" data-campo="orden"
+                       value="">
+            </label>
+        </div>
+        <div class="columns large-7">
+            <label>Nombre:
+                <input type="text" data-sap="{{ sap.id }}" data-campo="nombre" value="" class="saberbas">
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label title="Número de peridos lectivos que se estima que van a ser necesarios para impartir el contenido"
+            >Periodos:<input type="number" data-sap="{{ sap.id }}" class="saberbas" value=""
+                             data-campo="periodos">
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label>&nbsp;<br>
+                <a class="button tiny right">Guardar</a>
+            </label>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="columns large-12">
+            <div class="panel callout">
+                <h3>5º Saberes básicos que se van a impartir</h3>
+            </div>
+            <p>Los saberes básicos constituyen los contenidos de la materia que se explican a los alumnos
+                a lo largo del curso y que les permiten adquirir las competencias específicas.</p>
+            <p>En este apartado debe secuenciar los contenidos asociados a su materia e indicar el número de periodos
+                lectivos que estima necesarios para impartir la docencia correspondiente.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-1">
+            <label>Orden:
+                <input type="number" min="1" data-sap="{{ sap.id }}" class="saberbas" data-campo="orden"
+                       value="">
+            </label>
+        </div>
+        <div class="columns large-7">
+            <label>Nombre:
+                <input type="text" data-sap="{{ sap.id }}" data-campo="nombre" value="" class="saberbas">
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label title="Número de peridos lectivos que se estima que van a ser necesarios para impartir el contenido"
+            >Periodos:<input type="number" data-sap="{{ sap.id }}" class="saberbas" value=""
+                             data-campo="periodos">
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label>&nbsp;<br>
+                <a class="button tiny right">Guardar</a>
+            </label>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="columns large-12">
+            <div class="panel callout">
+                <h3>6º Situaciones de aprendizaje ligadas a los saberes básicos</h3>
+            </div>
+            <p>Los "saberes básicos" (SB) se adquieren a través de "situaciones de aprendizaje" (SAP), que
+                a su vez pueden estar compuestas por una o más "actividades de aprendizaje" (ACAP).</p>
+            <p>Estas actividades de aprendizaje deben ser evaluadas utilizando procedimientos/técnicas de evaluación
+                (en ocasiones llamados incorrectamente "Instrumentos de evaluación") a través unos criterios de
+                evaluación que establece la normativa y que ya han sido indicados anteriormente (apartado 2º de
+                esta programación).</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label>Selecciona uno de los "saberes básicos" que has indicado anteriormente:
+                <select data-sap="{{ sap.id }}" class="select_saberbas"></select>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-1">
+            <label>Orden:
+                <input type="number" min="1" data-sap="{{ sap.id }}" class="saberbas" data-campo="orden"
+                       value="">
+            </label>
+        </div>
+        <div class="columns large-7">
+            <label>Nombre:
+                <input type="text" data-sap="{{ sap.id }}" data-campo="nombre" value="" class="saberbas">
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label title="Número de peridos lectivos que se estima que van a ser necesarios para impartir el contenido"
+            >Periodos:<input type="number" data-sap="{{ sap.id }}" class="saberbas" value=""
+                             data-campo="periodos">
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label>&nbsp;<br>
+                <a class="button tiny right">Guardar</a>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label>Actividades extraescolares/complementarias ligadas a este contenido:
+                <select data-sap="{{ sap.id }}" class="saberbas" data-campo="actexcoms"></select>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label>Libros/materiales utilizados en este contenido:
+                <select data-sap="{{ sap.id }}" class="saberbas" data-campo="librorecursos"></select>
+            </label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div title="Situaciones de aprendizaje diseñadas para que el alumnado adquiera este saber básico"
+             class="columns large-12"><p><b>Situaciones de aprendizaje:</b></p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label>Libros/materiales utilizados en este contenido:
+                <select data-sap="{{ sap.id }}" class="saberbas" data-campo="librorecursos"></select>
+            </label>
+        </div>
+    </div>
+
+</div>
+{#<div class="row">#}
+{#    <div class="columns large-12">#}
+{#        <label><b>Archivos adjuntos al informe </b></label>#}
+{#    </div>#}
+{#</div>#}
+{#<div class="row">#}
+{#    <div class="columns large-12">#}
+{#        <table>#}
+{#            <tbody id="tbody_gauss_file{{ sap.id }}">#}
+{#            </tbody>#}
+{#        </table>#}
+{#    </div>#}
+{#</div>#}
+{#<div class="row">#}
+{#    <div class="columns large-8">#}
+{#        <label><input type="file" id="input_gauss_file{{ sap.id }}" multiple="multiple"></label>#}
+{#    </div>#}
+{#    <div class="columns large-4">#}
+{#        <a class="button tiny subir_gauss_file" data-id="{{ sap.id }}"><i class="fa fa-cloud-upload"></i> Cargar#}
+{#            archivos</a>#}
+{#    </div>#}
+{#</div>#}
+
+<script>
+    $('select').select2();
+</script>

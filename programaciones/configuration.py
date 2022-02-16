@@ -73,6 +73,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 8,
      'parent': 'acceso_programaciones_didacticas'
+     },
+    {'code_menu': 'acceso_progsecundaria',
+     'texto_menu': 'Programaciones secundaria',
+     'href': 'progsecundaria',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 9,
+     'parent': 'acceso_programaciones_didacticas'
      }
 ]
 # Se añaden otros permisos para el usuario
@@ -136,5 +144,13 @@ PERMISOS = [{'code_nombre': 'crea_programaciones_ccff',
             {'code_nombre': 'descarga_pga',
              'nombre': 'Puede descargar la programación general anual del centro educativo',
              'menu': 'acceso_cargar_programaciones'
+             },
+            {'code_nombre': 've_todas_programaciones',
+             'nombre': 'Puede ver todas las programaciones del centro',
+             'menu': 'acceso_progsecundaria'
+             },
+            {'code_nombre': 'crea_programaciones',
+             'nombre': 'Puede crear programaciones en el centro',
+             'menu': 'acceso_progsecundaria'
              }
             ]

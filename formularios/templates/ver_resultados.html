@@ -87,7 +87,7 @@
                     {% endfor %}
                 </tr>
                 </thead>
-                {% for gfr in gform.gformresponde_set.all %}
+                {% for gfr in gform_respondidos %}
                     <tr>
                         <td>{{ gfr.g_e.gauser.get_full_name }}</td>
                         <td>{{ gfr.g_e.ronda.entidad.name }}</td>

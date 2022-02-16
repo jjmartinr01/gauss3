@@ -680,7 +680,8 @@ def ver_resultados(request, id, identificador):
             return response
     elif request.method == 'GET':
         gform = Gform.objects.get(id=id, identificador=identificador)
-        return render(request, "ver_resultados.html", {'gform': gform})
+        gform_respondidos = gform.gformresponde_set.filter(respondido=True)
+        return render(request, "ver_resultados.html", {'gform': gform, 'gform_respondidos': gform_respondidos})
 
 
 

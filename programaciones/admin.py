@@ -17,3 +17,16 @@ admin.site.register(Objetivo)
 admin.site.register(Especialidad_entidad)
 admin.site.register(Gauser_extra_programaciones)
 admin.site.register(ProgramacionSubida)
+############################################################
+############### Programaciones Secundaria ##################
+############################################################
+admin.site.register(ProgSec)
+admin.site.register(CEProgSec)
+admin.site.register(CEvProgSec)
+admin.site.register(LibroRecurso)
+admin.site.register(ActExCom)
+admin.site.register(SaberBas)
+admin.site.register(SitApren)
+admin.site.register(ActSitApren)
+admin.site.register(InstrEval)
+admin.site.register(CriInstrEval)

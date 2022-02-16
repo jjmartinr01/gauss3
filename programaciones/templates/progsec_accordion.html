@@ -1,0 +1,31 @@
+{% load entidades_extras %}
+{% if buscadas %}
+    {% if progsecs|length == 1 %}
+        <b>Se ha encontrado 1 programación</b>
+    {% else %}
+        <b>Se han encontrado {{ progsecs|length }} programaciones</b>
+    {% endif %}
+{% endif %}
+{% for progsec in progsecs %}
+    <input type="hidden" name="progsecs_seleccionados" value="{{ progsec.id }}">
+
+    <dd class="accordion-navigation" id="accordion{{ progsec.id }}"
+        style="border-bottom: dotted 1px black">
+        <a href="#panel{{ progsec.id }}">
+            <i id="circle{{ progsec.id }}" class="fa fa-plus-circle circle_icon"></i>
+            <b id="asunto{{ progsec.id }}">{{ progsec.areamateria.nombre }} - {{ progsec.curso.nombre }} -
+                {% if not progsec.nombre %}<span style="color:red">Nueva programación</span>
+                {% else %}{{ progsec.nombre }}{% endif %}</b> -- ({{ progsec.modificado|date:"d-m-Y" }})
+
+                Creado por: <span style="color: green; padding-right: 20px;"><i
+                        class="fa fa-user"></i> {{ progsec.gep.ge.gauser.get_full_name }}</span>
+
+            {% if buscadas %}
+                <span style="color: red; padding-left: 100px;"><i class="fa fa-check"></i> </span>
+            {% endif %}
+        </a>
+
+        <div id="panel{{ progsec.id }}" class="content accordion-progsec" data-id="{{ progsec.id }}">
+        </div>
+    </dd>
+{% endfor %}

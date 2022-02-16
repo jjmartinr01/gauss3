@@ -162,13 +162,14 @@ class GformSectionInput(models.Model):
 
     @property
     def suma_renteros(self):
+        gfri_respondidos = self.gformrespondeinput_set.filter(gformresponde__respondido=True)
         if self.tipo in 'EN EL':
-            return sum([a for a in self.gformrespondeinput_set.all().values_list('rentero', flat=True) if a])
+            return sum([a for a in gfri_respondidos.values_list('rentero', flat=True) if a])
         elif self.tipo in ['EM', 'SC', 'SO', 'CA']:
             sumas = []
             for op in self.gformsectioninputops_set.all():
                 suma = 0
-                for gfri in self.gformrespondeinput_set.all():
+                for gfri in gfri_respondidos:
                     if op in gfri.ropciones.all():
                         suma += 1
                 sumas.append(suma)

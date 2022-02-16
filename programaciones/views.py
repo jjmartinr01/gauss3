@@ -22,6 +22,7 @@ from django.core.files.base import File
 from autenticar.control_acceso import permiso_required
 from autenticar.models import Gauser
 # from autenticar.control_acceso import access_required
+from entidades.templatetags.entidades_extras import profesorado
 from gauss.funciones import html_to_pdf, usuarios_ronda, usuarios_de_gauss, get_dce
 from programaciones.models import *
 from gauss.rutas import RUTA_BASE, MEDIA_PROGRAMACIONES
@@ -58,6 +59,7 @@ def pecjson(request, code):
     # response['Access-Control-Allow-Origin'] = 'https://stackoverflow.com'
     return response
 
+
 def pgajson(request, code):
     entidad = Entidad.objects.get(code=code)
     ronda = entidad.ronda
@@ -74,6 +76,7 @@ def pgajson(request, code):
     c = ')'
     # return JsonResponse(data)
     return HttpResponse(a + b + c)
+
 
 @permiso_required('acceso_cargar_programaciones')
 def cargar_programaciones(request):
@@ -132,8 +135,6 @@ def cargar_programaciones(request):
             # except:
             #     pass
 
-
-
             # curso_escolar = g_e.ronda.nombre.replace('/', '-')
             # ruta_centro = MEDIA_PROGRAMACIONES + "{0}/".format(g_e.ronda.entidad.code)
             # ruta_curso_escolar = "{0}{1}/".format(ruta_centro, curso_escolar)
@@ -176,6 +177,7 @@ def cargar_programaciones(request):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
+
 @login_required()
 def cargar_programaciones_ajax(request):
     g_e = request.session['gauser_extra']
@@ -197,7 +199,8 @@ def cargar_programaciones_ajax(request):
                     os.remove(ruta)
                     # Fin de las instrucciones para borrar el posible archivo
                     p.delete()
-                    html = render_to_string('cargar_programaciones_formulario_content.html', {'curso': curso, 'g_e': g_e})
+                    html = render_to_string('cargar_programaciones_formulario_content.html',
+                                            {'curso': curso, 'g_e': g_e})
                     return JsonResponse({'ok': True, 'html': html, 'curso': curso.id, 'mensaje': False})
                 else:
                     return JsonResponse({'ok': False, 'mensaje': 'No tienes permiso para borrar esta programación'})
@@ -313,6 +316,7 @@ def departamentos_centro_educativo(request):
                       'departamentos': departamentos,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
+
 
 @login_required()
 def departamentos_centro_educativo_ajax(request):
@@ -657,11 +661,12 @@ def programaciones(request):
                 crear_aviso(request, True, 'prog 4')
                 try:
                     file_path = '%s%s/%s/%s/%s/%s/' % (MEDIA_PROGRAMACIONES, g_e.ronda.entidad.code,
-                                                    ronda, g_e.gauser_extra_programaciones.departamento.nombre,
-                                                    programacion.modulo.materia.curso.get_etapa_display(),
-                                                    programacion.modulo.materia.curso.nombre)
+                                                       ronda, g_e.gauser_extra_programaciones.departamento.nombre,
+                                                       programacion.modulo.materia.curso.get_etapa_display(),
+                                                       programacion.modulo.materia.curso.nombre)
                 except:
-                    crear_aviso(request, False, 'Se ha producido un error. Probablemente se deba a que no te han asociado un departamento.')
+                    crear_aviso(request, False,
+                                'Se ha producido un error. Probablemente se deba a que no te han asociado un departamento.')
                     HttpResponse('Error. Probablemente se deba a que no te han asignado un departamento.')
                 crear_aviso(request, True, 'prog 5')
                 file_path = replace_normalize(file_path)
@@ -1909,5 +1914,229 @@ def proyecto_educativo_centro(request):
                                 ('pc', 'Plan de Convivencia'),
                                 ('rof', 'Reglamento de Organización y Funcionamiento')),
                       'aspectos': ['signos', 'organizacion', 'lineapedagogica', 'participacion', 'proyectos'],
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+
+#############################################################################
+################# PROGRAMACIONES LOMLOE SECUNDARIA ##########################
+#############################################################################
+
+# @permiso_required('acceso_progsecundaria')
+def progsecundaria(request):
+    g_e = request.session['gauser_extra']
+    g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
+    if c:
+        g_ep.puesto = g_e.puesto
+        g_ep.save()
+    pga = PGA.objects.get(ronda=g_e.ronda)
+    if g_e.has_permiso('ve_todas_programaciones'):
+        progsecs = ProgSec.objects.filter(pga=pga)
+    else:
+        progsecs = ProgSec.objects.filter(pga=pga, gep=g_ep)
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'crea_progsec':
+            try:
+                if g_e.has_permiso('crea_programaciones'):
+                    # materia = Materia.objects.get(id=request.POST['materia'])
+                    # mp, c = Materia_programaciones.objects.get_or_create(materia=materia)
+                    areamateria = AreaMateria.objects.get(id=request.POST['areamateria'])
+                    curso = Curso.objects.get(id=request.POST['curso'], ronda=g_e.ronda)
+                    progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria, curso=curso)
+                    DocProgSec.objects.get_or_create(psec=progsec, gep=g_ep, permiso='X')
+                    for ce in areamateria.competenciaespecifica_set.all():
+                        cepsec = CEProgSec.objects.create(psec=progsec, ce=ce)
+                        for cev in ce.criterioevaluacion_set.all():
+                            CEvProgSec.objects.create(cepsec=cepsec, cev=cev)
+                    html = render_to_string('progsec_accordion.html',
+                                            {'buscadas': False, 'progsecs': [progsec], 'g_e': g_e, 'nueva': True})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    JsonResponse({'ok': False, 'msg': 'Sin permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'open_accordion':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                departamentos = Departamento.objects.filter(ronda=g_e.ronda)
+                if departamentos.count() == 0:
+                    crea_departamentos(g_e.ronda)
+                    departamentos = Departamento.objects.filter(ronda=g_e.ronda)
+                html = render_to_string('progsec_accordion_content.html',
+                                        {'progsec': progsec, 'g_e': g_e, 'departamentos': departamentos,
+                                         'docentes': profesorado(g_e.ronda.entidad)})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'borrar_progsec':
+            try:
+                progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                permiso = progsec.get_permiso(g_ep)
+                if permiso == 'X':
+                    progsec.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': permiso})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'update_texto_pec':
+            try:
+                pec = PEC.objects.get(entidad=g_e.ronda.entidad, id=request.POST['pec'])
+                setattr(pec, request.POST['campo'], request.POST['texto'])
+                pec.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+    elif request.method == 'POST':
+        if request.POST['action'] == 'sube_file_pec':
+            pec = PEC.objects.get(id=request.POST['pec'])
+            n_files = int(request.POST['n_files'])
+            mensaje = False
+            p = {'doc_nombre': False}
+            if g_e.has_permiso('carga_programaciones'):
+                for i in range(n_files):
+                    fichero = request.FILES['fichero_xhr' + str(i)]
+                    try:
+                        p = PECdocumento.objects.get(pec=pec, tipo=request.POST['name'])
+                        if p.doc_file:
+                            os.remove(p.doc_file.path)
+                        p.doc_file = fichero
+                        p.doc_nombre = slugify(p.get_tipo_display())
+                        p.content_type = fichero.content_type
+                        p.save()
+                    except:
+                        p = PECdocumento.objects.create(pec=pec, doc_nombre=request.POST['name'], doc_file=fichero,
+                                                        content_type=fichero.content_type, tipo=request.POST['name'])
+                        p.doc_nombre = slugify(p.get_tipo_display())
+                        p.save()
+                return JsonResponse({'ok': True, 'mensaje': mensaje})
+            else:
+                mensaje = 'No tienes permiso para cargar archivos del PEC.'
+                return JsonResponse({'ok': False, 'mensaje': mensaje})
+        elif request.POST['action'] == 'download_file':
+            try:
+                pecdoc = PECdocumento.objects.get(id=request.POST['archivo'], pec__id=request.POST['pec'],
+                                                  pec__entidad=g_e.ronda.entidad)
+                response = HttpResponse(pecdoc.doc_file, content_type=pecdoc.content_type)
+                response['Content-Disposition'] = 'attachment; filename=%s' % pecdoc.filename
+                return response
+            except:
+                pass
+
+    return render(request, "progsec.html",
+                  {
+                      'formname': 'progsec',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear',
+                            'title': 'Crear una nueva programación de una materia de secundaria',
+                            'permiso': 'libre'},
+                           {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar',
+                            'title': 'Buscar programación a través del nombre de la materia de secundaria',
+                            'permiso': 'libre'},
+                           ),
+                      'g_e': g_e,
+                      'progsecs': progsecs,
+                      'cursos': Curso.objects.filter(ronda=g_e.ronda),
+                      'areasmateria': AreaMateria.objects.all(),
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)
+                  })
+
+
+# @permiso_required('acceso_progsecundaria')
+def progsecundaria_sb(request, id):
+    g_e = request.session['gauser_extra']
+    g_ep = Gauser_extra_programaciones.objects.get(ge=g_e)
+    pga = PGA.objects.get(ronda=g_e.ronda)
+    sb = SaberBas.objects.get(psec__pga=pga, id=id)
+    permiso = sb.psec.get_permiso(g_ep)
+    if permiso not in 'LEX':
+        return HttpResponse('Sin permiso')
+
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'crea_sap':
+            try:
+                if permiso in 'EX':
+                    # materia = Materia.objects.get(id=request.POST['materia'])
+                    # mp, c = Materia_programaciones.objects.get_or_create(materia=materia)
+                    areamateria = AreaMateria.objects.get(id=request.POST['areamateria'])
+                    curso = Curso.objects.get(id=request.POST['curso'], ronda=g_e.ronda)
+                    progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria, curso=curso)
+                    for ce in areamateria.competenciaespecifica_set.all():
+                        cepsec = CEProgSec.objects.create(psec=progsec, ce=ce)
+                        for cev in ce.criterioevaluacion_set.all():
+                            CEvProgSec.objects.create(cepsec=cepsec, cev=cev)
+                    html = render_to_string('progsec_accordion.html',
+                                            {'buscadas': False, 'progsecs': [progsec], 'g_e': g_e, 'nueva': True})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    JsonResponse({'ok': False, 'msg': 'Sin permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'open_accordion':
+            try:
+                sap = SitApren.objects.get(sbas__psec__gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                html = render_to_string('progsec_sap_accordion_content.html', {'sap': sap, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_texto_pec':
+            try:
+                pec = PEC.objects.get(entidad=g_e.ronda.entidad, id=request.POST['pec'])
+                setattr(pec, request.POST['campo'], request.POST['texto'])
+                pec.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+    elif request.method == 'POST':
+        if request.POST['action'] == 'sube_file_pec':
+            pec = PEC.objects.get(id=request.POST['pec'])
+            n_files = int(request.POST['n_files'])
+            mensaje = False
+            p = {'doc_nombre': False}
+            if g_e.has_permiso('carga_programaciones'):
+                for i in range(n_files):
+                    fichero = request.FILES['fichero_xhr' + str(i)]
+                    try:
+                        p = PECdocumento.objects.get(pec=pec, tipo=request.POST['name'])
+                        if p.doc_file:
+                            os.remove(p.doc_file.path)
+                        p.doc_file = fichero
+                        p.doc_nombre = slugify(p.get_tipo_display())
+                        p.content_type = fichero.content_type
+                        p.save()
+                    except:
+                        p = PECdocumento.objects.create(pec=pec, doc_nombre=request.POST['name'], doc_file=fichero,
+                                                        content_type=fichero.content_type, tipo=request.POST['name'])
+                        p.doc_nombre = slugify(p.get_tipo_display())
+                        p.save()
+                return JsonResponse({'ok': True, 'mensaje': mensaje})
+            else:
+                mensaje = 'No tienes permiso para cargar archivos del PEC.'
+                return JsonResponse({'ok': False, 'mensaje': mensaje})
+        elif request.POST['action'] == 'download_file':
+            try:
+                pecdoc = PECdocumento.objects.get(id=request.POST['archivo'], pec__id=request.POST['pec'],
+                                                  pec__entidad=g_e.ronda.entidad)
+                response = HttpResponse(pecdoc.doc_file, content_type=pecdoc.content_type)
+                response['Content-Disposition'] = 'attachment; filename=%s' % pecdoc.filename
+                return response
+            except:
+                pass
+    return render(request, "progsec_sap.html",
+                  {
+                      'formname': 'progsec',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear SAP', 'permiso': 'libre',
+                            'title': 'Crear una nueva situación de aprendizaje para este saber básico'},
+                           ),
+                      'g_e': g_e,
+                      'sb': sb,
+                      # 'cursos': Curso.objects.filter(ronda=g_e.ronda),
+                      # 'areasmateria': AreaMateria.objects.all(),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })

@@ -13,7 +13,6 @@ from horarios.models import Horario, Sesion
 from actividades.models import Actividad
 
 
-
 #############################################################################
 ##################### PROGRAMACIONES ANTIGUAS  ##############################
 #############################################################################
@@ -263,14 +262,17 @@ class ProgramacionSubida(models.Model):
 
 
 def crea_departamentos(ronda):
-    ds = [('Actividades Complementarias y Extraescolares', 'AEX', False, False, 3), ('Artes Plásticas', 'AP', True, False, 3),
+    ds = [('Actividades Complementarias y Extraescolares', 'AEX', False, False, 3),
+          ('Artes Plásticas', 'AP', True, False, 3),
           ('Cultura Clásica', 'CC', True, False, 3), ('Ciencias Naturales', 'CN', True, False, 3),
           ('Economía', 'ECO', True, False, 3), ('Educación Física', 'EF', True, False, 3),
           ('Filosofía', 'FIL', True, False, 3), ('Física y Química', 'FQ', True, False, 3),
           ('Formación y Orientación Laboral', 'FOL', True, False, 3), ('Francés', 'FRA', True, False, 3),
-          ('Geografía e Historia', 'GH', True, False, 3), ('Griego', 'GRI', True, False, 3), ('Inglés', 'ING', True, False, 3),
+          ('Geografía e Historia', 'GH', True, False, 3), ('Griego', 'GRI', True, False, 3),
+          ('Inglés', 'ING', True, False, 3),
           ('Latín', 'LAT', True, False, 3), ('Lengua Castellana y Literatura', 'LCL', True, False, 3),
-          ('Matemáticas', 'MAT', True, False, 3), ('Música', 'MUS', True, False, 3), ('Orientación', 'ORI', True, False, 3),
+          ('Matemáticas', 'MAT', True, False, 3), ('Música', 'MUS', True, False, 3),
+          ('Orientación', 'ORI', True, False, 3),
           ('Tecnología', 'TEC', True, False, 3), ('Ningún departamento', 'N_D', True, False, 0),
           ('Alemán', 'ALE', True, False, 3), ('Actividades físicas y deportivas', 'AFD', True, False, 3),
           ('Administración y gestión', 'ADG', True, True, 3),
@@ -624,41 +626,62 @@ class Cont_unidad_modulo(models.Model):
     def __str__(self):
         return '%s - %s (%s horas)' % (self.unidad.nombre, self.contenido[:200], self.duracion)
 
+
 #############################################################################
 ##################### PROGRAMACIONES LOMLOE  ################################
 #############################################################################
 
 class ProgSec(models.Model):
     pga = models.ForeignKey(PGA, on_delete=models.CASCADE)
+    nombre = models.CharField('Nombre específico para la programación', blank=True, max_length=300)
     gep = models.ForeignKey(Gauser_extra_programaciones, blank=True, null=True, on_delete=models.CASCADE)
     materia = models.ForeignKey(Materia_programaciones, blank=True, null=True, on_delete=models.CASCADE)
     areamateria = models.ForeignKey(AreaMateria, on_delete=models.CASCADE, blank=True, null=True)
+    curso = models.ForeignKey(Curso, on_delete=models.SET_NULL, blank=True, null=True)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    def get_permiso(self, gep):
+        try:
+            permiso = self.docprogsec_set.get(gep=gep).permiso
+        except:
+            permiso = 'No tiene permiso'
+        return permiso
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.pga.ronda, self.areamateria, self.gep.ge.gauser.get_full_name())
+
+
+class DocProgSec(models.Model):  # Docente habilitado en la progsec
+    PERMISOS = (('L', 'Lectura'), ('E', 'Edición'), ('X', 'Edición y borrado'))
+    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
+    gep = models.ForeignKey(Gauser_extra_programaciones, blank=True, null=True, on_delete=models.CASCADE)
+    permiso = models.CharField('Permiso en relación a esta programación', max_length=5, choices=PERMISOS, default='L')
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.psec, self.gep, self.get_permiso_display())
+
 
 class CEProgSec(models.Model):
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
     ce = models.ForeignKey(CompetenciaEspecifica, on_delete=models.CASCADE)
-    valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=0)
+    valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.psec, self.ce, self.valor)
+
 
 class CEvProgSec(models.Model):
-    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
+    # psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
+    cepsec = models.ForeignKey(CEProgSec, on_delete=models.CASCADE, blank=True, null=True)
     cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
-    valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=0)
+    valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
-# class PesoCE(models.Model):
-#     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
-#     ce = models.ForeignKey(CompetenciaEspecifica, on_delete=models.CASCADE)
-#     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=0)
-#     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    def __str__(self):
+        return '%s - %s (%s)' % (self.cepsec, self.cev, self.valor)
 
-# class PesoCev(models.Model):
-#     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
-#     cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
-#     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=0)
-#     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
 def update_documentos_psec(instance, filename):
     centro_code = str(instance.psec.pga.ronda.entidad.code)
@@ -668,6 +691,7 @@ def update_documentos_psec(instance, filename):
     nombre = slugify(instance.nombre)
     ext = filename.rpartition('.')[2]
     return 'programaciones/%s/%s/materias/%s/%s/%s.%s' % (centro_code, ronda, curso, materia, nombre, ext)
+
 
 class LibroRecurso(models.Model):
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
@@ -685,6 +709,7 @@ class LibroRecurso(models.Model):
     def __str__(self):
         return 'Libro-Recurso: %s' % (self.nombre)
 
+
 class ActExCom(models.Model):
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre de la actividad', blank=True, max_length=300)
@@ -693,30 +718,46 @@ class ActExCom(models.Model):
     fin = models.DateTimeField('Fecha y hora de finalización', blank=True, null=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
+    def __str__(self):
+        return '%s - %s (%s - %s)' % (self.psec, self.nombre, self.inicio, self.fin)
+
 
 class SaberBas(models.Model):
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
     orden = models.IntegerField('Orden del saber básico dentro del conjunto de saberes', default=1)
-    parent = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
+    # parent = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
     nombre = models.CharField('Nombre de la actividad', blank=True, max_length=300)
     periodos = models.IntegerField('Número estimado de periodos lectivos para impartirlo', default=1)
     librorecursos = models.ManyToManyField(LibroRecurso, blank=True)
     actexcoms = models.ManyToManyField(ActExCom, blank=True)
-    # ces = models.ManyToManyField(CompetenciaEspecifica, blank=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    class Meta:
+        ordering = ['psec', 'orden']
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.psec, self.nombre, self.periodos)
+
 
 class SitApren(models.Model):
     sbas = models.ForeignKey(SaberBas, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre dado a la situación de aprendizaje', blank=True, max_length=300)
     objetivo = models.TextField('Descripción de la situación de aprendizaje y lo que pretende conseguir', blank=True)
-    # ces = models.ManyToManyField(CompetenciaEspecifica, blank=True)
     ceps = models.ManyToManyField(CEProgSec, blank=True)
+
+    def __str__(self):
+        return '%s - %s' % (self.sbas, self.nombre)
+
 
 class ActSitApren(models.Model):
     sapren = models.ForeignKey(SitApren, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre dado a la situación de aprendizaje', blank=True, max_length=300)
     description = models.TextField('Descripción de la actividad ligada a la situación de aprendizaje', blank=True)
     producto = models.TextField('Producto o productos resultado de la situación de aprendizaje', blank=True)
+
+    def __str__(self):
+        return '%s - %s' % (self.sapren, self.nombre)
+
 
 class InstrEval(models.Model):
     TIPOS = (('ESVAL', 'Escala de valoración'), ('LCONT', 'Lista de control'), ('RANEC', 'Registro anecdótico'),
@@ -726,24 +767,22 @@ class InstrEval(models.Model):
              ('PRVOF', 'Preguntas de verdadero/falso justificadas'), ('PRAYD', 'Preguntas de analogías y diferencias'),
              ('PRIEL', 'Preguntas de interpretación y/o elaboración de gráficos, tablas, mapas, ...'),
              ('TMONO', 'Trabajo monográfico o de investigación'))
-    # sbas = models.ForeignKey(SaberBas, on_delete=models.CASCADE)
-    # sapren = models.ForeignKey(SitApren, on_delete=models.CASCADE)
     asapren = models.ForeignKey(ActSitApren, on_delete=models.CASCADE, blank=True, null=True)
     tipo = models.CharField('Tipo de instrumento', blank=True, max_length=10, choices=TIPOS)
     nombre = models.CharField('Nombre dado al instrumento', blank=True, max_length=300)
 
-# class SaberBasEval(models.Model):
-#     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
-#     cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
-#     peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=1)
-#     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    def __str__(self):
+        return '%s - %s' % (self.asapren, self.nombre)
+
 
 class CriInstrEval(models.Model):
     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
-    # cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
     cevps = models.ForeignKey(CEvProgSec, on_delete=models.CASCADE, blank=True, null=True)
     peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=1)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.ieval, self.cevps, self.peso)
 
 
 #############################################################################
@@ -1127,8 +1166,3 @@ modulos = [
     ("Tratamiento de la documentación contable", "Gestión Administrativa"),
     ("Tratamiento informático de la información", "Gestión Administrativa"),
 ]
-
-
-
-
-
