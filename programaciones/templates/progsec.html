@@ -199,18 +199,11 @@
             }
         });
 
-        {% comment %}
+
 
         function get_texto_from_update_texto(element, id) {
             var texto;
-            if (element.hasClass('asunto')) {
-                texto = element.val();
-                $('#asunto' + id).html(texto);
-            } else if (element.hasClass('variable')) {
-                texto = element.val();
-            } else {
-                texto = element.html();
-            }
+            texto = element.val();
             return texto;
         }
 
@@ -218,23 +211,14 @@
             var element = $(this);
             var id = element.data('id');
             var campo = element.data('campo');
-            var v = element.hasClass('variable') ? 1 : 0;
             var antiguo_texto = get_texto_from_update_texto(element, id);
             setTimeout(function () {
                 var nuevo_texto = get_texto_from_update_texto(element, id);
                 if (antiguo_texto === nuevo_texto) {
-                    $.post("/progsecundaria/", {action: 'update_texto', id: id, valor: nuevo_texto, campo: campo, v: v},
+                    $.post("/progsecundaria/", {action: 'update_texto', id: id, texto: nuevo_texto, campo: campo},
                         function (data) {
                             if (data.ok) {
-                                $('#texto_informe' + data.progsec).html(data.html);
-                                if (data.html_v) {
-                                    $('#variables' + data.progsec).html(data.html_v);
-                                }
-                                if (data.num_v > 0) {
-                                    $('.variables_texto2pdf' + data.progsec).show();
-                                } else {
-                                    $('.variables_texto2pdf' + data.progsec).hide();
-                                }
+                                $('#accordion_nombre' + data.progsec).html(data.html);
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $('#update_error').show().delay(1500).fadeOut();
@@ -243,6 +227,8 @@
                 }
             }, 750);
         });
+
+        {% comment %}
 
         $('body').on('click', '.copiar_progsec', function () {
             var id = $(this).data('id');
@@ -285,6 +271,7 @@
 
         });
 
+        {% comment %}
 
         {######################################################## #}
 
@@ -415,6 +402,7 @@
                 }
             });
         });
+        {% endcomment %}
     </script>
 
 {% endblock %}

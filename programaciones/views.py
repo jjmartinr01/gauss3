@@ -1983,14 +1983,20 @@ def progsecundaria(request):
                         return JsonResponse({'ok': False, 'msg': permiso})
                 except Exception as msg:
                     return JsonResponse({'ok': False, 'msg': str(msg)})
-            elif action == 'update_texto_pec':
+            elif action == 'update_texto':
                 try:
-                    pec = PEC.objects.get(entidad=g_e.ronda.entidad, id=request.POST['pec'])
-                    setattr(pec, request.POST['campo'], request.POST['texto'])
-                    pec.save()
-                    return JsonResponse({'ok': True})
-                except:
-                    return JsonResponse({'ok': False})
+                    progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                                  id=request.POST['id'])
+                    permiso = progsec.get_permiso(g_ep)
+                    if permiso in 'EX':
+                        texto = request.POST['texto']
+                        setattr(progsec, request.POST['campo'], texto)
+                        progsec.save()
+                        return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': texto})
+                    else:
+                        return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+                except Exception as msg:
+                    return JsonResponse({'ok': False, 'msg': str(msg)})
         elif request.method == 'POST':
             if request.POST['action'] == 'sube_file_pec':
                 pec = PEC.objects.get(id=request.POST['pec'])
@@ -2027,6 +2033,14 @@ def progsecundaria(request):
                 except:
                     pass
 
+        cursos = Curso.objects.filter(ronda=g_e.ronda)
+        if cursos.count() == 0:
+            Curso.objects.create(ronda=g_e.ronda, nombre="Curso genérico de ESO")
+            Curso.objects.create(ronda=g_e.ronda, nombre="Curso genérico de Primaria")
+            Curso.objects.create(ronda=g_e.ronda, nombre="Curso genérico de Bachillerato")
+            Curso.objects.create(ronda=g_e.ronda, nombre="Curso genérico de Infantil")
+            cursos = Curso.objects.filter(ronda=g_e.ronda)
+
         return render(request, "progsec.html",
                       {
                           'formname': 'progsec',
@@ -2040,7 +2054,7 @@ def progsecundaria(request):
                                ),
                           'g_e': g_e,
                           'progsecs': progsecs,
-                          'cursos': Curso.objects.filter(ronda=g_e.ronda),
+                          'cursos': cursos,
                           'areasmateria': AreaMateria.objects.all(),
                           'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)
                       })

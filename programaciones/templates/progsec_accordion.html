@@ -13,9 +13,9 @@
         style="border-bottom: dotted 1px black">
         <a href="#panel{{ progsec.id }}">
             <i id="circle{{ progsec.id }}" class="fa fa-plus-circle circle_icon"></i>
-            <b id="asunto{{ progsec.id }}">{{ progsec.areamateria.nombre }} - {{ progsec.curso.nombre }} -
+            <b>{{ progsec.curso.nombre }} - {{ progsec.areamateria.nombre }} - <span id="accordion_nombre{{ progsec.id }}">
                 {% if not progsec.nombre %}<span style="color:red">Nueva programación</span>
-                {% else %}{{ progsec.nombre }}{% endif %}</b> -- ({{ progsec.modificado|date:"d-m-Y" }})
+                {% else %}{{ progsec.nombre }}{% endif %}</span></b> -- ({{ progsec.modificado|date:"d-m-Y" }})
 
                 Creado por: <span style="color: green; padding-right: 20px;"><i
                         class="fa fa-user"></i> {{ progsec.gep.ge.gauser.get_full_name }}</span>
