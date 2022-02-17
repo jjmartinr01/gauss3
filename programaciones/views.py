@@ -1966,7 +1966,7 @@ def progsecundaria(request):
                         crea_departamentos(g_e.ronda)
                         departamentos = Departamento.objects.filter(ronda=g_e.ronda)
                     html = render_to_string('progsec_accordion_content.html',
-                                            {'progsec': progsec, 'g_e': g_e, 'departamentos': departamentos,
+                                            {'progsec': progsec, 'gep': g_ep, 'departamentos': departamentos,
                                              'docentes': profesorado(g_e.ronda.entidad)})
                     return JsonResponse({'ok': True, 'html': html})
                 except:
@@ -1993,6 +1993,35 @@ def progsecundaria(request):
                         setattr(progsec, request.POST['campo'], texto)
                         progsec.save()
                         return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': texto})
+                    else:
+                        return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+                except Exception as msg:
+                    return JsonResponse({'ok': False, 'msg': str(msg)})
+            elif action == 'select_departamento':
+                try:
+                    progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                                  id=request.POST['id'])
+                    permiso = progsec.get_permiso(g_ep)
+                    if permiso in 'EX':
+                        departamento = Departamento.objects.get(id=request.POST['departamento'], ronda=g_e.ronda)
+                        g_ep.departamento = departamento
+                        g_ep.save()
+                        return JsonResponse({'ok': True, 'progsec': progsec.id})
+                    else:
+                        return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+                except Exception as msg:
+                    return JsonResponse({'ok': False, 'msg': str(msg)})
+            elif action == 'select_jefe':
+                try:
+                    progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                                  id=request.POST['id'])
+                    permiso = progsec.get_permiso(g_ep)
+                    if permiso in 'EX':
+                        ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['jefe'])
+                        departamento = Departamento.objects.get(id=request.POST['departamento'], ronda=g_e.ronda)
+                        g_ep.departamento = departamento
+                        g_ep.save()
+                        return JsonResponse({'ok': True, 'progsec': progsec.id})
                     else:
                         return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
                 except Exception as msg:

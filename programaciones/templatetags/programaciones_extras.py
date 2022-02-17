@@ -5,6 +5,14 @@ from programaciones.models import *
 
 register = Library()
 
+
+@register.filter
+def jefe_departamento(departamento, g_e):
+    try:
+        return psec.get_permiso(g_e.gauser_extra_programaciones) == 'X'
+    except:
+        return False
+
 @register.filter
 def puede_borrar(psec, g_e):
     try:

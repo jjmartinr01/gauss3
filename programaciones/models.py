@@ -318,6 +318,13 @@ class Departamento(models.Model):
                                             blank=True)
 
     @property
+    def jefe(self):
+        try:
+            return self.gauser_extra_programaciones_set.get(jefe=True)
+        except:
+            return Gauser_extra_programaciones.objects.none()
+
+    @property
     def entidad(self):
         return self.ronda.entidad
 
@@ -638,6 +645,7 @@ class ProgSec(models.Model):
     materia = models.ForeignKey(Materia_programaciones, blank=True, null=True, on_delete=models.CASCADE)
     areamateria = models.ForeignKey(AreaMateria, on_delete=models.CASCADE, blank=True, null=True)
     curso = models.ForeignKey(Curso, on_delete=models.SET_NULL, blank=True, null=True)
+    departamento = models.ForeignKey(Departamento, on_delete=models.SET_NULL, blank=True, null=True)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 

@@ -228,6 +228,31 @@
             }, 750);
         });
 
+        $('body').on('change', '.select_departamento', function () {
+            var id = $(this).data('progsec');
+            var departamento = $(this).val();
+                    $.post("/progsecundaria/", {action: 'select_departamento', id: id, departamento: departamento},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+        });
+        $('body').on('change', '.select_jefe', function () {
+            var id = $(this).data('progsec');
+            var jefe = $(this).val();
+                    $.post("/progsecundaria/", {action: 'select_jefe', id: id, jefe: jefe},
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+        });
+
         {% comment %}
 
         $('body').on('click', '.copiar_progsec', function () {
