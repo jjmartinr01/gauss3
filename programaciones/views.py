@@ -1930,7 +1930,7 @@ def progsecundaria(request):
         if c:
             g_ep.puesto = g_e.puesto
             g_ep.save()
-        pga = PGA.objects.get(ronda=g_e.ronda)
+        pga, c = PGA.objects.get_or_create(ronda=g_e.ronda)
         if g_e.has_permiso('ve_todas_programaciones'):
             progsecs = ProgSec.objects.filter(pga=pga)
         else:
