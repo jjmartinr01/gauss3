@@ -66,8 +66,8 @@ class Articulo(models.Model):
     fotos = models.ManyToManyField(Foto_objeto, blank=True)
     categorias = models.ManyToManyField(Categoria_objeto, blank=True)
     estado = models.CharField("Estado del artículo", default='DISPONIBLE', max_length=15, choices=ESTADOS)
-    reservado = models.NullBooleanField('¿Ya ha sido reservado?', blank=True, null=True)
-    comprado = models.NullBooleanField('¿Ya ha sido comprado?', blank=True, null=True)
+    reservado = models.BooleanField('¿Ya ha sido reservado?', blank=True, null=True)
+    comprado = models.BooleanField('¿Ya ha sido comprado?', blank=True, null=True)
 
     class Meta:
         ordering = ['pk']
