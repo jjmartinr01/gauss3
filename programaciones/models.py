@@ -706,7 +706,7 @@ class LibroRecurso(models.Model):
     nombre = models.CharField('Nombre del libro o recurso', blank=True, max_length=300)
     isbn = models.CharField('ISBN', blank=True, max_length=20)
     observaciones = models.TextField('Observaciones', blank=True)
-    doc_file = models.FileField("Libro o recurso asociado a la programación", upload_to=update_documentos_psec)
+    doc_file = models.FileField("Libro/recurso asociado a la programación", upload_to=update_documentos_psec, null=True)
     content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 

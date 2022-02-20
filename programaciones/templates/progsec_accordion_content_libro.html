@@ -1,0 +1,30 @@
+<tr class="datos_libro{{ libro.id }}">
+    <td>{{ libro.nombre }}</td>
+    <td>{{ libro.isbn }}</td>
+    <td><a class="borrar_libro" data-progsec="{{ libro.psec.id }}" data-libro="{{ libro.id }}">
+        <i class="fa fa-trash"></i> Borrar
+    </a></td>
+</tr>
+<tr class="datos_libro{{ libro.id }}">
+    <td colspan="3" style="color: grey;">{{ libro.observaciones }}</td>
+</tr>
+{#<div id="datos_libro{{ libro.id }}">#}
+{#    <div class="row">#}
+{#        <div class="columns large-9">#}
+{#            {{ libro.nombre }}#}
+{#        </div>#}
+{#        <div class="columns large-2">#}
+{#            {{ libro.isbn }}#}
+{#        </div>#}
+{#        <div class="columns large-1">#}
+{#            <a class="borrar_libro" data-progsec="{{ progsec.id }}" data-libro="{{ libro.id }}">#}
+{#                <i class="fa fa-trash"></i> Borrar#}
+{#            </a>#}
+{#        </div>#}
+{#    </div>#}
+{#    <div class="row">#}
+{#        <div class="columns large-12" style="color: grey;">#}
+{#            {{ libro.observaciones }}#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}

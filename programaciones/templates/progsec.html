@@ -128,6 +128,31 @@
                     });
             });
         {% endif %}
+        $('body').on('click', '.borrar_progsec', function () {
+            id = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar esta programación didáctica?',
+                texto: 'Si aceptas, la programación se borrará por completo de la base de datos', size: 'large',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/progsecundaria/", {action: 'borrar_progsec', id: id},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#accordion' + id).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+
+        });
 
         {% comment %}
 
@@ -200,8 +225,7 @@
         });
 
 
-
-        function get_texto_from_update_texto(element, id) {
+        function get_texto_from_update_texto(element) {
             var texto;
             texto = element.val();
             return texto;
@@ -211,9 +235,9 @@
             var element = $(this);
             var id = element.data('id');
             var campo = element.data('campo');
-            var antiguo_texto = get_texto_from_update_texto(element, id);
+            var antiguo_texto = get_texto_from_update_texto(element);
             setTimeout(function () {
-                var nuevo_texto = get_texto_from_update_texto(element, id);
+                var nuevo_texto = get_texto_from_update_texto(element);
                 if (antiguo_texto === nuevo_texto) {
                     $.post("/progsecundaria/", {action: 'update_texto', id: id, texto: nuevo_texto, campo: campo},
                         function (data) {
@@ -228,30 +252,230 @@
             }, 750);
         });
 
-        $('body').on('change', '.select_departamento', function () {
+        $('body').on('click', '.cargar_libro', function () {
             var id = $(this).data('progsec');
-            var departamento = $(this).val();
-                    $.post("/progsecundaria/", {action: 'select_departamento', id: id, departamento: departamento},
+            var nombre = $('#nombre_libro' + id).val();
+            var isbn = $('#isbn_libro' + id).val();
+            var observaciones = $('#observaciones_libro' + id).val();
+            $.post("/progsecundaria/", {
+                    action: 'cargar_libro', id: id, nombre: nombre,
+                    isbn: isbn, observaciones: observaciones
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#lista_libros' + id).append(data.html);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        $('body').on('click', '.borrar_libro', function () {
+            id = $(this).data('progsec');
+            libro = $(this).data('libro');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar este libro de la programación didáctica?',
+                texto: 'Si aceptas, el libro se borrará por completo de la base de datos', size: 'large',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/progsecundaria/", {action: 'borrar_libro', id: id, libro: libro},
+                            function (data) {
+                                if (data.ok) {
+                                    $('.datos_libro' + libro).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+        $('body').on('click', '.cargar_actex', function () {
+            var id = $(this).data('progsec');
+            var nombre = $('#nombre_actex' + id).val();
+            var inicio = $('#inicio_actex' + id).val();
+            var fin = $('#fin_actex' + id).val();
+            var observaciones = $('#observaciones_actex' + id).val();
+            $.post("/progsecundaria/", {
+                    action: 'cargar_actex', id: id, nombre: nombre,
+                    inicio: inicio, fin: fin, observaciones: observaciones
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#lista_actex' + id).append(data.html);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        $('body').on('click', '.borrar_actex', function () {
+            id = $(this).data('progsec');
+            actex = $(this).data('actex');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar esta actividad extraescolar/complementaria de la programación didáctica?',
+                texto: 'Si aceptas, la actividad se borrará por completo de la base de datos', size: 'large',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/progsecundaria/", {action: 'borrar_actex', id: id, actex: actex},
+                            function (data) {
+                                if (data.ok) {
+                                    $('.datos_actex' + actex).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+        $('body').on('click', '.add_saber', function () {
+            var id = $(this).data('progsec');
+            $.post("/progsecundaria/", {
+                    action: 'add_saber', id: id
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#tbody_saberes' + id).append(data.html);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        $('body').on('keyup', '.mod_saber', function () {
+            var element = $(this);
+            var antiguo_texto = element.html();
+            setTimeout(function () {
+                var nuevo_texto = element.html();
+                if (antiguo_texto === nuevo_texto) {
+                    var id = element.data('progsec');
+                    var saber = element.data('saber');
+                    var campo = element.data('campo');
+                    if (campo === 'orden' || campo === 'periodos'){
+                        nuevo_texto = parseInt(nuevo_texto);
+                    }
+                    $.post("/progsecundaria/", {
+                            action: 'mod_saber', id: id, saber: saber, campo: campo, valor: nuevo_texto
+                        },
                         function (data) {
                             if (data.ok) {
+                                if (data.html){
+                                    $('#tbody_saberes' + id).html(data.html);
+                                }
                                 $("#update_ok").show().delay(1500).fadeOut();
                             } else {
                                 $('#update_error').show().delay(1500).fadeOut();
                             }
                         });
+                }
+            }, 750);
+        });
+
+        $('body').on('click', '.borrar_saber', function () {
+            id = $(this).data('progsec');
+            saber = $(this).data('saber');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar este saber básico de la programación didáctica?',
+                texto: 'Si aceptas, este saber básico se borrará por completo de la base de datos', size: 'large',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/progsecundaria/", {action: 'borrar_saber', id: id, saber: saber},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#tbody_saberes' + id).html(data.html);
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+        $('body').on('change', '.select_departamento', function () {
+            var id = $(this).data('progsec');
+            var departamento = $(this).val();
+            $.post("/progsecundaria/", {action: 'select_departamento', id: id, departamento: departamento},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
         });
         $('body').on('change', '.select_jefe', function () {
             var id = $(this).data('progsec');
             var jefe = $(this).val();
-                    $.post("/progsecundaria/", {action: 'select_jefe', id: id, jefe: jefe},
-                        function (data) {
-                            if (data.ok) {
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $('#update_error').show().delay(1500).fadeOut();
-                            }
-                        });
+            $.post("/progsecundaria/", {action: 'select_jefe', id: id, jefe: jefe},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
         });
+        $('body').on('change', '.miembros_departamento', function () {
+            var id = $(this).data('progsec');
+            var ges = $(this).val();
+            $.post("/progsecundaria/", {action: 'add_docprogsec', id: id, ges: ges},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.pesocep', function () {
+            var id = $(this).data('progsec');
+            var cep = $(this).data('cep');
+            var cep_peso = $(this).val();
+            $.post("/progsecundaria/", {action: 'update_pesocep', id: id, cep: cep, cep_peso: cep_peso},
+                function (data) {
+                    if (data.ok) {
+                        $('.valor_ce' + cep).html(cep_peso);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.pesocevp', function () {
+            var id = $(this).data('progsec');
+            var cevp = $(this).data('cevp');
+            var cevp_peso = $(this).val();
+            $.post("/progsecundaria/", {action: 'update_pesocevp', id: id, cevp: cevp, cevp_peso: cevp_peso},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
 
         {% comment %}
 
@@ -269,32 +493,6 @@
         });
 
 {% endcomment %}
-
-        $('body').on('click', '.borrar_progsec', function () {
-            id = $(this).data('id');
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar esta programación didáctica?',
-                texto: 'Si aceptas, la programación se borrará por completo de la base de datos', size: 'large',
-                buttons: {
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    },
-                    "Borrar": function () {
-                        hide_mensajes();
-                        $.post("/progsecundaria/", {action: 'borrar_progsec', id: id},
-                            function (data) {
-                                if (data.ok) {
-                                    $('#accordion' + id).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
-                    }
-                }
-            });
-
-        });
 
         {% comment %}
 

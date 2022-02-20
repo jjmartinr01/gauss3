@@ -79,7 +79,8 @@
                 <select class="select_departamento" data-progsec="{{ progsec.id }}">
                     <option value="">------</option>
                     {% for d in departamentos %}
-                        <option value="{{ d.id }}" {% if gep.departamento == d %}selected{% endif %}>{{ d.nombre }}</option>
+                        <option value="{{ d.id }}"
+                                {% if progsec.departamento == d %}selected{% endif %}>{{ d.nombre }}</option>
                     {% endfor %}
                 </select>
             </label>
@@ -89,7 +90,8 @@
                 <select class="select_jefe" data-progsec="{{ progsec.id }}">
                     <option value="">------</option>
                     {% for d in docentes %}
-                        <option value="{{ d.id }}" {% if gep.departamento.jefe.ge == d %}selected{% endif %}>{{ d.gauser.get_full_name }}</option>
+                        <option value="{{ d.id }}"
+                                {% if gep.departamento.jefe.ge == d %}selected{% endif %}>{{ d.gauser.get_full_name }}</option>
                     {% endfor %}
                 </select>
             </label>
@@ -98,10 +100,11 @@
     <div class="row">
         <div class="columns large-12">
             <label><b>Docentes del departamento usando esta programación (tendrán permiso para editarla): </b>
-                <select id="miembros_departamento{{ progsec.id }}" data-progsec="{{ progsec.id }}" multiple="multiple">
+                <select class="miembros_departamento" data-progsec="{{ progsec.id }}" multiple="multiple">
                     <option value="">------</option>
                     {% for d in docentes %}
-                        <option value="{{ d.id }}">{{ d.gauser.get_full_name }}</option>
+                        <option value="{{ d.id }}"
+                                {% if d.id in docentes_id %}selected{% endif %}>{{ d.gauser.get_full_name }}</option>
                     {% endfor %}
                 </select>
             </label>
@@ -132,34 +135,20 @@
                     <th>Peso</th>
                 </tr>
                 </thead>
-                <tr>
-                    <td>0.- dfsafsañlds ñla fñdaskl ñls sdñadskl jañdsl ñldaskfñ ñldaslk lñk adsñlkadslkdasldl kjlñ
-                        lkads a ñadslñl dlñads ñañl adskd jasl añlkads jkldalñljkdfñkl akñ lldsajklñadkjlj dsaflñ.
-                    </td>
-                    <td><input type="number" min="1" max="10" class="pesoce" data-ce="534553" value="5"></td>
-                </tr>
-                {% for ce in progsec.ceprogsec_set.all %}
+                {% for cep in progsec.ceprogsec_set.all %}
                     <tr>
-                        <td>{{ ce.ce.orden }}.- {{ ce.ce.nombre }}</td>
-                        <td><input type="number" min="1" max="10" class="pesoce" data-ce="{{ ce.id }}"
-                                   value="{{ ce.valor }}"></td>
+                        <td>{{ cep.ce.orden }}.- {{ cep.ce.nombre }}</td>
+                        <td><input type="number" min="1" max="10" class="pesocep" data-cep="{{ cep.id }}"
+                                   data-progsec="{{ progsec.id }}" value="{{ cep.valor|floatformat }}"></td>
                     </tr>
-                    {#        <div class="row">#}
-                    {#            <div class="columns large-10">#}
-                    {#                {{ ce.ce.nombre }}#}
-                    {#            </div>#}
-                    {#            <div class="columns large-2">#}
-                    {#                <input type="number" min="1" max="10" class="pesoce" data-ce="{{ ce.id }}" value="{{ ce.valor }}">#}
-                    {#            </div>#}
-                    {#        </div>#}
                 {% endfor %}
             </table>
         </div>
     </div>
-<div class="row">
+    <div class="row">
         <div class="columns large-12">
             <p style="color: gray;">La calificación de {{ progsec.areamateria.nombre }} se calculará a través de la
-            siguiente media ponderada:</p>
+                siguiente media ponderada:</p>
         </div>
     </div>
     <div class="row">
@@ -172,39 +161,16 @@
             <div>
                 {% for ce in progsec.ceprogsec_set.all %}
                     <span title="Calificación obtenida en la competencia específica {{ ce.ce.orden }}"
-                    >CE{{ ce.ce.orden }}</span>&nbsp;×&nbsp;<span class="valor_ce{{ ce.ce.orden }}"
-                >{{ ce.valor }}</span>{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}
+                    >CE{{ ce.ce.orden }}</span>&nbsp;×&nbsp;<span class="valor_ce{{ ce.id }}"
+                >{{ ce.valor|floatformat }}</span>{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}
             </div>
             <div style="border-top: 1px solid black;">
                 {% for ce in progsec.ceprogsec_set.all %}
-                    <span class="valor_ce{{ ce.ce.orden }}">{{ ce.valor }}</span
+                    <span class="valor_ce{{ ce.id }}">{{ ce.valor|floatformat }}</span
                     >{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}
             </div>
         </div>
     </div>
-{#    <div class="row">#}
-{#        <div class="columns large-12" style="text-align: center;">#}
-{#            <math style="font-family: Helvetica,serif; font-size: x-large;">#}
-{#                <mrow>#}
-{#                    <mi style="font-size: large;">calificación {{ progsec.areamateria.nombre }}</mi>#}
-{#                    <mo>=</mo>#}
-{#                    <mfrac>#}
-{#                        <mrow>#}
-{#                            <mi>{% for ce in progsec.ceprogsec_set.all %}#}
-{#                                <span title="Calificación obtenida en la competencia específica {{ ce.ce.orden }}"#}
-{#                                >CE{{ ce.ce.orden }}</span>&nbsp;×&nbsp;<span class="valor_ce{{ ce.ce.orden }}"#}
-{#                                >{{ ce.valor }}</span>{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}</mi>#}
-{#                        </mrow>#}
-{#                        <mrow>#}
-{#                            <mn>{% for ce in progsec.ceprogsec_set.all %}#}
-{#                                <span class="valor_ce{{ ce.ce.orden }}">{{ ce.valor }}</span#}
-{#                                >{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}</mn>#}
-{#                        </mrow>#}
-{#                    </mfrac>#}
-{#                </mrow>#}
-{#            </math>#}
-{#        </div>#}
-{#    </div>#}
     <div class="row">
         <div class="columns large-12">
             <p style="color: gray;">En la anterior fórmula, CE1 es la calificación que un alumno obtiene en la
@@ -221,31 +187,69 @@
             <div class="panel callout"><h3>2º Dar un peso a cada criterio de evaluación</h3></div>
             <p>Para concretar el nivel de adquisición de cada competencia específica, usted utilizará una serie
                 de criterios de evaluación. Así pues, usted no evaluará las competencias específicas directamente,
-                sino que lo hará de forma indirecta al calificar los criterios de evaluación.</p>
+                sino que lo hará de forma indirecta al calificar esos criterios de evaluación.</p>
             <p>Cada criterio de evaluación puede tener a su vez un "peso" que determina
                 su contribución ponderada para la adquisición de la competencia específica. Por favor, introduzca el
                 peso asociado a cada criterio de evaluación:</p>
         </div>
     </div>
+    <div class="row">
+        <div class="columns large-12">
+            <p style="color: gray;">La calificación de la CE{{ cep.orden }} será la
+                media ponderada de las calificaciones que usted otorgue a cada alumno en cada criterio de evaluación.
+                <br>La fórmula de cálculo es similar a la indicada anteriormente para {{ progsec.areamateria.nombre }},
+                pero utilizando los criterios de evaluación.</p>
+        </div>
+    </div>
 
-    {% for ce in progsec.ceprogsec_set.all %}
+{% comment %}
+    {% for cep in progsec.ceprogsec_set.all %}
         <div class="row">
             <div class="columns large-12">
-                <b>{{ ce.ce.nombre }}</b>
+                <b>{{ cep.ce.nombre }}</b>
             </div>
         </div>
-        {% for cev in ce.cevprogsec_set.all %}
+        {% for cevp in cep.cevprogsec_set.all %}
             <div class="row">
                 <div class="columns large-10">
-                    {{ cev.cev.texto }}
+                    {{ cevp.cev.texto }}
                 </div>
                 <div class="columns large-2">
-                    <input type="number" min="1" max="10" class="pesocev" data-ce="{{ cev.id }}"
-                           value="{{ cev.valor }}">
+                    <input type="number" min="1" max="10" class="pesocevp" data-cevp="{{ cevp.id }}"
+                           data-progsec="{{ progsec.id }}" value="{{ cevp.valor|floatformat }}">
                 </div>
             </div>
         {% endfor %}
     {% endfor %}
+{% endcomment %}
+<div class="row">
+        <div class="columns large-12">
+            <table style="width: 100%;">
+                <thead>
+                <tr>
+                    <th>Competencia específica con sus criterios de evaluación asociados</th>
+                    <th>Peso</th>
+                </tr>
+                </thead>
+                {% for cep in progsec.ceprogsec_set.all %}
+                    <thead>
+                    <tr>
+                        <th colspan="2">{{ cep.ce.orden }}.- {{ cep.ce.nombre }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for cevp in cep.cevprogsec_set.all %}
+                    <tr>
+                        <td>{{ cevp.cev.texto }}</td>
+                        <td><input type="number" min="1" max="10" class="pesocevp" data-cevp="{{ cevp.id }}"
+                           data-progsec="{{ progsec.id }}" value="{{ cevp.valor|floatformat }}"></td>
+                    </tr>
+                        {% endfor %}
+                    </tbody>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
 
     <div class="row">
         <div class="columns large-12 callout panel">
@@ -254,21 +258,40 @@
         </div>
     </div>
     <div class="row">
+        <div class="columns large-12">
+            <table id="lista_libros{{ progsec.id }}" style="width: 100%;">
+                <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>ISBN</th>
+                    <th>¿Borrar?</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for libro in progsec.librorecurso_set.all %}
+                    {% include "progsec_accordion_content_libro.html" %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
         <div class="columns large-9">
             <label>Introduce nombre del libro/material:
-                <input type="text" data-progsec="{{ progsec.id }}" id="nombre_libro" value="" placeholder="Obligatorio">
+                <input type="text" id="nombre_libro{{ progsec.id }}" value="" placeholder="Obligatorio">
             </label>
         </div>
         <div class="columns large-3">
             <label>Introduce el ISBN:
-                <input type="text" data-progsec="{{ progsec.id }}" id="isbn_libro" value="" placeholder="Opcional">
+                <input type="text" id="isbn_libro{{ progsec.id }}" value="" placeholder="Opcional">
             </label>
         </div>
     </div>
     <div class="row">
         <div class="columns large-12">
             <label>Introduce observaciones acerca del libro/material:
-                <textarea data-progsec="{{ progsec.id }}" id="observaciones_libro"
+                <textarea id="observaciones_libro{{ progsec.id }}"
                           placeholder="Texto opcional"></textarea>
             </label>
         </div>
@@ -276,11 +299,12 @@
     <div class="row">
         <div class="columns large-9">
             <label>Cargar el archivo del libro/material (opcional):
-                <input type="file" name="archivo_libro" id="archivo_libro" data-progsec="{{ progsec.id }}">
+                <input type="file" disabled="disabled" name="archivo_libro{{ progsec.id }}"
+                       id="archivo_libro{{ progsec.id }}">
             </label>
         </div>
         <div class="columns large-3">
-            <a class="button right">Cargar libro/material</a>
+            <a data-progsec="{{ progsec.id }}" class="button right cargar_libro">Cargar libro/material</a>
         </div>
     </div>
 
@@ -292,22 +316,43 @@
             {#            <p>Indique los libros/materiales que van utilizarse para desarrollar:</p>#}
         </div>
     </div>
+
+    <div class="row">
+        <div class="columns large-12">
+            <table id="lista_actex{{ progsec.id }}" style="width: 100%;">
+                <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Inicio</th>
+                    <th>Fin</th>
+                    <th>¿Borrar?</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for actex in progsec.actexcom_set.all %}
+                    {% include "progsec_accordion_content_actex.html" %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <div class="row">
         <div class="columns large-8">
             <label>Nombre de la actividad extraescolar/complementaria:
-                <input type="text" data-progsec="{{ progsec.id }}" id="nombre_actividad" value=""
+                <input type="text" data-progsec="{{ progsec.id }}" id="nombre_actex{{ progsec.id }}" value=""
                        placeholder="Obligatorio">
             </label>
         </div>
         <div class="columns large-2">
             <label>Inicio:
-                <input type="date" data-progsec="{{ progsec.id }}" id="inicio_actividad" value=""
+                <input type="date" data-progsec="{{ progsec.id }}" id="inicio_actex{{ progsec.id }}" value=""
                        placeholder="Obligatorio">
             </label>
         </div>
         <div class="columns large-2">
             <label>Fin:
-                <input type="date" data-progsec="{{ progsec.id }}" id="fin_actividad" value=""
+                <input type="date" data-progsec="{{ progsec.id }}" id="fin_actex{{ progsec.id }}" value=""
                        placeholder="Obligatorio">
             </label>
         </div>
@@ -315,13 +360,13 @@
     <div class="row">
         <div class="columns large-9">
             <label>Observaciones a la actividad extraescolar/complementaria:
-                <textarea data-progsec="{{ progsec.id }}" id="observaciones_actividad"
+                <textarea data-progsec="{{ progsec.id }}" id="observaciones_actex{{ progsec.id }}"
                           placeholder="Texto opcional"></textarea>
             </label>
         </div>
         <div class="columns large-3">
             <label>&nbsp;<br>
-                <a class="button right">Cargar actividad</a>
+                <a data-progsec="{{ progsec.id }}" class="button right cargar_actex">Cargar actividad</a>
             </label>
         </div>
     </div>
@@ -339,6 +384,30 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="columns large-12">
+            <table id="lista_saber{{ progsec.id }}" style="width: 100%;">
+                <thead>
+                <tr>
+                    <th>orden</th>
+                    <th>nombre</th>
+                    <th>periodos</th>
+                    <th>¿Borrar?</th>
+                    <th title="Situaciones de aprendizaje">SAP</th>
+                </tr>
+                </thead>
+                <tbody id="tbody_saberes{{ progsec.id }}">
+                {% include "progsec_accordion_content_saberes.html" %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+<div class="row">
+        <div class="columns large-12">
+            <a data-progsec="{{ progsec.id }}" class="add_saber button small right">Añadir Saber básico</a>
+        </div>
+    </div>
+    {% comment %}
     {% for sb in progsec.saberbas_set.all %}
         <div class="row" id="row_sb{{ sb.id }}">
             <div class="columns large-12">
@@ -364,7 +433,7 @@
                 </ul>
             </div>
         </div>
-        {% comment %}
+
         {% for sap in sb.sitapren_set.all %}
             <div class="row" id="row_sap{{ sap.id }}">
                 <div class="columns large-12">
@@ -386,8 +455,9 @@
                 </div>
             </div>
         {% endfor %}
-        {% endcomment %}
     {% endfor %}
+
+
 
 
 
@@ -416,6 +486,7 @@
             </label>
         </div>
     </div>
+
 
 
     <div class="row">
@@ -551,6 +622,7 @@
 {#    </div>#}
 {#</div>#}
 
+{% endcomment %}
 <script>
     $('select').select2();
 </script>

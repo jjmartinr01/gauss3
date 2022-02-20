@@ -1,0 +1,18 @@
+<tr class="datos_saber{{ saber.id }}">
+    <td contenteditable="true" class="mod_saber" data-campo="orden" data-progsec="{{ saber.psec.id }}"
+        data-saber="{{ saber.id }}">{{ saber.orden }}</td>
+    <td contenteditable="true" class="mod_saber" data-campo="nombre" data-progsec="{{ saber.psec.id }}"
+        data-saber="{{ saber.id }}">{% autoescape off %}{{ saber.nombre }}{% endautoescape %}</td>
+    <td contenteditable="true" class="mod_saber" data-campo="periodos" data-progsec="{{ saber.psec.id }}"
+        data-saber="{{ saber.id }}">{{ saber.periodos }}</td>
+    <td><a class="borrar_saber" data-progsec="{{ saber.psec.id }}" data-saber="{{ saber.id }}">
+        <i class="fa fa-trash"></i> Borrar
+    </a></td>
+    <td><a href="/progsecundaria_sb/{{ saber.id }}/"><i class="fa fa-pencil"></i> SAP</a></td>
+    {#    <td><a class="add_sap" data-progsec="{{ saber.psec.id }}" data-saber="{{ saber.id }}">#}
+    {#        <i class="fa fa-pencil"></i> SAP#}
+    {#    </a></td>#}
+</tr>
+{#<tr class="datos_saber{{ saber.id }}">#}
+{#    <td colspan="4" style="color: grey;">{{ saber.observaciones }}</td>#}
+{#</tr>#}
