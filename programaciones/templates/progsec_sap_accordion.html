@@ -1,15 +1,13 @@
 {% load entidades_extras %}
-{% for sap in sb.sitapren_set.all %}
-    <dd class="accordion-navigation" id="accordion{{ sap.id }}"
-        style="border-bottom: dotted 1px black">
-        <a href="#panel{{ sap.id }}">
-            <i id="circle{{ sap.id }}" class="fa fa-plus-circle circle_icon"></i>
-            <b id="asunto{{ sap.id }}">
-                {% if not sap.nombre %}<span style="color:red">Nueva Situación de aprendizaje</span>
-                {% else %}{{ sap.nombre }}{% endif %}</b>
-        </a>
+<dd class="accordion-navigation" id="accordion{{ sap.id }}"
+    style="border-bottom: dotted 1px black">
+    <a href="#panel{{ sap.id }}">
+        <i id="circle{{ sap.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <b id="nombre{{ sap.id }}">
+            {% if not sap.nombre %}<span style="color:red">Nueva Situación de aprendizaje</span>
+            {% else %}{{ sap.nombre }}{% endif %}</b>
+    </a>
 
-        <div id="panel{{ sap.id }}" class="content accordion-sap" data-id="{{ sap.id }}">
-        </div>
-    </dd>
-{% endfor %}
+    <div id="panel{{ sap.id }}" class="content accordion-sap" data-id="{{ sap.id }}">
+    </div>
+</dd>

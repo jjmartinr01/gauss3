@@ -2315,21 +2315,9 @@ def progsecundaria_sb(request, id):
         action = request.POST['action']
         if action == 'crea_sap':
             try:
-                if permiso in 'EX':
-                    # materia = Materia.objects.get(id=request.POST['materia'])
-                    # mp, c = Materia_programaciones.objects.get_or_create(materia=materia)
-                    areamateria = AreaMateria.objects.get(id=request.POST['areamateria'])
-                    curso = Curso.objects.get(id=request.POST['curso'], ronda=g_e.ronda)
-                    progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria, curso=curso)
-                    for ce in areamateria.competenciaespecifica_set.all():
-                        cepsec = CEProgSec.objects.create(psec=progsec, ce=ce)
-                        for cev in ce.criterioevaluacion_set.all():
-                            CEvProgSec.objects.create(cepsec=cepsec, cev=cev)
-                    html = render_to_string('progsec_accordion.html',
-                                            {'buscadas': False, 'progsecs': [progsec], 'g_e': g_e, 'nueva': True})
-                    return JsonResponse({'ok': True, 'html': html})
-                else:
-                    JsonResponse({'ok': False, 'msg': 'Sin permiso'})
+                sap = SitApren.objects.create(sbas=sb)
+                html = render_to_string('progsec_sap_accordion.html', {'sap':sap})
+                return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'open_accordion':
@@ -2340,14 +2328,30 @@ def progsecundaria_sb(request, id):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-        elif action == 'update_texto_pec':
+        elif action == 'update_texto':
             try:
-                pec = PEC.objects.get(entidad=g_e.ronda.entidad, id=request.POST['pec'])
-                setattr(pec, request.POST['campo'], request.POST['texto'])
-                pec.save()
+                clase = eval(request.POST['clase'])
+                objeto = clase.objects.get(id=request.POST['id'])
+                setattr(objeto, request.POST['campo'], request.POST['texto'])
+                objeto.save()
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'update_many2many':
+            try:
+                clase = eval(request.POST['clase'])
+                clasem2m = eval(request.POST['clasem2m'])
+                objeto = clase.objects.get(id=request.POST['id'])
+                objetom2m = clasem2m.objects.get(id=request.POST['idm2m'])
+                manytomany = getattr(objeto, request.POST['campo'])
+                if request.POST['checked'] == 'true':
+                    manytomany.add(objetom2m)
+                else:
+                    manytomany.remove(objetom2m)
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+
     elif request.method == 'POST':
         if request.POST['action'] == 'sube_file_pec':
             pec = PEC.objects.get(id=request.POST['pec'])
@@ -2389,6 +2393,8 @@ def progsecundaria_sb(request, id):
                       'iconos':
                           ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear SAP', 'permiso': 'libre',
                             'title': 'Crear una nueva situación de aprendizaje para este saber básico'},
+                           {'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Volver', 'permiso': 'libre',
+                            'title': 'Volver a la programación didáctica'},
                            ),
                       'g_e': g_e,
                       'sb': sb,
