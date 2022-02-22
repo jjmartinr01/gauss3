@@ -1,0 +1,35 @@
+<fieldset id="contenido_actividad{{ actividad.id }}" style="position:relative;">
+    <legend contenteditable="true" id="legend_nombre{{ actividad.id }}"
+            data-id="{{ actividad.id }}" data-clase="ActSitApren" class="update_texto"
+            data-campo="nombre">{{ actividad.nombre }}</legend>
+    <a class="borrar_sap_actividad" data-id="{{ actividad.id }}"
+       style="position: absolute; top:0; right: 10px;"><i class="fa fa-trash"></i> Borrar actividad</a>
+    <div class="row">
+        <div class="columns large-12">
+            <label>Descripción de la actividad:
+                <textarea type="text" data-id="{{ actividad.id }}" data-clase="ActSitApren"
+                          class="update_texto" data-campo="description">{{ actividad.description }}</textarea>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label>Producto solicitado a los alumnos en esta actividad:
+                <textarea type="text" data-id="{{ actividad.id }}" data-clase="ActSitApren"
+                          class="update_texto" data-campo="producto">{{ actividad.producto }}</textarea>
+            </label>
+        </div>
+    </div>
+    <div id="list_instrumentos_actividad{{ actividad.id }}">
+        <span style="font-weight: bold;">Procedimientos utilizados para evaluar la actividad:</span>
+        {% for instrumento in actividad.instreval_set.all %}
+            {% include 'progsec_sap_accordion_content_act_proc.html' %}
+        {% endfor %}
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <a class="button right add_act_instrumento" data-act="{{ actividad.id }}"><i
+                    class="fa fa-plus"></i> Añadir procedimiento</a>
+        </div>
+    </div>
+</fieldset>

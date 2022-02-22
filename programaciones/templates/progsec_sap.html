@@ -123,14 +123,22 @@
             }
         });
 
+        function get_texto_from_element(element) {
+            if (element.val()) {
+                return element.val();
+            } else {
+                return element.html();
+            }
+        }
+
         $('body').on('keyup', '.update_texto', function () {
             var element = $(this);
             var id = element.data('id');
             var campo = element.data('campo');
             var clase = element.data('clase');
-            var antiguo_texto = element.val();
+            var antiguo_texto = get_texto_from_element(element);
             setTimeout(function () {
-                var nuevo_texto = element.val();
+                var nuevo_texto = get_texto_from_element(element);
                 if (antiguo_texto === nuevo_texto) {
                     $.post(url_progsec_sap, {
                             action: 'update_texto', id: id, texto: nuevo_texto, campo: campo,
@@ -170,6 +178,137 @@
                     }
                 });
         });
+
+        $('body').on('change', '.update_select', function () {
+            var element = $(this);
+            var id = element.data('id');
+            var campo = element.data('campo');
+            var clase = element.data('clase');
+            var valor = element.val();
+            $.post(url_progsec_sap, {
+                    action: 'update_select', id: id, valor: valor, campo: campo, clase: clase
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('#Contenido').on('click', '.add_sap_actividad', function (e) {
+            e.preventDefault();
+            var element = $(this);
+            var sap = element.data('sap');
+            $.post(url_progsec_sap, {
+                    action: 'add_sap_actividad', sap: sap
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#list_sap_actividades' + sap).append(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.borrar_sap_actividad', function () {
+            id = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar este actividad?',
+                texto: 'Si aceptas la actividad se borrará por completo de la base de datos.',
+                size: 'large',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post(url_progsec_sap, {action: 'borrar_sap_actividad', id: id},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#contenido_actividad' + id).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+        $('#Contenido').on('click', '.add_act_instrumento', function (e) {
+            e.preventDefault();
+            var element = $(this);
+            var act = element.data('act');
+            $.post(url_progsec_sap, {
+                    action: 'add_act_instrumento', act: act
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#list_instrumentos_actividad' + act).append(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.borrar_act_instrumento', function () {
+            id = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar este procedimiento de evaluación?',
+                texto: 'Si aceptas el procedimiento se borrará por completo de la base de datos.',
+                size: 'large',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post(url_progsec_sap, {action: 'borrar_act_instrumento', id: id},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#sap_act_intrumento' + id).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+        function refresh_table_criteval(element) {
+            var id = element.data('id');
+            $.post(url_progsec_sap, {
+                    action: 'table_criteval', id: id
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#table_criteval' + id).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        }
+
+        $('#Contenido').on('mouseenter', '.table_criteval', function () {
+            var element = $(this);
+            refresh_table_criteval(element);
+        });
+        $('#Contenido').on('click', '.refresh_table_criteval', function (e) {
+            e.preventDefault();
+            var element = $(this);
+            refresh_table_criteval(element);
+        });
+
+
         {% comment %}
         function destroyEditorInstances() {
             for (var instance in CKEDITOR.instances) {

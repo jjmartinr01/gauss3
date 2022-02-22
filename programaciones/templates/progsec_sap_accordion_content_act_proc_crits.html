@@ -1,0 +1,34 @@
+    <thead title="Un peso igual a 0 implica que el criterio no es evaluado a través del procedimiento">
+                <tr>
+                    <th colspan="2" style="text-align: center;position: relative;">
+                        Criterios de evaluación asociados al procedimiento anterior
+                        <a style="position: absolute; right: 10px;" data-id="{{ instrumento.id }}"
+                           class="refresh_table_criteval">
+                            <i class="fa fa-refresh"></i> Refrescar tabla
+                        </a>
+                    </th>
+                </tr>
+{#    <tr>#}
+{#        <th colspan="3">{{ cep.ce.nombre }}</th>#}
+{#    </tr>#}
+    <tr>
+{#        <th>¿Elegido?</th>#}
+        <th>Criterio de evaluación</th>
+        <th>Peso</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for criinstreval in instrumento.criinstreval_set.all %}
+        <tr>
+{#            <td><input type="checkbox" ></td>#}
+            <td title="{{ criinstreval.cevps.cepsec.ce.nombre }}">
+                {{ criinstreval.cevps.cev.orden }}.- {{ criinstreval.cevps.cev.texto }}
+            </td>
+            <td title="Un peso igual a 0 implica que el criterio no es evaluado a través del procedimiento">
+                <input data-id="{{ criinstreval.id }}" data-clase="CriInstrEval"
+                        class="update_select" data-campo="peso"
+                       type="number" max="10" min="0" value="{{ criinstreval.peso }}">
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>

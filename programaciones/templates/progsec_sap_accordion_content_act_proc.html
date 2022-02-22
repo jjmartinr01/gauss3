@@ -1,0 +1,45 @@
+<div id="sap_act_intrumento{{ instrumento.id }}">
+    <hr style="margin: 0.1rem 0 1.2rem;">
+    <div class="row">
+        <div class="columns large-7">
+            <label>Nombre del procedimiento utilizado para evaluar esta situación de aprendizaje:
+                <input type="text" data-id="{{ instrumento.id }}" data-clase="InstrEval"
+                       class="update_texto" data-campo="nombre" value="{{ instrumento.nombre }}">
+            </label>
+        </div>
+        <div class="columns large-5">
+            <label>Tipo de procedimiento:
+                <select type="text" data-id="{{ instrumento.id }}" data-clase="InstrEval"
+                        class="update_select" data-campo="tipo">
+                    <option value="">-----</option>
+                    {% for tipo in instrumento.TIPOS %}
+                        <option value="{{ tipo.0 }}"
+                                {% if instrumento.tipo == tipo.0 %}selected{% endif %}>{{ tipo.1 }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="columns large-12">
+            <table style="width: 100%" id="table_criteval{{ instrumento.id }}">
+                <thead>
+                <tr class="table_criteval" data-id="{{ instrumento.id }}">
+                    <th colspan="3" style="text-align: center;">
+                        Criterios de evaluación asociados al procedimiento anterior
+                    </th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="columns large-12 right">
+            <a data-id="{{ instrumento.id }}" class="right button tiny alert borrar_act_instrumento">
+                <i class="fa fa-trash"></i> Borrar procedimiento
+            </a>
+        </div>
+    </div>
+</div>

@@ -5,6 +5,7 @@ from programaciones.models import *
 
 register = Library()
 
+
 @register.filter
 def puede_borrar(psec, g_e):
     try:

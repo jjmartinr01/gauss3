@@ -2337,6 +2337,15 @@ def progsecundaria_sb(request, id):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'update_select':
+            try:
+                clase = eval(request.POST['clase'])
+                objeto = clase.objects.get(id=request.POST['id'])
+                setattr(objeto, request.POST['campo'], request.POST['valor'])
+                objeto.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
         elif action == 'update_many2many':
             try:
                 clase = eval(request.POST['clase'])
@@ -2351,6 +2360,60 @@ def progsecundaria_sb(request, id):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'add_sap_actividad':
+            try:
+                sap=sb.sitapren_set.get(id=request.POST['sap'])
+                act = ActSitApren.objects.create(sapren=sap, nombre='Nombre de la actividad')
+                InstrEval.objects.create(asapren=act, tipo='TMONO', nombre='Procedimiento 1')
+                html = render_to_string('progsec_sap_accordion_content_act.html', {'actividad': act})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'borrar_sap_actividad':
+            try:
+                act = ActSitApren.objects.get(id=request.POST['id'])
+                if act.sapren.sbas == sb:
+                    act.delete()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'add_act_instrumento':
+            try:
+                act=ActSitApren.objects.get(id=request.POST['act'])
+                if act.sapren.sbas == sb:
+                    inst = InstrEval.objects.create(asapren=act, nombre='Nombre del instrumento')
+                    html = render_to_string('progsec_sap_accordion_content_act_proc.html', {'instrumento': inst})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    JsonResponse({'ok': False, 'msg': 'Error en la relación sb-instrumento'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'borrar_act_instrumento':
+            try:
+                inst = InstrEval.objects.get(id=request.POST['id'])
+                if inst.asapren.sapren.sbas == sb:
+                    inst.delete()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'table_criteval':
+            try:
+                inst = InstrEval.objects.get(id=request.POST['id'])
+                if inst.asapren.sapren.sbas == sb:
+                    criinstrevals = []
+                    for cep in inst.asapren.sapren.ceps.all():
+                        for cevps in cep.cevprogsec_set.all():
+                            criinstreval, c = CriInstrEval.objects.get_or_create(ieval=inst, cevps=cevps)
+                            criinstrevals.append(criinstreval.id)
+                    for cr in inst.criinstreval_set.all():
+                        if cr.id not in criinstrevals:
+                            cr.delete()
+                    html = render_to_string('progsec_sap_accordion_content_act_proc_crits.html', {'instrumento': inst})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
 
     elif request.method == 'POST':
         if request.POST['action'] == 'sube_file_pec':

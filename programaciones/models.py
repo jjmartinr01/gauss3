@@ -786,7 +786,7 @@ class InstrEval(models.Model):
 class CriInstrEval(models.Model):
     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
     cevps = models.ForeignKey(CEvProgSec, on_delete=models.CASCADE, blank=True, null=True)
-    peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=1)
+    peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=0)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
     def __str__(self):

@@ -118,150 +118,17 @@
             <p>El primer paso es crear las actividades que vas a llevar a cabo:</p>
         </div>
     </div>
-
+<div id="list_sap_actividades{{ sap.id }}">
     {% for actividad in sap.actsitapren_set.all %}
-        <div id="contenido_actividad{{ actividad.id }}">
-            <div class="row">
-                <div class="columns large-12">
-                    <label>Nombre de la actividad:
-                        <input type="text" data-id="{{ actividad.id }}" value="{{ actividad.nombre }}"
-                               data-clase="ActSitApren" class="update_texto" data-campo="nombre">
-                    </label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="columns large-12">
-                    <label>Descripción de la actividad:
-                        <textarea type="text" data-id="{{ actividad.id }}" data-clase="ActSitApren"
-                                  class="update_texto" data-campo="description">{{ actividad.description }}</textarea>
-                    </label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="columns large-12">
-                    <label>Producto solicitado a los alumnos en esta actividad:
-                        <textarea type="text" data-id="{{ actividad.id }}" data-clase="ActSitApren"
-                                  class="update_texto" data-campo="producto">{{ actividad.producto }}</textarea>
-                    </label>
-                </div>
-            </div>
-            <div id="instrumentos_actividad{{ actividad.id }}">
-                {% for instrumento in actividad.instreval_set.all %}
-                    <div class="row">
-                        <div class="columns large-10">
-                            <label>Nombre del procedimiento:
-                                <input type="text" data-id="{{ instrumento.id }}" data-clase="InstrEval"
-                                       class="update_texto" data-campo="nombre" value="{{ instrumento.nombre }}">
-                            </label>
-                        </div>
-                        <div class="columns large-2">
-                            <label>Tipo de procedimiento:
-                                <select type="text" data-id="{{ instrumento.id }}" data-clase="InstrEval"
-                                        class="update_select" data-campo="tipo">
-                                    <option value="">-----</option>
-                                    {% for tipo in instrumento.TIPOS %}
-                                        <option value="{{ tipo.0 }}">{{ tipo.1 }}</option>
-                                    {% endfor %}
-                                </select>
-                            </label>
-                        </div>
-                    </div>
-                    {% for criterio in instrumento.criinstreval_set.all %}
-                        <div class="row">
-                        <div class="columns large-10">
-                            <label>Nombre del procedimiento:
-                                <input type="text" data-id="{{ instrumento.id }}" data-clase="InstrEval"
-                                       class="update_texto" data-campo="nombre" value="{{ instrumento.nombre }}">
-                            </label>
-                        </div>
-                        <div class="columns large-2">
-                            <label>Tipo de procedimiento:
-                                <select type="text" data-id="{{ instrumento.id }}" data-clase="InstrEval"
-                                        class="update_select" data-campo="tipo">
-                                    <option value="">-----</option>
-                                    {% for tipo in instrumento.TIPOS %}
-                                        <option value="{{ tipo.0 }}">{{ tipo.1 }}</option>
-                                    {% endfor %}
-                                </select>
-                            </label>
-                        </div>
-                    </div>
-                        {% endfor %}
-                {% endfor %}
-            </div>
-        </div>
+        {% include 'progsec_sap_accordion_content_act.html' %}
     {% endfor %}
-
-    <div class="row">
-        <div class="columns large-12">
-            <div class="panel callout"><h3>2º Dar un peso a cada criterio de evaluación</h3></div>
-            <p>Para concretar el nivel de adquisición de cada competencia específica, usted utilizará una serie
-                de criterios de evaluación. Así pues, usted no evaluará las competencias específicas directamente,
-                sino que lo hará de forma indirecta al calificar los criterios de evaluación.</p>
-            <p>Cada criterio de evaluación puede tener a su vez un "peso" que determina
-                su contribución ponderada para la adquisición de la competencia específica. Por favor, introduzca el
-                peso asociado a cada criterio de evaluación:</p>
-        </div>
-    </div>
-
-    {% for ce in sap.cesap_set.all %}
-        <div class="row">
-            <div class="columns large-12">
-                <b>{{ ce.ce.nombre }}</b>
-            </div>
-        </div>
-        {% for cev in ce.cevsap_set.all %}
-            <div class="row">
-                <div class="columns large-10">
-                    {{ cev.cev.texto }}
-                </div>
-                <div class="columns large-2">
-                    <input type="number" min="1" max="10" class="pesocev" data-ce="{{ cev.id }}"
-                           value="{{ cev.valor }}">
-                </div>
-            </div>
-        {% endfor %}
-    {% endfor %}
-
-    <div class="row">
-        <div class="columns large-12 callout panel">
-            <h3>3º Libros o materiales van a ser utilizados para el desarrollo de la materia</h3>
-            {#            <p>Indique los libros/materiales que van utilizarse para desarrollar:</p>#}
-        </div>
-    </div>
-    <div class="row">
-        <div class="columns large-9">
-            <label>Introduce nombre del libro/material:
-                <input type="text" data-sap="{{ sap.id }}" id="nombre_libro" value="" placeholder="Obligatorio">
-            </label>
-        </div>
-        <div class="columns large-3">
-            <label>Introduce el ISBN:
-                <input type="text" data-sap="{{ sap.id }}" id="isbn_libro" value="" placeholder="Opcional">
-            </label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="columns large-12">
-            <label>Introduce observaciones acerca del libro/material:
-                <textarea data-sap="{{ sap.id }}" id="observaciones_libro"
-                          placeholder="Texto opcional"></textarea>
-            </label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="columns large-9">
-            <label>Cargar el archivo del libro/material (opcional):
-                <input type="file" name="archivo_libro" id="archivo_libro" data-sap="{{ sap.id }}">
-            </label>
-        </div>
-        <div class="columns large-3">
-            <a class="button right">Cargar libro/material</a>
-        </div>
-    </div>
-
-
 </div>
+<div class="row">
+        <div class="columns large-12">
+            <a class="button right add_sap_actividad" data-sap="{{ sap.id }}"><i class="fa fa-plus"></i> Añadir actividad</a>
+        </div>
+    </div>
+    </div>
 <script>
     $('select').select2();
 </script>
