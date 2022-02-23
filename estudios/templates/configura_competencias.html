@@ -140,147 +140,167 @@
 
         {% if request.session.gauser_extra|has_permiso:'puede_configurar_competencias' %}
 
-        $('body').on('change', '.dos_select2', function () {
-            var dos = $(this).val();
-            var cesp = $(this).data('cesp');
-            $.post("/configura_competencias/", {
-                    action: 'inserta_cesp_dos',
-                    cesp: cesp,
-                    dos: dos
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
+            $('body').on('change', '.dos_select2', function () {
+                var dos = $(this).val();
+                var cesp = $(this).data('cesp');
+                $.post("/configura_competencias/", {
+                        action: 'inserta_cesp_dos',
+                        cesp: cesp,
+                        dos: dos
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
 
-        $('body').on('click', '#inserta_ceval', function () {
-            var cesp = $('#id_cesp').val();
-            var ciclo = $('#ciclo_ceval').val();
-            var materia = $('#materia_ceval').val();
-            var orden = $('#orden_ceval').val();
-            var texto = $('#texto_ceval').val();
-            $.post("/configura_competencias/", {
-                    action: 'inserta_ceval',
-                    cesp: cesp,
-                    orden: orden,
-                    ciclo: ciclo,
-                    materia: materia,
-                    texto: texto
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#list_ceval' + data.cesp).append(data.html);
-                        $('#ciclo_ceval').val('');
-                        $('#materia_ceval').val('');
-                        $('#orden_ceval').val('');
-                        $('#texto_ceval').val('');
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
-        $('body').on('click', '.reveal_inserta_ceval', function () {
-            var cesp = $(this).data('cesp');
-            $('#id_cesp').val(cesp);
-            $('#div_reveal_inserta_ceval').foundation('reveal', 'open');
-        });
+            $('body').on('click', '#inserta_ceval', function () {
+                var cesp = $('#id_cesp').val();
+                var ciclo = $('#ciclo_ceval').val();
+                var materia = $('#materia_ceval').val();
+                var orden = $('#orden_ceval').val();
+                var texto = $('#texto_ceval').val();
+                $.post("/configura_competencias/", {
+                        action: 'inserta_ceval',
+                        cesp: cesp,
+                        orden: orden,
+                        ciclo: ciclo,
+                        materia: materia,
+                        texto: texto
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_ceval' + data.cesp).append(data.html);
+                            $('#ciclo_ceval').val('');
+                            $('#materia_ceval').val('');
+                            $('#orden_ceval').val('');
+                            $('#texto_ceval').val('');
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            $('body').on('click', '.reveal_inserta_ceval', function () {
+                var cesp = $(this).data('cesp');
+                $('#id_cesp').val(cesp);
+                $('#div_reveal_inserta_ceval').foundation('reveal', 'open');
+            });
 
-        $('body').on('click', '.inserta_cesp', function () {
-            var am = $(this).data('am');
-            var orden = $('#cesp_orden' + am).val();
-            var nombre = $('#cesp_nombre' + am).val();
-            var texto = $('#cesp_texto' + am).val();
-            $.post("/configura_competencias/", {
-                    action: 'inserta_cesp',
-                    am: am,
-                    orden: orden,
-                    nombre: nombre,
-                    texto: texto
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#list_cesp' + data.am).append(data.html);
-                        $('#cesp_orden' + data.am).val('');
-                        $('#cesp_nombre' + data.am).val('');
-                        $('#cesp_texto' + data.am).val('');
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
+            $('body').on('click', '.inserta_cesp', function () {
+                var am = $(this).data('am');
+                var orden = $('#cesp_orden' + am).val();
+                var nombre = $('#cesp_nombre' + am).val();
+                var texto = $('#cesp_texto' + am).val();
+                $.post("/configura_competencias/", {
+                        action: 'inserta_cesp',
+                        am: am,
+                        orden: orden,
+                        nombre: nombre,
+                        texto: texto
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_cesp' + data.am).append(data.html);
+                            $('#cesp_orden' + data.am).val('');
+                            $('#cesp_nombre' + data.am).val('');
+                            $('#cesp_texto' + data.am).val('');
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
 
-        $('body').on('click', '.inserta_am', function () {
-            var ps = $(this).data('ps');
-            var nombre = $('#am_nombre' + ps).val();
-            var texto = $('#am_texto' + ps).val();
-            $.post("/configura_competencias/", {
-                    action: 'inserta_am',
-                    ps: ps,
-                    nombre: nombre,
-                    texto: texto
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#list_am' + data.ps).append(data.html);
-                        $('#am_nombre' + data.ps).val('');
-                        $('#am_texto' + data.ps).val('');
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
+            $('body').on('click', '.inserta_am', function () {
+                var ps = $(this).data('ps');
+                var nombre = $('#am_nombre' + ps).val();
+                var texto = $('#am_texto' + ps).val();
+                $.post("/configura_competencias/", {
+                        action: 'inserta_am',
+                        ps: ps,
+                        nombre: nombre,
+                        texto: texto
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_am' + data.ps).append(data.html);
+                            $('#am_nombre' + data.ps).val('');
+                            $('#am_texto' + data.ps).val('');
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
 
-        $('body').on('click', '.inserta_do', function () {
-            var cc = $(this).data('cc');
-            var clave = $('#do_clave' + cc).val();
-            var texto = $('#do_texto' + cc).val();
-            $.post("/configura_competencias/", {action: 'inserta_do', cc: cc, clave: clave, texto: texto},
-                function (data) {
-                    if (data.ok) {
-                        $('#list_do' + data.cc).append(data.html);
-                        $('#do_clave' + data.cc).val('');
-                        $('#do_texto' + data.cc).val('');
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
+            $('body').on('click', '.inserta_do', function () {
+                var cc = $(this).data('cc');
+                var clave = $('#do_clave' + cc).val();
+                var texto = $('#do_texto' + cc).val();
+                $.post("/configura_competencias/", {action: 'inserta_do', cc: cc, clave: clave, texto: texto},
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_do' + data.cc).append(data.html);
+                            $('#do_clave' + data.cc).val('');
+                            $('#do_texto' + data.cc).val('');
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
 
-        $('body').on('click', '.inserta_cc', function () {
-            var ps = $(this).data('ps');
-            var orden = $('#cc_orden' + ps).val();
-            var siglas = $('#cc_siglas' + ps).val();
-            var competencia = $('#cc_competencia' + ps).val();
-            var texto = $('#cc_texto' + ps).val();
-            $.post("/configura_competencias/", {
-                    action: 'inserta_cc',
-                    ps: ps,
-                    orden: orden,
-                    siglas: siglas,
-                    competencia: competencia,
-                    texto: texto
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#list_cc' + data.ps).append(data.html);
-                        $('#cc_orden' + data.ps).val('');
-                        $('#cc_siglas' + data.ps).val('');
-                        $('#cc_competencia' + data.ps).val('');
-                        $('#cc_texto' + data.ps).val('');
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        });
+            $('body').on('click', '.inserta_cc', function () {
+                var ps = $(this).data('ps');
+                var orden = $('#cc_orden' + ps).val();
+                var siglas = $('#cc_siglas' + ps).val();
+                var competencia = $('#cc_competencia' + ps).val();
+                var texto = $('#cc_texto' + ps).val();
+                $.post("/configura_competencias/", {
+                        action: 'inserta_cc',
+                        ps: ps,
+                        orden: orden,
+                        siglas: siglas,
+                        competencia: competencia,
+                        texto: texto
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_cc' + data.ps).append(data.html);
+                            $('#cc_orden' + data.ps).val('');
+                            $('#cc_siglas' + data.ps).val('');
+                            $('#cc_competencia' + data.ps).val('');
+                            $('#cc_texto' + data.ps).val('');
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('click', '.cargar_fieldset_content_am', function () {
+                var am = $(this).data('am');
+                $.post("/configura_competencias/", {
+                        action: 'cargar_fieldset_content_am',
+                        am: am,
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#fieldset_content_am' + am).html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            setTimeout(function () {
+                                $('.dos_select2').select2();
+                                $('.select2-container').css('width', '100%');
+                            }, 150);
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
         {% endif %}
         {#$(document).foundation({#}
         {#    accordion: {#}

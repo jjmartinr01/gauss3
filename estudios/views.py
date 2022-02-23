@@ -417,6 +417,13 @@ def configura_competencias(request):
                 return JsonResponse({'html': html, 'ok': True, 'ps': ps.id})
             except Exception as msg:
                 return JsonResponse({'msg': str(msg), 'ok': True})
+        elif action == 'cargar_fieldset_content_am':
+            try:
+                am = AreaMateria.objects.get(id=request.POST['am'])
+                html = render_to_string('configura_competencias_am_content.html', {'am': am})
+                return JsonResponse({'html': html, 'ok': True, 'am': am.id})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': True})
         elif action == 'inserta_cesp':
             try:
                 am = AreaMateria.objects.get(id=request.POST['am'])

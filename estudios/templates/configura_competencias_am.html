@@ -1,5 +1,11 @@
 <fieldset>
     <legend style="font-weight: bold;color: #0f74a8;">{{ am.ps.get_etapa_display }} - {{ am.nombre }}</legend>
+    <div id="fieldset_content_am{{ am.id }}">
+        <a class="right button cargar_fieldset_content_am" data-am="{{ am.id }}">
+            Cargar contenido de {{ am.nombre }}
+        </a>
+    </div>
+    {% comment %}
     <div id="list_cesp{{ am.id }}">
         {% for cesp in am.competenciaespecifica_set.all %}
             {% include "configura_competencias_cesp.html" %}
@@ -62,4 +68,5 @@
 {#            </a>#}
 {#        </div>#}
 {#    </div>#}
+{% endcomment %}
 </fieldset>
