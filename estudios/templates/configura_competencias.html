@@ -301,6 +301,32 @@
                         }
                     });
             });
+
+            $('body').on('click', '.borrar_ceval', function () {
+                ceval = $(this).data('ceval');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar este criterio de evaluación?',
+                    texto: 'Si aceptas el criterio se borrará por completo de la base de datos.',
+                    size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post("/configura_competencias/", {action: 'borrar_ceval', ceval: ceval},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#ceval_' + ceval).remove();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
         {% endif %}
         {#$(document).foundation({#}
         {#    accordion: {#}

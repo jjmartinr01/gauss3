@@ -1,0 +1,92 @@
+{% load entidades_extras %}
+<style>
+    p {
+        text-align: justify;
+    }
+
+    .span_periodos {
+        color: darkred;
+    }
+
+    h5 {
+        font-weight: bold;
+    }
+
+</style>
+<table style="width: 100%">
+    <thead>
+    <tr>
+        <th></th>
+        {% for sb in cuaderno.psec.saberbas_set.all %}
+            <th colspan="{{ sb.num_criinstreval }}" title="{{ sb.nombre }}">{{ sb.nombre|truncatechars:20 }}</th>
+        {% endfor %}
+    </tr>
+    <tr>
+        <th></th>
+        {% for sb in cuaderno.psec.saberbas_set.all %}
+            {% for sap in sb.sitapren_set.all %}
+                <th colspan="{{ sap.num_criinstreval }}" title="{{ sap.nombre }}">{{ sap.nombre|truncatechars:20 }}</th>
+            {% endfor %}
+        {% endfor %}
+    </tr>
+    <tr>
+        <th></th>
+        {% for sb in cuaderno.psec.saberbas_set.all %}
+            {% for sap in sb.sitapren_set.all %}
+                {% for asap in sap.actsitapren_set.all %}
+                    <th colspan="{{ asap.num_criinstreval }}"
+                        title="{{ asap.nombre }}">{{ asap.nombre|truncatechars:20 }}</th>
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}
+    </tr>
+    <tr>
+        <th></th>
+        {% for sb in cuaderno.psec.saberbas_set.all %}
+            {% for sap in sb.sitapren_set.all %}
+                {% for asap in sap.actsitapren_set.all %}
+                    {% for ieval in asap.instreval_set.all %}
+                        <th colspan="{{ ieval.num_criinstreval }}"
+                            title="{{ ieval.nombre }}">{{ ieval.nombre|truncatechars:20 }}</th>
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}
+    </tr>
+    <tr>
+        <th></th>
+        {% for sb in cuaderno.psec.saberbas_set.all %}
+            {% for sap in sb.sitapren_set.all %}
+                {% for asap in sap.actsitapren_set.all %}
+                    {% for ieval in asap.instreval_set.all %}
+                        {% for cieval in asap.criinstreval_set.all %}
+                            <th title="{{ cieval.cevps.cev.texto }}">{{ cieval.cevps.cev.texto|truncatechars:20 }}</th>
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}
+    </tr>
+    </thead>
+<tbody>
+{% for alumno in cuaderno.grupo|get_alumnos %}
+    <tr>
+    <td>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }} </td>
+    {% for sb in cuaderno.psec.saberbas_set.all %}
+            {% for sap in sb.sitapren_set.all %}
+                {% for asap in sap.actsitapren_set.all %}
+                    {% for ieval in asap.instreval_set.all %}
+                        {% for cieval in asap.criinstreval_set.all %}
+                            {% with calalum in cieval|get_calalum:alumno %}
+                            <td title="{{ calalum.obs }}">{{ calalum }}</td>
+                            {% endwith %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}
+    </tr>
+{% endfor %}
+</tbody>
+
+</table>

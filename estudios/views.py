@@ -455,6 +455,12 @@ def configura_competencias(request):
                 return JsonResponse({'ok': True, 'cesp': cesp.id})
             except Exception as msg:
                 return JsonResponse({'msg': str(msg), 'ok': True})
+        elif action == 'borrar_ceval':
+            try:
+                CriterioEvaluacion.objects.get(id=request.POST['ceval']).delete()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': True})
 
         elif action == 'change_nota':
             pass

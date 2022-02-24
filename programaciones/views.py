@@ -2415,41 +2415,41 @@ def progsecundaria_sb(request, id):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
 
-    elif request.method == 'POST':
-        if request.POST['action'] == 'sube_file_pec':
-            pec = PEC.objects.get(id=request.POST['pec'])
-            n_files = int(request.POST['n_files'])
-            mensaje = False
-            p = {'doc_nombre': False}
-            if g_e.has_permiso('carga_programaciones'):
-                for i in range(n_files):
-                    fichero = request.FILES['fichero_xhr' + str(i)]
-                    try:
-                        p = PECdocumento.objects.get(pec=pec, tipo=request.POST['name'])
-                        if p.doc_file:
-                            os.remove(p.doc_file.path)
-                        p.doc_file = fichero
-                        p.doc_nombre = slugify(p.get_tipo_display())
-                        p.content_type = fichero.content_type
-                        p.save()
-                    except:
-                        p = PECdocumento.objects.create(pec=pec, doc_nombre=request.POST['name'], doc_file=fichero,
-                                                        content_type=fichero.content_type, tipo=request.POST['name'])
-                        p.doc_nombre = slugify(p.get_tipo_display())
-                        p.save()
-                return JsonResponse({'ok': True, 'mensaje': mensaje})
-            else:
-                mensaje = 'No tienes permiso para cargar archivos del PEC.'
-                return JsonResponse({'ok': False, 'mensaje': mensaje})
-        elif request.POST['action'] == 'download_file':
-            try:
-                pecdoc = PECdocumento.objects.get(id=request.POST['archivo'], pec__id=request.POST['pec'],
-                                                  pec__entidad=g_e.ronda.entidad)
-                response = HttpResponse(pecdoc.doc_file, content_type=pecdoc.content_type)
-                response['Content-Disposition'] = 'attachment; filename=%s' % pecdoc.filename
-                return response
-            except:
-                pass
+    # elif request.method == 'POST':
+    #     if request.POST['action'] == 'sube_file_pec':
+    #         pec = PEC.objects.get(id=request.POST['pec'])
+    #         n_files = int(request.POST['n_files'])
+    #         mensaje = False
+    #         p = {'doc_nombre': False}
+    #         if g_e.has_permiso('carga_programaciones'):
+    #             for i in range(n_files):
+    #                 fichero = request.FILES['fichero_xhr' + str(i)]
+    #                 try:
+    #                     p = PECdocumento.objects.get(pec=pec, tipo=request.POST['name'])
+    #                     if p.doc_file:
+    #                         os.remove(p.doc_file.path)
+    #                     p.doc_file = fichero
+    #                     p.doc_nombre = slugify(p.get_tipo_display())
+    #                     p.content_type = fichero.content_type
+    #                     p.save()
+    #                 except:
+    #                     p = PECdocumento.objects.create(pec=pec, doc_nombre=request.POST['name'], doc_file=fichero,
+    #                                                     content_type=fichero.content_type, tipo=request.POST['name'])
+    #                     p.doc_nombre = slugify(p.get_tipo_display())
+    #                     p.save()
+    #             return JsonResponse({'ok': True, 'mensaje': mensaje})
+    #         else:
+    #             mensaje = 'No tienes permiso para cargar archivos del PEC.'
+    #             return JsonResponse({'ok': False, 'mensaje': mensaje})
+    #     elif request.POST['action'] == 'download_file':
+    #         try:
+    #             pecdoc = PECdocumento.objects.get(id=request.POST['archivo'], pec__id=request.POST['pec'],
+    #                                               pec__entidad=g_e.ronda.entidad)
+    #             response = HttpResponse(pecdoc.doc_file, content_type=pecdoc.content_type)
+    #             response['Content-Disposition'] = 'attachment; filename=%s' % pecdoc.filename
+    #             return response
+    #         except:
+    #             pass
     return render(request, "progsec_sap.html",
                   {
                       'formname': 'progsec',
@@ -2461,7 +2461,163 @@ def progsecundaria_sb(request, id):
                            ),
                       'g_e': g_e,
                       'sb': sb,
-                      # 'cursos': Curso.objects.filter(ronda=g_e.ronda),
-                      # 'areasmateria': AreaMateria.objects.all(),
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+# @permiso_required('acceso_progsecundaria')
+def cuadernoprofesor(request):
+    g_e = request.session['gauser_extra']
+    g_ep = Gauser_extra_programaciones.objects.get(ge=g_e)
+
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'crea_sap':
+            try:
+                sap = SitApren.objects.create(sbas=sb)
+                html = render_to_string('progsec_sap_accordion.html', {'sap':sap})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'open_accordion':
+            try:
+                sap = SitApren.objects.get(sbas__psec__gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                              id=request.POST['id'])
+                html = render_to_string('progsec_sap_accordion_content.html', {'sap': sap, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+    #     elif action == 'update_texto':
+    #         try:
+    #             clase = eval(request.POST['clase'])
+    #             objeto = clase.objects.get(id=request.POST['id'])
+    #             setattr(objeto, request.POST['campo'], request.POST['texto'])
+    #             objeto.save()
+    #             return JsonResponse({'ok': True})
+    #         except:
+    #             return JsonResponse({'ok': False})
+    #     elif action == 'update_select':
+    #         try:
+    #             clase = eval(request.POST['clase'])
+    #             objeto = clase.objects.get(id=request.POST['id'])
+    #             setattr(objeto, request.POST['campo'], request.POST['valor'])
+    #             objeto.save()
+    #             return JsonResponse({'ok': True})
+    #         except:
+    #             return JsonResponse({'ok': False})
+    #     elif action == 'update_many2many':
+    #         try:
+    #             clase = eval(request.POST['clase'])
+    #             clasem2m = eval(request.POST['clasem2m'])
+    #             objeto = clase.objects.get(id=request.POST['id'])
+    #             objetom2m = clasem2m.objects.get(id=request.POST['idm2m'])
+    #             manytomany = getattr(objeto, request.POST['campo'])
+    #             if request.POST['checked'] == 'true':
+    #                 manytomany.add(objetom2m)
+    #             else:
+    #                 manytomany.remove(objetom2m)
+    #             return JsonResponse({'ok': True})
+    #         except:
+    #             return JsonResponse({'ok': False})
+    #     elif action == 'add_sap_actividad':
+    #         try:
+    #             sap=sb.sitapren_set.get(id=request.POST['sap'])
+    #             act = ActSitApren.objects.create(sapren=sap, nombre='Nombre de la actividad')
+    #             InstrEval.objects.create(asapren=act, tipo='TMONO', nombre='Procedimiento 1')
+    #             html = render_to_string('progsec_sap_accordion_content_act.html', {'actividad': act})
+    #             return JsonResponse({'ok': True, 'html': html})
+    #         except:
+    #             return JsonResponse({'ok': False})
+    #     elif action == 'borrar_sap_actividad':
+    #         try:
+    #             act = ActSitApren.objects.get(id=request.POST['id'])
+    #             if act.sapren.sbas == sb:
+    #                 act.delete()
+    #             return JsonResponse({'ok': True})
+    #         except:
+    #             return JsonResponse({'ok': False})
+    #     elif action == 'add_act_instrumento':
+    #         try:
+    #             act=ActSitApren.objects.get(id=request.POST['act'])
+    #             if act.sapren.sbas == sb:
+    #                 inst = InstrEval.objects.create(asapren=act, nombre='Nombre del instrumento')
+    #                 html = render_to_string('progsec_sap_accordion_content_act_proc.html', {'instrumento': inst})
+    #                 return JsonResponse({'ok': True, 'html': html})
+    #             else:
+    #                 JsonResponse({'ok': False, 'msg': 'Error en la relación sb-instrumento'})
+    #         except Exception as msg:
+    #             return JsonResponse({'ok': False, 'msg': str(msg)})
+    #     elif action == 'borrar_act_instrumento':
+    #         try:
+    #             inst = InstrEval.objects.get(id=request.POST['id'])
+    #             if inst.asapren.sapren.sbas == sb:
+    #                 inst.delete()
+    #             return JsonResponse({'ok': True})
+    #         except:
+    #             return JsonResponse({'ok': False})
+    #     elif action == 'table_criteval':
+    #         try:
+    #             inst = InstrEval.objects.get(id=request.POST['id'])
+    #             if inst.asapren.sapren.sbas == sb:
+    #                 criinstrevals = []
+    #                 for cep in inst.asapren.sapren.ceps.all():
+    #                     for cevps in cep.cevprogsec_set.all():
+    #                         criinstreval, c = CriInstrEval.objects.get_or_create(ieval=inst, cevps=cevps)
+    #                         criinstrevals.append(criinstreval.id)
+    #                 for cr in inst.criinstreval_set.all():
+    #                     if cr.id not in criinstrevals:
+    #                         cr.delete()
+    #                 html = render_to_string('progsec_sap_accordion_content_act_proc_crits.html', {'instrumento': inst})
+    #                 return JsonResponse({'ok': True, 'html': html})
+    #             else:
+    #                 return JsonResponse({'ok': False})
+    #         except Exception as msg:
+    #             return JsonResponse({'ok': False, 'msg': str(msg)})
+    #
+    # elif request.method == 'POST':
+    #     if request.POST['action'] == 'sube_file_pec':
+    #         pec = PEC.objects.get(id=request.POST['pec'])
+    #         n_files = int(request.POST['n_files'])
+    #         mensaje = False
+    #         p = {'doc_nombre': False}
+    #         if g_e.has_permiso('carga_programaciones'):
+    #             for i in range(n_files):
+    #                 fichero = request.FILES['fichero_xhr' + str(i)]
+    #                 try:
+    #                     p = PECdocumento.objects.get(pec=pec, tipo=request.POST['name'])
+    #                     if p.doc_file:
+    #                         os.remove(p.doc_file.path)
+    #                     p.doc_file = fichero
+    #                     p.doc_nombre = slugify(p.get_tipo_display())
+    #                     p.content_type = fichero.content_type
+    #                     p.save()
+    #                 except:
+    #                     p = PECdocumento.objects.create(pec=pec, doc_nombre=request.POST['name'], doc_file=fichero,
+    #                                                     content_type=fichero.content_type, tipo=request.POST['name'])
+    #                     p.doc_nombre = slugify(p.get_tipo_display())
+    #                     p.save()
+    #             return JsonResponse({'ok': True, 'mensaje': mensaje})
+    #         else:
+    #             mensaje = 'No tienes permiso para cargar archivos del PEC.'
+    #             return JsonResponse({'ok': False, 'mensaje': mensaje})
+    #     elif request.POST['action'] == 'download_file':
+    #         try:
+    #             pecdoc = PECdocumento.objects.get(id=request.POST['archivo'], pec__id=request.POST['pec'],
+    #                                               pec__entidad=g_e.ronda.entidad)
+    #             response = HttpResponse(pecdoc.doc_file, content_type=pecdoc.content_type)
+    #             response['Content-Disposition'] = 'attachment; filename=%s' % pecdoc.filename
+    #             return response
+    #         except:
+    #             pass
+
+    #dpss = DocProgSec.objects.filter(gep=g_ep) #Podrá crear cuadernos de aquellas programaciones de las que forme parte#
+    return render(request, "cuadernoprofesor.html",
+                  {
+                      'formname': 'progsec',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear Cuaderno', 'permiso': 'libre',
+                            'title': 'Crear un nuevo cuaderno de profesor asociado a una programación'},
+                           ),
+                      'g_e': g_e,
+                      # 'cuadernos': CuadernoProf.objects.filter(ge=g_e),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })

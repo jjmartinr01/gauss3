@@ -7,7 +7,7 @@ from django.db import models
 
 from gauss.rutas import MEDIA_PROGRAMACIONES
 from calendario.models import Vevent
-from estudios.models import Materia, Curso, AreaMateria, CompetenciaEspecifica, CriterioEvaluacion
+from estudios.models import Materia, Curso, AreaMateria, CompetenciaEspecifica, CriterioEvaluacion, Grupo
 from entidades.models import Gauser_extra, Ronda, Entidad
 from horarios.models import Horario, Sesion
 from actividades.models import Actividad
@@ -740,6 +740,10 @@ class SaberBas(models.Model):
     actexcoms = models.ManyToManyField(ActExCom, blank=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
+    @property
+    def num_criinstreval(self):
+        return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas=self).count()
+
     class Meta:
         ordering = ['psec', 'orden']
 
@@ -753,6 +757,10 @@ class SitApren(models.Model):
     objetivo = models.TextField('Descripción de la situación de aprendizaje y lo que pretende conseguir', blank=True)
     ceps = models.ManyToManyField(CEProgSec, blank=True)
 
+    @property
+    def num_criinstreval(self):
+        return CriInstrEval.objects.filter(ieval__asapren__sapren=self).count()
+
     def __str__(self):
         return '%s - %s' % (self.sbas, self.nombre)
 
@@ -763,25 +771,40 @@ class ActSitApren(models.Model):
     description = models.TextField('Descripción de la actividad ligada a la situación de aprendizaje', blank=True)
     producto = models.TextField('Producto o productos resultado de la situación de aprendizaje', blank=True)
 
+    @property
+    def num_criinstreval(self):
+        return CriInstrEval.objects.filter(ieval__asapren=self).count()
+
     def __str__(self):
         return '%s - %s' % (self.sapren, self.nombre)
 
 
 class InstrEval(models.Model):
-    TIPOS = (('ESVAL', 'Escala de valoración'), ('LCONT', 'Lista de control'), ('RANEC', 'Registro anecdótico'),
-             ('CUADE', 'Revisión del cuaderno'), ('COMPO', 'Composición y/o ensayo'),
+    # TIPOS = (('ESVAL', 'Escala de valoración'), ('LCONT', 'Lista de control'), ('RANEC', 'Registro anecdótico'),
+    #          ('CUADE', 'Revisión del cuaderno'), ('COMPO', 'Composición y/o ensayo'),
+    #          ('PRESC', 'Preguntas de respuesta corta'), ('PREEM', 'Preguntas de emparejamiento'),
+    #          ('PTINC', 'Preguntas de texto incompleto'), ('POMUL', 'Preguntas de opción múltiple'),
+    #          ('PRVOF', 'Preguntas de verdadero/falso justificadas'), ('PRAYD', 'Preguntas de analogías y diferencias'),
+    #          ('PRIEL', 'Preguntas de interpretación y/o elaboración de gráficos, tablas, mapas, ...'),
+    #          ('TMONO', 'Trabajo monográfico o de investigación'), ('EXATR', 'Examen tradicional/Prueba objetiva'))
+    ESCALAS = (('ESVCL', 'Escala de valoración cualitativa'), ('ESVCN', 'Escala de valoración cuantitativa'),
+               ('LCONT', 'Lista de control'))
+    TIPOS = (('CUADE', 'Revisión del cuaderno'), ('COMPO', 'Composición y/o ensayo'), ('RANEC', 'Registro anecdótico'),
              ('PRESC', 'Preguntas de respuesta corta'), ('PREEM', 'Preguntas de emparejamiento'),
              ('PTINC', 'Preguntas de texto incompleto'), ('POMUL', 'Preguntas de opción múltiple'),
              ('PRVOF', 'Preguntas de verdadero/falso justificadas'), ('PRAYD', 'Preguntas de analogías y diferencias'),
              ('PRIEL', 'Preguntas de interpretación y/o elaboración de gráficos, tablas, mapas, ...'),
-             ('TMONO', 'Trabajo monográfico o de investigación'))
+             ('TMONO', 'Trabajo monográfico o de investigación'), ('EXATR', 'Examen tradicional/Prueba objetiva'))
     asapren = models.ForeignKey(ActSitApren, on_delete=models.CASCADE, blank=True, null=True)
     tipo = models.CharField('Tipo de instrumento', blank=True, max_length=10, choices=TIPOS)
     nombre = models.CharField('Nombre dado al instrumento', blank=True, max_length=300)
 
+    @property
+    def num_criinstreval(self):
+        return CriInstrEval.objects.filter(ieval=self).count()
+
     def __str__(self):
         return '%s - %s' % (self.asapren, self.nombre)
-
 
 class CriInstrEval(models.Model):
     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
@@ -791,6 +814,123 @@ class CriInstrEval(models.Model):
 
     def __str__(self):
         return '%s - %s (%s)' % (self.ieval, self.cevps, self.peso)
+
+
+class CuadernoProf(models.Model):
+    ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
+    grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE, blank=True, null=True)
+    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE, blank=True, null=True)
+    vmin = models.IntegerField('Valor mínimo de calificación asignable a un alumno', default=0)
+    vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)
+
+    @property
+    def nombre(self):
+        return '%s - %s - %s' % (self.psec.pga.ronda, self.psec.areamateria.nombre, self.grupo)
+
+    def calificacion_alumno_cev(self, alumno, cev): #Calificación de un determinado criterio de evaluación
+        cas = self.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)
+        numerador = 0
+        denominador = 0
+        for ca in cas:
+            numerador += ca.cie.peso * ca.cal
+            denominador += ca.cie.peso
+        try:
+            return numerador / denominador
+        except:
+            return 0
+
+    def calificacion_alumno_ce(self, alumno, ce): #Calificación de una determinada competencia específica
+        try:
+            cepsec = self.psec.ceprogsec_set.get(ce=ce)
+        except:
+            return 1000000  # Si se da un error devolverá una cantidad tan grande que lo evidenciará
+        cevpsecs = cepsec.cevprogsec_set.all()
+        numerador = 0
+        denominador = 0
+        for cevp in cevpsecs:
+            numerador += self.calificacion_alumno_cev(alumno, cevp.cev) * cevp.valor
+            denominador += cevp.valor
+        try:
+            return numerador / denominador
+        except:
+            return 0
+
+    def calificacion_alumno(self, alumno):
+        ceps = self.psec.ceprogsec_set.all()
+        numerador = 0
+        denominador = 0
+        for cep in ceps:
+            numerador += self.calificacion_alumno_ce(alumno, cep.ce) * cep.valor
+            denominador += cep.valor
+        try:
+            return numerador / denominador
+        except:
+            return 0
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.psec, self.grupo, self.ge)
+
+class EscalaCP(models.Model): #Escala utilizada en el CuardernoProf
+    ESCALAS = (('ESVCL', 'Escala de valoración cualitativa'), ('ESVCN', 'Escala de valoración cuantitativa'),
+               ('LCONT', 'Lista de control'))
+    cp =models.ForeignKey(CuadernoProf, on_delete=models.CASCADE)
+    tipo = models.CharField('Tipo de escala', max_length=10, choices=ESCALAS, default='ESVCN')
+    nombre = models.CharField('Tipo de escala', max_length=300, blank=True, default='')
+
+    def __str__(self):
+        return '%s (%s)' % (self.cp, self.get_tipo_display())
+
+class EscalaCPvalor(models.Model): #Escala utilizada en el CuardernoProf
+    ESCALAS = (('ESVCL', 'Escala de valoración cualitativa'), ('ESVCN', 'Escala de valoración cuantitativa'),
+               ('LCONT', 'Lista de control'))
+    ecp =models.ForeignKey(EscalaCP, on_delete=models.CASCADE)
+    texto_cualitativo = models.CharField('Texto descripción cualitativa de cumplimiento', max_length=300, blank=True)
+    valor = models.FloatField('Valor cuantitativo asociado a la valoración cualitativa', default=0)
+
+    class Meta:
+        ordering = ['ecp', 'valor']
+
+    def __str__(self):
+        return '%s (%s - %s)' % (self.ecp, self.texto_cualitativo, self.valor)
+
+
+class CalAlum(models.Model):
+    # cp = models.ForeignKey(CuadernoProf, on_delete=models.CASCADE)
+    alumno = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
+    cie = models.ForeignKey(CriInstrEval, on_delete=models.CASCADE)
+    ecp = models.ForeignKey(EscalaCP, on_delete=models.CASCADE, blank=True, null=True)
+    obs = models.TextField('Observaciones a la calificación otorgada', blank=True, default='')
+
+    @property
+    def cal(self):
+        calificacion = 0
+        cavs = self.calalumvalor_set.all()
+        for cav in cavs:
+            calificacion += cav.valor
+        try:
+            return calificacion / cavs.count()
+        except:
+            return 0
+
+    def __str__(self):
+        return '%s - Alumno: %s - %s (%s)' % (self.ecp, self.alumno.gauser.get_full_name(), self.cie, self.cal)
+
+class CalAlumValor(models.Model):
+    ca = models.ForeignKey(CalAlum, on_delete=models.CASCADE)
+    texto_cualitativo = models.CharField('Texto descripción cualitativa de cumplimiento', max_length=300, blank=True)
+    valor = models.FloatField('Valor cuantitativo asociado a la valoración cualitativa', default=0)
+
+    def __str__(self):
+        return '%s (%s)' % (self.ca, self.valor)
+
+# class EscalaCalAlum(models.Model):
+#     ca =models.ForeignKey(CalAlum, on_delete=models.CASCADE)
+#     texto_cualitativo = models.CharField('Texto descripción cualitativa de cumplimiento', max_length=300, blank=True)
+#     valor = models.FloatField('Valor cuantitativo asociado a la valoración cualitativa', default=0)
+#     selected = models.BooleanField('')
+#
+#     def __str__(self):
+#         return '%s (%s)' % (self.ca, self.valor)
 
 
 #############################################################################

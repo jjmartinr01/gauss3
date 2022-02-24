@@ -1,1 +1,7 @@
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#f18d38">(Crit. Eval. para {{ ceval.get_ciclo_display }})</span> {{ ceval.orden }} - {{ ceval.texto }}</p>
+<p id="ceval_{{ ceval.id }}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+        style="color:#f18d38">(Crit. Eval. para {{ ceval.get_ciclo_display }})</span> {{ ceval.orden }}
+    - {{ ceval.texto }}
+    <a class="borrar_ceval" data-ceval="{{ ceval.id }}">
+        <i class="fa fa-trash"></i> Borrar Criterio
+    </a>
+</p>
