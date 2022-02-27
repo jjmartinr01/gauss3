@@ -149,7 +149,13 @@ caption {
         <table>
             <thead style="position: sticky;top:0">
             <tr>
-                <th class="fixed_column" rowspan="4"> Nombre <br>alumno/a</th>
+                <th class="fixed_column" rowspan="4">
+                    Nombre alumno/a<br><br>
+                    <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}"
+                       href="/cuaderno_full_screen/{{ cuaderno.id }}/">
+                        <i class="fa fa-external-link"></i> Pantalla completa
+                    </a>
+                </th>
                 {% for sb in cuaderno.psec.saberbas_set.all %}
                     <th colspan="{{ sb.num_criinstreval }}"
                         title="{{ sb.nombre }}">{{ sb.nombre|truncatechars:80 }}</th>
@@ -207,15 +213,25 @@ caption {
             {% for alumno in cuaderno.grupo.gauser_extra_estudios_set.all %}
                 <tr>
                     <td class="fixed_column">
-                        {{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}
+                        <b>{{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}</b>
                     </td>
-                    {% for sb in cuaderno.psec.saberbas_set.all %}a
-                        {% for sap in sb.sitapren_set.all %}b
-                            {% for asap in sap.actsitapren_set.all %}c
-                                {% for ieval in asap.instreval_set.all %}d
-                                    {% for cieval in ieval.criinstreval_set.all %}e
-                                        {% with calalum=cieval|get_calalum:alumno %}f
-                                            <td title="{{ calalum.obs }}">{{ calalum.cal }}f</td>
+                    {% for sb in cuaderno.psec.saberbas_set.all %}
+                        {% for sap in sb.sitapren_set.all %}
+                            {% for asap in sap.actsitapren_set.all %}
+                                {% for ieval in asap.instreval_set.all %}
+                                    {% for cieval in ieval.criinstreval_set.all %}
+                                        {% with calalum=cieval|get_calalum:alumno %}
+                                            {% if calalum %}
+                                                <td class="update_calalumn" data-ge="{{ alumno.ge.id }}"
+                                                    data-cieval="{{ cieval.id }}" data-cuaderno="{{ cuaderno.id }}"
+                                                    title="{{ calalum.obs }}" contenteditable="true">
+                                                {{ calalum.cal }}
+                                                </td>
+                                            {% else %}
+                                                <td class="create_calalumn" data-ge="{{ alumno.ge.id }}"
+                                                    data-cieval="{{ cieval.id }}" data-cuaderno="{{ cuaderno.id }}"
+                                                    id="create_calalum{{ cieval.id }}_{{ alumno.ge.id }}"></td>
+                                            {% endif %}
                                         {% endwith %}
                                     {% endfor %}
                                 {% endfor %}

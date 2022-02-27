@@ -145,6 +145,27 @@
                     }
                 });
         });
+
+        $('#Contenido').on('mouseenter', '.create_calalumn', function (e) {
+            e.preventDefault();
+            var element = $(this);
+            var cuaderno = element.data('cuaderno');
+            var cieval = element.data('cieval');
+            var ge = element.data('ge');
+            $.post(/cuadernoprofesor/, {
+                    action: 'create_calalumn', cuaderno: cuaderno, cieval: cieval, ge: ge
+                },
+                function (data) {
+                    if (data.ok) {
+                        element.removeClass('create_calalumn').addClass('update_calalumn');
+                        element.html(data.cal);
+                        element.prop('contenteditable', 'true');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
         {% comment %}
         function get_texto_from_element(element) {
             if (element.val()) {

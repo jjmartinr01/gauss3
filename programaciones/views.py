@@ -2526,6 +2526,16 @@ def cuadernoprofesor(request):
                 return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'create_calalumn':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                cieval = CriInstrEval.objects.get(id=request.POST['cieval'],
+                                                  ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+                ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
+                ca, c = CalAlum.objects.get_or_create(cp=cuaderno, alumno=ge, cie=cieval)
+                return JsonResponse({'ok': True, 'cal': ca.cal})
+            except:
+                return JsonResponse({'ok': False})
 
 
 
@@ -2661,6 +2671,79 @@ def cuadernoprofesor(request):
                             'title': 'Crear un nuevo cuaderno de profesor asociado a una programación'},
                            ),
                       'g_e': g_e,
+                      # 'cuadernos': CuadernoProf.objects.filter(ge=g_e),
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+
+
+# @permiso_required('acceso_progsecundaria')
+def cuaderno_full_screen(request, id):
+    g_e = request.session['gauser_extra']
+    g_ep = Gauser_extra_programaciones.objects.get(ge=g_e)
+    cuaderno = CuadernoProf.objects.get(id=id)
+
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'crea_cuaderno':
+            try:
+                if DocProgSec.objects.filter(psec__pga__ronda=g_e.ronda).count() < 1:
+                    msg = 'Primero tienes que participar como docente en alguna programación didáctica.'
+                    return JsonResponse({'ok': False, 'msg': msg})
+                cuaderno = CuadernoProf.objects.create(ge=g_e)
+                html = render_to_string('cuadernoprofesor_accordion.html', {'cuaderno':cuaderno})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'open_accordion':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['id'])
+                html = render_to_string('cuadernoprofesor_accordion_content.html', {'cuaderno': cuaderno})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'select_psec':
+            try:
+                psec = ProgSec.objects.get(id=request.POST['psec'])
+                try:
+                    DocProgSec.objects.get(gep__ge=g_e, psec=psec)
+                    grupos = psec.curso.grupos
+                    html = render_to_string('cuadernoprofesor_accordion_content_grupos.html', {'grupos': grupos})
+                    return JsonResponse({'ok': True, 'html': html})
+                except Exception as msg:
+                    return JsonResponse({'ok': False, 'msg': str(msg)})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'configura_cuaderno':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                cuaderno.psec = ProgSec.objects.get(id=request.POST['psec'])
+                cuaderno.grupo = Grupo.objects.get(id=request.POST['grupo'])
+                cuaderno.save()
+                html = render_to_string('cuadernoprofesor_accordion_content.html', {'cuaderno': cuaderno})
+                return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'create_calalumn':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                cieval = CriInstrEval.objects.get(id=request.POST['cieval'],
+                                                  ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+                ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
+                ca, c = CalAlum.objects.get_or_create(cp=cuaderno, alumno=ge, cie=cieval)
+                return JsonResponse({'ok': True, 'cal': ca.cal})
+            except:
+                return JsonResponse({'ok': False})
+
+    return render(request, "cuaderno_full_screen.html",
+                  {
+                      'formname': 'progsec',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear Cuaderno', 'permiso': 'libre',
+                            'title': 'Crear un nuevo cuaderno de profesor asociado a una programación'},
+                           ),
+                      'g_e': g_e,
+                      'cuaderno': cuaderno,
                       # 'cuadernos': CuadernoProf.objects.filter(ge=g_e),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })

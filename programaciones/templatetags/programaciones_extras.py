@@ -15,7 +15,10 @@ def get_posibles_psec(cuaderno):
 
 @register.filter
 def get_calalum(cieval, alumno):
-    return CalAlum.objects.get(alumno=alumno, cie=cieval)
+    try:
+        return CalAlum.objects.get(alumno=alumno.ge, cie=cieval)
+    except:
+        return None
 
 
 @register.filter
