@@ -2316,6 +2316,8 @@ def progsecundaria_sb(request, id):
         if action == 'crea_sap':
             try:
                 sap = SitApren.objects.create(sbas=sb)
+                act = ActSitApren.objects.create(sapren=sap, nombre='Nombre de la actividad')
+                InstrEval.objects.create(asapren=act, tipo='TMONO', nombre='Procedimiento 1')
                 html = render_to_string('progsec_sap_accordion.html', {'sap':sap})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
@@ -2372,11 +2374,15 @@ def progsecundaria_sb(request, id):
         elif action == 'borrar_sap_actividad':
             try:
                 act = ActSitApren.objects.get(id=request.POST['id'])
-                if act.sapren.sbas == sb:
-                    act.delete()
-                return JsonResponse({'ok': True})
-            except:
-                return JsonResponse({'ok': False})
+                if act.sapren.actsitapren_set.all().count() > 1:
+                    if act.sapren.sbas == sb:
+                        act.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    msg = 'No es posible borrar. Al menos, debe existir una actividad.'
+                    return JsonResponse({'ok': False, 'msg': msg})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'add_act_instrumento':
             try:
                 act=ActSitApren.objects.get(id=request.POST['act'])
@@ -2391,9 +2397,13 @@ def progsecundaria_sb(request, id):
         elif action == 'borrar_act_instrumento':
             try:
                 inst = InstrEval.objects.get(id=request.POST['id'])
-                if inst.asapren.sapren.sbas == sb:
-                    inst.delete()
-                return JsonResponse({'ok': True})
+                if inst.asapren.instreval_set.all().count() > 1:
+                    if inst.asapren.sapren.sbas == sb:
+                        inst.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    msg = 'No es posible borrar. Al menos, debe existir un procedimiento de evaluación.'
+                    return JsonResponse({'ok': False, 'msg': msg})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'table_criteval':
@@ -2469,23 +2479,56 @@ def cuadernoprofesor(request):
     g_e = request.session['gauser_extra']
     g_ep = Gauser_extra_programaciones.objects.get(ge=g_e)
 
+    # ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
+    # grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE, blank=True, null=True)
+    # psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE, blank=True, null=True)
+    # vmin = models.IntegerField('Valor mínimo de calificación asignable a un alumno', default=0)
+    # vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)
+
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
-        if action == 'crea_sap':
+        if action == 'crea_cuaderno':
             try:
-                sap = SitApren.objects.create(sbas=sb)
-                html = render_to_string('progsec_sap_accordion.html', {'sap':sap})
+                if DocProgSec.objects.filter(psec__pga__ronda=g_e.ronda).count() < 1:
+                    msg = 'Primero tienes que participar como docente en alguna programación didáctica.'
+                    return JsonResponse({'ok': False, 'msg': msg})
+                cuaderno = CuadernoProf.objects.create(ge=g_e)
+                html = render_to_string('cuadernoprofesor_accordion.html', {'cuaderno':cuaderno})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'open_accordion':
             try:
-                sap = SitApren.objects.get(sbas__psec__gep__ge__ronda__entidad=g_e.ronda.entidad,
-                                              id=request.POST['id'])
-                html = render_to_string('progsec_sap_accordion_content.html', {'sap': sap, 'g_e': g_e})
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['id'])
+                html = render_to_string('cuadernoprofesor_accordion_content.html', {'cuaderno': cuaderno})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'select_psec':
+            try:
+                psec = ProgSec.objects.get(id=request.POST['psec'])
+                try:
+                    DocProgSec.objects.get(gep__ge=g_e, psec=psec)
+                    grupos = psec.curso.grupos
+                    html = render_to_string('cuadernoprofesor_accordion_content_grupos.html', {'grupos': grupos})
+                    return JsonResponse({'ok': True, 'html': html})
+                except Exception as msg:
+                    return JsonResponse({'ok': False, 'msg': str(msg)})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'configura_cuaderno':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                cuaderno.psec = ProgSec.objects.get(id=request.POST['psec'])
+                cuaderno.grupo = Grupo.objects.get(id=request.POST['grupo'])
+                cuaderno.save()
+                html = render_to_string('cuadernoprofesor_accordion_content.html', {'cuaderno': cuaderno})
+                return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre})
+            except:
+                return JsonResponse({'ok': False})
+
+
+
     #     elif action == 'update_texto':
     #         try:
     #             clase = eval(request.POST['clase'])

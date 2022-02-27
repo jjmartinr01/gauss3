@@ -357,9 +357,9 @@
         });
         $('body').on('keyup', '.mod_saber', function () {
             var element = $(this);
-            var antiguo_texto = element.html();
+            var antiguo_texto = element.text();
             setTimeout(function () {
-                var nuevo_texto = element.html();
+                var nuevo_texto = element.text();
                 if (antiguo_texto === nuevo_texto) {
                     var id = element.data('progsec');
                     var saber = element.data('saber');
@@ -388,8 +388,8 @@
             id = $(this).data('progsec');
             saber = $(this).data('saber');
             show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar este saber básico de la programación didáctica?',
-                texto: 'Si aceptas, este saber básico se borrará por completo de la base de datos', size: 'large',
+                title: '<i class="fa fa-warning"></i> ¿Borrar esta unidad de programación?',
+                texto: 'Si aceptas, esta unidad se borrará por completo de la base de datos', size: 'large',
                 buttons: {
                     "Cancelar": function () {
                         hide_mensajes();

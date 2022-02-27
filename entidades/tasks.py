@@ -195,7 +195,9 @@ def carga_masiva_tipo_EXCEL(carga):
     book = xlrd.open_workbook(file_contents=f)
     sheet = book.sheet_by_index(0)
     # Get the keys from line 5 of excel file:
-    keys0 = [sheet.cell(4, col_index).value for col_index in range(sheet.ncols)]
+    keys0 = [slugify(sheet.cell(4, col_index).value) for col_index in range(sheet.ncols)]
+    key_columns = {col_index: slugify(sheet.cell(4, col_index).value) for col_index in range(sheet.ncols)}
+
     # Get the keys removing accents:
     # keys = [filter(lambda x: x in set(string.printable), k) for k in keys0]
     keys = keys0
@@ -215,34 +217,35 @@ def carga_masiva_tipo_EXCEL(carga):
             'iban': '',
             'provincia': '', 'telefono_fijo': '', 'telefono_movil': '', 'email': '', 'especialidad': ''}
     # Keys Reference for Alumnos:
-    kra = {'Alumno': 'alumno', 'Estado Matrícula': 'estado_matricula', 'Nº id. Racima': 'id_socio',
-           'DNI/Pasaporte': 'dni', 'Dirección': 'direccion', 'Código postal': 'cp',
-           'Localidad de residencia': 'localidad', 'Fecha de nacimiento': 'nacimiento',
-           'Provincia de residencia': 'provincia', 'Teléfono': 'telefono_fijo',
-           'Teléfono móvil': 'telefono_movil',
-           'Correo electrónico': 'email', 'Curso': 'curso', 'Nº historial académico': 'id_organizacion',
-           'Grupo': 'subentidades', 'Primer apellido': 'last_name1', 'Segundo apellido': 'last_name2',
-           'Nombre': 'nombre', 'DNI/Pasaporte Primer tutor': 'dni_tutor1',
-           'Primer apellido Primer tutor': 'last_name1_tutor1',
-           'Segundo apellido Primer tutor': 'last_name2_tutor1', 'Nombre Primer tutor': 'nombre_tutor1',
-           'Tfno. Primer tutor': 'telefono_fijo_tutor1',
-           'Tfno. Móvil Primer tutor': 'telefono_movil_tutor1',
-           'Sexo Primer tutor': 'sexo_tutor1', 'DNI/Pasaporte Segundo tutor': 'dni_tutor2',
-           'Primer apellido Segundo tutor': 'last_name1_tutor2',
-           'Segundo apellido Segundo tutor': 'last_name2_tutor2',
-           'Nombre Segundo tutor': 'nombre_tutor2', 'Tfno. Segundo tutor': 'telefono_fijo_tutor2',
-           'Tfno. Móvil Segundo tutor': 'telefono_movil_tutor2', 'Sexo Segundo tutor': 'sexo_tutor2',
-           'Localidad de nacimiento': 'localidad_nacimiento', 'Nacionalidad': 'nacionalidad',
-           'Código País nacimiento': 'code_pais_nacimiento', 'País de nacimiento': 'pais_nacimiento',
-           'Código Provincia nacimiento': 'code_provincia_nacimiento',
-           'Pago   Seguro escolar': 'pago_seguro_escolar', 'Sexo': 'sexo',
-           'Año de la matrícula': 'year_matricula', 'Nº de matrículas en este curso': 'num_matriculas',
-           'Observaciones de la matrícula': 'observaciones_matricula', 'Número SS': 'num_ss',
-           'Nº expte. en el centro': 'num_exp', 'Fecha de la matrícula': 'fecha_matricula',
-           'Nº de matrículas en el expediente': 'num_matriculas_exp',
-           'Repeticiones en el curso': 'rep_curso',
-           'Familia numerosa': 'familia_numerosa', 'Lengua materna': 'lengua_materna',
-           'Año incorporación al sistema educativo': 'year_incorporacion', 'Bilingüe': 'bilingue',
+
+    kra = {'alumno': 'alumno', 'estado-matricula': 'estado_matricula', 'no-id-racima': 'id_socio',
+           'dnipasaporte': 'dni', 'direccion': 'direccion', 'codigo-postal': 'cp',
+           'localidad-de-residencia': 'localidad', 'fecha-de-nacimiento': 'nacimiento',
+           'provincia-de-residencia': 'provincia', 'telefono': 'telefono_fijo',
+           'telefono-movil': 'telefono_movil',
+           'correo-electronico': 'email', 'curso': 'curso', 'no-historial-academico': 'id_organizacion',
+           'grupo': 'subentidades', 'primer-apellido': 'last_name1', 'segundo-apellido': 'last_name2',
+           'nombre': 'nombre', 'dnipasaporte-primer-tutor': 'dni_tutor1',
+           'primer-apellido-primer-tutor': 'last_name1_tutor1',
+           'segundo-apellido-primer-tutor': 'last_name2_tutor1', 'nombre-primer-tutor': 'nombre_tutor1',
+           'tfno-primer-tutor': 'telefono_fijo_tutor1',
+           'tfno-movil-primer-tutor': 'telefono_movil_tutor1',
+           'sexo-primer-tutor': 'sexo_tutor1', 'dnipasaporte-segundo-tutor': 'dni_tutor2',
+           'primer-apellido-segundo-tutor': 'last_name1_tutor2',
+           'segundo-apellido-segundo-tutor': 'last_name2_tutor2',
+           'nombre-segundo-tutor': 'nombre_tutor2', 'tfno-segundo-tutor': 'telefono_fijo_tutor2',
+           'tfno-movil-segundo-tutor': 'telefono_movil_tutor2', 'sexo-segundo-tutor': 'sexo_tutor2',
+           'localidad-de-nacimiento': 'localidad_nacimiento', 'nacionalidad': 'nacionalidad',
+           'codigo-pais-nacimiento': 'code_pais_nacimiento', 'pais-de-nacimiento': 'pais_nacimiento',
+           'codigo-provincia-nacimiento': 'code_provincia_nacimiento',
+           'pago-seguro-escolar': 'pago_seguro_escolar', 'sexo': 'sexo',
+           'ano-de-la-matricula': 'year_matricula', 'no-de-matriculas-en-este-curso': 'num_matriculas',
+           'observaciones-de-la-matricula': 'observaciones_matricula', 'numero-ss': 'num_ss',
+           'no-expte-en-el-centro': 'num_exp', 'fecha-de-la-matricula': 'fecha_matricula',
+           'no-de-matriculas-en-el-expediente': 'num_matriculas_exp',
+           'repeticiones-en-el-curso': 'rep_curso',
+           'familia-numerosa': 'familia_numerosa', 'Lengua materna': 'lengua_materna',
+           'Año incorporación al sistema educativo': 'year_incorporacion', 'bilingue': 'bilingue',
            'Correo electrónico Primer tutor': 'email_tutor1',
            'Correo electrónico Segundo tutor': 'email_tutor2',
            'Autoriza el uso de imagenes': 'uso_imagenes'}
@@ -339,12 +342,17 @@ def carga_masiva_tipo_EXCEL(carga):
         cargoa = Cargo.objects.get_or_create(cargo='Alumno/a', entidad=carga.ronda.entidad, nivel=6)
         cargop = Cargo.objects.get_or_create(cargo='Padre/Madre', entidad=carga.ronda.entidad, nivel=6)
         for row_index in range(5, sheet.nrows):
-            try:
+            # try:
                 d = adic
                 # d = {kra[keys[col_index]]: sheet.cell(row_index, col_index).value for col_index in
                 #      xrange(sheet.ncols)}
                 for col_index in range(sheet.ncols):
-                    d[kra[keys[col_index]]] = sheet.cell(row_index, col_index).value
+                    try:
+                        d[kra[key_columns[col_index]]] = sheet.cell(row_index, col_index).value
+                    except:
+                        pass
+                        # print('error: %s' % col_index)
+                    # d[kra[keys[col_index]]] = sheet.cell(row_index, col_index).value
                 d['apellidos'] = '%s %s' % (d['last_name1'], d['last_name2'])
                 d['apellidos_tutor1'] = '%s %s' % (d['last_name1_tutor1'], d['last_name2_tutor1'])
                 d['apellidos_tutor2'] = '%s %s' % (d['last_name1_tutor2'], d['last_name2_tutor2'])
@@ -393,8 +401,10 @@ def carga_masiva_tipo_EXCEL(carga):
                 gauser_extra.save()
                 gauser_extra.gauser_extra_estudios.grupo = grupo
                 gauser_extra.gauser_extra_estudios.save()
-            except:
-                logger.info('Error: %s -- %s' % (d['apellidos'], d['apellidos_tutor1']))
+            # except Exception as msg:
+            #     print(str(msg))
+            #     logger.info('Error: %s' % str(msg))
+                # logger.info('Error: %s -- %s' % (d['apellidos'], d['apellidos_tutor1']))
     carga.cargado = True
     carga.save()
 

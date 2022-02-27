@@ -1,4 +1,4 @@
-{% load entidades_extras %}
+{% load programaciones_extras %}
 <style>
     p {
         text-align: justify;
@@ -12,81 +12,219 @@
         font-weight: bold;
     }
 
-</style>
-<table style="width: 100%">
-    <thead>
-    <tr>
-        <th></th>
-        {% for sb in cuaderno.psec.saberbas_set.all %}
-            <th colspan="{{ sb.num_criinstreval }}" title="{{ sb.nombre }}">{{ sb.nombre|truncatechars:20 }}</th>
-        {% endfor %}
-    </tr>
-    <tr>
-        <th></th>
-        {% for sb in cuaderno.psec.saberbas_set.all %}
-            {% for sap in sb.sitapren_set.all %}
-                <th colspan="{{ sap.num_criinstreval }}" title="{{ sap.nombre }}">{{ sap.nombre|truncatechars:20 }}</th>
-            {% endfor %}
-        {% endfor %}
-    </tr>
-    <tr>
-        <th></th>
-        {% for sb in cuaderno.psec.saberbas_set.all %}
-            {% for sap in sb.sitapren_set.all %}
-                {% for asap in sap.actsitapren_set.all %}
-                    <th colspan="{{ asap.num_criinstreval }}"
-                        title="{{ asap.nombre }}">{{ asap.nombre|truncatechars:20 }}</th>
-                {% endfor %}
-            {% endfor %}
-        {% endfor %}
-    </tr>
-    <tr>
-        <th></th>
-        {% for sb in cuaderno.psec.saberbas_set.all %}
-            {% for sap in sb.sitapren_set.all %}
-                {% for asap in sap.actsitapren_set.all %}
-                    {% for ieval in asap.instreval_set.all %}
-                        <th colspan="{{ ieval.num_criinstreval }}"
-                            title="{{ ieval.nombre }}">{{ ieval.nombre|truncatechars:20 }}</th>
-                    {% endfor %}
-                {% endfor %}
-            {% endfor %}
-        {% endfor %}
-    </tr>
-    <tr>
-        <th></th>
-        {% for sb in cuaderno.psec.saberbas_set.all %}
-            {% for sap in sb.sitapren_set.all %}
-                {% for asap in sap.actsitapren_set.all %}
-                    {% for ieval in asap.instreval_set.all %}
-                        {% for cieval in asap.criinstreval_set.all %}
-                            <th title="{{ cieval.cevps.cev.texto }}">{{ cieval.cevps.cev.texto|truncatechars:20 }}</th>
-                        {% endfor %}
-                    {% endfor %}
-                {% endfor %}
-            {% endfor %}
-        {% endfor %}
-    </tr>
-    </thead>
-<tbody>
-{% for alumno in cuaderno.grupo|get_alumnos %}
-    <tr>
-    <td>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }} </td>
-    {% for sb in cuaderno.psec.saberbas_set.all %}
-            {% for sap in sb.sitapren_set.all %}
-                {% for asap in sap.actsitapren_set.all %}
-                    {% for ieval in asap.instreval_set.all %}
-                        {% for cieval in asap.criinstreval_set.all %}
-                            {% with calalum in cieval|get_calalum:alumno %}
-                            <td title="{{ calalum.obs }}">{{ calalum }}</td>
-                            {% endwith %}
-                        {% endfor %}
-                    {% endfor %}
-                {% endfor %}
-            {% endfor %}
-        {% endfor %}
-    </tr>
-{% endfor %}
-</tbody>
+    {#.fixed_column {#}
+    {#    position: absolute;#}
+    {#    left: 0;#}
+    {#    top: auto;#}
+    {#    width: auto;#}
+    {# }#}
+    {##}
+    {#.div_table {#}
+    {##}
+    {#    overflow-x: scroll;#}
+    {#    overflow-y: visible;#}
+    {#    padding-bottom: 1px;#}
+    {# }#}
 
-</table>
+
+    table {
+        white-space: nowrap;
+    {#table-layout: fixed;#} width: 100%;
+        overflow-x: auto;
+        display: block;
+    }
+
+    table thead th {
+        position: sticky;
+        z-index: 1;
+    }
+
+    table th {
+        text-align: center!important;
+    {#position: relative;#}
+    }
+
+    table td {
+        text-align: center!important;
+    {#position: relative;#}
+    }
+
+    {#table thead th:first-child {#}
+    {#  position: sticky;#}
+    {#  left: 0;#}
+    {#  z-index: 2;#}
+    {#    background: #F5F5F5;#}
+    {# }#}
+    .fixed_column {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: #F5F5F5;
+    }
+
+    table tbody td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        {#background: white;#}
+    }
+
+    {#table thead {#}
+    {#  position: sticky;#}
+    {#left: 0;#}
+    {#background: white;#}
+    {#z-index: 1;#}
+    {# }#}
+    {#    .fixed_column {#}
+    {#        z-index: 100;#}
+    {#    }#}
+    {% comment %}
+caption {
+  text-align: left;
+  padding: 0.25rem;
+  position: sticky;
+  left: 0;
+}
+
+
+    [role="region"][aria-labelledby][tabindex] {
+        width: 100%;
+        max-height: 98vh;
+        overflow: auto;
+    }
+
+    [role="region"][aria-labelledby][tabindex]:focus {
+        box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.5);
+        outline: 0;
+    }
+
+{% endcomment %}
+</style>
+{% comment %}
+<script>
+    setTimeout(function () {
+        $(".div_table").css('margin-left', $(".fixed_column").width() + 'px');
+        console.log('hola')
+    }, 200);
+</script>
+{% endcomment %}
+{% if not cuaderno.grupo %}
+    <div class="row">
+        <div class="columns large-12">
+            <p>El cuaderno docente debe relacionarse con una programación didáctica y con un grupo de alumnos.</p>
+            <p>Por favor, comience haciendo esa relación.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-6">
+            <label>Selecciona la programación:
+                <select data-cuaderno="{{ cuaderno.id }}" class="select_psec"
+                        id="select_psec{{ cuaderno.id }}">
+                    <option value="">---------</option>
+                    {% for psec in cuaderno|get_posibles_psec %}
+                        <option value="{{ psec.id }}">{{ psec.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <div class="columns large-4">
+            <label>Selecciona el grupo de alumnos:
+                <select data-cuaderno="{{ cuaderno.id }}" class="select_grupo" disabled
+                        id="select_grupo{{ cuaderno.id }}">
+                    <option value="">---------</option>
+                </select>
+            </label>
+        </div>
+        <div class="columns large-2">
+            <label>&nbsp;</label>
+            <a class="configura_cuaderno" data-cuaderno="{{ cuaderno.id }}">
+                <span class="label" style="font-weight: bold;">
+                <i class="fa fa-pencil"></i>
+                Configurar</span>
+            </a>
+        </div>
+    </div>
+{% else %}
+    <div class="div_table">
+        <table>
+            <thead style="position: sticky;top:0">
+            <tr>
+                <th class="fixed_column" rowspan="4"> Nombre <br>alumno/a</th>
+                {% for sb in cuaderno.psec.saberbas_set.all %}
+                    <th colspan="{{ sb.num_criinstreval }}"
+                        title="{{ sb.nombre }}">{{ sb.nombre|truncatechars:80 }}</th>
+                {% endfor %}
+            </tr>
+            <tr>
+                {#                <th class="fixed_column"></th>#}
+                {% for sb in cuaderno.psec.saberbas_set.all %}
+                    {% for sap in sb.sitapren_set.all %}
+                        <th colspan="{{ sap.num_criinstreval }}"
+                            title="{{ sap.nombre }}">{{ sap.nombre|truncatechars:40 }}</th>
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+            <tr>
+                {#                <th class="fixed_column"></th>#}
+                {% for sb in cuaderno.psec.saberbas_set.all %}
+                    {% for sap in sb.sitapren_set.all %}
+                        {% for asap in sap.actsitapren_set.all %}
+                            <th colspan="{{ asap.num_criinstreval }}"
+                                title="{{ asap.nombre }}">{{ asap.nombre|truncatechars:20 }}</th>
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+            <tr>
+                {#                <th class="fixed_column"></th>#}
+                {% for sb in cuaderno.psec.saberbas_set.all %}
+                    {% for sap in sb.sitapren_set.all %}
+                        {% for asap in sap.actsitapren_set.all %}
+                            {% for ieval in asap.instreval_set.all %}
+                                <th colspan="{{ ieval.num_criinstreval }}"
+                                    title="{{ ieval.nombre }}">{{ ieval.nombre|truncatechars:10 }}</th>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+            <tr>
+                {#                <th class="fixed_column"></th>#}
+                {% for sb in cuaderno.psec.saberbas_set.all %}
+                    {% for sap in sb.sitapren_set.all %}
+                        {% for asap in sap.actsitapren_set.all %}
+                            {% for ieval in asap.instreval_set.all %}
+                                {% for cieval in asap.criinstreval_set.all %}
+                                    <th title="{{ cieval.cevps.cev.texto }}">{{ cieval.cevps.cev.texto|truncatechars:20 }}</th>
+                                {% endfor %}
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for alumno in cuaderno.grupo.gauser_extra_estudios_set.all %}
+                <tr>
+                    <td class="fixed_column">
+                        {{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}
+                    </td>
+                    {% for sb in cuaderno.psec.saberbas_set.all %}a
+                        {% for sap in sb.sitapren_set.all %}b
+                            {% for asap in sap.actsitapren_set.all %}c
+                                {% for ieval in asap.instreval_set.all %}d
+                                    {% for cieval in ieval.criinstreval_set.all %}e
+                                        {% with calalum=cieval|get_calalum:alumno %}f
+                                            <td title="{{ calalum.obs }}">{{ calalum.cal }}f</td>
+                                        {% endwith %}
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}

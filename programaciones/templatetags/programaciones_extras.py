@@ -1,9 +1,21 @@
 # -*- coding: utf-8 -*-
 from django.template import Library
 from autenticar.models import Permiso
+from estudios.models import Gauser_extra_estudios
 from programaciones.models import *
 
 register = Library()
+
+
+
+@register.filter
+def get_posibles_psec(cuaderno):
+    psec_ids = DocProgSec.objects.filter(gep__ge=cuaderno.ge).values_list('psec__id', flat=True)
+    return ProgSec.objects.filter(id__in=psec_ids)
+
+@register.filter
+def get_calalum(cieval, alumno):
+    return CalAlum.objects.get(alumno=alumno, cie=cieval)
 
 
 @register.filter

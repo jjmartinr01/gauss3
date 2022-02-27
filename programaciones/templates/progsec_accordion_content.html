@@ -202,7 +202,7 @@
         </div>
     </div>
 
-{% comment %}
+    {% comment %}
     {% for cep in progsec.ceprogsec_set.all %}
         <div class="row">
             <div class="columns large-12">
@@ -222,7 +222,7 @@
         {% endfor %}
     {% endfor %}
 {% endcomment %}
-<div class="row">
+    <div class="row">
         <div class="columns large-12">
             <table style="width: 100%;">
                 <thead>
@@ -239,12 +239,12 @@
                     </thead>
                     <tbody>
                     {% for cevp in cep.cevprogsec_set.all %}
-                    <tr>
-                        <td>{{ cevp.cev.texto }}</td>
-                        <td><input type="number" min="1" max="10" class="pesocevp" data-cevp="{{ cevp.id }}"
-                           data-progsec="{{ progsec.id }}" value="{{ cevp.valor|floatformat }}"></td>
-                    </tr>
-                        {% endfor %}
+                        <tr>
+                            <td>{{ cevp.cev.texto }}</td>
+                            <td><input type="number" min="1" max="10" class="pesocevp" data-cevp="{{ cevp.id }}"
+                                       data-progsec="{{ progsec.id }}" value="{{ cevp.valor|floatformat }}"></td>
+                        </tr>
+                    {% endfor %}
                     </tbody>
                 {% endfor %}
             </table>
@@ -375,12 +375,15 @@
     <div class="row">
         <div class="columns large-12">
             <div class="panel callout">
-                <h3>5º Saberes básicos que se van a impartir</h3>
+                <h3>5º Unidades de programación</h3>
             </div>
-            <p>Los saberes básicos constituyen los contenidos de la materia que se explican a los alumnos
-                a lo largo del curso y que les permiten adquirir las competencias específicas.</p>
-            <p>En este apartado debe secuenciar los contenidos asociados a su materia e indicar el número de periodos
-                lectivos que estima necesarios para impartir la docencia correspondiente.</p>
+            <p>Las unidades de programación desarrollan los saberes básicos, que a su vez, constituyen los contenidos
+                de la materia. Estos contenidos se explican a los alumnos lo largo del curso y son los que les permiten
+                adquirir las competencias específicas.</p>
+            <p>En este apartado, usted debe secuenciar las diferentes unidades de programación sociadas con la materia
+                ({{ progsec.areamateria.nombre }}) e indicar el número de periodos lectivos que estima serán necesarios
+                para impartir la docencia correspondiente. Recuerde que cada unidad de programación puede contener
+                saberes de diferentes bloques.</p>
         </div>
     </div>
 
@@ -402,7 +405,7 @@
             </table>
         </div>
     </div>
-<div class="row">
+    <div class="row">
         <div class="columns large-12">
             <a data-progsec="{{ progsec.id }}" class="add_saber button small right">Añadir Saber básico</a>
         </div>
@@ -623,6 +626,6 @@
 {#</div>#}
 
 {% endcomment %}
-<script>
-    $('select').select2();
-</script>
+    <script>
+        $('select').select2();
+    </script>

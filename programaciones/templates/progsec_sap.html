@@ -226,15 +226,21 @@
                     },
                     "Borrar": function () {
                         hide_mensajes();
-                        $.post(url_progsec_sap, {action: 'borrar_sap_actividad', id: id},
-                            function (data) {
-                                if (data.ok) {
-                                    $('#contenido_actividad' + id).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
+                        setTimeout(function () {
+                            $.post(url_progsec_sap, {action: 'borrar_sap_actividad', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#contenido_actividad' + id).remove();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        show_mensajes({
+                                            title: '<i class="fa fa-warning"></i> Acción sin complentar',
+                                            texto: data.msg
+                                        });
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }, 800);
                     }
                 }
             });
@@ -269,15 +275,23 @@
                     },
                     "Borrar": function () {
                         hide_mensajes();
-                        $.post(url_progsec_sap, {action: 'borrar_act_instrumento', id: id},
-                            function (data) {
-                                if (data.ok) {
-                                    $('#sap_act_intrumento' + id).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
+                        setTimeout(function () {
+                            $.post(url_progsec_sap, {action: 'borrar_act_instrumento', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#sap_act_intrumento' + id).remove();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+
+                                        show_mensajes({
+                                            title: '<i class="fa fa-warning"></i> Acción sin complentar',
+                                            texto: data.msg
+                                        });
+
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }, 800);
                     }
                 }
             });

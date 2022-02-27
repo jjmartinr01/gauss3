@@ -742,7 +742,9 @@ class SaberBas(models.Model):
 
     @property
     def num_criinstreval(self):
-        return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas=self).count()
+        num = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas=self).count()
+        return num
+        # return 1 if num == 0 else num
 
     class Meta:
         ordering = ['psec', 'orden']
@@ -756,6 +758,14 @@ class SitApren(models.Model):
     nombre = models.CharField('Nombre dado a la situación de aprendizaje', blank=True, max_length=300)
     objetivo = models.TextField('Descripción de la situación de aprendizaje y lo que pretende conseguir', blank=True)
     ceps = models.ManyToManyField(CEProgSec, blank=True)
+
+    @property
+    def num_asapren(self):
+        return self.actsitapren_set.count()
+
+    @property
+    def num_instreval(self):
+        return InstrEval.objects.filter(asapren__sapren=self).count()
 
     @property
     def num_criinstreval(self):
@@ -825,7 +835,7 @@ class CuadernoProf(models.Model):
 
     @property
     def nombre(self):
-        return '%s - %s - %s' % (self.psec.pga.ronda, self.psec.areamateria.nombre, self.grupo)
+        return '%s - %s - %s' % (self.psec.pga.ronda, self.psec.areamateria.nombre, self.grupo.nombre)
 
     def calificacion_alumno_cev(self, alumno, cev): #Calificación de un determinado criterio de evaluación
         cas = self.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)
@@ -895,7 +905,7 @@ class EscalaCPvalor(models.Model): #Escala utilizada en el CuardernoProf
 
 
 class CalAlum(models.Model):
-    # cp = models.ForeignKey(CuadernoProf, on_delete=models.CASCADE)
+    cp = models.ForeignKey(CuadernoProf, on_delete=models.CASCADE, blank=True, null=True)
     alumno = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
     cie = models.ForeignKey(CriInstrEval, on_delete=models.CASCADE)
     ecp = models.ForeignKey(EscalaCP, on_delete=models.CASCADE, blank=True, null=True)
