@@ -6,7 +6,9 @@ from programaciones.models import *
 
 register = Library()
 
-
+@register.filter
+def get_ecpv_xs(ecp, y):
+    return ecp.escalacpvalor_set.filter(y=y)
 
 @register.filter
 def get_posibles_psec(cuaderno):

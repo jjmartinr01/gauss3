@@ -2478,13 +2478,6 @@ def progsecundaria_sb(request, id):
 def cuadernoprofesor(request):
     g_e = request.session['gauser_extra']
     g_ep = Gauser_extra_programaciones.objects.get(ge=g_e)
-
-    # ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
-    # grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE, blank=True, null=True)
-    # psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE, blank=True, null=True)
-    # vmin = models.IntegerField('Valor mínimo de calificación asignable a un alumno', default=0)
-    # vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)
-
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
         if action == 'crea_cuaderno':
@@ -2534,6 +2527,37 @@ def cuadernoprofesor(request):
                 ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
                 ca, c = CalAlum.objects.get_or_create(cp=cuaderno, alumno=ge, cie=cieval)
                 return JsonResponse({'ok': True, 'cal': ca.cal})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'define_ecp':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                ieval = InstrEval.objects.get(id=request.POST['ieval'], asapren__sapren__sbas__psec=cuaderno.psec)
+                ecp, c = EscalaCP.objects.get_or_create(cp=cuaderno, ieval=ieval)
+                html = render_to_string('cuadernoprofesor_accordion_content_ecp.html', {'ecp': ecp})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_texto':
+            try:
+                clase = eval(request.POST['clase'])
+                objeto = clase.objects.get(id=request.POST['id'])
+                setattr(objeto, request.POST['campo'], request.POST['texto'])
+                objeto.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_select':
+            try:
+                clase = eval(request.POST['clase'])
+                objeto = clase.objects.get(id=request.POST['id'])
+                setattr(objeto, request.POST['campo'], request.POST['valor'])
+                objeto.save()
+                if request.POST['clase'] == 'EscalaCP':
+                    html = render_to_string('cuadernoprofesor_accordion_content_ecp.html', {'ecp': objeto})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
 
@@ -2734,6 +2758,16 @@ def cuaderno_full_screen(request, id):
                 return JsonResponse({'ok': True, 'cal': ca.cal})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'define_ecp':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                ieval = CriInstrEval.objects.get(id=request.POST['ieval'], asapren__sapren__sbas__psec=cuaderno.psec)
+                ecp, c = EscalaCP.objects.get_or_create(cp=cuaderno, ieval=ieval)
+                html = render_to_string('cuadernoprofesor_accordion_content_ecp.html', {'ecp': ecp})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+
 
     return render(request, "cuaderno_full_screen.html",
                   {

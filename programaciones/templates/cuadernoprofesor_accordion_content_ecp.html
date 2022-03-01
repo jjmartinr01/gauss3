@@ -1,0 +1,89 @@
+{% load programaciones_extras %}
+<div class="row">
+    <div class="columns large-12">
+        <h4 style="text-align: center;">{{ ecp.ieval.nombre }}</h4>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-6">
+        <label>Nombre:
+            <input type="text" id="nombre_ecp" value="{{ ecp.nombre }}" data-campo="nombre"
+                   data-clase="EscalaCP" data-id="{{ ecp.id }}" class="update_texto"></label>
+    </div>
+    <div class="columns large-6">
+        <label>Tipo:
+            <select id="tipo_ecp" data-campo="tipo"
+                    data-clase="EscalaCP" data-id="{{ ecp.id }}" class="update_select">
+                <option value="">-----------</option>
+                <option value="ESVCL" {% if ecp.tipo == 'ESVCL' %}selected{% endif %}>
+                    Escala de valoración cualitativa/Lista de control
+                </option>
+                <option value="ESVCN" {% if ecp.tipo == 'ESVCN' %}selected{% endif %}>
+                    Valoración numérica
+                </option>
+                {#                <option value="LCONT" {% if ecp.tipo == 'LCONT' %}selected{% endif %}>#}
+                {#                    Lista de control#}
+                {#                </option>#}
+            </select>
+        </label>
+    </div>
+</div>
+{% if ecp.tipo == 'ESVCL' %}
+    <div class="row">
+        <div class="columns large-12">
+            <p style="color: grey;">Con este tipo de valoración debes crear una rúbrica o una lista de elementos a
+                calificar. Cada columna de la rúbrica o elemento de la lista debe estar relacionado con una cantidad
+                numérica.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12" id="tabla_ecp">
+            <table style="width: 100%;">
+                {% for y in ecp.get_ecpvys %}
+                    {% if forloop.first %}
+                        <thead>
+                        <tr>
+                            {% for ecpv in ecp|get_ecpv_xs:y %}
+                            <th>
+                                <span title="Descripción cualitativa de la valoración" class="des_cualitativa"
+                                      contenteditable="true" data-x="{{ ecpv.x }}"
+                                      data-y="{{ y }}">{{ ecpv.texto_cualitativo }}</span>
+{#                                <br>#}
+{#                                <span title="Valor númerico asociado a esta descripción" class="des_cuantitativa"#}
+{#                                      contenteditable="true" data-x="1" data-y="0">0</span>#}
+                                <br>
+                                <a data-x="1" data-y="0" class="del_column_ecp"><i class="fa fa-trash"></i> Borrar</a>
+                            </th>
+                            {% endfor %}
+                            <td><a class="button tiny add_column_ecp"><i class="fa fa-plus"></i> </a></td>
+                        </tr>
+                        </thead>
+                    {% else %}
+                        <tr>
+                            <th>
+                                <span contenteditable="true" data-x="0" data-y="1"
+                                      id="pos_0_1">Elemento a valorar</span>
+                                <br><a data-x="0" data-y="1" class="del_row_ecp"><i class="fa fa-trash"></i> Borrar</a>
+                            </th>
+                            <td id="pos_1_1" contenteditable="true" data-x="1" data-y="1">
+                                Criterio
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr>
+                    <td>
+                        <a class="tiny button add_row_ecp"><i class="fa fa-plus"></i> </a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+{% elif ecp.tipo == 'ESVCN' %}
+    <div class="row">
+        <div class="columns large-12">
+            <p style="color: grey;">Con este tipo de valoración solo deberás introducir una cantidad numérica para
+                calificar.</p>
+        </div>
+    </div>
+{% endif %}

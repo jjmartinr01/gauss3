@@ -27,44 +27,23 @@
                 {% endfor %}
             </dl>
         </div>
+        <div id="define_ecp" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true"
+             role="dialog">
+            <input type="hidden" id="id_instreval" value="">
+            <div id="content_ecp"></div>
+            <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+        </div>
     </form>
 {% endblock %}
 
 {% block final %}
     <script>
-        {% comment %}
-        config = {
-            removePlugins: 'exportpdf',
-            toolbar: [
-                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
-                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
-                {
-                    name: 'basicstyles',
-                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
-                },
-                {
-                    name: 'paragraph',
-                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
-                },
-                '/',
-                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
-                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
-                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
-                {name: 'colors', items: ['TextColor', 'BGColor']},
-                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
-                {name: 'document', items: ['Source']},
-                {name: 'about', items: ['About', 'generapdfbutton']}
-            ],
-            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
-        }
 
-        habilita(['s_search']);
-        {% endcomment %}
         {% if g_e|has_permiso:"crea_programaciones" %}
             habilita(['s_plus']);
             $('#plus_sign').click(function (event) {
                 event.preventDefault();
-                $.post(/cuadernoprofesor/, {'action': 'crea_cuaderno'},
+                $.post('/cuadernoprofesor/', {'action': 'crea_cuaderno'},
                     function (data) {
                         if (data.ok) {
                             $('#list_cuadernos').append(data.html);
@@ -87,7 +66,7 @@
                             $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
                             window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post(/cuadernoprofesor/, {action: 'open_accordion', id: id},
+                            $.post('/cuadernoprofesor/', {action: 'open_accordion', id: id},
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
@@ -113,7 +92,7 @@
             var element = $(this);
             var cuaderno = element.data('cuaderno');
             var psec = element.val();
-            $.post(/cuadernoprofesor/, {
+            $.post('/cuadernoprofesor/', {
                     action: 'select_psec', psec: psec
                 },
                 function (data) {
@@ -132,7 +111,7 @@
             var cuaderno = element.data('cuaderno');
             var psec = $('#select_psec' + cuaderno).val();
             var grupo = $('#select_grupo' + cuaderno).val();
-            $.post(/cuadernoprofesor/, {
+            $.post('/cuadernoprofesor/', {
                     action: 'configura_cuaderno', cuaderno: cuaderno, psec: psec, grupo: grupo
                 },
                 function (data) {
@@ -152,7 +131,7 @@
             var cuaderno = element.data('cuaderno');
             var cieval = element.data('cieval');
             var ge = element.data('ge');
-            $.post(/cuadernoprofesor/, {
+            $.post('/cuadernoprofesor/', {
                     action: 'create_calalumn', cuaderno: cuaderno, cieval: cieval, ge: ge
                 },
                 function (data) {
@@ -166,6 +145,79 @@
                     }
                 });
         });
+
+        $('#Contenido').on('click', '.define_ecp', function (e) {
+            e.preventDefault();
+            var ieval = $(this).data('ieval');
+            var cuaderno = $(this).data('cuaderno');
+            $.post('/cuadernoprofesor/', {action: 'define_ecp', cuaderno: cuaderno, ieval: ieval},
+                function (data) {
+                    if (data.ok) {
+                        $('#define_ecp').foundation('reveal', 'open');
+                        setTimeout(function (){
+                            $('#content_ecp').html(data.html);
+                        }, 100);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        function get_texto_from_element(element) {
+            if (element.val()) {
+                return element.val();
+            } else {
+                return element.html();
+            }
+        }
+
+        $('body').on('keyup', '.update_texto', function () {
+            var element = $(this);
+            var id = element.data('id');
+            var campo = element.data('campo');
+            var clase = element.data('clase');
+            console.log('fdadfas')
+            var antiguo_texto = get_texto_from_element(element);
+            setTimeout(function () {
+                var nuevo_texto = get_texto_from_element(element);
+                if (antiguo_texto === nuevo_texto) {
+                    $.post('/cuadernoprofesor/', {
+                            action: 'update_texto', id: id, texto: nuevo_texto, campo: campo,
+                            clase: clase
+                        },
+                        function (data) {
+                            if (data.ok) {
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }
+            }, 750);
+        });
+
+        $('body').on('change', '.update_select', function () {
+            var element = $(this);
+            var id = element.data('id');
+            var campo = element.data('campo');
+            var clase = element.data('clase');
+            var valor = element.val();
+            $.post('/cuadernoprofesor/', {
+                    action: 'update_select', id: id, valor: valor, campo: campo, clase: clase
+                },
+                function (data) {
+                    if (data.ok) {
+                        if (clase == 'EscalaCP'){
+                            $('#content_ecp').html(data.html);
+                        }
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
         {% comment %}
         function get_texto_from_element(element) {
             if (element.val()) {
@@ -184,7 +236,7 @@
             setTimeout(function () {
                 var nuevo_texto = get_texto_from_element(element);
                 if (antiguo_texto === nuevo_texto) {
-                    $.post(/cuadernoprofesor/, {
+                    $.post('/cuadernoprofesor/', {
                             action: 'update_texto', id: id, texto: nuevo_texto, campo: campo,
                             clase: clase
                         },
@@ -210,7 +262,7 @@
             var clase = element.data('clase');
             var clasem2m = element.data('clasem2m');
             var checked = element.prop('checked');
-            $.post(/cuadernoprofesor/, {
+            $.post('/cuadernoprofesor/', {
                     action: 'update_many2many', id: id, checked: checked, campo: campo, clase: clase,
                     clasem2m: clasem2m, idm2m: idm2m
                 },
@@ -239,7 +291,7 @@
                     },
                     "Borrar": function () {
                         hide_mensajes();
-                        $.post(/cuadernoprofesor/, {action: 'borrar_cuaderno_actividad', id: id},
+                        $.post('/cuadernoprofesor/', {action: 'borrar_cuaderno_actividad', id: id},
                             function (data) {
                                 if (data.ok) {
                                     $('#contenido_actividad' + id).remove();
@@ -257,7 +309,7 @@
             e.preventDefault();
             var element = $(this);
             var act = element.data('act');
-            $.post(/cuadernoprofesor/, {
+            $.post('/cuadernoprofesor/', {
                     action: 'add_act_instrumento', act: act
                 },
                 function (data) {
@@ -282,7 +334,7 @@
                     },
                     "Borrar": function () {
                         hide_mensajes();
-                        $.post(/cuadernoprofesor/, {action: 'borrar_act_instrumento', id: id},
+                        $.post('/cuadernoprofesor/', {action: 'borrar_act_instrumento', id: id},
                             function (data) {
                                 if (data.ok) {
                                     $('#cuaderno_act_intrumento' + id).remove();
@@ -298,7 +350,7 @@
 
         function refresh_table_criteval(element) {
             var id = element.data('id');
-            $.post(/cuadernoprofesor/, {
+            $.post('/cuadernoprofesor/', {
                     action: 'table_criteval', id: id
                 },
                 function (data) {

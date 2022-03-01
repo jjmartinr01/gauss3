@@ -884,8 +884,17 @@ class EscalaCP(models.Model): #Escala utilizada en el CuardernoProf
     ESCALAS = (('ESVCL', 'Escala de valoración cualitativa'), ('ESVCN', 'Escala de valoración cuantitativa'),
                ('LCONT', 'Lista de control'))
     cp =models.ForeignKey(CuadernoProf, on_delete=models.CASCADE)
+    ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE, blank=True, null=True)
     tipo = models.CharField('Tipo de escala', max_length=10, choices=ESCALAS, default='ESVCN')
     nombre = models.CharField('Tipo de escala', max_length=300, blank=True, default='')
+
+    @property
+    def get_ecpvys(self):
+        y_values = self.escalacpvalor_set.all().values_list('y', flat=True)
+        return y_values
+
+    def get_ecpvxs(self, y):
+        return self.escalacpvalor_set.filter(y=y)
 
     def __str__(self):
         return '%s (%s)' % (self.cp, self.get_tipo_display())
@@ -894,11 +903,13 @@ class EscalaCPvalor(models.Model): #Escala utilizada en el CuardernoProf
     ESCALAS = (('ESVCL', 'Escala de valoración cualitativa'), ('ESVCN', 'Escala de valoración cuantitativa'),
                ('LCONT', 'Lista de control'))
     ecp =models.ForeignKey(EscalaCP, on_delete=models.CASCADE)
+    x = models.IntegerField('Coordenada X', default=1)
+    y = models.IntegerField('Coordenada Y', default=0)
     texto_cualitativo = models.CharField('Texto descripción cualitativa de cumplimiento', max_length=300, blank=True)
     valor = models.FloatField('Valor cuantitativo asociado a la valoración cualitativa', default=0)
 
     class Meta:
-        ordering = ['ecp', 'valor']
+        ordering = ['ecp', 'y', 'x']
 
     def __str__(self):
         return '%s (%s - %s)' % (self.ecp, self.texto_cualitativo, self.valor)
@@ -927,6 +938,9 @@ class CalAlum(models.Model):
 
 class CalAlumValor(models.Model):
     ca = models.ForeignKey(CalAlum, on_delete=models.CASCADE)
+    ecp = models.ForeignKey(EscalaCPvalor, on_delete=models.CASCADE, blank=True, null=True, related_name='borrar')
+    ecpv = models.ForeignKey(EscalaCPvalor, on_delete=models.CASCADE, blank=True, null=True)
+    obs = models.TextField('Observaciones a la calificación otorgada', blank=True, default='')
     texto_cualitativo = models.CharField('Texto descripción cualitativa de cumplimiento', max_length=300, blank=True)
     valor = models.FloatField('Valor cuantitativo asociado a la valoración cualitativa', default=0)
 

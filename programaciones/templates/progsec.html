@@ -104,12 +104,16 @@
         }
         {% endcomment %}
 
-        habilita(['s_search']);
+        {#habilita(['s_search']);#}
         {% if g_e|has_permiso:"crea_programaciones" %}
             habilita(['s_plus']);
             $('#plus_sign').click(function (event) {
                 event.preventDefault();
                 $('#formulario_crear').toggle();
+                setTimeout(function (){
+                    $('#curso_progsec').select2();
+                    $('#areamateria_progsec').select2();
+                }, 100);
             });
 
             $('#crea_progsec').click(function (event) {

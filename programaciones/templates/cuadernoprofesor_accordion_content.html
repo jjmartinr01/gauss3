@@ -149,7 +149,7 @@ caption {
         <table>
             <thead style="position: sticky;top:0">
             <tr>
-                <th class="fixed_column" rowspan="4">
+                <th class="fixed_column" rowspan="5">
                     Nombre alumno/a<br><br>
                     <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}"
                        href="/cuaderno_full_screen/{{ cuaderno.id }}/">
@@ -158,7 +158,7 @@ caption {
                 </th>
                 {% for sb in cuaderno.psec.saberbas_set.all %}
                     <th colspan="{{ sb.num_criinstreval }}"
-                        title="{{ sb.nombre }}">{{ sb.nombre|truncatechars:80 }}</th>
+                        title="{{ sb.nombre }}">{{ sb.nombre|truncatechars:160 }}</th>
                 {% endfor %}
             </tr>
             <tr>
@@ -166,7 +166,7 @@ caption {
                 {% for sb in cuaderno.psec.saberbas_set.all %}
                     {% for sap in sb.sitapren_set.all %}
                         <th colspan="{{ sap.num_criinstreval }}"
-                            title="{{ sap.nombre }}">{{ sap.nombre|truncatechars:40 }}</th>
+                            title="{{ sap.nombre }}">{{ sap.nombre|truncatechars:80 }}</th>
                     {% endfor %}
                 {% endfor %}
             </tr>
@@ -176,7 +176,7 @@ caption {
                     {% for sap in sb.sitapren_set.all %}
                         {% for asap in sap.actsitapren_set.all %}
                             <th colspan="{{ asap.num_criinstreval }}"
-                                title="{{ asap.nombre }}">{{ asap.nombre|truncatechars:20 }}</th>
+                                title="{{ asap.nombre }}">{{ asap.nombre|truncatechars:40 }}</th>
                         {% endfor %}
                     {% endfor %}
                 {% endfor %}
@@ -187,21 +187,26 @@ caption {
                     {% for sap in sb.sitapren_set.all %}
                         {% for asap in sap.actsitapren_set.all %}
                             {% for ieval in asap.instreval_set.all %}
-                                <th colspan="{{ ieval.num_criinstreval }}"
-                                    title="{{ ieval.nombre }}">{{ ieval.nombre|truncatechars:10 }}</th>
+                                <th colspan="{{ ieval.num_criinstreval }}" title="{{ ieval.nombre }}">
+                                    <a data-ieval="{{ ieval.id }}" class="define_ecp"
+                                       data-cuaderno="{{ cuaderno.id }}">
+                                        {{ ieval.nombre|truncatechars:20 }}
+                                    </a>
+                                </th>
                             {% endfor %}
                         {% endfor %}
                     {% endfor %}
                 {% endfor %}
             </tr>
             <tr>
-                {#                <th class="fixed_column"></th>#}
                 {% for sb in cuaderno.psec.saberbas_set.all %}
                     {% for sap in sb.sitapren_set.all %}
                         {% for asap in sap.actsitapren_set.all %}
                             {% for ieval in asap.instreval_set.all %}
-                                {% for cieval in asap.criinstreval_set.all %}
-                                    <th title="{{ cieval.cevps.cev.texto }}">{{ cieval.cevps.cev.texto|truncatechars:20 }}</th>
+                                {% for cieval in ieval.criinstreval_set.all %}
+                                    <th title="{{ cieval.cevps.cev.texto }}">
+                                        {{ cieval.cevps.cev.texto|truncatechars:10 }}
+                                    </th>
                                 {% endfor %}
                             {% endfor %}
                         {% endfor %}
