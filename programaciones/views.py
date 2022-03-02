@@ -1948,6 +1948,7 @@ def reordenar_saberes(saber, valor):
         saber.delete()
     return render_to_string('progsec_accordion_content_saberes.html', {'progsec': progsec})
 
+
 # @permiso_required('acceso_progsecundaria')
 def progsecundaria(request):
     try:
@@ -1994,7 +1995,7 @@ def progsecundaria(request):
                         departamentos = Departamento.objects.filter(ronda=g_e.ronda)
                     html = render_to_string('progsec_accordion_content.html',
                                             {'progsec': progsec, 'gep': g_ep, 'departamentos': departamentos,
-                                             'docentes': profesorado(g_e.ronda.entidad), 'docentes_id':docentes_id})
+                                             'docentes': profesorado(g_e.ronda.entidad), 'docentes_id': docentes_id})
                     return JsonResponse({'ok': True, 'html': html})
                 except:
                     return JsonResponse({'ok': False})
@@ -2164,7 +2165,7 @@ def progsecundaria(request):
                         fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d')
                         observaciones = request.POST['observaciones']
                         actex = ActExCom.objects.create(psec=progsec, nombre=nombre, inicio=inicio, fin=fin,
-                                                            observaciones=observaciones)
+                                                        observaciones=observaciones)
                         html = render_to_string('progsec_accordion_content_actex.html', {'actex': actex})
                         return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': html})
                     else:
@@ -2230,7 +2231,7 @@ def progsecundaria(request):
                     if permiso in 'EX':
                         saber = progsec.saberbas_set.get(id=request.POST['saber'])
                         saber_id = saber.id
-                        html = reordenar_saberes(saber, 1000) #Si orden es > que 999 el saber se borra
+                        html = reordenar_saberes(saber, 1000)  # Si orden es > que 999 el saber se borra
                         return JsonResponse({'ok': True, 'saber_id': saber_id, 'html': html})
                     else:
                         return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
@@ -2255,7 +2256,8 @@ def progsecundaria(request):
                             p.save()
                         except:
                             p = PECdocumento.objects.create(pec=pec, doc_nombre=request.POST['name'], doc_file=fichero,
-                                                            content_type=fichero.content_type, tipo=request.POST['name'])
+                                                            content_type=fichero.content_type,
+                                                            tipo=request.POST['name'])
                             p.doc_nombre = slugify(p.get_tipo_display())
                             p.save()
                     return JsonResponse({'ok': True, 'mensaje': mensaje})
@@ -2318,14 +2320,14 @@ def progsecundaria_sb(request, id):
                 sap = SitApren.objects.create(sbas=sb)
                 act = ActSitApren.objects.create(sapren=sap, nombre='Nombre de la actividad')
                 InstrEval.objects.create(asapren=act, tipo='TMONO', nombre='Procedimiento 1')
-                html = render_to_string('progsec_sap_accordion.html', {'sap':sap})
+                html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'open_accordion':
             try:
                 sap = SitApren.objects.get(sbas__psec__gep__ge__ronda__entidad=g_e.ronda.entidad,
-                                              id=request.POST['id'])
+                                           id=request.POST['id'])
                 html = render_to_string('progsec_sap_accordion_content.html', {'sap': sap, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
             except:
@@ -2364,7 +2366,7 @@ def progsecundaria_sb(request, id):
                 return JsonResponse({'ok': False})
         elif action == 'add_sap_actividad':
             try:
-                sap=sb.sitapren_set.get(id=request.POST['sap'])
+                sap = sb.sitapren_set.get(id=request.POST['sap'])
                 act = ActSitApren.objects.create(sapren=sap, nombre='Nombre de la actividad')
                 InstrEval.objects.create(asapren=act, tipo='TMONO', nombre='Procedimiento 1')
                 html = render_to_string('progsec_sap_accordion_content_act.html', {'actividad': act})
@@ -2385,7 +2387,7 @@ def progsecundaria_sb(request, id):
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'add_act_instrumento':
             try:
-                act=ActSitApren.objects.get(id=request.POST['act'])
+                act = ActSitApren.objects.get(id=request.POST['act'])
                 if act.sapren.sbas == sb:
                     inst = InstrEval.objects.create(asapren=act, nombre='Nombre del instrumento')
                     html = render_to_string('progsec_sap_accordion_content_act_proc.html', {'instrumento': inst})
@@ -2474,6 +2476,7 @@ def progsecundaria_sb(request, id):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
+
 # @permiso_required('acceso_progsecundaria')
 def cuadernoprofesor(request):
     g_e = request.session['gauser_extra']
@@ -2486,7 +2489,7 @@ def cuadernoprofesor(request):
                     msg = 'Primero tienes que participar como docente en alguna programación didáctica.'
                     return JsonResponse({'ok': False, 'msg': msg})
                 cuaderno = CuadernoProf.objects.create(ge=g_e)
-                html = render_to_string('cuadernoprofesor_accordion.html', {'cuaderno':cuaderno})
+                html = render_to_string('cuadernoprofesor_accordion.html', {'cuaderno': cuaderno})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -2554,13 +2557,57 @@ def cuadernoprofesor(request):
                 setattr(objeto, request.POST['campo'], request.POST['valor'])
                 objeto.save()
                 if request.POST['clase'] == 'EscalaCP':
+                    casillas = [{'x': 0, 'y': 0, 't': '', 'valor': 0}, {'x': 0, 'y': 1, 't': 'Aspecto 1', 'valor': 0},
+                                {'x': 1, 'y': 0, 't': 'Grado 1', 'valor': 0},
+                                {'x': 1, 'y': 1, 't': 'Criterio 1', 'valor': 0}]
+                    for c in casillas:
+                        ecpv, cr = EscalaCPvalor.objects.get_or_create(ecp=objeto, x=c['x'], y=c['y'], valor=c['valor'])
+                        # ecpv.texto_cualitativo = c['t']
+                        # ecpv.save()
+                        if cr:
+                            ecpv.texto_cualitativo = c['t']
+                            ecpv.save()
                     html = render_to_string('cuadernoprofesor_accordion_content_ecp.html', {'ecp': objeto})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
-
+        elif action == 'add_row_ecp':
+            try:
+                ecp = EscalaCP.objects.get(id=request.POST['ecp'], cp__ge=g_e)
+                nueva_row_index = max(ecp.get_ecpvys) + 1
+                columns_index = ecp.escalacpvalor_set.filter(y=0).values_list('x', flat=True)
+                for i in columns_index:
+                    EscalaCPvalor.objects.get_or_create(ecp=ecp, x=i, y=nueva_row_index,
+                                                        texto_cualitativo='Texto', valor=0)
+                html = render_to_string('cuadernoprofesor_accordion_content_ecp.html', {'ecp': ecp})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'add_column_ecp':
+            try:
+                ecp = EscalaCP.objects.get(id=request.POST['ecp'], cp__ge=g_e)
+                rows_index = ecp.get_ecpvys
+                nueva_column_index = max(ecp.escalacpvalor_set.filter(y=0).values_list('x', flat=True)) + 1
+                for i in rows_index:
+                    EscalaCPvalor.objects.get_or_create(ecp=ecp, y=i, x=nueva_column_index,
+                                                        texto_cualitativo='Texto', valor=0)
+                html = render_to_string('cuadernoprofesor_accordion_content_ecp.html', {'ecp': ecp})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'del_rc_ecp':
+            try:
+                ecp = EscalaCP.objects.get(id=request.POST['ecp'], cp__ge=g_e)
+                if request.POST['borrar'] == 'x':
+                    ecp.escalacpvalor_set.filter(x=request.POST['i']).delete()
+                else:
+                    ecp.escalacpvalor_set.filter(y=request.POST['i']).delete()
+                html = render_to_string('cuadernoprofesor_accordion_content_ecp.html', {'ecp': ecp})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
 
 
     #     elif action == 'update_texto':
@@ -2686,7 +2733,7 @@ def cuadernoprofesor(request):
     #         except:
     #             pass
 
-    #dpss = DocProgSec.objects.filter(gep=g_ep) #Podrá crear cuadernos de aquellas programaciones de las que forme parte#
+    # dpss = DocProgSec.objects.filter(gep=g_ep) #Podrá crear cuadernos de aquellas programaciones de las que forme parte#
     return render(request, "cuadernoprofesor.html",
                   {
                       'formname': 'progsec',
@@ -2698,7 +2745,6 @@ def cuadernoprofesor(request):
                       # 'cuadernos': CuadernoProf.objects.filter(ge=g_e),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
-
 
 
 # @permiso_required('acceso_progsecundaria')
@@ -2715,7 +2761,7 @@ def cuaderno_full_screen(request, id):
                     msg = 'Primero tienes que participar como docente en alguna programación didáctica.'
                     return JsonResponse({'ok': False, 'msg': msg})
                 cuaderno = CuadernoProf.objects.create(ge=g_e)
-                html = render_to_string('cuadernoprofesor_accordion.html', {'cuaderno':cuaderno})
+                html = render_to_string('cuadernoprofesor_accordion.html', {'cuaderno': cuaderno})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -2767,7 +2813,6 @@ def cuaderno_full_screen(request, id):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
-
 
     return render(request, "cuaderno_full_screen.html",
                   {

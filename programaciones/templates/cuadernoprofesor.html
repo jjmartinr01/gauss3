@@ -154,7 +154,7 @@
                 function (data) {
                     if (data.ok) {
                         $('#define_ecp').foundation('reveal', 'open');
-                        setTimeout(function (){
+                        setTimeout(function () {
                             $('#content_ecp').html(data.html);
                         }, 100);
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -168,7 +168,7 @@
             if (element.val()) {
                 return element.val();
             } else {
-                return element.html();
+                return element.text();
             }
         }
 
@@ -177,11 +177,21 @@
             var id = element.data('id');
             var campo = element.data('campo');
             var clase = element.data('clase');
-            console.log('fdadfas')
             var antiguo_texto = get_texto_from_element(element);
             setTimeout(function () {
                 var nuevo_texto = get_texto_from_element(element);
                 if (antiguo_texto === nuevo_texto) {
+                    if (!nuevo_texto) {
+                        element.text('--');
+                    }
+                    if (campo === 'valor') {
+                        nuevo_texto = parseFloat(nuevo_texto.replace(',', '.').replace(/[^\d.]/g, ''));
+                        if (!nuevo_texto) {
+                            element.text(0);
+                        } else {
+                            element.text(nuevo_texto);
+                        }
+                    }
                     $.post('/cuadernoprofesor/', {
                             action: 'update_texto', id: id, texto: nuevo_texto, campo: campo,
                             clase: clase
@@ -208,7 +218,7 @@
                 },
                 function (data) {
                     if (data.ok) {
-                        if (clase == 'EscalaCP'){
+                        if (clase == 'EscalaCP') {
                             $('#content_ecp').html(data.html);
                         }
                         $("#update_ok").show().delay(1500).fadeOut();
@@ -217,6 +227,50 @@
                     }
                 });
         });
+
+        $('body').on('click', '.add_row_ecp', function (e) {
+            e.preventDefault();
+            var ecp = $(this).data('ecp');
+            $.post('/cuadernoprofesor/', {action: 'add_row_ecp', ecp: ecp},
+                function (data) {
+                    if (data.ok) {
+                        $('#content_ecp').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+        $('body').on('click', '.add_column_ecp', function (e) {
+            e.preventDefault();
+            var ecp = $(this).data('ecp');
+            $.post('/cuadernoprofesor/', {action: 'add_column_ecp', ecp: ecp},
+                function (data) {
+                    if (data.ok) {
+                        $('#content_ecp').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.del_rc_ecp', function (e) { {# borrar row o column #}
+            e.preventDefault();
+            var ecp = $(this).data('ecp');
+            var i = $(this).data('i');
+            var borrar = $(this).data('borrar');
+            $.post('/cuadernoprofesor/', {action: 'del_rc_ecp', ecp: ecp, i: i, borrar: borrar},
+                function (data) {
+                    if (data.ok) {
+                        $('#content_ecp').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
 
         {% comment %}
         function get_texto_from_element(element) {

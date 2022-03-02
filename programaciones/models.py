@@ -890,7 +890,7 @@ class EscalaCP(models.Model): #Escala utilizada en el CuardernoProf
 
     @property
     def get_ecpvys(self):
-        y_values = self.escalacpvalor_set.all().values_list('y', flat=True)
+        y_values = set(self.escalacpvalor_set.all().values_list('y', flat=True))
         return y_values
 
     def get_ecpvxs(self, y):
