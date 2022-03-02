@@ -938,11 +938,11 @@ class CalAlum(models.Model):
 
 class CalAlumValor(models.Model):
     ca = models.ForeignKey(CalAlum, on_delete=models.CASCADE)
-    ecp = models.ForeignKey(EscalaCPvalor, on_delete=models.CASCADE, blank=True, null=True, related_name='borrar')
+    # ecp = models.ForeignKey(EscalaCPvalor, on_delete=models.CASCADE, blank=True, null=True, related_name='borrar')
     ecpv = models.ForeignKey(EscalaCPvalor, on_delete=models.CASCADE, blank=True, null=True)
     obs = models.TextField('Observaciones a la calificación otorgada', blank=True, default='')
-    texto_cualitativo = models.CharField('Texto descripción cualitativa de cumplimiento', max_length=300, blank=True)
-    valor = models.FloatField('Valor cuantitativo asociado a la valoración cualitativa', default=0)
+    # texto_cualitativo = models.CharField('Texto descripción cualitativa de cumplimiento', max_length=300, blank=True)
+    # valor = models.FloatField('Valor cuantitativo asociado a la valoración cualitativa', default=0)
 
     def __str__(self):
         return '%s (%s)' % (self.ca, self.valor)
