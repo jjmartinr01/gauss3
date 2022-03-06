@@ -2496,6 +2496,11 @@ def cuadernoprofesor(request):
         elif action == 'open_accordion':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['id'])
+                cievals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+                for alumno in cuaderno.alumnos.all():
+                    for cieval in cievals:
+                        ecp = EscalaCP.objects.get(cp=cuaderno, ieval=cieval.ieval)
+                        CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval, ecp=ecp)
                 html = render_to_string('cuadernoprofesor_accordion_content.html', {'cuaderno': cuaderno})
                 return JsonResponse({'ok': True, 'html': html})
             except:
@@ -2518,20 +2523,21 @@ def cuadernoprofesor(request):
                 cuaderno.psec = ProgSec.objects.get(id=request.POST['psec'])
                 cuaderno.grupo = Grupo.objects.get(id=request.POST['grupo'])
                 cuaderno.save()
+                cuaderno.alumnos.add(*cuaderno.grupo.gauser_extra_estudios_set.all().values_list('ge', flat=True))
                 html = render_to_string('cuadernoprofesor_accordion_content.html', {'cuaderno': cuaderno})
                 return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre})
             except:
                 return JsonResponse({'ok': False})
-        elif action == 'create_calalumn':
-            try:
-                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
-                cieval = CriInstrEval.objects.get(id=request.POST['cieval'],
-                                                  ieval__asapren__sapren__sbas__psec=cuaderno.psec)
-                ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
-                ca, c = CalAlum.objects.get_or_create(cp=cuaderno, alumno=ge, cie=cieval)
-                return JsonResponse({'ok': True, 'cal': ca.cal})
-            except:
-                return JsonResponse({'ok': False})
+        # elif action == 'create_calalumn':
+        #     try:
+        #         cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+        #         cieval = CriInstrEval.objects.get(id=request.POST['cieval'],
+        #                                           ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+        #         ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
+        #         ca, c = CalAlum.objects.get_or_create(cp=cuaderno, alumno=ge, cie=cieval)
+        #         return JsonResponse({'ok': True, 'cal': ca.cal, 'calalum': ca.id})
+        #     except:
+        #         return JsonResponse({'ok': False})
         elif action == 'define_ecp':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
@@ -2556,31 +2562,67 @@ def cuadernoprofesor(request):
                 objeto = clase.objects.get(id=request.POST['id'])
                 setattr(objeto, request.POST['campo'], request.POST['valor'])
                 objeto.save()
-                if request.POST['clase'] == 'EscalaCP':
-                    casillas = [{'x': 0, 'y': 0, 't': '', 'valor': 0}, {'x': 0, 'y': 1, 't': 'Aspecto 1', 'valor': 0},
+                if request.POST['clase'] == 'EscalaCP' and request.POST['valor'] == 'ESVCL':
+                    objeto.escalacpvalor_set.all().delete()
+                    casillas = [{'x': 0, 'y': 0, 't': '', 'valor': 0},
+                                {'x': 0, 'y': 1, 't': 'Aspecto 1', 'valor': 0},
+                                {'x': 0, 'y': 2, 't': 'Aspecto 2', 'valor': 0},
                                 {'x': 1, 'y': 0, 't': 'Grado 1', 'valor': 0},
-                                {'x': 1, 'y': 1, 't': 'Criterio 1', 'valor': 0}]
+                                {'x': 1, 'y': 1, 't': 'Criterio 11', 'valor': 0},
+                                {'x': 1, 'y': 2, 't': 'Criterio 12', 'valor': 0},
+                                {'x': 2, 'y': 0, 't': 'Grado 2', 'valor': 0},
+                                {'x': 2, 'y': 1, 't': 'Criterio 21', 'valor': 0},
+                                {'x': 2, 'y': 2, 't': 'Criterio 22', 'valor': 0},
+                                {'x': 3, 'y': 0, 't': 'Grado 3', 'valor': 0},
+                                {'x': 3, 'y': 1, 't': 'Criterio 31', 'valor': 0},
+                                {'x': 3, 'y': 2, 't': 'Criterio 32', 'valor': 0}]
                     for c in casillas:
-                        ecpv, cr = EscalaCPvalor.objects.get_or_create(ecp=objeto, x=c['x'], y=c['y'], valor=c['valor'])
-                        # ecpv.texto_cualitativo = c['t']
-                        # ecpv.save()
-                        if cr:
-                            ecpv.texto_cualitativo = c['t']
-                            ecpv.save()
-                    html = render_to_string('cuadernoprofesor_accordion_content_ecp.html', {'ecp': objeto})
-                    return JsonResponse({'ok': True, 'html': html})
-                else:
-                    return JsonResponse({'ok': True})
+                        EscalaCPvalor.objects.create(ecp=objeto, x=c['x'], y=c['y'], valor=c['valor'],
+                                                     texto_cualitativo=c['t'])
+                    # html = render_to_string('cuadernoprofesor_accordion_content_ecp.html', {'ecp': objeto})
+                elif request.POST['clase'] == 'EscalaCP' and request.POST['valor'] == 'LCONT':
+                    objeto.escalacpvalor_set.all().delete()
+                    casillas = [{'x': 0, 'y': 0, 't': '', 'valor': 0},
+                                {'x': 0, 'y': 1, 't': 'Aspecto 1', 'valor': 0},
+                                {'x': 0, 'y': 2, 't': 'Aspecto 2', 'valor': 0},
+                                {'x': 1, 'y': 0, 't': 'Valoración 1', 'valor': 2},
+                                {'x': 1, 'y': 1, 't': 'Valoración 1', 'valor': 2},
+                                {'x': 1, 'y': 2, 't': 'Valoración 1', 'valor': 2},
+                                {'x': 2, 'y': 0, 't': 'Valoración 2', 'valor': 5},
+                                {'x': 2, 'y': 1, 't': 'Valoración 2', 'valor': 5},
+                                {'x': 2, 'y': 2, 't': 'Valoración 2', 'valor': 5},
+                                {'x': 3, 'y': 0, 't': 'Valoración 3', 'valor': 10},
+                                {'x': 3, 'y': 1, 't': 'Valoración 3', 'valor': 10},
+                                {'x': 3, 'y': 2, 't': 'Valoración 3', 'valor': 10}]
+                    for c in casillas:
+                        EscalaCPvalor.objects.create(ecp=objeto, x=c['x'], y=c['y'], valor=c['valor'],
+                                                     texto_cualitativo=c['t'])
+                    # html = render_to_string('cuadernoprofesor_accordion_content_ecp.html', {'ecp': objeto})
+                    # return JsonResponse({'ok': True, 'html': html})
+                elif request.POST['clase'] == 'EscalaCP' and request.POST['valor'] == 'ESVCN':
+                    objeto.escalacpvalor_set.all().delete()
+                    casillas = [{'x': i, 'y': 0, 't': i + 1, 'valor': i + 1} for i in range(0, 10)]
+                    for c in casillas:
+                        EscalaCPvalor.objects.create(ecp=objeto, x=c['x'], y=c['y'], valor=c['valor'],
+                                                     texto_cualitativo=c['t'])
+                html = render_to_string('cuadernoprofesor_accordion_content_ecp.html', {'ecp': objeto})
+                return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'add_row_ecp':
             try:
                 ecp = EscalaCP.objects.get(id=request.POST['ecp'], cp__ge=g_e)
                 nueva_row_index = max(ecp.get_ecpvys) + 1
-                columns_index = ecp.escalacpvalor_set.filter(y=0).values_list('x', flat=True)
-                for i in columns_index:
-                    EscalaCPvalor.objects.get_or_create(ecp=ecp, x=i, y=nueva_row_index,
-                                                        texto_cualitativo='Texto', valor=0)
+                if ecp.tipo == 'LCONT':
+                    columns_index = ecp.escalacpvalor_set.filter(y=0).values_list('x', 'valor')
+                    for x, valor in columns_index:
+                        EscalaCPvalor.objects.create(ecp=ecp, x=x, y=nueva_row_index,
+                                                     texto_cualitativo='', valor=valor)
+                else:
+                    columns_index = ecp.escalacpvalor_set.filter(y=0).values_list('x', flat=True)
+                    for x in columns_index:
+                        EscalaCPvalor.objects.create(ecp=ecp, x=x, y=nueva_row_index,
+                                                     texto_cualitativo='Texto', valor=0)
                 html = render_to_string('cuadernoprofesor_accordion_content_ecp.html', {'ecp': ecp})
                 return JsonResponse({'ok': True, 'html': html})
             except:
@@ -2606,6 +2648,91 @@ def cuadernoprofesor(request):
                     ecp.escalacpvalor_set.filter(y=request.POST['i']).delete()
                 html = render_to_string('cuadernoprofesor_accordion_content_ecp.html', {'ecp': ecp})
                 return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_calalum':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                cieval = CriInstrEval.objects.get(id=request.POST['cieval'],
+                                                  ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+                alumno = Gauser_extra.objects.get(id=request.POST['alumno'], ronda=g_e.ronda)
+                ecp, c = EscalaCP.objects.get_or_create(cp=cuaderno, ieval=cieval.ieval)
+                ca, c = CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval, ecp=ecp)
+                html = render_to_string('cuadernoprofesor_accordion_content_calalum.html', {'calalum': ca})
+                return JsonResponse({'ok': True, 'html': html, 'calalum': ca.id, 'alumno': alumno.id, 'cal': ca.cal})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_esvcl':
+            try:
+                ecpv = EscalaCPvalor.objects.get(id=request.POST['ecpv'], ecp__cp__ge=g_e)
+                ca = CalAlum.objects.get(id=request.POST['calalum'], ecp=ecpv.ecp)
+                cav, c = CalAlumValor.objects.get_or_create(ca=ca, ecpv=ecpv)
+                if c:
+                    return JsonResponse({'ok': True, 'alumno': ca.alumno.id, 'selected': True, 'cal': ca.cal})
+                else:
+                    cav.delete()
+                    return JsonResponse({'ok': True, 'alumno': ca.alumno.id, 'selected': False, 'cal': ca.cal})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_lcont':
+            try:
+                ecpv = EscalaCPvalor.objects.get(id=request.POST['ecpv'], ecp__cp__ge=g_e)
+                ecpv.valor = ecpv.ecp.escalacpvalor_set.get(y=0, x=ecpv.x).valor
+                ecpv.save()
+                ca = CalAlum.objects.get(id=request.POST['calalum'], ecp=ecpv.ecp)
+                cav, c = CalAlumValor.objects.get_or_create(ca=ca, ecpv=ecpv)
+                if c:
+                    ca.calalumvalor_set.filter(ecpv__y=ecpv.y).exclude(ecpv=ecpv).delete()
+                return JsonResponse({'ok': True, 'alumno': ca.alumno.id, 'cal': ca.cal})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_esvcn':
+            try:
+                ca = CalAlum.objects.get(id=request.POST['calalum'])
+                ca.calalumvalor_set.all().delete()
+                valor = float(request.POST['valor'])
+                ecpv, c = EscalaCPvalor.objects.get_or_create(ecp=ca.ecp, ecp__cp__ge=g_e, valor=valor)
+                for idx, e in enumerate(ca.ecp.escalacpvalor_set.all().order_by('valor')):
+                    e.y = idx
+                    e.save()
+                CalAlumValor.objects.create(ca=ca, ecpv=ecpv)
+                return JsonResponse({'ok': True, 'alumno': ca.alumno.id, 'cal': ca.cal})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'gestionar_alumnos':
+            try:
+                cuaderno = CuadernoProf.objects.get(id=request.POST['cuaderno'], ge=g_e)
+                html = render_to_string('cuadernoprofesor_accordion_content_ga.html', {'cuaderno': cuaderno})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+
+        elif action == 'update_alumnos_cuaderno':
+            try:
+                cuaderno = CuadernoProf.objects.get(id=request.POST['cuaderno'], ge=g_e)
+                alumno = Gauser_extra.objects.get(id=int(request.POST['alumno'][1:]), ronda=g_e.ronda)
+                if alumno not in cuaderno.alumnos.all():
+                    cievals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+                    for cieval in cievals:
+                        ecp = EscalaCP.objects.get(cp=cuaderno, ieval=cieval.ieval)
+                        CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval, ecp=ecp)
+                    html_span = render_to_string('cuadernoprofesor_accordion_content_ga_alumno.html',
+                                                 {'cuaderno': cuaderno, 'alumno': alumno})
+                else:
+                    html_span = ''
+                cuaderno.alumnos.add(alumno)
+                return JsonResponse({'ok': True, 'cuaderno': cuaderno.id, 'html_span': html_span,
+                                     'num_alumnos': cuaderno.alumnos.all().count()})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg':str(msg)})
+        elif action == 'borrar_alumno_cuaderno':
+            try:
+                cuaderno = CuadernoProf.objects.get(id=request.POST['cuaderno'], ge=g_e)
+                alumno = Gauser_extra.objects.get(id=int(request.POST['alumno']), ronda=g_e.ronda)
+                cuaderno.calalum_set.filter(alumno=alumno).delete()
+                cuaderno.alumnos.remove(alumno)
+                return JsonResponse({'ok': True, 'cuaderno': cuaderno.id, 'alumno': alumno.id,
+                                     'num_alumnos': cuaderno.alumnos.all().count()})
             except:
                 return JsonResponse({'ok': False})
 
@@ -2794,16 +2921,16 @@ def cuaderno_full_screen(request, id):
                 return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre})
             except:
                 return JsonResponse({'ok': False})
-        elif action == 'create_calalumn':
-            try:
-                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
-                cieval = CriInstrEval.objects.get(id=request.POST['cieval'],
-                                                  ieval__asapren__sapren__sbas__psec=cuaderno.psec)
-                ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
-                ca, c = CalAlum.objects.get_or_create(cp=cuaderno, alumno=ge, cie=cieval)
-                return JsonResponse({'ok': True, 'cal': ca.cal})
-            except:
-                return JsonResponse({'ok': False})
+        # elif action == 'create_calalumn':
+        #     try:
+        #         cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+        #         cieval = CriInstrEval.objects.get(id=request.POST['cieval'],
+        #                                           ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+        #         ge = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
+        #         ca, c = CalAlum.objects.get_or_create(cp=cuaderno, alumno=ge, cie=cieval)
+        #         return JsonResponse({'ok': True, 'cal': ca.cal})
+        #     except:
+        #         return JsonResponse({'ok': False})
         elif action == 'define_ecp':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])

@@ -4,110 +4,52 @@
         text-align: justify;
     }
 
-    .span_periodos {
-        color: darkred;
-    }
+    {#.span_periodos {#}
+    {#    color: darkred;#}
+    {# }#}
 
     h5 {
         font-weight: bold;
     }
 
-    {#.fixed_column {#}
-    {#    position: absolute;#}
-    {#    left: 0;#}
-    {#    top: auto;#}
-    {#    width: auto;#}
-    {# }#}
-    {##}
-    {#.div_table {#}
-    {##}
-    {#    overflow-x: scroll;#}
-    {#    overflow-y: visible;#}
-    {#    padding-bottom: 1px;#}
-    {# }#}
-
-
-    table {
+    .tabla_cuaderno {
         white-space: nowrap;
-    {#table-layout: fixed;#} width: 100%;
+    table-layout: fixed;
+        width: 100%;
         overflow-x: auto;
         display: block;
     }
 
-    table thead th {
+    .tabla_cuaderno thead th {
         position: sticky;
         z-index: 1;
     }
 
-    table th {
-        text-align: center!important;
-    {#position: relative;#}
+    .tabla_cuaderno th {
+        text-align: center !important;
     }
 
-    table td {
-        text-align: center!important;
-    {#position: relative;#}
+    .tabla_cuaderno td {
+        text-align: center !important;
     }
 
-    {#table thead th:first-child {#}
-    {#  position: sticky;#}
-    {#  left: 0;#}
-    {#  z-index: 2;#}
-    {#    background: #F5F5F5;#}
-    {# }#}
     .fixed_column {
         position: sticky;
         left: 0;
-        z-index: 2;
+        z-index: 5!important;
         background: #F5F5F5;
     }
 
-    table tbody td:first-child {
+    .tabla_cuaderno tbody td:first-child {
         position: sticky;
         left: 0;
         z-index: 2;
-        {#background: white;#}
     }
-
-    {#table thead {#}
-    {#  position: sticky;#}
-    {#left: 0;#}
-    {#background: white;#}
-    {#z-index: 1;#}
-    {# }#}
-    {#    .fixed_column {#}
-    {#        z-index: 100;#}
-    {#    }#}
-    {% comment %}
-caption {
-  text-align: left;
-  padding: 0.25rem;
-  position: sticky;
-  left: 0;
-}
-
-
-    [role="region"][aria-labelledby][tabindex] {
-        width: 100%;
-        max-height: 98vh;
-        overflow: auto;
+    .update_calalum{
+        cursor: pointer;
     }
-
-    [role="region"][aria-labelledby][tabindex]:focus {
-        box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.5);
-        outline: 0;
-    }
-
-{% endcomment %}
 </style>
-{% comment %}
-<script>
-    setTimeout(function () {
-        $(".div_table").css('margin-left', $(".fixed_column").width() + 'px');
-        console.log('hola')
-    }, 200);
-</script>
-{% endcomment %}
+
 {% if not cuaderno.grupo %}
     <div class="row">
         <div class="columns large-12">
@@ -145,15 +87,18 @@ caption {
         </div>
     </div>
 {% else %}
-    <div class="div_table">
-        <table>
+    <div class="div_table{{ cuaderno.id }}">
+        <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
             <thead style="position: sticky;top:0">
             <tr>
                 <th class="fixed_column" rowspan="5">
                     Nombre alumno/a<br><br>
-                    <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}"
-                       href="/cuaderno_full_screen/{{ cuaderno.id }}/">
-                        <i class="fa fa-external-link"></i> Pantalla completa
+                    <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}" title="Mostrar en pantalla completa"
+                       href="/cuaderno_full_screen/{{ cuaderno.id }}/" style="position:absolute;top:5px;left:5px">
+                        <i class="fa fa-external-link"></i>
+                    </a>
+                    <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
+                        <i class="fa fa-users"></i> Gestionar alumnos
                     </a>
                 </th>
                 {% for sb in cuaderno.psec.saberbas_set.all %}
@@ -214,11 +159,11 @@ caption {
                 {% endfor %}
             </tr>
             </thead>
-            <tbody>
-            {% for alumno in cuaderno.grupo.gauser_extra_estudios_set.all %}
-                <tr>
-                    <td class="fixed_column">
-                        <b>{{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}</b>
+            <tbody id="tbody_cuaderno{{ cuaderno.id }}">
+            {% for alumno in cuaderno.alumnos.all %}
+                <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
+                    <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
+                        <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
                     </td>
                     {% for sb in cuaderno.psec.saberbas_set.all %}
                         {% for sap in sb.sitapren_set.all %}
@@ -226,8 +171,15 @@ caption {
                                 {% for ieval in asap.instreval_set.all %}
                                     {% for cieval in ieval.criinstreval_set.all %}
                                         {% with calalum=cieval|get_calalum:alumno %}
+                                            <td class="update_calalum" data-calalum="{{ calalum.id }}"
+                                                data-cieval="{{ cieval.id }}" data-cuaderno="{{ cuaderno.id }}"
+                                                data-alumno="{{ alumno.id }}" title="{{ calalum.obs }}"
+                                                id="valor_calalum{{ calalum.id }}_{{ alumno.id }}">
+                                                {{ calalum.cal }}
+                                            </td>
+                                            {% comment %}
                                             {% if calalum %}
-                                                <td class="update_calalumn" data-ge="{{ alumno.ge.id }}"
+                                                <td class="update_calalum" data-ge="{{ alumno.ge.id }}"
                                                     data-cieval="{{ cieval.id }}" data-cuaderno="{{ cuaderno.id }}"
                                                     title="{{ calalum.obs }}" contenteditable="true">
                                                 {{ calalum.cal }}
@@ -237,6 +189,7 @@ caption {
                                                     data-cieval="{{ cieval.id }}" data-cuaderno="{{ cuaderno.id }}"
                                                     id="create_calalum{{ cieval.id }}_{{ alumno.ge.id }}"></td>
                                             {% endif %}
+                                            {% endcomment %}
                                         {% endwith %}
                                     {% endfor %}
                                 {% endfor %}
@@ -245,6 +198,9 @@ caption {
                     {% endfor %}
                 </tr>
             {% endfor %}
+            <tr id="tr_calificar_alumno{{ cuaderno.id }}">
+                <td colspan="70" style="text-align: left!important;" id="td_calificar_alumno{{ cuaderno.id }}"></td>
+            </tr>
             </tbody>
         </table>
     </div>

@@ -1,0 +1,136 @@
+{% load programaciones_extras %}
+<style>
+    table td {
+        text-align: center;
+    }
+
+    .ecpv_selected {
+        color: white;
+        background-color: grey;
+    }
+
+    .maximo_width {
+        overflow: hidden;
+        width: 75vw;
+        white-space: normal;
+    }
+
+    .calalum_title {
+        text-align: left;
+        font-weight: bold;
+        font-size: x-large;
+        margin-right: 25vw;
+    }
+
+    .update_esvcl {
+        cursor: pointer;
+    }
+</style>
+<div class="maximo_width" style="display: inline-block; margin-left: 10px;" id="div_calalum{{ calalum.cp.id }}">
+    <div style="display: inline-block;width: 60vw;">
+        <span class="calalum_title">{{ calalum.alumno.gauser.last_name }}, {{ calalum.alumno.gauser.first_name }}</span>
+        <p class="maximo_width">{{ calalum.cie.cevps.cev.texto }}</p>
+    </div>
+    <div style="display: inline-block;">
+        <a class="button tiny next_calalum" title="Pasar al siguiente alumno/a"
+           data-alumno="{{ calalum.alumno.id }}" data-cieval="{{ calalum.cie.id }}"
+           data-cuaderno="{{ calalum.cp.id }}"><i class="fa fa-caret-down"></i></a>
+        <a class="button tiny previous_calalum" title="Ir al anterior alumno/a"
+           data-alumno="{{ calalum.alumno.id }}" data-cieval="{{ calalum.cie.id }}"
+           data-cuaderno="{{ calalum.cp.id }}"><i class="fa fa-caret-up"></i></a>
+        <a class="button tiny close_calalum alert" title="Cerrar el diálogo del instrumento"
+           data-alumno="{{ calalum.alumno.id }}" data-cuaderno="{{ calalum.cp.id }}"><i class="fa fa-times"></i></a>
+    </div>
+
+    {% if calalum.ecp.tipo == 'ESVCL' %}
+        <table class="maximo_width">
+            {% for y in calalum.ecp.get_ecpvys %}
+                {% if y == 0 %}
+                    <thead>
+                    <tr>
+                        {% for ecpv in calalum.ecp|get_ecpv_xs:y %}
+                            <th>
+                                <span>{{ ecpv.texto_cualitativo }}</span>
+                            </th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                {% else %}
+                    <tr>
+                        {% for ecpv in calalum.ecp|get_ecpv_xs:y %}
+                            {% if ecpv.x == 0 %}
+                                <th>
+                                    <span>{{ ecpv.texto_cualitativo }}</span>
+                                </th>
+                            {% else %}
+                                <td class="update_esvcl {% if calalum|ecpv_selected:ecpv %}ecpv_selected{% endif %}"
+                                    data-calalum="{{ calalum.id }}" data-ecpv="{{ ecpv.id }}">
+                                    {{ ecpv.texto_cualitativo }}<br>({{ ecpv.valor }})
+                                </td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+    {% elif calalum.ecp.tipo == 'LCONT' %}
+        <table class="maximo_width">
+            {% for y in calalum.ecp.get_ecpvys %}
+                {% if y == 0 %}
+                    <thead>
+                    <tr>
+                        {% for ecpv in calalum.ecp|get_ecpv_xs:y %}
+                            {% if ecpv.x == 0 %}
+                                <th></th>
+                            {% else %}
+                                <th>
+                                    <span title="Valoración cuantitativa">{{ ecpv.valor }}</span>
+                                </th>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                {% else %}
+                    <tr>
+                        {% for ecpv in calalum.ecp|get_ecpv_xs:y %}
+                            {% if ecpv.x == 0 %}
+                                <th>
+                                    {{ ecpv.texto_cualitativo }}
+                                </th>
+                            {% else %}
+                                <td>
+                                    <input type="radio" title="Elegir el grado de valoración"
+                                           name="ecpv{{ calalum.ecp.id }}_{{ ecpv.y }}" data-calalum="{{ calalum.id }}"
+                                           class="update_lcont" value="{{ ecpv.valor }}" data-ecpv="{{ ecpv.id }}"
+                                           {% if calalum|ecpv_selected:ecpv %}checked{% endif %}>
+                                </td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+    {% elif calalum.ecp.tipo == 'ESVCN' %}
+        <span class="maximo_width">
+        {% for ecpv in calalum.ecp.escalacpvalor_set.all %}
+            <a type="text" data-ecpv="{{ ecpv.id }}" data-calalum="{{ calalum.id }}" data-valor="{{ ecpv.valor }}"
+               class="button tiny update_esvcn"><b>{{ ecpv.valor }}</b></a>
+        {% endfor %}
+        </span>
+        <div class="maximo_width">
+            <div class="row collapse">
+                <label for="cal_esvcn_text{{ calalum.id }}">Calificación numérica asignada</label>
+                <div class="small-9 columns">
+                    <input type="text" data-calalum="{{ calalum.id }}" value="{{ calalum.valor }}"
+                           id="cal_esvcn_text{{ calalum.id }}" placeholder="Introduce una calificación numérica"/>
+                </div>
+                <div class="small-3 columns">
+                    <span class="postfix update_esvcn" data-calalum="{{ calalum.id }}" data-ecpv="empty"
+                          style="background-color: #007095;cursor: pointer;">
+                        <b style="color: white;">Calificar</b>
+                    </span>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>

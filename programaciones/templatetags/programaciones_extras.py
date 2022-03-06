@@ -7,6 +7,10 @@ from programaciones.models import *
 register = Library()
 
 @register.filter
+def ecpv_selected(calalum, ecpv):
+    return calalum.calalumvalor_set.filter(ecpv=ecpv).count() > 0
+
+@register.filter
 def get_ecpv_xs(ecp, y):
     return ecp.escalacpvalor_set.filter(y=y)
 
@@ -18,7 +22,7 @@ def get_posibles_psec(cuaderno):
 @register.filter
 def get_calalum(cieval, alumno):
     try:
-        return CalAlum.objects.get(alumno=alumno.ge, cie=cieval)
+        return CalAlum.objects.get(alumno=alumno, cie=cieval)
     except:
         return None
 

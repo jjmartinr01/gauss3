@@ -1,3 +1,11 @@
-<div data-do="{{ do.id }}">
-    <p>&nbsp;&nbsp;&nbsp;&nbsp;{{ do.clave }} - {{ do.texto }}</p>
+<div class="row" data-do="{{ do.id }}" id="descriptor_operativo{{ do.id }}">
+    <div class="columns large-2">
+        <input type="text" value="{{ do.clave }}">
+    </div>
+    <div class="columns large-9">
+        <textarea rows="3">{{ do.texto }}</textarea>
+    </div>
+    <div class="columns large-1">
+        <a class="button tiny borrar_do"><i class="fa fa-trash"></i></a>
+    </div>
 </div>

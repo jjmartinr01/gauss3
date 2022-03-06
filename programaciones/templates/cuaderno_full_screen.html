@@ -138,7 +138,7 @@
                                         {% for cieval in ieval.criinstreval_set.all %}
                                             {% with calalum=cieval|get_calalum:alumno %}
                                                 {% if calalum %}
-                                                    <td class="update_calalumn" data-ge="{{ alumno.ge.id }}"
+                                                    <td class="update_calalum" data-ge="{{ alumno.ge.id }}"
                                                         data-cieval="{{ cieval.id }}" data-cuaderno="{{ cuaderno.id }}"
                                                         title="{{ calalum.obs }}" contenteditable="true">
                                                         {{ calalum.cal }}

@@ -1,16 +1,28 @@
 <fieldset>
-    <legend style="font-weight: bold;color: #0f74a8;">{{ cc.ps.get_etapa_display }} - ({{ cc.siglas }}) {{ cc.competencia }}</legend>
+    <legend style="font-weight: bold;color: #0f74a8;">{{ cc.ps.get_etapa_display }} -
+        ({{ cc.siglas }}) {{ cc.competencia }}</legend>
     <div id="list_do{{ cc.id }}">
+    <div class="row" data-do="{{ do.id }}">
+    <div class="columns large-2">
+        <b>Clave DO</b>
+    </div>
+    <div class="columns large-9">
+        <b>Texto del Descriptor Operativo</b>
+    </div>
+    <div class="columns large-1">
+        <b>Borrar</b>
+    </div>
+</div>
         {% for do in cc.descriptoroperativo_set.all %}
             {% include "configura_competencias_do.html" %}
         {% endfor %}
     </div>
-<div class="row">
+    <div class="row">
         <div class="columns large-12">
             <label style="font-weight: bold;">Formulario para crear descriptores operativos (DO)
-                                para la competencia {{ cc.siglas }}</label>
+                para la competencia {{ cc.siglas }}</label>
         </div>
-</div>
+    </div>
     <div class="row">
         <div class="columns large-2">
             <label>clave del DO ({{ cc.siglas }})

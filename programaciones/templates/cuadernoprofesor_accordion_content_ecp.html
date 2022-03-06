@@ -16,14 +16,14 @@
                     data-clase="EscalaCP" data-id="{{ ecp.id }}" class="update_select">
                 <option value="">-----------</option>
                 <option value="ESVCL" {% if ecp.tipo == 'ESVCL' %}selected{% endif %}>
-                    Escala de valoración cualitativa/Lista de control
+                    Escala de valoración cualitativa
                 </option>
                 <option value="ESVCN" {% if ecp.tipo == 'ESVCN' %}selected{% endif %}>
                     Valoración numérica
                 </option>
-                {#                <option value="LCONT" {% if ecp.tipo == 'LCONT' %}selected{% endif %}>#}
-                {#                    Lista de control#}
-                {#                </option>#}
+                <option value="LCONT" {% if ecp.tipo == 'LCONT' %}selected{% endif %}>
+                    Lista de control
+                </option>
             </select>
         </label>
     </div>
@@ -31,9 +31,10 @@
 {% if ecp.tipo == 'ESVCL' %}
     <div class="row">
         <div class="columns large-12">
-            <p style="color: grey;">Con este tipo de valoración debes crear una rúbrica o una lista de elementos a
-                calificar. Cada columna de la rúbrica o elemento de la lista debe estar relacionado con una cantidad
-                numérica.</p>
+            <p style="color: grey;">Con este tipo de valoración debes crear una rúbrica. La primera fila de la rúbrica
+                representa el grado de valoración desde un punto de vista cualitativo. La primera columna de la
+                rúbrica representa los elementos a valorar. Por último, las casillas interiores, que tienen
+                asignada una valoración cuantitativa definen la rúbrica.</p>
         </div>
     </div>
     <div class="row">
@@ -99,11 +100,95 @@
             </table>
         </div>
     </div>
+{% elif ecp.tipo == 'LCONT' %}
+    <div class="row">
+        <div class="columns large-12">
+            <p style="color: grey;">Con este tipo de valoración debes crear una lista de elementos a
+                calificar. Cada fila representa un elemento que se debe chequear y que puede ser valorado con
+                diferentes cantdidades.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12" id="tabla_ecp">
+            <table style="width: 100%;">
+                {% for y in ecp.get_ecpvys %}
+                    {% if y == 0 %}
+                        <thead>
+                        <tr>
+                            {% for ecpv in ecp|get_ecpv_xs:y %}
+                                {% if ecpv.x == 0 %}
+                                    <th></th>
+                                {% else %}
+                                    <th>
+                                <span title="Valoración cuantitativa" contenteditable="true"
+                                      class="update_texto" data-campo="valor" data-clase="EscalaCPvalor"
+                                      data-id="{{ ecpv.id }}">{{ ecpv.valor }}</span>
+                                        {% if forloop.last %}
+                                            <br>
+                                            <a data-ecp="{{ ecp.id }}" data-i="{{ ecpv.x }}" data-borrar='x'
+                                               class="del_rc_ecp"><i class="fa fa-trash"></i>
+                                                Borrar</a>
+                                        {% endif %}
+                                    </th>
+                                {% endif %}
+                            {% endfor %}
+                            <td><a class="button tiny add_column_ecp" data-ecp="{{ ecp.id }}">
+                                <i class="fa fa-plus"></i> </a></td>
+                        </tr>
+                        </thead>
+                    {% else %}
+                        <tr>
+                            {% for ecpv in ecp|get_ecpv_xs:y %}
+                                {% if ecpv.x == 0 %}
+                                    <th>
+                                        <span class="update_texto" data-campo="texto_cualitativo"
+                                              data-clase="EscalaCPvalor" data-id="{{ ecpv.id }}"
+                                              contenteditable="true">{{ ecpv.texto_cualitativo }}</span>
+                                        {% if forloop.parentloop.last %}
+                                            <br>
+                                            <a data-ecp="{{ ecp.id }}" data-i="{{ y }}" data-borrar='y'
+                                               class="del_rc_ecp"><i class="fa fa-trash"></i>
+                                                Borrar</a>
+                                        {% endif %}
+                                    </th>
+                                {% else %}
+                                    <td>
+                                        <input type="radio" title="Elegir el grado de valoración"
+                                               name="ecpv{{ ecp.id }}_{{ ecpv.y }}"
+                                               class="update_radio" value="{{ ecpv.valor }}" data-id="{{ ecpv.id }}">
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr>
+                    <td>
+                        <a class="tiny button add_row_ecp" data-ecp="{{ ecp.id }}"><i class="fa fa-plus"></i> </a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
 {% elif ecp.tipo == 'ESVCN' %}
     <div class="row">
         <div class="columns large-12">
             <p style="color: grey;">Con este tipo de valoración solo deberás introducir una cantidad numérica para
-                calificar.</p>
+                calificar, o hacer click sobre alguna de las cantidades indicadas.</p>
+        </div>
+    </div>
+
+    {% for ecpv in ecp.escalacpvalor_set.all %}
+        <div class="columns large-1">
+            <a type="text" data-ecp="{{ ecp.id }}" class="button tiny update_esvcn"><b>{{ ecpv.valor }}</b></a>
+        </div>
+    {% endfor %}
+
+    <div class="row">
+        <div class="columns large-12">
+            <label>Calificación numérica asignada
+                <input type="text" data-ecp="{{ ecp.id }}" value="" class="update_esvcn">
+            </label>
         </div>
     </div>
 {% endif %}

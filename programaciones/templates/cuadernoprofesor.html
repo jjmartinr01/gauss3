@@ -15,14 +15,17 @@
     </style>
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
-        <input type="hidden" id="id_cuaderno" name="id_cuaderno" value="{{ sb.id }}">
+        <input type="hidden" id="id_cuaderno" name="id_cuaderno" value="">
+        <input type="hidden" id="id_cieval" name="id_cieval" value="">
+        <input type="hidden" id="id_alumno" name="id_alumno" value="">
         <div>
             <h4 class="title_page"><strong>Cuadernos de docente asociados a programaciones didácticas</strong></h4>
         </div>
+
         <div id="contenido_cuadernos">
             <br>
             <dl class="accordion" data-accordion id="list_cuadernos">
-                {% for cuaderno in g_e.cuadernoprof_set.all %}
+                {% for cuaderno in g_e.cuaderno_docente_set.all %}
                     {% include 'cuadernoprofesor_accordion.html' %}
                 {% endfor %}
             </dl>
@@ -82,6 +85,7 @@
                         } else {
                             $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#panel' + id).html('');
+                            $('#id_cuaderno').val('');
                         }
                     }
                 }
@@ -125,26 +129,26 @@
                 });
         });
 
-        $('#Contenido').on('mouseenter', '.create_calalumn', function (e) {
-            e.preventDefault();
-            var element = $(this);
-            var cuaderno = element.data('cuaderno');
-            var cieval = element.data('cieval');
-            var ge = element.data('ge');
-            $.post('/cuadernoprofesor/', {
-                    action: 'create_calalumn', cuaderno: cuaderno, cieval: cieval, ge: ge
-                },
-                function (data) {
-                    if (data.ok) {
-                        element.removeClass('create_calalumn').addClass('update_calalumn');
-                        element.html(data.cal);
-                        element.prop('contenteditable', 'true');
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
+        {#$('#Contenido').on('mouseenter', '.create_calalumn', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var element = $(this);#}
+        {#    var cuaderno = element.data('cuaderno');#}
+        {#    var cieval = element.data('cieval');#}
+        {#    var ge = element.data('ge');#}
+        {#    $.post('/cuadernoprofesor/', {#}
+        {#            action: 'create_calalumn', cuaderno: cuaderno, cieval: cieval, ge: ge#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                element.removeClass('create_calalumn').addClass('update_calalum');#}
+        {#                element.html(data.cal);#}
+        {#                element.prop('contenteditable', 'true');#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
 
         $('#Contenido').on('click', '.define_ecp', function (e) {
             e.preventDefault();
@@ -271,163 +275,232 @@
                 });
         });
 
+        var update_calalum_open = false;
 
-        {% comment %}
-        function get_texto_from_element(element) {
-            if (element.val()) {
-                return element.val();
-            } else {
-                return element.html();
+        function set_update_calalum() {
+            var cuaderno = $('#id_cuaderno').val();
+            var cieval = $('#id_cieval').val();
+            var alumno = $('#id_alumno').val();
+            $.post('/cuadernoprofesor/', {
+                    action: 'update_calalum', cuaderno: cuaderno,
+                    cieval: cieval, alumno: alumno
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#td_calificar_alumno' + cuaderno).html(data.html);
+                        var tr_calificar_alumno = $('#tr_calificar_alumno' + cuaderno);
+                        tr_calificar_alumno.insertBefore($('#tr_alumno' + alumno)).show();
+                        update_calalumn_open = true;
+                        $('#id_alumno').val(alumno);
+                        $('#update_ok').show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            window.scrollTo(0, tr_calificar_alumno.offset().top - 50);
+                        }, 200);
+                        var sx = $('#tabla' + cuaderno)[0].scrollLeft;
+                        $('#div_calalum' + cuaderno).css('margin-left', sx + 10 + 'px');
+                        $('#valor_calalum' + data.calalum + '_' + data.alumno).html(data.cal);
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        }
+
+        $('body').on('click', '.update_calalum', function (e) {
+            e.preventDefault();
+            var element = $(this);
+            $('#id_cieval').val(element.data('cieval'));
+            $('#id_alumno').val(element.data('alumno'));
+            set_update_calalum();
+        });
+
+        $('body').on('click', '.close_calalum', function (e) {
+            e.preventDefault();
+            var cuaderno = $('#id_cuaderno').val();
+            $('#td_calificar_alumno' + cuaderno).html('');
+            $('#tbody_cuaderno' + cuaderno).append($('#tr_calificar_alumno' + cuaderno));
+            update_calalum_open = false;
+        });
+
+        $('body').on('click', '.next_calalum', function (e) {
+            e.preventDefault();
+            var element = $('#id_alumno');
+            var alumno = element.val();
+            var next_alumno = $('#tr_alumno' + alumno).next().data('alumno');
+            if (next_alumno) {
+                element.val(next_alumno);
+                set_update_calalum();
             }
-        }
-
-        $('body').on('keyup', '.update_texto', function () {
-            var element = $(this);
-            var id = element.data('id');
-            var campo = element.data('campo');
-            var clase = element.data('clase');
-            var antiguo_texto = get_texto_from_element(element);
-            setTimeout(function () {
-                var nuevo_texto = get_texto_from_element(element);
-                if (antiguo_texto === nuevo_texto) {
-                    $.post('/cuadernoprofesor/', {
-                            action: 'update_texto', id: id, texto: nuevo_texto, campo: campo,
-                            clase: clase
-                        },
-                        function (data) {
-                            if (data.ok) {
-                                if (campo === 'nombre') {
-                                    $('#nombre' + id).html(nuevo_texto);
-                                }
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $('#update_error').show().delay(1500).fadeOut();
-                            }
-                        });
-                }
-            }, 750);
         });
 
-        $('body').on('change', '.update_many2many', function () {
+        $('body').on('click', '.previous_calalum', function (e) {
+            e.preventDefault();
+            var element = $('#id_alumno');
+            var alumno = element.val();
+            {# Es necesario hacer dos prev() porque la fila anterior es el formulario calalum #}
+            var prev_alumno = $('#tr_alumno' + alumno).prev().prev().data('alumno');
+            if (prev_alumno) {
+                element.val(prev_alumno);
+                set_update_calalum();
+            }
+        });
+
+        $(window).keydown(function (e) {
+            var element = $('#id_alumno');
+            var alumno = element.val();
+            if (e.keyCode == 38 && update_calalumn_open) {
+                e.preventDefault();
+                var prox_alumno = $('#tr_alumno' + alumno).prev().prev().data('alumno');
+            }
+            if (e.keyCode == 40 && update_calalumn_open) {
+                var prox_alumno = $('#tr_alumno' + alumno).next().data('alumno');
+            }
+            if (prox_alumno) {
+                element.val(prox_alumno);
+                set_update_calalum();
+            }
+        });
+
+        $('body').on('click', '.update_esvcl', function (e) {
+            e.preventDefault();
             var element = $(this);
-            var id = element.data('id');
-            var idm2m = element.data('idm2m');
-            var campo = element.data('campo');
-            var clase = element.data('clase');
-            var clasem2m = element.data('clasem2m');
-            var checked = element.prop('checked');
-            $.post('/cuadernoprofesor/', {
-                    action: 'update_many2many', id: id, checked: checked, campo: campo, clase: clase,
-                    clasem2m: clasem2m, idm2m: idm2m
-                },
+            var calalum = element.data('calalum');
+            var ecpv = element.data('ecpv');
+            $.post('/cuadernoprofesor/', {action: 'update_esvcl', ecpv: ecpv, calalum: calalum},
                 function (data) {
                     if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
+                        $('#valor_calalum' + calalum + '_' + data.alumno).html(data.cal);
+                        if (data.selected) {
+                            element.addClass('ecpv_selected');
+                        } else {
+                            element.removeClass('ecpv_selected');
+                        }
+                        $('#update_ok').show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
         });
 
+        $('body').on('click', '.update_lcont', function (e) {
+            {#e.preventDefault();#}
+            var element = $(this);
+            var calalum = element.data('calalum');
+            var ecpv = element.data('ecpv');
+            $.post('/cuadernoprofesor/', {action: 'update_lcont', ecpv: ecpv, calalum: calalum},
+                function (data) {
+                    if (data.ok) {
+                        $('#valor_calalum' + calalum + '_' + data.alumno).html(data.cal);
+                        $('#update_ok').show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
 
+        $('body').on('click', '.update_esvcn', function (e) {
+            var element = $(this);
+            var calalum = element.data('calalum');
+            var ecpv = element.data('ecpv');
+            var valor = '';
+            if (ecpv === 'empty') {
+                valor = $('#cal_esvcn_text' + calalum).val();
+            } else {
+                valor = element.data('valor');
+            }
+            valor = parseFloat(valor.replace(',', '.').replace(/[^\d.]/g, ''));
+            if (!valor) {
+                valor = 0;
+            }
+            $('#cal_esvcn_text' + calalum).val(valor);
 
+            $.post('/cuadernoprofesor/', {action: 'update_esvcn', valor: valor, calalum: calalum},
+                function (data) {
+                    if (data.ok) {
+                        $('#valor_calalum' + calalum + '_' + data.alumno).html(data.cal);
+                        $('#update_ok').show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
 
+        {# ########################################################### #}
+        {# ################# GESTIÓN DE LOS ALUMNOS ################## #}
+        {# ########################################################### #}
+        $('body').on('click', '.gestionar_alumnos', function (e) {
+            e.preventDefault();
+            var element = $(this);
+            var cuaderno = element.data('cuaderno');
+            $.post('/cuadernoprofesor/', {action: 'gestionar_alumnos', cuaderno: cuaderno},
+                function (data) {
+                    if (data.ok) {
+                        $('#panel' + cuaderno).html(data.html);
+                        setTimeout(function () {
+                            $(".alumnos_cuaderno").select2(
+                                conf_select2({
+                                    'gcs': 'g',
+                                    'format_g': '{0}, {1}',
+                                    'placeholder': 'Escribe parte del nombre del alumno para buscarlo'
+                                })
+                            );
+                        }, 200);
+                        $('#update_ok').show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
 
-        $('body').on('click', '.borrar_cuaderno_actividad', function () {
-            id = $(this).data('id');
+        $('body').on('change.select2', '.alumnos_cuaderno', function (e) {
+            var cuaderno = $(this).data('id');
+            var alumno = $(this).val();
+            $.post("/cuadernoprofesor/", {
+                    action: 'update_alumnos_cuaderno',
+                    cuaderno: cuaderno,
+                    alumno: alumno
+                },
+                function (data) {
+                    if (data.ok) {
+                        $("#div_alumnos_cuaderno" + data.cuaderno).append(data.html_span);
+                        $("#num_alumnos_cuaderno" + data.cuaderno).html(data.num_alumnos);
+                        $(".alumnos_cuaderno").empty();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.borrar_alumno_cuaderno', function (e) {
+            {#var cuaderno = $(this).data('cuaderno');#}
+            $('#id_alumno').val($(this).data('alumno'));
             show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar este actividad?',
-                texto: 'Si aceptas la actividad se borrará por completo de la base de datos.',
-                size: 'large',
-                buttons: {
+                title: '<i class="fa fa-warning"></i> ¿Borrar a este alumno del cuaderno?',
+                texto: 'Si aceptas, todas las calificaciones del alumno/a anotadas en este cuaderno se borrarán por completo de la base de datos.',
+                size: 'large', buttons: {
                     "Cancelar": function () {
                         hide_mensajes();
                     },
                     "Borrar": function () {
                         hide_mensajes();
-                        $.post('/cuadernoprofesor/', {action: 'borrar_cuaderno_actividad', id: id},
+                        $.post("/cuadernoprofesor/", {
+                                action: 'borrar_alumno_cuaderno',
+                                cuaderno: $('#id_cuaderno').val(),
+                                alumno: $('#id_alumno').val()
+                            },
                             function (data) {
                                 if (data.ok) {
-                                    $('#contenido_actividad' + id).remove();
+                                    $("#alumno" + data.cuaderno + '_' + data.alumno).remove();
+                                    $("#num_alumnos_cuaderno" + data.cuaderno).html(data.num_alumnos);
                                     $("#update_ok").show().delay(1500).fadeOut();
                                 } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
+                                    $("#update_error").show().delay(1500).fadeOut();
                                 }
                             });
                     }
                 }
             });
         });
-
-        $('#Contenido').on('click', '.add_act_instrumento', function (e) {
-            e.preventDefault();
-            var element = $(this);
-            var act = element.data('act');
-            $.post('/cuadernoprofesor/', {
-                    action: 'add_act_instrumento', act: act
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#list_instrumentos_actividad' + act).append(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.borrar_act_instrumento', function () {
-            id = $(this).data('id');
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar este procedimiento de evaluación?',
-                texto: 'Si aceptas el procedimiento se borrará por completo de la base de datos.',
-                size: 'large',
-                buttons: {
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    },
-                    "Borrar": function () {
-                        hide_mensajes();
-                        $.post('/cuadernoprofesor/', {action: 'borrar_act_instrumento', id: id},
-                            function (data) {
-                                if (data.ok) {
-                                    $('#cuaderno_act_intrumento' + id).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
-                    }
-                }
-            });
-        });
-
-        function refresh_table_criteval(element) {
-            var id = element.data('id');
-            $.post('/cuadernoprofesor/', {
-                    action: 'table_criteval', id: id
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#table_criteval' + id).html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        }
-
-        $('#Contenido').on('mouseenter', '.table_criteval', function () {
-            var element = $(this);
-            refresh_table_criteval(element);
-        });
-        $('#Contenido').on('click', '.refresh_table_criteval', function (e) {
-            e.preventDefault();
-            var element = $(this);
-            refresh_table_criteval(element);
-        });
-        {% endcomment %}
-
     </script>
 
 {% endblock %}

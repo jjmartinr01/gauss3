@@ -827,12 +827,17 @@ class CriInstrEval(models.Model):
 
 
 class CuadernoProf(models.Model):
-    ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
+    ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, related_name='cuaderno_docente_set')
     grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE, blank=True, null=True)
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE, blank=True, null=True)
     vmin = models.IntegerField('Valor mínimo de calificación asignable a un alumno', default=0)
     vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)
+    alumnos = models.ManyToManyField(Gauser_extra, blank=True, related_name='cuaderno_alumno_set')
 
+    @property
+    def num_columns(self):
+        # El número de columnas del cuaderno será el número de CriInstrEval más la columna del nombre
+        return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=self.psec).count() + 1
     @property
     def nombre(self):
         return '%s - %s - %s' % (self.psec.pga.ronda, self.psec.areamateria.nombre, self.grupo.nombre)
@@ -886,7 +891,7 @@ class EscalaCP(models.Model): #Escala utilizada en el CuardernoProf
     cp =models.ForeignKey(CuadernoProf, on_delete=models.CASCADE)
     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE, blank=True, null=True)
     tipo = models.CharField('Tipo de escala', max_length=10, choices=ESCALAS, default='ESVCN')
-    nombre = models.CharField('Tipo de escala', max_length=300, blank=True, default='')
+    nombre = models.CharField('Nombre dado a la escala', max_length=300, blank=True, default='')
 
     @property
     def get_ecpvys(self):
@@ -927,9 +932,9 @@ class CalAlum(models.Model):
         calificacion = 0
         cavs = self.calalumvalor_set.all()
         for cav in cavs:
-            calificacion += cav.valor
+            calificacion += cav.ecpv.valor
         try:
-            return calificacion / cavs.count()
+            return round(calificacion / cavs.count(), 2)
         except:
             return 0
 
@@ -938,23 +943,12 @@ class CalAlum(models.Model):
 
 class CalAlumValor(models.Model):
     ca = models.ForeignKey(CalAlum, on_delete=models.CASCADE)
-    # ecp = models.ForeignKey(EscalaCPvalor, on_delete=models.CASCADE, blank=True, null=True, related_name='borrar')
     ecpv = models.ForeignKey(EscalaCPvalor, on_delete=models.CASCADE, blank=True, null=True)
-    obs = models.TextField('Observaciones a la calificación otorgada', blank=True, default='')
-    # texto_cualitativo = models.CharField('Texto descripción cualitativa de cumplimiento', max_length=300, blank=True)
-    # valor = models.FloatField('Valor cuantitativo asociado a la valoración cualitativa', default=0)
+    # obs = models.TextField('Observaciones a la calificación otorgada', blank=True, default='')
 
     def __str__(self):
-        return '%s (%s)' % (self.ca, self.valor)
+        return '%s (%s)' % (self.ca, self.ecpv)
 
-# class EscalaCalAlum(models.Model):
-#     ca =models.ForeignKey(CalAlum, on_delete=models.CASCADE)
-#     texto_cualitativo = models.CharField('Texto descripción cualitativa de cumplimiento', max_length=300, blank=True)
-#     valor = models.FloatField('Valor cuantitativo asociado a la valoración cualitativa', default=0)
-#     selected = models.BooleanField('')
-#
-#     def __str__(self):
-#         return '%s (%s)' % (self.ca, self.valor)
 
 
 #############################################################################
