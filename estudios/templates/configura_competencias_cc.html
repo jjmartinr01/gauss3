@@ -2,43 +2,56 @@
     <legend style="font-weight: bold;color: #0f74a8;">{{ cc.ps.get_etapa_display }} -
         ({{ cc.siglas }}) {{ cc.competencia }}</legend>
     <div id="list_do{{ cc.id }}">
-    <div class="row" data-do="{{ do.id }}">
-    <div class="columns large-2">
-        <b>Clave DO</b>
-    </div>
-    <div class="columns large-9">
-        <b>Texto del Descriptor Operativo</b>
-    </div>
-    <div class="columns large-1">
-        <b>Borrar</b>
-    </div>
-</div>
+        <div class="row" data-do="{{ do.id }}">
+            <div class="columns large-2">
+                <b>Clave DO</b>
+            </div>
+            <div class="columns large-9">
+                <b>Texto del Descriptor Operativo</b>
+            </div>
+            <div class="columns large-1">
+                <b>Borrar</b>
+            </div>
+        </div>
         {% for do in cc.descriptoroperativo_set.all %}
             {% include "configura_competencias_do.html" %}
         {% endfor %}
     </div>
+
     <div class="row">
         <div class="columns large-12">
-            <label style="font-weight: bold;">Formulario para crear descriptores operativos (DO)
-                para la competencia {{ cc.siglas }}</label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="columns large-2">
-            <label>clave del DO ({{ cc.siglas }})
-                <input type="text" value="" id="do_clave{{ cc.id }}">
-            </label>
-        </div>
-        <div class="columns large-9">
-            <label>Añadir texto descriptor operativo para la {{ cc.siglas }}
-                <input type="text" value="" id="do_texto{{ cc.id }}">
-            </label>
-        </div>
-        <div class="columns large-1">
-            <label>Añadir</label>
-            <a class="button tiny inserta_do" data-cc="{{ cc.id }}">
-                <i class="fa fa-plus"></i>
+            <a class="button small inserta_objeto right" data-ForeignKey_id="{{ cc.id }}"
+               data-ForeignKey_clase="CompetenciaClave" data-ForeignKey_field="cc"
+               data-clase="DescriptorOperativo" data-div_append="list_do{{ cc.id }}"
+               data-render2string="configura_competencias_do.html" data-render2string_objeto="do">
+                <b><i class="fa fa-plus"></i> Añadir un nuevo descriptor operativo</b>
             </a>
         </div>
     </div>
+
+    {#    <div class="row">#}
+    {#        <div class="columns large-12">#}
+    {#            <label style="font-weight: bold;">Formulario para crear descriptores operativos (DO)#}
+    {#                para la competencia {{ cc.siglas }}</label>#}
+    {#        </div>#}
+    {#    </div>#}
+
+    {#    <div class="row">#}
+    {#        <div class="columns large-2">#}
+    {#            <label>clave del DO ({{ cc.siglas }})#}
+    {#                <input type="text" value="" id="do_clave{{ cc.id }}">#}
+    {#            </label>#}
+    {#        </div>#}
+    {#        <div class="columns large-9">#}
+    {#            <label>Añadir texto descriptor operativo para la {{ cc.siglas }}#}
+    {#                <input type="text" value="" id="do_texto{{ cc.id }}">#}
+    {#            </label>#}
+    {#        </div>#}
+    {#        <div class="columns large-1">#}
+    {#            <label>Añadir</label>#}
+    {#            <a class="button tiny inserta_do" data-cc="{{ cc.id }}">#}
+    {#                <i class="fa fa-plus"></i>#}
+    {#            </a>#}
+    {#        </div>#}
+    {#    </div>#}
 </fieldset>

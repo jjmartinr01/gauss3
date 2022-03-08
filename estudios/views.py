@@ -325,6 +325,7 @@ def evaluar_materias(request):
         'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)}
     return render(request, "evaluar_materias.html", respuesta)
 
+
 # @permiso_required('acceso_define_materias')
 # def define_materia(request):
 #     g_e = request.session['gauser_extra']
@@ -375,7 +376,6 @@ def configura_competencias(request):
     cesps = CompetenciaEspecifica.objects.all()
     cevas = CriterioEvaluacion.objects.all()
 
-
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
         if action == 'open_accordion':
@@ -395,7 +395,7 @@ def configura_competencias(request):
                 html = render_to_string('configura_competencias_do.html', {'do': do})
                 return JsonResponse({'html': html, 'ok': True, 'cc': cc.id})
             except Exception as msg:
-                return JsonResponse({'msg': str(msg), 'ok': True})
+                return JsonResponse({'msg': str(msg), 'ok': False})
         elif action == 'inserta_cc':
             try:
                 ps = PerfilSalida.objects.get(id=request.POST['ps'])
@@ -406,7 +406,7 @@ def configura_competencias(request):
                 html = render_to_string('configura_competencias_cc.html', {'cc': cc})
                 return JsonResponse({'html': html, 'ok': True, 'ps': ps.id})
             except Exception as msg:
-                return JsonResponse({'msg': str(msg), 'ok': True})
+                return JsonResponse({'msg': str(msg), 'ok': False})
         elif action == 'inserta_am':
             try:
                 ps = PerfilSalida.objects.get(id=request.POST['ps'])
@@ -416,36 +416,32 @@ def configura_competencias(request):
                 html = render_to_string('configura_competencias_am.html', {'am': am})
                 return JsonResponse({'html': html, 'ok': True, 'ps': ps.id})
             except Exception as msg:
-                return JsonResponse({'msg': str(msg), 'ok': True})
+                return JsonResponse({'msg': str(msg), 'ok': False})
         elif action == 'cargar_fieldset_content_am':
             try:
                 am = AreaMateria.objects.get(id=request.POST['am'])
                 html = render_to_string('configura_competencias_am_content.html', {'am': am})
                 return JsonResponse({'html': html, 'ok': True, 'am': am.id})
             except Exception as msg:
-                return JsonResponse({'msg': str(msg), 'ok': True})
+                return JsonResponse({'msg': str(msg), 'ok': False})
         elif action == 'inserta_cesp':
             try:
                 am = AreaMateria.objects.get(id=request.POST['am'])
-                cesp, c = CompetenciaEspecifica.objects.get_or_create(orden=request.POST['orden'], nombre=request.POST['nombre'], am=am)
-                cesp.texto = request.POST['texto']
-                cesp.save()
+                orden = am.competenciaespecifica_set.all().count() + 1
+                cesp = CompetenciaEspecifica.objects.create(orden=orden, am=am, nombre='', texto='')
                 html = render_to_string('configura_competencias_cesp.html', {'cesp': cesp})
                 return JsonResponse({'html': html, 'ok': True, 'am': am.id})
             except Exception as msg:
-                return JsonResponse({'msg': str(msg), 'ok': True})
+                return JsonResponse({'msg': str(msg), 'ok': False})
         elif action == 'inserta_ceval':
             try:
                 cesp = CompetenciaEspecifica.objects.get(id=request.POST['cesp'])
-                ceval, c = CriterioEvaluacion.objects.get_or_create(orden=request.POST['orden'],
-                                                                    ciclo=request.POST['ciclo'], ce=cesp)
-                ceval.texto = request.POST['texto']
-                ceval.materia = request.POST['materia']
-                ceval.save()
+                orden = cesp.criterioevaluacion_set.all().count() + 1
+                ceval = CriterioEvaluacion.objects.create(ce=cesp, orden=orden, texto='')
                 html = render_to_string('configura_competencias_cesp_ceval.html', {'ceval': ceval})
                 return JsonResponse({'html': html, 'ok': True, 'cesp': cesp.id})
             except Exception as msg:
-                return JsonResponse({'msg': str(msg), 'ok': True})
+                return JsonResponse({'msg': str(msg), 'ok': False})
         elif action == 'inserta_cesp_dos':
             try:
                 cesp = CompetenciaEspecifica.objects.get(id=request.POST['cesp'])
@@ -454,19 +450,65 @@ def configura_competencias(request):
                 cesp.dos.add(*dos)
                 return JsonResponse({'ok': True, 'cesp': cesp.id})
             except Exception as msg:
-                return JsonResponse({'msg': str(msg), 'ok': True})
+                return JsonResponse({'msg': str(msg), 'ok': False})
         elif action == 'borrar_ceval':
             try:
                 CriterioEvaluacion.objects.get(id=request.POST['ceval']).delete()
                 return JsonResponse({'ok': True})
             except Exception as msg:
-                return JsonResponse({'msg': str(msg), 'ok': True})
+                return JsonResponse({'msg': str(msg), 'ok': False})
+        #############################################################################
+        ##################### NUEVAS FUNCIONES ######################################
+        #############################################################################
+        elif action == 'inserta_objeto':
+            try:
+                clase = eval(request.POST['clase'])
+                ForeignKey_clase = eval(request.POST['foreignkey_clase'])
+                ForeignKey_objeto = ForeignKey_clase.objects.get(id=request.POST['foreignkey_id'])
+                objeto = clase.objects.create()
+                setattr(objeto, request.POST['foreignkey_field'], ForeignKey_objeto)
+                objeto.save()
+                # if request.POST['M2M_clase']:
+                #     M2M_clase = eval(request.POST['M2M_clase'])
+                #     M2M_objeto = M2M_clase.objects.get(id=request.POST['M2M_id'])
+                #     setattr(objeto, request.POST['M2M_field'], [M2M_objeto, ])
+                html = render_to_string(request.POST['render2string'], {request.POST['render2string_objeto']: objeto})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': False})
+        elif action == 'borrar_objeto':
+            try:
+                clase = eval(request.POST['clase'])
+                clase.objects.get(id=request.POST['id']).delete()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': False})
+        elif action == 'update_texto':
+            try:
+                clase = eval(request.POST['clase'])
+                objeto = clase.objects.get(id=request.POST['id'])
+                setattr(objeto, request.POST['campo'], request.POST['texto'])
+                objeto.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': False})
+        elif action == 'curso_asociado_ceval':
+            try:
+                ceval = CriterioEvaluacion.objects.get(id=request.POST['ceval'])
+                ceval.ciclo = request.POST['valor']
+                ceval.save()
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': False})
 
+        #############################################################################
+            ###################### FIN NUEVAS FUNCIONES #################################
+            #############################################################################
         elif action == 'change_nota':
             pass
-    elif request.method == 'POST' and not request.is_ajax():
-        if request.POST['action'] == 'cartas_examen':
-            pass
+        elif request.method == 'POST' and not request.is_ajax():
+            if request.POST['action'] == 'cartas_examen':
+                pass
     respuesta = {
         'formname': 'configura_competencias',
         'dos': dos,

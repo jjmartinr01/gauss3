@@ -26,7 +26,7 @@
             <br>
             <dl class="accordion" data-accordion id="list_cuadernos">
                 {% for cuaderno in g_e.cuaderno_docente_set.all %}
-                    {% include 'cuadernoprofesor_accordion.html' %}
+                    {% include 'cuadernodocente_accordion.html' %}
                 {% endfor %}
             </dl>
         </div>
@@ -46,7 +46,7 @@
             habilita(['s_plus']);
             $('#plus_sign').click(function (event) {
                 event.preventDefault();
-                $.post('/cuadernoprofesor/', {'action': 'crea_cuaderno'},
+                $.post('/cuadernodocente/', {'action': 'crea_cuaderno'},
                     function (data) {
                         if (data.ok) {
                             $('#list_cuadernos').append(data.html);
@@ -69,7 +69,7 @@
                             $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
                             window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post('/cuadernoprofesor/', {action: 'open_accordion', id: id},
+                            $.post('/cuadernodocente/', {action: 'open_accordion', id: id},
                                 function (data) {
                                     if (data.ok) {
                                         $('#panel' + id).html(data.html);
@@ -96,7 +96,7 @@
             var element = $(this);
             var cuaderno = element.data('cuaderno');
             var psec = element.val();
-            $.post('/cuadernoprofesor/', {
+            $.post('/cuadernodocente/', {
                     action: 'select_psec', psec: psec
                 },
                 function (data) {
@@ -115,7 +115,7 @@
             var cuaderno = element.data('cuaderno');
             var psec = $('#select_psec' + cuaderno).val();
             var grupo = $('#select_grupo' + cuaderno).val();
-            $.post('/cuadernoprofesor/', {
+            $.post('/cuadernodocente/', {
                     action: 'configura_cuaderno', cuaderno: cuaderno, psec: psec, grupo: grupo
                 },
                 function (data) {
@@ -135,7 +135,7 @@
         {#    var cuaderno = element.data('cuaderno');#}
         {#    var cieval = element.data('cieval');#}
         {#    var ge = element.data('ge');#}
-        {#    $.post('/cuadernoprofesor/', {#}
+        {#    $.post('/cuadernodocente/', {#}
         {#            action: 'create_calalumn', cuaderno: cuaderno, cieval: cieval, ge: ge#}
         {#        },#}
         {#        function (data) {#}
@@ -154,7 +154,7 @@
             e.preventDefault();
             var ieval = $(this).data('ieval');
             var cuaderno = $(this).data('cuaderno');
-            $.post('/cuadernoprofesor/', {action: 'define_ecp', cuaderno: cuaderno, ieval: ieval},
+            $.post('/cuadernodocente/', {action: 'define_ecp', cuaderno: cuaderno, ieval: ieval},
                 function (data) {
                     if (data.ok) {
                         $('#define_ecp').foundation('reveal', 'open');
@@ -196,7 +196,7 @@
                             element.text(nuevo_texto);
                         }
                     }
-                    $.post('/cuadernoprofesor/', {
+                    $.post('/cuadernodocente/', {
                             action: 'update_texto', id: id, texto: nuevo_texto, campo: campo,
                             clase: clase
                         },
@@ -217,7 +217,7 @@
             var campo = element.data('campo');
             var clase = element.data('clase');
             var valor = element.val();
-            $.post('/cuadernoprofesor/', {
+            $.post('/cuadernodocente/', {
                     action: 'update_select', id: id, valor: valor, campo: campo, clase: clase
                 },
                 function (data) {
@@ -235,7 +235,7 @@
         $('body').on('click', '.add_row_ecp', function (e) {
             e.preventDefault();
             var ecp = $(this).data('ecp');
-            $.post('/cuadernoprofesor/', {action: 'add_row_ecp', ecp: ecp},
+            $.post('/cuadernodocente/', {action: 'add_row_ecp', ecp: ecp},
                 function (data) {
                     if (data.ok) {
                         $('#content_ecp').html(data.html);
@@ -248,7 +248,7 @@
         $('body').on('click', '.add_column_ecp', function (e) {
             e.preventDefault();
             var ecp = $(this).data('ecp');
-            $.post('/cuadernoprofesor/', {action: 'add_column_ecp', ecp: ecp},
+            $.post('/cuadernodocente/', {action: 'add_column_ecp', ecp: ecp},
                 function (data) {
                     if (data.ok) {
                         $('#content_ecp').html(data.html);
@@ -264,7 +264,7 @@
             var ecp = $(this).data('ecp');
             var i = $(this).data('i');
             var borrar = $(this).data('borrar');
-            $.post('/cuadernoprofesor/', {action: 'del_rc_ecp', ecp: ecp, i: i, borrar: borrar},
+            $.post('/cuadernodocente/', {action: 'del_rc_ecp', ecp: ecp, i: i, borrar: borrar},
                 function (data) {
                     if (data.ok) {
                         $('#content_ecp').html(data.html);
@@ -281,7 +281,7 @@
             var cuaderno = $('#id_cuaderno').val();
             var cieval = $('#id_cieval').val();
             var alumno = $('#id_alumno').val();
-            $.post('/cuadernoprofesor/', {
+            $.post('/cuadernodocente/', {
                     action: 'update_calalum', cuaderno: cuaderno,
                     cieval: cieval, alumno: alumno
                 },
@@ -365,7 +365,7 @@
             var element = $(this);
             var calalum = element.data('calalum');
             var ecpv = element.data('ecpv');
-            $.post('/cuadernoprofesor/', {action: 'update_esvcl', ecpv: ecpv, calalum: calalum},
+            $.post('/cuadernodocente/', {action: 'update_esvcl', ecpv: ecpv, calalum: calalum},
                 function (data) {
                     if (data.ok) {
                         $('#valor_calalum' + calalum + '_' + data.alumno).html(data.cal);
@@ -386,7 +386,7 @@
             var element = $(this);
             var calalum = element.data('calalum');
             var ecpv = element.data('ecpv');
-            $.post('/cuadernoprofesor/', {action: 'update_lcont', ecpv: ecpv, calalum: calalum},
+            $.post('/cuadernodocente/', {action: 'update_lcont', ecpv: ecpv, calalum: calalum},
                 function (data) {
                     if (data.ok) {
                         $('#valor_calalum' + calalum + '_' + data.alumno).html(data.cal);
@@ -413,7 +413,7 @@
             }
             $('#cal_esvcn_text' + calalum).val(valor);
 
-            $.post('/cuadernoprofesor/', {action: 'update_esvcn', valor: valor, calalum: calalum},
+            $.post('/cuadernodocente/', {action: 'update_esvcn', valor: valor, calalum: calalum},
                 function (data) {
                     if (data.ok) {
                         $('#valor_calalum' + calalum + '_' + data.alumno).html(data.cal);
@@ -431,7 +431,7 @@
             e.preventDefault();
             var element = $(this);
             var cuaderno = element.data('cuaderno');
-            $.post('/cuadernoprofesor/', {action: 'gestionar_alumnos', cuaderno: cuaderno},
+            $.post('/cuadernodocente/', {action: 'gestionar_alumnos', cuaderno: cuaderno},
                 function (data) {
                     if (data.ok) {
                         $('#panel' + cuaderno).html(data.html);
@@ -454,7 +454,7 @@
         $('body').on('change.select2', '.alumnos_cuaderno', function (e) {
             var cuaderno = $(this).data('id');
             var alumno = $(this).val();
-            $.post("/cuadernoprofesor/", {
+            $.post("/cuadernodocente/", {
                     action: 'update_alumnos_cuaderno',
                     cuaderno: cuaderno,
                     alumno: alumno
@@ -483,7 +483,7 @@
                     },
                     "Borrar": function () {
                         hide_mensajes();
-                        $.post("/cuadernoprofesor/", {
+                        $.post("/cuadernodocente/", {
                                 action: 'borrar_alumno_cuaderno',
                                 cuaderno: $('#id_cuaderno').val(),
                                 alumno: $('#id_alumno').val()

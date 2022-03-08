@@ -9,6 +9,8 @@
             <h4 style="text-align: center;color: #008CBA;"><strong> Configuración de Competencias/Evaluación</strong>
             </h4>
         </div>
+        <input type="hidden" id="clase_borrar" value="">
+        <input type="hidden" id="id_objeto_borrar" value="">
         <ul class="tabs" data-tab role="tablist">
             <li class="tab-title active"><a href="#tab1" style="font-weight: bold;">Competencias Clave y DOs</a></li>
             <li class="tab-title"><a href="#tab2" style="font-weight: bold;">Áreas, Comp. Espec. y Crit. de Eval.</a>
@@ -50,48 +52,48 @@
                 </dl>
             </div>
         </div>
-        <div id="div_reveal_inserta_ceval" class="reveal-modal" data-reveal>
-            <input type="hidden" value="" id="id_cesp">
-            <div class="row">
-                <div class="columns large-12"><h3>Añadir Criterio de evaluación</h3></div>
-            </div>
-            <div class="row">
-                <div class="columns large-6">
-                    <label>Ciclo/Etapa
-                        <select id="ciclo_ceval">
-                            <option value="">----</option>
-                            <option value="PRI1">Primer Ciclo Primaria</option>
-                            <option value="PRI2">Segundo Ciclo Primaria</option>
-                            <option value="PRI3">Tercer Ciclo Primaria</option>
-                            <option value="SEC1">1º - 3º de ESO</option>
-                            <option value="SEC3">1º - 4º de ESO</option>
-                            <option value="SEC4">1º - 2º de ESO</option>
-                            <option value="SEC5">3º - 4º de ESO</option>
-                            <option value="SEC2">4º de ESO</option>
-                            <option value="BAC">Bachillerato</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="columns large-6"><label>Materia (opcional)
-                    <input type="text" value="" id="materia_ceval"></label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="columns large-2"><label>Orden
-                    <input type="number" value="" id="orden_ceval"></label>
-                </div>
-                <div class="columns large-10"><label>Texto del criterio de evaluación
-                    <input type="text" value="" id="texto_ceval"></label>
-                </div>
-            </div>
-            <a class="close-reveal-modal reveal_modal_aviso">&#215;</a>
-            <div class="row">
-                <br>
-                <div class="columns large-12"><a id="inserta_ceval"
-                                                 class="button secondary">Aceptar</a>
-                </div>
-            </div>
-        </div>
+{#        <div id="div_reveal_inserta_ceval" class="reveal-modal" data-reveal>#}
+{#            <input type="hidden" value="" id="id_cesp">#}
+{#            <div class="row">#}
+{#                <div class="columns large-12"><h3>Añadir Criterio de evaluación</h3></div>#}
+{#            </div>#}
+{#            <div class="row">#}
+{#                <div class="columns large-6">#}
+{#                    <label>Ciclo/Etapa#}
+{#                        <select id="ciclo_ceval">#}
+{#                            <option value="">----</option>#}
+{#                            <option value="PRI1">Primer Ciclo Primaria</option>#}
+{#                            <option value="PRI2">Segundo Ciclo Primaria</option>#}
+{#                            <option value="PRI3">Tercer Ciclo Primaria</option>#}
+{#                            <option value="SEC1">1º - 3º de ESO</option>#}
+{#                            <option value="SEC3">1º - 4º de ESO</option>#}
+{#                            <option value="SEC4">1º - 2º de ESO</option>#}
+{#                            <option value="SEC5">3º - 4º de ESO</option>#}
+{#                            <option value="SEC2">4º de ESO</option>#}
+{#                            <option value="BAC">Bachillerato</option>#}
+{#                        </select>#}
+{#                    </label>#}
+{#                </div>#}
+{#                <div class="columns large-6"><label>Materia (opcional)#}
+{#                    <input type="text" value="" id="materia_ceval"></label>#}
+{#                </div>#}
+{#            </div>#}
+{#            <div class="row">#}
+{#                <div class="columns large-2"><label>Orden#}
+{#                    <input type="number" value="" id="orden_ceval"></label>#}
+{#                </div>#}
+{#                <div class="columns large-10"><label>Texto del criterio de evaluación#}
+{#                    <input type="text" value="" id="texto_ceval"></label>#}
+{#                </div>#}
+{#            </div>#}
+{#            <a class="close-reveal-modal reveal_modal_aviso">&#215;</a>#}
+{#            <div class="row">#}
+{#                <br>#}
+{#                <div class="columns large-12"><a id="inserta_ceval"#}
+{#                                                 class="button secondary">Aceptar</a>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
     </form>
 {% endblock %}
 
@@ -157,57 +159,35 @@
                     });
             });
 
-            $('body').on('click', '#inserta_ceval', function () {
-                var cesp = $('#id_cesp').val();
-                var ciclo = $('#ciclo_ceval').val();
-                var materia = $('#materia_ceval').val();
-                var orden = $('#orden_ceval').val();
-                var texto = $('#texto_ceval').val();
+            $('body').on('click', '.inserta_ceval', function () {
+                var cesp = $(this).data('cesp');
                 $.post("/configura_competencias/", {
                         action: 'inserta_ceval',
                         cesp: cesp,
-                        orden: orden,
-                        ciclo: ciclo,
-                        materia: materia,
-                        texto: texto
                     },
                     function (data) {
                         if (data.ok) {
                             $('#list_ceval' + data.cesp).append(data.html);
-                            $('#ciclo_ceval').val('');
-                            $('#materia_ceval').val('');
-                            $('#orden_ceval').val('');
-                            $('#texto_ceval').val('');
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $("#update_error").show().delay(1500).fadeOut();
                         }
                     });
             });
-            $('body').on('click', '.reveal_inserta_ceval', function () {
-                var cesp = $(this).data('cesp');
-                $('#id_cesp').val(cesp);
-                $('#div_reveal_inserta_ceval').foundation('reveal', 'open');
-            });
 
             $('body').on('click', '.inserta_cesp', function () {
                 var am = $(this).data('am');
-                var orden = $('#cesp_orden' + am).val();
-                var nombre = $('#cesp_nombre' + am).val();
-                var texto = $('#cesp_texto' + am).val();
                 $.post("/configura_competencias/", {
                         action: 'inserta_cesp',
-                        am: am,
-                        orden: orden,
-                        nombre: nombre,
-                        texto: texto
+                        am: am
                     },
                     function (data) {
                         if (data.ok) {
                             $('#list_cesp' + data.am).append(data.html);
-                            $('#cesp_orden' + data.am).val('');
-                            $('#cesp_nombre' + data.am).val('');
-                            $('#cesp_texto' + data.am).val('');
+                            setTimeout(function () {
+                                $('.dos_select2').select2();
+                                $('.select2-container').css('width', '100%');
+                            }, 150);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $("#update_error").show().delay(1500).fadeOut();
@@ -317,7 +297,7 @@
                             $.post("/configura_competencias/", {action: 'borrar_ceval', ceval: ceval},
                                 function (data) {
                                     if (data.ok) {
-                                        $('#ceval_' + ceval).remove();
+                                        $('#div_criterio_eval' + ceval).remove();
                                         $("#update_ok").show().delay(1500).fadeOut();
                                     } else {
                                         $('#update_error').show().delay(1500).fadeOut();
@@ -327,33 +307,119 @@
                     }
                 });
             });
+
+
+            {# ########################################################### #}
+            {# ############## Nuevas funciones  ########################## #}
+            {# ########################################################### #}
+
+            $('body').on('click', '.inserta_objeto', function (e) {
+                e.preventDefault();
+                var element = $(this);
+                var clase = element.data('clase');
+                var foreignkey_id = element.data('foreignkey_id');
+                var foreignkey_clase = element.data('foreignkey_clase');
+                var foreignkey_field = element.data('foreignkey_field');
+                var render2string = element.data('render2string');
+                var render2string_objeto = element.data('render2string_objeto');
+                var div_append = element.data('div_append');
+                $.post('/configura_competencias/', {
+                        action: 'inserta_objeto', clase: clase,
+                        foreignkey_id: foreignkey_id, foreignkey_clase: foreignkey_clase,
+                        foreignkey_field: foreignkey_field, render2string: render2string,
+                        render2string_objeto: render2string_objeto
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#' + div_append).append(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('click', '.borrar_objeto', function () {
+                $('#clase_borrar').val($(this).data('clase'));
+                $('#id_objeto_borrar').val($(this).data('id'));
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar este elemento?',
+                    texto: 'Si aceptas, se borrará por completo de la base de datos.',
+                    size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post("/configura_competencias/", {
+                                    action: 'borrar_objeto',
+                                    clase: $('#clase_borrar').val(),
+                                    id: $('#id_objeto_borrar').val()
+                                },
+                                function (data) {
+                                    if (data.ok) {
+                                        var nombre_id = $('#clase_borrar').val().toLowerCase();
+                                        console.log('#' + nombre_id + $('#id_objeto_borrar').val());
+                                        $('#' + nombre_id + $('#id_objeto_borrar').val()).remove();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+            function get_texto_from_element(element) {
+                console.log(element.val());
+                if (element.val()) {
+                    return element.val();
+                } else {
+                    return element.text();
+                }
+            }
+
+            $('body').on('keyup change', '.update_texto', function () {
+                var element = $(this);
+                var id = element.data('id');
+                var campo = element.data('campo');
+                var clase = element.data('clase');
+                var antiguo_texto = get_texto_from_element(element);
+                setTimeout(function () {
+                    var nuevo_texto = get_texto_from_element(element);
+                    if (antiguo_texto === nuevo_texto) {
+                        $.post('/configura_competencias/', {
+                                action: 'update_texto', id: id, texto: nuevo_texto, campo: campo,
+                                clase: clase
+                            },
+                            function (data) {
+                                if (data.ok) {
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }, 750);
+            });
+
+            $('body').on('change', '.curso_asociado_ceval', function(){
+               var ceval = $(this).data('ceval');
+               var valor = $(this).val();
+               $.post('/configura_competencias/', {
+                                action: 'curso_asociado_ceval', ceval: ceval, valor: valor
+                            },
+                            function (data) {
+                                if (data.ok) {
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+            });
         {% endif %}
-        {#$(document).foundation({#}
-        {#    accordion: {#}
-        {#        callback: function (accordion) {#}
-        {#            if (accordion.hasClass('curso_pendientes')) {#}
-        {#                var id = accordion.data('curso');#}
-        {#                console.log(id);#}
-        {#                if ($('#circle' + id).hasClass('fa-plus-circle')) {#}
-        {#                    $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');#}
-        {#                    $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');#}
-        {#                    window.scrollTo(0, $('#accordion' + id).offset().top - 50);#}
-        {#                    $.post("/configura_materias_pendientes/", {action: 'open_accordion', id: id},#}
-        {#                        function (data) {#}
-        {#                            if (data.ok) {#}
-        {#                                $('#curso' + id).html(data.html);#}
-        {#                                $("#update_ok").show().delay(1500).fadeOut();#}
-        {#                            } else {#}
-        {#                                $("#update_error").show().delay(1500).fadeOut();#}
-        {#                            }#}
-        {#                        });#}
-        {#                } else {#}
-        {#                    $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');#}
-        {#                    $('#curso' + id).html('');#}
-        {#                }#}
-        {#            }#}
-        {#        }#}
-        {#    }#}
-        {# });#}
+
     </script>
 {% endblock %}

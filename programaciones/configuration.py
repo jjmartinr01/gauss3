@@ -81,6 +81,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 9,
      'parent': 'acceso_programaciones_didacticas'
+     },
+    {'code_menu': 'acceso_cuaderno_docente',
+     'texto_menu': 'Cuadernos docentes',
+     'href': 'cuadernodocente',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 10,
+     'parent': 'acceso_programaciones_didacticas'
      }
 ]
 # Se añaden otros permisos para el usuario

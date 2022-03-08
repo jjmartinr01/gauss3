@@ -1,11 +1,14 @@
-<div class="row" data-do="{{ do.id }}" id="descriptor_operativo{{ do.id }}">
+<div class="row" data-do="{{ do.id }}" id="descriptoroperativo{{ do.id }}">
     <div class="columns large-2">
-        <input type="text" value="{{ do.clave }}">
+        <input type="text" value="{{ do.clave }}" data-clase="DescriptorOperativo" data-campo="clave"
+        data-id="{{ do.id }}" class="update_texto">
     </div>
     <div class="columns large-9">
-        <textarea rows="3">{{ do.texto }}</textarea>
+        <textarea rows="3" data-clase="DescriptorOperativo" data-campo="texto" class="update_texto"
+        data-id="{{ do.id }}">{{ do.texto }}</textarea>
     </div>
     <div class="columns large-1">
-        <a class="button tiny borrar_do"><i class="fa fa-trash"></i></a>
+        <a class="button tiny borrar_objeto" data-clase="DescriptorOperativo" class="update_texto"
+        data-id="{{ do.id }}"><i class="fa fa-trash"></i></a>
     </div>
 </div>

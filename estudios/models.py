@@ -202,7 +202,8 @@ class CompetenciaEspecifica(models.Model):
 class CriterioEvaluacion(models.Model):
     CICLOS = (('PRI1', 'Primer Ciclo Primaria'), ('PRI2', 'Segundo Ciclo Primaria'), ('PRI3', 'Tercer Ciclo Primaria'),
               ('SEC1', '1º - 3º de ESO'), ('SEC2', '4º de ESO'), ('SEC3', '1º - 4º de ESO'), ('SEC4', '1º - 2º de ESO'),
-              ('SEC5', '3º - 4º de ESO'), ('BAC', 'Bachillerato'))
+              ('SEC5', '3º - 4º de ESO'), ('BAC', 'Bachillerato'), ('ESO1', '1º de ESO'),
+              ('ESO2', '2º de ESO'), ('ESO3', '3º de ESO'))
     ce = models.ForeignKey(CompetenciaEspecifica, on_delete=models.CASCADE, blank=True, null=True)
     ciclo = models.CharField('Ciclo', choices=CICLOS, default='PRI1', max_length=5)
     materia = models.CharField('Nombre específico de la materia (opocional)', max_length=205, blank=True, null=True)

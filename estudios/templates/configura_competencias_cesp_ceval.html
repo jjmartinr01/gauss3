@@ -1,7 +1,50 @@
-<p id="ceval_{{ ceval.id }}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
-        style="color:#f18d38">(Crit. Eval. para {{ ceval.get_ciclo_display }})</span> {{ ceval.orden }}
-    - {{ ceval.texto }}
-    <a class="borrar_ceval" data-ceval="{{ ceval.id }}">
-        <i class="fa fa-trash"></i> Borrar Criterio
-    </a>
-</p>
+<div id="div_criterio_eval{{ ceval.id }}">
+    <div class="row">
+        <div class="columns large-12">
+            <h4>Criterio de evaluación (CEV)</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-2">
+            <label>Orden CEV
+                <input type="number" value="{{ ceval.orden }}" data-clase="CriterioEvaluacion" data-campo="orden"
+                       data-id="{{ ceval.id }}" class="update_texto">
+            </label>
+        </div>
+        <div class="columns large-10">
+            <label>Texto del criterio de evaluación (CEV)
+                <input type="text" value="{{ ceval.texto }}" data-clase="CriterioEvaluacion" data-campo="texto"
+                       data-id="{{ ceval.id }}" class="update_texto">
+            </label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="columns large-6">
+            <label>Ciclo/Etapa asociado al CEV
+                <select class="curso_asociado_ceval" data-ceval="{{ ceval.id }}">
+                    <option value="">----</option>
+                    <option value="PRI1" {% if ceval.ciclo == 'PRI1' %}selected{% endif %}>Primer Ciclo Primaria
+                    </option>
+                    <option value="PRI2" {% if ceval.ciclo == 'PRI2' %}selected{% endif %}>Segundo Ciclo Primaria
+                    </option>
+                    <option value="PRI3" {% if ceval.ciclo == 'PRI3' %}selected{% endif %}>Tercer Ciclo Primaria
+                    </option>
+                    <option value="SEC1" {% if ceval.ciclo == 'SEC1' %}selected{% endif %}>1º - 3º de ESO</option>
+                    <option value="SEC3" {% if ceval.ciclo == 'SEC3' %}selected{% endif %}>1º - 4º de ESO</option>
+                    <option value="SEC4" {% if ceval.ciclo == 'SEC4' %}selected{% endif %}>1º - 2º de ESO</option>
+                    <option value="SEC5" {% if ceval.ciclo == 'SEC5' %}selected{% endif %}>3º - 4º de ESO</option>
+                    <option value="ESO1" {% if ceval.ciclo == 'ESO1' %}selected{% endif %}>1º de ESO</option>
+                    <option value="ESO2" {% if ceval.ciclo == 'ESO2' %}selected{% endif %}>2º de ESO</option>
+                    <option value="ESO3" {% if ceval.ciclo == 'ESO3' %}selected{% endif %}>3º de ESO</option>
+                    <option value="SEC2" {% if ceval.ciclo == 'SEC2' %}selected{% endif %}>4º de ESO</option>
+                    <option value="BAC" {% if ceval.ciclo == 'BAC' %}selected{% endif %}>Bachillerato</option>
+                </select>
+            </label>
+        </div>
+        <div class="columns large-3"><a class="borrar_ceval" data-ceval="{{ ceval.id }}">
+            <i class="fa fa-trash"></i> Borrar Criterio
+        </a>
+        </div>
+    </div>
+</div>

@@ -1,3 +1,61 @@
+<div data-cesp="{{ cesp.id }}" id="competenciaespecifica{{ cesp.id }}">
+    <div class="row">
+        <div class="columns large-12">
+            <h3>Competencia específica (CE) <a class="borrar_objeto" data-clase="CompetenciaEspecifica"
+                                               data-id="{{ cesp.id }}"><i class="fa fa-trash"></i> Borrar</a>
+            </h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-2">
+            <label><b>Orden CE</b>
+                <input type="number" value="{{ cesp.orden }}" data-clase="CompetenciaEspecifica" data-campo="orden"
+                       data-id="{{ cesp.id }}" class="update_texto">
+            </label>
+        </div>
+        <div class="columns large-10">
+            <label><b>Nombre CE</b>
+                <input type="text" value="{{ cesp.nombre }}" data-clase="CompetenciaEspecifica" data-campo="nombre"
+                       data-id="{{ cesp.id }}" class="update_texto">
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label><b>Descripción de la CE</b>
+                <textarea rows="3" data-clase="CompetenciaEspecifica" data-campo="texto" class="update_texto"
+                          data-id="{{ cesp.id }}">{{ cesp.texto }}</textarea>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label>
+                <b>Descriptores del perfil de salida asociados a la competencia específica número {{ cesp.orden }}</b>
+                <select id="cesp_dos{{ cesp.id }}" multiple="multiple" data-cesp="{{ cesp.id }}" class="dos_select2">
+                    {% for cc in cesp.am.ps.competenciaclave_set.all %}
+                        {% for do in cc.descriptoroperativo_set.all %}
+                            <option value="{{ do.id }}"
+                                    {% if do in cesp.dos.all %}selected{% endif %}>{{ do.clave }}</option>
+                        {% endfor %}
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+    <div id="list_ceval{{ cesp.id }}">
+        {% for ceval in cesp.criterioevaluacion_set.all %}
+            {% include "configura_competencias_cesp_ceval.html" %}
+        {% endfor %}
+    </div>
+    <a class="inserta_ceval" data-cesp="{{ cesp.id }}" data-orden="{{ cesp.orden }}">
+        <i class="fa fa-plus"></i> Añadir Criterio de Evaluación
+    </a>
+</div>
+<hr>
+
+
+{% comment %}
 <div data-cesp="{{ cesp.id }}">
     <p>&nbsp;&nbsp;&nbsp;&nbsp;{{ cesp.orden }} - {{ cesp.nombre }}
         <a class="reveal_inserta_ceval" data-cesp="{{ cesp.id }}" data-orden="{{ cesp.orden }}">
@@ -24,3 +82,4 @@
         {% endfor %}
     </div>
 </div>
+{% endcomment %}

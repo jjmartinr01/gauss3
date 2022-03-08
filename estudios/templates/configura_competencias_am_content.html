@@ -9,7 +9,7 @@
         <hr>
     </div>
 </div>
-
+{% comment %}
 <div class="row">
     <div class="columns large-12">
         <label style="font-weight: bold;">Formulario para crear competencias específicas de
@@ -41,6 +41,15 @@
         </a>
     </div>
 </div>
+{% endcomment %}
+<div class="row">
+    <div class="columns large-12">
+        <a class="button inserta_cesp" data-am="{{ am.id }}">
+            <i class="fa fa-plus"></i> Añadir una nueva competencia específica para {{ am.nombre }}
+        </a>
+    </div>
+</div>
+
 {#    <div class="row">#}
 {#        <div class="columns large-11">#}
 {#            <label>Descriptores del perfil de salida asociados a {{ am.nombre }}</label>#}
