@@ -2528,6 +2528,15 @@ def cuadernodocente(request):
                 return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'cuaderno_competencias':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                cuaderno.vista = request.POST['vista']
+                cuaderno.save()
+                html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno})
+                return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'define_ecp':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])

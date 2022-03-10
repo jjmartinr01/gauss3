@@ -1,4 +1,4 @@
-from django.contrib.postgres.fields import JSONField
+# from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -275,7 +275,7 @@ class UsuarioEnlaceDomotica(models.Model):
     creador = models.ForeignKey(Gauser, blank=True, null=True, on_delete=models.CASCADE)
     nombre = models.CharField("Nombre del usuario", max_length=120, blank=True, null=True)
     secret = models.CharField("Código secreto del enlace", max_length=20, default=clave_secreta)
-    validez = JSONField(blank=True, null=True)
+    # validez = JSONField(blank=True, null=True)
     creado = models.DateTimeField('Fecha de creación', auto_now_add=True)
     modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 

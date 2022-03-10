@@ -183,6 +183,25 @@ class AreaMateria(models.Model):
     nombre = models.CharField('Nombre del Área/Materia', blank=True, null=True, max_length=350)
     texto = models.TextField('Descripción del Área/Materia', blank=True, null=True)
 
+    @property
+    def num_ces(self):
+        return self.competenciaespecifica_set.all().count()
+
+    @property
+    def num_cevs(self):
+        n = 0
+        for ce in self.competenciaespecifica_set.all():
+            n += ce.criterioevaluacion_set.all().count()
+        return n
+
+    @property
+    def cevs(self):
+        criterios = []
+        for ce in self.competenciaespecifica_set.all():
+            for cev in ce.criterioevaluacion_set.all():
+                criterios.append(cev)
+        return criterios
+
     def __str__(self):
         return '%s - %s' % (self.nombre, self.texto[:100])
 

@@ -129,6 +129,39 @@
                 });
         });
 
+        var cuaderno_full_screen = false;
+        $(document).on('click', '.cuaderno_full_screen', function (e) {
+            e.preventDefault();
+            if (cuaderno_full_screen) {
+                $('#Principal').removeClass('large-12').addClass('large-10');
+                $('#menu_lateral_for_large').removeClass('hide-for-large');
+                cuaderno_full_screen = false;
+            } else {
+                $('#menu_lateral_for_large').addClass('hide-for-large');
+                $('#Principal').removeClass('large-10').addClass('large-12');
+                cuaderno_full_screen = true;
+            }
+        });
+
+
+        $('#Contenido').on('click', '.cuaderno_competencias', function (e) {
+            e.preventDefault();
+            var element = $(this);
+            var cuaderno = element.data('cuaderno');
+            var vista = element.data('vista');
+            $.post('/cuadernodocente/', {
+                    action: 'cuaderno_competencias', cuaderno: cuaderno, vista: vista
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#panel' + cuaderno).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
         {#$('#Contenido').on('mouseenter', '.create_calalumn', function (e) {#}
         {#    e.preventDefault();#}
         {#    var element = $(this);#}

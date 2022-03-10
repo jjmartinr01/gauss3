@@ -14,7 +14,7 @@
 
     .tabla_cuaderno {
         white-space: nowrap;
-    table-layout: fixed;
+        table-layout: fixed;
         width: 100%;
         overflow-x: auto;
         display: block;
@@ -36,7 +36,7 @@
     .fixed_column {
         position: sticky;
         left: 0;
-        z-index: 5!important;
+        z-index: 5 !important;
         background: #F5F5F5;
     }
 
@@ -45,7 +45,8 @@
         left: 0;
         z-index: 2;
     }
-    .update_calalum{
+
+    .update_calalum {
         cursor: pointer;
     }
 </style>
@@ -86,7 +87,7 @@
             </a>
         </div>
     </div>
-{% else %}
+{% elif cuaderno.vista == 'NOR' %}
     <div class="div_table{{ cuaderno.id }}">
         <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
             <thead style="position: sticky;top:0">
@@ -94,8 +95,13 @@
                 <th class="fixed_column" rowspan="5">
                     Nombre alumno/a<br><br>
                     <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}" title="Mostrar en pantalla completa"
-                       href="/cuaderno_full_screen/{{ cuaderno.id }}/" style="position:absolute;top:5px;left:5px">
+                       style="position:absolute;top:5px;left:5px">
                         <i class="fa fa-external-link"></i>
+                    </a>
+                    <a class="cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="COM"
+                       title="Ir a la vista de calificaciones por competencias específicas"
+                       style="position:absolute;top:5px;right:5px">
+                        <i class="fa fa-exchange"></i>
                     </a>
                     <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
                         <i class="fa fa-users"></i> Gestionar alumnos
@@ -177,19 +183,6 @@
                                                 id="valor_calalum{{ calalum.id }}_{{ alumno.id }}">
                                                 {{ calalum.cal }}
                                             </td>
-                                            {% comment %}
-                                            {% if calalum %}
-                                                <td class="update_calalum" data-ge="{{ alumno.ge.id }}"
-                                                    data-cieval="{{ cieval.id }}" data-cuaderno="{{ cuaderno.id }}"
-                                                    title="{{ calalum.obs }}" contenteditable="true">
-                                                {{ calalum.cal }}
-                                                </td>
-                                            {% else %}
-                                                <td class="create_calalumn" data-ge="{{ alumno.ge.id }}"
-                                                    data-cieval="{{ cieval.id }}" data-cuaderno="{{ cuaderno.id }}"
-                                                    id="create_calalum{{ cieval.id }}_{{ alumno.ge.id }}"></td>
-                                            {% endif %}
-                                            {% endcomment %}
                                         {% endwith %}
                                     {% endfor %}
                                 {% endfor %}
@@ -201,6 +194,53 @@
             <tr id="tr_calificar_alumno{{ cuaderno.id }}">
                 <td colspan="70" style="text-align: left!important;" id="td_calificar_alumno{{ cuaderno.id }}"></td>
             </tr>
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="div_table{{ cuaderno.id }}">
+        <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
+            <thead style="position: sticky;top:0">
+            <tr>
+                <th class="fixed_column" rowspan="5">
+                    Nombre alumno/a<br><br>
+                    <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}" title="Mostrar en pantalla completa"
+                       style="position:absolute;top:5px;left:5px">
+                        <i class="fa fa-external-link"></i>
+                    </a>
+                    <a class="cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="NOR"
+                       title="Ir a la vista de calificaciones por instrumentos, situaciones de aprendizaje y saberes básicos"
+                       style="position:absolute;top:5px;right:5px">
+                        <i class="fa fa-exchange"></i>
+                    </a>
+                    <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
+                        <i class="fa fa-users"></i> Gestionar alumnos
+                    </a>
+                </th>
+                <th rowspan="2" title="Calificación total obtenida en la materia">Calificación</th>
+                {% for ce in cuaderno.psec.areamateria.competenciaespecifica_set.all %}
+                    <th colspan="{{ ce.criterioevaluacion_set.all|length }}"
+                        title="{{ ce.nombre }}">{{ ce.nombre|truncatechars:160 }}</th>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for cev in cuaderno.psec.areamateria.cevs %}
+                    <th title="{{ cev.texto }}">{{ cev.texto|truncatechars:20 }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody id="tbody_cuaderno{{ cuaderno.id }}">
+            {% for alumno in cuaderno.alumnos.all %}
+                <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
+                    <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
+                        <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
+                    </td>
+                    <td></td>
+                    {% for cev in cuaderno.psec.areamateria.cevs %}
+                        <td title="">f</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
             </tbody>
         </table>
     </div>

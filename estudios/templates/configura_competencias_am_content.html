@@ -1,3 +1,20 @@
+<div class="row">
+    <div class="columns large-12">
+        <div data-alert class="alert-box info radius">
+            <span style="font-weight: bold">
+                {{ am.num_ces }} competencias específicas y
+                {{ am.num_cevs }} criterios de evaluación.
+            </span>
+            <br>
+            {% for cesp in am.competenciaespecifica_set.all %}
+                <span style="font-weight: bold">CE{{ cesp.orden }} ({{ cesp.criterioevaluacion_set.all|length }} CEVs)
+                    {% if not forloop.last %} - {% endif %}
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
 <div id="list_cesp{{ am.id }}">
     {% for cesp in am.competenciaespecifica_set.all %}
         {% include "configura_competencias_cesp.html" %}
