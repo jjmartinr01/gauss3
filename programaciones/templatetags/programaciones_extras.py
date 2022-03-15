@@ -20,11 +20,17 @@ def get_posibles_psec(cuaderno):
     return ProgSec.objects.filter(id__in=psec_ids)
 
 @register.filter
-def get_calalum(cieval, alumno):
+def get_cieval(cuaderno, cieval):
+    return cuaderno, cieval
+
+
+@register.filter
+def get_calalum(cuaderno_cieval, alumno):
     try:
-        return CalAlum.objects.get(alumno=alumno, cie=cieval)
-    except:
-        return None
+        cuaderno, cieval = cuaderno_cieval
+        return CalAlum.objects.get(alumno=alumno, cie=cieval, cp=cuaderno)
+    except Exception as msg:
+        return str(msg)
 
 
 @register.filter

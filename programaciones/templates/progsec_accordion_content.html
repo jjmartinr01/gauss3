@@ -376,7 +376,7 @@
     <div class="row">
         <div class="columns large-12">
             <div class="panel callout">
-                <h3>5º Unidades de programación</h3>
+                <h3 id="unidades_programacion{{ progsec.id }}">5º Unidades de programación</h3>
             </div>
             <p>Las unidades de programación organizan la acción didáctica orientada hacia la adquisición de
                 competencias. En este proceso se desarrollan los saberes básicos (conocimientos, destrezas y actitudes),
@@ -388,29 +388,48 @@
         </div>
     </div>
 
+    {#    <div class="row">#}
+    {#        <div class="columns large-12">#}
+    {#            <table id="lista_saber{{ progsec.id }}" style="width: 100%;">#}
+    {#                <thead>#}
+    {#                <tr>#}
+    {#                    <th>orden</th>#}
+    {#                    <th>nombre</th>#}
+    {#                    <th>periodos</th>#}
+    {#                    <th>¿Borrar?</th>#}
+    {#                    <th title="Situaciones de aprendizaje">SAP</th>#}
+    {#                </tr>#}
+    {#                </thead>#}
+    {#                <tbody id="tbody_saberes{{ progsec.id }}">#}
+    {#                {% include "progsec_accordion_content_saberes.html" %}#}
+    {#                </tbody>#}
+    {#            </table>#}
+    {#        </div>#}
+    {#    </div>#}
+
+
     <div class="row">
-        <div class="columns large-12">
-            <table id="lista_saber{{ progsec.id }}" style="width: 100%;">
-                <thead>
-                <tr>
-                    <th>orden</th>
-                    <th>nombre</th>
-                    <th>periodos</th>
-                    <th>¿Borrar?</th>
-                    <th title="Situaciones de aprendizaje">SAP</th>
-                </tr>
-                </thead>
-                <tbody id="tbody_saberes{{ progsec.id }}">
-                {% include "progsec_accordion_content_saberes.html" %}
-                </tbody>
-            </table>
-        </div>
+        <div class="columns large-2"><b>Comienzo</b></div>
+{#        <div class="columns large-1"><b>Orden</b></div>#}
+        <div class="columns large-7"><b>Nombre de la unidad de programación (UP)</b></div>
+        <div class="columns large-1"><b>Periodos</b></div>
+        <div class="columns large-1"><b>¿Borrar?</b></div>
+        <div class="columns large-1"><b>SAP</b></div>
     </div>
-    <div class="row">
-        <div class="columns large-12">
-            <a data-progsec="{{ progsec.id }}" class="add_saber button small right">Añadir Saber básico</a>
-        </div>
+    <div id="lista_saberes{{ progsec.id }}">
+        {% include "progsec_accordion_content_saberes.html" %}
     </div>
+
+
+{#    <div class="row">#}
+{#        <div class="columns large-12">#}
+{#            <a data-progsec="{{ progsec.id }}" class="add_saber button small right">Añadir Saber básico</a>#}
+{#        </div>#}
+{#    </div>#}
+{#    <div id="gantt{{ progsec.id }}">#}
+{#        {% include 'progsec_accordion_content_gantt.html' %}#}
+{#    </div>#}
+
     {% comment %}
     {% for sb in progsec.saberbas_set.all %}
         <div class="row" id="row_sb{{ sb.id }}">

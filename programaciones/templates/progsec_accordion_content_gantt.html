@@ -1,0 +1,27 @@
+<style>
+    .div_gantt {
+        float: left;
+        border: 1px grey solid;
+        height: 20px;
+        width: calc(98% / {{ progsec.dias_curso|length }});
+    }
+    .div_selected {
+        background-color: #4d9200;
+    }
+</style>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Distribución temporal de la programación:</b></label>
+    </div>
+</div>
+{% for saber in progsec.saberbas_set.all %}
+    {% with divs=saber.divs_gantt %}
+    <div class="row" title="Comienzo el {{ saber.comienzo|date:'d/m/Y' }} y dura {{ saber.periodos }} periodos.&#013;{{ saber.nombre }}">
+        <div style="float:left;">{{ saber.orden }}</div>
+        {% for i in progsec.dias_curso %}
+            <div class="div_gantt {% if i in divs %}div_selected{% endif %}"
+                 id="s{{ saber.id }}_{{ i }}"></div>
+        {% endfor %}
+    </div>
+    {% endwith %}
+{% endfor %}

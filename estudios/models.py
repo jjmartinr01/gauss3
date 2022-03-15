@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.db import models
 from entidades.models import Entidad, Ronda, Subentidad, Gauser_extra, Dependencia
 
+
 # Create your models here.
 class EtapaEscolar(models.Model):
     nombre = models.CharField('Nombre de la etapa escolar', max_length=250)
@@ -19,11 +20,12 @@ class EtapaEscolar(models.Model):
 # ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', 'FP Básica'), ('fa', 'Bachillerato'),
 #           ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'))
 ETAPAS = (('ba', 'Infantil'), ('ca', 'Primaria'), ('da', 'Secundaria'), ('ea', 'FP Básica'), ('fa', 'Bachillerato'),
-              ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'), ('ia', 'Enseñanzas Iniciales de Personas Adultas'),
-              ('ja', 'Educación Secundaria de Personas Adultas'),
-              ('ka', 'Educación Secundaria de Personas Adultas a Distancia Semipresencial'),
-              ('la', 'Educación Secundaria de Personas Adultas a Distancia'), ('ma', 'Educación para Personas Adultas'),
-              ('na', 'Preparación Pruebas de Acceso a CCFF'), ('za', 'Etapa no identificada'))
+          ('ga', 'FP Grado Medio'), ('ha', 'FP Grado Superior'), ('ia', 'Enseñanzas Iniciales de Personas Adultas'),
+          ('ja', 'Educación Secundaria de Personas Adultas'),
+          ('ka', 'Educación Secundaria de Personas Adultas a Distancia Semipresencial'),
+          ('la', 'Educación Secundaria de Personas Adultas a Distancia'), ('ma', 'Educación para Personas Adultas'),
+          ('na', 'Preparación Pruebas de Acceso a CCFF'), ('za', 'Etapa no identificada'))
+
 
 class Curso(models.Model):
     # entidad = models.ForeignKey(Entidad, blank=True, null=True, related_name='estudios', on_delete=models.CASCADE)
@@ -112,10 +114,12 @@ class Materia(models.Model):
 
 
 class Gauser_extra_estudios(models.Model):
-    ge = models.OneToOneField(Gauser_extra, on_delete=models.CASCADE) # Alumno
-    grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE) # Grupo del alumno
-    tutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='estudios_tutor', on_delete=models.CASCADE)
-    cotutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='estudios_cotutor', on_delete=models.CASCADE)
+    ge = models.OneToOneField(Gauser_extra, on_delete=models.CASCADE)  # Alumno
+    grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE)  # Grupo del alumno
+    tutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='estudios_tutor',
+                              on_delete=models.CASCADE)
+    cotutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='estudios_cotutor',
+                                on_delete=models.CASCADE)
 
     @property
     def materias(self):
@@ -141,6 +145,7 @@ class Matricula(models.Model):
     def __str__(self):
         return '%s - %s (%s)' % (self.ge, self.materia, self.estado)
 
+
 #######################################################################################
 ############################# EVALUACIÓN LOMLOE #######################################
 #######################################################################################
@@ -153,6 +158,7 @@ class PerfilSalida(models.Model):
 
     def __str__(self):
         return '%s - %s' % (self.ley, self.get_etapa_display())
+
 
 class CompetenciaClave(models.Model):
     ps = models.ForeignKey(PerfilSalida, on_delete=models.CASCADE, blank=True, null=True)
@@ -167,6 +173,7 @@ class CompetenciaClave(models.Model):
     def __str__(self):
         return '%s - (%s) %s' % (self.ps, self.siglas, self.competencia)
 
+
 class DescriptorOperativo(models.Model):
     cc = models.ForeignKey(CompetenciaClave, on_delete=models.CASCADE, blank=True, null=True)
     clave = models.CharField('Clave del descriptor', blank=True, null=True, max_length=9)
@@ -178,10 +185,29 @@ class DescriptorOperativo(models.Model):
     def __str__(self):
         return '(%s) %s' % (self.cc, self.texto[:100])
 
+
+CURSOS_LOMLOE = (('INF0', 'Primer Ciclo Infantil - 0 años'), ('INF1', 'Primer Ciclo Infantil - 1 año'),
+                 ('INF2', 'Primer Ciclo Infantil - 2 años'), ('INF3', 'Segundo Ciclo Infantil - 3 años'),
+                 ('INF4', 'Segundo Ciclo Infantil - 4 años'), ('INF5', 'Segundo Ciclo Infantil - 5 años'),
+                 ('PRI1', 'Primer Ciclo Primaria - 1er Curso'), ('PRI2', 'Primer Ciclo Primaria - 2o Curso'),
+                 ('PRI3', 'Segundo Ciclo Primaria - 3er Curso'), ('PRI4', 'Segundo Ciclo Primaria - 4o Curso'),
+                 ('PRI5', 'Tercer Ciclo Primaria - 5o Curso'), ('PRI6', 'Tercer Ciclo Primaria - 6o Curso'),
+                 ('ESO1', '1º de ESO'), ('ESO2', '2º de ESO'), ('ESO3', '3º de ESO'), ('ESO4', '4º de ESO'),
+                 ('BA1C', '1º Bachillerato de Ciencias y Tecnología'),
+                 ('BA2C', '2º Bachillerato de Ciencias y Tecnología'),
+                 ('BA1H', '1º Bachillerato de Humanidades y Ciencias Sociales'),
+                 ('BA2H', '2º Bachillerato de Humanidades y Ciencias Sociales'),
+                 ('BA1A', '1º Bachillerato de Artes'),
+                 ('BA2A', '2º Bachillerato de Artes'),
+                 ('BA1G', '1º Bachillerato General'),
+                 ('BA2G', '2º Bachillerato General'))
+
+
 class AreaMateria(models.Model):
     ps = models.ForeignKey(PerfilSalida, on_delete=models.CASCADE, blank=True, null=True)
     nombre = models.CharField('Nombre del Área/Materia', blank=True, null=True, max_length=350)
     texto = models.TextField('Descripción del Área/Materia', blank=True, null=True)
+    curso = models.CharField('Curso asociado a la asignatura', choices=CURSOS_LOMLOE, default='INF0', max_length=5)
 
     @property
     def num_ces(self):
@@ -205,6 +231,7 @@ class AreaMateria(models.Model):
     def __str__(self):
         return '%s - %s' % (self.nombre, self.texto[:100])
 
+
 class CompetenciaEspecifica(models.Model):
     am = models.ForeignKey(AreaMateria, on_delete=models.CASCADE, blank=True, null=True)
     orden = models.IntegerField('Número de competencia específica', default=0)
@@ -213,16 +240,25 @@ class CompetenciaEspecifica(models.Model):
     dos = models.ManyToManyField(DescriptorOperativo, blank=True)
 
     class Meta:
-        ordering = ['orden',]
+        ordering = ['orden', ]
 
     def __str__(self):
         return '%s.- (%s) - %s' % (self.orden, self.am.nombre, self.nombre[:50])
+
 
 class CriterioEvaluacion(models.Model):
     CICLOS = (('PRI1', 'Primer Ciclo Primaria'), ('PRI2', 'Segundo Ciclo Primaria'), ('PRI3', 'Tercer Ciclo Primaria'),
               ('SEC1', '1º - 3º de ESO'), ('SEC2', '4º de ESO'), ('SEC3', '1º - 4º de ESO'), ('SEC4', '1º - 2º de ESO'),
               ('SEC5', '3º - 4º de ESO'), ('BAC', 'Bachillerato'), ('ESO1', '1º de ESO'),
-              ('ESO2', '2º de ESO'), ('ESO3', '3º de ESO'))
+              ('ESO2', '2º de ESO'), ('ESO3', '3º de ESO'),
+              ('BA1C', '1º Bachillerato de Ciencias y Tecnología'),
+              ('BA2C', '2º Bachillerato de Ciencias y Tecnología'),
+              ('BA1H', '1º Bachillerato de Humanidades y Ciencias Sociales'),
+              ('BA2H', '2º Bachillerato de Humanidades y Ciencias Sociales'),
+              ('BA1A', '1º Bachillerato de Artes'),
+              ('BA2A', '2º Bachillerato de Artes'),
+              ('BA1G', '1º Bachillerato General'),
+              ('BA2G', '2º Bachillerato General'))
     ce = models.ForeignKey(CompetenciaEspecifica, on_delete=models.CASCADE, blank=True, null=True)
     ciclo = models.CharField('Ciclo', choices=CICLOS, default='PRI1', max_length=5)
     materia = models.CharField('Nombre específico de la materia (opocional)', max_length=205, blank=True, null=True)
@@ -230,7 +266,7 @@ class CriterioEvaluacion(models.Model):
     texto = models.TextField('Descripción del criterio de evaluación', blank=True, null=True)
 
     class Meta:
-        ordering = ['orden',]
+        ordering = ['orden', ]
 
     def __str__(self):
         if self.materia:

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.utils.text import slugify
+from django.utils.timezone import now
 import os
 
 from django.db import models
@@ -649,6 +650,26 @@ class ProgSec(models.Model):
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
+    @property
+    def dias_curso(self):
+        return range(1, 176)  # Un total de 175 días: 1, 2, 3, ..., 174, 175
+
+    @property
+    def tiempo_curso(self):
+        return 24105600 #Tiempo en segundos aproximado entre 9 septiembre y 15 de junio
+
+    @property
+    def num_periodos(self):
+        return self.saberbas_set.aggregate(models.Sum('periodos'))['periodos__sum']
+
+    @property
+    def comienzo(self):
+        return self.saberbas_set.aggregate(models.Min('comienzo'))['comienzo__min']
+
+    @property
+    def fin(self):
+        return self.saberbas_set.aggregate(models.Max('comienzo'))['comienzo__max']
+
     def get_permiso(self, gep):
         try:
             permiso = self.docprogsec_set.get(gep=gep).permiso
@@ -735,10 +756,32 @@ class SaberBas(models.Model):
     orden = models.IntegerField('Orden del saber básico dentro del conjunto de saberes', default=1)
     # parent = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
     nombre = models.CharField('Nombre de la actividad', blank=True, max_length=300)
+    comienzo = models.DateField('Fecha de comienzo programada', default=now)
     periodos = models.IntegerField('Número estimado de periodos lectivos para impartirlo', default=1)
     librorecursos = models.ManyToManyField(LibroRecurso, blank=True)
     actexcoms = models.ManyToManyField(ActExCom, blank=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    @property
+    def num_divs(self):
+        # Devuelve el número de divs que ocupa este saber básico en el diagrama de Gantt
+        n_periodos = self.psec.num_periodos
+        tiempo_curso = self.psec.tiempo_curso
+        tiempo_dia = tiempo_curso / 175 #175 son las divisiones del diagrama de Gantt
+        tiempo_periodo = tiempo_curso / n_periodos #Tiempo asignado a cada periodo
+        return int(self.periodos * 175 / n_periodos)
+
+    @property
+    def div_comienzo(self):
+        div_anteriores = 0
+        for sb in self.psec.saberbas_set.filter(comienzo__lt=self.comienzo):
+            div_anteriores += sb.num_divs
+        return div_anteriores + 1
+
+    @property
+    def divs_gantt(self):
+        c = self.div_comienzo
+        return range(c, c + self.num_divs)
 
     @property
     def num_criinstreval(self):
@@ -747,7 +790,7 @@ class SaberBas(models.Model):
         # return 1 if num == 0 else num
 
     class Meta:
-        ordering = ['psec', 'orden']
+        ordering = ['psec', 'comienzo', 'orden']
 
     def __str__(self):
         return '%s - %s (%s)' % (self.psec, self.nombre, self.periodos)
@@ -835,6 +878,7 @@ class CuadernoProf(models.Model):
     vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)
     alumnos = models.ManyToManyField(Gauser_extra, blank=True, related_name='cuaderno_alumno_set')
     vista = models.CharField('Tipo de vista', max_length=3, choices=VISTAS, default='NOR')
+    borrado = models.BooleanField('¿Cuaderno borrado?', default=False)
 
     @property
     def num_columns(self):

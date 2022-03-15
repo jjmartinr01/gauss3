@@ -26,7 +26,9 @@
             <br>
             <dl class="accordion" data-accordion id="list_cuadernos">
                 {% for cuaderno in g_e.cuaderno_docente_set.all %}
-                    {% include 'cuadernodocente_accordion.html' %}
+                    {% if not cuaderno.borrado %}
+                        {% include 'cuadernodocente_accordion.html' %}
+                    {% endif %}
                 {% endfor %}
             </dl>
         </div>
@@ -90,6 +92,47 @@
                     }
                 }
             }
+        });
+
+        $('body').on('click', '.borrar_cuadernoprof', function (e) {
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar a este cuaderno docente?',
+                texto: 'Si aceptas, todas las calificaciones anotadas en este cuaderno se borrarán por completo.',
+                size: 'large', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/cuadernodocente/", {
+                                action: 'borrar_cuadernoprof',
+                                cuaderno: $('#id_cuaderno').val(),
+                            },
+                            function (data) {
+                                if (data.ok) {
+                                    $("#accordion" + data.cuaderno).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+        $('#Contenido').on('click', '.copiar_cuadernoprof', function (e) {
+            $.post('/cuadernodocente/', {
+                    action: 'copiar_cuadernoprof', cuaderno: $('#id_cuaderno').val()
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#list_cuadernos').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
         });
 
         $('body').on('change', '.select_psec', function () {

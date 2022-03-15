@@ -50,7 +50,19 @@
         cursor: pointer;
     }
 </style>
-
+<div class="row">
+    <div class="columns large-12">
+            <ul class="button-group right">
+                <li><a title="Borrar este cuaderno docente de la base de datos"
+                       class="button alert borrar_cuadernoprof tiny"><i class="fa fa-trash-o"></i> Borrar</a></li>
+{#                <li><a title="Hacer una copia (un duplicado) de este cuaderno docente"#}
+{#                       class="button copiar_cuadernoprof tiny"><i class="fa fa-copy"></i> Copiar</a></li>#}
+{#                <li><a class="button pdf_ie tiny" data-id="{{ ie.id }}"#}
+{#                       title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>#}
+{#                </li>#}
+            </ul>
+    </div>
+</div>
 {% if not cuaderno.grupo %}
     <div class="row">
         <div class="columns large-12">
@@ -176,7 +188,7 @@
                             {% for asap in sap.actsitapren_set.all %}
                                 {% for ieval in asap.instreval_set.all %}
                                     {% for cieval in ieval.criinstreval_set.all %}
-                                        {% with calalum=cieval|get_calalum:alumno %}
+                                        {% with calalum=cuaderno|get_cieval:cieval|get_calalum:alumno %}
                                             <td class="update_calalum" data-calalum="{{ calalum.id }}"
                                                 data-cieval="{{ cieval.id }}" data-cuaderno="{{ cuaderno.id }}"
                                                 data-alumno="{{ alumno.id }}" title="{{ calalum.obs }}"

@@ -8,7 +8,6 @@
 {% endif %}
 {% for progsec in progsecs %}
     <input type="hidden" name="progsecs_seleccionados" value="{{ progsec.id }}">
-
     <dd class="accordion-navigation" id="accordion{{ progsec.id }}"
         style="border-bottom: dotted 1px black">
         <a href="#panel{{ progsec.id }}">
@@ -25,7 +24,8 @@
             {% endif %}
         </a>
 
-        <div id="panel{{ progsec.id }}" class="content accordion-progsec" data-id="{{ progsec.id }}">
+        <div id="panel{{ progsec.id }}" data-id="{{ progsec.id }}" data-prog="{{ prog }}"
+             class="content accordion-progsec {% if progsec.id == prog %}active{% endif %}">
         </div>
     </dd>
 {% endfor %}

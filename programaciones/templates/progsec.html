@@ -110,7 +110,7 @@
             $('#plus_sign').click(function (event) {
                 event.preventDefault();
                 $('#formulario_crear').toggle();
-                setTimeout(function (){
+                setTimeout(function () {
                     $('#curso_progsec').select2();
                     $('#areamateria_progsec').select2();
                 }, 100);
@@ -227,6 +227,20 @@
                 }
             }
         });
+
+        {% if prog %}
+            $.post("/progsecundaria/", {action: 'open_accordion', id: {{prog}}},
+                function (data) {
+                    if (data.ok) {
+                        $('#panel{{ prog }}').html(data.html);
+                        $('#id_progsec').val({{prog}});
+                        window.scrollTo(0, $('#unidades_programacion{{ prog }}').offset().top + 200);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        {% endif %}
 
 
         function get_texto_from_update_texto(element) {
@@ -353,40 +367,48 @@
                 function (data) {
                     if (data.ok) {
                         $("#update_ok").show().delay(1500).fadeOut();
-                        $('#tbody_saberes' + id).append(data.html);
+                        {#$('#tbody_saberes' + id).append(data.html);#}
+                        $('#lista_saberes' + id).html(data.html);
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
                 });
         });
-        $('body').on('keyup', '.mod_saber', function () {
+
+        var funcion_tiempo_espera;
+        $('body').on('keyup change', '.mod_saber', function () {
             var element = $(this);
-            var antiguo_texto = element.text();
-            setTimeout(function () {
-                var nuevo_texto = element.text();
-                if (antiguo_texto === nuevo_texto) {
-                    var id = element.data('progsec');
-                    var saber = element.data('saber');
-                    var campo = element.data('campo');
-                    if (campo === 'orden' || campo === 'periodos'){
-                        nuevo_texto = parseInt(nuevo_texto);
-                    }
-                    $.post("/progsecundaria/", {
-                            action: 'mod_saber', id: id, saber: saber, campo: campo, valor: nuevo_texto
-                        },
-                        function (data) {
-                            if (data.ok) {
-                                if (data.html){
-                                    $('#tbody_saberes' + id).html(data.html);
-                                }
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $('#update_error').show().delay(1500).fadeOut();
-                            }
-                        });
+            clearTimeout(funcion_tiempo_espera);
+            funcion_tiempo_espera = setTimeout(function () {
+                var valor = element.val();
+                var id = element.data('progsec');
+                var saber = element.data('saber');
+                var campo = element.data('campo');
+                if (campo === 'orden' || campo === 'periodos') {
+                    valor = parseInt(valor);
                 }
+                $.post("/progsecundaria/", {
+                        action: 'mod_saber', id: id, saber: saber, campo: campo, valor: valor
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            if (data.html) {
+                                if (campo == 'periodos'){
+                                    $('#gantt' + id).html(data.html);
+                                }else{
+                                    $('#lista_saberes' + id).html(data.html);
+                                }
+                            }
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
             }, 750);
         });
+        {#$('body').on('keydown', '.mod_saber', function () {#}
+        {#    clearTimeout(funcion_tiempo_espera);#}
+        {# });#}
 
         $('body').on('click', '.borrar_saber', function () {
             id = $(this).data('progsec');
@@ -403,7 +425,8 @@
                         $.post("/progsecundaria/", {action: 'borrar_saber', id: id, saber: saber},
                             function (data) {
                                 if (data.ok) {
-                                    $('#tbody_saberes' + id).html(data.html);
+                                    {#$('#tbody_saberes' + id).html(data.html);#}
+                                    $('#lista_saberes' + id).html(data.html);
                                     $("#update_ok").show().delay(1500).fadeOut();
                                 } else {
                                     $('#update_error').show().delay(1500).fadeOut();

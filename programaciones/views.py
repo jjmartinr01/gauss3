@@ -24,7 +24,7 @@ from autenticar.models import Gauser
 # from autenticar.control_acceso import access_required
 from entidades.models import Cargo
 from entidades.templatetags.entidades_extras import profesorado
-from gauss.funciones import html_to_pdf, usuarios_ronda, usuarios_de_gauss, get_dce
+from gauss.funciones import html_to_pdf, usuarios_ronda, usuarios_de_gauss, get_dce, clone_object
 from programaciones.models import *
 from gauss.rutas import RUTA_BASE, MEDIA_PROGRAMACIONES
 from mensajes.views import crear_aviso
@@ -1948,6 +1948,14 @@ def reordenar_saberes(saber, valor):
         saber.delete()
     return render_to_string('progsec_accordion_content_saberes.html', {'progsec': progsec})
 
+def reordenar_saberes_comienzo(psec):
+    # if comienzo > datetime(3000, 1, 1):
+    #     saber.delete()
+    for i, s in enumerate(psec.saberbas_set.all()):
+        s.orden = i + 1
+        s.save()
+    return render_to_string('progsec_accordion_content_saberes.html', {'progsec': psec})
+
 
 @permiso_required('acceso_progsecundaria')
 def progsecundaria(request):
@@ -1997,8 +2005,8 @@ def progsecundaria(request):
                                             {'progsec': progsec, 'gep': g_ep, 'departamentos': departamentos,
                                              'docentes': profesorado(g_e.ronda.entidad), 'docentes_id': docentes_id})
                     return JsonResponse({'ok': True, 'html': html})
-                except:
-                    return JsonResponse({'ok': False})
+                except Exception as msg:
+                    return JsonResponse({'ok': False, 'msg': str(msg)})
             elif action == 'borrar_progsec':
                 try:
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
@@ -2192,9 +2200,10 @@ def progsecundaria(request):
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
                     if permiso in 'EX':
-                        orden = progsec.saberbas_set.all().count() + 1
-                        saber = SaberBas.objects.create(psec=progsec, orden=orden)
-                        html = render_to_string('progsec_accordion_content_saberes_tr.html', {'saber': saber})
+                        saber = SaberBas.objects.create(psec=progsec)
+                        html = reordenar_saberes_comienzo(saber.psec)
+                        # html = render_to_string('progsec_accordion_content_saberes_tr.html', {'saber': saber})
+                        # html = render_to_string('progsec_accordion_content_saberes_row.html', {'saber': saber})
                         return JsonResponse({'ok': True, 'html': html})
                     else:
                         return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
@@ -2210,14 +2219,22 @@ def progsecundaria(request):
                         saber = progsec.saberbas_set.get(id=request.POST['saber'])
                         campo = request.POST['campo']
                         if campo == 'nombre':
-                            valor = request.POST['valor']
-                        else:
-                            valor = int(request.POST['valor'])
-                        if campo == 'orden':
-                            html = reordenar_saberes(saber, valor)
-                        else:
-                            setattr(saber, campo, valor)
+                            saber.nombre = request.POST['valor']
                             saber.save()
+                        elif campo == 'comienzo':
+                            comienzo = datetime.strptime(request.POST['valor'], '%Y-%m-%d')
+                            saber.comienzo = comienzo
+                            saber.save()
+                            html = reordenar_saberes_comienzo(saber.psec)
+                        else:
+                            saber.periodos = int(request.POST['valor'])
+                            saber.save()
+                            html = render_to_string('progsec_accordion_content_gantt.html', {'progsec': progsec})
+                        # if campo == 'orden':
+                        #     html = reordenar_saberes(saber, valor)
+                        # else:
+                        #     setattr(saber, campo, valor)
+                        #     saber.save()
                         return JsonResponse({'ok': True, 'html': html})
                     else:
                         return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
@@ -2230,9 +2247,12 @@ def progsecundaria(request):
                     permiso = progsec.get_permiso(g_ep)
                     if permiso in 'EX':
                         saber = progsec.saberbas_set.get(id=request.POST['saber'])
-                        saber_id = saber.id
-                        html = reordenar_saberes(saber, 1000)  # Si orden es > que 999 el saber se borra
-                        return JsonResponse({'ok': True, 'saber_id': saber_id, 'html': html})
+                        psec = saber.psec
+                        # saber_id = saber.id
+                        #html = reordenar_saberes(saber, 1000)  # Si orden es > que 999 el saber se borra
+                        saber.delete()
+                        html = reordenar_saberes_comienzo(psec)
+                        return JsonResponse({'ok': True, 'html': html})
                     else:
                         return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
                 except Exception as msg:
@@ -2274,6 +2294,10 @@ def progsecundaria(request):
                 except:
                     pass
 
+        try:
+            prog = int(request.GET['prog'])
+        except:
+            prog = False
         cursos = Curso.objects.filter(ronda=g_e.ronda)
         if cursos.count() == 0:
             Curso.objects.create(ronda=g_e.ronda, nombre="Curso genérico de ESO")
@@ -2294,6 +2318,7 @@ def progsecundaria(request):
                                 'permiso': 'libre'},
                                ),
                           'g_e': g_e,
+                          'prog': prog,
                           'progsecs': progsecs,
                           'cursos': cursos,
                           'areasmateria': AreaMateria.objects.all(),
@@ -2477,10 +2502,12 @@ def progsecundaria_sb(request, id):
                   })
 
 
-@permiso_required('acceso_cuaderno_docente')
+# @permiso_required('acceso_cuaderno_docente')
 def cuadernodocente(request):
     g_e = request.session['gauser_extra']
     g_ep = Gauser_extra_programaciones.objects.get(ge=g_e)
+    # Borrar definitivamente cuadernos borrados por los docentes la ronda anterior
+    CuadernoProf.objects.filter(borrado=True, ge__ronda__fin__lt=g_e.ronda.inicio).delete()
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
         if action == 'crea_cuaderno':
@@ -2499,9 +2526,25 @@ def cuadernodocente(request):
                 cievals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec)
                 for alumno in cuaderno.alumnos.all():
                     for cieval in cievals:
-                        ecp = EscalaCP.objects.get(cp=cuaderno, ieval=cieval.ieval)
+                        ecp, c = EscalaCP.objects.get_or_create(cp=cuaderno, ieval=cieval.ieval)
                         CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval, ecp=ecp)
                 html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'borrar_cuadernoprof':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                cuaderno.borrado = True
+                cuaderno.save()
+                return JsonResponse({'ok': True, 'cuaderno': cuaderno.id})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'copiar_cuadernoprof':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                cuaderno_copiado = clone_object(cuaderno)
+                html = render_to_string('cuadernodocente_accordion.html', {'cuaderno': cuaderno_copiado})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
