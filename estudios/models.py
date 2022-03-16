@@ -151,10 +151,21 @@ class Matricula(models.Model):
 #######################################################################################
 
 class PerfilSalida(models.Model):
-    ETAPAS_PERFIL_SALIDA = (('PRI', 'Primaria'), ('SEC', 'Secundaria Obligatoria'), ('BAC', 'Bachillerato'))
+    ETAPAS_PERFIL_SALIDA = (('00INF', 'Infantil'), ('10PRI', 'Primaria'), ('20SEC', 'Secundaria Obligatoria'),
+                            ('30FPB', 'Ciclos Formativos de Grado Basico'),
+                            ('35FPB', 'Ciclos Formativos de Grado Medio'),
+                            ('40FPB', 'Ciclos Formativos de Grado Superior'),
+                            ('50BAC', 'Bachillerato'),
+                            ('INF', 'Infantil antinguo'), ('PRI', 'Primaria antinguo'),
+                            ('SEC', 'Secundaria Obligatoria antinguo'),
+                            ('BAC', 'Bachillerato antinguo'))
     ley = models.CharField('Ley asociada a definir el perfil de salida', blank=True, null=True, max_length=300)
     observaciones = models.TextField('Observaciones', blank=True, null=True)
-    etapa = models.CharField('Etapa escolar', choices=ETAPAS_PERFIL_SALIDA, default='PRI', max_length=5)
+    etapa = models.CharField('Etapa escolar', choices=ETAPAS_PERFIL_SALIDA, default='10PRI', max_length=5)
+
+    class Meta:
+        verbose_name_plural = 'Perfiles de salida'
+        ordering = ['etapa',]
 
     def __str__(self):
         return '%s - %s' % (self.ley, self.get_etapa_display())
@@ -168,6 +179,7 @@ class CompetenciaClave(models.Model):
     texto = models.TextField('Descripción de la competencia clave', blank=True, null=True)
 
     class Meta:
+        verbose_name_plural = 'Competencias Clave'
         ordering = ['ps', 'orden']
 
     def __str__(self):
@@ -180,34 +192,39 @@ class DescriptorOperativo(models.Model):
     texto = models.TextField('Descripción del descriptor operativo', blank=True, null=True)
 
     class Meta:
+        verbose_name_plural = 'Descriptores'
         ordering = ['cc', 'clave']
 
     def __str__(self):
         return '(%s) %s' % (self.cc, self.texto[:100])
 
 
-CURSOS_LOMLOE = (('INF0', 'Primer Ciclo Infantil - 0 años'), ('INF1', 'Primer Ciclo Infantil - 1 año'),
-                 ('INF2', 'Primer Ciclo Infantil - 2 años'), ('INF3', 'Segundo Ciclo Infantil - 3 años'),
-                 ('INF4', 'Segundo Ciclo Infantil - 4 años'), ('INF5', 'Segundo Ciclo Infantil - 5 años'),
-                 ('PRI1', 'Primer Ciclo Primaria - 1er Curso'), ('PRI2', 'Primer Ciclo Primaria - 2o Curso'),
-                 ('PRI3', 'Segundo Ciclo Primaria - 3er Curso'), ('PRI4', 'Segundo Ciclo Primaria - 4o Curso'),
-                 ('PRI5', 'Tercer Ciclo Primaria - 5o Curso'), ('PRI6', 'Tercer Ciclo Primaria - 6o Curso'),
-                 ('ESO1', '1º de ESO'), ('ESO2', '2º de ESO'), ('ESO3', '3º de ESO'), ('ESO4', '4º de ESO'),
-                 ('BA1C', '1º Bachillerato de Ciencias y Tecnología'),
-                 ('BA2C', '2º Bachillerato de Ciencias y Tecnología'),
-                 ('BA1H', '1º Bachillerato de Humanidades y Ciencias Sociales'),
-                 ('BA2H', '2º Bachillerato de Humanidades y Ciencias Sociales'),
-                 ('BA1A', '1º Bachillerato de Artes'),
-                 ('BA2A', '2º Bachillerato de Artes'),
-                 ('BA1G', '1º Bachillerato General'),
-                 ('BA2G', '2º Bachillerato General'))
+CURSOS_LOMLOE = (('000I0', 'Primer Ciclo Infantil - 0 años'), ('001I1', 'Primer Ciclo Infantil - 1 año'),
+                 ('002I2', 'Primer Ciclo Infantil - 2 años'), ('003I3', 'Segundo Ciclo Infantil - 3 años'),
+                 ('004I4', 'Segundo Ciclo Infantil - 4 años'), ('005I5', 'Segundo Ciclo Infantil - 5 años'),
+                 ('006P1', 'Primer Ciclo Primaria - 1er Curso'), ('007P2', 'Primer Ciclo Primaria - 2o Curso'),
+                 ('008P3', 'Segundo Ciclo Primaria - 3er Curso'), ('009P4', 'Segundo Ciclo Primaria - 4o Curso'),
+                 ('010P5', 'Tercer Ciclo Primaria - 5o Curso'), ('011P6', 'Tercer Ciclo Primaria - 6o Curso'),
+                 ('012E1', '1º de ESO'), ('017E2', '2º de ESO'), ('021E3', '3º de ESO'), ('026E4', '4º de ESO'),
+                 ('031B1C', '1º Bachillerato de Ciencias y Tecnología'),
+                 ('036B2C', '2º Bachillerato de Ciencias y Tecnología'),
+                 ('041B1H', '1º Bachillerato de Humanidades y Ciencias Sociales'),
+                 ('046B2H', '2º Bachillerato de Humanidades y Ciencias Sociales'),
+                 ('051B1A', '1º Bachillerato de Artes'),
+                 ('056B2A', '2º Bachillerato de Artes'),
+                 ('061B1G', '1º Bachillerato General'),
+                 ('066B2G', '2º Bachillerato General'))
 
 
 class AreaMateria(models.Model):
     ps = models.ForeignKey(PerfilSalida, on_delete=models.CASCADE, blank=True, null=True)
     nombre = models.CharField('Nombre del Área/Materia', blank=True, null=True, max_length=350)
     texto = models.TextField('Descripción del Área/Materia', blank=True, null=True)
-    curso = models.CharField('Curso asociado a la asignatura', choices=CURSOS_LOMLOE, default='INF0', max_length=5)
+    curso = models.CharField('Curso asociado a la asignatura', choices=CURSOS_LOMLOE, default='000I0', max_length=6)
+
+    class Meta:
+        verbose_name_plural = 'Áreas/Materias'
+        ordering = ['ps', 'curso']
 
     @property
     def num_ces(self):
@@ -240,10 +257,17 @@ class CompetenciaEspecifica(models.Model):
     dos = models.ManyToManyField(DescriptorOperativo, blank=True)
 
     class Meta:
+        verbose_name_plural = 'Competencias Específicas'
         ordering = ['orden', ]
 
     def __str__(self):
-        return '%s.- (%s) - %s' % (self.orden, self.am.nombre, self.nombre[:50])
+        n = self.nombre if self.nombre else 'Sin nombre'
+        a = self.am.nombre if self.am else 'No área/materia'
+        return '%s.- (%s) - %s' % (self.orden, a, n)
+        # if self.am:
+        #     return '%s.- (%s) - %s' % (self.orden, self.am.nombre, self.nombre[:50])
+        # else:
+        #     return '%s.- (%s) - %s' % (self.orden, 'No área/Materia', self.nombre[:50])
 
 
 class CriterioEvaluacion(models.Model):
@@ -266,6 +290,7 @@ class CriterioEvaluacion(models.Model):
     texto = models.TextField('Descripción del criterio de evaluación', blank=True, null=True)
 
     class Meta:
+        verbose_name_plural = 'Criterios de Evaluación'
         ordering = ['orden', ]
 
     def __str__(self):
