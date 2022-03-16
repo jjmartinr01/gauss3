@@ -224,7 +224,8 @@ class AreaMateria(models.Model):
 
     class Meta:
         verbose_name_plural = 'Áreas/Materias'
-        ordering = ['ps', 'curso']
+        # ordering = ['ps', 'curso']
+        ordering = ['ps', ]
 
     @property
     def num_ces(self):
