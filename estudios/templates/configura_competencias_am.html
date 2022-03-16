@@ -1,8 +1,15 @@
-<fieldset>
-    <legend style="font-weight: bold;color: #0f74a8;">{{ am.ps.get_etapa_display }} - {{ am.nombre }}</legend>
+<fieldset id="areamateria{{ am.id }}">
+    <legend style="font-weight: bold;color: #0f74a8;">{{ am.ps.get_etapa_display }} - {{ am.nombre }}
+        - {{ am.get_curso_display }}</legend>
     <div id="fieldset_content_am{{ am.id }}">
-        <a class="right button cargar_fieldset_content_am" data-am="{{ am.id }}">
-            Cargar contenido de {{ am.nombre }}
-        </a>
+        <div class="row">
+            <div class="columns large-6">
+                <a class="borrar_objeto alert button" data-clase="AreaMateria"
+                   data-id="{{ am.id }}"><i class="fa fa-trash"></i> Borrar</a>
+            </div>
+            <div class="columns large-6"><a class="right button cargar_fieldset_content_am" data-am="{{ am.id }}">
+                Cargar contenido de {{ am.nombre }}
+            </a></div>
+        </div>
     </div>
 </fieldset>

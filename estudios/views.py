@@ -410,9 +410,10 @@ def configura_competencias(request):
         elif action == 'inserta_am':
             try:
                 ps = PerfilSalida.objects.get(id=request.POST['ps'])
-                am, c = AreaMateria.objects.get_or_create(nombre=request.POST['nombre'], ps=ps)
-                am.texto = request.POST['texto']
-                am.save()
+                for curso in AreaMateria.CURSOS_LOMLOE:
+                    if ps.etapa in curso[0]:
+                        break
+                am = AreaMateria.objects.create(nombre='Nueva área/materia', ps=ps, curso=curso[0], texto='')
                 html = render_to_string('configura_competencias_am.html', {'am': am})
                 return JsonResponse({'html': html, 'ok': True, 'ps': ps.id})
             except Exception as msg:

@@ -1972,14 +1972,17 @@ def progsecundaria(request):
             progsecs = ProgSec.objects.filter(pga=pga, gep=g_ep)
         if request.method == 'POST' and request.is_ajax():
             action = request.POST['action']
-            if action == 'crea_progsec':
+            if action == 'get_areasmaterias':
+                try:
+                    ams = AreaMateria.objects.filter(curso=request.POST['curso'])
+                    return JsonResponse({'ok': True, 'valores': [{'valor': am.id, 'texto': am.nombre} for am in ams]})
+                except Exception as msg:
+                    return JsonResponse({'ok': False, 'msg': str(msg)})
+            elif action == 'crea_progsec':
                 try:
                     if g_e.has_permiso('crea_programaciones'):
-                        # materia = Materia.objects.get(id=request.POST['materia'])
-                        # mp, c = Materia_programaciones.objects.get_or_create(materia=materia)
                         areamateria = AreaMateria.objects.get(id=request.POST['areamateria'])
-                        curso = Curso.objects.get(id=request.POST['curso'], ronda=g_e.ronda)
-                        progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria, curso=curso)
+                        progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria)
                         DocProgSec.objects.get_or_create(psec=progsec, gep=g_ep, permiso='X')
                         for ce in areamateria.competenciaespecifica_set.all():
                             cepsec = CEProgSec.objects.create(psec=progsec, ce=ce)
@@ -2298,19 +2301,11 @@ def progsecundaria(request):
             prog = int(request.GET['prog'])
         except:
             prog = False
-        cursos = Curso.objects.filter(ronda=g_e.ronda)
-        if cursos.count() == 0:
-            Curso.objects.create(ronda=g_e.ronda, nombre="Curso genérico de ESO")
-            Curso.objects.create(ronda=g_e.ronda, nombre="Curso genérico de Primaria")
-            Curso.objects.create(ronda=g_e.ronda, nombre="Curso genérico de Bachillerato")
-            Curso.objects.create(ronda=g_e.ronda, nombre="Curso genérico de Infantil")
-            cursos = Curso.objects.filter(ronda=g_e.ronda)
-
         return render(request, "progsec.html",
                       {
                           'formname': 'progsec',
                           'iconos':
-                              ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear',
+                              ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Programación',
                                 'title': 'Crear una nueva programación de una materia de secundaria',
                                 'permiso': 'libre'},
                                {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar',
@@ -2320,7 +2315,7 @@ def progsecundaria(request):
                           'g_e': g_e,
                           'prog': prog,
                           'progsecs': progsecs,
-                          'cursos': cursos,
+                          'cursos': AreaMateria.CURSOS_LOMLOE,
                           'areasmateria': AreaMateria.objects.all(),
                           'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)
                       })

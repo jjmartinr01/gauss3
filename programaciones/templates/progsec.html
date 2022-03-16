@@ -44,24 +44,21 @@
                         <select id="curso_progsec">
                             <option value="">-------</option>
                             {% for curso in cursos %}
-                                <option value="{{ curso.id }}">{{ curso.nombre }}</option>
+                                <option value="{{ curso.0 }}">{{ curso.1 }}</option>
                             {% endfor %}
                         </select>
                     </label>
                 </div>
                 <div class="columns large-5">
                     <label>Selecciona la materia:
-                        <select id="areamateria_progsec">
+                        <select id="areamateria_progsec" disabled>
                             <option value="">-------</option>
-                            {% for am in areasmateria %}
-                                <option value="{{ am.id }}">{{ am.nombre }} ({{ am.ps.get_etapa_display }})</option>
-                            {% endfor %}
                         </select>
                     </label>
                 </div>
                 <div class="columns large-2">
                     <label>&nbsp;</label>
-                    <a id="crea_progsec"><i class="fa fa-plus"></i> <b>Crear</b></a>
+                    <a id="crea_progsec" class="hide"><i class="fa fa-plus"></i> <b>Crear</b></a>
                 </div>
             </div>
         </div>
@@ -114,6 +111,35 @@
                     $('#curso_progsec').select2();
                     $('#areamateria_progsec').select2();
                 }, 100);
+            });
+
+            $('#curso_progsec').change(function () {
+                var curso = $('#curso_progsec').val();
+                $.post("/progsecundaria/", {'action': 'get_areasmaterias', 'curso': curso},
+                    function (data) {
+                        if (data.ok) {
+                            $('#areamateria_progsec').prop('disabled', false);
+                            $.each(data.valores, function (i, valor) {
+                                $('#areamateria_progsec').append($('<option>', {
+                                    value: valor.valor,
+                                    text: valor.texto
+                                }));
+                            });
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                        $(document).scrollTop($('#title_page').offset().top - 150);
+                    });
+            });
+
+            $('#areamateria_progsec').change(function () {
+                var areamateria = $('#areamateria_progsec').val();
+                if (areamateria){
+                    $('#crea_progsec').show();
+                }else{
+                    $('#crea_progsec').hide();
+                }
             });
 
             $('#crea_progsec').click(function (event) {
@@ -393,9 +419,9 @@
                     function (data) {
                         if (data.ok) {
                             if (data.html) {
-                                if (campo == 'periodos'){
+                                if (campo == 'periodos') {
                                     $('#gantt' + id).html(data.html);
-                                }else{
+                                } else {
                                     $('#lista_saberes' + id).html(data.html);
                                 }
                             }

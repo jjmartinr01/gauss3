@@ -2,11 +2,19 @@
 from django.template import Library
 from gauss.funciones import human_readable_list
 from entidades.models import Subentidad
-from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios, Matricula
+from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios, Matricula, AreaMateria
 from datetime import datetime, time
 
 register = Library()
 
+
+@register.filter
+def get_ps_cursos(ps):
+    cs = []
+    for curso in AreaMateria.CURSOS_LOMLOE:
+        if ps.etapa in curso[0]:
+            cs.append(curso)
+    return cs
 
 @register.filter
 def grupos_curso(curso):

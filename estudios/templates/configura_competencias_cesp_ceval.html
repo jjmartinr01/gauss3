@@ -1,7 +1,9 @@
 <div id="div_criterio_eval{{ ceval.id }}">
     <div class="row">
         <div class="columns large-12">
-            <h4>Criterio de evaluación (CEV)</h4>
+            <h4>Criterio de evaluación (CEV) <a class="borrar_ceval" data-ceval="{{ ceval.id }}">
+            <i class="fa fa-trash"></i> Borrar Criterio
+        </a></h4>
         </div>
     </div>
     <div class="row">
@@ -19,6 +21,7 @@
         </div>
     </div>
 
+{% comment %}
     <div class="row">
         <div class="columns large-6">
             <label>Ciclo/Etapa asociado al CEV
@@ -47,4 +50,5 @@
         </a>
         </div>
     </div>
+    {% endcomment %}
 </div>

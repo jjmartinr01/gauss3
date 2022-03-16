@@ -1,6 +1,5 @@
 {% load my_templatetags %}
-
-{#                                <h5 style="font-weight: bold;">{{ ps }}</h5>#}
+{% load estudios_extras %}
 <div data-ps="{{ ps.id }}" id="perfilsalida{{ ps.id }}">
     <div id="list_am{{ ps.id }}">
         {% for am in ps.areamateria_set.all %}
@@ -9,27 +8,48 @@
     </div>
     <div class="row">
         <div class="columns large-12">
-            <label style="font-weight: bold;">Formulario para crear Áreas/Materias
-                en {{ ps.get_etapa_display }}</label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="columns large-12">
-            <label>Nombre
-                <input type="text" value="" id="am_nombre{{ ps.id }}">
-            </label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="columns large-10">
-            <label>Descripción del Área/Materia
-                <textarea id="am_texto{{ ps.id }}"></textarea></label>
-        </div>
-        <div class="columns large-2">
-            <label>Añadir</label>
-            <a class="button tiny inserta_am" data-ps="{{ ps.id }}">
-                <i class="fa fa-plus"></i>
+            <a class="button alert inserta_am right" data-ps="{{ ps.id }}">
+                <i class="fa fa-plus"></i> Crear una nueva materia para  {{ ps.get_etapa_display }}
             </a>
         </div>
     </div>
+    {#    <div class="row">#}
+    {#        <div class="columns large-12">#}
+    {#            <label style="font-weight: bold;">Formulario para crear Áreas/Materias#}
+    {#                en {{ ps.get_etapa_display }}</label>#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div class="row">#}
+    {#        <div class="columns large-8">#}
+    {#            <label>Nombre#}
+    {#                <input type="text" value="" id="am_nombre{{ ps.id }}">#}
+    {#            </label>#}
+    {#        </div>#}
+    {#        <div class="columns large-2">#}
+    {#            <label>Curso#}
+    {#                <select id="am_curso{{ ps.id }}">#}
+    {#                    {% for c in ps|get_ps_cursos %}#}
+    {#                        <option value="{{ c.0 }}">{{ c.1 }}</option>#}
+    {#                    {% endfor %}#}
+    {#                </select>#}
+    {#            </label>#}
+    {#        </div>#}
+    {#    <div class="columns large-2">#}
+    {#            <label>Periodos/horas#}
+    {#                <input type="number" min="0" max="16" step="0.5" value="" id="am_periodos{{ ps.id }}">#}
+    {#            </label>#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div class="row">#}
+    {#        <div class="columns large-10">#}
+    {#            <label>Descripción del Área/Materia#}
+    {#                <textarea id="am_texto{{ ps.id }}"></textarea></label>#}
+    {#        </div>#}
+    {#        <div class="columns large-2">#}
+    {#            <label>Añadir</label>#}
+    {#            <a class="button tiny inserta_am" data-ps="{{ ps.id }}">#}
+    {#                <i class="fa fa-plus"></i>#}
+    {#            </a>#}
+    {#        </div>#}
+    {#    </div>#}
 </div>

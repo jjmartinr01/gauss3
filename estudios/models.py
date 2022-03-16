@@ -151,14 +151,15 @@ class Matricula(models.Model):
 #######################################################################################
 
 class PerfilSalida(models.Model):
-    ETAPAS_PERFIL_SALIDA = (('00INF', 'Infantil'), ('10PRI', 'Primaria'), ('20SEC', 'Secundaria Obligatoria'),
+    ETAPAS_PERFIL_SALIDA = (('00INF', 'Infantil'), ('10PRI', 'Primaria'), ('20ESO', 'Secundaria Obligatoria'),
                             ('30FPB', 'Ciclos Formativos de Grado Basico'),
                             ('35FPB', 'Ciclos Formativos de Grado Medio'),
                             ('40FPB', 'Ciclos Formativos de Grado Superior'),
                             ('50BAC', 'Bachillerato'),
                             ('INF', 'Infantil antinguo'), ('PRI', 'Primaria antinguo'),
                             ('SEC', 'Secundaria Obligatoria antinguo'),
-                            ('BAC', 'Bachillerato antinguo'))
+                            ('BAC', 'Bachillerato antinguo'),
+                            ('20SEC', 'Secundaria Obligatoria borrar'))
     ley = models.CharField('Ley asociada a definir el perfil de salida', blank=True, null=True, max_length=300)
     observaciones = models.TextField('Observaciones', blank=True, null=True)
     etapa = models.CharField('Etapa escolar', choices=ETAPAS_PERFIL_SALIDA, default='10PRI', max_length=5)
@@ -199,28 +200,44 @@ class DescriptorOperativo(models.Model):
         return '(%s) %s' % (self.cc, self.texto[:100])
 
 
-CURSOS_LOMLOE = (('000I0', 'Primer Ciclo Infantil - 0 años'), ('001I1', 'Primer Ciclo Infantil - 1 año'),
-                 ('002I2', 'Primer Ciclo Infantil - 2 años'), ('003I3', 'Segundo Ciclo Infantil - 3 años'),
-                 ('004I4', 'Segundo Ciclo Infantil - 4 años'), ('005I5', 'Segundo Ciclo Infantil - 5 años'),
-                 ('006P1', 'Primer Ciclo Primaria - 1er Curso'), ('007P2', 'Primer Ciclo Primaria - 2o Curso'),
-                 ('008P3', 'Segundo Ciclo Primaria - 3er Curso'), ('009P4', 'Segundo Ciclo Primaria - 4o Curso'),
-                 ('010P5', 'Tercer Ciclo Primaria - 5o Curso'), ('011P6', 'Tercer Ciclo Primaria - 6o Curso'),
-                 ('012E1', '1º de ESO'), ('017E2', '2º de ESO'), ('021E3', '3º de ESO'), ('026E4', '4º de ESO'),
-                 ('031B1C', '1º Bachillerato de Ciencias y Tecnología'),
-                 ('036B2C', '2º Bachillerato de Ciencias y Tecnología'),
-                 ('041B1H', '1º Bachillerato de Humanidades y Ciencias Sociales'),
-                 ('046B2H', '2º Bachillerato de Humanidades y Ciencias Sociales'),
-                 ('051B1A', '1º Bachillerato de Artes'),
-                 ('056B2A', '2º Bachillerato de Artes'),
-                 ('061B1G', '1º Bachillerato General'),
-                 ('066B2G', '2º Bachillerato General'))
+# CURSOS_LOMLOE = (('000I0', 'Primer Ciclo Infantil - 0 años'), ('001I1', 'Primer Ciclo Infantil - 1 año'),
+#                  ('002I2', 'Primer Ciclo Infantil - 2 años'), ('003I3', 'Segundo Ciclo Infantil - 3 años'),
+#                  ('004I4', 'Segundo Ciclo Infantil - 4 años'), ('005I5', 'Segundo Ciclo Infantil - 5 años'),
+#                  ('006P1', 'Primer Ciclo Primaria - 1er Curso'), ('007P2', 'Primer Ciclo Primaria - 2o Curso'),
+#                  ('008P3', 'Segundo Ciclo Primaria - 3er Curso'), ('009P4', 'Segundo Ciclo Primaria - 4o Curso'),
+#                  ('010P5', 'Tercer Ciclo Primaria - 5o Curso'), ('011P6', 'Tercer Ciclo Primaria - 6o Curso'),
+#                  ('012E1', '1º de ESO'), ('017E2', '2º de ESO'), ('021E3', '3º de ESO'), ('026E4', '4º de ESO'),
+#                  ('031B1C', '1º Bachillerato de Ciencias y Tecnología'),
+#                  ('036B2C', '2º Bachillerato de Ciencias y Tecnología'),
+#                  ('041B1H', '1º Bachillerato de Humanidades y Ciencias Sociales'),
+#                  ('046B2H', '2º Bachillerato de Humanidades y Ciencias Sociales'),
+#                  ('051B1A', '1º Bachillerato de Artes'),
+#                  ('056B2A', '2º Bachillerato de Artes'),
+#                  ('061B1G', '1º Bachillerato General'),
+#                  ('066B2G', '2º Bachillerato General'))
 
 
 class AreaMateria(models.Model):
+    CURSOS_LOMLOE = (('00INF0', 'Primer Ciclo Infantil - 0 años'), ('00INF1', 'Primer Ciclo Infantil - 1 año'),
+                     ('00INF2', 'Primer Ciclo Infantil - 2 años'), ('00INF3', 'Segundo Ciclo Infantil - 3 años'),
+                     ('00INF4', 'Segundo Ciclo Infantil - 4 años'), ('00INF5', 'Segundo Ciclo Infantil - 5 años'),
+                     ('10PRI1', 'Primer Ciclo Primaria - 1er Curso'), ('10PRI2', 'Primer Ciclo Primaria - 2o Curso'),
+                     ('10PRI3', 'Segundo Ciclo Primaria - 3er Curso'), ('10PRI4', 'Segundo Ciclo Primaria - 4o Curso'),
+                     ('10PRI5', 'Tercer Ciclo Primaria - 5o Curso'), ('10PRI6', 'Tercer Ciclo Primaria - 6o Curso'),
+                     ('20ESO1', '1º de ESO'), ('20ESO2', '2º de ESO'), ('20ESO3', '3º de ESO'), ('20ESO4', '4º de ESO'),
+                     ('50BAC1C', '1º Bachillerato de Ciencias y Tecnología'),
+                     ('50BAC2C', '2º Bachillerato de Ciencias y Tecnología'),
+                     ('50BAC1H', '1º Bachillerato de Humanidades y Ciencias Sociales'),
+                     ('50BAC2H', '2º Bachillerato de Humanidades y Ciencias Sociales'),
+                     ('50BAC1A', '1º Bachillerato de Artes'),
+                     ('50BAC2A', '2º Bachillerato de Artes'),
+                     ('50BAC1G', '1º Bachillerato General'),
+                     ('50BAC2G', '2º Bachillerato General'))
     ps = models.ForeignKey(PerfilSalida, on_delete=models.CASCADE, blank=True, null=True)
     nombre = models.CharField('Nombre del Área/Materia', blank=True, null=True, max_length=350)
     texto = models.TextField('Descripción del Área/Materia', blank=True, null=True)
-    # curso = models.CharField('Curso asociado a la asignatura', choices=CURSOS_LOMLOE, default='000I0', max_length=6)
+    curso = models.CharField('Curso asociado a la asignatura', choices=CURSOS_LOMLOE, default='00INF0', max_length=7)
+    periodos = models.FloatField('Número de periodos u horas semanales', default=3)
 
     class Meta:
         verbose_name_plural = 'Áreas/Materias'

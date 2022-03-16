@@ -41,10 +41,6 @@
                                 <i id="circle_am_ce_cev{{ ps.id }}" class="fa fa-plus-circle circle_icon"></i>
                                 <span style="color:#008CBA">Áreas/Materias, Competencias Específicas y Criterios de Evaluación:</span> {{ ps }}
                             </a>
-                            {#                        <dd class="accordion-navigation">#}
-                            {#                            <a href="#panelps{{ forloop.counter }}" style="font-weight: bold;">#}
-                            {#                                <span style="color:#008CBA">Áreas/Materias, Competencias Específicas y Criterios de Evaluación:</span> {{ ps }}#}
-                            {#                            </a>#}
                             <div id="panel_am_ce_cev{{ ps.id }}" class="content accordion-ps" data-tipo="am_ce_cev"
                                  data-id="{{ ps.id }}"></div>
                         </dd>
@@ -197,19 +193,13 @@
 
             $('body').on('click', '.inserta_am', function () {
                 var ps = $(this).data('ps');
-                var nombre = $('#am_nombre' + ps).val();
-                var texto = $('#am_texto' + ps).val();
                 $.post("/configura_competencias/", {
                         action: 'inserta_am',
                         ps: ps,
-                        nombre: nombre,
-                        texto: texto
                     },
                     function (data) {
                         if (data.ok) {
                             $('#list_am' + data.ps).append(data.html);
-                            $('#am_nombre' + data.ps).val('');
-                            $('#am_texto' + data.ps).val('');
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $("#update_error").show().delay(1500).fadeOut();
