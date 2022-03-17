@@ -191,7 +191,7 @@ class DescriptorOperativo(models.Model):
     cc = models.ForeignKey(CompetenciaClave, on_delete=models.CASCADE, blank=True, null=True)
     clave = models.CharField('Clave del descriptor', blank=True, null=True, max_length=9)
     texto = models.TextField('Descripción del descriptor operativo', blank=True, null=True)
-    prueba = models.IntegerField('a', default=3, blank=True, null=True)
+    # prueba = models.IntegerField('a', default=3, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'Descriptores'
