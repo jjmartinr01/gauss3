@@ -191,6 +191,7 @@ class DescriptorOperativo(models.Model):
     cc = models.ForeignKey(CompetenciaClave, on_delete=models.CASCADE, blank=True, null=True)
     clave = models.CharField('Clave del descriptor', blank=True, null=True, max_length=9)
     texto = models.TextField('Descripción del descriptor operativo', blank=True, null=True)
+    prueba = models.IntegerField('a', default=3, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'Descriptores'
@@ -266,36 +267,36 @@ class AreaMateria(models.Model):
     def __str__(self):
         return '%s - %s' % (self.nombre, self.texto[:100])
 
-class Asignatura(models.Model):
-    CURSOS_LOMLOE = (('00INF0', 'Primer Ciclo Infantil - 0 años'), ('00INF1', 'Primer Ciclo Infantil - 1 año'),
-                     ('00INF2', 'Primer Ciclo Infantil - 2 años'), ('00INF3', 'Segundo Ciclo Infantil - 3 años'),
-                     ('00INF4', 'Segundo Ciclo Infantil - 4 años'), ('00INF5', 'Segundo Ciclo Infantil - 5 años'),
-                     ('10PRI1', 'Primer Ciclo Primaria - 1er Curso'), ('10PRI2', 'Primer Ciclo Primaria - 2o Curso'),
-                     ('10PRI3', 'Segundo Ciclo Primaria - 3er Curso'), ('10PRI4', 'Segundo Ciclo Primaria - 4o Curso'),
-                     ('10PRI5', 'Tercer Ciclo Primaria - 5o Curso'), ('10PRI6', 'Tercer Ciclo Primaria - 6o Curso'),
-                     ('20ESO1', '1º de ESO'), ('20ESO2', '2º de ESO'), ('20ESO3', '3º de ESO'), ('20ESO4', '4º de ESO'),
-                     ('50BAC1C', '1º Bachillerato de Ciencias y Tecnología'),
-                     ('50BAC2C', '2º Bachillerato de Ciencias y Tecnología'),
-                     ('50BAC1H', '1º Bachillerato de Humanidades y Ciencias Sociales'),
-                     ('50BAC2H', '2º Bachillerato de Humanidades y Ciencias Sociales'),
-                     ('50BAC1A', '1º Bachillerato de Artes'),
-                     ('50BAC2A', '2º Bachillerato de Artes'),
-                     ('50BAC1G', '1º Bachillerato General'),
-                     ('50BAC2G', '2º Bachillerato General'))
-    ps = models.ForeignKey(PerfilSalida, on_delete=models.CASCADE, blank=True, null=True)
-    nombre = models.CharField('Nombre del Área/Materia', blank=True, null=True, max_length=350)
-    texto = models.TextField('Descripción del Área/Materia', blank=True, null=True)
-    curso = models.CharField('Curso', choices=CURSOS_LOMLOE, max_length=8, blank=True, null=True)
-    periodos = models.FloatField('Número de periodos u horas semanales', default=3, blank=True, null=True)
-    am = models.ForeignKey(AreaMateria, on_delete=models.SET_NULL, blank=True, null=True)
+# class Asignatura(models.Model):
+#     CURSOS_LOMLOE = (('00INF0', 'Primer Ciclo Infantil - 0 años'), ('00INF1', 'Primer Ciclo Infantil - 1 año'),
+#                      ('00INF2', 'Primer Ciclo Infantil - 2 años'), ('00INF3', 'Segundo Ciclo Infantil - 3 años'),
+#                      ('00INF4', 'Segundo Ciclo Infantil - 4 años'), ('00INF5', 'Segundo Ciclo Infantil - 5 años'),
+#                      ('10PRI1', 'Primer Ciclo Primaria - 1er Curso'), ('10PRI2', 'Primer Ciclo Primaria - 2o Curso'),
+#                      ('10PRI3', 'Segundo Ciclo Primaria - 3er Curso'), ('10PRI4', 'Segundo Ciclo Primaria - 4o Curso'),
+#                      ('10PRI5', 'Tercer Ciclo Primaria - 5o Curso'), ('10PRI6', 'Tercer Ciclo Primaria - 6o Curso'),
+#                      ('20ESO1', '1º de ESO'), ('20ESO2', '2º de ESO'), ('20ESO3', '3º de ESO'), ('20ESO4', '4º de ESO'),
+#                      ('50BAC1C', '1º Bachillerato de Ciencias y Tecnología'),
+#                      ('50BAC2C', '2º Bachillerato de Ciencias y Tecnología'),
+#                      ('50BAC1H', '1º Bachillerato de Humanidades y Ciencias Sociales'),
+#                      ('50BAC2H', '2º Bachillerato de Humanidades y Ciencias Sociales'),
+#                      ('50BAC1A', '1º Bachillerato de Artes'),
+#                      ('50BAC2A', '2º Bachillerato de Artes'),
+#                      ('50BAC1G', '1º Bachillerato General'),
+#                      ('50BAC2G', '2º Bachillerato General'))
+#     ps = models.ForeignKey(PerfilSalida, on_delete=models.CASCADE, blank=True, null=True)
+#     nombre = models.CharField('Nombre del Área/Materia', blank=True, null=True, max_length=350)
+#     texto = models.TextField('Descripción del Área/Materia', blank=True, null=True)
+#     curso = models.CharField('Curso', choices=CURSOS_LOMLOE, max_length=8, blank=True, null=True)
+#     periodos = models.FloatField('Número de periodos u horas semanales', default=3, blank=True, null=True)
+#     am = models.ForeignKey(AreaMateria, on_delete=models.SET_NULL, blank=True, null=True)
+#
+#     class Meta:
+#         verbose_name_plural = 'Asignaturas'
+#         ordering = ['ps', 'curso']
+        # ordering = ['ps', ]
 
-    class Meta:
-        verbose_name_plural = 'Asignaturas'
-        # ordering = ['ps', 'curso']
-        ordering = ['ps', ]
-
-    def __str__(self):
-        return '%s - %s' % (self.nombre, self.texto[:100])
+    # def __str__(self):
+    #     return '%s - %s' % (self.nombre, self.texto[:100])
 
 
 class CompetenciaEspecifica(models.Model):
