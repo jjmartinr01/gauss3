@@ -384,8 +384,8 @@ def configura_competencias(request):
                 filename = 'configura_competencias_accordion_%s.html' % request.POST['tipo']
                 html = render_to_string(filename, {'ps': ps})
                 return JsonResponse({'ok': True, 'html': html})
-            except:
-                return JsonResponse({'ok': False})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'inserta_do':
             try:
                 cc = CompetenciaClave.objects.get(id=request.POST['cc'])
