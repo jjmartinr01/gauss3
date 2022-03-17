@@ -649,7 +649,6 @@ class ProgSec(models.Model):
     departamento = models.ForeignKey(Departamento, on_delete=models.SET_NULL, blank=True, null=True)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
-    prueba = models.IntegerField('a', default=3, blank=True, null=True)
 
     @property
     def dias_curso(self):
