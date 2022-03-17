@@ -236,9 +236,9 @@ class AreaMateria(models.Model):
     ps = models.ForeignKey(PerfilSalida, on_delete=models.CASCADE, blank=True, null=True)
     nombre = models.CharField('Nombre del Área/Materia', blank=True, null=True, max_length=350)
     texto = models.TextField('Descripción del Área/Materia', blank=True, null=True)
-    curso = models.CharField('Curso asociado a la asignatura', choices=CURSOS_LOMLOE, max_length=8,
-                             blank=True, null=True)
-    periodos = models.FloatField('Número de periodos u horas semanales', default=3, blank=True, null=True)
+    # curso = models.CharField('Curso asociado a la asignatura', choices=CURSOS_LOMLOE, max_length=8,
+    #                          blank=True, null=True)
+    # periodos = models.FloatField('Número de periodos u horas semanales', default=3, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'Áreas/Materias'
