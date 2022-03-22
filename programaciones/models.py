@@ -756,7 +756,7 @@ class SaberBas(models.Model):
     orden = models.IntegerField('Orden del saber básico dentro del conjunto de saberes', default=1)
     # parent = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
     nombre = models.CharField('Nombre de la actividad', blank=True, max_length=300)
-    # comienzo = models.DateField('Fecha de comienzo programada', default=now)
+    comienzo = models.DateField('Fecha de comienzo programada', default=now)
     periodos = models.IntegerField('Número estimado de periodos lectivos para impartirlo', default=1)
     librorecursos = models.ManyToManyField(LibroRecurso, blank=True)
     actexcoms = models.ManyToManyField(ActExCom, blank=True)
