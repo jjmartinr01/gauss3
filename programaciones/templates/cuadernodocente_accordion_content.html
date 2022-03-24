@@ -52,15 +52,15 @@
 </style>
 <div class="row">
     <div class="columns large-12">
-            <ul class="button-group right">
-                <li><a title="Borrar este cuaderno docente de la base de datos"
-                       class="button alert borrar_cuadernoprof tiny"><i class="fa fa-trash-o"></i> Borrar</a></li>
-{#                <li><a title="Hacer una copia (un duplicado) de este cuaderno docente"#}
-{#                       class="button copiar_cuadernoprof tiny"><i class="fa fa-copy"></i> Copiar</a></li>#}
-{#                <li><a class="button pdf_ie tiny" data-id="{{ ie.id }}"#}
-{#                       title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>#}
-{#                </li>#}
-            </ul>
+        <ul class="button-group right">
+            <li><a title="Borrar este cuaderno docente de la base de datos"
+                   class="button alert borrar_cuadernoprof tiny"><i class="fa fa-trash-o"></i> Borrar</a></li>
+            {#                <li><a title="Hacer una copia (un duplicado) de este cuaderno docente"#}
+            {#                       class="button copiar_cuadernoprof tiny"><i class="fa fa-copy"></i> Copiar</a></li>#}
+            {#                <li><a class="button pdf_ie tiny" data-id="{{ ie.id }}"#}
+            {#                       title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>#}
+            {#                </li>#}
+        </ul>
     </div>
 </div>
 {% if not cuaderno.grupo %}
@@ -167,7 +167,9 @@
                         {% for asap in sap.actsitapren_set.all %}
                             {% for ieval in asap.instreval_set.all %}
                                 {% for cieval in ieval.criinstreval_set.all %}
-                                    <th title="{{ cieval.cevps.cev.texto }}">
+                                    <th title="{{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
+                                               {{ cieval.cevps.cev.texto }}">
+                                        {{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
                                         {{ cieval.cevps.cev.texto|truncatechars:10 }}
                                     </th>
                                 {% endfor %}
@@ -229,15 +231,19 @@
                         <i class="fa fa-users"></i> Gestionar alumnos
                     </a>
                 </th>
-                <th rowspan="2" title="Calificación total obtenida en la materia">Calificación</th>
+                <th rowspan="2" title="Calificación total obtenida en la materia">Calificación<br>global</th>
                 {% for ce in cuaderno.psec.areamateria.competenciaespecifica_set.all %}
-                    <th colspan="{{ ce.criterioevaluacion_set.all|length }}"
-                        title="{{ ce.nombre }}">{{ ce.nombre|truncatechars:160 }}</th>
+                    <th colspan="{{ ce.criterioevaluacion_set.all|length|add:'1' }}"
+                        title="{{ ce.orden }}.- {{ ce.nombre }}">{{ ce.orden }}.- {{ ce.nombre|truncatechars:160 }}</th>
                 {% endfor %}
             </tr>
             <tr>
                 {% for cev in cuaderno.psec.areamateria.cevs %}
-                    <th title="{{ cev.texto }}">{{ cev.texto|truncatechars:20 }}</th>
+                    {% ifchanged cev.ce %}
+                        <th title="Calificación global de la CE{{ cev.ce.orden }}">Cal. CE{{ cev.ce.orden }}</th>
+                    {% endifchanged %}
+                    <th title="{{ cev.ce.orden }}.{{ cev.orden }}.- {{ cev.texto }}"
+                    >{{ cev.ce.orden }}.{{ cev.orden }}.- {{ cev.texto|truncatechars:20 }}</th>
                 {% endfor %}
             </tr>
             </thead>
@@ -247,10 +253,16 @@
                     <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
                         <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
                     </td>
-                    <td></td>
+                    <td><b>{{ cuaderno|get_global_cal:alumno }}</b></td>
                     {% for cev in cuaderno.psec.areamateria.cevs %}
-                        <td title="">f</td>
+                        {% ifchanged cev.ce %}
+                            <td>{{ cuaderno|get_ce_cal:cev.ce|get_calalum_ce:alumno }}</td>
+                        {% endifchanged %}
+                        <td>
+                            {{ cuaderno|get_cev_cals:cev|get_calalum_cev:alumno }}
+                        </td>
                     {% endfor %}
+                    <td>f</td>
                 </tr>
             {% endfor %}
             </tbody>

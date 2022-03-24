@@ -388,6 +388,20 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="columns large-12">
+            <div data-alert class="alert-box info radius">
+                <p>Para la valoración de los criterios de evaluación esta programación utiliza los siguientes
+                procedimientos de evaluación:</p>
+                <ol>
+                    {% for ins in progsec.instrumentos_utilizados %}
+                        <li>{{ ins }}</li>
+                    {% endfor %}
+                </ol>
+{#                <a href="#" class="close">&times;</a>#}
+            </div>
+        </div>
+    </div>
     {#    <div class="row">#}
     {#        <div class="columns large-12">#}
     {#            <table id="lista_saber{{ progsec.id }}" style="width: 100%;">#}
@@ -410,7 +424,7 @@
 
     <div class="row">
         <div class="columns large-2"><b>Comienzo</b></div>
-{#        <div class="columns large-1"><b>Orden</b></div>#}
+        {#        <div class="columns large-1"><b>Orden</b></div>#}
         <div class="columns large-7"><b>Nombre de la unidad de programación (UP)</b></div>
         <div class="columns large-1"><b>Periodos</b></div>
         <div class="columns large-1"><b>¿Borrar?</b></div>
@@ -421,14 +435,14 @@
     </div>
 
 
-{#    <div class="row">#}
-{#        <div class="columns large-12">#}
-{#            <a data-progsec="{{ progsec.id }}" class="add_saber button small right">Añadir Saber básico</a>#}
-{#        </div>#}
-{#    </div>#}
-{#    <div id="gantt{{ progsec.id }}">#}
-{#        {% include 'progsec_accordion_content_gantt.html' %}#}
-{#    </div>#}
+    {#    <div class="row">#}
+    {#        <div class="columns large-12">#}
+    {#            <a data-progsec="{{ progsec.id }}" class="add_saber button small right">Añadir Saber básico</a>#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div id="gantt{{ progsec.id }}">#}
+    {#        {% include 'progsec_accordion_content_gantt.html' %}#}
+    {#    </div>#}
 
     {% comment %}
     {% for sb in progsec.saberbas_set.all %}

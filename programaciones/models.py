@@ -677,6 +677,16 @@ class ProgSec(models.Model):
             permiso = 'No tiene permiso'
         return permiso
 
+    @property
+    def instrumentos_utilizados(self):
+        try:
+            tipos_existentes = dict(InstrEval.TIPOS)
+            tipos_utilizados = InstrEval.objects.filter(asapren__sapren__sbas__psec=self).values_list('tipo', flat=True)
+            # con filter(None, lista) eliminamos los elementos vacíos de la lista
+            return [tipos_existentes[tipo] for tipo in filter(None, set(tipos_utilizados))]
+        except:
+            return []
+
     def __str__(self):
         return '%s - %s (%s)' % (self.pga.ronda, self.areamateria, self.gep.ge.gauser.get_full_name())
 
@@ -754,7 +764,6 @@ class ActExCom(models.Model):
 class SaberBas(models.Model):
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
     orden = models.IntegerField('Orden del saber básico dentro del conjunto de saberes', default=1)
-    # parent = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
     nombre = models.CharField('Nombre de la actividad', blank=True, max_length=300)
     comienzo = models.DateField('Fecha de comienzo programada', default=now)
     periodos = models.IntegerField('Número estimado de periodos lectivos para impartirlo', default=1)
@@ -897,7 +906,7 @@ class CuadernoProf(models.Model):
             numerador += ca.cie.peso * ca.cal
             denominador += ca.cie.peso
         try:
-            return numerador / denominador
+            return round(numerador / denominador, 2)
         except:
             return 0
 
@@ -913,7 +922,7 @@ class CuadernoProf(models.Model):
             numerador += self.calificacion_alumno_cev(alumno, cevp.cev) * cevp.valor
             denominador += cevp.valor
         try:
-            return numerador / denominador
+            return round(numerador / denominador, 2)
         except:
             return 0
 
@@ -925,7 +934,7 @@ class CuadernoProf(models.Model):
             numerador += self.calificacion_alumno_ce(alumno, cep.ce) * cep.valor
             denominador += cep.valor
         try:
-            return numerador / denominador
+            return round(numerador / denominador, 2)
         except:
             return 0
 
