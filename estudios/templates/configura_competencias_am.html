@@ -4,8 +4,11 @@
     <div id="fieldset_content_am{{ am.id }}">
         <div class="row">
             <div class="columns large-6">
-                <a class="borrar_objeto alert button" data-clase="AreaMateria"
-                   data-id="{{ am.id }}"><i class="fa fa-trash"></i> Borrar</a>
+                <ul class="button-group">
+                <li><a class="borrar_objeto alert button" data-clase="AreaMateria"
+                   data-id="{{ am.id }}"><i class="fa fa-trash"></i> Borrar</a></li>
+                <li><a class="copia_am button" data-am="{{ am.id }}"><i class="fa fa-copy"></i> Copiar</a></li>
+                </ul>
             </div>
             <div class="columns large-6"><a class="right button cargar_fieldset_content_am" data-am="{{ am.id }}">
                 Cargar contenido de {{ am.nombre }}

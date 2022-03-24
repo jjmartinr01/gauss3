@@ -207,6 +207,24 @@
                     });
             });
 
+            $('body').on('click', '.copia_am', function () {
+                var element = $(this);
+                var am = element.data('am');
+                $.post("/configura_competencias/", {
+                        action: 'copia_am',
+                        am: am,
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            {#$('#list_am' + data.ps).append(data.html);#}
+                            $('#areamateria' + am).after(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
             $('body').on('click', '.inserta_do', function () {
                 var cc = $(this).data('cc');
                 var clave = $('#do_clave' + cc).val();

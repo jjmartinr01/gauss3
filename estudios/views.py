@@ -501,6 +501,26 @@ def configura_competencias(request):
                 return JsonResponse({'ok': True})
             except Exception as msg:
                 return JsonResponse({'msg': str(msg), 'ok': False})
+        elif action == 'copia_am':
+            try:
+                am = AreaMateria.objects.get(id=request.POST['am'])
+                ces_ids = am.competenciaespecifica_set.all().values_list('id', flat=True)
+                am.pk = None
+                am.nombre = am.nombre + ' (copia)'
+                am.save()
+                for ce in CompetenciaEspecifica.objects.filter(id__in=ces_ids):
+                    cevs_ids = ce.criterioevaluacion_set.all().values_list('id', flat=True)
+                    ce.pk = None
+                    ce.am = am
+                    ce.save()
+                    for cev in CriterioEvaluacion.objects.filter(id__in=cevs_ids):
+                        cev.pk = None
+                        cev.ce = ce
+                        cev.save()
+                html = render_to_string('configura_competencias_am.html', {'am': am})
+                return JsonResponse({'html': html, 'ok': True, 'ps': am.ps.id})
+            except Exception as msg:
+                return JsonResponse({'msg': str(msg), 'ok': False})
 
         #############################################################################
             ###################### FIN NUEVAS FUNCIONES #################################
