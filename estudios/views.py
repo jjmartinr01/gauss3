@@ -509,10 +509,12 @@ def configura_competencias(request):
                 am.nombre = am.nombre + ' (copia)'
                 am.save()
                 for ce in CompetenciaEspecifica.objects.filter(id__in=ces_ids):
+                    dos_ids = ce.dos.all().values_list('id', flat=True)
                     cevs_ids = ce.criterioevaluacion_set.all().values_list('id', flat=True)
                     ce.pk = None
                     ce.am = am
                     ce.save()
+                    ce.dos.add(*DescriptorOperativo.objects.filter(id__in=dos_ids))
                     for cev in CriterioEvaluacion.objects.filter(id__in=cevs_ids):
                         cev.pk = None
                         cev.ce = ce
