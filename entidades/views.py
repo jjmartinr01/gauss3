@@ -295,7 +295,7 @@ def usuarios_entidad_ajax(request):
                     mensaje = '<p>Se ha dado de baja al usuario <strong> %s </strong>.</p> <p> Es posible recuperarlo a través del administrador del sistema.</p>' % g_e_selected.gauser.get_full_name()
                     return JsonResponse({'ok': True, 'mensaje': mensaje})
                 else:
-                    mensaje = '<p>No tienes permisos para dar de baja a los socios.</p>'
+                    mensaje = '<p>No tienes permisos para dar de baja a los usuarios.</p>'
                     return JsonResponse({'ok': True, 'mensaje': mensaje})
     else:
         if request.method == 'POST':
@@ -330,19 +330,19 @@ def usuarios_entidad(request):
             g_e_selected = entidad_users[0]
         except:
             g_e_selected = False
-            crear_aviso(request, False, 'No hay ningún usuario.<br>En primer lugar debes crear al menos un socio.')
+            crear_aviso(request, False, 'No hay ningún usuario.<br>En primer lugar debes crear al menos un usuario.')
 
     respuesta = {
         'iconos':
-            ({'tipo': 'button', 'nombre': 'list', 'texto': 'Listado', 'title': 'Obtener un listado de socios',
+            ({'tipo': 'button', 'nombre': 'list', 'texto': 'Listado', 'title': 'Obtener un listado de usuarios',
               'permiso': 'listado_usuarios'},
-             {'tipo': 'button', 'nombre': 'male', 'texto': 'Baja', 'title': 'Dar de baja al socio',
+             {'tipo': 'button', 'nombre': 'male', 'texto': 'Baja', 'title': 'Dar de baja al usuario',
               'permiso': 'baja_usuarios', 'nombre2': 'times'},
-             {'tipo': 'button', 'nombre': 'arrow-left', 'texto': '', 'title': 'Socio anterior (orden alfabético)',
+             {'tipo': 'button', 'nombre': 'arrow-left', 'texto': '', 'title': 'Usuario anterior (orden alfabético)',
               'permiso': 'acceso_miembros_entidad'},
-             {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar', 'title': 'Buscar socio por nombre',
+             {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar', 'title': 'Buscar usuario por nombre',
               'permiso': 'acceso_miembros_entidad'},
-             {'tipo': 'button', 'nombre': 'arrow-right', 'texto': '', 'title': 'Siguiente socio (orden alfabético)',
+             {'tipo': 'button', 'nombre': 'arrow-right', 'texto': '', 'title': 'Siguiente usuario (orden alfabético)',
               'permiso': 'acceso_miembros_entidad'},
              ),
         'formname': 'entidad_users',
@@ -1486,11 +1486,11 @@ def bajas_usuarios(request):
                     n_a.save()
                     try:
                         g_e_selected = Gauser_extra.objects.get(gauser=n_a.gauser, ronda=n_a.entidad.ronda)
-                        crear_aviso(request, False, 'Se ha recuperado al socio %s' % (g_e_selected))
+                        crear_aviso(request, False, 'Se ha recuperado al usuario %s' % (g_e_selected))
                     except:
                         g_e_selected = Gauser_extra.objects.create(gauser=n_a.gauser, ronda=n_a.entidad.ronda)
                         crear_aviso(request, False,
-                                    'Se ha recuperado al socio %s creando un usuario para esta ronda. Es necesario asignar perfiles manualmente.' % (
+                                    'Se ha recuperado al usuario %s creando un usuario para esta ronda. Es necesario asignar perfiles manualmente.' % (
                                         g_e_selected))
                     g_e_selected.activo = True
                     if not g_e_selected.observaciones: g_e_selected.observaciones = ''
@@ -1499,7 +1499,7 @@ def bajas_usuarios(request):
                     g_e_selected.observaciones = g_e_selected.observaciones + obs
                     g_e_selected.save()
             else:
-                crear_aviso(request, False, 'No tienes permiso para dar de alta a los socios')
+                crear_aviso(request, False, 'No tienes permiso para dar de alta a los usuarios')
 
         if request.POST['action'] == 'borrar_bajas2':
             permiso_borrar = g_e.has_permiso('borrar_datos_socios')
@@ -1517,7 +1517,7 @@ def bajas_usuarios(request):
                       'formname': 'bajas_usuarios',
                       'iconos':
                           ({'tipo': 'button', 'nombre': 'male', 'texto': 'Alta', 'nombre2': 'check',
-                            'title': 'Volver a dar de alta al ex-socio seleccionado',
+                            'title': 'Volver a dar de alta al ex-usuario seleccionado',
                             'permiso': 'm25i12i20'},
                            {'tipo': 'button', 'nombre': 'trash-o', 'texto': 'Borrar',
                             'title': 'Borrar el cargo seleccionado', 'permiso': 'm25i12i10'}),
