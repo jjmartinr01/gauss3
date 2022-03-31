@@ -54,21 +54,33 @@
                        title="Borrar completamente este informe de la base de datos"><i class="fa fa-trash-o"></i>
                     Borrar</a></li>
             {% endif %}
-            <li><a class="button copiar_progsec tiny" data-id="{{ progsec.id }}"
-                   title="Hacer una copia (un duplicado) de este informe"><i class="fa fa-copy"></i> Copiar</a>
+            <li><a class="button copiar_progsec tiny" data-progsec="{{ progsec.id }}"
+                   title="Hacer una copia (un duplicado) de esta programación didáctica"><i class="fa fa-copy"></i> Copiar</a>
             </li>
-            <li><a class="button pdf_progsec tiny" data-id="{{ progsec.id }}"
-                   title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>
-            </li>
+{#            <li><a class="button pdf_progsec tiny" data-id="{{ progsec.id }}"#}
+{#                   title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>#}
+{#            </li>#}
         </ul>
     </div>
 </div>
 <div class="row">
-    <div class="columns large-12">
+    <div class="columns large-8">
         <label><b>Nombre específico: </b>
             <input type="text" class="update_texto nombre" data-campo="nombre" data-id="{{ progsec.id }}"
                    id="input_nombre{{ progsec.id }}" value="{{ progsec.nombre }}"
                    placeholder="Introduce aquí el nombre específico para la programación"></label>
+    </div>
+    <div class="columns large-2">
+        <label title="Fecha de comienzo de las clases"><b>Comienzo:</b>
+            <input type="date" class="update_texto" data-campo="inicio_clases" data-id="{{ progsec.id }}"
+                   id="input_inicio_clases{{ progsec.id }}" value="{{ progsec.inicio_clases|date:'Y-m-d' }}"
+                   placeholder="Fecha de comienzo de las clases"></label>
+    </div>
+    <div class="columns large-2">
+        <label title="Fecha de finalización de las clases"><b>Fin: </b>
+            <input type="date" class="update_texto" data-campo="fin_clases" data-id="{{ progsec.id }}"
+                   id="input_fin_clases{{ progsec.id }}" value="{{ progsec.fin_clases|date:'Y-m-d' }}"
+                   placeholder="Fecha de finalización de las clases"></label>
     </div>
 </div>
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.utils.text import slugify
-from django.utils.timezone import now
+from django.utils.timezone import now, datetime
 import os
 
 from django.db import models
@@ -647,6 +647,8 @@ class ProgSec(models.Model):
     areamateria = models.ForeignKey(AreaMateria, on_delete=models.CASCADE, blank=True, null=True)
     curso = models.ForeignKey(Curso, on_delete=models.SET_NULL, blank=True, null=True)
     departamento = models.ForeignKey(Departamento, on_delete=models.SET_NULL, blank=True, null=True)
+    inicio_clases = models.DateField("Fecha de inicio de las clases", blank=True, null=True)
+    fin_clases = models.DateField("Fecha de fin de las clases", blank=True, null=True)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
@@ -656,19 +658,28 @@ class ProgSec(models.Model):
 
     @property
     def tiempo_curso(self):
-        return 24105600 #Tiempo en segundos aproximado entre 9 septiembre y 15 de junio
+        return (self.fin_clases - self.inicio_clases).total_seconds()
+        # return 24105600 #Tiempo en segundos aproximado entre 9 septiembre y 15 de junio
 
     @property
     def num_periodos(self):
         return self.saberbas_set.aggregate(models.Sum('periodos'))['periodos__sum']
 
-    @property
-    def comienzo(self):
-        return self.saberbas_set.aggregate(models.Min('comienzo'))['comienzo__min']
+    def dia_curso_from_fecha(self, fecha):
+        # El día uno de curso es la fecha self.inicio_clases
+        # El día último de curso es la fecha self.fin_clases
+        try:
+            return int((fecha - self.inicio_clases) * 175 / (self.fin_clases - self.inicio_clases))
+        except:
+            return 0
 
-    @property
-    def fin(self):
-        return self.saberbas_set.aggregate(models.Max('comienzo'))['comienzo__max']
+    # @property
+    # def comienzo(self):
+    #     return self.saberbas_set.aggregate(models.Min('comienzo'))['comienzo__min']
+
+    # @property
+    # def fin(self):
+    #     return self.saberbas_set.aggregate(models.Max('comienzo'))['comienzo__max']
 
     def get_permiso(self, gep):
         try:
@@ -772,20 +783,24 @@ class SaberBas(models.Model):
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
     @property
+    def fin(self):
+        # Fecha de finalización aproximada calculada para este saber básico:
+        timedelta_periodo = (self.psec.fin_clases - self.psec.inicio_clases) / self.psec.num_periodos
+        return self.comienzo + timedelta_periodo * self.periodos
+
+    @property
     def num_divs(self):
         # Devuelve el número de divs que ocupa este saber básico en el diagrama de Gantt
+        divisiones_gantt = len(self.psec.dias_curso)
         n_periodos = self.psec.num_periodos
-        tiempo_curso = self.psec.tiempo_curso
-        tiempo_dia = tiempo_curso / 175 #175 son las divisiones del diagrama de Gantt
-        tiempo_periodo = tiempo_curso / n_periodos #Tiempo asignado a cada periodo
-        return int(self.periodos * 175 / n_periodos)
+        try:
+            return int(self.periodos * divisiones_gantt / n_periodos)
+        except:
+            return 0
 
     @property
     def div_comienzo(self):
-        div_anteriores = 0
-        for sb in self.psec.saberbas_set.filter(comienzo__lt=self.comienzo):
-            div_anteriores += sb.num_divs
-        return div_anteriores + 1
+        return self.psec.dia_curso_from_fecha(self.comienzo)
 
     @property
     def divs_gantt(self):
@@ -869,6 +884,7 @@ class InstrEval(models.Model):
     def __str__(self):
         return '%s - %s' % (self.asapren, self.nombre)
 
+
 class CriInstrEval(models.Model):
     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
     cevps = models.ForeignKey(CEvProgSec, on_delete=models.CASCADE, blank=True, null=True)
@@ -894,11 +910,12 @@ class CuadernoProf(models.Model):
     def num_columns(self):
         # El número de columnas del cuaderno será el número de CriInstrEval más la columna del nombre
         return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=self.psec).count() + 1
+
     @property
     def nombre(self):
         return '%s - %s - %s' % (self.psec.pga.ronda, self.psec.areamateria.nombre, self.grupo.nombre)
 
-    def calificacion_alumno_cev(self, alumno, cev): #Calificación de un determinado criterio de evaluación
+    def calificacion_alumno_cev(self, alumno, cev):  # Calificación de un determinado criterio de evaluación
         cas = self.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)
         numerador = 0
         denominador = 0
@@ -910,7 +927,7 @@ class CuadernoProf(models.Model):
         except:
             return 0
 
-    def calificacion_alumno_ce(self, alumno, ce): #Calificación de una determinada competencia específica
+    def calificacion_alumno_ce(self, alumno, ce):  # Calificación de una determinada competencia específica
         try:
             cepsec = self.psec.ceprogsec_set.get(ce=ce)
         except:
@@ -941,10 +958,11 @@ class CuadernoProf(models.Model):
     def __str__(self):
         return '%s - %s (%s)' % (self.psec, self.grupo, self.ge)
 
-class EscalaCP(models.Model): #Escala utilizada en el CuardernoProf
+
+class EscalaCP(models.Model):  # Escala utilizada en el CuardernoProf
     ESCALAS = (('ESVCL', 'Escala de valoración cualitativa'), ('ESVCN', 'Escala de valoración cuantitativa'),
                ('LCONT', 'Lista de control'))
-    cp =models.ForeignKey(CuadernoProf, on_delete=models.CASCADE)
+    cp = models.ForeignKey(CuadernoProf, on_delete=models.CASCADE)
     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE, blank=True, null=True)
     tipo = models.CharField('Tipo de escala', max_length=10, choices=ESCALAS, default='ESVCN')
     nombre = models.CharField('Nombre dado a la escala', max_length=300, blank=True, default='')
@@ -960,10 +978,11 @@ class EscalaCP(models.Model): #Escala utilizada en el CuardernoProf
     def __str__(self):
         return '%s (%s)' % (self.cp, self.get_tipo_display())
 
-class EscalaCPvalor(models.Model): #Escala utilizada en el CuardernoProf
+
+class EscalaCPvalor(models.Model):  # Escala utilizada en el CuardernoProf
     ESCALAS = (('ESVCL', 'Escala de valoración cualitativa'), ('ESVCN', 'Escala de valoración cuantitativa'),
                ('LCONT', 'Lista de control'))
-    ecp =models.ForeignKey(EscalaCP, on_delete=models.CASCADE)
+    ecp = models.ForeignKey(EscalaCP, on_delete=models.CASCADE)
     x = models.IntegerField('Coordenada X', default=1)
     y = models.IntegerField('Coordenada Y', default=0)
     texto_cualitativo = models.CharField('Texto descripción cualitativa de cumplimiento', max_length=300, blank=True)
@@ -997,14 +1016,15 @@ class CalAlum(models.Model):
     def __str__(self):
         return '%s - Alumno: %s - %s (%s)' % (self.ecp, self.alumno.gauser.get_full_name(), self.cie, self.cal)
 
+
 class CalAlumValor(models.Model):
     ca = models.ForeignKey(CalAlum, on_delete=models.CASCADE)
     ecpv = models.ForeignKey(EscalaCPvalor, on_delete=models.CASCADE, blank=True, null=True)
+
     # obs = models.TextField('Observaciones a la calificación otorgada', blank=True, default='')
 
     def __str__(self):
         return '%s (%s)' % (self.ca, self.ecpv)
-
 
 
 #############################################################################
