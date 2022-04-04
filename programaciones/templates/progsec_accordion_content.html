@@ -55,11 +55,12 @@
                     Borrar</a></li>
             {% endif %}
             <li><a class="button copiar_progsec tiny" data-progsec="{{ progsec.id }}"
-                   title="Hacer una copia (un duplicado) de esta programación didáctica"><i class="fa fa-copy"></i> Copiar</a>
+                   title="Hacer una copia (un duplicado) de esta programación didáctica"><i class="fa fa-copy"></i>
+                Copiar</a>
             </li>
-{#            <li><a class="button pdf_progsec tiny" data-id="{{ progsec.id }}"#}
-{#                   title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>#}
-{#            </li>#}
+            {#            <li><a class="button pdf_progsec tiny" data-id="{{ progsec.id }}"#}
+            {#                   title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>#}
+            {#            </li>#}
         </ul>
     </div>
 </div>
@@ -214,27 +215,6 @@
                 pero utilizando los criterios de evaluación.</p>
         </div>
     </div>
-
-    {% comment %}
-    {% for cep in progsec.ceprogsec_set.all %}
-        <div class="row">
-            <div class="columns large-12">
-                <b>{{ cep.ce.nombre }}</b>
-            </div>
-        </div>
-        {% for cevp in cep.cevprogsec_set.all %}
-            <div class="row">
-                <div class="columns large-10">
-                    {{ cevp.cev.texto }}
-                </div>
-                <div class="columns large-2">
-                    <input type="number" min="1" max="10" class="pesocevp" data-cevp="{{ cevp.id }}"
-                           data-progsec="{{ progsec.id }}" value="{{ cevp.valor|floatformat }}">
-                </div>
-            </div>
-        {% endfor %}
-    {% endfor %}
-{% endcomment %}
     <div class="row">
         <div class="columns large-12">
             <table style="width: 100%;">
@@ -266,7 +246,22 @@
 
     <div class="row">
         <div class="columns large-12 callout panel">
-            <h3>3º Libros o materiales van a ser utilizados para el desarrollo de la materia</h3>
+            <h3>3º Procedimiento para la adopción de medidas de atención a la diversidad</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label>Describe aquí el procedimiento:
+                <textarea placeholder="Introduce aquí el procedimiento para la adopción de medidas de atención a las diversidad"
+                          id="procdiversidad{{ progsec.id }}" class="update_texto" data-campo="procdiversidad"
+                          data-id="{{ progsec.id }}">{{ progsec.procdiversidad }}</textarea>
+            </label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="columns large-12 callout panel">
+            <h3>4º Libros o materiales van a ser utilizados para el desarrollo de la materia</h3>
             {#            <p>Indique los libros/materiales que van utilizarse para desarrollar:</p>#}
         </div>
     </div>
@@ -324,7 +319,7 @@
     <div class="row">
         <div class="columns large-12">
             <div class="panel callout">
-                <h3>4º Actividades extraescolares/complementarias que se van a llevar a cabo</h3>
+                <h3>5º Actividades extraescolares/complementarias que se van a llevar a cabo</h3>
             </div>
             {#            <p>Indique los libros/materiales que van utilizarse para desarrollar:</p>#}
         </div>
@@ -388,7 +383,7 @@
     <div class="row">
         <div class="columns large-12">
             <div class="panel callout">
-                <h3 id="unidades_programacion{{ progsec.id }}">5º Unidades de programación</h3>
+                <h3 id="unidades_programacion{{ progsec.id }}">6º Unidades de programación</h3>
             </div>
             <p>Las unidades de programación organizan la acción didáctica orientada hacia la adquisición de
                 competencias. En este proceso se desarrollan los saberes básicos (conocimientos, destrezas y actitudes),
@@ -404,35 +399,16 @@
         <div class="columns large-12">
             <div data-alert class="alert-box info radius">
                 <p>Para la valoración de los criterios de evaluación esta programación utiliza los siguientes
-                procedimientos de evaluación:</p>
+                    procedimientos de evaluación:</p>
                 <ol>
                     {% for ins in progsec.instrumentos_utilizados %}
                         <li>{{ ins }}</li>
                     {% endfor %}
                 </ol>
-{#                <a href="#" class="close">&times;</a>#}
+                {#                <a href="#" class="close">&times;</a>#}
             </div>
         </div>
     </div>
-    {#    <div class="row">#}
-    {#        <div class="columns large-12">#}
-    {#            <table id="lista_saber{{ progsec.id }}" style="width: 100%;">#}
-    {#                <thead>#}
-    {#                <tr>#}
-    {#                    <th>orden</th>#}
-    {#                    <th>nombre</th>#}
-    {#                    <th>periodos</th>#}
-    {#                    <th>¿Borrar?</th>#}
-    {#                    <th title="Situaciones de aprendizaje">SAP</th>#}
-    {#                </tr>#}
-    {#                </thead>#}
-    {#                <tbody id="tbody_saberes{{ progsec.id }}">#}
-    {#                {% include "progsec_accordion_content_saberes.html" %}#}
-    {#                </tbody>#}
-    {#            </table>#}
-    {#        </div>#}
-    {#    </div>#}
-
 
     <div class="row">
         <div class="columns large-2"><b>Comienzo</b></div>
@@ -445,233 +421,7 @@
     <div id="lista_saberes{{ progsec.id }}">
         {% include "progsec_accordion_content_saberes.html" %}
     </div>
-
-
-    {#    <div class="row">#}
-    {#        <div class="columns large-12">#}
-    {#            <a data-progsec="{{ progsec.id }}" class="add_saber button small right">Añadir Saber básico</a>#}
-    {#        </div>#}
-    {#    </div>#}
-    {#    <div id="gantt{{ progsec.id }}">#}
-    {#        {% include 'progsec_accordion_content_gantt.html' %}#}
-    {#    </div>#}
-
-    {% comment %}
-    {% for sb in progsec.saberbas_set.all %}
-        <div class="row" id="row_sb{{ sb.id }}">
-            <div class="columns large-12">
-                <p><b>{{ sb.orden }}.- {{ sb.nombre }} (<span class="span_periodos">{{ sb.periodos }} periodos</span>
-                    )</b></p>
-            </div>
-            <div id="row_sb_botones{{ sb.id }}">
-                <ul class="button-group right">
-                    <li><a class="button alert borrar_sb tiny" data-id="{{ progsec.id }}"
-                           title="Borrar completamente este saber básico de la base de datos"><i
-                            class="fa fa-trash-o"></i>
-                        Borrar</a></li>
-                    <li><a class="button ordensube_sb tiny" data-id="{{ progsec.id }}"
-                           title="Aumentar en 1 el orden de este saber básico"><i class="fa fa-arrow-up"></i></a>
-                    </li>
-                    <li><a class="button ordenbaja_sb tiny" data-id="{{ progsec.id }}"
-                           title="Reducir en 1 el orden de este saber básico"><i class="fa fa-arrow-down"></i></a>
-                    </li>
-                    <li><a class="button add_sap tiny" data-id="{{ progsec.id }}" href="/progsecundaria_sb/{{ sb.id }}/"
-                           title="Añadir situaciones de aprendizaje a este saber básico"><i class="fa fa-plus"></i>
-                        SAP</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        {% for sap in sb.sitapren_set.all %}
-            <div class="row" id="row_sap{{ sap.id }}">
-                <div class="columns large-12">
-                    <p><b>{{ sap.nombre }}</b></p>
-                    <p style="color: darkblue;">{{ sap.objetivo }}</p>
-                </div>
-                <div id="row_sap_botones{{ sap.id }}">
-                    <ul class="button-group right">
-                        <li><a class="button alert borrar_sap tiny" data-id="{{ progsec.id }}"
-                               title="Borrar completamente este saber básico de la base de datos"><i
-                                class="fa fa-trash-o"></i>
-                            Borrar</a></li>
-                        <li><a class="button add_asap tiny" data-id="{{ progsec.id }}"
-                               title="Añadir una actividad asociada a esta situación de aprendizaje"><i
-                                class="fa fa-plus"></i>
-                            ASAP</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        {% endfor %}
-    {% endfor %}
-
-
-
-
-
-
-    <div class="row">
-        <div class="columns large-1">
-            <label>Orden:
-                <input type="number" min="1" data-progsec="{{ progsec.id }}" class="saberbas" data-campo="orden"
-                       value="">
-            </label>
-        </div>
-        <div class="columns large-7">
-            <label>Nombre:
-                <input type="text" data-progsec="{{ progsec.id }}" data-campo="nombre" value="" class="saberbas">
-            </label>
-        </div>
-        <div class="columns large-2">
-            <label title="Número de peridos lectivos que se estima que van a ser necesarios para impartir el contenido"
-            >Periodos:<input type="number" data-progsec="{{ progsec.id }}" class="saberbas" value=""
-                             data-campo="periodos">
-            </label>
-        </div>
-        <div class="columns large-2">
-            <label>&nbsp;<br>
-                <a class="button tiny right">Guardar</a>
-            </label>
-        </div>
-    </div>
-
-
-
-    <div class="row">
-        <div class="columns large-12">
-            <div class="panel callout">
-                <h3>5º Saberes básicos que se van a impartir</h3>
-            </div>
-            <p>Los saberes básicos constituyen los contenidos de la materia que se explican a los alumnos
-                a lo largo del curso y que les permiten adquirir las competencias específicas.</p>
-            <p>En este apartado debe secuenciar los contenidos asociados a su materia e indicar el número de periodos
-                lectivos que estima necesarios para impartir la docencia correspondiente.</p>
-        </div>
-    </div>
-    <div class="row">
-        <div class="columns large-1">
-            <label>Orden:
-                <input type="number" min="1" data-progsec="{{ progsec.id }}" class="saberbas" data-campo="orden"
-                       value="">
-            </label>
-        </div>
-        <div class="columns large-7">
-            <label>Nombre:
-                <input type="text" data-progsec="{{ progsec.id }}" data-campo="nombre" value="" class="saberbas">
-            </label>
-        </div>
-        <div class="columns large-2">
-            <label title="Número de peridos lectivos que se estima que van a ser necesarios para impartir el contenido"
-            >Periodos:<input type="number" data-progsec="{{ progsec.id }}" class="saberbas" value=""
-                             data-campo="periodos">
-            </label>
-        </div>
-        <div class="columns large-2">
-            <label>&nbsp;<br>
-                <a class="button tiny right">Guardar</a>
-            </label>
-        </div>
-    </div>
-
-
-    <div class="row">
-        <div class="columns large-12">
-            <div class="panel callout">
-                <h3>6º Situaciones de aprendizaje ligadas a los saberes básicos</h3>
-            </div>
-            <p>Los "saberes básicos" (SB) se adquieren a través de "situaciones de aprendizaje" (SAP), que
-                a su vez pueden estar compuestas por una o más "actividades de aprendizaje" (ACAP).</p>
-            <p>Estas actividades de aprendizaje deben ser evaluadas utilizando procedimientos/técnicas de evaluación
-                (en ocasiones llamados incorrectamente "Instrumentos de evaluación") a través unos criterios de
-                evaluación que establece la normativa y que ya han sido indicados anteriormente (apartado 2º de
-                esta programación).</p>
-        </div>
-    </div>
-    <div class="row">
-        <div class="columns large-12">
-            <label>Selecciona uno de los "saberes básicos" que has indicado anteriormente:
-                <select data-progsec="{{ progsec.id }}" class="select_saberbas"></select>
-            </label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="columns large-1">
-            <label>Orden:
-                <input type="number" min="1" data-progsec="{{ progsec.id }}" class="saberbas" data-campo="orden"
-                       value="">
-            </label>
-        </div>
-        <div class="columns large-7">
-            <label>Nombre:
-                <input type="text" data-progsec="{{ progsec.id }}" data-campo="nombre" value="" class="saberbas">
-            </label>
-        </div>
-        <div class="columns large-2">
-            <label title="Número de peridos lectivos que se estima que van a ser necesarios para impartir el contenido"
-            >Periodos:<input type="number" data-progsec="{{ progsec.id }}" class="saberbas" value=""
-                             data-campo="periodos">
-            </label>
-        </div>
-        <div class="columns large-2">
-            <label>&nbsp;<br>
-                <a class="button tiny right">Guardar</a>
-            </label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="columns large-12">
-            <label>Actividades extraescolares/complementarias ligadas a este contenido:
-                <select data-progsec="{{ progsec.id }}" class="saberbas" data-campo="actexcoms"></select>
-            </label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="columns large-12">
-            <label>Libros/materiales utilizados en este contenido:
-                <select data-progsec="{{ progsec.id }}" class="saberbas" data-campo="librorecursos"></select>
-            </label>
-        </div>
-    </div>
-
-    <div class="row">
-        <div title="Situaciones de aprendizaje diseñadas para que el alumnado adquiera este saber básico"
-             class="columns large-12"><p><b>Situaciones de aprendizaje:</b></p>
-        </div>
-    </div>
-    <div class="row">
-        <div class="columns large-12">
-            <label>Libros/materiales utilizados en este contenido:
-                <select data-progsec="{{ progsec.id }}" class="saberbas" data-campo="librorecursos"></select>
-            </label>
-        </div>
-    </div>
-
 </div>
-{#<div class="row">#}
-{#    <div class="columns large-12">#}
-{#        <label><b>Archivos adjuntos al informe </b></label>#}
-{#    </div>#}
-{#</div>#}
-{#<div class="row">#}
-{#    <div class="columns large-12">#}
-{#        <table>#}
-{#            <tbody id="tbody_gauss_file{{ progsec.id }}">#}
-{#            </tbody>#}
-{#        </table>#}
-{#    </div>#}
-{#</div>#}
-{#<div class="row">#}
-{#    <div class="columns large-8">#}
-{#        <label><input type="file" id="input_gauss_file{{ progsec.id }}" multiple="multiple"></label>#}
-{#    </div>#}
-{#    <div class="columns large-4">#}
-{#        <a class="button tiny subir_gauss_file" data-id="{{ progsec.id }}"><i class="fa fa-cloud-upload"></i> Cargar#}
-{#            archivos</a>#}
-{#    </div>#}
-{#</div>#}
-
-{% endcomment %}
-    <script>
-        $('select').select2();
-    </script>
+<script>
+    $('select').select2();
+</script>

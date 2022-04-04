@@ -649,6 +649,8 @@ class ProgSec(models.Model):
     departamento = models.ForeignKey(Departamento, on_delete=models.SET_NULL, blank=True, null=True)
     inicio_clases = models.DateField("Fecha de inicio de las clases", blank=True, null=True)
     fin_clases = models.DateField("Fecha de fin de las clases", blank=True, null=True)
+    es_copia_de = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
+    procdiversidad = models.TextField('Proced. adop. medidas de aten. a la divers.', blank=True, null=True, default='')
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
@@ -771,7 +773,6 @@ class ActExCom(models.Model):
     def __str__(self):
         return '%s - %s (%s - %s)' % (self.psec, self.nombre, self.inicio, self.fin)
 
-
 class SaberBas(models.Model):
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
     orden = models.IntegerField('Orden del saber básico dentro del conjunto de saberes', default=1)
@@ -814,8 +815,8 @@ class SaberBas(models.Model):
         # return 1 if num == 0 else num
 
     class Meta:
-        # ordering = ['psec', 'comienzo', 'orden']
-        ordering = ['psec', 'orden']
+        ordering = ['psec', 'comienzo']
+        # ordering = ['psec', 'orden']
 
     def __str__(self):
         return '%s - %s (%s)' % (self.psec, self.nombre, self.periodos)
