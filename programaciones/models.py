@@ -647,10 +647,10 @@ class ProgSec(models.Model):
     areamateria = models.ForeignKey(AreaMateria, on_delete=models.CASCADE, blank=True, null=True)
     curso = models.ForeignKey(Curso, on_delete=models.SET_NULL, blank=True, null=True)
     departamento = models.ForeignKey(Departamento, on_delete=models.SET_NULL, blank=True, null=True)
-    inicio_clases = models.DateField("Fecha de inicio de las clases", blank=True, null=True)
-    fin_clases = models.DateField("Fecha de fin de las clases", blank=True, null=True)
+    # inicio_clases = models.DateField("Fecha de inicio de las clases", blank=True, null=True)
+    # fin_clases = models.DateField("Fecha de fin de las clases", blank=True, null=True)
     es_copia_de = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
-    procdiversidad = models.TextField('Proced. adop. medidas de aten. a la divers.', blank=True, null=True, default='')
+    # procdiversidad = models.TextField('Proced. adop. medidas de aten. a la divers.', blank=True, null=True, default='')
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
@@ -660,7 +660,11 @@ class ProgSec(models.Model):
 
     @property
     def tiempo_curso(self):
-        return (self.fin_clases - self.inicio_clases).total_seconds()
+        # inicio = self.inicio_clases
+        # fin = self.fin_clases
+        inicio = datetime(2021,9,1)
+        fin = datetime(2022,6,23)
+        return (fin - inicio).total_seconds()
         # return 24105600 #Tiempo en segundos aproximado entre 9 septiembre y 15 de junio
 
     @property
@@ -670,8 +674,12 @@ class ProgSec(models.Model):
     def dia_curso_from_fecha(self, fecha):
         # El día uno de curso es la fecha self.inicio_clases
         # El día último de curso es la fecha self.fin_clases
+        # inicio = self.inicio_clases
+        # fin = self.fin_clases
+        inicio = datetime(2021, 9, 1)
+        fin = datetime(2022, 6, 23)
         try:
-            return int((fecha - self.inicio_clases) * 175 / (self.fin_clases - self.inicio_clases))
+            return int((fecha - inicio) * 175 / (fin - inicio))
         except:
             return 0
 
@@ -786,7 +794,11 @@ class SaberBas(models.Model):
     @property
     def fin(self):
         # Fecha de finalización aproximada calculada para este saber básico:
-        timedelta_periodo = (self.psec.fin_clases - self.psec.inicio_clases) / self.psec.num_periodos
+        # inicio = self.psec.inicio_clases
+        # fin = self.psec.fin_clases
+        inicio = datetime(2021, 9, 1)
+        fin = datetime(2022, 6, 23)
+        timedelta_periodo = (fin - inicio) / self.psec.num_periodos
         return self.comienzo + timedelta_periodo * self.periodos
 
     @property
