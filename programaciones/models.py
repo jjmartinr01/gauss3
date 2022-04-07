@@ -649,7 +649,7 @@ class ProgSec(models.Model):
     departamento = models.ForeignKey(Departamento, on_delete=models.SET_NULL, blank=True, null=True)
     # inicio_clases = models.DateField("Fecha de inicio de las clases", blank=True, null=True)
     # fin_clases = models.DateField("Fecha de fin de las clases", blank=True, null=True)
-    es_copia_de = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
+    # es_copia_de = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
     # procdiversidad = models.TextField('Proced. adop. medidas de aten. a la divers.', blank=True, null=True, default='')
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
