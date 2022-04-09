@@ -728,6 +728,10 @@ class CEProgSec(models.Model):
     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
+    class Meta:
+        verbose_name_plural = 'Competencias específicas asociadas a una programación'
+        ordering = ['ce__orden', ]
+
     def __str__(self):
         return '%s - %s (%s)' % (self.psec, self.ce, self.valor)
 
@@ -738,6 +742,10 @@ class CEvProgSec(models.Model):
     cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    class Meta:
+        verbose_name_plural = 'Criterios de Evaluación asociados a una programación'
+        ordering = ['cev__orden', ]
 
     def __str__(self):
         return '%s - %s (%s)' % (self.cepsec, self.cev, self.valor)
