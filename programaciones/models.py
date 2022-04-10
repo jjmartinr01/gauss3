@@ -942,7 +942,7 @@ class CuadernoProf(models.Model):
     vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)
     alumnos = models.ManyToManyField(Gauser_extra, blank=True, related_name='cuaderno_alumno_set')
     vista = models.CharField('Tipo de vista', max_length=3, choices=VISTAS, default='NOR')
-    borrado = models.BooleanField('¿Cuaderno borrado?', default=False)
+    # borrado = models.BooleanField('¿Cuaderno borrado?', default=False)
 
     # class Meta:
     #     verbose_name_plural = 'Cuadernos de docente'
@@ -951,8 +951,7 @@ class CuadernoProf(models.Model):
     @property
     def num_columns(self):
         # El número de columnas del cuaderno será el número de CriInstrEval más la columna del nombre
-        return 6
-        # return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=self.psec).count() + 1
+        return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=self.psec).count() + 1
 
     @property
     def nombre(self):
