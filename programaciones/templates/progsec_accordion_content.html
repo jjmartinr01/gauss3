@@ -285,9 +285,11 @@
         </div>
     </div>
 
+<div id="cevalponderada{{ progsec.id }}">
 {% with cep=progsec.ceprogsec_set.all.last %}
 {% include "progsec_accordion_content_cevalponderada.html" %}
 {% endwith %}
+</div>
 
     <div class="row">
         <div class="columns large-12 callout panel">

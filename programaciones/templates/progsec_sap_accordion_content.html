@@ -54,13 +54,12 @@
 <div class="row">
     <div class="columns large-12">
         <ul class="button-group right">
-            {% if sap.inspector.gauser == g_e.gauser or g_e|has_permiso:'borra_informes_sap' %}
                 <li><a class="button alert borrar_sap tiny" data-id="{{ sap.id }}"
-                       title="Borrar completamente esta programación de la base de datos"><i class="fa fa-trash-o"></i>
-                    Borrar</a></li>
-            {% endif %}
+                       title="Borrar completamente esta situación de aprendizaje de la base de datos"><i
+                        class="fa fa-trash-o"></i> Borrar</a></li>
             <li><a class="button copiar_sap tiny" data-id="{{ sap.id }}"
-                   title="Hacer una copia (un duplicado) de este informe"><i class="fa fa-copy"></i> Copiar</a>
+                   title="Hacer una copia (un duplicado) de esta situación de aprendizaje"><i
+                    class="fa fa-copy"></i> Copiar</a>
             </li>
         </ul>
     </div>
@@ -99,7 +98,7 @@
                     <td><input type="checkbox" class="update_many2many" data-campo="ceps" data-id="{{ sap.id }}"
                                {% if cep in sap.ceps.all %}checked="checked"{% endif %} data-clase="SitApren"
                                data-clasem2m="CEProgSec" data-idm2m="{{ cep.id }}"></td>
-                    <td>{{ cep.ce.nombre }}</td>
+                    <td>{{ cep.ce.orden }}.- {{ cep.ce.nombre }}</td>
                 </tr>
             {% endfor %}
             </tbody>

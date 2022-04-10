@@ -848,6 +848,10 @@ class SitApren(models.Model):
     objetivo = models.TextField('Descripción de la situación de aprendizaje y lo que pretende conseguir', blank=True)
     ceps = models.ManyToManyField(CEProgSec, blank=True)
 
+    class Meta:
+        verbose_name_plural = 'Situaciones de aprendizaje'
+        ordering = ['sbas__psec', 'sbas', 'id' ]
+
     @property
     def num_asapren(self):
         return self.actsitapren_set.count()
@@ -911,6 +915,10 @@ class CriInstrEval(models.Model):
     cevps = models.ForeignKey(CEvProgSec, on_delete=models.CASCADE, blank=True, null=True)
     peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=0)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    class Meta:
+        verbose_name_plural = 'Criterios de Evaluación asociados a un instrumento/procedimiento'
+        ordering = ['cevps__cepsec__ce__orden', 'cevps__cev__orden']
 
     def __str__(self):
         return '%s - %s (%s)' % (self.ieval, self.cevps, self.peso)

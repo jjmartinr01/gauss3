@@ -90,6 +90,33 @@
                         {#$(document).scrollTop($('#title_page').offset().top - 150);#}
                     });
             });
+
+            $('body').on('click', '.borrar_sap', function () {
+            id = $(this).data('id');
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar esta situación de aprendizaje?',
+                texto: 'Si aceptas, la situación de aprendizaje se borrará por completo de la base de datos',
+                size: 'large',
+                buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post(url_progsec_sap, {action: 'borrar_sap', id: id},
+                            function (data) {
+                                if (data.ok) {
+                                    $('#accordion' + id).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
+                    }
+                }
+            });
+
+        });
         {% endif %}
 
         $(document).foundation({

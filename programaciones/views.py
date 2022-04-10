@@ -2185,7 +2185,8 @@ def progsecundaria(request):
                         cevp = CEvProgSec.objects.get(cepsec__psec=progsec, id=request.POST['cevp'])
                         cevp.valor = int(request.POST['cevp_peso'])
                         cevp.save()
-                        return JsonResponse({'ok': True, 'progsec': progsec.id})
+                        html = render_to_string('progsec_accordion_content_cevalponderada.html', {'cep': cevp.cepsec})
+                        return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': html})
                     else:
                         return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
                 except Exception as msg:
@@ -2284,7 +2285,7 @@ def progsecundaria(request):
                             comienzo = datetime.strptime(request.POST['valor'], '%Y-%m-%d')
                             saber.comienzo = comienzo
                             saber.save()
-                            html = reordenar_saberes_comienzo(saber.psec)
+                            html = render_to_string('progsec_accordion_content_gantt.html', {'progsec': progsec})
                         else:
                             saber.periodos = int(request.POST['valor'])
                             saber.save()
@@ -2294,6 +2295,18 @@ def progsecundaria(request):
                         # else:
                         #     setattr(saber, campo, valor)
                         #     saber.save()
+                        return JsonResponse({'ok': True, 'html': html})
+                    else:
+                        return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+                except Exception as msg:
+                    return JsonResponse({'ok': False, 'msg': str(msg)})
+            elif action == 'ordenar_saberes':
+                try:
+                    progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                                  id=request.POST['id'])
+                    permiso = progsec.get_permiso(g_ep)
+                    if permiso in 'EX':
+                        html = reordenar_saberes_comienzo(progsec)
                         return JsonResponse({'ok': True, 'html': html})
                     else:
                         return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
@@ -2398,6 +2411,17 @@ def progsecundaria_sb(request, id):
                 InstrEval.objects.create(asapren=act, tipo='TMONO', nombre='Procedimiento 1')
                 html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
                 return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'borrar_sap':
+            try:
+                sapren = SitApren.objects.get(id=request.POST['id'])
+                if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
+                    sapren.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    msg = 'No tienes permiso para borrar esta situación de aprendizaje.'
+                    return JsonResponse({'ok': False, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'open_accordion':

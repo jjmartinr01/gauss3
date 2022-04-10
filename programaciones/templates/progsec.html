@@ -181,7 +181,6 @@
                     }
                 }
             });
-
         });
 
         {% comment %}
@@ -411,11 +410,7 @@
                     function (data) {
                         if (data.ok) {
                             if (data.html) {
-                                if (campo == 'periodos') {
                                     $('#gantt' + id).html(data.html);
-                                } else {
-                                    $('#lista_saberes' + id).html(data.html);
-                                }
                             }
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
@@ -427,6 +422,22 @@
         {#$('body').on('keydown', '.mod_saber', function () {#}
         {#    clearTimeout(funcion_tiempo_espera_mod_saber);#}
         {# });#}
+
+        $('body').on('click', '.ordenar_saberes', function () {
+            var element = $(this);
+                var id = element.data('progsec');
+                $.post("/progsecundaria/", {
+                        action: 'ordenar_saberes', id: id
+                    },
+                    function (data) {
+                        if (data.ok) {
+                                    $('#lista_saberes' + id).html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+        });
 
         $('body').on('click', '.borrar_saber', function () {
             id = $(this).data('progsec');
@@ -514,6 +525,7 @@
             $.post("/progsecundaria/", {action: 'update_pesocevp', id: id, cevp: cevp, cevp_peso: cevp_peso},
                 function (data) {
                     if (data.ok) {
+                        $('#cevalponderada' + id).html(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
