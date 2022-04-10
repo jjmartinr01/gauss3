@@ -945,7 +945,7 @@ class CuadernoProf(models.Model):
     # psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE, blank=True, null=True)
     # vmin = models.IntegerField('Valor mínimo de calificación asignable a un alumno', default=0)
     # vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)
-    alumnos = models.ManyToManyField(Gauser_extra, blank=True, related_name='cuaderno_alumno_set')
+    # alumnos = models.ManyToManyField(Gauser_extra, blank=True, related_name='cuaderno_alumno_set')
     # vista = models.CharField('Tipo de vista', max_length=3, choices=VISTAS, default='NOR')
     # borrado = models.BooleanField('¿Cuaderno borrado?', default=False)
 
