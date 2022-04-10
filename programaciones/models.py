@@ -942,7 +942,7 @@ class CuadernoProf(models.Model):
     VISTAS = (('NOR', 'Vista Normal'), ('COM', 'Vista por competencias'))
     ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, related_name='cuaderno_docente_set')
     grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE, blank=True, null=True)
-    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE, blank=True, null=True)
+    # psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE, blank=True, null=True)
     # vmin = models.IntegerField('Valor mínimo de calificación asignable a un alumno', default=0)
     # vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)
     alumnos = models.ManyToManyField(Gauser_extra, blank=True, related_name='cuaderno_alumno_set')
@@ -1003,7 +1003,8 @@ class CuadernoProf(models.Model):
             return 0
 
     def __str__(self):
-        return '%s - %s (%s)' % (self.psec, self.grupo, self.ge)
+        return 'cuaderno'
+        # return '%s - %s (%s)' % (self.psec, self.grupo, self.ge)
 
 
 class EscalaCP(models.Model):  # Escala utilizada en el CuardernoProf
