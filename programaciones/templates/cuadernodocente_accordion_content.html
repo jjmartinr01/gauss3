@@ -99,7 +99,8 @@
             </a>
         </div>
     </div>
-{% elif cuaderno.vista == 'NOR' %}
+{#{% elif cuaderno.vista == 'NOR' %}#}
+{% elif cuaderno %}
     <div class="div_table{{ cuaderno.id }}">
         <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
             <thead style="position: sticky;top:0">
@@ -166,7 +167,7 @@
                     {% for sap in sb.sitapren_set.all %}
                         {% for asap in sap.actsitapren_set.all %}
                             {% for ieval in asap.instreval_set.all %}
-                                {% for cieval in ieval.criinstreval_set.all %}
+                                {% for cieval in ieval.get_criinstreval %}
                                     <th title="{{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
                                                {{ cieval.cevps.cev.texto }}">
                                         {{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
@@ -189,7 +190,7 @@
                         {% for sap in sb.sitapren_set.all %}
                             {% for asap in sap.actsitapren_set.all %}
                                 {% for ieval in asap.instreval_set.all %}
-                                    {% for cieval in ieval.criinstreval_set.all %}
+                                    {% for cieval in ieval.get_criinstreval %}
                                         {% with calalum=cuaderno|get_cieval:cieval|get_calalum:alumno %}
                                             <td class="update_calalum" data-calalum="{{ calalum.id }}"
                                                 data-cieval="{{ cieval.id }}" data-cuaderno="{{ cuaderno.id }}"

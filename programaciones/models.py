@@ -912,6 +912,11 @@ class InstrEval(models.Model):
         ordering = ['asapren__sapren__sbas__psec', 'asapren__sapren__sbas', 'asapren__sapren', 'asapren', 'id']
 
     @property
+    def get_criinstreval(self):
+        # Para evitar utilizar criinstreval_set.all que devolvería también aquellos que tienen peso 0
+        return CriInstrEval.objects.filter(ieval=self, peso__gt=0)
+
+    @property
     def num_criinstreval(self):
         return CriInstrEval.objects.filter(ieval=self, peso__gt=0).count()
 
@@ -941,7 +946,7 @@ class CuadernoProf(models.Model):
     vmin = models.IntegerField('Valor mínimo de calificación asignable a un alumno', default=0)
     vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)
     alumnos = models.ManyToManyField(Gauser_extra, blank=True, related_name='cuaderno_alumno_set')
-    vista = models.CharField('Tipo de vista', max_length=3, choices=VISTAS, default='NOR')
+    # vista = models.CharField('Tipo de vista', max_length=3, choices=VISTAS, default='NOR')
     # borrado = models.BooleanField('¿Cuaderno borrado?', default=False)
 
     # class Meta:
