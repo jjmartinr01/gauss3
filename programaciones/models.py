@@ -940,7 +940,7 @@ class CriInstrEval(models.Model):
 
 class CuadernoProf(models.Model):
     VISTAS = (('NOR', 'Vista Normal'), ('COM', 'Vista por competencias'))
-    ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, related_name='cuaderno_docente_set')
+    # ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, related_name='cuaderno_docente_set')
     # grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE, blank=True, null=True)
     # psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE, blank=True, null=True)
     # vmin = models.IntegerField('Valor mínimo de calificación asignable a un alumno', default=0)
