@@ -835,7 +835,8 @@ class SaberBas(models.Model):
         # return 1 if num == 0 else num
 
     class Meta:
-        ordering = ['psec', 'comienzo']
+        ordering = ['psec', ]
+        # ordering = ['psec', 'comienzo']
         # ordering = ['psec', 'orden']
 
     def __str__(self):
@@ -874,6 +875,10 @@ class ActSitApren(models.Model):
     description = models.TextField('Descripción de la actividad ligada a la situación de aprendizaje', blank=True)
     producto = models.TextField('Producto o productos resultado de la situación de aprendizaje', blank=True)
 
+    class Meta:
+        verbose_name_plural = 'Actividades en situaciones de aprendizaje'
+        ordering = ['sapren__sbas__psec', 'sapren__sbas', 'sapren', 'id']
+
     @property
     def num_criinstreval(self):
         return CriInstrEval.objects.filter(ieval__asapren=self).count()
@@ -901,6 +906,10 @@ class InstrEval(models.Model):
     asapren = models.ForeignKey(ActSitApren, on_delete=models.CASCADE, blank=True, null=True)
     tipo = models.CharField('Tipo de instrumento', blank=True, max_length=10, choices=TIPOS)
     nombre = models.CharField('Nombre dado al instrumento', blank=True, max_length=300)
+
+    class Meta:
+        verbose_name_plural = 'Instrumentos/Procedimientos de evaluación'
+        ordering = ['asapren__sapren__sbas__psec', 'asapren__sapren__sbas', 'asapren__sapren', 'asapren', 'id']
 
     @property
     def num_criinstreval(self):
@@ -935,10 +944,15 @@ class CuadernoProf(models.Model):
     vista = models.CharField('Tipo de vista', max_length=3, choices=VISTAS, default='NOR')
     borrado = models.BooleanField('¿Cuaderno borrado?', default=False)
 
+    # class Meta:
+    #     verbose_name_plural = 'Cuadernos de docente'
+    #     ordering = ['psec', 'ge']
+
     @property
     def num_columns(self):
         # El número de columnas del cuaderno será el número de CriInstrEval más la columna del nombre
-        return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=self.psec).count() + 1
+        return 6
+        # return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=self.psec).count() + 1
 
     @property
     def nombre(self):
