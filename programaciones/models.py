@@ -953,54 +953,54 @@ class CuadernoProf(models.Model):
     #     verbose_name_plural = 'Cuadernos de docente'
     #     ordering = ['psec', 'ge']
 
-    @property
-    def num_columns(self):
-        # El número de columnas del cuaderno será el número de CriInstrEval más la columna del nombre
-        return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=self.psec).count() + 1
-
-    @property
-    def nombre(self):
-        return '%s - %s - %s' % (self.psec.pga.ronda, self.psec.areamateria.nombre, self.grupo.nombre)
-
-    def calificacion_alumno_cev(self, alumno, cev):  # Calificación de un determinado criterio de evaluación
-        cas = self.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)
-        numerador = 0
-        denominador = 0
-        for ca in cas:
-            numerador += ca.cie.peso * ca.cal
-            denominador += ca.cie.peso
-        try:
-            return round(numerador / denominador, 2)
-        except:
-            return 0
-
-    def calificacion_alumno_ce(self, alumno, ce):  # Calificación de una determinada competencia específica
-        try:
-            cepsec = self.psec.ceprogsec_set.get(ce=ce)
-        except:
-            return 1000000  # Si se da un error devolverá una cantidad tan grande que lo evidenciará
-        cevpsecs = cepsec.cevprogsec_set.all()
-        numerador = 0
-        denominador = 0
-        for cevp in cevpsecs:
-            numerador += self.calificacion_alumno_cev(alumno, cevp.cev) * cevp.valor
-            denominador += cevp.valor
-        try:
-            return round(numerador / denominador, 2)
-        except:
-            return 0
-
-    def calificacion_alumno(self, alumno):
-        ceps = self.psec.ceprogsec_set.all()
-        numerador = 0
-        denominador = 0
-        for cep in ceps:
-            numerador += self.calificacion_alumno_ce(alumno, cep.ce) * cep.valor
-            denominador += cep.valor
-        try:
-            return round(numerador / denominador, 2)
-        except:
-            return 0
+    # @property
+    # def num_columns(self):
+        ## El número de columnas del cuaderno será el número de CriInstrEval más la columna del nombre
+        # return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=self.psec).count() + 1
+    #
+    # @property
+    # def nombre(self):
+    #     return '%s - %s - %s' % (self.psec.pga.ronda, self.psec.areamateria.nombre, self.grupo.nombre)
+    #
+    # def calificacion_alumno_cev(self, alumno, cev):  # Calificación de un determinado criterio de evaluación
+    #     cas = self.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)
+    #     numerador = 0
+    #     denominador = 0
+    #     for ca in cas:
+    #         numerador += ca.cie.peso * ca.cal
+    #         denominador += ca.cie.peso
+    #     try:
+    #         return round(numerador / denominador, 2)
+    #     except:
+    #         return 0
+    #
+    # def calificacion_alumno_ce(self, alumno, ce):  # Calificación de una determinada competencia específica
+    #     try:
+    #         cepsec = self.psec.ceprogsec_set.get(ce=ce)
+    #     except:
+    #         return 1000000  # Si se da un error devolverá una cantidad tan grande que lo evidenciará
+    #     cevpsecs = cepsec.cevprogsec_set.all()
+    #     numerador = 0
+    #     denominador = 0
+    #     for cevp in cevpsecs:
+    #         numerador += self.calificacion_alumno_cev(alumno, cevp.cev) * cevp.valor
+    #         denominador += cevp.valor
+    #     try:
+    #         return round(numerador / denominador, 2)
+    #     except:
+    #         return 0
+    #
+    # def calificacion_alumno(self, alumno):
+    #     ceps = self.psec.ceprogsec_set.all()
+    #     numerador = 0
+    #     denominador = 0
+    #     for cep in ceps:
+    #         numerador += self.calificacion_alumno_ce(alumno, cep.ce) * cep.valor
+    #         denominador += cep.valor
+    #     try:
+    #         return round(numerador / denominador, 2)
+    #     except:
+    #         return 0
 
     def __str__(self):
         return 'cuaderno'
