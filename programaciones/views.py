@@ -2582,7 +2582,7 @@ def cuadernodocente(request):
     g_e = request.session['gauser_extra']
     g_ep = Gauser_extra_programaciones.objects.get(ge=g_e)
     # Borrar definitivamente cuadernos borrados por los docentes la ronda anterior
-    CuadernoProf.objects.filter(borrado=True, ge__ronda__fin__lt=g_e.ronda.inicio).delete()
+    # CuadernoProf.objects.filter(borrado=True, ge__ronda__fin__lt=g_e.ronda.inicio).delete()
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
         if action == 'crea_cuaderno':

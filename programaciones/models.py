@@ -830,7 +830,7 @@ class SaberBas(models.Model):
 
     @property
     def num_criinstreval(self):
-        num = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas=self).count()
+        num = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas=self, peso__gt=0).count()
         return num
         # return 1 if num == 0 else num
 
@@ -863,7 +863,7 @@ class SitApren(models.Model):
 
     @property
     def num_criinstreval(self):
-        return CriInstrEval.objects.filter(ieval__asapren__sapren=self).count()
+        return CriInstrEval.objects.filter(ieval__asapren__sapren=self, peso__gt=0).count()
 
     def __str__(self):
         return '%s - %s' % (self.sbas, self.nombre)
@@ -881,7 +881,7 @@ class ActSitApren(models.Model):
 
     @property
     def num_criinstreval(self):
-        return CriInstrEval.objects.filter(ieval__asapren=self).count()
+        return CriInstrEval.objects.filter(ieval__asapren=self, peso__gt=0).count()
 
     def __str__(self):
         return '%s - %s' % (self.sapren, self.nombre)
@@ -913,7 +913,7 @@ class InstrEval(models.Model):
 
     @property
     def num_criinstreval(self):
-        return CriInstrEval.objects.filter(ieval=self).count()
+        return CriInstrEval.objects.filter(ieval=self, peso__gt=0).count()
 
     def __str__(self):
         return '%s - %s' % (self.asapren, self.nombre)
