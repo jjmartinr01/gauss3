@@ -800,6 +800,7 @@ class SaberBas(models.Model):
 
     @property
     def fin(self):
+        return self.psec.fin_clases
         # Fecha de finalización aproximada calculada para este saber básico:
         inicio = self.psec.inicio_clases
         fin = self.psec.fin_clases
@@ -820,6 +821,7 @@ class SaberBas(models.Model):
 
     @property
     def div_comienzo(self):
+        return self.psec.fin_clases
         return self.psec.dia_curso_from_fecha(self.comienzo)
 
     @property
