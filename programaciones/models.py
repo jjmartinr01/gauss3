@@ -792,7 +792,7 @@ class SaberBas(models.Model):
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
     orden = models.IntegerField('Orden del saber básico dentro del conjunto de saberes', default=1)
     nombre = models.CharField('Nombre de la actividad', blank=True, max_length=300)
-    # comienzo = models.DateField('Fecha de comienzo programada', default=now)
+    comienzo = models.DateField('Fecha de comienzo programada', default=now)
     periodos = models.IntegerField('Número estimado de periodos lectivos para impartirlo', default=1)
     librorecursos = models.ManyToManyField(LibroRecurso, blank=True)
     actexcoms = models.ManyToManyField(ActExCom, blank=True)
@@ -800,7 +800,6 @@ class SaberBas(models.Model):
 
     @property
     def fin(self):
-        return self.psec.fin_clases
         # Fecha de finalización aproximada calculada para este saber básico:
         inicio = self.psec.inicio_clases
         fin = self.psec.fin_clases
@@ -821,7 +820,6 @@ class SaberBas(models.Model):
 
     @property
     def div_comienzo(self):
-        return self.psec.fin_clases
         return self.psec.dia_curso_from_fecha(self.comienzo)
 
     @property
@@ -836,8 +834,8 @@ class SaberBas(models.Model):
         # return 1 if num == 0 else num
 
     class Meta:
-        ordering = ['psec', ]
-        # ordering = ['psec', 'comienzo']
+        # ordering = ['psec', ]
+        ordering = ['psec', 'comienzo']
         # ordering = ['psec', 'orden']
 
     def __str__(self):
@@ -947,8 +945,8 @@ class CuadernoProf(models.Model):
     vmin = models.IntegerField('Valor mínimo de calificación asignable a un alumno', default=0)
     vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)
     alumnos = models.ManyToManyField(Gauser_extra, blank=True, related_name='cuaderno_alumno_set')
-    # vista = models.CharField('Tipo de vista', max_length=3, choices=VISTAS, default='NOR')
-    # borrado = models.BooleanField('¿Cuaderno borrado?', default=False)
+    vista = models.CharField('Tipo de vista', max_length=3, choices=VISTAS, default='NOR')
+    borrado = models.BooleanField('¿Cuaderno borrado?', default=False)
 
     class Meta:
         verbose_name_plural = 'Cuadernos de docente'
@@ -1070,7 +1068,7 @@ class CalAlumValor(models.Model):
     ca = models.ForeignKey(CalAlum, on_delete=models.CASCADE)
     ecpv = models.ForeignKey(EscalaCPvalor, on_delete=models.CASCADE, blank=True, null=True)
 
-    # obs = models.TextField('Observaciones a la calificación otorgada', blank=True, default='')
+    obs = models.TextField('Observaciones a la calificación otorgada', blank=True, default='')
 
     def __str__(self):
         return '%s (%s)' % (self.ca, self.ecpv)
