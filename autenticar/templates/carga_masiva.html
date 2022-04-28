@@ -26,20 +26,63 @@
                         <p>Este formulario sirve para cargar dos archivos diferentes: el del personal del centro y
                             el de los alumnos.</p>
                         <ol>
-                            <li><b>El primero se obtiene de:</b> Racima <i class="fa fa-long-arrow-right"></i> Personal
-                                <i class="fa fa-long-arrow-right"></i> Información del personal
-                                <i class="fa fa-long-arrow-right"></i> Exportar datos (XLS)
+                            <li><b>El archivo para cargar el personal del centro se obtiene de:</b>
+                                <ul>
+                                    <li>
+                                        Racima (Gestión)
+                                        <i class="fa fa-long-arrow-right"></i> Seguimiento
+                                        <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                                        <i class="fa fa-long-arrow-right"></i> Módulo: Empleados
+                                        <i class="fa fa-long-arrow-right"></i> Consulta: Plantillas orgánicas en centros
+                                    </li>
+                                    <li>
+                                        En "año académico" escribir el año en el que comenzó este curso escolar
+                                    </li>
+                                    <li>
+                                        Finalmente, elegir exportar con formato "Hoja Microsoft Excel"
+                                    </li>
+                                </ul>
                             </li>
-                            <li><b>El segundo de:</b> Racima <i class="fa fa-long-arrow-right"></i> Alumnado
-                                <i class="fa fa-long-arrow-right"></i> Búsquedas <i class="fa fa-long-arrow-right"></i>
-                                Alumnado del centro <i class="fa fa-long-arrow-right"></i> Con todos los campos en
-                                blanco se
-                                pulsa el "check" <i class="fa fa-long-arrow-right"></i> Exportar datos (XLS)
+                            <li><b>El archivo para cargar los alumnos del centro se obtiene de:</b>
+                                <ul>
+                                    <li>
+                                        Racima (Gestión)
+                                        <i class="fa fa-long-arrow-right"></i> Seguimiento
+                                        <i class="fa fa-long-arrow-right"></i> Catálogo de consultas
+                                        <i class="fa fa-long-arrow-right"></i> Módulo: Matriculación
+                                        <i class="fa fa-long-arrow-right"></i> Consulta: Datos completos del alumnado matriculado
+                                    </li>
+                                    <li>
+                                        En "año académico" escribir el año en el que comenzó este curso escolar
+                                    </li>
+                                    <li>
+                                        Finalmente, elegir exportar con formato "Hoja Microsoft Excel"
+                                    </li>
+                                </ul>
                             </li>
                         </ol>
                         <p><i>GAUSS distinguirá automáticamente uno de otro.</i></p>
                     </div>
                 </div>
+                {#                <div class="row">#}
+                {#                    <div class="large-12 columns">#}
+                {#                        <p>Este formulario sirve para cargar dos archivos diferentes: el del personal del centro y#}
+                {#                            el de los alumnos.</p>#}
+                {#                        <ol>#}
+                {#                            <li><b>El primero se obtiene de:</b> Racima <i class="fa fa-long-arrow-right"></i> Personal#}
+                {#                                <i class="fa fa-long-arrow-right"></i> Información del personal#}
+                {#                                <i class="fa fa-long-arrow-right"></i> Exportar datos (XLS)#}
+                {#                            </li>#}
+                {#                            <li><b>El segundo de:</b> Racima <i class="fa fa-long-arrow-right"></i> Alumnado#}
+                {#                                <i class="fa fa-long-arrow-right"></i> Búsquedas <i class="fa fa-long-arrow-right"></i>#}
+                {#                                Alumnado del centro <i class="fa fa-long-arrow-right"></i> Con todos los campos en#}
+                {#                                blanco se#}
+                {#                                pulsa el "check" <i class="fa fa-long-arrow-right"></i> Exportar datos (XLS)#}
+                {#                            </li>#}
+                {#                        </ol>#}
+                {#                        <p><i>GAUSS distinguirá automáticamente uno de otro.</i></p>#}
+                {#                    </div>#}
+                {#                </div>#}
             </div>
         {% else %}
             <input type="hidden" name="action" value="carga_masiva_csv">
@@ -180,14 +223,15 @@
         habilita(['s_check']);
         $('#check_sign').click(function (e) {
             e.preventDefault();
-            if ($('#file_masivo').val()){
+            if ($('#file_masivo').val()) {
                 document.getElementById("{{ formname }}").submit();
-            }else{
-                show_mensajes({title: '<i class="fa fa-warning"></i> No has cargado un archivo', texto: 'Para ' +
-                'subir un archivo primero debes cargarlo pulsando en "Examinar..."'})
+            } else {
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> No has cargado un archivo', texto: 'Para ' +
+                        'subir un archivo primero debes cargarlo pulsando en "Examinar..."'
+                })
             }
         });
-
 
 
     </script>

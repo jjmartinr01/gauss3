@@ -660,10 +660,10 @@ class ProgSec(models.Model):
 
     @property
     def tiempo_curso(self):
-        # inicio = self.inicio_clases
-        # fin = self.fin_clases
-        inicio = datetime(2021,9,1)
-        fin = datetime(2022,6,23)
+        inicio = self.inicio_clases
+        fin = self.fin_clases
+        # inicio = datetime(2021,9,1)
+        # fin = datetime(2022,6,23)
         return (fin - inicio).total_seconds()
         # return 24105600 #Tiempo en segundos aproximado entre 9 septiembre y 15 de junio
 
@@ -674,10 +674,10 @@ class ProgSec(models.Model):
     def dia_curso_from_fecha(self, fecha):
         # El día uno de curso es la fecha self.inicio_clases
         # El día último de curso es la fecha self.fin_clases
-        # inicio = self.inicio_clases
-        # fin = self.fin_clases
-        inicio = datetime(2021, 9, 1)
-        fin = datetime(2022, 6, 23)
+        inicio = self.inicio_clases
+        fin = self.fin_clases
+        # inicio = datetime(2021, 9, 1)
+        # fin = datetime(2022, 6, 23)
         try:
             return int((fecha - inicio) * 175 / (fin - inicio))
         except:
@@ -737,7 +737,6 @@ class CEProgSec(models.Model):
 
 
 class CEvProgSec(models.Model):
-    # psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
     cepsec = models.ForeignKey(CEProgSec, on_delete=models.CASCADE, blank=True, null=True)
     cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
@@ -802,10 +801,10 @@ class SaberBas(models.Model):
     @property
     def fin(self):
         # Fecha de finalización aproximada calculada para este saber básico:
-        # inicio = self.psec.inicio_clases
-        # fin = self.psec.fin_clases
-        inicio = datetime(2021, 9, 1)
-        fin = datetime(2022, 6, 23)
+        inicio = self.psec.inicio_clases
+        fin = self.psec.fin_clases
+        # inicio = datetime(2021, 9, 1)
+        # fin = datetime(2022, 6, 23)
         timedelta_periodo = (fin - inicio) / self.psec.num_periodos
         return self.comienzo + timedelta_periodo * self.periodos
 
@@ -941,66 +940,66 @@ class CriInstrEval(models.Model):
 class CuadernoProf(models.Model):
     VISTAS = (('NOR', 'Vista Normal'), ('COM', 'Vista por competencias'))
     ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, related_name='cuaderno_docente_set', blank=True, null=True)
-    # grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE, blank=True, null=True)
-    # psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE, blank=True, null=True)
-    # vmin = models.IntegerField('Valor mínimo de calificación asignable a un alumno', default=0)
-    # vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)
-    # alumnos = models.ManyToManyField(Gauser_extra, blank=True, related_name='cuaderno_alumno_set')
+    grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE, blank=True, null=True)
+    psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE, blank=True, null=True)
+    vmin = models.IntegerField('Valor mínimo de calificación asignable a un alumno', default=0)
+    vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)
+    alumnos = models.ManyToManyField(Gauser_extra, blank=True, related_name='cuaderno_alumno_set')
     # vista = models.CharField('Tipo de vista', max_length=3, choices=VISTAS, default='NOR')
     # borrado = models.BooleanField('¿Cuaderno borrado?', default=False)
 
-    # class Meta:
-    #     verbose_name_plural = 'Cuadernos de docente'
-    #     ordering = ['psec', 'ge']
+    class Meta:
+        verbose_name_plural = 'Cuadernos de docente'
+        ordering = ['psec', 'ge']
 
-    # @property
-    # def num_columns(self):
-        ## El número de columnas del cuaderno será el número de CriInstrEval más la columna del nombre
-        # return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=self.psec).count() + 1
-    #
-    # @property
-    # def nombre(self):
-    #     return '%s - %s - %s' % (self.psec.pga.ronda, self.psec.areamateria.nombre, self.grupo.nombre)
-    #
-    # def calificacion_alumno_cev(self, alumno, cev):  # Calificación de un determinado criterio de evaluación
-    #     cas = self.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)
-    #     numerador = 0
-    #     denominador = 0
-    #     for ca in cas:
-    #         numerador += ca.cie.peso * ca.cal
-    #         denominador += ca.cie.peso
-    #     try:
-    #         return round(numerador / denominador, 2)
-    #     except:
-    #         return 0
-    #
-    # def calificacion_alumno_ce(self, alumno, ce):  # Calificación de una determinada competencia específica
-    #     try:
-    #         cepsec = self.psec.ceprogsec_set.get(ce=ce)
-    #     except:
-    #         return 1000000  # Si se da un error devolverá una cantidad tan grande que lo evidenciará
-    #     cevpsecs = cepsec.cevprogsec_set.all()
-    #     numerador = 0
-    #     denominador = 0
-    #     for cevp in cevpsecs:
-    #         numerador += self.calificacion_alumno_cev(alumno, cevp.cev) * cevp.valor
-    #         denominador += cevp.valor
-    #     try:
-    #         return round(numerador / denominador, 2)
-    #     except:
-    #         return 0
-    #
-    # def calificacion_alumno(self, alumno):
-    #     ceps = self.psec.ceprogsec_set.all()
-    #     numerador = 0
-    #     denominador = 0
-    #     for cep in ceps:
-    #         numerador += self.calificacion_alumno_ce(alumno, cep.ce) * cep.valor
-    #         denominador += cep.valor
-    #     try:
-    #         return round(numerador / denominador, 2)
-    #     except:
-    #         return 0
+    @property
+    def num_columns(self):
+        # El número de columnas del cuaderno será el número de CriInstrEval más la columna del nombre
+        return CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=self.psec).count() + 1
+
+    @property
+    def nombre(self):
+        return '%s - %s - %s' % (self.psec.pga.ronda, self.psec.areamateria.nombre, self.grupo.nombre)
+
+    def calificacion_alumno_cev(self, alumno, cev):  # Calificación de un determinado criterio de evaluación
+        cas = self.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)
+        numerador = 0
+        denominador = 0
+        for ca in cas:
+            numerador += ca.cie.peso * ca.cal
+            denominador += ca.cie.peso
+        try:
+            return round(numerador / denominador, 2)
+        except:
+            return 0
+
+    def calificacion_alumno_ce(self, alumno, ce):  # Calificación de una determinada competencia específica
+        try:
+            cepsec = self.psec.ceprogsec_set.get(ce=ce)
+        except:
+            return 1000000  # Si se da un error devolverá una cantidad tan grande que lo evidenciará
+        cevpsecs = cepsec.cevprogsec_set.all()
+        numerador = 0
+        denominador = 0
+        for cevp in cevpsecs:
+            numerador += self.calificacion_alumno_cev(alumno, cevp.cev) * cevp.valor
+            denominador += cevp.valor
+        try:
+            return round(numerador / denominador, 2)
+        except:
+            return 0
+
+    def calificacion_alumno(self, alumno):
+        ceps = self.psec.ceprogsec_set.all()
+        numerador = 0
+        denominador = 0
+        for cep in ceps:
+            numerador += self.calificacion_alumno_ce(alumno, cep.ce) * cep.valor
+            denominador += cep.valor
+        try:
+            return round(numerador / denominador, 2)
+        except:
+            return 0
 
     def __str__(self):
         return 'cuaderno'
