@@ -310,13 +310,16 @@ def crea_departamentos(ronda):
 
 
 class Departamento(models.Model):
+    ETAPAS = (('INF', 'Infantil'), ('PRI', 'Primaria'), ('SEC', 'Secundaria'))
     ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE)
     nombre = models.CharField('Denominación', max_length=310)
     abreviatura = models.CharField("Abreviatura", max_length=10)
     didactico = models.BooleanField("Es un departamento didáctico", default=True)
     fp = models.BooleanField("Es una familia profesional", default=False)
-    horas_coordinador = models.IntegerField("Número de horas de coordinación para el jefe de departamento", null=True,
-                                            blank=True)
+    horas_coordinador = models.IntegerField("Nº de horas de coordinación jefe de departamento", null=True, blank=True)
+    etapa = models.CharField('Etapa', choices=ETAPAS, max_length=4, blank=True, null=True, default='SEC')
+    # En primaria y secundaria no existen departamentos, pero utilizamos esta tabla para recoger la
+    # estructura de 'Ciclo' que se utiliza en ellas.
 
     @property
     def jefe(self):

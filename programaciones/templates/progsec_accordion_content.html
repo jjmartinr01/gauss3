@@ -85,7 +85,48 @@
     </div>
 </div>
 
+{% if 'PRI' in progsec.areamateria.curso or 'INF' in progsec.areamateria.curso %}
 <div id="docentes_progsec{{ progsec.id }}">
+    <div class="row">
+{#        <div class="columns large-6">#}
+{#            <label><b>Departamento: </b>#}
+{#                <select class="select_departamento" data-progsec="{{ progsec.id }}">#}
+{#                    <option value="">------</option>#}
+{#                    {% for d in departamentos %}#}
+{#                        <option value="{{ d.id }}"#}
+{#                                {% if progsec.departamento == d %}selected{% endif %}>{{ d.nombre }}</option>#}
+{#                    {% endfor %}#}
+{#                </select>#}
+{#            </label>#}
+{#        </div>#}
+        <div class="columns large-6">
+            <label><b>Coordinador/a de ciclo: </b>
+                <select class="select_jefe" data-progsec="{{ progsec.id }}">
+                    <option value="">------</option>
+                    {% for d in docentes %}
+                        <option value="{{ d.id }}"
+                                {% if gep.departamento.jefe.ge == d %}selected{% endif %}>{{ d.gauser.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label><b>Docentes del departamento usando esta programación (tendrán permiso para editarla): </b>
+                <select class="miembros_departamento" data-progsec="{{ progsec.id }}" multiple="multiple">
+                    <option value="">------</option>
+                    {% for d in docentes %}
+                        <option value="{{ d.id }}"
+                                {% if d.id in docentes_id %}selected{% endif %}>{{ d.gauser.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+</div>
+{% else %}
+    <div id="docentes_progsec{{ progsec.id }}">
     <div class="row">
         <div class="columns large-6">
             <label><b>Departamento: </b>
@@ -124,6 +165,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 <br>
 
 <div id="contenido_progsec{{ progsec.id }}">
