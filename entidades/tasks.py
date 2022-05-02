@@ -19,6 +19,7 @@ from gauss.constantes import PROVINCIAS, CODE_CONTENEDOR
 from bancos.views import asocia_banco_ge
 from mensajes.models import Aviso
 from gauss.funciones import pass_generator, genera_nie
+from gauss.constantes import CARGOS
 from django.http import HttpResponse, JsonResponse
 
 logger = logging.getLogger('django')
@@ -439,10 +440,6 @@ def carga_masiva_tipo_EXCEL(carga):
     keys = [slugify(sheet.cell(4, col_index).value) for col_index in range(sheet.ncols)]
     key_columns = {col_index: slugify(sheet.cell(4, col_index).value) for col_index in range(sheet.ncols)}
 
-    print(keys)
-    print('\n')
-    print(key_columns)
-    # return True
     if int(sheet.ncols) > 50:  # En este caso es el archivo de los alumnos
         # Un ejemplo de key_columns es:
         # {0: 'estado-matricula', 1: 'direccion', 2: 'codigo-postal', 3: 'localidad-de-residencia',
@@ -581,123 +578,17 @@ def carga_masiva_tipo_EXCEL(carga):
         # {0: 'ano', 1: 'centro', 2: 'codigo', 3: 'nombre-docente', 4: 'apellidos-docente', 5: 'dni', 6: 'x_docente',
         #  7: 'correo-e', 8: 'puesto', 9: 'x_puesto', 10: 'tipo-personal', 11: 'jornada-contratada', 12: 'usuario'}
 
-        krp = {'Empleado': 'empleado', 'DNI/Pasaporte': 'dni', 'Tipo de personal': 'subentidades',
-               'Puesto': 'perfiles',
-               'Fecha de nacimiento': 'nacimiento', 'Activo': 'activo',
-               'Fecha del último nombramiento': 'fecha_alta',
-               'Fecha de cese': 'baja', 'Dirección': 'direccion', 'Código Postal': 'cp', 'Sexo': 'sexo',
-               'Localidad': 'localidad', 'Provincia': 'provincia', 'Teléfono 1': 'telefono_fijo',
-               'Teléfono 2': 'telefono_movil', 'Correo electrónico': 'email', 'Especialidad': 'especialidad'}
-        pdic = {'empleado': '', 'dni': '', 'subentidades': '', 'perfiles': '', 'nacimiento': '', 'activo': '',
-                'fecha_alta': '', 'baja': '', 'direccion': '', 'cp': '', 'sexo': '', 'localidad': '',
-                'iban': '',
-                'provincia': '', 'telefono_fijo': '', 'telefono_movil': '', 'email': '', 'especialidad': ''}
-        for row_index in range(5, sheet.nrows):
-            d = pdic
-
-            for col_index in range(sheet.ncols):
-                d[krp[keys[col_index]]] = sheet.cell(row_index, col_index).value
-            d['apellidos'] = d['empleado'].split(', ')[0]
-            d['nombre'] = d['empleado'].split(', ')[1]
-            d['id_socio'] = d['dni']
-            clave_ex = d['subentidades'].replace(' ', '_').lower()
-
-            sub1s = Subentidad.objects.filter(entidad=carga.ronda.entidad, clave_ex=clave_ex)
-            if sub1s.count() > 0:
-                sub1 = sub1s[0]
-            else:
-                sub1 = Subentidad.objects.create(nombre=d['subentidades'], mensajes=True, edad_min=18,
-                                                 entidad=carga.ronda.entidad, clave_ex=clave_ex, edad_max=67)
-            sub2s = Subentidad.objects.filter(nombre=d['perfiles'], entidad=carga.ronda.entidad)
-            if sub2s.count() > 0:
-                sub2 = sub2s[0]
-            else:
-                sub2 = Subentidad.objects.create(nombre=d['perfiles'], mensajes=True, edad_min=18,
-                                                 edad_max=67, entidad=carga.ronda.entidad, parent=sub1)
-            cargo = Cargo.objects.get_or_create(entidad=carga.ronda.entidad, cargo=d['subentidades'])
-            d['subentidades'] = str(sub1.id) + ',' + str(sub2.id)
-            d['activo'] = True if 'S' in d['activo'] else False
-            d['perfiles'] = str(cargo[0].id)
-            d['observaciones'] = d['especialidad'] + '<br>Causa baja el ' + d['baja']
-            create_usuario(d, carga, '')
-
-
-
-
-
-
-    # Keys Reference for Personal:
-    krp = {'Empleado': 'empleado', 'DNI/Pasaporte': 'dni', 'Tipo de personal': 'subentidades',
-           'Puesto': 'perfiles',
-           'Fecha de nacimiento': 'nacimiento', 'Activo': 'activo',
-           'Fecha del último nombramiento': 'fecha_alta',
-           'Fecha de cese': 'baja', 'Dirección': 'direccion', 'Código Postal': 'cp', 'Sexo': 'sexo',
-           'Localidad': 'localidad', 'Provincia': 'provincia', 'Teléfono 1': 'telefono_fijo',
-           'Teléfono 2': 'telefono_movil', 'Correo electrónico': 'email', 'Especialidad': 'especialidad'}
-    pdic = {'empleado': '', 'dni': '', 'subentidades': '', 'perfiles': '', 'nacimiento': '', 'activo': '',
-            'fecha_alta': '', 'baja': '', 'direccion': '', 'cp': '', 'sexo': '', 'localidad': '',
-            'iban': '',
-            'provincia': '', 'telefono_fijo': '', 'telefono_movil': '', 'email': '', 'especialidad': ''}
-    # Keys Reference for Alumnos:
-
-    kra = {'alumno': 'alumno', 'estado-matricula': 'estado_matricula', 'no-id-racima': 'id_socio',
-           'dnipasaporte': 'dni', 'direccion': 'direccion', 'codigo-postal': 'cp',
-           'localidad-de-residencia': 'localidad', 'fecha-de-nacimiento': 'nacimiento',
-           'provincia-de-residencia': 'provincia', 'telefono': 'telefono_fijo',
-           'telefono-movil': 'telefono_movil',
-           'correo-electronico': 'email', 'curso': 'curso', 'no-historial-academico': 'id_organizacion',
-           'primer-apellido': 'last_name1', 'segundo-apellido': 'last_name2',
-           'nombre': 'nombre', 'dnipasaporte-primer-tutor': 'dni_tutor1',
-           'primer-apellido-primer-tutor': 'last_name1_tutor1',
-           'segundo-apellido-primer-tutor': 'last_name2_tutor1', 'nombre-primer-tutor': 'nombre_tutor1',
-           'tfno-primer-tutor': 'telefono_fijo_tutor1',
-           'tfno-movil-primer-tutor': 'telefono_movil_tutor1',
-           'sexo-primer-tutor': 'sexo_tutor1', 'dnipasaporte-segundo-tutor': 'dni_tutor2',
-           'primer-apellido-segundo-tutor': 'last_name1_tutor2',
-           'segundo-apellido-segundo-tutor': 'last_name2_tutor2',
-           'nombre-segundo-tutor': 'nombre_tutor2', 'tfno-segundo-tutor': 'telefono_fijo_tutor2',
-           'tfno-movil-segundo-tutor': 'telefono_movil_tutor2', 'sexo-segundo-tutor': 'sexo_tutor2',
-           'localidad-de-nacimiento': 'localidad_nacimiento', 'nacionalidad': 'nacionalidad',
-           'codigo-pais-nacimiento': 'code_pais_nacimiento', 'pais-de-nacimiento': 'pais_nacimiento',
-           'codigo-provincia-nacimiento': 'code_provincia_nacimiento',
-           'pago-seguro-escolar': 'pago_seguro_escolar', 'sexo': 'sexo',
-           'ano-de-la-matricula': 'year_matricula', 'no-de-matriculas-en-este-curso': 'num_matriculas',
-           'observaciones-de-la-matricula': 'observaciones_matricula', 'numero-ss': 'num_ss',
-           'no-expte-en-el-centro': 'num_exp', 'fecha-de-la-matricula': 'fecha_matricula',
-           'no-de-matriculas-en-el-expediente': 'num_matriculas_exp',
-           'repeticiones-en-el-curso': 'rep_curso',
-           'familia-numerosa': 'familia_numerosa', 'Lengua materna': 'lengua_materna',
-           'Año incorporación al sistema educativo': 'year_incorporacion', 'bilingue': 'bilingue',
-           'Correo electrónico Primer tutor': 'email_tutor1',
-           'Correo electrónico Segundo tutor': 'email_tutor2',
-           'Autoriza el uso de imagenes': 'uso_imagenes'}
-
-    adic = {'alumno': '', 'estado_matricula': '', 'id_socio': '', 'dni': '', 'direccion': '', 'cp': '',
-            'localidad': '', 'nacimiento': '', 'provincia': '', 'telefono_fijo': '', 'telefono_movil': '',
-            'email': '', 'curso': '', 'id_organizacion': '', 'subentidades': '', 'last_name1': '',
-            'last_name2': '', 'nombre': '', 'dni_tutor1': '', 'last_name1_tutor1': '',
-            'last_name2_tutor1': '', 'nombre_tutor1': '', 'telefono_fijo_tutor1': '', 'fecha_alta': '',
-            'telefono_movil_tutor1': '', 'sexo_tutor1': '', 'dni_tutor2': '', 'last_name1_tutor2': '',
-            'last_name2_tutor2': '', 'nombre_tutor2': '', 'telefono_fijo_tutor2': '', 'perfiles': '',
-            'telefono_movil_tutor2': '', 'sexo_tutor2': '', 'localidad_nacimiento': '', 'nacionalidad': '',
-            'code_pais_nacimiento': '', 'pais_nacimiento': '', 'code_provincia_nacimiento': '',
-            'pago_seguro_escolar': '', 'sexo': '', 'year_matricula': '', 'num_matriculas': '',
-            'observaciones_matricula': '', 'num_ss': '', 'num_exp': '', 'fecha_matricula': '',
-            'num_matriculas_exp': '', 'rep_curso': '', 'familia_numerosa': '', 'lengua_materna': '',
-            'year_incorporacion': '', 'bilingue': '', 'email_tutor1': '', 'email_tutor2': '', 'iban': '',
-            'localidad_tutor1': '', 'localidad_tutor2': '', 'direccion_tutor1': '', 'direccion_tutor2': '',
-            'cp_tutor1': '', 'cp_tutor2': '', 'nacimiento_tutor1': '', 'nacimiento_tutor2': '',
-            'provincia_tutor1': '', 'provincia_tutor2': '', 'iban_tutor1': '', 'iban_tutor2': '',
-            'id_socio_tutor1': '', 'id_socio_tutor2': '', 'fecha_alta_tutor1': '', 'fecha_alta_tutor2': '',
-            'observaciones_tutor1': '', 'observaciones_tutor2': '',
-            'perfiles_tutor1': '', 'perfiles_tutor2': '', }
-
-    # print('esto es antes del if')
-    if len(keys) < 30:  # This implies the file is from Personal (RegInfPerCen.xls)
-        pass
+        # krp = {'Empleado': 'empleado', 'DNI/Pasaporte': 'dni', 'Tipo de personal': 'subentidades',
+        #        'Puesto': 'perfiles', 'Fecha de nacimiento': 'nacimiento', 'Activo': 'activo',
+        #        'Fecha del último nombramiento': 'fecha_alta',
+        #        'Fecha de cese': 'baja', 'Dirección': 'direccion', 'Código Postal': 'cp', 'Sexo': 'sexo',
+        #        'Localidad': 'localidad', 'Provincia': 'provincia', 'Teléfono 1': 'telefono_fijo',
+        #        'Teléfono 2': 'telefono_movil', 'Correo electrónico': 'email', 'Especialidad': 'especialidad'}
+        # pdic = {'empleado': '', 'dni': '', 'subentidades': '', 'perfiles': '', 'nacimiento': '', 'activo': '',
+        #         'fecha_alta': '', 'baja': '', 'direccion': '', 'cp': '', 'sexo': '', 'localidad': '', 'email': '',
+        #         'iban': '', 'provincia': '', 'telefono_fijo': '', 'telefono_movil': '', 'especialidad': ''}
         # for row_index in range(5, sheet.nrows):
         #     d = pdic
-        #
         #     for col_index in range(sheet.ncols):
         #         d[krp[keys[col_index]]] = sheet.cell(row_index, col_index).value
         #     d['apellidos'] = d['empleado'].split(', ')[0]
@@ -723,75 +614,71 @@ def carga_masiva_tipo_EXCEL(carga):
         #     d['perfiles'] = str(cargo[0].id)
         #     d['observaciones'] = d['especialidad'] + '<br>Causa baja el ' + d['baja']
         #     create_usuario(d, carga, '')
-    else:
-        pass
-        # fecha_expira = carga.ronda.entidad.ronda.fin + timedelta(days=5)  # Expiración para los grupos
-        # subas = Subentidad.objects.filter(clave_ex='alumnos', entidad=carga.ronda.entidad)
-        # if subas.count() > 0:
-        #     suba = subas[0]
-        # else:
-        #     suba = Subentidad.objects.create(nombre='Alumnos', mensajes=True, clave_ex='alumnos',
-        #                                      entidad=carga.ronda.entidad, edad_min=12, edad_max=67)
-        # subps = Subentidad.objects.filter(clave_ex='madres_padres', entidad=carga.ronda.entidad)
-        # if subps.count() > 0:
-        #     subp = subps[0]
-        # else:
-        #     subp = Subentidad.objects.create(nombre='Madres/Padres', mensajes=True,
-        #                                      entidad=carga.ronda.entidad,
-        #                                      clave_ex='madres_padres', edad_min=18, edad_max=67)
-        # cargoa = Cargo.objects.get_or_create(cargo='Alumno/a', entidad=carga.ronda.entidad, nivel=6)
-        # cargop = Cargo.objects.get_or_create(cargo='Padre/Madre', entidad=carga.ronda.entidad, nivel=6)
-        # for row_index in range(5, sheet.nrows):
-        #     d = adic
-        #     for col_index in range(sheet.ncols):
-        #         try:
-        #             d[kra[key_columns[col_index]]] = sheet.cell(row_index, col_index).value
-        #         except:
-        #             pass
-        #     d['apellidos'] = '%s %s' % (d['last_name1'], d['last_name2'])
-        #     d['apellidos_tutor1'] = '%s %s' % (d['last_name1_tutor1'], d['last_name2_tutor1'])
-        #     d['apellidos_tutor2'] = '%s %s' % (d['last_name1_tutor2'], d['last_name2_tutor2'])
-        #     grupo, c = Grupo.objects.get_or_create(nombre=d['subentidades'], ronda=carga.ronda)
-        #     if c:
-        #         logger.info('Carga masiva xls. Se crea grupo %s' % grupo.nombre)
-        #     d['subentidades'] = str(suba.id)
-        #     d['subentidades_tutor1'] = str(subp.id)
-        #     d['subentidades_tutor2'] = str(subp.id)
-        #     d['activo'] = True
-        #     d['observaciones'] = '<b>Localidad de nacimiento:</b> %s<br><b>Nacionalidad:</b> %s<br>' \
-        #                          '<b>Código del país de nacimiento:</b> %s<br><b>País de nacimiento:</b> %s<br>' \
-        #                          '<b>Código de la provincia de nacimiento:</b> %s<br><b>Ha pagado el seguro escolar:</b> %s<br>' \
-        #                          '<b>Año de la matrícula:</b> %s<br><b>Número de matrículas en este curso:</b> %s<br>' \
-        #                          '<b>Observaciones de la matrícula:</b> %s<br><b>Número de SS:</b> %s<br>' \
-        #                          '<b>Nº de expediente en el centro:</b> %s<br><b>Fecha de matrícula:</b> %s<br>' \
-        #                          '<b>Nº de matrículas en el expediente:</b> %s<br><b>Repeticiones en el curso:</b> %s<br>' \
-        #                          '<b>Familia numerosa:</b> %s<br><b>Lengua materna:</b> %s<br><b>Año de incorporación al sistema educativo:</b> %s<br>' % (
-        #                              d['localidad_nacimiento'], d['nacionalidad'],
-        #                              d['code_pais_nacimiento'],
-        #                              d['pais_nacimiento'], d['code_provincia_nacimiento'],
-        #                              d['pago_seguro_escolar'], d['year_matricula'], d['num_matriculas'],
-        #                              d['observaciones_matricula'],
-        #                              d['num_ss'], d['num_exp'], d['fecha_matricula'],
-        #                              d['num_matriculas_exp'],
-        #                              d['rep_curso'], d['familia_numerosa'], d['lengua_materna'],
-        #                              d['year_incorporacion'])
-        #
-        #     tutor1 = create_usuario(d, carga, '_tutor1')
-        #     if tutor1:
-        #         tutor1.cargos.add(cargop[0])
-        #         tutor1.save()
-        #     tutor2 = create_usuario(d, carga, '_tutor2')
-        #     if tutor2:
-        #         tutor2.cargos.add(cargop[0])
-        #         tutor2.save()
-        #     gauser_extra = create_usuario(d, carga, '')
-        #     gauser_extra.tutor1 = tutor1
-        #     gauser_extra.tutor2 = tutor2
-        #     gauser_extra.subentidades.add(suba)
-        #     gauser_extra.cargos.add(cargoa[0])
-        #     gauser_extra.save()
-        #     gauser_extra.gauser_extra_estudios.grupo = grupo
-        #     gauser_extra.gauser_extra_estudios.save()
+
+        ####################################
+        errores = {}
+        # Get the keys from line 5 of excel file:
+        dict_names = {}
+        for col_index in range(sheet.ncols):
+            dict_names[str(sheet.cell(4, col_index).value).strip()] = col_index
+        for row_index in range(5, sheet.nrows):
+            try:
+                code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
+                entidad = Entidad.objects.get(code=code_entidad)
+                dni = genera_nie(str(sheet.cell(row_index, dict_names['DNI']).value))
+                nombre = sheet.cell(row_index, dict_names['Nombre docente']).value
+                apellidos = sheet.cell(row_index, dict_names['Apellidos docente']).value
+                email = sheet.cell(row_index, dict_names['Correo-e']).value
+                username = sheet.cell(row_index, dict_names['Usuario']).value
+                clave_ex = str(sheet.cell(row_index, dict_names['X_DOCENTE']).value).strip()
+                puesto = str(sheet.cell(row_index, dict_names['Puesto']).value).strip()
+                xpuesto = str(sheet.cell(row_index, dict_names['X_PUESTO']).value).strip()
+                tipo_personal = str(sheet.cell(row_index, dict_names['Tipo personal']).value).strip()
+                jornada_contratada = str(sheet.cell(row_index, dict_names['Jornada contratada']).value).strip()
+
+                if 'No Docente' in tipo_personal and jornada_contratada == '0:00':
+                    try:
+                        cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_nodocente', borrable=False)
+                    except:
+                        cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_nodocente', borrable=False,
+                                                     cargo='No docente')
+                else:
+                    try:
+                        cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
+                    except:
+                        cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_docente', borrable=False,
+                                                     cargo='Docente')
+                for c in CARGOS:
+                    if cargo.clave_cargo == c['clave_cargo']:
+                        for code_nombre in c['permisos']:
+                            cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
+                try:
+                    try:
+                        gauser = Gauser.objects.get(dni=dni)
+                        gauser.email = email
+                        gauser.username = username
+                    except:
+                        gauser = Gauser.objects.get(username=username)
+                        gauser.email = email
+                        gauser.dni = dni
+                except:
+                    gauser = Gauser.objects.create_user(username, email=email, last_login=now(), dni=dni,
+                                                        password=pass_generator(size=9))
+                gauser.first_name = nombre
+                gauser.last_name = apellidos
+                gauser.save()
+                gauser_extra, c = Gauser_extra.objects.get_or_create(ronda=entidad.ronda, gauser=gauser)
+                gauser_extra.clave_ex = clave_ex
+                gauser_extra.activo = True
+                gauser_extra.puesto = puesto
+                gauser_extra.tipo_personal = tipo_personal
+                gauser_extra.jornada_contratada = jornada_contratada
+                gauser_extra.cargos.add(cargo)
+                gauser_extra.save()
+            except Exception as msg:
+                apellidos = slugify(sheet.cell(row_index, dict_names['Apellidos docente']).value)
+                errores[row_index] = {'error': str(msg), 'apellidos': apellidos}
+                logger.info('Error carga general docentes %s -- %s' % (str(apellidos), msg))
     carga.cargado = True
     carga.save()
 
@@ -991,6 +878,10 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
                 cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
             except:
                 cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_docente', borrable=False, cargo='Docente')
+            try:
+                cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_nodocente', borrable=False)
+            except:
+                cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_nodocente', borrable=False, cargo='No docente')
             dni = genera_nie(str(sheet.cell(row_index, dict_names['DNI']).value))
             nombre = sheet.cell(row_index, dict_names['Nombre docente']).value
             apellidos = sheet.cell(row_index, dict_names['Apellidos docente']).value

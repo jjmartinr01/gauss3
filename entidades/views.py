@@ -34,6 +34,7 @@ from mensajes.models import Aviso, Mensaje, Etiqueta
 from mensajes.views import crear_aviso
 from bancos.views import asocia_banco_entidad, num_cuenta2iban
 from gauss.rutas import *
+from gauss.constantes import CARGOS
 from gauss.funciones import usuarios_de_gauss, pass_generator, usuarios_ronda, genera_nie, usuarios_organization
 from datetime import date
 import simplejson as json
@@ -275,9 +276,9 @@ def usuarios_entidad_ajax(request):
                 if g_e.has_permiso('baja_usuarios'):
                     g_e_selected = Gauser_extra.objects.get(id=request.POST['ge'], ronda=g_e.ronda)
                     obs = '<br>(Autor: %s) Con fecha %s se ha dado de baja a %s.' % (g_e.gauser.get_full_name(),
-                                                                                      datetime.now().strftime(
-                                                                                          "%d-%m-%Y"),
-                                                                                      g_e_selected.gauser.get_full_name())
+                                                                                     datetime.now().strftime(
+                                                                                         "%d-%m-%Y"),
+                                                                                     g_e_selected.gauser.get_full_name())
                     g_e_selected.activo = False
                     g_e_selected.observaciones = g_e_selected.observaciones + obs
                     g_e_selected.save()
@@ -2293,60 +2294,7 @@ def modulos_entidad(request):
         return redirect('/calendario/')
 
 
-########################################################################################################
-Cargos = [{'clave_cargo': 'g_inspector_educacion', 'cargo': 'Inspector de Educación',
-           'permisos': ['acceso_datos_entidad', 'acceso_calendario', 'acceso_vista_calendario', 'crea_eventos',
-                        'acceso_gestion_documental', 'acceso_documentos', 'crea_carpetas', 'sube_archivos',
-                        'acceso_cuestionarios', 'acceso_formularios', 'crea_formularios', 'copia_formularios',
-                        'acceso_cupos', 'acceso_acciones_usuarios1', 'acceso_registro', 'acceso_reparaciones',
-                        'crea_solicitud_reparacion', 'acceso_reuniones', 'acceso_conv_template', 'c_conv_template',
-                        'acceso_faqs', 'acceso_inspeccion_educativa', 'es_inspector_educacion', 'acceso_tareas_ie',
-                        'crea_tareas_ie', 'edita_tareas_ie', 'copia_tareas_ie', 'borra_tareas_ie',
-                        'acceso_conv_reunion', 'c_conv_reunion', 'acceso_informes_ie', 'crea_informes_ie',
-                        'acceso_plantilla_organica', 'acceso_mis_formularios', 'acceso_formularios_disponibles',
-                        'acceso_gestion_entidad', 'acceso_redactar_actas_reunion', 'w_sus_actas_reunion',
-                        'acceso_faqs_entidad', 'acceso_plantillas_informes_ie', 'acceso_asignar_centros_inspeccion',
-                        'acceso_control_asistencia_reunion', 'acceso_firmar_actas_reunion', 'acceso_faqs_sugeridas',
-                        'r_actas_reunion', 'acceso_lectura_actas_reunion']},
-          {'clave_cargo': 'g_docente', 'cargo': 'Docente',
-           'permisos': ['acceso_calendario', 'acceso_vista_calendario', 'crea_eventos', 'acceso_gestion_documental',
-                        'acceso_documentos', 'acceso_cuestionarios', 'acceso_formularios', 'crea_formularios',
-                        'acceso_horarios', 'acceso_acciones_usuarios1', 'acceso_convivencia', 'acceso_absentismo',
-                        'crea_actuacion_absentismo', 'acceso_reparaciones', 'crea_solicitud_reparacion',
-                        'acceso_actividades', 'crea_actividad', 'acceso_informes_usuarios',
-                        'acceso_informes_seguimiento', 'solicita_informes_seguimiento', 'acceso_competencias_clave',
-                        'acceso_programaciones_didacticas', 'acceso_evaluar_materias', 'evalua_materias_asignadas',
-                        'acceso_reuniones', 'acceso_faqs', 'acceso_sancionar_conductas', 'sancionar_nivel_docente',
-                        'genera_informe_sancionador', 'cc_valorar_mis_alumnos', 'acceso_cargar_programaciones',
-                        'carga_programaciones', 'descarga_programaciones', 'acceso_mis_formularios',
-                        'acceso_formularios_disponibles', 'acceso_informes_tareas', 'solicita_informes_tareas',
-                        'acceso_faqs_entidad', 'acceso_horario_usuarios', 've_horarios_usuarios',
-                        'acceso_control_asistencia_reunion', 'acceso_firmar_actas_reunion', 'acceso_faqs_sugeridas',
-                        'acceso_horario_aulas', 'acceso_lectura_actas_reunion', 'acceso_horarios_subentidades',
-                        've_horarios_entidad', 'acceso_guardias_horarios']},
-          {'clave_cargo': 'g_director_general_educacion', 'cargo': 'Director General de Educación',
-           'permisos': ['acceso_configuracion', 'acceso_perfiles_permisos', 'asigna_perfiles', 'asigna_permisos',
-                        'modifica_texto_menu', 'modifica_pos_menu', 'acceso_datos_entidad', 'acceso_calendario',
-                        'acceso_vista_calendario', 'crea_eventos', 've_todos_eventos', 'acceso_gestion_documental',
-                        'acceso_documentos', 'crea_carpetas', 'sube_archivos', 've_todas_carpetas',
-                        'edita_todos_archivos', 'borra_cualquier_archivo', 'borra_cualquier_carpeta', 'edita_carpetas',
-                        'acceso_cuestionarios', 'acceso_formularios', 'crea_formularios', 'copia_formularios',
-                        'borra_formularios', 'acceso_cupos', 'acceso_registro', 'crea_registros', 'acceso_reuniones',
-                        'acceso_conv_template', 'c_conv_template', 'w_conv_template', 'd_conv_template', 'acceso_faqs',
-                        'acceso_configura_faqs', 'crea_secciones_faqs', 'crea_faqs_entidad', 'edita_faqs_entidad',
-                        'publica_faqs_entidad', 'acceso_inspeccion_educativa', 'acceso_tareas_ie',
-                        'acceso_gestionar_perfiles', 'crea_perfiles', 'borra_perfiles', 'edita_perfiles',
-                        'acceso_conv_reunion', 'r_conv_reunion', 'c_conv_reunion', 'w_conv_reunion', 'd_conv_reunion',
-                        'm_conv_reunion', 'acceso_informes_ie', 'crea_informes_ie', 'acceso_plantilla_organica',
-                        'acceso_mis_formularios', 'acceso_formularios_disponibles', 'acceso_gestion_entidad',
-                        'acceso_redactar_actas_reunion', 'w_sus_actas_reunion', 'w_actas_subentidades_reunion',
-                        'w_cualquier_acta_reunion', 'mail_actas_reunion', 'acceso_faqs_entidad',
-                        'acceso_plantillas_informes_ie', 'acceso_gestionar_subentidades', 'crea_subentidades',
-                        'borra_subentidades', 'edita_subentidades', 'acceso_miembros_entidad', 'listado_usuarios',
-                        'acceso_control_asistencia_reunion', 'acceso_firmar_actas_reunion', 'acceso_faqs_sugeridas',
-                        'acepta_faqs_sugeridas', 'acceso_listados_usuarios', 'r_actas_reunion',
-                        'acceso_lectura_actas_reunion', 'acceso_doc_configuration']}
-          ]
+
 
 
 # @gauss_required
@@ -2371,7 +2319,7 @@ def get_entidad_general():
             m.save()
     except Exception as msg:
         errores.append(str(msg))
-    for c in Cargos:
+    for c in CARGOS:
         try:
             Cargo.objects.get(entidad=e, clave_cargo=c['clave_cargo'], borrable=False)
         except:
@@ -2658,7 +2606,8 @@ def selectgcs_organization(request):
     if request.is_ajax():
         if request.method == 'GET':
             texto = request.GET['q']
-            rondas = Entidad.objects.filter(organization=g_e.ronda.entidad.organization).values_list('ronda__id', flat=True)
+            rondas = Entidad.objects.filter(organization=g_e.ronda.entidad.organization).values_list('ronda__id',
+                                                                                                     flat=True)
             q1 = Q(gauser__first_name__icontains=texto) | Q(gauser__last_name__icontains=texto)
             q2 = Q(ronda__id__in=rondas)
             ges = Gauser_extra.objects.filter(q1 & q2)
@@ -2744,27 +2693,29 @@ def decode_select_allges(coded_ids, ronda):
     ges = usuarios_ronda(ronda)
     return ges.filter(Q(id__in=ges_ids) | Q(cargos__id__in=cs_ids) | Q(subentidades__id__in=ss_ids)).distinct()
 
+
 #############################################################################
 ####################### API llamadas desde otro dominio #####################
 #############################################################################
 
 dic = {'first_name': '', 'last_name': '', 'address': '', 'sexo': '',
-                  'email': '', 'telfij': '', 'telmov': '',
-                  'nacimiento': '', 'dni': '',
-                  'first_name_tutor1': '', 'dni_tutor1': '',
-                  'last_name_tutor1': '',
-                  'telfij_tutor1': '',
-                  'telmov_tutor1': '', 'email_tutor1': '',
-                  'first_name_tutor2': '', 'dni_tutor2': '',
-                  'last_name_tutor2': '',
-                  'telfij_tutor2': '',
-                  'telmov_tutor2': '', 'email_tutor2': '',
-                  'observaciones': '', 'num_cuenta_bancaria': ''}
+       'email': '', 'telfij': '', 'telmov': '',
+       'nacimiento': '', 'dni': '',
+       'first_name_tutor1': '', 'dni_tutor1': '',
+       'last_name_tutor1': '',
+       'telfij_tutor1': '',
+       'telmov_tutor1': '', 'email_tutor1': '',
+       'first_name_tutor2': '', 'dni_tutor2': '',
+       'last_name_tutor2': '',
+       'telfij_tutor2': '',
+       'telmov_tutor2': '', 'email_tutor2': '',
+       'observaciones': '', 'num_cuenta_bancaria': ''}
 
 dic_arvutur = {'first_name': '', 'last_name': '', 'address': '', 'sexo': '',
-                  'email': '', 'telfij': '', 'telmov': '',
-                  'nacimiento': '', 'dni': '',
-                  'observaciones': '', 'num_cuenta_bancaria': ''}
+               'email': '', 'telfij': '', 'telmov': '',
+               'nacimiento': '', 'dni': '',
+               'observaciones': '', 'num_cuenta_bancaria': ''}
+
 
 def postnewreserva(request, entidad_code):
     sleep(3)

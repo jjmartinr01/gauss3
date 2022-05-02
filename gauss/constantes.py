@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-#Código de centro asociado a un contenedor desechable. Para los casos en los que no se pueda borrar la entidad:
+# Código de centro asociado a un contenedor desechable. Para los casos en los que no se pueda borrar la entidad:
 CODE_CONTENEDOR = '1010101010'
-#gauser asociado al centro contenedor al que se podrán asignar Gauser_extras en caso de no poder borrarse:
+# gauser asociado al centro contenedor al que se podrán asignar Gauser_extras en caso de no poder borrarse:
 GAUSER_COMODIN = 'qazwsxedcrfvtgbyhnujmikolp'
 
 WEEKDAYS = {}
@@ -84,8 +84,8 @@ DIAS = (
     ('S', 'Sábado'),
     ('D', 'Domingo'),
 )
-MESES=('Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre',
-       'Octubre', 'Noviembre', 'Diciembre')
+MESES = ('Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre',
+         'Octubre', 'Noviembre', 'Diciembre')
 
 LOCALIDADES = (
     ('26339', 'ABALOS'),
@@ -424,3 +424,65 @@ PAISES = (
     ("324", "Yemen"),
     ("325", "Zambia"),
     ("326", "Zimbabwe"))
+
+########################################################################################################
+CARGOS = [{'clave_cargo': 'g_inspector_educacion', 'cargo': 'Inspector de Educación',
+           'permisos': ['acceso_datos_entidad', 'acceso_calendario', 'acceso_vista_calendario', 'crea_eventos',
+                        'acceso_gestion_documental', 'acceso_documentos', 'crea_carpetas', 'sube_archivos',
+                        'acceso_cuestionarios', 'acceso_formularios', 'crea_formularios', 'copia_formularios',
+                        'acceso_cupos', 'acceso_acciones_usuarios1', 'acceso_registro', 'acceso_reparaciones',
+                        'crea_solicitud_reparacion', 'acceso_reuniones', 'acceso_conv_template', 'c_conv_template',
+                        'acceso_faqs', 'acceso_inspeccion_educativa', 'es_inspector_educacion', 'acceso_tareas_ie',
+                        'crea_tareas_ie', 'edita_tareas_ie', 'copia_tareas_ie', 'borra_tareas_ie',
+                        'acceso_conv_reunion', 'c_conv_reunion', 'acceso_informes_ie', 'crea_informes_ie',
+                        'acceso_plantilla_organica', 'acceso_mis_formularios', 'acceso_formularios_disponibles',
+                        'acceso_gestion_entidad', 'acceso_redactar_actas_reunion', 'w_sus_actas_reunion',
+                        'acceso_faqs_entidad', 'acceso_plantillas_informes_ie', 'acceso_asignar_centros_inspeccion',
+                        'acceso_control_asistencia_reunion', 'acceso_firmar_actas_reunion', 'acceso_faqs_sugeridas',
+                        'r_actas_reunion', 'acceso_lectura_actas_reunion']},
+          {'clave_cargo': 'g_docente', 'cargo': 'Docente',
+           'permisos': ['acceso_calendario', 'acceso_vista_calendario', 'crea_eventos', 'acceso_gestion_documental',
+                        'acceso_documentos', 'acceso_cuestionarios', 'acceso_formularios', 'crea_formularios',
+                        'acceso_horarios', 'acceso_acciones_usuarios1', 'acceso_convivencia', 'acceso_absentismo',
+                        'crea_actuacion_absentismo', 'acceso_reparaciones', 'crea_solicitud_reparacion',
+                        'acceso_actividades', 'crea_actividad', 'acceso_informes_usuarios',
+                        'acceso_informes_seguimiento', 'solicita_informes_seguimiento', 'acceso_competencias_clave',
+                        'acceso_programaciones_didacticas', 'acceso_evaluar_materias', 'evalua_materias_asignadas',
+                        'acceso_reuniones', 'acceso_faqs', 'acceso_sancionar_conductas', 'sancionar_nivel_docente',
+                        'genera_informe_sancionador', 'cc_valorar_mis_alumnos', 'acceso_cargar_programaciones',
+                        'carga_programaciones', 'descarga_programaciones', 'acceso_mis_formularios',
+                        'acceso_formularios_disponibles', 'acceso_informes_tareas', 'solicita_informes_tareas',
+                        'acceso_faqs_entidad', 'acceso_horario_usuarios', 've_horarios_usuarios',
+                        'acceso_control_asistencia_reunion', 'acceso_firmar_actas_reunion', 'acceso_faqs_sugeridas',
+                        'acceso_horario_aulas', 'acceso_lectura_actas_reunion', 'acceso_horarios_subentidades',
+                        've_horarios_entidad', 'acceso_guardias_horarios']},
+          {'clave_cargo': 'g_nodocente', 'cargo': 'No docente',
+           'permisos': ['acceso_calendario', 'acceso_vista_calendario', 'crea_eventos', 'acceso_gestion_documental',
+                        'acceso_documentos', 'acceso_cuestionarios', 'acceso_formularios', 'crea_formularios',
+                        'acceso_horarios', 'acceso_acciones_usuarios1', 'acceso_reparaciones', 'crea_solicitud_reparacion',
+                        'acceso_faqs', 'acceso_faqs_entidad', 'acceso_horario_usuarios', 've_horarios_usuarios',
+                        'acceso_faqs_sugeridas', 'acceso_horario_aulas', 'acceso_horarios_subentidades',
+                        've_horarios_entidad', 'acceso_guardias_horarios']},
+          {'clave_cargo': 'g_director_general_educacion', 'cargo': 'Director General de Educación',
+           'permisos': ['acceso_configuracion', 'acceso_perfiles_permisos', 'asigna_perfiles', 'asigna_permisos',
+                        'modifica_texto_menu', 'modifica_pos_menu', 'acceso_datos_entidad', 'acceso_calendario',
+                        'acceso_vista_calendario', 'crea_eventos', 've_todos_eventos', 'acceso_gestion_documental',
+                        'acceso_documentos', 'crea_carpetas', 'sube_archivos', 've_todas_carpetas',
+                        'edita_todos_archivos', 'borra_cualquier_archivo', 'borra_cualquier_carpeta', 'edita_carpetas',
+                        'acceso_cuestionarios', 'acceso_formularios', 'crea_formularios', 'copia_formularios',
+                        'borra_formularios', 'acceso_cupos', 'acceso_registro', 'crea_registros', 'acceso_reuniones',
+                        'acceso_conv_template', 'c_conv_template', 'w_conv_template', 'd_conv_template', 'acceso_faqs',
+                        'acceso_configura_faqs', 'crea_secciones_faqs', 'crea_faqs_entidad', 'edita_faqs_entidad',
+                        'publica_faqs_entidad', 'acceso_inspeccion_educativa', 'acceso_tareas_ie',
+                        'acceso_gestionar_perfiles', 'crea_perfiles', 'borra_perfiles', 'edita_perfiles',
+                        'acceso_conv_reunion', 'r_conv_reunion', 'c_conv_reunion', 'w_conv_reunion', 'd_conv_reunion',
+                        'm_conv_reunion', 'acceso_informes_ie', 'crea_informes_ie', 'acceso_plantilla_organica',
+                        'acceso_mis_formularios', 'acceso_formularios_disponibles', 'acceso_gestion_entidad',
+                        'acceso_redactar_actas_reunion', 'w_sus_actas_reunion', 'w_actas_subentidades_reunion',
+                        'w_cualquier_acta_reunion', 'mail_actas_reunion', 'acceso_faqs_entidad',
+                        'acceso_plantillas_informes_ie', 'acceso_gestionar_subentidades', 'crea_subentidades',
+                        'borra_subentidades', 'edita_subentidades', 'acceso_miembros_entidad', 'listado_usuarios',
+                        'acceso_control_asistencia_reunion', 'acceso_firmar_actas_reunion', 'acceso_faqs_sugeridas',
+                        'acepta_faqs_sugeridas', 'acceso_listados_usuarios', 'r_actas_reunion',
+                        'acceso_lectura_actas_reunion', 'acceso_doc_configuration']}
+          ]

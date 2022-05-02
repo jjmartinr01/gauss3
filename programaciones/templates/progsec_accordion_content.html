@@ -321,7 +321,8 @@
                         <tr>
                             <td>{{ cep.ce.orden }}.{{ cevp.cev.orden }}.- {{ cevp.cev.texto }}</td>
                             <td><input type="number" min="1" max="10" class="pesocevp" data-cevp="{{ cevp.id }}"
-                                       data-progsec="{{ progsec.id }}" value="{{ cevp.valor|floatformat }}"></td>
+                                       data-progsec="{{ progsec.id }}" value="{{ cevp.valor|floatformat }}"
+                                       onkeydown="return false"></td>
                         </tr>
                     {% endfor %}
                     </tbody>

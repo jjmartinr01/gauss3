@@ -20,8 +20,8 @@
       </div>
     </div>
     <div class="columns large-1">
-        <input type="number" value="{{ saber.periodos }}" class="mod_saber" data-campo="periodos"
-               data-progsec="{{ saber.psec.id }}" data-saber="{{ saber.id }}">
+        <input type="number" value="{{ saber.periodos }}" class="mod_saber" data-campo="periodos" min="1" max="100"
+               data-progsec="{{ saber.psec.id }}" data-saber="{{ saber.id }}" onkeydown="return false">
     </div>
     <div class="columns large-1" style="text-align: center;"><a class="alert borrar_saber" data-progsec="{{ saber.psec.id }}"
                                     data-saber="{{ saber.id }}">

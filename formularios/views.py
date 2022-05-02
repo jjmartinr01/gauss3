@@ -1471,9 +1471,9 @@ def mis_evalpract(request):  # mis_evaluaciones_prácticas
                 # Datos para la creación del informe de Inspección:
                 title = 'Informe de evaluación de %s' % efpa.docente.gauser.get_full_name()
                 ie, c = InformeInspeccion.objects.get_or_create(title=title)
-                ie.inspector = efpa.inspector
+                ie.inspector = g_e
                 ie.asunto = 'Informe de evaluación de %s' % efpa.docente.gauser.get_full_name()
-                ie.destinatario = '<p>COMISIÓN DE EVALUACIÓN</p>'
+                ie.destinatario = '<p>COMISIÓN DE EVALUACIÓN DE LA FASE DE PRÁCTICAS</p>'
                 ie.texto = render_to_string('mis_evalpract_accordion_content_informe_INSP.html', {'efpa': efpa})
                 ie.save()
                 # Datos para la creación del documento de valoración:
