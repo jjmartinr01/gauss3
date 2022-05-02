@@ -153,6 +153,10 @@
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $("#update_error").show().delay(1500).fadeOut();
+                            show_mensajes({
+                                'title': '<i class="fa fa-warning"></i> Aviso',
+                                'texto': data.msg
+                            })
                         }
                         $(document).scrollTop($('#title_page').offset().top - 150);
                     });
@@ -410,7 +414,7 @@
                     function (data) {
                         if (data.ok) {
                             if (data.html) {
-                                    $('#gantt' + id).html(data.html);
+                                $('#gantt' + id).html(data.html);
                             }
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
@@ -425,18 +429,18 @@
 
         $('body').on('click', '.ordenar_saberes', function () {
             var element = $(this);
-                var id = element.data('progsec');
-                $.post("/progsecundaria/", {
-                        action: 'ordenar_saberes', id: id
-                    },
-                    function (data) {
-                        if (data.ok) {
-                                    $('#lista_saberes' + id).html(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $('#update_error').show().delay(1500).fadeOut();
-                        }
-                    });
+            var id = element.data('progsec');
+            $.post("/progsecundaria/", {
+                    action: 'ordenar_saberes', id: id
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#lista_saberes' + id).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
         });
 
         $('body').on('click', '.borrar_saber', function () {

@@ -1948,6 +1948,7 @@ def reordenar_saberes(saber, valor):
         saber.delete()
     return render_to_string('progsec_accordion_content_saberes.html', {'progsec': progsec})
 
+
 def reordenar_saberes_comienzo(psec):
     # if comienzo > datetime(3000, 1, 1):
     #     saber.delete()
@@ -1981,8 +1982,34 @@ def progsecundaria(request):
             elif action == 'crea_progsec':
                 try:
                     if g_e.has_permiso('crea_programaciones'):
+                        CURSOS_CICLOS = {'00INF0': 'Primer Ciclo Infantil', '00INF1': 'Primer Ciclo Infantil',
+                                         '00INF2': 'Primer Ciclo Infantil', '00INF3': 'Segundo Ciclo Infantil',
+                                         '00INF4': 'Segundo Ciclo Infantil', '00INF5': 'Segundo Ciclo Infantil',
+                                         '10PRI1': 'Primer Ciclo Primaria', '10PRI2': 'Primer Ciclo Primaria',
+                                         '10PRI3': 'Segundo Ciclo Primaria', '10PRI4': 'Segundo Ciclo Primaria',
+                                         '10PRI5': 'Tercer Ciclo Primaria', '10PRI6': 'Tercer Ciclo Primaria'}
                         areamateria = AreaMateria.objects.get(id=request.POST['areamateria'])
-                        progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria)
+                        try:
+                            ciclo = CURSOS_CICLOS[request.POST['curso']]
+                            etapa = ''.join([i for i in request.POST['curso'] if not i.isdigit()])
+                            dep, c = Departamento.objects.get_or_create(ronda=g_e.ronda, nombre=ciclo, etapa=etapa,
+                                                                        abreviatura=etapa)
+                            try:
+                                ProgSec.objects.get(pga=pga, areamateria=areamateria, departamento=dep)
+                                msg = 'Ya existe una programación para %s (%s). No se crea una nueva.' % (
+                                    areamateria.nombre, areamateria.get_curso_display())
+                                return JsonResponse({'ok': False, 'msg': msg})
+                            except:
+                                progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria,
+                                                                 departamento=dep)
+                        except:
+                            try:
+                                ProgSec.objects.get(pga=pga, areamateria=areamateria)
+                                msg = 'Ya existe una programación para %s (%s). No se crea una nueva.' % (
+                                    areamateria.nombre, areamateria.get_curso_display())
+                                return JsonResponse({'ok': False, 'msg': msg})
+                            except:
+                                progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria)
                         DocProgSec.objects.get_or_create(psec=progsec, gep=g_ep, permiso='X')
                         for ce in areamateria.competenciaespecifica_set.all():
                             cepsec = CEProgSec.objects.create(psec=progsec, ce=ce)
@@ -1992,7 +2019,7 @@ def progsecundaria(request):
                                                 {'buscadas': False, 'progsecs': [progsec], 'g_e': g_e, 'nueva': True})
                         return JsonResponse({'ok': True, 'html': html})
                     else:
-                        JsonResponse({'ok': False, 'msg': 'Sin permiso'})
+                        JsonResponse({'ok': False, 'msg': 'No tienes permiso para crear programaciones.'})
                 except Exception as msg:
                     return JsonResponse({'ok': False, 'msg': str(msg)})
             elif action == 'open_accordion':
@@ -2041,7 +2068,7 @@ def progsecundaria(request):
                         lr.psec = ps_nueva
                         lr.save()
                     for actex in ps.actexcom_set.all():
-                        actex.pk =None
+                        actex.pk = None
                         actex.psec = ps_nueva
                         actex.save()
                     for sb in ps.saberbas_set.all():
@@ -2081,7 +2108,7 @@ def progsecundaria(request):
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
                     if permiso in 'EX':
-                        if '_clases' in request.POST['campo']: #inicio_clases o fin_clases
+                        if '_clases' in request.POST['campo']:  # inicio_clases o fin_clases
                             texto = datetime.strptime(request.POST['texto'], '%Y-%m-%d')
                         else:
                             texto = request.POST['texto']
@@ -2321,7 +2348,7 @@ def progsecundaria(request):
                         saber = progsec.saberbas_set.get(id=request.POST['saber'])
                         psec = saber.psec
                         # saber_id = saber.id
-                        #html = reordenar_saberes(saber, 1000)  # Si orden es > que 999 el saber se borra
+                        # html = reordenar_saberes(saber, 1000)  # Si orden es > que 999 el saber se borra
                         saber.delete()
                         html = reordenar_saberes_comienzo(psec)
                         return JsonResponse({'ok': True, 'html': html})
@@ -2391,6 +2418,16 @@ def progsecundaria(request):
     except Exception as msg:
         return HttpResponse(str(msg))
 
+def verprogramacion(request, centro, id):
+    try:
+        progsec = ProgSec.objects.get(id=id, pga__ronda__entidad__code=centro)
+        return render(request, "verprogramacion.html",
+                      {
+                          'formname': 'progsec',
+                          'progsec': progsec
+                      })
+    except:
+        pass
 
 @permiso_required('acceso_progsecundaria')
 def progsecundaria_sb(request, id):
@@ -2732,7 +2769,7 @@ def cuadernodocente(request):
                     columns_index = ecp.escalacpvalor_set.filter(y=0).values_list('x', 'valor')
                     for x, valor in columns_index:
                         EscalaCPvalor.objects.create(ecp=ecp, x=x, y=nueva_row_index,
-                                                     texto_cualitativo='', valor=valor)
+                                                     texto_cualitativo='Nuevo aspecto', valor=valor)
                 else:
                     columns_index = ecp.escalacpvalor_set.filter(y=0).values_list('x', flat=True)
                     for x in columns_index:
