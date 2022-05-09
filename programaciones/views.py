@@ -2601,7 +2601,7 @@ def progsecundaria_sb(request, id):
     #             pass
     return render(request, "progsec_sap.html",
                   {
-                      'formname': 'progsec',
+                      'formname': 'progsec_sap',
                       'iconos':
                           ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear SAP', 'permiso': 'libre',
                             'title': 'Crear una nueva situación de aprendizaje para este saber básico'},
@@ -2613,6 +2613,150 @@ def progsecundaria_sb(request, id):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
+# @permiso_required('acceso_repositorio_sap')
+def repositorio_sap(request):
+    g_e = request.session['gauser_extra']
+    g_ep = Gauser_extra_programaciones.objects.get(ge=g_e)
+
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'crea_sap':
+            try:
+                sap = RepoSitApren.objects.create(autor=g_e)
+                act = RepoActSitApren.objects.create(sapren=sap, nombre='Nombre de la actividad')
+                RepoInstrEval.objects.create(asapren=act, tipo='TMONO', nombre='Procedimiento 1')
+                html = render_to_string('repositorio_sap_accordion.html', {'sap': sap})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'borrar_sap':
+            try:
+                sapren = SitApren.objects.get(id=request.POST['id'])
+                if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
+                    sapren.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    msg = 'No tienes permiso para borrar esta situación de aprendizaje.'
+                    return JsonResponse({'ok': False, 'msg': msg})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'open_accordion':
+            try:
+                sap = RepoSitApren.objects.get(id=request.POST['id'])
+                html = render_to_string('repositorio_sap_accordion_content.html', {'sap': sap, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_texto':
+            try:
+                clase = eval(request.POST['clase'])
+                objeto = clase.objects.get(id=request.POST['id'])
+                setattr(objeto, request.POST['campo'], request.POST['texto'])
+                objeto.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_select':
+            try:
+                clase = eval(request.POST['clase'])
+                objeto = clase.objects.get(id=request.POST['id'])
+                setattr(objeto, request.POST['campo'], request.POST['valor'])
+                objeto.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_many2many':
+            try:
+                clase = eval(request.POST['clase'])
+                clasem2m = eval(request.POST['clasem2m'])
+                objeto = clase.objects.get(id=request.POST['id'])
+                objetom2m = clasem2m.objects.get(id=request.POST['idm2m'])
+                manytomany = getattr(objeto, request.POST['campo'])
+                if request.POST['checked'] == 'true':
+                    manytomany.add(objetom2m)
+                else:
+                    manytomany.remove(objetom2m)
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'add_sap_actividad':
+            try:
+                sap = sb.sitapren_set.get(id=request.POST['sap'])
+                act = ActSitApren.objects.create(sapren=sap, nombre='Nombre de la actividad')
+                InstrEval.objects.create(asapren=act, tipo='TMONO', nombre='Procedimiento 1')
+                html = render_to_string('progsec_sap_accordion_content_act.html', {'actividad': act})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'borrar_sap_actividad':
+            try:
+                act = ActSitApren.objects.get(id=request.POST['id'])
+                if act.sapren.actsitapren_set.all().count() > 1:
+                    if act.sapren.sbas == sb:
+                        act.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    msg = 'No es posible borrar. Al menos, debe existir una actividad.'
+                    return JsonResponse({'ok': False, 'msg': msg})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'add_act_instrumento':
+            try:
+                act = ActSitApren.objects.get(id=request.POST['act'])
+                if act.sapren.sbas == sb:
+                    inst = InstrEval.objects.create(asapren=act, nombre='Nombre del instrumento')
+                    html = render_to_string('progsec_sap_accordion_content_act_proc.html', {'instrumento': inst})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    JsonResponse({'ok': False, 'msg': 'Error en la relación sb-instrumento'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'borrar_act_instrumento':
+            try:
+                inst = InstrEval.objects.get(id=request.POST['id'])
+                if inst.asapren.instreval_set.all().count() > 1:
+                    if inst.asapren.sapren.sbas == sb:
+                        inst.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    msg = 'No es posible borrar. Al menos, debe existir un procedimiento de evaluación.'
+                    return JsonResponse({'ok': False, 'msg': msg})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'table_criteval':
+            try:
+                inst = InstrEval.objects.get(id=request.POST['id'])
+                if inst.asapren.sapren.sbas == sb:
+                    criinstrevals = []
+                    for cep in inst.asapren.sapren.ceps.all():
+                        for cevps in cep.cevprogsec_set.all():
+                            criinstreval, c = CriInstrEval.objects.get_or_create(ieval=inst, cevps=cevps)
+                            criinstrevals.append(criinstreval.id)
+                    for cr in inst.criinstreval_set.all():
+                        if cr.id not in criinstrevals:
+                            cr.delete()
+                    html = render_to_string('progsec_sap_accordion_content_act_proc_crits.html', {'instrumento': inst})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+    q1 = Q(borrada=False) & Q(publicar=True)
+    q2 = Q(autor__gauser=g_e.gauser)
+    sap_all = RepoSitApren.objects.filter(q1 | q2)
+    return render(request, "repositorio_sap.html",
+                  {
+                      'formname': 'repositorio_sap',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear SAP', 'permiso': 'libre',
+                            'title': 'Crear una nueva situación de aprendizaje'},
+                           {'tipo': 'button', 'nombre': 'search', 'texto': 'Filtrar', 'permiso': 'libre',
+                            'title': 'Filtrar situaciones de aprendizaje'},
+                           ),
+                      'g_e': g_e,
+                      'saps': sap_all,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
 
 # @permiso_required('acceso_cuaderno_docente')
 def cuadernodocente(request):

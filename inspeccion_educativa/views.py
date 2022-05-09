@@ -822,6 +822,7 @@ def plantillas_ie(request):
                                                               id=request.POST['id'])
                 variantes = p_ie.variantepii_set.all()
                 p_ie.pk = None
+                p_ie.creador = g_e
                 p_ie.asunto = p_ie.asunto + ' (Copia)'
                 p_ie.save()
                 for v in variantes:

@@ -1,0 +1,17 @@
+{% load entidades_extras %}
+<dd class="accordion-navigation" id="accordion{{ sap.id }}"
+    style="border-bottom: dotted 1px black">
+    <a href="#panel{{ sap.id }}">
+        <i id="circle{{ sap.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <b id="nombre{{ sap.id }}">
+            {% if not sap.nombre %}<span style="color:red">Nueva Situación de aprendizaje</span>
+                {% else %}{{ sap.nombre }} -
+                Actividades: <span id="num_acts{{ sap.id }}">{{ sap.num_asapren }}</span>
+                Procedimientos: <span id="num_insts{{ sap.id }}">{{ sap.num_instreval }}</span>
+                Criterios: <span id="num_criinsts{{ sap.id }}">{{ sap.num_criinstreval }}</span>
+            {% endif %}</b>
+    </a>
+
+    <div id="panel{{ sap.id }}" class="content accordion-sap" data-id="{{ sap.id }}">
+    </div>
+</dd>

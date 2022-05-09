@@ -1,0 +1,133 @@
+{% load entidades_extras %}
+<style>
+    p {
+        text-align: justify;
+    }
+
+    {#.span_periodos {#}
+    {#    color: darkred;#}
+    {# }#}
+
+    h5 {
+        font-weight: bold;
+    }
+
+
+    {% comment %}
+    {% for sb in sap.saberbas_set.all %}
+        #row_sb_botones{{ sb.id }} {
+            display: none;
+            position: absolute;
+            top: 1px;
+            right: 35px;
+        }
+        #row_sb{{ sb.id }} {
+            position: relative;
+        }
+        #row_sb{{ sb.id }}:hover #row_sb_botones{{ sb.id }} {
+            display: block;
+        }
+        #row_sb{{ sb.id }}:hover {
+            border-top: 1px solid #ebccd1;
+        }
+        {% for sap in sb.sitapren_set.all %}
+            #row_sap_botones{{ sb.id }} {
+                display: none;
+                position: absolute;
+                top: 1px;
+                right: 35px;
+            }
+            #row_sap{{ sb.id }} {
+                position: relative;
+            }
+            #row_sap{{ sb.id }}:hover #row_sap_botones{{ sb.id }} {
+                display: block;
+            }
+            #row_sap{{ sb.id }}:hover {
+                border-top: 1px solid #ebccd1;
+            }
+        {% endfor %}
+    {% endfor %}
+{% endcomment %}
+
+</style>
+<div class="row">
+    <div class="columns large-12">
+        <ul class="button-group right">
+                <li><a class="button alert borrar_sap tiny" data-id="{{ sap.id }}"
+                       title="Borrar completamente esta situación de aprendizaje de la base de datos"><i
+                        class="fa fa-trash-o"></i> Borrar</a></li>
+            <li><a class="button copiar_sap tiny" data-id="{{ sap.id }}"
+                   title="Hacer una copia (un duplicado) de esta situación de aprendizaje"><i
+                    class="fa fa-copy"></i> Copiar</a>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Nombre dado a la situación de aprendizaje: </b>
+            <input type="text" class="update_texto" data-campo="nombre" data-id="{{ sap.id }}"
+                   id="input_nombre{{ sap.id }}" value="{{ sap.nombre }}" data-clase="SitApren"
+                   placeholder="Introduce aquí el nombre de la situación de aprendizaje"></label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Descripción de esta situación de aprendizaje: </b>
+            <textarea type="text" class="update_texto" data-campo="objetivo" data-clase="SitApren"
+                      placeholder="Introduce aquí observaciones para la situación de aprendizaje" data-id="{{ sap.id }}"
+                      id="input_objetivo{{ sap.id }}">{{ sap.objetivo }}</textarea></label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <table style="width: 100%">
+            <thead>
+            <tr>
+                <th colspan="2">
+                    Selecciona las competencias específicas que van a ser trabajadas en esta situación de aprendizaje
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for cep in sap.sbas.psec.ceprogsec_set.all %}
+                <tr>
+                    <td><input type="checkbox" class="update_many2many" data-campo="ceps" data-id="{{ sap.id }}"
+                               {% if cep in sap.ceps.all %}checked="checked"{% endif %} data-clase="SitApren"
+                               data-clasem2m="CEProgSec" data-idm2m="{{ cep.id }}"></td>
+                    <td>{{ cep.ce.orden }}.- {{ cep.ce.nombre }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<br>
+
+<div id="contenido_sap{{ sap.id }}">
+    <div class="row">
+        <div class="columns large-12">
+            <div class="panel callout"><h5>Actividades asociadas a esta situación de aprendizaje</h5></div>
+            <p>Las situaciones de aprendizaje se llevan a cabo a través de actividades que permiten calificar
+                en qué medida se alcanzan las competencias específicas, utilizando los criterios de evaluación
+                que elijas. Estos criterios irán asociados, a su vez, con determinados procedimientos de evaluación.</p>
+            <p>El primer paso es crear las actividades que vas a llevar a cabo:</p>
+        </div>
+    </div>
+<div id="list_sap_actividades{{ sap.id }}">
+    {% for actividad in sap.actsitapren_set.all %}
+        {% include 'progsec_sap_accordion_content_act.html' %}
+    {% endfor %}
+</div>
+<div class="row">
+        <div class="columns large-12">
+            <a class="button right add_sap_actividad" data-sap="{{ sap.id }}"><i class="fa fa-plus"></i> Añadir actividad</a>
+        </div>
+    </div>
+    </div>
+<script>
+    $('select').select2();
+</script>

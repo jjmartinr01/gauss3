@@ -89,6 +89,14 @@ MENU_DEFAULT = [
      'tipo': 'Accesible',
      'pos': 10,
      'parent': 'acceso_programaciones_didacticas'
+     },
+    {'code_menu': 'acceso_repositorio_sap',
+     'texto_menu': 'Situaciones de Aprendizaje',
+     'href': 'repositorio_sap',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 10,
+     'parent': 'acceso_programaciones_didacticas'
      }
 ]
 # Se añaden otros permisos para el usuario

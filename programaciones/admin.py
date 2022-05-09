@@ -35,3 +35,13 @@ admin.site.register(EscalaCP)
 admin.site.register(EscalaCPvalor)
 admin.site.register(CalAlum)
 admin.site.register(CalAlumValor)
+############################################################
+admin.site.register(RepoSitApren)
+admin.site.register(RepoCEv)
+admin.site.register(RepoSitAprenLike)
+admin.site.register(RepoActSitApren)
+admin.site.register(RepoInstrEval)
+admin.site.register(RepoCriInstrEval)
+############################################################
+############################################################
+

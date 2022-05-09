@@ -6,6 +6,7 @@ import os
 
 from django.db import models
 
+from autenticar.models import Gauser
 from gauss.rutas import MEDIA_PROGRAMACIONES
 from calendario.models import Vevent
 from estudios.models import Materia, Curso, AreaMateria, CompetenciaEspecifica, CriterioEvaluacion, Grupo
@@ -939,6 +940,138 @@ class CriInstrEval(models.Model):
     def __str__(self):
         return '%s - %s (%s)' % (self.ieval, self.cevps, self.peso)
 
+############################################################
+class RepoSitApren(models.Model):
+    autor = models.ForeignKey(Gauser_extra, on_delete=models.SET_NULL, blank=True, null=True)
+    nombre = models.CharField('Nombre dado a la situación de aprendizaje', blank=True, max_length=300)
+    objetivo = models.TextField('Descripción de la situación de aprendizaje y lo que pretende conseguir', blank=True)
+    areamateria = models.ForeignKey(AreaMateria, on_delete=models.CASCADE, blank=True, null=True)
+    publicar = models.BooleanField('¿Publicar?', default=False)
+    es_copia_de = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
+    borrada = models.BooleanField('¿Está borrada?', default=False)
+    creado = models.DateField("Fecha de creación", auto_now_add=True)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    class Meta:
+        verbose_name_plural = 'SAP Repositorio de situaciones de aprendizaje'
+        ordering = ['autor', 'areamateria', 'id']
+
+    @property
+    def ces(self): #Competencias específicas
+        ce_ids = self.repocev_set.values_list('cev__ce__id').distinct()
+        return CompetenciaEspecifica.objects.filter(id__in=ce_ids)
+
+    @property
+    def num_asapren(self):
+        return self.repoactsitapren_set.count()
+
+    @property
+    def num_instreval(self):
+        return RepoInstrEval.objects.filter(asapren__sapren=self).count()
+
+    @property
+    def num_criinstreval(self):
+        return RepoCriInstrEval.objects.filter(ieval__asapren__sapren=self, peso__gt=0).count()
+
+    def __str__(self):
+        return '%s - %s' % (self.areamateria, self.nombre)
+
+class RepoSitAprenLike(models.Model):
+    rsap = models.ForeignKey(RepoSitApren, on_delete=models.CASCADE, blank=True, null=True)
+    ge = models.ForeignKey(Gauser_extra, on_delete=models.SET_NULL, blank=True, null=True)
+    like = models.IntegerField('Puntuación dada a la situación de aprendizaje', default=0)
+    creado = models.DateField("Fecha de creación", auto_now_add=True)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    class Meta:
+        verbose_name_plural = 'SAP Likes para situaciones de aprendizaje'
+        ordering = ['rsap', 'like']
+
+    def __str__(self):
+        return '%s - %s' % (self.rsap, self.like)
+
+class RepoCEv(models.Model):
+    sapren = models.ForeignKey(RepoSitApren, on_delete=models.CASCADE)
+    cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
+    valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    class Meta:
+        verbose_name_plural = 'SAP Criterios de Evaluación empleados en una Situación de Aprendizaje'
+        ordering = ['sapren', 'cev__ce__orden', 'cev__orden', ]
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.cev.ce, self.cev, self.valor)
+
+class RepoActSitApren(models.Model):
+    sapren = models.ForeignKey(RepoSitApren, on_delete=models.CASCADE)
+    nombre = models.CharField('Nombre dado a la situación de aprendizaje', blank=True, max_length=300)
+    description = models.TextField('Descripción de la actividad ligada a la situación de aprendizaje', blank=True)
+    producto = models.TextField('Producto o productos resultado de la situación de aprendizaje', blank=True)
+
+    class Meta:
+        verbose_name_plural = 'SAP Actividades en situaciones de aprendizaje'
+        ordering = ['sapren', 'id']
+
+    @property
+    def num_criinstreval(self):
+        return RepoCriInstrEval.objects.filter(ieval__asapren=self, peso__gt=0).count()
+
+    def __str__(self):
+        return '%s - %s' % (self.sapren, self.nombre)
+
+
+class RepoInstrEval(models.Model):
+    # TIPOS = (('ESVAL', 'Escala de valoración'), ('LCONT', 'Lista de control'), ('RANEC', 'Registro anecdótico'),
+    #          ('CUADE', 'Revisión del cuaderno'), ('COMPO', 'Composición y/o ensayo'),
+    #          ('PRESC', 'Preguntas de respuesta corta'), ('PREEM', 'Preguntas de emparejamiento'),
+    #          ('PTINC', 'Preguntas de texto incompleto'), ('POMUL', 'Preguntas de opción múltiple'),
+    #          ('PRVOF', 'Preguntas de verdadero/falso justificadas'), ('PRAYD', 'Preguntas de analogías y diferencias'),
+    #          ('PRIEL', 'Preguntas de interpretación y/o elaboración de gráficos, tablas, mapas, ...'),
+    #          ('TMONO', 'Trabajo monográfico o de investigación'), ('EXATR', 'Examen tradicional/Prueba objetiva'))
+    ESCALAS = (('ESVCL', 'Escala de valoración cualitativa'), ('ESVCN', 'Escala de valoración cuantitativa'),
+               ('LCONT', 'Lista de control'))
+    TIPOS = (('CUADE', 'Revisión del cuaderno'), ('COMPO', 'Composición y/o ensayo'), ('RANEC', 'Registro anecdótico'),
+             ('PRESC', 'Preguntas de respuesta corta'), ('PREEM', 'Preguntas de emparejamiento'),
+             ('PTINC', 'Preguntas de texto incompleto'), ('POMUL', 'Preguntas de opción múltiple'),
+             ('PRVOF', 'Preguntas de verdadero/falso justificadas'), ('PRAYD', 'Preguntas de analogías y diferencias'),
+             ('PRIEL', 'Preguntas de interpretación y/o elaboración de gráficos, tablas, mapas, ...'),
+             ('TMONO', 'Trabajo monográfico o de investigación'), ('EXATR', 'Examen tradicional/Prueba objetiva'))
+    asapren = models.ForeignKey(RepoActSitApren, on_delete=models.CASCADE, blank=True, null=True)
+    tipo = models.CharField('Tipo de instrumento', blank=True, max_length=10, choices=TIPOS)
+    nombre = models.CharField('Nombre dado al instrumento', blank=True, max_length=300)
+
+    class Meta:
+        verbose_name_plural = 'SAP Instrumentos/Procedimientos de evaluación'
+        ordering = ['asapren__sapren', 'asapren', 'id']
+
+    @property
+    def get_criinstreval(self):
+        # Para evitar utilizar criinstreval_set.all que devolvería también aquellos que tienen peso 0
+        return RepoCriInstrEval.objects.filter(ieval=self, peso__gt=0)
+
+    @property
+    def num_criinstreval(self):
+        return RepoCriInstrEval.objects.filter(ieval=self, peso__gt=0).count()
+
+    def __str__(self):
+        return '%s - %s' % (self.asapren, self.nombre)
+
+
+class RepoCriInstrEval(models.Model):
+    ieval = models.ForeignKey(RepoInstrEval, on_delete=models.CASCADE)
+    cevps = models.ForeignKey(RepoCEv, on_delete=models.CASCADE, blank=True, null=True)
+    peso = models.IntegerField('Peso sobre la evaluación del mismo criterio en otros saberes', default=0)
+    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    class Meta:
+        verbose_name_plural = 'SAP Criterios de Evaluación asociados a un instrumento/procedimiento'
+        ordering = ['cevps__cev__ce__orden', 'cevps__cev__orden']
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.ieval, self.cevps, self.peso)
+
+############################################################
 
 class CuadernoProf(models.Model):
     VISTAS = (('NOR', 'Vista Normal'), ('COM', 'Vista por competencias'))
