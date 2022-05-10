@@ -946,6 +946,7 @@ class RepoSitApren(models.Model):
     nombre = models.CharField('Nombre dado a la situación de aprendizaje', blank=True, max_length=300)
     objetivo = models.TextField('Descripción de la situación de aprendizaje y lo que pretende conseguir', blank=True)
     areamateria = models.ForeignKey(AreaMateria, on_delete=models.CASCADE, blank=True, null=True)
+    ces = models.ManyToManyField(CompetenciaEspecifica, blank=True)
     publicar = models.BooleanField('¿Publicar?', default=False)
     es_copia_de = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
     borrada = models.BooleanField('¿Está borrada?', default=False)
@@ -956,10 +957,10 @@ class RepoSitApren(models.Model):
         verbose_name_plural = 'SAP Repositorio de situaciones de aprendizaje'
         ordering = ['autor', 'areamateria', 'id']
 
-    @property
-    def ces(self): #Competencias específicas
-        ce_ids = self.repocev_set.values_list('cev__ce__id').distinct()
-        return CompetenciaEspecifica.objects.filter(id__in=ce_ids)
+    # @property
+    # def ces(self): #Competencias específicas
+    #     ce_ids = self.repocev_set.values_list('cev__ce__id').distinct()
+    #     return CompetenciaEspecifica.objects.filter(id__in=ce_ids)
 
     @property
     def num_asapren(self):

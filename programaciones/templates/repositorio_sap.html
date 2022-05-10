@@ -205,6 +205,25 @@
                 });
         });
 
+        $('#Contenido').on('click', '.vincula_areamateria_sap', function (e) {
+            e.preventDefault();
+            var element = $(this);
+            var sap = element.data('sap');
+            var am = $('#select_am_sap' + sap).val();
+            $.post(url_repositorio_sap, {
+                    action: 'vincula_areamateria_sap', sap: sap, am: am
+                },
+                function (data) {
+                    if (data.ok) {
+                        var id = $('#id_sap').val();
+                        $('#panel' + id).html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
         $('body').on('click', '.borrar_sap_actividad', function () {
             id = $(this).data('id');
             show_mensajes({

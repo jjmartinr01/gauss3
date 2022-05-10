@@ -2418,6 +2418,7 @@ def progsecundaria(request):
     except Exception as msg:
         return HttpResponse(str(msg))
 
+
 def verprogramacion(request, centro, id):
     try:
         progsec = ProgSec.objects.get(id=id, pga__ronda__entidad__code=centro)
@@ -2429,7 +2430,8 @@ def verprogramacion(request, centro, id):
     except:
         pass
 
-@permiso_required('acceso_progsecundaria')
+
+# @permiso_required('acceso_progsecundaria')
 def progsecundaria_sb(request, id):
     g_e = request.session['gauser_extra']
     g_ep = Gauser_extra_programaciones.objects.get(ge=g_e)
@@ -2613,6 +2615,7 @@ def progsecundaria_sb(request, id):
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
+
 # @permiso_required('acceso_repositorio_sap')
 def repositorio_sap(request):
     g_e = request.session['gauser_extra']
@@ -2631,8 +2634,8 @@ def repositorio_sap(request):
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_sap':
             try:
-                sapren = SitApren.objects.get(id=request.POST['id'])
-                if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
+                sapren = RepoSitApren.objects.get(id=request.POST['id'])
+                if sapren.autor.gauser == g_e.gauser:
                     sapren.delete()
                     return JsonResponse({'ok': True})
                 else:
@@ -2643,8 +2646,22 @@ def repositorio_sap(request):
         elif action == 'open_accordion':
             try:
                 sap = RepoSitApren.objects.get(id=request.POST['id'])
-                html = render_to_string('repositorio_sap_accordion_content.html', {'sap': sap, 'g_e': g_e})
+                html = render_to_string('repositorio_sap_accordion_content.html',
+                                        {'sap': sap, 'g_e': g_e, 'areamaterias': AreaMateria.objects.all()})
                 return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'vincula_areamateria_sap':
+            try:
+                sap = RepoSitApren.objects.get(id=request.POST['sap'])
+                am = AreaMateria.objects.get(id=request.POST['am'])
+                if sap.autor.gauser == g_e.gauser:
+                    sap.areamateria = am
+                    sap.save()
+                    html = render_to_string('repositorio_sap_accordion_content.html', {'sap': sap, 'g_e': g_e})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'Solo el autor puede elegir la asignatura'})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_texto':
@@ -2681,31 +2698,30 @@ def repositorio_sap(request):
                 return JsonResponse({'ok': False})
         elif action == 'add_sap_actividad':
             try:
-                sap = sb.sitapren_set.get(id=request.POST['sap'])
-                act = ActSitApren.objects.create(sapren=sap, nombre='Nombre de la actividad')
-                InstrEval.objects.create(asapren=act, tipo='TMONO', nombre='Procedimiento 1')
-                html = render_to_string('progsec_sap_accordion_content_act.html', {'actividad': act})
+                sap = RepoSitApren.objects.get(id=request.POST['sap'], autor__gauser=g_e.gauser)
+                act = RepoActSitApren.objects.create(sapren=sap, nombre='Nombre de la actividad')
+                RepoInstrEval.objects.create(asapren=act, tipo='TMONO', nombre='Procedimiento 1')
+                html = render_to_string('repositorio_sap_accordion_content_act.html', {'actividad': act})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'borrar_sap_actividad':
             try:
-                act = ActSitApren.objects.get(id=request.POST['id'])
-                if act.sapren.actsitapren_set.all().count() > 1:
-                    if act.sapren.sbas == sb:
-                        act.delete()
+                act = RepoActSitApren.objects.get(id=request.POST['id'])
+                if act.sapren.actsitapren_set.all().count() > 1 and act.sapren.autor.gauser == g_e.gauser:
+                    act.delete()
                     return JsonResponse({'ok': True})
                 else:
-                    msg = 'No es posible borrar. Al menos, debe existir una actividad.'
+                    msg = 'No es posible borrar. Al menos, debe existir una actividad y ser el autor de la SAP.'
                     return JsonResponse({'ok': False, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'add_act_instrumento':
             try:
-                act = ActSitApren.objects.get(id=request.POST['act'])
-                if act.sapren.sbas == sb:
-                    inst = InstrEval.objects.create(asapren=act, nombre='Nombre del instrumento')
-                    html = render_to_string('progsec_sap_accordion_content_act_proc.html', {'instrumento': inst})
+                act = RepoActSitApren.objects.get(id=request.POST['act'])
+                if act.sapren.autor.gauser == g_e.gauser:
+                    inst = RepoInstrEval.objects.create(asapren=act, nombre='Nombre del instrumento')
+                    html = render_to_string('repositorio_sap_accordion_content_act_proc.html', {'instrumento': inst})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
                     JsonResponse({'ok': False, 'msg': 'Error en la relación sb-instrumento'})
@@ -2713,29 +2729,34 @@ def repositorio_sap(request):
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_act_instrumento':
             try:
-                inst = InstrEval.objects.get(id=request.POST['id'])
-                if inst.asapren.instreval_set.all().count() > 1:
-                    if inst.asapren.sapren.sbas == sb:
-                        inst.delete()
+                inst = RepoInstrEval.objects.get(id=request.POST['id'])
+                if inst.asapren.instreval_set.all().count() > 1 and inst.asapren.sapren.autor.gauser == g_e.gauser:
+                    inst.delete()
                     return JsonResponse({'ok': True})
                 else:
-                    msg = 'No es posible borrar. Al menos, debe existir un procedimiento de evaluación.'
+                    msg = 'No es posible borrar. Al menos, debe existir un procedimiento de evaluación y ser autor.'
                     return JsonResponse({'ok': False, 'msg': msg})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'table_criteval':
             try:
-                inst = InstrEval.objects.get(id=request.POST['id'])
-                if inst.asapren.sapren.sbas == sb:
-                    criinstrevals = []
-                    for cep in inst.asapren.sapren.ceps.all():
-                        for cevps in cep.cevprogsec_set.all():
-                            criinstreval, c = CriInstrEval.objects.get_or_create(ieval=inst, cevps=cevps)
-                            criinstrevals.append(criinstreval.id)
-                    for cr in inst.criinstreval_set.all():
-                        if cr.id not in criinstrevals:
-                            cr.delete()
-                    html = render_to_string('progsec_sap_accordion_content_act_proc_crits.html', {'instrumento': inst})
+                inst = RepoInstrEval.objects.get(id=request.POST['id'])
+                sapren = inst.asapren.sapren
+                if inst.asapren.sapren.autor.gauser == g_e.gauser:
+                    rcev_ids = []
+                    rcriinstrevals_ids = []
+                    for ce in sapren.ces.all():
+                        for cev in ce.criterioevaluacion_set.all():
+                            rcev, c = RepoCEv.objects.get_or_create(sapren=sapren, cev=cev)
+                            rcev_ids.append(rcev.id)
+                    RepoCEv.objects.filter(sapren=sapren).exclude(id__in=rcev_ids).delete()
+
+                    for cev in sapren.repocev_set.all():
+                        rcriinstreval, c = RepoCriInstrEval.objects.get_or_create(ieval=inst, cevps=cev)
+                        rcriinstrevals_ids.append(rcriinstreval.id)
+                    RepoCriInstrEval.objects.filter(ieval=inst).exclude(id__in=rcriinstrevals_ids).delete()
+                    html = render_to_string('repositorio_sap_accordion_content_act_proc_crits.html',
+                                            {'instrumento': inst})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': False})
@@ -2757,6 +2778,7 @@ def repositorio_sap(request):
                       'saps': sap_all,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
+
 
 # @permiso_required('acceso_cuaderno_docente')
 def cuadernodocente(request):
