@@ -10,50 +10,29 @@
 
     {# Rating:  https://dabblet.com/gist/1709019 #}
     {# Rating:  https://fontawesome.com/v4/examples/ #}
-    .rating {
-        unicode-bidi: bidi-override;
-        direction: rtl;
-        font-size: 23px
+    .fa-star-o {
+        cursor: pointer;
+        padding-left: 5px;
+        color: #e3cf7a;
+        font-size: 23px;
     }
-
-    .rating span.star, .rating span.marca, .rating span.nostar {
-        font-family: FontAwesome;
-        font-weight: normal;
-        font-style: normal;
-        display: inline-block
+    .fa-star {
+        cursor: pointer;
+        padding-left: 5px;
+        color: #e3cf7a;
+        font-size: 23px;
     }
-
-    .rating span.star:hover {
-        cursor: pointer
-    }
-
-    .rating span.star:before, .rating span.nostar:before {
-        content: "\f006";
-        padding-right: 5px;
-        color: #777
-    }
-
-    .rating span.star:hover:before, .rating span.star:hover ~ span.star:before {
-        content: "\f005";
-        color: #e3cf7a
-    }
-    .rating span.marca:before {
-        content: "\f005";
-        color: #e3cf7a}
 </style>
 {% if sap.areamateria %}
     <div class="row">
-    <div class="columns large-2">
-        <p style="font-weight: bold">Valoración: 8.34</p>
-    </div>
-    <div class="columns large-4 rating">
-    <span class="star" data-sap="{{ sap.id }}" data-value="5"></span>
-    <span class="star" data-sap="{{ sap.id }}" data-value="4"></span>
-    <span class="star" data-sap="{{ sap.id }}" data-value="3"></span>
-    <span class="nostar" data-sap="{{ sap.id }}" data-value="2"></span>
-    <span class="marca" data-sap="{{ sap.id }}" data-value="1"></span>
-    </div>
-        <div class="columns large-6">
+        <div class="columns large-3">
+            <p style="font-weight: bold" title="Valoración sobre un total de 5 puntos">Valoración global:
+                <span id="val_global{{ sap.id }}">{{ sap.val_global }}</span></p>
+        </div>
+        <div class="columns large-4" id="rating{{ sap.id }}">
+            {% include "repositorio_sap_accordion_content_stars.html" %}
+        </div>
+        <div class="columns large-5">
             <ul class="button-group right">
                 <li><a class="button alert borrar_sap tiny" data-id="{{ sap.id }}"
                        title="Borrar completamente esta situación de aprendizaje de la base de datos"><i

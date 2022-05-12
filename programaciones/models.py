@@ -963,6 +963,15 @@ class RepoSitApren(models.Model):
     #     return CompetenciaEspecifica.objects.filter(id__in=ce_ids)
 
     @property
+    def val_global(self):
+        try:
+            rsaprenlikes = self.repositaprenlike_set.all()
+            suma = rsaprenlikes.aggregate(models.Sum('like'))['like__sum']
+            return round(suma/rsaprenlikes.count(), 2)
+        except:
+            return ''
+
+    @property
     def num_asapren(self):
         return self.repoactsitapren_set.count()
 

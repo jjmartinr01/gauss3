@@ -1,0 +1,14 @@
+<span style="font-weight: bold;">Tu valoración:</span>
+{% if like > 0 %}
+    <i class="fa fa-star"></i>{% if like > 1 %}<i class="fa fa-star"></i>{% else %}<i
+        class="fa fa-star-o"></i>{% endif %}{% if like > 2 %}<i class="fa fa-star"></i>{% else %}<i
+        class="fa fa-star-o"></i>{% endif %}{% if like > 3 %}<i class="fa fa-star"></i>{% else %}<i
+        class="fa fa-star-o"></i>{% endif %}{% if like > 4 %}<i class="fa fa-star"></i>{% else %}<i
+        class="fa fa-star-o"></i>{% endif %}
+{% else %}
+    <i class="fa fa-star-o star star1 star2 star3 star4 star5" data-sap="{{ sap.id }}" data-value="1"></i><i
+        class="fa fa-star-o stardos star star2 star3 star4 star5" data-sap="{{ sap.id }}" data-value="2"></i><i
+        class="fa fa-star-o startres star star3 star4 star5" data-sap="{{ sap.id }}" data-value="3"></i><i
+        class="fa fa-star-o starcuatro star star4 star5" data-sap="{{ sap.id }}" data-value="4"></i><i
+        class="fa fa-star-o star starcinco star5" data-sap="{{ sap.id }}" data-value="5"></i>
+{% endif %}

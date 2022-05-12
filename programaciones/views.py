@@ -2646,9 +2646,25 @@ def repositorio_sap(request):
         elif action == 'open_accordion':
             try:
                 sap = RepoSitApren.objects.get(id=request.POST['id'])
-                html = render_to_string('repositorio_sap_accordion_content.html',
-                                        {'sap': sap, 'g_e': g_e, 'areamaterias': AreaMateria.objects.all()})
+                try:
+                    like = sap.repositaprenlike_set.get(ge__gauser=g_e.gauser).like
+                except:
+                    like = 0
+                html = render_to_string('repositorio_sap_accordion_content.html', {'sap': sap, 'g_e': g_e, 'like': like,
+                                                                                   'areamaterias': AreaMateria.objects.all()})
                 return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'click_star':
+            try:
+                rsap = RepoSitApren.objects.get(id=request.POST['sap'])
+                rsaplike, c = RepoSitAprenLike.objects.get_or_create(rsap=rsap, ge=g_e)
+                like = int(request.POST['valor'])
+                rsaplike.like = like
+                rsaplike.save()
+                html = render_to_string('repositorio_sap_accordion_content_stars.html',
+                                        {'sap': rsap, 'g_e': g_e, 'like': like})
+                return JsonResponse({'ok': True, 'html': html, 'val_global': rsap.val_global})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'vincula_areamateria_sap':
@@ -2765,6 +2781,7 @@ def repositorio_sap(request):
     q1 = Q(borrada=False) & Q(publicar=True)
     q2 = Q(autor__gauser=g_e.gauser)
     sap_all = RepoSitApren.objects.filter(q1 | q2)
+    RepoSitAprenLike.objects.all().delete()
     return render(request, "repositorio_sap.html",
                   {
                       'formname': 'repositorio_sap',

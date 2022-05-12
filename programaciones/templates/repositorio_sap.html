@@ -56,31 +56,31 @@
             });
 
             $('body').on('click', '.borrar_sap', function () {
-            id = $(this).data('id');
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar esta situación de aprendizaje?',
-                texto: 'Si aceptas, la situación de aprendizaje se borrará por completo de la base de datos',
-                size: 'large',
-                buttons: {
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    },
-                    "Borrar": function () {
-                        hide_mensajes();
-                        $.post(url_repositorio_sap, {action: 'borrar_sap', id: id},
-                            function (data) {
-                                if (data.ok) {
-                                    $('#accordion' + id).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
+                id = $(this).data('id');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar esta situación de aprendizaje?',
+                    texto: 'Si aceptas, la situación de aprendizaje se borrará por completo de la base de datos',
+                    size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post(url_repositorio_sap, {action: 'borrar_sap', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#accordion' + id).remove();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
                     }
-                }
-            });
+                });
 
-        });
+            });
         {% endif %}
 
         $(document).foundation({
@@ -332,6 +332,42 @@
             refresh_table_criteval(element);
         });
 
+        $('#Contenido').on('mouseenter', '.star', function () {
+            var element = $(this);
+            if (element.hasClass('starcinco')) {
+                $('.star5').css('color', '#e3cf7a').addClass('fa-star').removeClass('fa-star-o');
+            } else if (element.hasClass('starcuatro')) {
+                $('.star4').css('color', '#e3cf7a').addClass('fa-star').removeClass('fa-star-o');
+            } else if (element.hasClass('startres')) {
+                $('.star3').css('color', '#e3cf7a').addClass('fa-star').removeClass('fa-star-o');
+            } else if (element.hasClass('stardos')) {
+                $('.star2').css('color', '#e3cf7a').addClass('fa-star').removeClass('fa-star-o');
+            } else {
+                $('.star1').css('color', '#e3cf7a').addClass('fa-star').removeClass('fa-star-o');
+            }
+        });
+
+        $('#Contenido').on('mouseout', '.star', function () {
+            $('.star').addClass('fa-star-o').removeClass('fa-star');
+        });
+
+        $('#Contenido').on('click', '.star', function () {
+            var element = $(this);
+            var sap = element.data('sap');
+            var valor = element.data('value');
+            $.post(url_repositorio_sap, {
+                    action: 'click_star', sap: sap, valor: valor
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#rating' + sap).html(data.html);
+                        $('#val_global' + sap).html(data.val_global);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
 
         {% comment %}
         function destroyEditorInstances() {
