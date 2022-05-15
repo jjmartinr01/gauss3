@@ -19,7 +19,7 @@ from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.core.files.base import File
 
-from autenticar.control_acceso import permiso_required
+from autenticar.control_acceso import permiso_required, gauss_required
 from autenticar.models import Gauser
 # from autenticar.control_acceso import access_required
 from entidades.models import Cargo
@@ -1970,7 +1970,8 @@ def progsecundaria(request):
         if g_e.has_permiso('ve_todas_programaciones'):
             progsecs = ProgSec.objects.filter(pga=pga)
         else:
-            progsecs = ProgSec.objects.filter(pga=pga, gep=g_ep)
+            progsec_ids = DocProgSec.objects.filter(gep=g_ep).values_list('psec__id', flat=True)
+            progsecs = ProgSec.objects.filter(pga=pga, id__in=progsec_ids)
         if request.method == 'POST' and request.is_ajax():
             action = request.POST['action']
             if action == 'get_areasmaterias':
@@ -2431,7 +2432,7 @@ def verprogramacion(request, centro, id):
         pass
 
 
-# @permiso_required('acceso_progsecundaria')
+@permiso_required('acceso_progsecundaria')
 def progsecundaria_sb(request, id):
     g_e = request.session['gauser_extra']
     g_ep = Gauser_extra_programaciones.objects.get(ge=g_e)
@@ -3080,3 +3081,26 @@ def cuadernodocente(request):
                       'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
+
+@gauss_required
+def configurar_cargos_permisos(request):
+    from gauss.constantes import CARGOS
+    from entidades.menus_entidades import TiposCentro
+    from autenticar.models import Permiso
+    mensaje = 'Hecho.'
+    for e in Entidad.objects.all():
+        try:
+            if e.entidadextra.tipo_centro in TiposCentro:
+                for c in CARGOS:
+                    cargo, creado = Cargo.objects.get_or_create(entidad=e, borrable=False, clave_cargo=c['clave_cargo'])
+                    if creado:
+                        cargo.cargo = c['cargo']
+                        cargo.save()
+                    for code_nombre in c['permisos']:
+                        try:
+                            cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
+                        except Exception as msg:
+                            mensaje += '<br>%s -- %s' % (code_nombre, str(msg))
+        except Exception as msg:
+            mensaje += '<br>%s -- %s' %(e, str(msg))
+    return HttpResponse(mensaje)

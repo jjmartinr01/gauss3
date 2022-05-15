@@ -644,19 +644,23 @@ class Cont_unidad_modulo(models.Model):
 #############################################################################
 
 class ProgSec(models.Model):
+    TIPOS = (('BOR', 'Borrador'), ('DEF', 'Definitiva'), ('RE', 'Refuerzo Educativo'),
+             ('AAC', 'Adaptación de Acceso al Currículo'), ('EC', 'Enriquecimiento Curricular'),
+             ('ACS', 'Adaptación Curricular Significativa'), ('PRE', 'Plan de Recuperación'), )
     pga = models.ForeignKey(PGA, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre específico para la programación', blank=True, max_length=300)
     gep = models.ForeignKey(Gauser_extra_programaciones, blank=True, null=True, on_delete=models.CASCADE)
     materia = models.ForeignKey(Materia_programaciones, blank=True, null=True, on_delete=models.CASCADE)
     areamateria = models.ForeignKey(AreaMateria, on_delete=models.CASCADE, blank=True, null=True)
     curso = models.ForeignKey(Curso, on_delete=models.SET_NULL, blank=True, null=True)
+    tipo = models.CharField('Tipo de programación', max_length=4, choices=TIPOS, default='BOR', blank=True, null=True)
     departamento = models.ForeignKey(Departamento, on_delete=models.SET_NULL, blank=True, null=True)
-    inicio_clases = models.DateField("Fecha de inicio de las clases", blank=True, null=True)
-    fin_clases = models.DateField("Fecha de fin de las clases", blank=True, null=True)
+    inicio_clases = models.DateField('Fecha de inicio de las clases', blank=True, null=True)
+    fin_clases = models.DateField('Fecha de fin de las clases', blank=True, null=True)
     es_copia_de = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
     procdiversidad = models.TextField('Proced. adop. medidas de aten. a la divers.', blank=True, null=True, default='')
-    creado = models.DateField("Fecha de creación", auto_now_add=True)
-    modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    creado = models.DateField('Fecha de creación', auto_now_add=True)
+    modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
     @property
     def dias_curso(self):
