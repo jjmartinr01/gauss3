@@ -470,6 +470,19 @@
             });
         });
 
+        $('body').on('change', '.select_tipo', function () {
+            var id = $(this).data('progsec');
+            var tipo = $(this).val();
+            $.post("/progsecundaria/", {action: 'select_tipo', id: id, tipo: tipo},
+                function (data) {
+                    if (data.ok) {
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
         $('body').on('change', '.select_departamento', function () {
             var id = $(this).data('progsec');
             var departamento = $(this).val();

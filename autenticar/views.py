@@ -38,7 +38,8 @@ from estudios.models import Gauser_extra_estudios
 from autenticar.models import Enlace, Permiso, Gauser, Menu_default
 from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, CargaMasiva, ConfigurationUpdate, Ronda, \
     Reserva_plaza
-from entidades.tasks import carga_masiva_from_excel
+from entidades.tasks import carga_masiva_from_excel, ejecutar_configurar_cargos_permisos, \
+    ejecutar_configurar_menus_centros_educativos
 from mensajes.views import crear_aviso, crea_mensaje_cola
 from mensajes.models import Aviso, Mensaje
 from bancos.views import asocia_banco_ge
@@ -734,7 +735,7 @@ def create_usuario(datos, request, tipo):
     return gauser_extra
 
 
-# @permiso_required('acceso_carga_masiva')
+@permiso_required('acceso_carga_masiva')
 def carga_masiva(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':
@@ -1128,3 +1129,19 @@ def execute_migrations(request):
         return JsonResponse({'mensajes': mensajes, 'errores': errores, 'ok': True})
     else:
         return render(request, "execute_migrations.html")
+
+# --------------------------------------------------------------------------#
+# DEFINICIÓN DE FUNCIONES ACTUALIZAR MENUS Y PERMISOS EN ENTIDADES Y CARGOS
+# --------------------------------------------------------------------------#
+
+@gauss_required
+def configurar_cargos_permisos(request):
+    ejecutar_configurar_cargos_permisos.apply_async(expires=300)
+    return HttpResponse('Esta operación puede requerir varios minutos')
+
+@gauss_required
+def configurar_menus_centros_educativos(request):
+    ejecutar_configurar_menus_centros_educativos.apply_async(expires=300)
+    return HttpResponse('Esta operación puede requerir varios minutos')
+
+

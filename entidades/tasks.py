@@ -955,3 +955,64 @@ def carga_masiva_from_excel():
         carga.cargado = True
         carga.save()
     return True
+
+
+# --------------------------------------------------------------------------#
+# DEFINICIÓN DE FUNCIONES ACTUALIZAR MENUS Y PERMISOS EN ENTIDADES Y CARGOS
+# --------------------------------------------------------------------------#
+
+@shared_task
+def ejecutar_configurar_cargos_permisos():
+    from gauss.constantes import CARGOS
+    from entidades.menus_entidades import TiposCentro
+    mensaje = 'Hecho.'
+    for e in Entidad.objects.all():
+        try:
+            if e.entidadextra.tipo_centro in TiposCentro:
+                for c in CARGOS:
+                    cargo, creado = Cargo.objects.get_or_create(entidad=e, borrable=False, clave_cargo=c['clave_cargo'])
+                    if creado:
+                        cargo.cargo = c['cargo']
+                        cargo.save()
+                    for code_nombre in c['permisos']:
+                        try:
+                            cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
+                        except Exception as msg:
+                            mensaje += '<br>Permiso: %s -- %s' % (code_nombre, str(msg))
+                try:
+                    insp_g = e.centroinspeccionado.inspectorasignado_set.all()[0].gauser
+                    if 'illanu' in insp_g.last_name:
+                        insp_ge, c = Gauser_extra.objects.get_or_create(gauser=insp_g, ronda=e.ronda)
+                        insp_ge.activo = True
+                        insp_ge.puesto = 'Inspector de Educación'
+                        insp_ge.save()
+                        insp_ge.cargos.add(Cargo.objects.get(entidad=e, clave_cargo='g_inspector_educacion'))
+                except Exception as msg:
+                    mensaje += '<br>Cargo: g_inspector_educacion -- %s' % str(msg)
+        except Exception as msg:
+            mensaje += '<br>Entidad: %s -- %s' %(e, str(msg))
+    Aviso.objects.create(aviso=mensaje, fecha=now(), aceptado=True)
+    return True
+
+@shared_task
+def ejecutar_configurar_menus_centros_educativos():
+    from entidades.menus_entidades import Menus_Centro_Educativo
+    from entidades.menus_entidades import TiposCentro
+    mensaje = 'Hecho.'
+    for e in Entidad.objects.all():
+        try:
+            if e.entidadextra.tipo_centro in TiposCentro:
+                for m in Menus_Centro_Educativo:
+                    try:
+                        md = Menu_default.objects.get(code_menu=m[0])
+                        try:
+                            Menu.objects.get(entidad=e, menu_default=md)
+                        except:
+                            Menu.objects.create(entidad=e, menu_default=md, texto_menu=m[1], pos=m[2])
+                    except Exception as msg:
+                        mensaje += '<br>Menu: %s -- %s' % (m, str(msg))
+                        Aviso.objects.create(aviso=mensaje, fecha=now())
+        except Exception as msg:
+            mensaje += '<br>Entidad: %s -- %s' % (e, str(msg))
+            Aviso.objects.create(aviso=mensaje, fecha=now(), aceptado=True)
+    return True

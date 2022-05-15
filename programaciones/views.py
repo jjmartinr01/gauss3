@@ -1995,14 +1995,16 @@ def progsecundaria(request):
                             etapa = ''.join([i for i in request.POST['curso'] if not i.isdigit()])
                             dep, c = Departamento.objects.get_or_create(ronda=g_e.ronda, nombre=ciclo, etapa=etapa,
                                                                         abreviatura=etapa)
-                            try:
-                                ProgSec.objects.get(pga=pga, areamateria=areamateria, departamento=dep)
-                                msg = 'Ya existe una programación para %s (%s). No se crea una nueva.' % (
-                                    areamateria.nombre, areamateria.get_curso_display())
-                                return JsonResponse({'ok': False, 'msg': msg})
-                            except:
-                                progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria,
-                                                                 departamento=dep)
+                            progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria,
+                                                             departamento=dep)
+                            # try:
+                            #     ProgSec.objects.get(pga=pga, areamateria=areamateria, departamento=dep)
+                            #     msg = 'Ya existe una programación para %s (%s). No se crea una nueva.' % (
+                            #         areamateria.nombre, areamateria.get_curso_display())
+                            #     return JsonResponse({'ok': False, 'msg': msg})
+                            # except:
+                            #     progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria,
+                            #                                      departamento=dep)
                         except:
                             try:
                                 ProgSec.objects.get(pga=pga, areamateria=areamateria)
@@ -2058,6 +2060,7 @@ def progsecundaria(request):
                     ps_nueva.gep = g_ep
                     ps_nueva.nombre = ps.nombre + ' (Copia)'
                     ps_nueva.departamento = None
+                    ps_nueva.tipo = 'BOR'
                     ps_nueva.save()
                     DocProgSec.objects.create(psec=ps_nueva, gep=g_ep, permiso='X')
                     for ceps in ps.ceprogsec_set.all():
@@ -2116,6 +2119,19 @@ def progsecundaria(request):
                         setattr(progsec, request.POST['campo'], texto)
                         progsec.save()
                         return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': texto})
+                    else:
+                        return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+                except Exception as msg:
+                    return JsonResponse({'ok': False, 'msg': str(msg)})
+            elif action == 'select_tipo':
+                try:
+                    progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                                  id=request.POST['id'])
+                    permiso = progsec.get_permiso(g_ep)
+                    if permiso in 'EX':
+                        progsec.tipo = request.POST['tipo']
+                        progsec.save()
+                        return JsonResponse({'ok': True, 'progsec': progsec.id})
                     else:
                         return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
                 except Exception as msg:

@@ -28,5 +28,4 @@ urlpatterns = [
     path('cuadernodocente/', views.cuadernodocente),
     path('verprogramacion/<int:centro>/<int:id>/', views.verprogramacion),
     path('repositorio_sap/', views.repositorio_sap),
-    path('configurar_cargos_permisos/', views.configurar_cargos_permisos),
 ]
