@@ -980,7 +980,7 @@ def ejecutar_configurar_cargos_permisos():
                         except Exception as msg:
                             mensaje += '<br>Permiso: %s -- %s' % (code_nombre, str(msg))
                 try:
-                    insp_g = e.centroinspeccionado.inspectorasignado_set.all()[0].gauser
+                    insp_g = e.centroinspeccionado.inspectorasignado_set.all()[0].inspector.gauser
                     if 'illanu' in insp_g.last_name:
                         insp_ge, c = Gauser_extra.objects.get_or_create(gauser=insp_g, ronda=e.ronda)
                         insp_ge.activo = True
