@@ -4,14 +4,14 @@ from __future__ import unicode_literals
 # El code_menu debe ser único y se configurará como un permiso del sistema
 MENU_DEFAULT = [
     {'code_menu': 'acceso_cupos',
-     'texto_menu': 'Cupos de la entidad',
+     'texto_menu': 'Plantilla/Cupo docentes',
      'href': '',
      'nivel': 1,
      'tipo': 'Accesible',
      'pos': 1
      },
     {'code_menu': 'acceso_cupo_profesorado',
-     'texto_menu': 'Cupo de profesores',
+     'texto_menu': 'Cupo profesorado',
      'href': 'cupo',
      'nivel': 2,
      'tipo': 'Accesible',
