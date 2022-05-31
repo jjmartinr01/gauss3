@@ -2129,6 +2129,11 @@ def progsecundaria(request):
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
                     if permiso in 'EX':
+                        if request.POST['tipo'] == 'DEF':
+                            definitivas = ProgSec.objects.filter(tipo='DEF', pga=pga, areamateria=progsec.areamateria)
+                            for d in definitivas:
+                                d.tipo = 'BOR'
+                                d.save()
                         progsec.tipo = request.POST['tipo']
                         progsec.save()
                         return JsonResponse({'ok': True, 'progsec': progsec.id})
