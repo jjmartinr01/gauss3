@@ -12,7 +12,7 @@ from django.template.loader import render_to_string
 
 from entidades.models import Gauser_extra
 from gauss.funciones import get_dce
-from horarios.models import Sesion, Horario
+from horarios.models import Sesion, Horario, SesionExtra
 from estudios.models import Grupo, Gauser_extra_estudios, Materia, Curso
 from competencias_clave.models import CompetenciasMateria, CompetenciasMateriaAlumno
 from mensajes.models import Aviso
@@ -31,7 +31,10 @@ def cc_valorar_mis_alumnos(request):
             id = request.GET['m']
 
     horario = Horario.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
-    sesiones = Sesion.objects.filter(horario=horario, g_e=g_e, grupo__isnull=False)
+    sesextras = SesionExtra.objects.filter(sesion__horario=horario, sesion__g_e=g_e, grupo__isnull=False)
+    sesiones_ids = sesextras.values_list('sesion__id', flat=True)
+    # sesiones = Sesion.objects.filter(horario=horario, g_e=g_e, grupo__isnull=False)
+    sesiones = Sesion.objects.filter(id__in=sesiones_ids)
     materias_id = sesiones.values_list('materia__id', flat=True).distinct()
     materias = Materia.objects.filter(id__in=materias_id, curso__etapa__in=etapas)
     try:
