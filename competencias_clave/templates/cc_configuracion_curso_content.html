@@ -8,19 +8,28 @@
 <table width="100%">
     <tr>
         <th>Materia</th>
+{#        <th>CCL</th>#}
+{#        <th>CMCT</th>#}
+{#        <th>CD</th>#}
+{#        <th>CPAA</th>#}
+{#        <th>CSC</th>#}
+{#        <th>SIE</th>#}
+{#        <th>CEC</th>#}
         <th>CCL</th>
-        <th>CMCT</th>
+        <th>CP</th>
+        <th>STEM</th>
         <th>CD</th>
-        <th>CPAA</th>
-        <th>CSC</th>
-        <th>SIE</th>
-        <th>CEC</th>
+        <th>CPSAA</th>
+        <th>CC</th>
+        <th>CE</th>
+        <th>CCEC</th>
         <th>&nbsp;</th>
     </tr>
     {% for m in materias %}
         <tr>
             <td>{{ m.materia.nombre }}</td>
             <td><input id="ccl{{ m.id }}" class="ccper" data-materia="{{ m.id }}" data-cc="ccl" value="{{ m.ccl }}"/></td>
+            <td><input id="cp{{ m.id }}" class="ccper" data-materia="{{ m.id }}" data-cc="cp" value="{{ m.ccl }}"/></td>
             <td><input id="cmct{{ m.id }}" class="ccper" data-materia="{{ m.id }}" data-cc="cmct" value="{{ m.cmct }}"/></td>
             <td><input id="cd{{ m.id }}" class="ccper" data-materia="{{ m.id }}" data-cc="cd" value="{{ m.cd }}"/></td>
             <td><input id="cpaa{{ m.id }}" class="ccper" data-materia="{{ m.id }}" data-cc="cpaa" value="{{ m.cpaa }}"/></td>

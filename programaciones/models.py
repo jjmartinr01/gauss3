@@ -855,6 +855,7 @@ class SitApren(models.Model):
     nombre = models.CharField('Nombre dado a la situación de aprendizaje', blank=True, max_length=300)
     objetivo = models.TextField('Descripción de la situación de aprendizaje y lo que pretende conseguir', blank=True)
     ceps = models.ManyToManyField(CEProgSec, blank=True)
+    contenidos_sbas = models.TextField('Saberes básicos que se van a trabajar en la SAP', blank=True, default='')
 
     class Meta:
         verbose_name_plural = 'Situaciones de aprendizaje'
@@ -1097,6 +1098,7 @@ class CuadernoProf(models.Model):
     alumnos = models.ManyToManyField(Gauser_extra, blank=True, related_name='cuaderno_alumno_set')
     vista = models.CharField('Tipo de vista', max_length=3, choices=VISTAS, default='NOR')
     borrado = models.BooleanField('¿Cuaderno borrado?', default=False)
+    log = models.TextField('Log del cuaderno', blank=True, default='')
 
     class Meta:
         verbose_name_plural = 'Cuadernos de docente'

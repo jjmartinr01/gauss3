@@ -2845,7 +2845,9 @@ def cuadernodocente(request):
                     for cieval in cievals:
                         ecp, c = EscalaCP.objects.get_or_create(cp=cuaderno, ieval=cieval.ieval)
                         CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval, ecp=ecp)
-                html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno})
+                docentes = profesorado(g_e.ronda.entidad)
+                html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno,
+                                                                                   'docentes': docentes})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -2889,12 +2891,26 @@ def cuadernodocente(request):
                 return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'select_asignar_cuaderno':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                if g_e.has_permiso('asigna_cuadernos_profesor') or cuaderno.ge.gauser == g_e.gauser:
+                    ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['docente'])
+                    cuaderno.ge = ge
+                    cuaderno.save()
+                    return JsonResponse({'ok': True, 'cuaderno': cuaderno.id})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'cuaderno_competencias':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
                 cuaderno.vista = request.POST['vista']
                 cuaderno.save()
-                html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno})
+                docentes = profesorado(g_e.ronda.entidad)
+                html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno,
+                                                                                   'docentes': docentes})
                 return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})

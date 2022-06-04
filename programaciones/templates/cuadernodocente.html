@@ -94,6 +94,12 @@
             }
         });
 
+        $('body').on('click', '.asignar_cuadernoprof', function (e) {
+            e.preventDefault();
+            var cuaderno = $('#id_cuaderno').val();
+            $('#select_asignar_docente_cuaderno' + cuaderno).toggle();
+        });
+
         $('body').on('click', '.borrar_cuadernoprof', function (e) {
             show_mensajes({
                 title: '<i class="fa fa-warning"></i> ¿Borrar a este cuaderno docente?',
@@ -128,6 +134,23 @@
                 function (data) {
                     if (data.ok) {
                         $('#list_cuadernos').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $('#update_error').show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('change', '.select_asignar_cuaderno', function () {
+            var element = $(this);
+            var cuaderno = element.data('cuaderno');
+            var docente = element.val();
+            $.post('/cuadernodocente/', {
+                    action: 'select_asignar_cuaderno', docente: docente, cuaderno: cuaderno
+                },
+                function (data) {
+                    if (data.ok) {
+                        $('#accordion' + cuaderno).remove();
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();

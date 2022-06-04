@@ -20,6 +20,7 @@ class CompetenciasMateria(models.Model):
     csc = models.IntegerField('Competencias sociales y cívicas', blank=True, null=True, default=0)
     sie = models.IntegerField('Sentido de la iniciativa y espíritu emprendedor', blank=True, null=True, default=0)
     cec = models.IntegerField('Conciencia y expresiones culturales', blank=True, null=True, default=0)
+    # cp = models.IntegerField('Competencia plurilingüe', blank=True, null=True, default=0)
 
     class Meta:
         ordering = ['ronda', 'materia']
@@ -33,10 +34,12 @@ class CompetenciasMateria(models.Model):
         self.csc = self.csc if self.csc else 0
         self.sie = self.sie if self.sie else 0
         self.cec = self.cec if self.cec else 0
+        # self.cp = self.cp if self.cp else 0
+        # return self.ccl + self.cmct + self.cd + self.cpaa + self.csc + self.sie + self.cec + self.cp
         return self.ccl + self.cmct + self.cd + self.cpaa + self.csc + self.sie + self.cec
 
     def __str__(self):
-        return u'%s: CCL %s - CMCT %s - CD %s - CPAA %s - CSC %s - SIE %s - CEC %s' % (
+        return '%s: CCL %s - CMCT %s - CD %s - CPAA %s - CSC %s - SIE %s - CEC %s' % (
             self.materia, self.ccl, self.cmct, self.cd, self.cpaa, self.csc, self.sie, self.cec)
 
 
@@ -52,6 +55,7 @@ class CompetenciasMateriaAlumno(models.Model):
     csc = models.IntegerField('Competencias sociales y cívicas', blank=True, null=True)
     sie = models.IntegerField('Sentido de la iniciativa y espíritu emprendedor', blank=True, null=True)
     cec = models.IntegerField('Conciencia y expresiones culturales', blank=True, null=True)
+    # cp = models.IntegerField('Competencia plurilingüe', blank=True, null=True)
 
     @property
     def ccl_value(self):
@@ -62,5 +66,5 @@ class CompetenciasMateriaAlumno(models.Model):
         ordering = ['alumno__gauser__last_name', 'materia']
 
     def __str__(self):
-        return u'%s, %s: CCL %s - CMCT %s - CD %s - CPAA %s - CSC %s - SIE %s - CEC %s' % (
+        return '%s, %s: CCL %s - CMCT %s - CD %s - CPAA %s - CSC %s - SIE %s - CEC %s' % (
             self.alumno, self.materia, self.ccl, self.cmct, self.cd, self.cpaa, self.csc, self.sie, self.cec)

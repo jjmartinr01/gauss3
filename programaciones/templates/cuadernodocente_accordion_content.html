@@ -53,6 +53,9 @@
 <div class="row">
     <div class="columns large-12">
         <ul class="button-group right">
+            <li><a title="Asignar el cuaderno a otro docente"
+                   class="button asignar_cuadernoprof tiny"><i class="fa fa-user"></i><i
+                    class="fa fa-arrow-right"></i><i class="fa fa-user"></i> Asignar</a></li>
             <li><a title="Borrar este cuaderno docente de la base de datos"
                    class="button alert borrar_cuadernoprof tiny"><i class="fa fa-trash-o"></i> Borrar</a></li>
             {#                <li><a title="Hacer una copia (un duplicado) de este cuaderno docente"#}
@@ -61,6 +64,21 @@
             {#                       title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>#}
             {#                </li>#}
         </ul>
+    </div>
+</div>
+
+<div class="row" id="select_asignar_docente_cuaderno{{ cuaderno.id }}" style="display: none;">
+    <div class="columns large-12">
+        <label><b>Seleccionar la persona que tiene asignado el cuaderno: </b>
+            <select class="select_asignar_cuaderno" data-cuaderno="{{ cuaderno.id }}">
+                <option value="">------</option>
+                {% for d in docentes %}
+                    <option value="{{ d.id }}"
+                            {% if cuaderno.ge == d %}selected{% endif %}>{{ forloop.counter }}.- {{ d.gauser.last_name }},
+                        {{ d.gauser.first_name }}</option>
+                {% endfor %}
+            </select>
+        </label>
     </div>
 </div>
 {% if not cuaderno.grupo %}
@@ -100,7 +118,7 @@
         </div>
     </div>
 {% elif cuaderno.vista == 'NOR' %}
-{#{% elif cuaderno %}#}
+    {#{% elif cuaderno %}#}
     <div class="div_table{{ cuaderno.id }}">
         <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
             <thead style="position: sticky;top:0">
