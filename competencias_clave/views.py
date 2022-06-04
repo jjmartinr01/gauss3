@@ -30,7 +30,7 @@ def cc_valorar_mis_alumnos(request):
         if 'm' in request.GET:
             id = request.GET['m']
 
-    horario = Horario.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+    horario = Horario.objects.get(ronda=g_e.ronda, predeterminado=True)
     sesextras = SesionExtra.objects.filter(sesion__horario=horario, sesion__g_e=g_e, grupo__isnull=False)
     sesiones_ids = sesextras.values_list('sesion__id', flat=True)
     # sesiones = Sesion.objects.filter(horario=horario, g_e=g_e, grupo__isnull=False)
@@ -45,8 +45,10 @@ def cc_valorar_mis_alumnos(request):
         except:
             materia_seleccionada = None
     competenciasmateria, c = CompetenciasMateria.objects.get_or_create(ronda=g_e.ronda, materia=materia_seleccionada)
-    grupos_id_materia_seleccionada = sesiones.filter(materia=materia_seleccionada).values_list('grupo__id',
-                                                                                               flat=True).distinct()
+
+    # grupos_id_materia_seleccionada = sesiones.filter(materia=materia_seleccionada).values_list('grupo__id',
+    #                                                                                            flat=True).distinct()
+    grupos_id_materia_seleccionada = sesextras.filter(materia=materia_seleccionada).values_list('grupo__id', flat=True).distinct()
     grupos_materia_seleccionada = Grupo.objects.filter(id__in=grupos_id_materia_seleccionada)
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
