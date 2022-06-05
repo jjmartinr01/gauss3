@@ -123,7 +123,7 @@
         <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
             <thead style="position: sticky;top:0">
             <tr>
-                <th class="fixed_column" rowspan="5">
+                <th class="fixed_column" rowspan="5" id="fixed_column{{ cuaderno.id }}">
                     Nombre alumno/a<br><br>
                     <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}" title="Mostrar en pantalla completa"
                        style="position:absolute;top:5px;left:5px">
@@ -139,7 +139,7 @@
                     </a>
                 </th>
                 {% for sb in cuaderno.psec.saberbas_set.all %}
-                    <th colspan="{{ sb.num_criinstreval }}"
+                    <th colspan="{{ sb.num_criinstreval }}" id="sb{{ forloop.counter }}"
                         title="{{ sb.nombre }}">{{ sb.nombre|truncatechars:160 }}</th>
                 {% endfor %}
             </tr>

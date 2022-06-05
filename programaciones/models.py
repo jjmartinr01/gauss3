@@ -703,7 +703,10 @@ class ProgSec(models.Model):
         try:
             permiso = self.docprogsec_set.get(gep=gep).permiso
         except:
-            permiso = 'No tiene permiso'
+            if gep.ge.has_permiso('ve_todas_programaciones'):
+                permiso = 'L'
+            else:
+                permiso = 'No tiene permiso'
         return permiso
 
     @property
@@ -1118,8 +1121,9 @@ class CuadernoProf(models.Model):
         numerador = 0
         denominador = 0
         for ca in cas:
-            numerador += ca.cie.peso * ca.cal
-            denominador += ca.cie.peso
+            if ca.cal > 0:
+                numerador += ca.cie.peso * ca.cal
+                denominador += ca.cie.peso
         try:
             return round(numerador / denominador, 2)
         except:
@@ -1134,8 +1138,10 @@ class CuadernoProf(models.Model):
         numerador = 0
         denominador = 0
         for cevp in cevpsecs:
-            numerador += self.calificacion_alumno_cev(alumno, cevp.cev) * cevp.valor
-            denominador += cevp.valor
+            cal_cev = self.calificacion_alumno_cev(alumno, cevp.cev)
+            if cal_cev > 0:
+                numerador += cal_cev * cevp.valor
+                denominador += cevp.valor
         try:
             return round(numerador / denominador, 2)
         except:
@@ -1146,8 +1152,10 @@ class CuadernoProf(models.Model):
         numerador = 0
         denominador = 0
         for cep in ceps:
-            numerador += self.calificacion_alumno_ce(alumno, cep.ce) * cep.valor
-            denominador += cep.valor
+            cal_ce = self.calificacion_alumno_ce(alumno, cep.ce)
+            if cal_ce > 0:
+                numerador += cal_ce * cep.valor
+                denominador += cep.valor
         try:
             return round(numerador / denominador, 2)
         except:
@@ -1205,10 +1213,14 @@ class CalAlum(models.Model):
     def cal(self):
         calificacion = 0
         cavs = self.calalumvalor_set.all()
+        n = 0
         for cav in cavs:
-            calificacion += cav.ecpv.valor
+            if cav.ecpv.valor > 0:
+                n += 1
+                calificacion += cav.ecpv.valor
         try:
-            return round(calificacion / cavs.count(), 2)
+            # return round(calificacion / cavs.count(), 2)
+            return round(calificacion / n, 2)
         except:
             return 0
 
@@ -1219,7 +1231,6 @@ class CalAlum(models.Model):
 class CalAlumValor(models.Model):
     ca = models.ForeignKey(CalAlum, on_delete=models.CASCADE)
     ecpv = models.ForeignKey(EscalaCPvalor, on_delete=models.CASCADE, blank=True, null=True)
-
     obs = models.TextField('Observaciones a la calificación otorgada', blank=True, default='')
 
     def __str__(self):

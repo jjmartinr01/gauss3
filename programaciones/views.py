@@ -18,6 +18,7 @@ from django.forms import ModelForm
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.core.files.base import File
+from django.utils.timezone import now
 
 from autenticar.control_acceso import permiso_required, gauss_required
 from autenticar.models import Gauser
@@ -2456,7 +2457,7 @@ def verprogramacion(request, centro, id):
 @permiso_required('acceso_progsecundaria')
 def progsecundaria_sb(request, id):
     g_e = request.session['gauser_extra']
-    g_ep = Gauser_extra_programaciones.objects.get(ge=g_e)
+    g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
     pga = PGA.objects.get(ronda=g_e.ronda)
     sb = SaberBas.objects.get(psec__pga=pga, id=id)
     permiso = sb.psec.get_permiso(g_ep)
@@ -2641,7 +2642,7 @@ def progsecundaria_sb(request, id):
 # @permiso_required('acceso_repositorio_sap')
 def repositorio_sap(request):
     g_e = request.session['gauser_extra']
-    g_ep = Gauser_extra_programaciones.objects.get(ge=g_e)
+    g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
 
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
@@ -2819,10 +2820,13 @@ def repositorio_sap(request):
                   })
 
 
+def logcuaderno(request):
+    g_e = request.session['gauser_extra']
+    action = request.POST['action']
 # @permiso_required('acceso_cuaderno_docente')
 def cuadernodocente(request):
     g_e = request.session['gauser_extra']
-    g_ep = Gauser_extra_programaciones.objects.get(ge=g_e)
+    g_ep, c = Gauser_extra_programaciones.objects.get_or_create(ge=g_e)
     # Borrar definitivamente cuadernos borrados por los docentes la ronda anterior
     # CuadernoProf.objects.filter(borrado=True, ge__ronda__fin__lt=g_e.ronda.inicio).delete()
     if request.method == 'POST' and request.is_ajax():
@@ -2832,7 +2836,8 @@ def cuadernodocente(request):
                 if DocProgSec.objects.filter(psec__pga__ronda=g_e.ronda).count() < 1:
                     msg = 'Primero tienes que participar como docente en alguna programación didáctica.'
                     return JsonResponse({'ok': False, 'msg': msg})
-                cuaderno = CuadernoProf.objects.create(ge=g_e)
+                log = '%s %s %s\n' % (action, now(), g_e)
+                cuaderno = CuadernoProf.objects.create(ge=g_e, log=log)
                 html = render_to_string('cuadernodocente_accordion.html', {'cuaderno': cuaderno})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
@@ -2848,6 +2853,8 @@ def cuadernodocente(request):
                 docentes = profesorado(g_e.ronda.entidad)
                 html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno,
                                                                                    'docentes': docentes})
+                cuaderno.log += '%s %s %s\n' % (action, now(), g_e)
+                cuaderno.save()
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -2855,6 +2862,7 @@ def cuadernodocente(request):
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
                 cuaderno.borrado = True
+                cuaderno.log += '%s %s %s\n' % (action, now(), g_e)
                 cuaderno.save()
                 return JsonResponse({'ok': True, 'cuaderno': cuaderno.id})
             except:
@@ -2885,6 +2893,7 @@ def cuadernodocente(request):
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
                 cuaderno.psec = ProgSec.objects.get(id=request.POST['psec'])
                 cuaderno.grupo = Grupo.objects.get(id=request.POST['grupo'])
+                cuaderno.log += '%s %s %s | %s\n' % (action, now(), g_e, request.POST)
                 cuaderno.save()
                 cuaderno.alumnos.add(*cuaderno.grupo.gauser_extra_estudios_set.all().values_list('ge', flat=True))
                 html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno})
@@ -2897,6 +2906,7 @@ def cuadernodocente(request):
                 if g_e.has_permiso('asigna_cuadernos_profesor') or cuaderno.ge.gauser == g_e.gauser:
                     ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['docente'])
                     cuaderno.ge = ge
+                    cuaderno.log += '%s %s %s | %s\n' % (action, now(), g_e, ge.gauser)
                     cuaderno.save()
                     return JsonResponse({'ok': True, 'cuaderno': cuaderno.id})
                 else:
@@ -2907,6 +2917,7 @@ def cuadernodocente(request):
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
                 cuaderno.vista = request.POST['vista']
+                cuaderno.log += '%s %s %s | %s\n' % (action, now(), g_e, request.POST['vista'])
                 cuaderno.save()
                 docentes = profesorado(g_e.ronda.entidad)
                 html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno,
@@ -2919,16 +2930,25 @@ def cuadernodocente(request):
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
                 ieval = InstrEval.objects.get(id=request.POST['ieval'], asapren__sapren__sbas__psec=cuaderno.psec)
                 ecp, c = EscalaCP.objects.get_or_create(cp=cuaderno, ieval=ieval)
-                html = render_to_string('cuadernodocente_accordion_content_ecp.html', {'ecp': ecp})
-                return JsonResponse({'ok': True, 'html': html})
-            except:
-                return JsonResponse({'ok': False})
+                if CalAlumValor.objects.filter(ca__cp=cuaderno, ecpv__valor__gt=0, ca__cie__ieval=ieval).count() == 0:
+                    html = render_to_string('cuadernodocente_accordion_content_ecp.html', {'ecp': ecp})
+                    cuaderno.log += '%s %s %s | %s\n' % (action, now(), g_e, request.POST)
+                    cuaderno.save()
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False,
+                                         'msg': 'Si existen calificaciones no se puede modificar el instrumento.'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'update_texto':
             try:
                 clase = eval(request.POST['clase'])
                 objeto = clase.objects.get(id=request.POST['id'])
                 setattr(objeto, request.POST['campo'], request.POST['texto'])
                 objeto.save()
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                cuaderno.log += '%s %s %s | %s\n' % (action, now(), g_e, request.POST)
+                cuaderno.save()
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
@@ -2978,6 +2998,9 @@ def cuadernodocente(request):
                     for c in casillas:
                         EscalaCPvalor.objects.create(ecp=objeto, x=c['x'], y=c['y'], valor=c['valor'],
                                                      texto_cualitativo=c['t'])
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                cuaderno.log += '%s %s %s | %s\n' % (action, now(), g_e, request.POST)
+                cuaderno.save()
                 html = render_to_string('cuadernodocente_accordion_content_ecp.html', {'ecp': objeto})
                 return JsonResponse({'ok': True, 'html': html})
             except:
@@ -3070,6 +3093,15 @@ def cuadernodocente(request):
                     e.save()
                 CalAlumValor.objects.create(ca=ca, ecpv=ecpv)
                 return JsonResponse({'ok': True, 'alumno': ca.alumno.id, 'cal': ca.cal})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_obs':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                ca = CalAlum.objects.get(id=request.POST['calalum'], cp=cuaderno)
+                ca.obs = request.POST['texto']
+                ca.save()
+                return JsonResponse({'ok': True, 'obs': ca.obs})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'gestionar_alumnos':
