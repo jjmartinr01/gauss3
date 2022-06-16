@@ -660,6 +660,22 @@
                 }
             });
         });
+
+
+        $('body').on('click', '.go_vista_cuaderno', function (e) {
+            var id = $('#id_cuaderno').val();
+            $('#panel' + id).css('opacity', 0.4);
+            $.post('/cuadernodocente/', {action: 'open_accordion', id: id},
+                function (data) {
+                    if (data.ok) {
+                        $('#panel' + id).html(data.html).css('opacity', 1);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
     </script>
 
 {% endblock %}

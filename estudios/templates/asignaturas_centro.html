@@ -6,33 +6,12 @@
         {% csrf_token %}
 
         <div class="">
-            <h4 style="text-align: center;color: #008CBA;"><strong> Configuración de Competencias/Evaluación</strong>
+            <h4 style="text-align: center;color: #008CBA;"><strong> Creación de asignaturas del centro</strong>
             </h4>
         </div>
         <input type="hidden" id="clase_borrar" value="">
         <input type="hidden" id="id_objeto_borrar" value="">
-        <ul class="tabs" data-tab role="tablist">
-            <li class="tab-title active"><a href="#tab1" style="font-weight: bold;">Competencias Clave y DOs</a></li>
-            <li class="tab-title"><a href="#tab2" style="font-weight: bold;">Áreas, Comp. Espec. y Crit. de Eval.</a>
-            </li>
-        </ul>
-        <div class="tabs-content">
-            <div class="content active" id="tab1">
-                <dl class="accordion" data-accordion id="list_ce_dos">
-                    {% for ps in pss %}
-                        <dd class="accordion-navigation" id="accordion_ce_dos{{ ps.id }}"
-                            style="border-bottom: dotted 1px black">
-                            <a href="#panel_ce_dos{{ ps.id }}">
-                                <i id="circle_ce_dos{{ ps.id }}" class="fa fa-plus-circle circle_icon"></i>
-                                <span style="font-weight: bold;">{{ ps }}</span>
-                            </a>
-                            <div id="panel_ce_dos{{ ps.id }}" class="content accordion-ps" data-tipo="ce_dos"
-                                 data-id="{{ ps.id }}"></div>
-                        </dd>
-                    {% endfor %}
-                </dl>
-            </div>
-            <div class="content" id="tab2">
+            <div id="asignaturas_div">
                 <dl class="accordion" data-accordion>
                     {% for ps in pss %}
                         <dd class="accordion-navigation" id="accordion_am_ce_cev{{ ps.id }}"
@@ -47,49 +26,6 @@
                     {% endfor %}
                 </dl>
             </div>
-        </div>
-        {#        <div id="div_reveal_inserta_ceval" class="reveal-modal" data-reveal>#}
-        {#            <input type="hidden" value="" id="id_cesp">#}
-        {#            <div class="row">#}
-        {#                <div class="columns large-12"><h3>Añadir Criterio de evaluación</h3></div>#}
-        {#            </div>#}
-        {#            <div class="row">#}
-        {#                <div class="columns large-6">#}
-        {#                    <label>Ciclo/Etapa#}
-        {#                        <select id="ciclo_ceval">#}
-        {#                            <option value="">----</option>#}
-        {#                            <option value="PRI1">Primer Ciclo Primaria</option>#}
-        {#                            <option value="PRI2">Segundo Ciclo Primaria</option>#}
-        {#                            <option value="PRI3">Tercer Ciclo Primaria</option>#}
-        {#                            <option value="SEC1">1º - 3º de ESO</option>#}
-        {#                            <option value="SEC3">1º - 4º de ESO</option>#}
-        {#                            <option value="SEC4">1º - 2º de ESO</option>#}
-        {#                            <option value="SEC5">3º - 4º de ESO</option>#}
-        {#                            <option value="SEC2">4º de ESO</option>#}
-        {#                            <option value="BAC">Bachillerato</option>#}
-        {#                        </select>#}
-        {#                    </label>#}
-        {#                </div>#}
-        {#                <div class="columns large-6"><label>Materia (opcional)#}
-        {#                    <input type="text" value="" id="materia_ceval"></label>#}
-        {#                </div>#}
-        {#            </div>#}
-        {#            <div class="row">#}
-        {#                <div class="columns large-2"><label>Orden#}
-        {#                    <input type="number" value="" id="orden_ceval"></label>#}
-        {#                </div>#}
-        {#                <div class="columns large-10"><label>Texto del criterio de evaluación#}
-        {#                    <input type="text" value="" id="texto_ceval"></label>#}
-        {#                </div>#}
-        {#            </div>#}
-        {#            <a class="close-reveal-modal reveal_modal_aviso">&#215;</a>#}
-        {#            <div class="row">#}
-        {#                <br>#}
-        {#                <div class="columns large-12"><a id="inserta_ceval"#}
-        {#                                                 class="button secondary">Aceptar</a>#}
-        {#                </div>#}
-        {#            </div>#}
-        {#        </div>#}
     </form>
 {% endblock %}
 
@@ -413,38 +349,20 @@
                 }, 750);
             });
 
-            $('body').on('change', '.curso_asociado_ceval', function () {
-                var ceval = $(this).data('ceval');
-                var valor = $(this).val();
-                $.post('/configura_competencias/', {
-                        action: 'curso_asociado_ceval', ceval: ceval, valor: valor
-                    },
-                    function (data) {
-                        if (data.ok) {
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $('#update_error').show().delay(1500).fadeOut();
-                        }
-                    });
+            $('body').on('change', '.curso_asociado_ceval', function(){
+               var ceval = $(this).data('ceval');
+               var valor = $(this).val();
+               $.post('/configura_competencias/', {
+                                action: 'curso_asociado_ceval', ceval: ceval, valor: valor
+                            },
+                            function (data) {
+                                if (data.ok) {
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $('#update_error').show().delay(1500).fadeOut();
+                                }
+                            });
             });
-
-            $('body').on('click', '.unir_ams', function () {
-                var ps = $(this).data('ps');
-                var am1 = $('#unir_am1_' + ps).val();
-                var am2 = $('#unir_am2_' + ps).val();
-                $.post('/configura_competencias/', {
-                        action: 'unir_ams', am1: am1, am2: am2, ps: ps
-                    },
-                    function (data) {
-                        if (data.ok) {
-                            $('#list_am' + data.ps).prepend(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $('#update_error').show().delay(1500).fadeOut();
-                        }
-                    });
-            });
-
         {% endif %}
 
     </script>

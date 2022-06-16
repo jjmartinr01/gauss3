@@ -1,6 +1,40 @@
 {% load my_templatetags %}
 {% load estudios_extras %}
 <div data-ps="{{ ps.id }}" id="perfilsalida{{ ps.id }}">
+    {#    <div class="row">#}
+    {#        <div class="columns large-12">#}
+    {#            <a class="button toggle_unir_asignaturas" data-ps="{{ ps.id }}"><i class="fa fa-arrows-h"></i> Unir#}
+    {#                asignaturas</a>#}
+    {#        </div>#}
+    {#    </div>#}
+    <div class="row" id="unir_asignaturas{{ ps.id }}">
+        <p style="color: grey;">Puedes crear una nueva asignatura a partir de otras dos ya creadas. En primer lugar,
+            elígelas utilizando los siguientes selectores. Después, pulsa sobre el texto
+            <span style="color:#008CBA; white-space: nowrap;"><i class="fa fa-chain"></i> Unir</span>.
+            Esto creará una nueva asignatura como una combinación de las dos seleccionadas.</p>
+        <div class="columns large-5">
+            <select id="unir_am1_{{ ps.id }}">
+                <option value="">-----</option>
+                {% for am in ps.areamateria_set.all %}
+                    <option value="{{ am.id }}">{{ am.nombre }} ({{ am.get_curso_display }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="columns large-1" style="text-align: center;">
+            <i class="fa fa-arrows-h"></i>
+        </div>
+        <div class="columns large-5">
+            <select id="unir_am2_{{ ps.id }}">
+                <option value="">-----</option>
+                {% for am in ps.areamateria_set.all %}
+                    <option value="{{ am.id }}">{{ am.nombre }} ({{ am.get_curso_display }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="columns large-1">
+            <a class="unir_ams" data-ps="{{ ps.id }}"><i class="fa fa-chain"></i> Unir</a>
+        </div>
+    </div>
     <div id="list_am{{ ps.id }}">
         {% for am in ps.areamateria_set.all %}
             {% include "configura_competencias_am.html" %}
@@ -9,7 +43,7 @@
     <div class="row">
         <div class="columns large-12">
             <a class="button alert inserta_am right" data-ps="{{ ps.id }}">
-                <i class="fa fa-plus"></i> Crear una nueva materia para  {{ ps.get_etapa_display }}
+                <i class="fa fa-plus"></i> Crear una nueva materia para {{ ps.get_etapa_display }}
             </a>
         </div>
     </div>

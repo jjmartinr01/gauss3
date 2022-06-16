@@ -233,6 +233,7 @@ class AreaMateria(models.Model):
                      ('50BAC2A', '2º Bachillerato de Artes'),
                      ('50BAC1G', '1º Bachillerato General'),
                      ('50BAC2G', '2º Bachillerato General'))
+    entidad = models.ForeignKey(Entidad, on_delete=models.CASCADE, blank=True, null=True)
     ps = models.ForeignKey(PerfilSalida, on_delete=models.CASCADE, blank=True, null=True)
     nombre = models.CharField('Nombre del Área/Materia', blank=True, null=True, max_length=350)
     texto = models.TextField('Descripción del Área/Materia', blank=True, null=True)
