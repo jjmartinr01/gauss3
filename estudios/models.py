@@ -273,6 +273,7 @@ class AreaMateria(models.Model):
 
 class CompetenciaEspecifica(models.Model):
     am = models.ForeignKey(AreaMateria, on_delete=models.CASCADE, blank=True, null=True)
+    asignatura = models.CharField('Nombre asignatura', max_length=205, blank=True, null=True, default='')
     orden = models.IntegerField('Número de competencia específica', default=0)
     nombre = models.TextField('Nombre de la competencia específica', blank=True, null=True)
     texto = models.TextField('Descripción de la competencia específica', blank=True, null=True)

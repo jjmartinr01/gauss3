@@ -463,16 +463,20 @@ def configura_competencias(request):
                 ps = PerfilSalida.objects.get(id=request.POST['ps'])
                 am1 = AreaMateria.objects.get(id=request.POST['am1'], ps=ps)
                 am2 = AreaMateria.objects.get(id=request.POST['am2'], ps=ps)
+                if am1 == am2:
+                    return JsonResponse({'msg': 'Las asignaturas deben ser diferentes.', 'ok': False})
                 if am1.curso == am2.curso:
                     texto = str(am1.texto) + '\n-----------------------------\n' + str(am2.texto)
                     pdos = am1.periodos + am2.periodos
                     nombre = am1.nombre + ' --- ' + am2.nombre
                     am = AreaMateria.objects.create(nombre=nombre, ps=ps, curso=am1.curso, texto=texto, periodos=pdos)
-                    for ce in am1.competenciaespecifica_set.all():
+                    ces = list(am1.competenciaespecifica_set.all()) + list(am2.competenciaespecifica_set.all())
+                    for ce in ces:
                         antigua_ce = CompetenciaEspecifica.objects.get(id=ce.id)
                         nueva_ce = ce
                         nueva_ce.pk = None
                         nueva_ce.am = am
+                        nueva_ce.asignatura = antigua_ce.am.nombre
                         nueva_ce.save()
                         for cev in antigua_ce.criterioevaluacion_set.all():
                             nuevo_cev = cev
