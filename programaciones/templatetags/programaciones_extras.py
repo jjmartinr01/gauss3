@@ -18,6 +18,10 @@ def get_ecpv_xs(ecp, y):
 def get_posibles_psec(cuaderno):
     psec_ids = DocProgSec.objects.filter(gep__ge=cuaderno.ge).values_list('psec__id', flat=True)
     return ProgSec.objects.filter(id__in=psec_ids)
+#################################################
+@register.filter
+def get_recpv_xs(recp, y):
+    return recp.repoescalacpvalor_set.filter(y=y)
 
 #################################################
 ########  Estas dos funciones trabajan juntas para crear una función de tres variables

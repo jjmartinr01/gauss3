@@ -43,5 +43,7 @@ admin.site.register(RepoActSitApren)
 admin.site.register(RepoInstrEval)
 admin.site.register(RepoCriInstrEval)
 ############################################################
+admin.site.register(RepoEscalaCP)
+admin.site.register(RepoEscalaCPvalor)
 ############################################################
 

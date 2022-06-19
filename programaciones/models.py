@@ -8,6 +8,7 @@ from django.db import models
 
 from autenticar.models import Gauser
 from gauss.rutas import MEDIA_PROGRAMACIONES
+from gauss.funciones import pass_generator
 from calendario.models import Vevent
 from estudios.models import Materia, Curso, AreaMateria, CompetenciaEspecifica, CriterioEvaluacion, Grupo
 from entidades.models import Gauser_extra, Ronda, Entidad
@@ -741,7 +742,7 @@ class CEProgSec(models.Model):
 
     class Meta:
         verbose_name_plural = 'Competencias específicas asociadas a una programación'
-        ordering = ['ce__orden', ]
+        ordering = ['ce__asignatura', 'ce__orden', ]
 
     def __str__(self):
         return '%s - %s (%s)' % (self.psec, self.ce, self.valor)
@@ -943,7 +944,7 @@ class CriInstrEval(models.Model):
 
     class Meta:
         verbose_name_plural = 'Criterios de Evaluación asociados a un instrumento/procedimiento'
-        ordering = ['cevps__cepsec__ce__orden', 'cevps__cev__orden']
+        ordering = ['cevps__cepsec__ce__asignatura', 'cevps__cepsec__ce__orden', 'cevps__cev__orden']
 
     def __str__(self):
         return '%s - %s (%s)' % (self.ieval, self.cevps, self.peso)
@@ -1040,13 +1041,6 @@ class RepoActSitApren(models.Model):
 
 
 class RepoInstrEval(models.Model):
-    # TIPOS = (('ESVAL', 'Escala de valoración'), ('LCONT', 'Lista de control'), ('RANEC', 'Registro anecdótico'),
-    #          ('CUADE', 'Revisión del cuaderno'), ('COMPO', 'Composición y/o ensayo'),
-    #          ('PRESC', 'Preguntas de respuesta corta'), ('PREEM', 'Preguntas de emparejamiento'),
-    #          ('PTINC', 'Preguntas de texto incompleto'), ('POMUL', 'Preguntas de opción múltiple'),
-    #          ('PRVOF', 'Preguntas de verdadero/falso justificadas'), ('PRAYD', 'Preguntas de analogías y diferencias'),
-    #          ('PRIEL', 'Preguntas de interpretación y/o elaboración de gráficos, tablas, mapas, ...'),
-    #          ('TMONO', 'Trabajo monográfico o de investigación'), ('EXATR', 'Examen tradicional/Prueba objetiva'))
     ESCALAS = (('ESVCL', 'Escala de valoración cualitativa'), ('ESVCN', 'Escala de valoración cuantitativa'),
                ('LCONT', 'Lista de control'))
     TIPOS = (('CUADE', 'Revisión del cuaderno'), ('COMPO', 'Composición y/o ensayo'), ('RANEC', 'Registro anecdótico'),
@@ -1235,6 +1229,46 @@ class CalAlumValor(models.Model):
 
     def __str__(self):
         return '%s (%s)' % (self.ca, self.ecpv)
+
+
+class RepoEscalaCP(models.Model):  # Escala utilizada en el CuardernoProf
+    ESCALAS = (('ESVCL', 'Escala de valoración cualitativa'), ('ESVCN', 'Escala de valoración cuantitativa'),
+               ('LCONT', 'Lista de control'))
+    creador = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, blank=True, null=True)
+    tipo = models.CharField('Tipo de escala', max_length=10, choices=ESCALAS, default='ESVCN')
+    nombre = models.CharField('Nombre dado a la escala', max_length=300, blank=True, default='')
+    identificador = models.CharField('Identificador', max_length=11, default=pass_generator)
+    observaciones = models.TextField('Observaciones', blank=True, null=True, default='')
+
+    class Meta:
+        ordering = ['creador', 'observaciones', 'nombre']
+
+    @property
+    def get_recpvys(self):
+        y_values = set(self.repoescalacpvalor_set.all().values_list('y', flat=True))
+        return y_values
+
+    def get_recpvxs(self, y):
+        return self.repoescalacpvalor_set.filter(y=y)
+
+    def __str__(self):
+        return '%s (%s)' % (self.nombre, self.tipo)
+
+
+class RepoEscalaCPvalor(models.Model):  # Escala utilizada en el CuardernoProf
+    ESCALAS = (('ESVCL', 'Escala de valoración cualitativa'), ('ESVCN', 'Escala de valoración cuantitativa'),
+               ('LCONT', 'Lista de control'))
+    ecp = models.ForeignKey(RepoEscalaCP, on_delete=models.CASCADE)
+    x = models.IntegerField('Coordenada X', default=1)
+    y = models.IntegerField('Coordenada Y', default=0)
+    texto_cualitativo = models.CharField('Texto descripción cualitativa de cumplimiento', max_length=300, blank=True)
+    valor = models.FloatField('Valor cuantitativo asociado a la valoración cualitativa', default=0)
+
+    class Meta:
+        ordering = ['ecp', 'y', 'x']
+
+    def __str__(self):
+        return '%s (%s - %s)' % (self.ecp, self.texto_cualitativo, self.valor)
 
 
 #############################################################################

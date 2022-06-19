@@ -281,7 +281,7 @@ class CompetenciaEspecifica(models.Model):
 
     class Meta:
         verbose_name_plural = 'Competencias Específicas'
-        ordering = ['orden', ]
+        ordering = ['asignatura', 'orden', ]
 
     def __str__(self):
         n = self.nombre if self.nombre else 'Sin nombre'

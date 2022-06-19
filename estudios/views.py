@@ -476,7 +476,8 @@ def configura_competencias(request):
                         nueva_ce = ce
                         nueva_ce.pk = None
                         nueva_ce.am = am
-                        nueva_ce.asignatura = antigua_ce.am.nombre
+                        if not nueva_ce.asignatura:
+                            nueva_ce.asignatura = antigua_ce.am.nombre
                         nueva_ce.save()
                         for cev in antigua_ce.criterioevaluacion_set.all():
                             nuevo_cev = cev

@@ -1,0 +1,312 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        .title_page {
+            text-align: center;
+            color: #008CBA;
+        }
+
+        .ckeditor {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="id_recp" name="id_recp" value="">
+        <div>
+            <h4 class="title_page"><strong>Repositorio Instrumentos de Evaluación</strong></h4>
+        </div>
+
+        <div data-alert class="alert-box info radius">
+            <p>Esto es un repositorio de instrumentos de evaluación (rúbricas, listas de control, ...) que está
+                disponible para toda la comunidad educativa.</p>
+            {#            <p>Las rúbricas que crees aquí podrán ser utilizadas por cualquier docente con acceso#}
+            {#                a Gauss.</p>#}
+            <p>Si deseas utilizar uno de estos instrumentos en tu recp de docente basta con que
+                copies el identificador y lo utilices para importar el instrumento en tu recp.</p>
+            <a href="#" class="close">&times;</a>
+        </div>
+
+        <div id="contenido_escalas">
+            <br>
+            <dl class="accordion" data-accordion id="list_escalas">
+                {% for recp in recps %}
+                    {% include 'repoescalacp_accordion.html' %}
+                {% endfor %}
+            </dl>
+            {% if recps.paginator.num_pages > 1 %}
+                <br>
+                <div class="row">
+                    <div class="columns large-12">
+                        <ul class="pagination" role="menubar" aria-label="Pagination">
+                            {% if recps.has_previous %}
+                                <li class="arrow">
+                                    <a class="go_page" data-page="{{ recps.previous_page_number }}">&laquo; Anterior</a>
+                                </li>
+                            {% else %}
+                                <li class="arrow unavailable" aria-disabled="true">
+                                    <a class="go_page">&laquo; Anterior</a>
+                                </li>
+                            {% endif %}
+                            {% for page in recps.paginator.num_pages|number_range %}
+                                {% if page == recps.number %}
+                                    <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
+                                {% else %}
+                                    <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            {% if recps.has_next %}
+                                <li class="arrow">
+                                    <a class="go_page" data-page="{{ recps.next_page_number }}">Siguiente &raquo;</a>
+                                </li>
+                            {% else %}
+                                <li class="arrow unavailable" aria-disabled="true">
+                                    <a class="go_page">Siguiente &raquo;</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            {% else %}
+
+            {% endif %}
+        </div>
+    </form>
+
+
+
+
+
+
+
+{% endblock %}
+
+{% block final %}
+    <script>
+        {#        {% if g_e|has_permiso:"crea_programaciones" %}#}
+        {#            habilita(['s_plus']);#}
+        {#            $('#plus_sign').click(function (event) {#}
+        {#                event.preventDefault();#}
+        {#                $.post('/repoescalacp/', {'action': 'crea_cuaderno'},#}
+        {#                    function (data) {#}
+        {#                        if (data.ok) {#}
+        {#                            $('#list_cuadernos').append(data.html);#}
+        {#                            $("#update_ok").show().delay(1500).fadeOut();#}
+        {#                        } else {#}
+        {#                            show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg})#}
+        {#                            $("#update_error").show().delay(1500).fadeOut();#}
+        {#                        }#}
+        {#$(document).scrollTop($('#title_page').offset().top - 150);#}
+        {#                    });#}
+        {#            });#}
+        {#        {% endif %}#}
+
+        $(document).foundation({
+            accordion: {
+                callback: function (accordion) {
+                    if (accordion.hasClass('accordion-recp')) {
+                        var id = accordion.data('id');
+                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                            $.post('/repoescalacp/', {action: 'open_accordion', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#panel' + id).html(data.html);
+                                        {#destroyEditorInstances();#}
+                                        {#constructInlineEditorInstances(id);#}
+                                        $('#id_recp').val(id);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $("#update_error").show().delay(1500).fadeOut();
+                                    }
+                                });
+                        } else {
+                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                            $('#panel' + id).html('');
+                            $('#id_recp').val('');
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#Contenido').on('click', '.recp_copy_identificador', function () {
+            var inputid = $(this).data('inputid');
+            var identificador = $('#' + inputid).val();
+            var c = copiar_al_portapapeles($('#' + inputid).val());
+            if (c) {
+                show_mensajes({
+                    title: 'Identificador copiado',
+                    texto: 'Se ha copiado en el portapapeles el identificador del instrumento: ' + identificador
+                });
+            }
+        });
+
+        {#$('body').on('click', '.borrar_cuadernoprof', function (e) {#}
+        {#    show_mensajes({#}
+        {#        title: '<i class="fa fa-warning"></i> ¿Borrar a este recp docente?',#}
+        {#        texto: 'Si aceptas, todas las calificaciones anotadas en este recp se borrarán por completo.',#}
+        {#        size: 'large', buttons: {#}
+        {#            "Cancelar": function () {#}
+        {#                hide_mensajes();#}
+        {#            },#}
+        {#            "Borrar": function () {#}
+        {#                hide_mensajes();#}
+        {#                $.post("/repoescalacp/", {#}
+        {#                        action: 'borrar_cuadernoprof',#}
+        {#                        recp: $('#id_recp').val(),#}
+        {#                    },#}
+        {#                    function (data) {#}
+        {#                        if (data.ok) {#}
+        {#                            $("#accordion" + data.recp).remove();#}
+        {#                            $("#update_ok").show().delay(1500).fadeOut();#}
+        {#                        } else {#}
+        {#                            $("#update_error").show().delay(1500).fadeOut();#}
+        {#                        }#}
+        {#                    });#}
+        {#            }#}
+        {#        }#}
+        {#    });#}
+        {# });#}
+        {##}
+        {#$('#Contenido').on('click', '.copiar_cuadernoprof', function (e) {#}
+        {#    $.post('/repoescalacp/', {#}
+        {#            action: 'copiar_cuadernoprof', recp: $('#id_recp').val()#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $('#list_cuadernos').prepend(data.html);#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
+        {##}
+        {#$('body').on('click', '.asignar_cuadernoprof', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var recp = $('#id_recp').val();#}
+        {#    $('#select_asignar_docente_cuaderno' + recp).toggle();#}
+        {# });#}
+        {##}
+        {#var propietario_cuaderno = ''#}
+        {#$('body').on('focus', '.select_asignar_cuaderno', function () {#}
+        {#    propietario_cuaderno = $(this).val();#}
+        {# });#}
+        {##}
+        {#$('body').on('change', '.select_asignar_cuaderno', function () {#}
+        {#    element = $(this);#}
+        {#    show_mensajes({#}
+        {#        title: '<i class="fa fa-warning"></i> ¿Asignar este recp a otro docente?',#}
+        {#        texto: 'Si aceptas, ya no tendrás acceso al recp y a ninguna de sus anotaciones.',#}
+        {#        size: 'large', buttons: {#}
+        {#            "Cancelar": function () {#}
+        {#                hide_mensajes();#}
+        {#                element.val(propietario_cuaderno);#}
+        {#                $('#select_asignar_docente_cuaderno' + element.data('recp')).toggle();#}
+        {#            },#}
+        {#            "Asignar": function () {#}
+        {#                hide_mensajes();#}
+        {#                $.post('/repoescalacp/', {#}
+        {#                        action: 'select_asignar_cuaderno', docente: element.val(),#}
+        {#                        recp: element.data('recp')#}
+        {#                    },#}
+        {#                    function (data) {#}
+        {#                        if (data.ok) {#}
+        {#                            $('#accordion' + element.data('recp')).remove();#}
+        {#                            $("#update_ok").show().delay(1500).fadeOut();#}
+        {#                        } else {#}
+        {#                            $('#update_error').show().delay(1500).fadeOut();#}
+        {#                        }#}
+        {#                    });#}
+        {#            }#}
+        {#        }#}
+        {#    });#}
+        {# });#}
+        {##}
+        {#$('body').on('change', '.select_psec', function () {#}
+        {#    var element = $(this);#}
+        {#    var recp = element.data('recp');#}
+        {#    var psec = element.val();#}
+        {#    $.post('/repoescalacp/', {#}
+        {#            action: 'select_psec', psec: psec#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $('#select_grupo' + recp).prop('disabled', false).html(data.html);#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
+        {##}
+        {#$('#Contenido').on('click', '.configura_cuaderno', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var element = $(this);#}
+        {#    var recp = element.data('recp');#}
+        {#    var psec = $('#select_psec' + recp).val();#}
+        {#    var grupo = $('#select_grupo' + recp).val();#}
+        {#    $.post('/repoescalacp/', {#}
+        {#            action: 'configura_cuaderno', recp: recp, psec: psec, grupo: grupo#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $('#panel' + recp).html(data.html);#}
+        {#                $('#nombre' + recp).html(data.nombre);#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
+        {##}
+        {#var cuaderno_full_screen = false;#}
+        {#$(document).on('click', '.cuaderno_full_screen', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    if (cuaderno_full_screen) {#}
+        {#        $('#Principal').removeClass('large-12').addClass('large-10');#}
+        {#        $('#menu_lateral_for_large').removeClass('hide-for-large');#}
+        {#        cuaderno_full_screen = false;#}
+        {#    } else {#}
+        {#        $('#menu_lateral_for_large').addClass('hide-for-large');#}
+        {#        $('#Principal').removeClass('large-10').addClass('large-12');#}
+        {#        cuaderno_full_screen = true;#}
+        {#    }#}
+        {# });#}
+        {##}
+        {##}
+        {#$('#Contenido').on('click', '.cuaderno_competencias', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    var element = $(this);#}
+        {#    var recp = element.data('recp');#}
+        {#    var vista = element.data('vista');#}
+        {#    $.post('/repoescalacp/', {#}
+        {#            action: 'cuaderno_competencias', recp: recp, vista: vista#}
+        {#        },#}
+        {#        function (data) {#}
+        {#            if (data.ok) {#}
+        {#                $('#panel' + recp).html(data.html);#}
+        {#                $("#update_ok").show().delay(1500).fadeOut();#}
+        {#            } else {#}
+        {#                $('#update_error').show().delay(1500).fadeOut();#}
+        {#            }#}
+        {#        });#}
+        {# });#}
+
+
+    </script>
+
+{% endblock %}
+
+
+
+
+
+
+

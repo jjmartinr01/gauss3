@@ -1,0 +1,11 @@
+{% load entidades_extras %}
+<dd class="accordion-navigation" id="accordion{{ recp.id }}"
+    style="border-bottom: dotted 1px black">
+    <a href="#panel{{ recp.id }}">
+        <i id="circle{{ recp.id }}" class="fa fa-plus-circle circle_icon"></i>
+        <b id="nombre{{ recp.id }}">{{ recp.nombre }} - {{ recp.observaciones|striptags|truncatechars_html:50 }}</b>
+    </a>
+
+    <div id="panel{{ recp.id }}" class="content accordion-recp" data-id="{{ recp.id }}">
+    </div>
+</dd>

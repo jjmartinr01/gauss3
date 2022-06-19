@@ -18,6 +18,7 @@ from django.forms import ModelForm
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.core.files.base import File
+from django.core.paginator import Paginator
 from django.utils.timezone import now
 
 from autenticar.control_acceso import permiso_required, gauss_required
@@ -2820,9 +2821,6 @@ def repositorio_sap(request):
                   })
 
 
-def logcuaderno(request):
-    g_e = request.session['gauser_extra']
-    action = request.POST['action']
 # @permiso_required('acceso_cuaderno_docente')
 def cuadernodocente(request):
     g_e = request.session['gauser_extra']
@@ -3003,8 +3001,8 @@ def cuadernodocente(request):
                 cuaderno.save()
                 html = render_to_string('cuadernodocente_accordion_content_ecp.html', {'ecp': objeto})
                 return JsonResponse({'ok': True, 'html': html})
-            except:
-                return JsonResponse({'ok': False})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'add_row_ecp':
             try:
                 ecp = EscalaCP.objects.get(id=request.POST['ecp'], cp__ge=g_e)
@@ -3046,6 +3044,37 @@ def cuadernodocente(request):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'enviar2repo':
+            try:
+                ecp = EscalaCP.objects.get(id=request.POST['ecp'], cp__ge=g_e)
+                observaciones = ecp.cp.psec.areamateria.nombre + ' <br>' +  ecp.cp.psec.areamateria.get_curso_display()
+                ecp_nueva = RepoEscalaCP.objects.get_or_create(tipo=ecp.tipo, nombre=ecp.nombre, creador=g_e,
+                                                               observaciones=observaciones)
+                ecp_nueva[0].repoescalacpvalor_set.all().delete()
+                for ecpv in ecp.escalacpvalor_set.all():
+                    RepoEscalaCPvalor.objects.create(ecp=ecp_nueva[0], x=ecpv.x, y=ecpv.y, valor=ecpv.valor,
+                                                     texto_cualitativo=ecpv.texto_cualitativo)
+                return JsonResponse({'ok': True})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'repo2cuaderno':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                cuaderno.log += '%s %s %s | %s\n' % (action, now(), g_e, request.POST)
+                cuaderno.save()
+                recp = RepoEscalaCP.objects.get(identificador=request.POST['identificador'])
+                ecp = EscalaCP.objects.get(id=request.POST['ecp'], cp=cuaderno)
+                ecp.tipo = recp.tipo
+                ecp.nombre = recp.nombre
+                ecp.save()
+                ecp.escalacpvalor_set.all().delete()
+                for recpv in recp.repoescalacpvalor_set.all():
+                    EscalaCPvalor.objects.create(ecp=ecp, x=recpv.x, y=recpv.y, valor=recpv.valor,
+                                                     texto_cualitativo=recpv.texto_cualitativo)
+                html = render_to_string('cuadernodocente_accordion_content_ecp.html', {'ecp': ecp})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'update_calalum':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
@@ -3142,7 +3171,7 @@ def cuadernodocente(request):
                 return JsonResponse({'ok': False})
     return render(request, "cuadernodocente.html",
                   {
-                      'formname': 'progsec',
+                      'formname': 'cuadernodocente',
                       'iconos':
                           ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear Cuaderno', 'permiso': 'libre',
                             'title': 'Crear un nuevo cuaderno de profesor asociado a una programación'},
@@ -3150,6 +3179,58 @@ def cuadernodocente(request):
                       'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
+
+
+# @permiso_required('acceso_cuaderno_docente')
+def repoescalacp(request):
+    g_e = request.session['gauser_extra']
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'crea_repoescalacp':
+            try:
+                repoescalacp = RepoEscalaCP.objects.create(ge=g_e)
+                html = render_to_string('cuadernodocente_accordion.html', {'cuaderno': cuaderno})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'open_accordion':
+            try:
+                recp = RepoEscalaCP.objects.get(id=request.POST['id'])
+                html = render_to_string('repoescalacp_accordion_content.html', {'recp': recp})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'borrar_repoescalacp':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                cuaderno.borrado = True
+                cuaderno.log += '%s %s %s\n' % (action, now(), g_e)
+                cuaderno.save()
+                return JsonResponse({'ok': True, 'cuaderno': cuaderno.id})
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'copiar_cuadernoprof':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                cuaderno_copiado = clone_object(cuaderno)
+                html = render_to_string('cuadernodocente_accordion.html', {'cuaderno': cuaderno_copiado})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
+
+    paginator = Paginator(RepoEscalaCP.objects.all(), 25)
+    return render(request, "repoescalacp.html",
+                  {
+                      'formname': 'repoescalacp',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear Cuaderno', 'permiso': 'libre',
+                            'title': 'Crear un nuevo cuaderno de profesor asociado a una programación'},
+                           ),
+                      'recps': paginator.page(1),
+                      'g_e': g_e,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
 
 @gauss_required
 def configurar_cargos_permisos(request):
@@ -3171,5 +3252,5 @@ def configurar_cargos_permisos(request):
                         except Exception as msg:
                             mensaje += '<br>%s -- %s' % (code_nombre, str(msg))
         except Exception as msg:
-            mensaje += '<br>%s -- %s' %(e, str(msg))
+            mensaje += '<br>%s -- %s' % (e, str(msg))
     return HttpResponse(mensaje)

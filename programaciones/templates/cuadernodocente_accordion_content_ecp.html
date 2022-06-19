@@ -100,12 +100,35 @@
             </table>
         </div>
     </div>
+    <div class="row">
+        <div class="columns large-5">
+            <a class="button radius enviar2repo" id="enviar2repo{{ ecp.id }}"
+               data-ecp="{{ ecp.id }}"><i class="fa fa-users"></i> Compartir</a>
+            <a class="button radius secondary" id="enviar2repo_compartido{{ ecp.id }}"
+               style="display: none;"><i class="fa fa-users"></i> Instrumento compartido</a>
+        </div>
+        <div class="columns large-7">
+            <div class="row collapse postfix-radius">
+                <div class="columns large-9">
+                    <label><b>Cargar del repositorio. Escribe el identificador:</b>
+                        <input placeholder="Para cargar del repositorio, escribe el identificador" type="text"
+                        id="identificador{{ ecp.id }}" value="">
+                    </label>
+                </div>
+                <div class="columns large-3">
+                    <label>&nbsp;</label>
+                    <a class="button radius postfix repo2cuaderno"
+                       data-ecp="{{ ecp.id }}"><i class="fa fa-sign-in"></i> Cargar</a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% elif ecp.tipo == 'LCONT' %}
     <div class="row">
         <div class="columns large-12">
             <p style="color: grey;">Con este tipo de valoración debes crear una lista de elementos a
                 calificar. Cada fila representa un elemento que se debe chequear y que puede ser valorado con
-                diferentes cantdidades.</p>
+                diferentes cantidades.</p>
         </div>
     </div>
     <div class="row">
@@ -170,6 +193,29 @@
             </table>
         </div>
     </div>
+    <div class="row">
+        <div class="columns large-5">
+            <a class="button radius enviar2repo" id="enviar2repo{{ ecp.id }}"
+               data-ecp="{{ ecp.id }}"><i class="fa fa-users"></i> Compartir</a>
+            <a class="button radius secondary" id="enviar2repo_compartido{{ ecp.id }}"
+               style="display: none;"><i class="fa fa-users"></i> Instrumento compartido</a>
+        </div>
+        <div class="columns large-7">
+            <div class="row collapse postfix-radius">
+                <div class="columns large-9">
+                    <label><b>Cargar del repositorio. Escribe el identificador:</b>
+                        <input placeholder="Para cargar del repositorio, escribe el identificador" type="text"
+                        id="identificador{{ ecp.id }}" value="">
+                    </label>
+                </div>
+                <div class="columns large-3">
+                    <label>&nbsp;</label>
+                    <a class="button radius postfix repo2cuaderno"
+                       data-ecp="{{ ecp.id }}"><i class="fa fa-sign-in"></i> Cargar</a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% elif ecp.tipo == 'ESVCN' %}
     <div class="row">
         <div class="columns large-12">
@@ -189,6 +235,26 @@
             <label>Calificación numérica asignada
                 <input type="text" data-ecp="{{ ecp.id }}" value="" class="update_esvcn">
             </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-5">
+            &nbsp;
+        </div>
+        <div class="columns large-7">
+            <div class="row collapse postfix-radius">
+                <div class="columns large-9">
+                    <label><b>Cargar del repositorio. Escribe el identificador:</b>
+                        <input placeholder="Para cargar del repositorio, escribe el identificador" type="text"
+                        id="identificador{{ ecp.id }}" value="">
+                    </label>
+                </div>
+                <div class="columns large-3">
+                    <label>&nbsp;</label>
+                    <a class="button radius postfix repo2cuaderno"
+                       data-ecp="{{ ecp.id }}"><i class="fa fa-sign-in"></i> Cargar</a>
+                </div>
+            </div>
         </div>
     </div>
 {% endif %}

@@ -676,6 +676,37 @@
                 });
         });
 
+        $('body').on('click', '.enviar2repo', function (e) {
+            var ecp = $(this).data('ecp');
+            $.post('/cuadernodocente/', {action: 'enviar2repo', ecp: ecp},
+                function (data) {
+                    if (data.ok) {
+                        $('#enviar2repo' + ecp).hide();
+                        $('#enviar2repo_compartido' + ecp).show();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.repo2cuaderno', function (e) {
+            var cuaderno = $('#id_cuaderno').val();
+            var ecp = $(this).data('ecp');
+            var identificador = $('#identificador' + ecp).val();
+            $.post('/cuadernodocente/', {action: 'repo2cuaderno', ecp: ecp, cuaderno: cuaderno,
+                identificador: identificador},
+                function (data) {
+                    if (data.ok) {
+                        $('#content_ecp').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+
     </script>
 
 {% endblock %}

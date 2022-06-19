@@ -78,12 +78,13 @@
     <div class="columns large-4">
         <label title="Tipo de programación"><b>Tipo:</b>
             <select data-campo="tipo" data-progsec="{{ progsec.id }}" class="select_tipo"
-                   id="tipo{{ progsec.id }}">
+                    id="tipo{{ progsec.id }}">
                 {% for tipo in progsec.TIPOS %}
-                    <option value="{{ tipo.0 }}" {% if progsec.tipo == tipo.0 %}selected{% endif %}>{{ tipo.1 }}</option>
+                    <option value="{{ tipo.0 }}"
+                            {% if progsec.tipo == tipo.0 %}selected{% endif %}>{{ tipo.1 }}</option>
                 {% endfor %}
             </select>
-            </label>
+        </label>
     </div>
     <div class="columns large-2">
         <label title="Fecha de comienzo de las clases"><b>Comienzo:</b>
@@ -210,6 +211,13 @@
                 </tr>
                 </thead>
                 {% for cep in progsec.ceprogsec_set.all %}
+                    {% ifchanged cep.ce.asignatura %}
+                        {% if cep.ce.asignatura %}
+                        <tr>
+                            <td style="color: darkorange">{{ cep.ce.asignatura }}</td>
+                        </tr>
+                        {% endif %}
+                    {% endifchanged %}
                     <tr>
                         <td>{{ cep.ce.orden }}.- {{ cep.ce.nombre }}</td>
                         {#                        <td><input type="number" min="1" max="10" class="pesocep" data-cep="{{ cep.id }}"#}
@@ -321,6 +329,15 @@
                 </tr>
                 </thead>
                 {% for cep in progsec.ceprogsec_set.all %}
+                    {% ifchanged cep.ce.asignatura %}
+                        {% if cep.ce.asignatura %}
+                        <thead>
+                        <tr>
+                            <th colspan="2" style="color: darkorange">{{ cep.ce.asignatura }}</th>
+                        </tr>
+                        </thead>
+                        {% endif %}
+                    {% endifchanged %}
                     <thead>
                     <tr>
                         <th colspan="2">{{ cep.ce.orden }}.- {{ cep.ce.nombre }}</th>

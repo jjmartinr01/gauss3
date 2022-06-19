@@ -1,0 +1,137 @@
+{% load entidades_extras %}
+{% load programaciones_extras %}
+
+<div class="row">
+    <div class="columns large-5">
+        <label><b>Nombre:</b></label>{{ recp.nombre }}
+    </div>
+    <div class="columns large-3">
+        <label><b>Tipo:</b></label>{{ recp.get_tipo_display }}
+
+    </div>
+    <div class="columns large-4">
+        <div class="row collapse postfix-radius">
+                <div class="columns large-8">
+                    <label><b>Identificador:</b> <input type="text" id="recp_identificador{{ recp.id }}"
+                                                        value="{{ recp.identificador }}"></label>
+                </div>
+                <div class="columns large-4">
+                    <label>&nbsp;</label>
+                    <a class="button radius postfix recp_copy_identificador"
+                       data-inputid="recp_identificador{{ recp.id }}"><i class="fa fa-copy"></i> Copiar</a>
+                </div>
+            </div>
+
+    </div>
+</div>
+{% if recp.tipo == 'ESVCL' %}
+    <div class="row">
+        <div class="columns large-12">
+            <p style="color: grey;">Con este tipo de valoración debes crear una rúbrica. La primera fila de la
+                rúbrica
+                representa el grado de valoración desde un punto de vista cualitativo. La primera columna de la
+                rúbrica representa los elementos a valorar. Por último, las casillas interiores, que tienen
+                asignada una valoración cuantitativa definen la rúbrica.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12" id="tabla_ecp">
+            <table style="width: 100%;">
+                {% for y in recp.get_recpvys %}
+                    {% if y == 0 %}
+                        <thead>
+                        <tr>
+                            {% for ecpv in recp|get_recpv_xs:y %}
+                                <th>
+                                <span title="Descripción cualitativa de la valoración"
+                                      class="update_texto" data-campo="texto_cualitativo" data-clase="RepoEscalaCPvalor"
+                                      data-id="{{ ecpv.id }}">{{ ecpv.texto_cualitativo }}</span>
+                                </th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                    {% else %}
+                        <tr>
+                            {% for ecpv in recp|get_recpv_xs:y %}
+                                {% if ecpv.x == 0 %}
+                                    <th>
+                                        <span class="update_texto" data-campo="texto_cualitativo"
+                                              data-clase="RepoEscalaCPvalor" data-id="{{ ecpv.id }}"
+                                              >{{ ecpv.texto_cualitativo }}</span>
+                                    </th>
+                                {% else %}
+                                    <td>
+                                        <span title="Descripción cualitativa de la valoración"
+                                              class="update_texto" data-campo="texto_cualitativo"
+                                              data-clase="RepoEscalaCPvalor"
+                                              data-id="{{ ecpv.id }}">{{ ecpv.texto_cualitativo }}</span>
+                                        <br>
+                                        <span title="Valor númerico asociado a esta descripción"
+
+                                              class="update_texto" data-campo="valor"
+                                              data-clase="RepoEscalaCPvalor"
+                                              data-id="{{ ecpv.id }}">{{ ecpv.valor }}</span>
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% elif recp.tipo == 'LCONT' %}
+    <div class="row">
+        <div class="columns large-12">
+            <p style="color: grey;">Con este tipo de valoración debes crear una lista de elementos a
+                calificar. Cada fila representa un elemento que se debe chequear y que puede ser valorado con
+                diferentes cantidades.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12" id="tabla_ecp">
+            <table style="width: 100%;">
+                {% for y in recp.get_recpvys %}
+                    {% if y == 0 %}
+                        <thead>
+                        <tr>
+                            {% for ecpv in recp|get_recpv_xs:y %}
+                                {% if ecpv.x == 0 %}
+                                    <th></th>
+                                {% else %}
+                                    <th>
+                                <span title="Valoración cuantitativa"
+                                      class="update_texto" data-campo="valor" data-clase="RepoEscalaCPvalor"
+                                      data-id="{{ ecpv.id }}">{{ ecpv.valor }}</span>
+                                    </th>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                    {% else %}
+                        <tr>
+                            {% for ecpv in recp|get_recpv_xs:y %}
+                                {% if ecpv.x == 0 %}
+                                    <th>
+                                        <span class="update_texto" data-campo="texto_cualitativo"
+                                              data-clase="RepoEscalaCPvalor" data-id="{{ ecpv.id }}"
+                                              >{{ ecpv.texto_cualitativo }}</span>
+                                    </th>
+                                {% else %}
+                                    <td>
+                                        <input type="radio" title="Elegir el grado de valoración"
+                                               name="ecpv{{ recp.id }}_{{ ecpv.y }}"
+                                               class="update_radio" value="{{ ecpv.valor }}"
+                                               data-id="{{ ecpv.id }}">
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% elif recp.tipo == 'ESVCN' %}
+
+{% endif %}

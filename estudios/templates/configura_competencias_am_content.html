@@ -51,6 +51,11 @@
 
 <div id="list_cesp{{ am.id }}">
     {% for cesp in am.competenciaespecifica_set.all %}
+        {% ifchanged cesp.asignatura %}
+            <div data-alert class="alert-box warning radius">
+                <span style="font-weight: bold">{{ cesp.asignatura }}</span>
+            </div>
+        {% endifchanged %}
         {% include "configura_competencias_cesp.html" %}
     {% endfor %}
 </div>

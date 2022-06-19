@@ -54,9 +54,9 @@
 <div class="row">
     <div class="columns large-12">
         <ul class="button-group right">
-                <li><a class="button alert borrar_sap tiny" data-id="{{ sap.id }}"
-                       title="Borrar completamente esta situación de aprendizaje de la base de datos"><i
-                        class="fa fa-trash-o"></i> Borrar</a></li>
+            <li><a class="button alert borrar_sap tiny" data-id="{{ sap.id }}"
+                   title="Borrar completamente esta situación de aprendizaje de la base de datos"><i
+                    class="fa fa-trash-o"></i> Borrar</a></li>
             <li><a class="button copiar_sap tiny" data-id="{{ sap.id }}"
                    title="Hacer una copia (un duplicado) de esta situación de aprendizaje"><i
                     class="fa fa-copy"></i> Copiar</a>
@@ -94,6 +94,15 @@
             </thead>
             <tbody>
             {% for cep in sap.sbas.psec.ceprogsec_set.all %}
+                {% ifchanged cep.ce.asignatura %}
+                    {% if cep.ce.asignatura %}
+                        <thead>
+                        <tr>
+                            <th colspan="2" style="color: darkorange">{{ cep.ce.asignatura }}</th>
+                        </tr>
+                        </thead>
+                    {% endif %}
+                {% endifchanged %}
                 <tr>
                     <td><input type="checkbox" class="update_many2many" data-campo="ceps" data-id="{{ sap.id }}"
                                {% if cep in sap.ceps.all %}checked="checked"{% endif %} data-clase="SitApren"
@@ -117,17 +126,18 @@
             <p>El primer paso es crear las actividades que vas a llevar a cabo:</p>
         </div>
     </div>
-<div id="list_sap_actividades{{ sap.id }}">
-    {% for actividad in sap.actsitapren_set.all %}
-        {% include 'progsec_sap_accordion_content_act.html' %}
-    {% endfor %}
-</div>
-<div class="row">
+    <div id="list_sap_actividades{{ sap.id }}">
+        {% for actividad in sap.actsitapren_set.all %}
+            {% include 'progsec_sap_accordion_content_act.html' %}
+        {% endfor %}
+    </div>
+    <div class="row">
         <div class="columns large-12">
-            <a class="button right add_sap_actividad" data-sap="{{ sap.id }}"><i class="fa fa-plus"></i> Añadir actividad</a>
+            <a class="button right add_sap_actividad" data-sap="{{ sap.id }}"><i class="fa fa-plus"></i> Añadir
+                actividad</a>
         </div>
     </div>
-    </div>
+</div>
 <script>
     $('select').select2();
 </script>
