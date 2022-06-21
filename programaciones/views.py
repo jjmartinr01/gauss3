@@ -8,7 +8,8 @@ import shutil
 import locale
 from math import modf
 import logging
-
+import requests
+from bs4 import BeautifulSoup
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
@@ -3047,7 +3048,7 @@ def cuadernodocente(request):
         elif action == 'enviar2repo':
             try:
                 ecp = EscalaCP.objects.get(id=request.POST['ecp'], cp__ge=g_e)
-                observaciones = ecp.cp.psec.areamateria.nombre + ' <br>' +  ecp.cp.psec.areamateria.get_curso_display()
+                observaciones = ecp.cp.psec.areamateria.nombre + ' <br>' + ecp.cp.psec.areamateria.get_curso_display()
                 ecp_nueva = RepoEscalaCP.objects.get_or_create(tipo=ecp.tipo, nombre=ecp.nombre, creador=g_e,
                                                                observaciones=observaciones)
                 ecp_nueva[0].repoescalacpvalor_set.all().delete()
@@ -3070,7 +3071,7 @@ def cuadernodocente(request):
                 ecp.escalacpvalor_set.all().delete()
                 for recpv in recp.repoescalacpvalor_set.all():
                     EscalaCPvalor.objects.create(ecp=ecp, x=recpv.x, y=recpv.y, valor=recpv.valor,
-                                                     texto_cualitativo=recpv.texto_cualitativo)
+                                                 texto_cualitativo=recpv.texto_cualitativo)
                 html = render_to_string('cuadernodocente_accordion_content_ecp.html', {'ecp': ecp})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
@@ -3181,6 +3182,45 @@ def cuadernodocente(request):
                   })
 
 
+def carga_edrubrics(id):
+    s = requests.Session()
+    s.verify = False
+    try:
+        edrubrics = s.get('https://edrubrics.additioapp.com/item/view/%s' % id, timeout=5)
+    except:
+        return False
+    html_parseado = BeautifulSoup(edrubrics.content.decode(edrubrics.encoding), 'html.parser')
+    nombre_rubrica = html_parseado.find('title').text
+    observaciones = 'Edrubrics %s' % id
+    recp, c = RepoEscalaCP.objects.get_or_create(tipo='ESVCL', nombre=nombre_rubrica, observaciones=observaciones)
+    if c:
+        max_length = RepoEscalaCPvalor._meta.get_field('texto_cualitativo').max_length
+        RepoEscalaCPvalor.objects.create(ecp=recp, x=0, y=0, texto_cualitativo='')
+        elementos_primera_columna = html_parseado.findAll('div', {'class': 'rows-column-style'})
+        for n, elem in enumerate(elementos_primera_columna):
+            texto_cualitativo = elem.text.strip()[:max_length]
+            RepoEscalaCPvalor.objects.create(ecp=recp, x=0, y=n + 1, texto_cualitativo=texto_cualitativo)
+        elementos_cabecera = html_parseado.findAll('div', {'class': 'title-columns-style'})
+        valores_sin_normalizar = []
+        for n, elem in enumerate(elementos_cabecera):
+            tds = elem.findAll('td')
+            texto_cualitativo = tds[0].text.strip()[:max_length]
+            valor = float(tds[2].text.strip().replace(',', '.'))
+            valores_sin_normalizar.append(valor)
+            RepoEscalaCPvalor.objects.create(ecp=recp, x=n + 1, y=0, texto_cualitativo=texto_cualitativo)
+        # Normalizar los valores a 10:
+        escala = 10 / max(valores_sin_normalizar)
+        valores = [round(v * escala, 2) for v in valores_sin_normalizar]
+        column_values = html_parseado.findAll('ul')
+        for x, cv in enumerate(column_values):
+            for y, li in enumerate(cv.findAll('li')):
+                texto_cualitativo = li.text.strip()[:max_length]
+                RepoEscalaCPvalor.objects.create(ecp=recp, x=x + 1, y=y + 1, valor=valores[x],
+                                                 texto_cualitativo=texto_cualitativo)
+        return recp
+    return False
+
+
 # @permiso_required('acceso_cuaderno_docente')
 def repoescalacp(request):
     g_e = request.session['gauser_extra']
@@ -3193,6 +3233,16 @@ def repoescalacp(request):
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'carga_edrubrics':
+            try:
+                recp = carga_edrubrics(request.POST['id'])
+                if recp:
+                    html = render_to_string('repoescalacp_accordion.html', {'recp': recp})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'Rúbrica ya cargada'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'open_accordion':
             try:
                 recp = RepoEscalaCP.objects.get(id=request.POST['id'])
@@ -3202,11 +3252,8 @@ def repoescalacp(request):
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_repoescalacp':
             try:
-                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
-                cuaderno.borrado = True
-                cuaderno.log += '%s %s %s\n' % (action, now(), g_e)
-                cuaderno.save()
-                return JsonResponse({'ok': True, 'cuaderno': cuaderno.id})
+                recp = RepoEscalaCP.objects.get(id=request.POST['recp']).delete()
+                return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'copiar_cuadernoprof':

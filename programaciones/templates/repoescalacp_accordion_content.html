@@ -1,6 +1,10 @@
 {% load entidades_extras %}
 {% load programaciones_extras %}
-
+<div class="row">
+<div class="columns large-12 right">
+<a class="button alert borrar_repoescalacp right" data-recp="{{ recp.id }}"><i class="fa fa-trash"></i> Borrar</a>
+</div>
+</div>
 <div class="row">
     <div class="columns large-5">
         <label><b>Nombre:</b></label>{{ recp.nombre }}
@@ -12,7 +16,7 @@
     <div class="columns large-4">
         <div class="row collapse postfix-radius">
                 <div class="columns large-8">
-                    <label><b>Identificador:</b> <input type="text" id="recp_identificador{{ recp.id }}"
+                    <label><b>Identificador en GAUSS:</b> <input type="text" id="recp_identificador{{ recp.id }}"
                                                         value="{{ recp.identificador }}"></label>
                 </div>
                 <div class="columns large-4">

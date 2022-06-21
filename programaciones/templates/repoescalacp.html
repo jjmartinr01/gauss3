@@ -25,9 +25,35 @@
                 disponible para toda la comunidad educativa.</p>
             {#            <p>Las rúbricas que crees aquí podrán ser utilizadas por cualquier docente con acceso#}
             {#                a Gauss.</p>#}
-            <p>Si deseas utilizar uno de estos instrumentos en tu recp de docente basta con que
-                copies el identificador y lo utilices para importar el instrumento en tu recp.</p>
+            <p>Si deseas utilizar uno de estos instrumentos en tu cuaderno de docente basta con que
+                copies el identificador y lo utilices para importar el instrumento en tu cuaderno.</p>
             <a href="#" class="close">&times;</a>
+        </div>
+        <div id="div_carga_edrubrics">
+            <div class="row">
+                <div class="columns large-12">
+                    <p>Haciendo click en este enlace <a href="https://edrubrics.additioapp.com/items" target="_blank">
+                        https://edrubrics.additioapp.com/items
+                    </a> accederás a un banco de rúbricas.</p>
+                    <p>Tras seleccionar la que te interese podrás ver en la url de tu navegador algo parecido a
+                        esto:</p>
+                    <pre>https://edrubrics.additioapp.com/item/view/<span style="color:red">343</span> </pre>
+                    <br>
+                    <p>En rojo está marcado el identificador de la rúbrica de Edrubrics (en tu caso el identificador
+                        será
+                        diferente). Escríbelo en el siguiente formulario para cargar esa rúbrica en GAUSS.</p>
+                </div>
+            </div>
+            <div class="row collapse postfix-radius">
+                <div class="columns large-9">
+                    <label>Introduce el identificador de Edrubrics para cargar la rúbrica:
+                        <input type="text" id="id_edrubrics" value=""></label>
+                </div>
+                <div class="columns large-3">
+                    <label>&nbsp;</label>
+                    <a class="button radius postfix" id="carga_edrubrics"><i class="fa fa-sign-in"></i> Cargar</a>
+                </div>
+            </div>
         </div>
 
         <div id="contenido_escalas">
@@ -146,6 +172,38 @@
                 });
             }
         });
+
+        $('#Contenido').on('click', '#carga_edrubrics', function () {
+            var identificador = $('#id_edrubrics').val();
+            $.post('/repoescalacp/', {'action': 'carga_edrubrics', id: identificador},
+                function (data) {
+                    if (data.ok) {
+                        $('#list_escalas').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg})
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    {#$(document).scrollTop($('#title_page').offset().top - 150);#}
+                });
+        });
+
+        $('#Contenido').on('click', '.borrar_repoescalacp', function () {
+            var recp = $(this).data('recp');
+            $.post('/repoescalacp/', {'action': 'borrar_repoescalacp', recp: recp},
+                function (data) {
+                    if (data.ok) {
+                        $('#accordion' + recp).remove();
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg})
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    {#$(document).scrollTop($('#title_page').offset().top - 150);#}
+                });
+        });
+
+
 
         {#$('body').on('click', '.borrar_cuadernoprof', function (e) {#}
         {#    show_mensajes({#}
