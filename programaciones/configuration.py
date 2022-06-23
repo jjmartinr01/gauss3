@@ -176,5 +176,9 @@ PERMISOS = [{'code_nombre': 'crea_programaciones_ccff',
             {'code_nombre': 'crea_programaciones',
              'nombre': 'Puede crear programaciones en el centro',
              'menu': 'acceso_progsecundaria'
+             },
+            {'code_nombre': 'borra_instrumento_repositorio',
+             'nombre': 'Puede borrar cualquier instrumento de evaluación del repositorio',
+             'menu': 'acceso_repositorio_instrumento'
              }
             ]

@@ -20,38 +20,89 @@
             <h4 class="title_page"><strong>Repositorio Instrumentos de Evaluación</strong></h4>
         </div>
 
-        <div data-alert class="alert-box info radius">
-            <p>Esto es un repositorio de instrumentos de evaluación (rúbricas, listas de control, ...) que está
+        <div id="div_ayuda_repositorio" class="panel callout radius hide">
+            <h4 style="font-weight: bold;color:#008CBA">Ayuda para el uso de este repositorio</h4>
+            <p>Este repositorio de instrumentos de evaluación (rúbricas, listas de control, ...) que está
                 disponible para toda la comunidad educativa.</p>
-            {#            <p>Las rúbricas que crees aquí podrán ser utilizadas por cualquier docente con acceso#}
-            {#                a Gauss.</p>#}
-            <p>Si deseas utilizar uno de estos instrumentos en tu cuaderno de docente basta con que
-                copies el identificador y lo utilices para importar el instrumento en tu cuaderno.</p>
-            <a href="#" class="close">&times;</a>
+            <p>Puedes cargar/importar rúbricas en este repositorio para que cualquier docente pueda
+            utilizarlas. Para hacer esto debes pulsar en el botón
+                <span class="label radius"><i class="fa fa-plus"></i> Importar instrumento</span></p>
+            <p>Si lo que deseas es utilizar uno de estos instrumentos de evaluación en tu cuaderno de docente
+                basta con que sigas estos pasos abras el instrumento que te interese,
+                copies el identificador y lo utilices para importar el instrumento en tu cuaderno:</p>
+            <ol>
+                <li>Haz click sobre el instrumento que desees utilizar para que se despliegue su contenido.</li>
+                <li>En la parte superior de la información desplegada, aparecerá una casilla con la etiqueta:
+                "Identificador de GAUSS". Pulsa en
+                <span class="label radius"><i class="fa fa-copy"></i> Copiar</span></li>
+                <li>Abre el cuaderno docente en el que quieres utilizar el instrumento y tras seleccionar el
+                procedimiento de evaluación tendrás la opción de importar el instrumento utilizando el
+                identificador que has copiado.</li>
+            </ol>
         </div>
-        <div id="div_carga_edrubrics">
-            <div class="row">
-                <div class="columns large-12">
-                    <p>Haciendo click en este enlace <a href="https://edrubrics.additioapp.com/items" target="_blank">
-                        https://edrubrics.additioapp.com/items
-                    </a> accederás a un banco de rúbricas.</p>
-                    <p>Tras seleccionar la que te interese podrás ver en la url de tu navegador algo parecido a
-                        esto:</p>
-                    <pre>https://edrubrics.additioapp.com/item/view/<span style="color:red">343</span> </pre>
-                    <br>
-                    <p>En rojo está marcado el identificador de la rúbrica de Edrubrics (en tu caso el identificador
-                        será
-                        diferente). Escríbelo en el siguiente formulario para cargar esa rúbrica en GAUSS.</p>
+        <div id="div_carga_instrumentos" class="callout panel radius hide">
+            <h4 style="font-weight: bold;color:#008CBA">Tienes tres formas de cargar/importar instrumentos de
+                evaluación en este repositorio:</h4>
+            <h5 style="font-weight: bold;color:darkorange">1.- Importándolos desde Edrubrics (Additio):</h5>
+            <div id="div_carga_edrubrics">
+                <div class="row">
+                    <div class="columns large-12">
+                        <p>Haciendo click en este enlace <a href="https://edrubrics.additioapp.com/items"
+                                                            target="_blank">
+                            https://edrubrics.additioapp.com/items
+                        </a> accederás a un banco de rúbricas.</p>
+                        <p>Tras seleccionar la que te interese podrás ver en la url de tu navegador algo parecido a
+                            esto:</p>
+                        <pre>https://edrubrics.additioapp.com/item/view/<span style="color:red">343</span> </pre>
+                        <br>
+                        <p>En rojo está marcado el identificador de la rúbrica de Edrubrics (en tu caso el identificador
+                            será
+                            diferente). Escríbelo en el siguiente formulario para cargar esa rúbrica en GAUSS pulsando
+                            en <span class="label radius"><i class="fa fa-sign-in"></i> Cargar</span></p>
+                    </div>
+                </div>
+                <div class="row collapse postfix-radius">
+                    <div class="columns large-9">
+                        <label>Introduce el identificador de Edrubrics para cargar la rúbrica:
+                            <input type="text" id="id_edrubrics" value=""></label>
+                    </div>
+                    <div class="columns large-3">
+                        <label>&nbsp;</label>
+                        <a class="button radius postfix" id="carga_edrubrics"><i class="fa fa-sign-in"></i> Cargar</a>
+                    </div>
                 </div>
             </div>
-            <div class="row collapse postfix-radius">
-                <div class="columns large-9">
-                    <label>Introduce el identificador de Edrubrics para cargar la rúbrica:
-                        <input type="text" id="id_edrubrics" value=""></label>
+            <h5 style="font-weight: bold;color:darkorange">2.- Importándolos desde iDoceo:</h5>
+            <div id="div_carga_idoceo">
+                <div class="row">
+                    <div class="columns large-12">
+                        <p>Exporta tu rúbrica de iDoceo en formato XLS. Después pulsa en
+                            <span style="border: solid 1px grey;font-weight: 400;" class="label radius secondary">Examinar ...</span>
+                            para cargar el archivo que se ha creado y pulsa en <span class="label radius"><i
+                                    class="fa fa-sign-in"></i>
+                            Cargar</span>.</p>
+                    </div>
                 </div>
-                <div class="columns large-3">
-                    <label>&nbsp;</label>
-                    <a class="button radius postfix" id="carga_edrubrics"><i class="fa fa-sign-in"></i> Cargar</a>
+                <div class="row collapse postfix-radius">
+                    <div class="columns large-9"
+                         style="border: solid 1px lightgrey; background-color: white;height: 2.3125rem">
+                        <input type="file" id="file_idoceo">
+                    </div>
+                    <div class="columns large-3">
+                        <a class="button radius postfix" id="carga_idoceo"><i class="fa fa-sign-in"></i> Cargar</a>
+                    </div>
+                </div>
+            </div>
+            <h5 style="font-weight: bold;color:darkorange">3.- Compartiéndolos desde Gauss:</h5>
+            <div id="div_carga_gauss">
+                <div class="row">
+                    <div class="columns large-12">
+                        <p>En cualquiera de tus cuadernos docentes, cuando crees un instrumento de evaluación según tus
+                            necesidades, te aparecerá un botón similar a
+                            <span class="label radius"><i class="fa fa-users"></i> Compartir</span>
+                            si el instrumento es susceptible de ser exportado/compartido. Al hacer click sobre dicho
+                            botón el instrumento de evaluación se copiará en este repositorio.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -101,34 +152,19 @@
             {% endif %}
         </div>
     </form>
-
-
-
-
-
-
-
 {% endblock %}
 
 {% block final %}
     <script>
-        {#        {% if g_e|has_permiso:"crea_programaciones" %}#}
-        {#            habilita(['s_plus']);#}
-        {#            $('#plus_sign').click(function (event) {#}
-        {#                event.preventDefault();#}
-        {#                $.post('/repoescalacp/', {'action': 'crea_cuaderno'},#}
-        {#                    function (data) {#}
-        {#                        if (data.ok) {#}
-        {#                            $('#list_cuadernos').append(data.html);#}
-        {#                            $("#update_ok").show().delay(1500).fadeOut();#}
-        {#                        } else {#}
-        {#                            show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg})#}
-        {#                            $("#update_error").show().delay(1500).fadeOut();#}
-        {#                        }#}
-        {#$(document).scrollTop($('#title_page').offset().top - 150);#}
-        {#                    });#}
-        {#            });#}
-        {#        {% endif %}#}
+        habilita(['s_plus', 's_info-circle']);
+        $('#plus_sign').click(function (event) {
+            event.preventDefault();
+            $('#div_carga_instrumentos').toggle();
+        });
+        $('#info-circle_sign').click(function (event) {
+            event.preventDefault();
+            $('#div_ayuda_repositorio').toggle();
+        });
 
         $(document).foundation({
             accordion: {
@@ -178,6 +214,7 @@
             $.post('/repoescalacp/', {'action': 'carga_edrubrics', id: identificador},
                 function (data) {
                     if (data.ok) {
+                        $('#id_edrubrics').val('');
                         $('#list_escalas').prepend(data.html);
                         $("#update_ok").show().delay(1500).fadeOut();
                     } else {
@@ -188,178 +225,73 @@
                 });
         });
 
-        $('#Contenido').on('click', '.borrar_repoescalacp', function () {
-            var recp = $(this).data('recp');
-            $.post('/repoescalacp/', {'action': 'borrar_repoescalacp', recp: recp},
-                function (data) {
-                    if (data.ok) {
-                        $('#accordion' + recp).remove();
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg})
-                        $("#update_error").show().delay(1500).fadeOut();
+        $('body').on('click', '.borrar_repoescalacp', function (e) {
+            $('#id_recp').val($(this).data('recp'));
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar a este instrumento de evaluación?',
+                texto: 'Si aceptas, el instrumento de evaluación se borrará desapareciendo del repositorio por completo.',
+                size: 'large', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/repoescalacp/", {
+                                action: 'borrar_repoescalacp',
+                                recp: $('#id_recp').val(),
+                            },
+                            function (data) {
+                                if (data.ok) {
+                                    $('#accordion' + $('#id_recp').val()).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                    setTimeout(function () {
+                                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg});
+                                    }, 400);
+                                }
+                            });
                     }
-                    {#$(document).scrollTop($('#title_page').offset().top - 150);#}
-                });
+                }
+            });
         });
 
+        $('body').on('click', '#carga_idoceo', function () {
+            var input_files = document.getElementById('file_idoceo').files;
+            $('#span_spin').show();
+            $('.span_porcentage').show();
 
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
 
-        {#$('body').on('click', '.borrar_cuadernoprof', function (e) {#}
-        {#    show_mensajes({#}
-        {#        title: '<i class="fa fa-warning"></i> ¿Borrar a este recp docente?',#}
-        {#        texto: 'Si aceptas, todas las calificaciones anotadas en este recp se borrarán por completo.',#}
-        {#        size: 'large', buttons: {#}
-        {#            "Cancelar": function () {#}
-        {#                hide_mensajes();#}
-        {#            },#}
-        {#            "Borrar": function () {#}
-        {#                hide_mensajes();#}
-        {#                $.post("/repoescalacp/", {#}
-        {#                        action: 'borrar_cuadernoprof',#}
-        {#                        recp: $('#id_recp').val(),#}
-        {#                    },#}
-        {#                    function (data) {#}
-        {#                        if (data.ok) {#}
-        {#                            $("#accordion" + data.recp).remove();#}
-        {#                            $("#update_ok").show().delay(1500).fadeOut();#}
-        {#                        } else {#}
-        {#                            $("#update_error").show().delay(1500).fadeOut();#}
-        {#                        }#}
-        {#                    });#}
-        {#            }#}
-        {#        }#}
-        {#    });#}
-        {# });#}
-        {##}
-        {#$('#Contenido').on('click', '.copiar_cuadernoprof', function (e) {#}
-        {#    $.post('/repoescalacp/', {#}
-        {#            action: 'copiar_cuadernoprof', recp: $('#id_recp').val()#}
-        {#        },#}
-        {#        function (data) {#}
-        {#            if (data.ok) {#}
-        {#                $('#list_cuadernos').prepend(data.html);#}
-        {#                $("#update_ok").show().delay(1500).fadeOut();#}
-        {#            } else {#}
-        {#                $('#update_error').show().delay(1500).fadeOut();#}
-        {#            }#}
-        {#        });#}
-        {# });#}
-        {##}
-        {#$('body').on('click', '.asignar_cuadernoprof', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    var recp = $('#id_recp').val();#}
-        {#    $('#select_asignar_docente_cuaderno' + recp).toggle();#}
-        {# });#}
-        {##}
-        {#var propietario_cuaderno = ''#}
-        {#$('body').on('focus', '.select_asignar_cuaderno', function () {#}
-        {#    propietario_cuaderno = $(this).val();#}
-        {# });#}
-        {##}
-        {#$('body').on('change', '.select_asignar_cuaderno', function () {#}
-        {#    element = $(this);#}
-        {#    show_mensajes({#}
-        {#        title: '<i class="fa fa-warning"></i> ¿Asignar este recp a otro docente?',#}
-        {#        texto: 'Si aceptas, ya no tendrás acceso al recp y a ninguna de sus anotaciones.',#}
-        {#        size: 'large', buttons: {#}
-        {#            "Cancelar": function () {#}
-        {#                hide_mensajes();#}
-        {#                element.val(propietario_cuaderno);#}
-        {#                $('#select_asignar_docente_cuaderno' + element.data('recp')).toggle();#}
-        {#            },#}
-        {#            "Asignar": function () {#}
-        {#                hide_mensajes();#}
-        {#                $.post('/repoescalacp/', {#}
-        {#                        action: 'select_asignar_cuaderno', docente: element.val(),#}
-        {#                        recp: element.data('recp')#}
-        {#                    },#}
-        {#                    function (data) {#}
-        {#                        if (data.ok) {#}
-        {#                            $('#accordion' + element.data('recp')).remove();#}
-        {#                            $("#update_ok").show().delay(1500).fadeOut();#}
-        {#                        } else {#}
-        {#                            $('#update_error').show().delay(1500).fadeOut();#}
-        {#                        }#}
-        {#                    });#}
-        {#            }#}
-        {#        }#}
-        {#    });#}
-        {# });#}
-        {##}
-        {#$('body').on('change', '.select_psec', function () {#}
-        {#    var element = $(this);#}
-        {#    var recp = element.data('recp');#}
-        {#    var psec = element.val();#}
-        {#    $.post('/repoescalacp/', {#}
-        {#            action: 'select_psec', psec: psec#}
-        {#        },#}
-        {#        function (data) {#}
-        {#            if (data.ok) {#}
-        {#                $('#select_grupo' + recp).prop('disabled', false).html(data.html);#}
-        {#                $("#update_ok").show().delay(1500).fadeOut();#}
-        {#            } else {#}
-        {#                $('#update_error').show().delay(1500).fadeOut();#}
-        {#            }#}
-        {#        });#}
-        {# });#}
-        {##}
-        {#$('#Contenido').on('click', '.configura_cuaderno', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    var element = $(this);#}
-        {#    var recp = element.data('recp');#}
-        {#    var psec = $('#select_psec' + recp).val();#}
-        {#    var grupo = $('#select_grupo' + recp).val();#}
-        {#    $.post('/repoescalacp/', {#}
-        {#            action: 'configura_cuaderno', recp: recp, psec: psec, grupo: grupo#}
-        {#        },#}
-        {#        function (data) {#}
-        {#            if (data.ok) {#}
-        {#                $('#panel' + recp).html(data.html);#}
-        {#                $('#nombre' + recp).html(data.nombre);#}
-        {#                $("#update_ok").show().delay(1500).fadeOut();#}
-        {#            } else {#}
-        {#                $('#update_error').show().delay(1500).fadeOut();#}
-        {#            }#}
-        {#        });#}
-        {# });#}
-        {##}
-        {#var cuaderno_full_screen = false;#}
-        {#$(document).on('click', '.cuaderno_full_screen', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    if (cuaderno_full_screen) {#}
-        {#        $('#Principal').removeClass('large-12').addClass('large-10');#}
-        {#        $('#menu_lateral_for_large').removeClass('hide-for-large');#}
-        {#        cuaderno_full_screen = false;#}
-        {#    } else {#}
-        {#        $('#menu_lateral_for_large').addClass('hide-for-large');#}
-        {#        $('#Principal').removeClass('large-10').addClass('large-12');#}
-        {#        cuaderno_full_screen = true;#}
-        {#    }#}
-        {# });#}
-        {##}
-        {##}
-        {#$('#Contenido').on('click', '.cuaderno_competencias', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    var element = $(this);#}
-        {#    var recp = element.data('recp');#}
-        {#    var vista = element.data('vista');#}
-        {#    $.post('/repoescalacp/', {#}
-        {#            action: 'cuaderno_competencias', recp: recp, vista: vista#}
-        {#        },#}
-        {#        function (data) {#}
-        {#            if (data.ok) {#}
-        {#                $('#panel' + recp).html(data.html);#}
-        {#                $("#update_ok").show().delay(1500).fadeOut();#}
-        {#            } else {#}
-        {#                $('#update_error').show().delay(1500).fadeOut();#}
-        {#            }#}
-        {#        });#}
-        {# });#}
-
-
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('archivo_xhr' + i, input_files[i], slugify_filename(input_files[i].name));
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'upload_archivo_xhr');
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        {#console.log(xhr.responseText);#}
+                        var data = JSON.parse(xhr.responseText);
+                        $('#list_escalas').prepend(data.html);
+                        $('#file_idoceo').val('');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        {#$('#tbody_gauss_file' + data.id).html(data.html);#}
+                        $('#span_spin').hide();
+                        $('#span_porcentage').hide();
+                    }
+                }
+            };
+            xhr.open('POST', "/repoescalacp/", true);
+            xhr.send(formData);
+        });
     </script>
-
 {% endblock %}
 
 

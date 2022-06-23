@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 from datetime import date, datetime
 import simplejson as json
 import unicodedata
@@ -9,6 +10,7 @@ import locale
 from math import modf
 import logging
 import requests
+import xlrd
 from bs4 import BeautifulSoup
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -3188,9 +3190,11 @@ def carga_edrubrics(id):
     try:
         edrubrics = s.get('https://edrubrics.additioapp.com/item/view/%s' % id, timeout=5)
     except:
-        return False
+        return False, 'Error en la carga de la web'
     html_parseado = BeautifulSoup(edrubrics.content.decode(edrubrics.encoding), 'html.parser')
     nombre_rubrica = html_parseado.find('title').text
+    if 'Not Found' in nombre_rubrica:
+        return False, 'La rúbrica solicitada no existe.'
     observaciones = 'Edrubrics %s' % id
     recp, c = RepoEscalaCP.objects.get_or_create(tipo='ESVCL', nombre=nombre_rubrica, observaciones=observaciones)
     if c:
@@ -3217,8 +3221,8 @@ def carga_edrubrics(id):
                 texto_cualitativo = li.text.strip()[:max_length]
                 RepoEscalaCPvalor.objects.create(ecp=recp, x=x + 1, y=y + 1, valor=valores[x],
                                                  texto_cualitativo=texto_cualitativo)
-        return recp
-    return False
+        return True, recp
+    return False, 'La rúbrica ya existe en Gauss y no se vuelve a cargar.'
 
 
 # @permiso_required('acceso_cuaderno_docente')
@@ -3226,52 +3230,87 @@ def repoescalacp(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST' and request.is_ajax():
         action = request.POST['action']
-        if action == 'crea_repoescalacp':
+        if action == 'carga_edrubrics':
             try:
-                repoescalacp = RepoEscalaCP.objects.create(ge=g_e)
-                html = render_to_string('cuadernodocente_accordion.html', {'cuaderno': cuaderno})
-                return JsonResponse({'ok': True, 'html': html})
-            except Exception as msg:
-                return JsonResponse({'ok': False, 'msg': str(msg)})
-        elif action == 'carga_edrubrics':
-            try:
-                recp = carga_edrubrics(request.POST['id'])
-                if recp:
+                carga_correcta, recp = carga_edrubrics(request.POST['id'])
+                if not carga_correcta:
+                    return JsonResponse({'ok': False, 'msg': str(recp)})
+                else:
                     html = render_to_string('repoescalacp_accordion.html', {'recp': recp})
                     return JsonResponse({'ok': True, 'html': html})
-                else:
-                    return JsonResponse({'ok': False, 'msg': 'Rúbrica ya cargada'})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'open_accordion':
             try:
                 recp = RepoEscalaCP.objects.get(id=request.POST['id'])
-                html = render_to_string('repoescalacp_accordion_content.html', {'recp': recp})
+                html = render_to_string('repoescalacp_accordion_content.html', {'recp': recp, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_repoescalacp':
             try:
-                recp = RepoEscalaCP.objects.get(id=request.POST['recp']).delete()
-                return JsonResponse({'ok': True})
-            except:
-                return JsonResponse({'ok': False})
-        elif action == 'copiar_cuadernoprof':
-            try:
-                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
-                cuaderno_copiado = clone_object(cuaderno)
-                html = render_to_string('cuadernodocente_accordion.html', {'cuaderno': cuaderno_copiado})
-                return JsonResponse({'ok': True, 'html': html})
-            except:
-                return JsonResponse({'ok': False})
+                recp = RepoEscalaCP.objects.get(id=request.POST['recp'])
+                if g_e.has_permiso('borra_instrumento_repositorio') or g_e == recp.creador:
+                    recp.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'No tienes permiso para borrar este instrumento.'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+    elif request.method == 'POST' and request.POST['action'] == 'upload_archivo_xhr':
+        try:
+            n_files = int(request.POST['n_files'])
+            for i in range(n_files):
+                fichero = request.FILES['archivo_xhr' + str(i)]
+                if fichero.content_type in 'application/vnd.ms-excel application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                    rows = []
+                    book = xlrd.open_workbook(file_contents=fichero.read())
+                    sheet = book.sheet_by_index(0)
+                    valores_sin_normalizar = []
+                    for n, texto in enumerate([sheet.cell(0, col_index).value for col_index in range(sheet.ncols)]):
+                        punto = False
+                        valor = ''
+                        texto_cualitativo = ''
+                        for caracter in texto:
+                            if caracter.isdigit():
+                                valor += caracter
+                            elif caracter == '.' and not punto:
+                                valor += caracter
+                                punto = True
+                            else:
+                                texto_cualitativo += caracter
+                        try:
+                            valor = float(valor)
+                        except:
+                            valor = 0
+                        rows.append({'x': n, 'y': 0, 'valor': valor, 'texto': texto_cualitativo})
+                        valores_sin_normalizar.append(valor)
+                    escala = 10 / max(valores_sin_normalizar)
+                    valores = [round(v * escala, 2) for v in valores_sin_normalizar]
+                    for row_index in range(1, sheet.nrows):
+                        for col_index in range(sheet.ncols):
+                            rows.append({'x': col_index, 'y': row_index, 'valor': valores[col_index], 'texto': sheet.cell(row_index, col_index).value})
+            nombre_rubrica = fichero.name.rpartition('.')[0].replace('-', ' ').capitalize()
+            obs = 'Importación xls iDoceo %s' % fichero.name
+            recp, c = RepoEscalaCP.objects.get_or_create(tipo='ESVCL', nombre=nombre_rubrica, observaciones=obs)
+            if c:
+                for row in rows:
+                    RepoEscalaCPvalor.objects.create(ecp=recp, x=row['x'], y=row['y'], texto_cualitativo=row['texto'],
+                                                     valor=row['valor'])
+            html = render_to_string('repoescalacp_accordion.html', {'recp': recp})
+            return JsonResponse({'ok': True, 'html': html})
+        except:
+            return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
 
     paginator = Paginator(RepoEscalaCP.objects.all(), 25)
     return render(request, "repoescalacp.html",
                   {
                       'formname': 'repoescalacp',
                       'iconos':
-                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear Cuaderno', 'permiso': 'libre',
-                            'title': 'Crear un nuevo cuaderno de profesor asociado a una programación'},
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Importar instrumento', 'permiso': 'libre',
+                            'title': 'Importar un instrumento de evaluación al repositorio.'},
+                           {'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Ayuda', 'permiso': 'libre',
+                            'title': 'Ayuda sobre el uso del repositorio de instrumentos de evaluación.'},
                            ),
                       'recps': paginator.page(1),
                       'g_e': g_e,

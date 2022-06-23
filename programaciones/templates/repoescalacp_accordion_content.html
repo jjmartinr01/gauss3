@@ -1,43 +1,46 @@
 {% load entidades_extras %}
 {% load programaciones_extras %}
+{% if g_e|has_permiso:'borra_instrumento_repositorio' or g_e.gauser == recp.creador.gauser %}
+    <div class="row">
+        <div class="columns large-12 right">
+            <a class="button alert borrar_repoescalacp right" data-recp="{{ recp.id }}"><i class="fa fa-trash"></i>
+                Borrar</a>
+        </div>
+    </div>
+{% endif %}
 <div class="row">
-<div class="columns large-12 right">
-<a class="button alert borrar_repoescalacp right" data-recp="{{ recp.id }}"><i class="fa fa-trash"></i> Borrar</a>
-</div>
-</div>
-<div class="row">
-    <div class="columns large-5">
+    <div class="columns large-4">
         <label><b>Nombre:</b></label>{{ recp.nombre }}
     </div>
-    <div class="columns large-3">
+    <div class="columns large-4">
         <label><b>Tipo:</b></label>{{ recp.get_tipo_display }}
 
     </div>
     <div class="columns large-4">
         <div class="row collapse postfix-radius">
-                <div class="columns large-8">
-                    <label><b>Identificador en GAUSS:</b> <input type="text" id="recp_identificador{{ recp.id }}"
-                                                        value="{{ recp.identificador }}"></label>
-                </div>
-                <div class="columns large-4">
-                    <label>&nbsp;</label>
-                    <a class="button radius postfix recp_copy_identificador"
-                       data-inputid="recp_identificador{{ recp.id }}"><i class="fa fa-copy"></i> Copiar</a>
-                </div>
+            <div class="columns large-8">
+                <label><b>Identificador en GAUSS:</b> <input type="text" id="recp_identificador{{ recp.id }}"
+                                                             value="{{ recp.identificador }}"></label>
             </div>
+            <div class="columns large-4">
+                <label>&nbsp;</label>
+                <a class="button radius postfix recp_copy_identificador"
+                   data-inputid="recp_identificador{{ recp.id }}"><i class="fa fa-copy"></i> Copiar</a>
+            </div>
+        </div>
 
     </div>
 </div>
 {% if recp.tipo == 'ESVCL' %}
-    <div class="row">
-        <div class="columns large-12">
-            <p style="color: grey;">Con este tipo de valoración debes crear una rúbrica. La primera fila de la
-                rúbrica
-                representa el grado de valoración desde un punto de vista cualitativo. La primera columna de la
-                rúbrica representa los elementos a valorar. Por último, las casillas interiores, que tienen
-                asignada una valoración cuantitativa definen la rúbrica.</p>
-        </div>
-    </div>
+{#    <div class="row">#}
+{#        <div class="columns large-12">#}
+{#            <p style="color: grey;">Con este tipo de valoración debes crear una rúbrica. La primera fila de la#}
+{#                rúbrica#}
+{#                representa el grado de valoración desde un punto de vista cualitativo. La primera columna de la#}
+{#                rúbrica representa los elementos a valorar. Por último, las casillas interiores, que tienen#}
+{#                asignada una valoración cuantitativa definen la rúbrica.</p>#}
+{#        </div>#}
+{#    </div>#}
     <div class="row">
         <div class="columns large-12" id="tabla_ecp">
             <table style="width: 100%;">
@@ -61,7 +64,7 @@
                                     <th>
                                         <span class="update_texto" data-campo="texto_cualitativo"
                                               data-clase="RepoEscalaCPvalor" data-id="{{ ecpv.id }}"
-                                              >{{ ecpv.texto_cualitativo }}</span>
+                                        >{{ ecpv.texto_cualitativo }}</span>
                                     </th>
                                 {% else %}
                                     <td>
@@ -85,13 +88,13 @@
         </div>
     </div>
 {% elif recp.tipo == 'LCONT' %}
-    <div class="row">
-        <div class="columns large-12">
-            <p style="color: grey;">Con este tipo de valoración debes crear una lista de elementos a
-                calificar. Cada fila representa un elemento que se debe chequear y que puede ser valorado con
-                diferentes cantidades.</p>
-        </div>
-    </div>
+{#    <div class="row">#}
+{#        <div class="columns large-12">#}
+{#            <p style="color: grey;">Con este tipo de valoración debes crear una lista de elementos a#}
+{#                calificar. Cada fila representa un elemento que se debe chequear y que puede ser valorado con#}
+{#                diferentes cantidades.</p>#}
+{#        </div>#}
+{#    </div>#}
     <div class="row">
         <div class="columns large-12" id="tabla_ecp">
             <table style="width: 100%;">
@@ -119,7 +122,7 @@
                                     <th>
                                         <span class="update_texto" data-campo="texto_cualitativo"
                                               data-clase="RepoEscalaCPvalor" data-id="{{ ecpv.id }}"
-                                              >{{ ecpv.texto_cualitativo }}</span>
+                                        >{{ ecpv.texto_cualitativo }}</span>
                                     </th>
                                 {% else %}
                                     <td>
