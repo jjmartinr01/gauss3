@@ -16,6 +16,7 @@
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
         <input type="hidden" id="id_recp" name="id_recp" value="">
+        <input type="hidden" id="resultados_busqueda" name="resultados_busqueda" value="false">
         <div>
             <h4 class="title_page"><strong>Repositorio Instrumentos de Evaluación</strong></h4>
         </div>
@@ -106,50 +107,21 @@
                 </div>
             </div>
         </div>
-
-        <div id="contenido_escalas">
-            <br>
-            <dl class="accordion" data-accordion id="list_escalas">
-                {% for recp in recps %}
-                    {% include 'repoescalacp_accordion.html' %}
-                {% endfor %}
-            </dl>
-            {% if recps.paginator.num_pages > 1 %}
-                <br>
-                <div class="row">
-                    <div class="columns large-12">
-                        <ul class="pagination" role="menubar" aria-label="Pagination">
-                            {% if recps.has_previous %}
-                                <li class="arrow">
-                                    <a class="go_page" data-page="{{ recps.previous_page_number }}">&laquo; Anterior</a>
-                                </li>
-                            {% else %}
-                                <li class="arrow unavailable" aria-disabled="true">
-                                    <a class="go_page">&laquo; Anterior</a>
-                                </li>
-                            {% endif %}
-                            {% for page in recps.paginator.num_pages|number_range %}
-                                {% if page == recps.number %}
-                                    <li class="current"><a href="" class="go_page" data-page="">{{ page }}</a></li>
-                                {% else %}
-                                    <li><a class="go_page" data-page="{{ page }}">{{ page }}</a></li>
-                                {% endif %}
-                            {% endfor %}
-                            {% if recps.has_next %}
-                                <li class="arrow">
-                                    <a class="go_page" data-page="{{ recps.next_page_number }}">Siguiente &raquo;</a>
-                                </li>
-                            {% else %}
-                                <li class="arrow unavailable" aria-disabled="true">
-                                    <a class="go_page">Siguiente &raquo;</a>
-                                </li>
-                            {% endif %}
-                        </ul>
+        <div id="div_buscar_repositorio">
+            <div class="row collapse postfix-radius">
+                    <div class="columns large-9"
+                         style="border: solid 1px lightgrey; background-color: white;height: 2.3125rem">
+                        <input type="text" id="buscar_repositorio_texto" value=""
+                               placeholder="Introduce un texto de búsqueda: expresión oral, matemáticas, ...">
+                    </div>
+                    <div class="columns large-3">
+                        <a class="button radius postfix" id="buscar_repositorio"><i class="fa fa-search"></i> Buscar</a>
                     </div>
                 </div>
-            {% else %}
-
-            {% endif %}
+        </div>
+        <br>
+        <div id="contenido_escalas">
+            {% include 'repoescalacp_accordion.html' %}
         </div>
     </form>
 {% endblock %}
@@ -291,6 +263,38 @@
             xhr.open('POST', "/repoescalacp/", true);
             xhr.send(formData);
         });
+
+        $('#Contenido').on('click', '#buscar_repositorio', function () {
+            var texto = $('#buscar_repositorio_texto').val();
+            $.post('/repoescalacp/', {'action': 'buscar_repositorio', 'texto': texto},
+                function (data) {
+                    if (data.ok) {
+                        $('#contenido_escalas').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg})
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.go_page', function (e) {
+            e.preventDefault();
+            var texto = $('#buscar_repositorio_texto').val();
+            var page = $(this).data('page');
+            if (page) {
+                $.post("/repoescalacp/", {action: 'go_page', page: page, texto: texto},
+                    function (data) {
+                        if (data.ok) {
+                            $('#contenido_escalas').html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        });
+
     </script>
 {% endblock %}
 

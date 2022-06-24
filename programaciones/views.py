@@ -3225,7 +3225,7 @@ def carga_edrubrics(id):
     return False, 'La rúbrica ya existe en Gauss y no se vuelve a cargar.'
 
 
-# @permiso_required('acceso_cuaderno_docente')
+@permiso_required('acceso_repositorio_instrumento')
 def repoescalacp(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST' and request.is_ajax():
@@ -3257,6 +3257,41 @@ def repoescalacp(request):
                     return JsonResponse({'ok': False, 'msg': 'No tienes permiso para borrar este instrumento.'})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'buscar_repositorio':
+            try:
+                palabras = request.POST['texto'].split()
+                if len(palabras) > 0:
+                    q = Q(creador__gauser__first_name__icontains=palabras[0]) | Q(
+                        creador__gauser__last_name__icontains=palabras[0])
+                    for palabra in palabras:
+                        q = q | Q(nombre__icontains=palabra) | Q(observaciones__icontains=palabra)
+                    paginator = Paginator(RepoEscalaCP.objects.filter(q).distinct(), 5)
+                    recps = paginator.page(1)
+                    html = render_to_string('repoescalacp_accordion.html', {'recps': recps, 'buscar':True})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'Debes escribir algo para poder buscar.'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'go_page':
+            try:
+                palabras = request.POST['texto'].split()
+                if len(palabras) > 0:
+                    q = Q(creador__gauser__first_name__icontains=palabras[0]) | Q(
+                        creador__gauser__last_name__icontains=palabras[0])
+                    for palabra in palabras:
+                        q = q | Q(nombre__icontains=palabra) | Q(observaciones__icontains=palabra)
+                    paginator = Paginator(RepoEscalaCP.objects.filter(q).distinct(), 5)
+                    buscar = True
+                else:
+                    paginator = Paginator(RepoEscalaCP.objects.all(), 5)
+                    buscar = False
+                recps = paginator.page(request.POST['page'])
+                html = render_to_string('repoescalacp_accordion.html', {'recps': recps, 'buscar':buscar})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+
     elif request.method == 'POST' and request.POST['action'] == 'upload_archivo_xhr':
         try:
             n_files = int(request.POST['n_files'])
@@ -3289,7 +3324,8 @@ def repoescalacp(request):
                     valores = [round(v * escala, 2) for v in valores_sin_normalizar]
                     for row_index in range(1, sheet.nrows):
                         for col_index in range(sheet.ncols):
-                            rows.append({'x': col_index, 'y': row_index, 'valor': valores[col_index], 'texto': sheet.cell(row_index, col_index).value})
+                            rows.append({'x': col_index, 'y': row_index, 'valor': valores[col_index],
+                                         'texto': sheet.cell(row_index, col_index).value})
             nombre_rubrica = fichero.name.rpartition('.')[0].replace('-', ' ').capitalize()
             obs = 'Importación xls iDoceo %s' % fichero.name
             recp, c = RepoEscalaCP.objects.get_or_create(tipo='ESVCL', nombre=nombre_rubrica, observaciones=obs)
@@ -3302,7 +3338,7 @@ def repoescalacp(request):
         except:
             return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
 
-    paginator = Paginator(RepoEscalaCP.objects.all(), 25)
+    paginator = Paginator(RepoEscalaCP.objects.all(), 5)
     return render(request, "repoescalacp.html",
                   {
                       'formname': 'repoescalacp',
