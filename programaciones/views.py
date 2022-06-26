@@ -3236,6 +3236,8 @@ def repoescalacp(request):
                 if not carga_correcta:
                     return JsonResponse({'ok': False, 'msg': str(recp)})
                 else:
+                    recp.creador = g_e
+                    recp.save()
                     html = render_to_string('repoescalacp_accordion.html', {'recp': recp})
                     return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
@@ -3265,7 +3267,7 @@ def repoescalacp(request):
                         creador__gauser__last_name__icontains=palabras[0])
                     for palabra in palabras:
                         q = q | Q(nombre__icontains=palabra) | Q(observaciones__icontains=palabra)
-                    paginator = Paginator(RepoEscalaCP.objects.filter(q).distinct(), 5)
+                    paginator = Paginator(RepoEscalaCP.objects.filter(q).distinct(), 25)
                     recps = paginator.page(1)
                     html = render_to_string('repoescalacp_accordion.html', {'recps': recps, 'buscar':True})
                     return JsonResponse({'ok': True, 'html': html})
@@ -3294,42 +3296,46 @@ def repoescalacp(request):
 
     elif request.method == 'POST' and request.POST['action'] == 'upload_archivo_xhr':
         try:
-            n_files = int(request.POST['n_files'])
-            for i in range(n_files):
-                fichero = request.FILES['archivo_xhr' + str(i)]
-                if fichero.content_type in 'application/vnd.ms-excel application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-                    rows = []
-                    book = xlrd.open_workbook(file_contents=fichero.read())
-                    sheet = book.sheet_by_index(0)
-                    valores_sin_normalizar = []
-                    for n, texto in enumerate([sheet.cell(0, col_index).value for col_index in range(sheet.ncols)]):
-                        punto = False
-                        valor = ''
-                        texto_cualitativo = ''
-                        for caracter in texto:
-                            if caracter.isdigit():
-                                valor += caracter
-                            elif caracter == '.' and not punto:
-                                valor += caracter
-                                punto = True
-                            else:
-                                texto_cualitativo += caracter
-                        try:
-                            valor = float(valor)
-                        except:
-                            valor = 0
-                        rows.append({'x': n, 'y': 0, 'valor': valor, 'texto': texto_cualitativo})
-                        valores_sin_normalizar.append(valor)
-                    escala = 10 / max(valores_sin_normalizar)
-                    valores = [round(v * escala, 2) for v in valores_sin_normalizar]
-                    for row_index in range(1, sheet.nrows):
-                        for col_index in range(sheet.ncols):
-                            rows.append({'x': col_index, 'y': row_index, 'valor': valores[col_index],
-                                         'texto': sheet.cell(row_index, col_index).value})
+            # Al no permitir carga múltiple de archivos n_files es siempre 1
+            # n_files = int(request.POST['n_files'])
+            # for i in range(n_files):
+            #     fichero = request.FILES['archivo_xhr' + str(i)]
+            fichero = request.FILES['archivo_xhr0']
+            if fichero.content_type in 'application/vnd.ms-excel application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                rows = []
+                book = xlrd.open_workbook(file_contents=fichero.read())
+                sheet = book.sheet_by_index(0)
+                valores_sin_normalizar = []
+                for n, texto in enumerate([sheet.cell(0, col_index).value for col_index in range(sheet.ncols)]):
+                    punto = False
+                    valor = ''
+                    texto_cualitativo = ''
+                    for caracter in texto:
+                        if caracter.isdigit():
+                            valor += caracter
+                        elif caracter == '.' and not punto:
+                            valor += caracter
+                            punto = True
+                        else:
+                            texto_cualitativo += caracter
+                    try:
+                        valor = float(valor)
+                    except:
+                        valor = 0
+                    rows.append({'x': n, 'y': 0, 'valor': valor, 'texto': texto_cualitativo})
+                    valores_sin_normalizar.append(valor)
+                escala = 10 / max(valores_sin_normalizar)
+                valores = [round(v * escala, 2) for v in valores_sin_normalizar]
+                for row_index in range(1, sheet.nrows):
+                    for col_index in range(sheet.ncols):
+                        rows.append({'x': col_index, 'y': row_index, 'valor': valores[col_index],
+                                     'texto': sheet.cell(row_index, col_index).value})
             nombre_rubrica = fichero.name.rpartition('.')[0].replace('-', ' ').capitalize()
             obs = 'Importación xls iDoceo %s' % fichero.name
             recp, c = RepoEscalaCP.objects.get_or_create(tipo='ESVCL', nombre=nombre_rubrica, observaciones=obs)
             if c:
+                recp.creador = g_e
+                recp.save()
                 for row in rows:
                     RepoEscalaCPvalor.objects.create(ecp=recp, x=row['x'], y=row['y'], texto_cualitativo=row['texto'],
                                                      valor=row['valor'])
@@ -3338,7 +3344,7 @@ def repoescalacp(request):
         except:
             return JsonResponse({'ok': False, 'mensaje': 'Se ha producido un error.'})
 
-    paginator = Paginator(RepoEscalaCP.objects.all(), 5)
+    paginator = Paginator(RepoEscalaCP.objects.all(), 25)
     return render(request, "repoescalacp.html",
                   {
                       'formname': 'repoescalacp',
