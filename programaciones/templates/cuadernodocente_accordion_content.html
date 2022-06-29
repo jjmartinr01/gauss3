@@ -186,12 +186,12 @@
                                 {% for ieval in asap.ievals %}
                                     {% for cieval in ieval.cievals %}
                                         {% if cieval %}
-                                        <th title="{{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
+                                            <th title="{{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
                                                {{ cieval.cevps.cev.texto }}">
-                                            {{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
-                                            {{ cieval.cevps.cev.texto|truncatechars:10 }}
-                                        </th>
-                                            {% else %}
+                                                {{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
+                                                {{ cieval.cevps.cev.texto|truncatechars:10 }}
+                                            </th>
+                                        {% else %}
                                             <th>&nbsp;</th>
                                         {% endif %}
                                     {% endfor %}
@@ -235,60 +235,80 @@
         </div>
     {% endwith %}
 {% else %}
-    <div class="div_table{{ cuaderno.id }}">
-        <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
-            <thead style="position: sticky;top:0">
-            <tr>
-                <th class="fixed_column" rowspan="5">
-                    Nombre alumno/a<br><br>
-                    <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}" title="Mostrar en pantalla completa"
-                       style="position:absolute;top:5px;left:5px">
-                        <i class="fa fa-external-link"></i>
-                    </a>
-                    <a class="cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="NOR"
-                       title="Ir a la vista de calificaciones por instrumentos, situaciones de aprendizaje y saberes básicos"
-                       style="position:absolute;top:5px;right:5px">
-                        <i class="fa fa-exchange"></i>
-                    </a>
-                    <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
-                        <i class="fa fa-users"></i> Gestionar alumnos
-                    </a>
-                </th>
-                <th rowspan="2" title="Calificación total obtenida en la materia">Calificación<br>global</th>
-                {% for ce in cuaderno.psec.areamateria.competenciaespecifica_set.all %}
-                    <th colspan="{{ ce.criterioevaluacion_set.all|length|add:'1' }}"
-                        title="{{ ce.orden }}.- {{ ce.nombre }}">{{ ce.orden }}.- {{ ce.nombre|truncatechars:160 }}</th>
-                {% endfor %}
-            </tr>
-            <tr>
-                {% for cev in cuaderno.psec.areamateria.cevs %}
-                    {% ifchanged cev.ce %}
-                        <th title="Calificación global de la CE{{ cev.ce.orden }}">Cal. CE{{ cev.ce.orden }}</th>
-                    {% endifchanged %}
-                    <th title="{{ cev.ce.orden }}.{{ cev.orden }}.- {{ cev.texto }}"
-                    >{{ cev.ce.orden }}.{{ cev.orden }}.- {{ cev.texto|truncatechars:20 }}</th>
-                {% endfor %}
-            </tr>
-            </thead>
-            <tbody id="tbody_cuaderno{{ cuaderno.id }}">
-            {% for alumno in cuaderno.alumnos.all %}
-                <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
-                    <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
-                        <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
-                    </td>
-                    <td><b>{{ cuaderno|get_global_cal:alumno }}</b></td>
+    {% with num_asig=cuaderno.psec.ces_asignaturas_ambito|length caas=cuaderno.psec.ces_asignaturas_ambito %}
+        <div class="div_table{{ cuaderno.id }}">
+            <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
+                <thead style="position: sticky;top:0">
+                <tr>
+                    <th class="fixed_column" rowspan="5">
+                        Nombre alumno/a<br><br>
+                        <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}" title="Mostrar en pantalla completa"
+                           style="position:absolute;top:5px;left:5px">
+                            <i class="fa fa-external-link"></i>
+                        </a>
+                        <a class="cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="NOR"
+                           title="Ir a la vista de calificaciones por instrumentos, situaciones de aprendizaje y saberes básicos"
+                           style="position:absolute;top:5px;right:5px">
+                            <i class="fa fa-exchange"></i>
+                        </a>
+                        <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
+                            <i class="fa fa-users"></i> Gestionar alumnos
+                        </a>
+                    </th>
+                    {% if num_asig > 1 %}
+                        <th rowspan="2">Asignatura</th>
+                    {% endif %}
+                    <th rowspan="2" title="Calificación total obtenida en la materia">Calificación<br>global</th>
+                    {% for ce in cuaderno.psec.areamateria.competenciaespecifica_set.all %}
+                        <th colspan="{{ ce.criterioevaluacion_set.all|length|add:'1' }}"
+                            title="{{ ce.orden }}.- {{ ce.nombre }}">{{ ce.orden }}.- {{ ce.nombre|truncatechars:160 }}</th>
+                    {% endfor %}
+                </tr>
+                <tr>
                     {% for cev in cuaderno.psec.areamateria.cevs %}
                         {% ifchanged cev.ce %}
-                            <td>{{ cuaderno|get_ce_cal:cev.ce|get_calalum_ce:alumno }}</td>
+                            <th title="Calificación global de la CE{{ cev.ce.orden }}">Cal. CE{{ cev.ce.orden }}</th>
                         {% endifchanged %}
-                        <td>
-                            {{ cuaderno|get_cev_cals:cev|get_calalum_cev:alumno }}
-                        </td>
+                        <th title="{{ cev.ce.orden }}.{{ cev.orden }}.- {{ cev.texto }}"
+                        >{{ cev.ce.orden }}.{{ cev.orden }}.- {{ cev.texto|truncatechars:20 }}</th>
                     {% endfor %}
-                    <td>f</td>
                 </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody id="tbody_cuaderno{{ cuaderno.id }}">
+                {% for alumno in cuaderno.alumnos.all %}
+                    {% for asignatura, ces in caas.items %}
+                        <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}" style="color:red">
+                            {% if forloop.first %}
+                                <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}"
+                                    rowspan="{{ num_asig }}">
+                                    <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
+                                </td>
+                            {% endif %}
+                            {% if num_asig > 1 %}
+                                <td>{{ asignatura }}</td>
+                            {% endif %}
+                            {#                                                        <td><b>{{ cuaderno|get_global_cal:alumno }}</b></td>#}
+                            <td>
+                                <b>{{ cuaderno|get_global_asignatura:asignatura|get_global_cal_asignatura:alumno }}</b>
+                            </td>
+                            {% for cev in cuaderno.psec.areamateria.cevs %}
+                                {% ifchanged cev.ce %}
+                                    {% if cev.ce in ces %}
+                                        <td>{{ cuaderno|get_ce_cal:cev.ce|get_calalum_ce:alumno }}</td>
+                                    {% else %}
+                                        <td>--</td>
+                                    {% endif %}
+                                {% endifchanged %}
+                                {% if cev.ce in ces %}
+                                    <td>{{ cuaderno|get_cev_cals:cev|get_calalum_cev:alumno }}</td>
+                                {% else %}
+                                    <td>--</td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endwith %}
 {% endif %}

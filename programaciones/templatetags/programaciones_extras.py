@@ -92,6 +92,21 @@ def get_calalum_ce(cuaderno_ce, alumno):
 def get_global_cal(cuaderno, alumno):
     return cuaderno.calificacion_alumno(alumno)
 
+########  Estas funciones calculan la calificación global de un alumno del cuaderno en función de su asignatura
+
+@register.filter
+def get_global_asignatura(cuaderno, asignatura):
+    return cuaderno, asignatura
+
+
+@register.filter
+def get_global_cal_asignatura(cuaderno_asignatura, alumno):
+    try:
+        cuaderno, asignatura = cuaderno_asignatura
+        return cuaderno.calificacion_alumno_asignatura(alumno, asignatura)
+    except Exception as msg:
+        return str(msg)
+
 ########  Fin de la función
 #################################################
 

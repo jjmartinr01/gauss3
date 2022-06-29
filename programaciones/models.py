@@ -720,6 +720,25 @@ class ProgSec(models.Model):
         except:
             return []
 
+    @property
+    def asignaturas_ambito(self):
+        return set(self.areamateria.competenciaespecifica_set.all().values_list('asignatura', flat=True))
+
+    @property
+    def ces_asignaturas_ambito(self):
+        caa = {}
+        for ce in self.areamateria.competenciaespecifica_set.all():
+            if not ce.asignatura:
+                ce.asignatura = ce.am.nombre
+                ce.save()
+        ces = self.areamateria.competenciaespecifica_set.all()
+        for a in set(ces.values_list('asignatura', flat=True)):
+            caa[a] = ces.filter(asignatura=a)
+        return caa
+
+    def ces_asignatura(self, asignatura):
+        return self.areamateria.competenciaespecifica_set.filter(asignatura=asignatura)
+
     def __str__(self):
         return '%s - %s (%s)' % (self.pga.ronda, self.areamateria, self.gep.ge.gauser.get_full_name())
 
@@ -1143,6 +1162,20 @@ class CuadernoProf(models.Model):
 
     def calificacion_alumno(self, alumno):
         ceps = self.psec.ceprogsec_set.all()
+        numerador = 0
+        denominador = 0
+        for cep in ceps:
+            cal_ce = self.calificacion_alumno_ce(alumno, cep.ce)
+            if cal_ce > 0:
+                numerador += cal_ce * cep.valor
+                denominador += cep.valor
+        try:
+            return round(numerador / denominador, 2)
+        except:
+            return 0
+
+    def calificacion_alumno_asignatura(self, alumno, asignatura):
+        ceps = self.psec.ceprogsec_set.filter(ce__asignatura=asignatura)
         numerador = 0
         denominador = 0
         for cep in ceps:
