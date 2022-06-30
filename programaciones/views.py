@@ -34,7 +34,7 @@ from programaciones.models import *
 from gauss.rutas import RUTA_BASE, MEDIA_PROGRAMACIONES
 from mensajes.views import crear_aviso
 from mensajes.models import Aviso
-from estudios.models import ETAPAS
+from estudios.models import ETAPAS, Gauser_extra_estudios
 
 locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')
 
@@ -3355,6 +3355,62 @@ def repoescalacp(request):
                             'title': 'Ayuda sobre el uso del repositorio de instrumentos de evaluación.'},
                            ),
                       'recps': paginator.page(1),
+                      'g_e': g_e,
+                      'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
+                  })
+
+
+# @permiso_required('acceso_repositorio_instrumento')
+def calificacc(request):
+    g_e = request.session['gauser_extra']
+    if request.method == 'POST' and request.is_ajax():
+        action = request.POST['action']
+        if action == 'select_grupo':
+            try:
+                grupo = Grupo.objects.get(id=request.POST['grupo'])
+                am = CuadernoProf.objects.filter(grupo=grupo)[0].psec.areamateria
+                ps = am.ps
+                ams = AreaMateria.objects.filter(curso=am.curso)
+                alumnos = Gauser_extra_estudios.objects.filter(grupo=grupo).order_by('ge__gauser__last_name')
+                html = render_to_string('calificacc_tabla.html', {'alumnos': alumnos, 'ps': ps, 'ams': ams})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'open_accordion':
+            try:
+                recp = RepoEscalaCP.objects.get(id=request.POST['id'])
+                html = render_to_string('repoescalacp_accordion_content.html', {'recp': recp, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'buscar_repositorio':
+            try:
+                palabras = request.POST['texto'].split()
+                if len(palabras) > 0:
+                    q = Q(creador__gauser__first_name__icontains=palabras[0]) | Q(
+                        creador__gauser__last_name__icontains=palabras[0])
+                    for palabra in palabras:
+                        q = q | Q(nombre__icontains=palabra) | Q(observaciones__icontains=palabra)
+                    paginator = Paginator(RepoEscalaCP.objects.filter(q).distinct(), 25)
+                    recps = paginator.page(1)
+                    html = render_to_string('repoescalacp_accordion.html', {'recps': recps, 'buscar':True})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'Debes escribir algo para poder buscar.'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+
+    grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda).values_list('grupo__id', 'grupo__nombre')
+    return render(request, "calificacc.html",
+                  {
+                      'formname': 'calificacc',
+                      'iconos':
+                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Importar instrumento', 'permiso': 'libre',
+                            'title': 'Importar un instrumento de evaluación al repositorio.'},
+                           {'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Ayuda', 'permiso': 'libre',
+                            'title': 'Ayuda sobre el uso del repositorio de instrumentos de evaluación.'},
+                           ),
+                      'grupos': grupos,
                       'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })

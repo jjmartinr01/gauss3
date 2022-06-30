@@ -1,0 +1,205 @@
+{% extends "base_select2-4.html" %}
+{% load my_templatetags %}
+
+{% block contenido %}
+    <style>
+        .title_page {
+            text-align: center;
+            color: #008CBA;
+        }
+
+        .ckeditor {
+            border: lightgrey 1px solid;
+            min-height: 100px;
+        }
+    </style>
+    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+        {% csrf_token %}
+        <input type="hidden" id="id_grupo" name="id_grupo" value="">
+        <input type="hidden" id="resultados_busqueda" name="resultados_busqueda" value="false">
+        <div>
+            <h4 class="title_page"><strong>Evaluación/Calificación Competencias Clave</strong></h4>
+        </div>
+
+        <div class="row">
+            <div class="columns large-12">
+                <label><b>Selecciona grupo de alumnos:</b>
+                <select id="select_grupo">
+                    <option value="">----</option>
+                    {% for grupo in grupos %}
+                        <option value="{{ grupo.0 }}">{{ grupo.1 }}</option>
+                    {% endfor %}
+                </select></label>
+            </div>
+        </div>
+        <br>
+        <div id="contenido_competencias_clave">
+        </div>
+    </form>
+{% endblock %}
+
+{% block final %}
+    <script>
+        habilita(['s_plus', 's_info-circle']);
+        $('#plus_sign').click(function (event) {
+            event.preventDefault();
+            $('#div_carga_instrumentos').toggle();
+        });
+        $('#info-circle_sign').click(function (event) {
+            event.preventDefault();
+            $('#div_ayuda_repositorio').toggle();
+        });
+
+        $('body').on('change', '#select_grupo', function () {
+                var grupo = $(this).val();
+                $.post("/calificacc/", {
+                        action: 'select_grupo',
+                        grupo: grupo
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#contenido_competencias_clave').html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+
+
+        $('#Contenido').on('click', '.grupo_copy_identificador', function () {
+            var inputid = $(this).data('inputid');
+            var identificador = $('#' + inputid).val();
+            var c = copiar_al_portapapeles($('#' + inputid).val());
+            if (c) {
+                show_mensajes({
+                    title: 'Identificador copiado',
+                    texto: 'Se ha copiado en el portapapeles el identificador del instrumento: ' + identificador
+                });
+            }
+        });
+
+        $('#Contenido').on('click', '#carga_edrubrics', function () {
+            var identificador = $('#id_edrubrics').val();
+            $.post('/repoescalacp/', {'action': 'carga_edrubrics', id: identificador},
+                function (data) {
+                    if (data.ok) {
+                        $('#id_edrubrics').val('');
+                        $('#list_competencias_clave').prepend(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg})
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                    {#$(document).scrollTop($('#title_page').offset().top - 150);#}
+                });
+        });
+
+        $('body').on('click', '.borrar_repoescalacp', function (e) {
+            $('#id_grupo').val($(this).data('grupo'));
+            show_mensajes({
+                title: '<i class="fa fa-warning"></i> ¿Borrar a este instrumento de evaluación?',
+                texto: 'Si aceptas, el instrumento de evaluación se borrará desapareciendo del repositorio por completo.',
+                size: 'large', buttons: {
+                    "Cancelar": function () {
+                        hide_mensajes();
+                    },
+                    "Borrar": function () {
+                        hide_mensajes();
+                        $.post("/repoescalacp/", {
+                                action: 'borrar_repoescalacp',
+                                grupo: $('#id_grupo').val(),
+                            },
+                            function (data) {
+                                if (data.ok) {
+                                    $('#accordion' + $('#id_grupo').val()).remove();
+                                    $("#update_ok").show().delay(1500).fadeOut();
+                                } else {
+                                    $("#update_error").show().delay(1500).fadeOut();
+                                    setTimeout(function () {
+                                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg});
+                                    }, 400);
+                                }
+                            });
+                    }
+                }
+            });
+        });
+
+        $('body').on('click', '#carga_idoceo', function () {
+            var input_files = document.getElementById('file_idoceo').files;
+            $('#span_spin').show();
+            $('.span_porcentage').show();
+
+            for (var i = 0; i < input_files.length; i++) {
+                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+            }
+
+            var formData = new FormData();
+            for (var i = 0; i < input_files.length; i++) {
+                formData.append('archivo_xhr' + i, input_files[i], slugify_filename(input_files[i].name));
+            }
+            formData.append('n_files', input_files.length);
+            formData.append('action', 'upload_archivo_xhr');
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            var xhr = new XMLHttpRequest();
+            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        {#console.log(xhr.responseText);#}
+                        var data = JSON.parse(xhr.responseText);
+                        $('#list_competencias_clave').prepend(data.html);
+                        $('#file_idoceo').val('');
+                        $("#update_ok").show().delay(1500).fadeOut();
+                        {#$('#tbody_gauss_file' + data.id).html(data.html);#}
+                        $('#span_spin').hide();
+                        $('#span_porcentage').hide();
+                    }
+                }
+            };
+            xhr.open('POST', "/repoescalacp/", true);
+            xhr.send(formData);
+        });
+
+        $('#Contenido').on('click', '#buscar_repositorio', function () {
+            var texto = $('#buscar_repositorio_texto').val();
+            $.post('/repoescalacp/', {'action': 'buscar_repositorio', 'texto': texto},
+                function (data) {
+                    if (data.ok) {
+                        $('#contenido_competencias_clave').html(data.html);
+                        $("#update_ok").show().delay(1500).fadeOut();
+                    } else {
+                        show_mensajes({title: '<i class="fa fa-warning"></i> Error', texto: data.msg})
+                        $("#update_error").show().delay(1500).fadeOut();
+                    }
+                });
+        });
+
+        $('body').on('click', '.go_page', function (e) {
+            e.preventDefault();
+            var texto = $('#buscar_repositorio_texto').val();
+            var page = $(this).data('page');
+            if (page) {
+                $.post("/repoescalacp/", {action: 'go_page', page: page, texto: texto},
+                    function (data) {
+                        if (data.ok) {
+                            $('#contenido_competencias_clave').html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            }
+        });
+
+    </script>
+{% endblock %}
+
+
+
+
+
+
+

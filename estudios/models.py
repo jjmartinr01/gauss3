@@ -151,15 +151,20 @@ class Matricula(models.Model):
 #######################################################################################
 
 class PerfilSalida(models.Model):
+    # ETAPAS_PERFIL_SALIDA = (('00INF', 'Infantil'), ('10PRI', 'Primaria'), ('20ESO', 'Secundaria Obligatoria'),
+    #                         ('30FPB', 'Ciclos Formativos de Grado Basico'),
+    #                         ('35FPB', 'Ciclos Formativos de Grado Medio'),
+    #                         ('40FPB', 'Ciclos Formativos de Grado Superior'),
+    #                         ('50BAC', 'Bachillerato'),
+    #                         ('INF', 'Infantil antinguo'), ('PRI', 'Primaria antinguo'),
+    #                         ('SEC', 'Secundaria Obligatoria antinguo'),
+    #                         ('BAC', 'Bachillerato antinguo'),
+    #                         ('20SEC', 'Secundaria Obligatoria borrar'))
     ETAPAS_PERFIL_SALIDA = (('00INF', 'Infantil'), ('10PRI', 'Primaria'), ('20ESO', 'Secundaria Obligatoria'),
                             ('30FPB', 'Ciclos Formativos de Grado Basico'),
                             ('35FPB', 'Ciclos Formativos de Grado Medio'),
                             ('40FPB', 'Ciclos Formativos de Grado Superior'),
-                            ('50BAC', 'Bachillerato'),
-                            ('INF', 'Infantil antinguo'), ('PRI', 'Primaria antinguo'),
-                            ('SEC', 'Secundaria Obligatoria antinguo'),
-                            ('BAC', 'Bachillerato antinguo'),
-                            ('20SEC', 'Secundaria Obligatoria borrar'))
+                            ('50BAC', 'Bachillerato'))
     ley = models.CharField('Ley asociada a definir el perfil de salida', blank=True, null=True, max_length=300)
     observaciones = models.TextField('Observaciones', blank=True, null=True)
     etapa = models.CharField('Etapa escolar', choices=ETAPAS_PERFIL_SALIDA, default='10PRI', max_length=5)

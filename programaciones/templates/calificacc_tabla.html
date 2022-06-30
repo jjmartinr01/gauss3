@@ -1,0 +1,75 @@
+<style>
+    .tabla_cc {
+        white-space: nowrap;
+        table-layout: fixed;
+        width: 100%;
+        overflow-x: auto;
+        display: block;
+    }
+
+    .verticalText {
+        writing-mode: vertical-lr;
+        transform: rotate(180deg);
+        font-weight: bold;
+    }
+</style>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Haz click sobre el alumno que quieras evaluar</b></label>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        {% for alumno in alumnos %}
+            <a class="button tiny round alumnocc" href="" data-id="{{ alumno.id }}">
+                <b>{{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}</b>
+            </a>
+        {% endfor %}
+    </div>
+</div>
+<table class="tabla_cc">
+    <thead>
+    <tr>
+        <th colspan="2" rowspan="2"></th>
+        {% for cc in ps.competenciaclave_set.all %}
+            <th colspan="{{ cc.descriptoroperativo_set.all|length }}">{{ cc.competencia }}</th>
+        {% endfor %}
+    </tr>
+    <tr>
+        {% for cc in ps.competenciaclave_set.all %}
+            {% for do in cc.descriptoroperativo_set.all %}
+                <th>{{ do.clave }}</th>
+            {% endfor %}
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for am in ams %}
+        {% for ce in am.competenciaespecifica_set.all %}
+            <tr>
+                {% if forloop.first %}
+                    <td rowspan="{{ am.competenciaespecifica_set.all|length }}">
+                        <span class="verticalText">{{ am.nombre }}</span>
+                    </td>
+                {% endif %}
+                <td title="{{ ce.nombre }}">
+                    CE{{ ce.orden }}
+                </td>
+                {% for cc in ps.competenciaclave_set.all %}
+                    {% for do in cc.descriptoroperativo_set.all %}
+                        <td>
+                            {% if do in ce.dos.all %}
+                                <i class="fa fa-check" style="color: green;"></i>
+                                <span class="do{{ do.id }}" id="do-{{ am.id }}-{{ ce.id }}-{{ do.id }}"></span>
+                            {% else %}
+{#                                <i class="fa fa-times" style="color: red;"></i> -#}
+                                -
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    {% endfor %}
+    </tbody>
+</table>
