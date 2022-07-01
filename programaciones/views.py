@@ -3400,7 +3400,7 @@ def calificacc(request):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
 
-    grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda).values_list('grupo__id', 'grupo__nombre')
+    grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False)
     return render(request, "calificacc.html",
                   {
                       'formname': 'calificacc',

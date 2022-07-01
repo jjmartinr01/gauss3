@@ -283,7 +283,7 @@ def ajax_cupo(request):
                         else:
                             J = {'cmax': 20, 'cmin': 18, 'mmax': 10, 'mmin': 9, 'dmax': 13, 'dmin': 12, 'umax': 7,
                                  'umin': 6}
-                        ec = EspecialidadCupo.objects.create(cupo=cupo, departamento=None, nombre=nombre_especialidad,
+                        ec = EspecialidadCupo.objects.create(cupo=cupo, nombre=nombre_especialidad,
                                                              clave_ex=pxls.x_puesto, dep=pxls.departamento,
                                                              x_dep=pxls.x_departamento, max_completa=J['cmax'],
                                                              min_completa=J['cmin'], max_dostercios=J['dmax'],
