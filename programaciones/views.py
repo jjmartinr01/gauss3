@@ -3400,7 +3400,7 @@ def calificacc(request):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
 
-    grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False)
+    grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False).values_list('grupo__id', 'grupo__nombre')
     return render(request, "calificacc.html",
                   {
                       'formname': 'calificacc',
@@ -3410,7 +3410,7 @@ def calificacc(request):
                            {'tipo': 'button', 'nombre': 'info-circle', 'texto': 'Ayuda', 'permiso': 'libre',
                             'title': 'Ayuda sobre el uso del repositorio de instrumentos de evaluación.'},
                            ),
-                      'grupos': grupos,
+                      'grupos': set(grupos),
                       'g_e': g_e,
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })

@@ -27,7 +27,7 @@
                 <select id="select_grupo">
                     <option value="">----</option>
                     {% for grupo in grupos %}
-                        <option value="{{ grupo.id }}">{{ grupo.nombre }}</option>
+                        <option value="{{ grupo.0 }}">{{ grupo.1 }}</option>
                     {% endfor %}
                 </select></label>
             </div>

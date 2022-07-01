@@ -225,7 +225,7 @@ def ajax_cupo(request):
                 centros_primaria = ['C.E.E. - Centro de Educación Especial',
                                     'C.R.A. - Colegio Rural Agrupado',
                                     'C.E.I.P. - Colegio de Educación Infantil y Primaria']
-                po = PlantillaOrganica.objects.get(id=request.POST['po'], g_e=g_e)
+                po = PlantillaOrganica.objects.get(id=request.POST['po'], ronda_centro=g_e.ronda)
                 po.habilitar_miembros_equipo_directivo()
                 # if 'I.E.S' in po.ronda_centro.entidad.entidadextra.tipo_centro:
                 #     J = {'cmax': 20, 'cmin': 18, 'mmax': 10, 'mmin': 9, 'dmax': 13, 'dmin': 12, 'umax': 7, 'umin': 6}
