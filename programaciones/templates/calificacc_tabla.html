@@ -12,6 +12,26 @@
         transform: rotate(180deg);
         font-weight: bold;
     }
+    .tex_cal {
+        color: green; font-weight: bold;
+    }
+    .fixed_column {
+        position: sticky;
+        left: 0px;
+        z-index: 5 !important;
+        background: #F5F5F5;
+    }
+    .fixed_column2 {
+        position: sticky;
+        left:46px;
+        z-index: 5 !important;
+        background: #F5F5F5;
+    }
+    {#.tabla_cc tbody td:first-child {#}
+    {#    position: sticky;#}
+    {#    left: 0px;#}
+    {#    z-index: 2;#}
+    {# }#}
 </style>
 <div class="row">
     <div class="columns large-12">
@@ -21,7 +41,7 @@
 <div class="row">
     <div class="columns large-12">
         {% for alumno in alumnos %}
-            <a class="button tiny round alumnocc" href="" data-id="{{ alumno.id }}">
+            <a class="button tiny round carga_alumnocc" href="" data-alumno="{{ alumno.id }}">
                 <b>{{ alumno.ge.gauser.last_name }}, {{ alumno.ge.gauser.first_name }}</b>
             </a>
         {% endfor %}
@@ -30,15 +50,19 @@
 <table class="tabla_cc">
     <thead>
     <tr>
-        <th colspan="2" rowspan="2"></th>
+        <th colspan="2" rowspan="2" id="nombre_alumno" class="fixed_column"> Nombre del alumno</th>
         {% for cc in ps.competenciaclave_set.all %}
-            <th colspan="{{ cc.descriptoroperativo_set.all|length }}">{{ cc.competencia }}</th>
+            <th colspan="{{ cc.descriptoroperativo_set.all|length }}">{{ cc.competencia }}
+                <span class="tex_cal" id="{{ cc.siglas }}"></span>
+            </th>
         {% endfor %}
     </tr>
     <tr>
         {% for cc in ps.competenciaclave_set.all %}
             {% for do in cc.descriptoroperativo_set.all %}
-                <th>{{ do.clave }}</th>
+                <th>
+                    {{ do.clave }} <span id="{{ do.clave }}" class="{{ cc.siglas }} tex_cal"></span>
+                </th>
             {% endfor %}
         {% endfor %}
     </tr>
@@ -48,11 +72,11 @@
         {% for ce in am.competenciaespecifica_set.all %}
             <tr>
                 {% if forloop.first %}
-                    <td rowspan="{{ am.competenciaespecifica_set.all|length }}">
+                    <td rowspan="{{ am.competenciaespecifica_set.all|length }}" class="fixed_column nombre_materia">
                         <span class="verticalText">{{ am.nombre }}</span>
                     </td>
                 {% endif %}
-                <td title="{{ ce.nombre }}">
+                <td title="{{ ce.nombre }}" class="fixed_column2">
                     CE{{ ce.orden }}
                 </td>
                 {% for cc in ps.competenciaclave_set.all %}
@@ -60,7 +84,8 @@
                         <td>
                             {% if do in ce.dos.all %}
                                 <i class="fa fa-check" style="color: green;"></i>
-                                <span class="do{{ do.id }}" id="do-{{ am.id }}-{{ ce.id }}-{{ do.id }}"></span>
+                                <span class="do{{ do.id }} {{ do.clave }}"
+                                      id="do-{{ am.id }}-{{ ce.id }}-{{ do.id }}"></span>
                             {% else %}
 {#                                <i class="fa fa-times" style="color: red;"></i> -#}
                                 -

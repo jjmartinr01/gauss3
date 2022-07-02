@@ -34,7 +34,7 @@ from programaciones.models import *
 from gauss.rutas import RUTA_BASE, MEDIA_PROGRAMACIONES
 from mensajes.views import crear_aviso
 from mensajes.models import Aviso
-from estudios.models import ETAPAS, Gauser_extra_estudios
+from estudios.models import ETAPAS, Gauser_extra_estudios, PerfilSalida, DescriptorOperativo
 
 locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')
 
@@ -3269,7 +3269,7 @@ def repoescalacp(request):
                         q = q | Q(nombre__icontains=palabra) | Q(observaciones__icontains=palabra)
                     paginator = Paginator(RepoEscalaCP.objects.filter(q).distinct(), 25)
                     recps = paginator.page(1)
-                    html = render_to_string('repoescalacp_accordion.html', {'recps': recps, 'buscar':True})
+                    html = render_to_string('repoescalacp_accordion.html', {'recps': recps, 'buscar': True})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'Debes escribir algo para poder buscar.'})
@@ -3289,7 +3289,7 @@ def repoescalacp(request):
                     paginator = Paginator(RepoEscalaCP.objects.all(), 5)
                     buscar = False
                 recps = paginator.page(request.POST['page'])
-                html = render_to_string('repoescalacp_accordion.html', {'recps': recps, 'buscar':buscar})
+                html = render_to_string('repoescalacp_accordion.html', {'recps': recps, 'buscar': buscar})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
@@ -3372,15 +3372,31 @@ def calificacc(request):
                 ps = am.ps
                 ams = AreaMateria.objects.filter(curso=am.curso)
                 alumnos = Gauser_extra_estudios.objects.filter(grupo=grupo).order_by('ge__gauser__last_name')
-                html = render_to_string('calificacc_tabla.html', {'alumnos': alumnos, 'ps': ps, 'ams': ams})
-                return JsonResponse({'ok': True, 'html': html})
+                html = render_to_string('calificacc_tabla.html', {'alumnos': alumnos, 'ps': ps, 'ams': ams,
+                                                                  'curso': am.curso})
+                return JsonResponse({'ok': True, 'html': html, 'ps': ps.id})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
-        elif action == 'open_accordion':
+        elif action == 'carga_alumnocc':
             try:
-                recp = RepoEscalaCP.objects.get(id=request.POST['id'])
-                html = render_to_string('repoescalacp_accordion_content.html', {'recp': recp, 'g_e': g_e})
-                return JsonResponse({'ok': True, 'html': html})
+                cal_dos = {}
+                alumno = Gauser_extra_estudios.objects.get(id=request.POST['alumno'], ge__ronda=g_e.ronda)
+                ps = PerfilSalida.objects.get(id=request.POST['ps'])
+                cc_siglas = []
+                dos_claves = []
+                for cc in ps.competenciaclave_set.all():
+                    cc_siglas.append(cc.siglas)
+                    for do in DescriptorOperativo.objects.filter(cc=cc):
+                        dos_claves.append(do.clave)
+                cals_alumno = CalAlum.objects.filter(alumno=alumno.ge)
+                for cal_alumno in cals_alumno:
+                    ce = cal_alumno.cie.cevps.cepsec.ce
+                    cal_ce = cal_alumno.cp.calificacion_alumno_ce(alumno.ge, ce)
+                    for do in ce.dos.all():
+                        key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
+                        cal_dos[key] = cal_ce
+                return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
+                                     'nombre_alumno': alumno.ge.gauser.get_full_name()})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'buscar_repositorio':
@@ -3393,14 +3409,15 @@ def calificacc(request):
                         q = q | Q(nombre__icontains=palabra) | Q(observaciones__icontains=palabra)
                     paginator = Paginator(RepoEscalaCP.objects.filter(q).distinct(), 25)
                     recps = paginator.page(1)
-                    html = render_to_string('repoescalacp_accordion.html', {'recps': recps, 'buscar':True})
+                    html = render_to_string('repoescalacp_accordion.html', {'recps': recps, 'buscar': True})
                     return JsonResponse({'ok': True, 'html': html})
                 else:
                     return JsonResponse({'ok': False, 'msg': 'Debes escribir algo para poder buscar.'})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
 
-    grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False).values_list('grupo__id', 'grupo__nombre')
+    grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False).values_list('grupo__id',
+                                                                                               'grupo__nombre')
     return render(request, "calificacc.html",
                   {
                       'formname': 'calificacc',
