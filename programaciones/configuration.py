@@ -95,7 +95,7 @@ MENU_DEFAULT = [
      'href': 'repositorio_sap',
      'nivel': 2,
      'tipo': 'Accesible',
-     'pos': 10,
+     'pos': 11,
      'parent': 'acceso_programaciones_didacticas'
      },
     {'code_menu': 'acceso_repositorio_instrumento',
@@ -103,7 +103,15 @@ MENU_DEFAULT = [
      'href': 'repoescalacp',
      'nivel': 2,
      'tipo': 'Accesible',
-     'pos': 10,
+     'pos': 12,
+     'parent': 'acceso_programaciones_didacticas'
+     },
+    {'code_menu': 'acceso_calificaciones_competencias_clave',
+     'texto_menu': 'Calificaciones CC',
+     'href': 'calificacc',
+     'nivel': 2,
+     'tipo': 'Accesible',
+     'pos': 13,
      'parent': 'acceso_programaciones_didacticas'
      }
 ]
