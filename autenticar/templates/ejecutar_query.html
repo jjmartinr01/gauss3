@@ -10,6 +10,23 @@
         </div>
 
         <div class="row">
+            <div class="columns large-3">
+                <label><b>Sistema Operativo:</b></label><b>{{ platform.system }}</b>
+                <b>{{ platform.release }}</b> <b>{{ platform.linux_distribution }}</b>
+            </div>
+            <div class="columns large-3">
+                <label><b>Versión de Python:</b></label><b>{{ platform.python_version }}</b>
+            </div>
+            <div class="columns large-3">
+                <label><b>Versión de Django:</b></label><b>{{ version_django }}</b>
+            </div>
+            <div class="columns large-3">
+                <label><b>Versión de PostgreSQL:</b></label><b>{{ version_postgre }}</b>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
             <div class="columns large-12">
                 <label>Escribe la query que será ejecutada:
                     <textarea type="text" id="query" name="query">{{ query }}</textarea>

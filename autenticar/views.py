@@ -425,6 +425,9 @@ def ejecutar_query(request):
                 resultado = eval(query)
             except Exception as msg:
                 resultado = msg
+        import django
+        import platform
+        from django.db import connection
         return render(request, "ejecutar_query.html",
                       {
                           'iconos': ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',
@@ -433,6 +436,9 @@ def ejecutar_query(request):
                           'formname': 'queryform',
                           'query': query,
                           'resultado': resultado,
+                          'version_django': django.get_version(),
+                          'version_postgre': connection.cursor().connection.server_version,
+                          'platform': platform,
                           'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                       })
     else:
