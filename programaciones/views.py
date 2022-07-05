@@ -2053,7 +2053,10 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso == 'X' or progsec.gep.ge == g_e:
+                    if permiso == 'C':
+                        msg = 'Hay cuadernos de docentes creados. Primero deberían ser borrados.'
+                        return JsonResponse({'ok': False, 'msg': msg})
+                    elif permiso == 'X' or progsec.gep.ge == g_e:
                         progsec.delete()
                         return JsonResponse({'ok': True})
                     else:
