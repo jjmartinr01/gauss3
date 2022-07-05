@@ -2011,13 +2011,16 @@ def progsecundaria(request):
                             #     progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria,
                             #                                      departamento=dep)
                         except:
-                            try:
-                                ProgSec.objects.get(pga=pga, areamateria=areamateria)
-                                msg = 'Ya existe una programación para %s (%s). No se crea una nueva.' % (
-                                    areamateria.nombre, areamateria.get_curso_display())
-                                return JsonResponse({'ok': False, 'msg': msg})
-                            except:
-                                progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria)
+                            crea_departamentos(g_e.ronda)
+                            progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria)
+                            # try:
+                            #     ProgSec.objects.get(pga=pga, areamateria=areamateria)
+                            #     msg = 'Ya existe una programación para %s (%s). No se crea una nueva.' % (
+                            #         areamateria.nombre, areamateria.get_curso_display())
+                            #     return JsonResponse({'ok': False, 'msg': msg})
+                            # except:
+                            #     crea_departamentos(g_e.ronda)
+                            #     progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria)
                         DocProgSec.objects.get_or_create(psec=progsec, gep=g_ep, permiso='X')
                         for ce in areamateria.competenciaespecifica_set.all():
                             cepsec = CEProgSec.objects.create(psec=progsec, ce=ce)
@@ -2036,9 +2039,9 @@ def progsecundaria(request):
                                                   id=request.POST['id'])
                     docentes_id = DocProgSec.objects.filter(psec=progsec).values_list('gep__ge', flat=True)
                     departamentos = Departamento.objects.filter(ronda=g_e.ronda)
-                    if departamentos.count() == 0:
-                        crea_departamentos(g_e.ronda)
-                        departamentos = Departamento.objects.filter(ronda=g_e.ronda)
+                    # if departamentos.count() == 0:
+                    #     crea_departamentos(g_e.ronda)
+                    #     departamentos = Departamento.objects.filter(ronda=g_e.ronda)
                     html = render_to_string('progsec_accordion_content.html',
                                             {'progsec': progsec, 'gep': g_ep, 'departamentos': departamentos,
                                              'docentes': profesorado(g_e.ronda.entidad), 'docentes_id': docentes_id})
@@ -2050,7 +2053,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso == 'X':
+                    if permiso == 'X' or progsec.gep.ge == g_e:
                         progsec.delete()
                         return JsonResponse({'ok': True})
                     else:
