@@ -125,7 +125,8 @@ def cupo(request):
 
     cupos_id = CupoPermisos.objects.filter(gauser=g_e.gauser).values_list('cupo__id', flat=True)
     f = datetime.datetime(2021, 1, 1)
-    cupos = Cupo.objects.filter(Q(creado__gt=f), Q(ronda__entidad=g_e.ronda.entidad) | Q(id__in=cupos_id)).distinct()
+    # cupos = Cupo.objects.filter(Q(creado__gt=f), Q(ronda__entidad=g_e.ronda.entidad) | Q(id__in=cupos_id)).distinct()
+    cupos = Cupo.objects.filter(Q(creado__gt=f), Q(id__in=cupos_id)).distinct()
     plantillas_o = PlantillaOrganica.objects.filter(Q(g_e=g_e) | Q(ronda_centro=g_e.ronda))
     cursos_existentes = Curso.objects.filter(ronda__entidad__organization=g_e.ronda.entidad.organization,
                                              clave_ex__isnull=False).values_list('clave_ex', 'nombre').distinct()
@@ -225,7 +226,8 @@ def ajax_cupo(request):
                 centros_primaria = ['C.E.E. - Centro de Educación Especial',
                                     'C.R.A. - Colegio Rural Agrupado',
                                     'C.E.I.P. - Colegio de Educación Infantil y Primaria']
-                po = PlantillaOrganica.objects.get(id=request.POST['po'], ronda_centro=g_e.ronda)
+                condiciones = Q(id=request.POST['po']) & (Q(g_e=g_e) | Q(ronda_centro=g_e.ronda))
+                po = PlantillaOrganica.objects.get(condiciones)
                 po.habilitar_miembros_equipo_directivo()
                 # if 'I.E.S' in po.ronda_centro.entidad.entidadextra.tipo_centro:
                 #     J = {'cmax': 20, 'cmin': 18, 'mmax': 10, 'mmin': 9, 'dmax': 13, 'dmin': 12, 'umax': 7, 'umin': 6}

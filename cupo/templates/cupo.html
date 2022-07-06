@@ -536,7 +536,9 @@
                     } else {
                         $("#update_error").show().delay(1500).fadeOut();
                     }
-                    show_avisos();
+                    setTimeout(function (){
+                        show_avisos();
+                    }, 200);
                 });
             });
         {% endif %}
