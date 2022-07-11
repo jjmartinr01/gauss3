@@ -703,6 +703,8 @@ class ProgSec(models.Model):
     def get_permiso(self, gep):
         if self.cuadernoprof_set.all().count() > 0:
             return 'C'
+        if gep == self.gep:
+            return 'X'
         try:
             permiso = self.docprogsec_set.get(gep=gep).permiso
         except:
