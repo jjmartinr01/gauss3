@@ -2053,7 +2053,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso == 'C':
+                    if 'C' in permiso:
                         msg = 'Hay cuadernos de docentes creados. Primero deberían ser borrados.'
                         return JsonResponse({'ok': False, 'msg': msg})
                     elif permiso == 'X' or progsec.gep.ge == g_e:
@@ -2122,7 +2122,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         if '_clases' in request.POST['campo']:  # inicio_clases o fin_clases
                             texto = datetime.strptime(request.POST['texto'], '%Y-%m-%d')
                         else:
@@ -2139,7 +2139,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         if request.POST['tipo'] == 'DEF':
                             definitivas = ProgSec.objects.filter(tipo='DEF', pga=pga, areamateria=progsec.areamateria)
                             for d in definitivas:
@@ -2157,7 +2157,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         departamento = Departamento.objects.get(id=request.POST['departamento'], ronda=g_e.ronda)
                         g_ep.departamento = departamento
                         g_ep.save()
@@ -2173,7 +2173,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         ge = Gauser_extra.objects.get(ronda=g_e.ronda, id=request.POST['jefe'])
                         departamento = progsec.departamento
                         geps = departamento.gauser_extra_programaciones_set.all()
@@ -2206,7 +2206,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         cdocentes = Cargo.objects.filter(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
                         DocProgSec.objects.filter(psec=progsec, gep__jefe=False, gep__ge__cargos__in=cdocentes).delete()
                         ges = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=request.POST.getlist('ges[]'))
@@ -2227,7 +2227,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         cep = CEProgSec.objects.get(psec=progsec, id=request.POST['cep'])
                         cep.valor = int(request.POST['cep_peso'])
                         cep.save()
@@ -2241,7 +2241,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         cevp = CEvProgSec.objects.get(cepsec__psec=progsec, id=request.POST['cevp'])
                         cevp.valor = int(request.POST['cevp_peso'])
                         cevp.save()
@@ -2256,7 +2256,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         nombre = request.POST['nombre']
                         isbn = request.POST['isbn']
                         observaciones = request.POST['observaciones']
@@ -2273,7 +2273,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         libro = LibroRecurso.objects.get(psec=progsec, id=request.POST['libro'])
                         libro_id = libro.id
                         libro.delete()
@@ -2287,7 +2287,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         nombre = request.POST['nombre']
                         inicio = datetime.strptime(request.POST['inicio'], '%Y-%m-%d')
                         fin = datetime.strptime(request.POST['fin'], '%Y-%m-%d')
@@ -2305,7 +2305,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         actex = ActExCom.objects.get(psec=progsec, id=request.POST['actex'])
                         actex_id = actex.id
                         actex.delete()
@@ -2319,7 +2319,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         saber = SaberBas.objects.create(psec=progsec)
                         html = reordenar_saberes_comienzo(saber.psec)
                         # html = render_to_string('progsec_accordion_content_saberes_tr.html', {'saber': saber})
@@ -2334,7 +2334,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         html = None
                         saber = progsec.saberbas_set.get(id=request.POST['saber'])
                         campo = request.POST['campo']
@@ -2365,7 +2365,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         html = reordenar_saberes_comienzo(progsec)
                         return JsonResponse({'ok': True, 'html': html})
                     else:
@@ -2377,7 +2377,7 @@ def progsecundaria(request):
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
                                                   id=request.POST['id'])
                     permiso = progsec.get_permiso(g_ep)
-                    if permiso in 'EX':
+                    if 'E' in permiso or 'X' in permiso:
                         saber = progsec.saberbas_set.get(id=request.POST['saber'])
                         psec = saber.psec
                         # saber_id = saber.id
@@ -2471,7 +2471,7 @@ def progsecundaria_sb(request, id):
     pga = PGA.objects.get(ronda=g_e.ronda)
     sb = SaberBas.objects.get(psec__pga=pga, id=id)
     permiso = sb.psec.get_permiso(g_ep)
-    if permiso not in 'LEX':
+    if not ('L' in permiso or 'E' in permiso or 'E' in permiso):
         return HttpResponse('Sin permiso')
 
     if request.method == 'POST' and request.is_ajax():

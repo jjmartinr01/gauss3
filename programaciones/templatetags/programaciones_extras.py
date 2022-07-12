@@ -115,7 +115,7 @@ def get_global_cal_asignatura(cuaderno_asignatura, alumno):
 @register.filter
 def puede_borrar(psec, g_e):
     try:
-        return psec.get_permiso(g_e.gauser_extra_programaciones) == 'X'
+        return 'X' in psec.get_permiso(g_e.gauser_extra_programaciones)
     except:
         return False
 

@@ -701,15 +701,16 @@ class ProgSec(models.Model):
     #     return self.saberbas_set.aggregate(models.Max('comienzo'))['comienzo__max']
 
     def get_permiso(self, gep):
+        permiso = ''
         if self.cuadernoprof_set.all().count() > 0:
-            return 'C'
+            permiso += 'C'
         if gep == self.gep:
-            return 'X'
+            permiso += 'LEX'
         try:
-            permiso = self.docprogsec_set.get(gep=gep).permiso
+            permiso += self.docprogsec_set.get(gep=gep).permiso
         except:
             if gep.ge.has_permiso('ve_todas_programaciones'):
-                permiso = 'L'
+                permiso += 'L'
             else:
                 permiso = 'No tiene permiso'
         return permiso
