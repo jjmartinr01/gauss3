@@ -145,6 +145,10 @@
             e.preventDefault();
             window.location.href = '/cupo/';
         });
+        setTimeout(function (){
+            $(document).foundation();
+        }, 1000);
+
         cupo_id = {{ cupo.id }};
         especialidad_id = 0;
         $('#curso').on('change', function (e) {
