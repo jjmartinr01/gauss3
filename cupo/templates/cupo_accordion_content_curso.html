@@ -1,7 +1,33 @@
-
 <div id="label_curso{{ c.id }}" class="label secondary">
-        <div contenteditable="true" style="display: inline-block;font-weight: bold;"
-             class="texto_nombre_curso" id="texto_nombre_curso{{ c.id }}" data-curso="{{ c.id }}">{{ c.nombre }}</div>
-        <div style="display: inline-block; font-weight: bold;"><a class="select_del_curso" data-cupo="{{ c.cupo.id }}"
-       data-curso="{{ c.id }}"><i class="fa fa-times"></i> </a></div>
+    <div style="display: inline-block;font-weight: bold;"
+         id="texto_nombre_curso{{ c.id }}" data-curso="{{ c.id }}">
+        {{ c.nombre }}
+    </div>
+    <div style="display: inline-block; font-weight: bold;">
+        <a data-cupo="{{ c.cupo.id }}" data-curso="{{ c.id }}"
+           data-dropdown="drop{{ c.id }}" aria-controls="drop{{ c.id }}" aria-expanded="false">
+            <i class="fa fa-gears"></i>
+        </a>
+    </div>
+</div>
+
+<div id="drop{{ c.id }}" data-dropdown-content class="f-dropdown content medium" aria-hidden="true"
+     tabindex="-1" aria-autoclose="false">
+    <label>Cambia el nombre:
+        <input type="text" data-curso="{{ c.id }}" class="change_nombre_curso" value="{{ c.nombre }}">
+    </label>
+    <label>Cambia la etapa:
+        <select class="change_etapa_curso" data-curso="{{ c.id }}">
+            {% for etapa in c.cupo.etapaescolarcupo_set.all %}
+                <option value="{{ etapa.id }}"
+                        {% if c.etapa_escolar == etapa %}selected{% endif %}>{{ etapa.nombre }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <a data-curso="{{ c.id }}" class="select_copy_curso button">
+        <i class="fa fa-copy fa-fw"></i> <b>Duplicar</b>
+    </a>
+    <a data-curso="{{ c.id }}" class="select_del_curso button alert right">
+        <i class="fa fa-trash-o fa-fw"></i> <b>Borrar</b>
+    </a>
 </div>
