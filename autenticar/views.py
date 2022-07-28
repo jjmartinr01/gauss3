@@ -450,7 +450,10 @@ def ejecutar_query(request):
 
 @LogGauss
 def index(request):
-    url_destino = '/calendario/'  # Esta será la url a la que el sistema vaya por defecto
+    if 'nexturl' in request.GET:
+        url_destino = request.GET['nexturl']
+    else:
+        url_destino = '/calendario/'  # Esta será la url a la que el sistema vaya por defecto
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[-1].strip()

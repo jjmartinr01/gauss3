@@ -876,7 +876,12 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
     try:
         g_e = request.session["gauser_extra"]
     except:
-        return redirect('/logincas/?nexturl=/rellena_gform/' + '/'.join([str(id), identificador, gfr_identificador]))
+        full_path = request.get_full_path()
+        if 'larioja.org' in full_path:
+            return redirect('/logincas/?nexturl=/rellena_gform/' + '/'.join([str(id), identificador, gfr_identificador]))
+        else:
+            return redirect(
+                '/?nexturl=/rellena_gform/' + '/'.join([str(id), identificador, gfr_identificador]))
     if not gform.accesible:
         sleep(3)
         return render(request, "gform_no_existe.html", {'error': 'gform no accesible'})
@@ -896,7 +901,13 @@ def rellena_gform(request, id, identificador, gfr_identificador=''):
             gformresponde = GformResponde.objects.filter(gform=gform, g_e=g_e, respondido=False,
                                                          identificador=request.session['gformresponde'])[0]
         except:
-            gformresponde = GformResponde.objects.create(gform=gform, g_e=g_e)
+            gform_entidad = gform.propietario.ronda.entidad
+            con1 = gform.destinatarios == 'ENT' and g_e.ronda.entidad == gform_entidad
+            con2 = gform.destinatarios == 'ORG' and g_e.ronda.entidad.organization == gform_entidad.organization
+            if con1 or con2:
+                gformresponde = GformResponde.objects.create(gform=gform, g_e=g_e)
+            else:
+                return render(request, "gform_no_existe.html", {'error': 'No destinatario del gform'})
             request.session['gformresponde'] = gformresponde.identificador
     else:
         try:
