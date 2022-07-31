@@ -21,3 +21,4 @@ lib64*
 lib/*
 pyvenv.cfg
 share/*
+!requirements.txt
