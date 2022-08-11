@@ -876,7 +876,7 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
             gauser_entidad = Gauser.objects.get(username=entidad.code)
         except Exception as msg:
             email = 'inventado@%s.com' % entidad.code
-            gauser_entidad = Gauser.objects.create_user(entidad.code, email, entidad.code, last_login=now())
+            gauser_entidad = Gauser.objects.create_user(entidad.code, email, str(entidad.code), last_login=now())
             Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros4: %s' % str(msg), fecha=now())
         try:
             Gauser_extra.objects.get(gauser=gauser_entidad, ronda=entidad.ronda)

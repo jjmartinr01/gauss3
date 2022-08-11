@@ -123,36 +123,36 @@ class Compartir_Ges_documental(models.Model):
 ##############################        NORMATIVA       #############################
 ###################################################################################
 
-# class NormativaEtiqueta(models.Model):
-#     creador = models.ForeignKey(GE, on_delete=models.CASCADE)
-#     nombre = models.CharField("Carpeta/Etiqueta", max_length=300)
-#     log = models.TextField('Log de acciones sobre este objeto', default='', blank=True)
-#     creado = models.DateField("Fecha de creación", auto_now_add=True)
-#
-#
-# class Normativa(models.Model):
-#     creador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
-#     etiquetas = models.ManyToManyField(NormativaEtiqueta, blank=True)
-#     nombre = models.CharField("Nombre del documento", max_length=240)
-#     url = models.URLField('URL de la normativa', blank=True, null=True)
-#     fecha_pub = models.DateField('Fecha de publicación')
-#     derogada = models.BooleanField('¿Está derogada', default=False)
-#     texto = models.TextField("Texto del documento o resumen", blank=True, null=True)
-#     fichero = models.FileField("Fichero con documento", upload_to=update_fichero_documental, blank=True, null=True)
-#     fich_name = models.CharField("Nombre del fichero", max_length=100, blank=True, null=True)
-#     content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
-#     borrado = models.BooleanField("Archivo borrado?", default=False)
-#     log = models.TextField('Log de acciones sobre este objeto', default='', blank=True)
-#     creado = models.DateField("Fecha de creación", auto_now_add=True)
-#
-#
-#     class Meta:
-#         ordering = ['-creado']
-#         verbose_name_plural = "Normativa y legislación"
-#
-#     def __str__(self):
-#         return '%s (%s) - Borrado: %s' % (self.nombre, self.creado, self.borrado)
-#
+class NormativaEtiqueta(models.Model):
+    creador = models.ForeignKey(GE, on_delete=models.CASCADE)
+    nombre = models.CharField("Carpeta/Etiqueta", max_length=300)
+    log = models.TextField('Log de acciones sobre este objeto', default='', blank=True)
+    creado = models.DateField("Fecha de creación", auto_now_add=True)
+
+
+class Normativa(models.Model):
+    creador = models.ForeignKey(GE, on_delete=models.SET_NULL, blank=True, null=True)
+    etiquetas = models.ManyToManyField(NormativaEtiqueta, blank=True)
+    nombre = models.CharField("Nombre del documento", max_length=240)
+    url = models.URLField('URL de la normativa', blank=True, null=True)
+    fecha_pub = models.DateField('Fecha de publicación')
+    derogada = models.BooleanField('¿Está derogada', default=False)
+    texto = models.TextField("Texto del documento o resumen", blank=True, null=True)
+    fichero = models.FileField("Fichero con documento", upload_to=update_fichero_documental, blank=True, null=True)
+    fich_name = models.CharField("Nombre del fichero", max_length=100, blank=True, null=True)
+    content_type = models.CharField("Tipo de archivo", max_length=200, blank=True, null=True)
+    borrado = models.BooleanField("Archivo borrado?", default=False)
+    log = models.TextField('Log de acciones sobre este objeto', default='', blank=True)
+    creado = models.DateField("Fecha de creación", auto_now_add=True)
+
+
+    class Meta:
+        ordering = ['-creado']
+        verbose_name_plural = "Normativa y legislación"
+
+    def __str__(self):
+        return '%s (%s) - Borrado: %s' % (self.nombre, self.creado, self.borrado)
+
 
 
 ###################################################################################

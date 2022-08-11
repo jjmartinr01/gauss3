@@ -1068,9 +1068,13 @@ def carga_masiva_inspeccion(request):
             CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_centros_racima'],
                                        tipo='CENTROSRACIMA', g_e=g_e)
             crear_aviso(request, True, 'cm_ins2')
-            carga_masiva_from_excel.apply_async(expires=300)
-            crear_aviso(request, True, 'cm_ins3')
-            crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+            try:
+                carga_masiva_from_excel.apply_async(expires=300)
+                crear_aviso(request, True, 'cm_ins3')
+                crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+            except:
+                crear_aviso(request, False, 'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
+
         elif action == 'carga_masiva_xls_mdb':
             from inspeccion_educativa.models import INSPECTORES_GAUSER
             logger.info('Carga de archivo de tipo: ' + request.FILES['file_xls_mdb'].content_type)

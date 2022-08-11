@@ -20,7 +20,7 @@ from entidades.models import Gauser_extra
 from mensajes.views import encolar_mensaje
 from vut.models import RegistroPolicia, Viajero, Autorizado
 from gtelegram.views import envia_telegram, envia_telegram_gausers
-from vut.seleniumPN import RegistraViajeroPN
+# from vut.seleniumPN import RegistraViajeroPN
 
 logger = logging.getLogger('django')
 

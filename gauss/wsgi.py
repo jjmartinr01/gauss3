@@ -9,6 +9,10 @@ https://docs.djangoproject.com/en/1.9/howto/deployment/wsgi/
 
 import sys
 import site
+import os
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gauss.settings")
+os.environ["DJANGO_SETTINGS_MODULE"] = "gauss.settings"
+
 try:
     from gauss.settings import RUTA_PYTHON_HOME
 except:
@@ -36,10 +40,6 @@ path = '/home/gauss/django/gauss3'
 if path not in sys.path:
     sys.path.append(path)
 
-import os
+
 from django.core.wsgi import get_wsgi_application
-
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gauss.settings")
-os.environ["DJANGO_SETTINGS_MODULE"] = "gauss.settings"
-
 application = get_wsgi_application()
