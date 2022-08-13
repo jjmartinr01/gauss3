@@ -906,6 +906,7 @@ def update_fichero_carga_masiva(instance, filename):
     return os.path.join("carga_masiva/", nombre)
 
 
+
 class CargaMasiva(models.Model):
     TIPOS = (('EXCEL', 'Usuarios cargados desde Racima'),
              ('PENDIENTES', 'Alumnos con materias pendientes cargados desde Racima'),
@@ -930,10 +931,22 @@ class CargaMasiva(models.Model):
 
     def __str__(self):
         if self.ronda:
-            return '%s -- Cargado: %s' % (self.ronda, self.cargado)
+            return 'Cargado: %s -- %s -> %s' % (self.cargado, self.creado, self.g_e)
         else:
-            return '%s -- Cargado: %s' % (self.g_e.ronda, self.cargado)
+            return 'Cargado: %s (%s -> %s)' % (self.cargado, self.creado, self.g_e)
 
+
+@receiver(post_save, sender=CargaMasiva, dispatch_uid="borra_cargas_masivas_antiguas")
+def borra_cargas_masivas_antiguas(sender, instance, **kwargs):
+    fecha_limite = date.today() - timedelta(90)
+    cargas_antiguas = CargaMasiva.objects.filter(creado__lt=fecha_limite)
+    for c in cargas_antiguas:
+        try:
+            os.remove(RUTA_BASE + c.fichero.url)
+            c.delete()
+        except:
+            instance.log = 'Error al borrar: %s' % c
+            instance.save()
 
 # n='cosa'
 # m='valor de la cosa'
