@@ -922,6 +922,7 @@ class CargaMasiva(models.Model):
     cargado = models.BooleanField("¿Se ha cargado el archivo?", default=False)
     error = models.BooleanField("¿Se ha producido un error en la carga del archivo archivo?", default=False)
     creado = models.DateField('Fecha de creación', auto_now_add=True, blank=True, null=True)
+    log = models.TextField("Log de los incidentes durante la carga", blank=True, null=True, default='')
 
     class Meta:
         verbose_name_plural = "Cargas Masivas"

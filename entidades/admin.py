@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django import forms
 from django.contrib import admin
 from entidades.models import *
 
@@ -24,6 +25,12 @@ class DependenciaAdmin(admin.ModelAdmin):
 class Menu_Admin(admin.ModelAdmin):
     list_filter = ['entidad']
 
+class CargaMasivaAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['g_e'].queryset = Gauser_extra.objects.filter(ronda=self.instance.g_e.ronda)
+class CargaMasivaAdmin(admin.ModelAdmin):
+    form = CargaMasivaAdminForm
 
 admin.site.register(Organization)
 admin.site.register(Entidad)
@@ -39,7 +46,7 @@ admin.site.register(ConfiguraReservaPlaza)
 admin.site.register(Reserva_plaza)
 admin.site.register(ConfigurationUpdate)
 admin.site.register(Entidad_auto_id)
-admin.site.register(CargaMasiva)
+admin.site.register(CargaMasiva, CargaMasivaAdmin)
 admin.site.register(EnlaceGE)
 admin.site.register(EntidadExtra)
 admin.site.register(EntidadExtraExpediente)
