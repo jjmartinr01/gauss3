@@ -721,12 +721,16 @@ class PlantillaOrganica(models.Model):
                     Menu.objects.create(entidad=self.ronda_centro.entidad, menu_default=md, texto_menu=menu[1],
                                         pos=menu[2])
         permisos = Permiso.objects.filter(code_nombre__in=Miembro_Equipo_Directivo)
+        #La siguiente línea es para eliminar los posibles cargos que se crearon con esa clave anteriormente y
+        # que ya no tienen razón de ser:
+        Cargo.objects.filter(entidad=self.ronda_centro.entidad, clave_cargo='202006011113').delete()
         try:
-            miembro_equipo_directivo = Cargo.objects.get(entidad=self.ronda_centro.entidad, clave_cargo='202006011113')
+            miembro_equipo_directivo = Cargo.objects.get(entidad=self.ronda_centro.entidad,
+                                                         clave_cargo='g_miembro_equipo_directivo')
         except:
             miembro_equipo_directivo = Cargo.objects.create(entidad=self.ronda_centro.entidad, borrable=False,
                                                             cargo='Miembro del Equipo Directivo',
-                                                            nivel=1, clave_cargo='202006011113')
+                                                            clave_cargo='g_miembro_equipo_directivo')
             miembro_equipo_directivo.permisos.add(*permisos)
         for pxls in self.plantillaxls_set.filter(x_actividad__in=['529', '530', '532']):
             try:

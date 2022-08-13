@@ -5,6 +5,10 @@
         <span id="span_cargo{{ cargo.id }}">{{ cargo.cargo }}</span> <span
             id="span_nivel{{ cargo.id }}"
             style="color: #a3a3a3">{{ cargo.get_nivel_display }}</span>
+        {% if not cargo.borrable %}
+        <span class="right" style="color:lightcoral;"
+        title="Creado automáticamente. Edición limitada a ciertos campos."><i class="fa fa-ban"></i></span>
+        {% endif %}
     </a>
 
     <div id="panel{{ cargo.id }}" class="content accordion-cargo" data-id="{{ cargo.id }}">

@@ -13,13 +13,12 @@ from django.utils.encoding import smart_text
 from estudios.models import Grupo, Gauser_extra_estudios, Materia, Matricula, Curso
 from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva, Entidad, EntidadExtra, \
     EntidadExtraExpediente, EntidadExtraExpedienteOferta, Ronda, Menu, GE_extra_field
-from entidades.menus_entidades import Menus_Centro_Educativo
+from entidades.menus_entidades import Menus_Centro_Educativo, TiposCentro
 from autenticar.models import Gauser, Permiso, Menu_default
-from gauss.constantes import PROVINCIAS, CODE_CONTENEDOR
+from gauss.constantes import PROVINCIAS, CODE_CONTENEDOR, CARGOS_CENTROS
 from bancos.views import asocia_banco_ge
 from mensajes.models import Aviso
 from gauss.funciones import pass_generator, genera_nie
-from gauss.constantes import CARGOS
 from django.http import HttpResponse, JsonResponse
 
 logger = logging.getLogger('django')
@@ -767,20 +766,15 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
     f = carga.fichero.read()
     book = xlrd.open_workbook(file_contents=f)
     sheet = book.sheet_by_index(0)
-
-    # Copiar los permisos que tiene el director del Ciudad de Haro
-    try:
-        permisos_director = Cargo.objects.get(entidad__code=26008475, cargo__icontains='Director').permisos.all()
-    except Exception as msg:
-        permisos_director = Permiso.objects.none()
-        Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros1: %s' % str(msg), fecha=now())
     # Get the keys from line 5 of excel file:
     dict_names = {}
     for col_index in range(sheet.ncols):
         dict_names[sheet.cell(4, col_index).value] = col_index
+    entidades_creadas = []
     for row_index in range(5, sheet.nrows):
         code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
         entidad, created = Entidad.objects.get_or_create(code=code_entidad)
+        # print(entidad)
         if created:
             entidad.name = sheet.cell(row_index, dict_names['Centro']).value
             entidad.organization = carga.g_e.ronda.entidad.organization
@@ -792,97 +786,97 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
             entidad.fax = sheet.cell(row_index, dict_names['FAX']).value
             entidad.mail = sheet.cell(row_index, dict_names['Correo-e']).value
             entidad.save()
-            cargo_director = Cargo.objects.create(entidad=entidad, cargo='Director/a', nivel=1)
-            cargo_director.permisos.add(*permisos_director)
-            Cargo.objects.create(entidad=entidad, cargo='Jefe/a de Estudios', nivel=2)
-            Cargo.objects.create(entidad=entidad, cargo='Profesor/a', nivel=3)
-            Cargo.objects.create(entidad=entidad, cargo='Maestro/a', nivel=3)
-            Cargo.objects.create(entidad=entidad, cargo='Alumno/a')
-            Cargo.objects.create(entidad=entidad, cargo='Madre/Padre')
-        if entidad.ronda:  # Capturamos los g_es con perfiles de dirección
-            q = Q(cargo__icontains='director') | Q(cargo__icontains='estudios') | Q(cargo__icontains='secretar')
-            cargos = Cargo.objects.filter(q, Q(entidad=entidad))
-            g_es = Gauser_extra.objects.filter(ronda=entidad.ronda, cargos__in=cargos, activo=True)
-        else:
-            g_es = Gauser_extra.objects.none()
-        if not entidad.ronda or entidad.ronda.fin < datetime.today().date():
-            y1, y2 = datetime.today().year, datetime.today().year + 1
-            inicio = datetime.strptime("1/9/%s" % y1, "%d/%m/%Y")
-            fin = datetime.strptime("31/8/%s" % y2, "%d/%m/%Y")
-            ronda = Ronda.objects.create(nombre="%s/%s" % (y1, y2), entidad=entidad, inicio=inicio, fin=fin)
-            entidad.ronda = ronda
-            entidad.save()
-            # Cargamos los usuarios capturados antes en la nueva ronda:
-            for g__e in g_es:
-                try:
-                    Gauser_extra.objects.get(gauser=g__e.gauser, ronda=ronda)
-                except:
-                    new_user = Gauser_extra.objects.create(gauser=g__e.gauser,
-                                                           ronda=ronda,
-                                                           id_entidad=g__e.id_entidad,
-                                                           id_organizacion=g__e.id_organizacion,
-                                                           alias=g__e.alias, activo=True,
-                                                           observaciones=g__e.observaciones,
-                                                           foto=g__e.foto,
-                                                           tutor1=None, tutor2=None,
-                                                           ocupacion=g__e.ocupacion,
-                                                           num_cuenta_bancaria=g__e.num_cuenta_bancaria)
-                    new_user.subentidades.add(*g__e.subentidades.all())
-                    new_user.subsubentidades.add(*g__e.subsubentidades.all())
-                    new_user.cargos.add(*g__e.cargos.all())
-                    new_user.permisos.add(*g__e.permisos.all())
+        if entidad not in entidades_creadas:
+            # print('No creada:', entidad)
+            Cargo.objects.filter(entidad=entidad, borrable=True).delete()
+            mensaje = ejecutar_configurar_cargos_permisos_entidad(entidad)
+            entidades_creadas.append(entidad)
+            print(mensaje)
+            if entidad.ronda:  # Capturamos los g_es con perfiles de dirección
+                q = Q(cargo__icontains='director') | Q(cargo__icontains='estudios') | Q(cargo__icontains='secretar')
+                cargos = Cargo.objects.filter(q, Q(entidad=entidad))
+                g_es = Gauser_extra.objects.filter(ronda=entidad.ronda, cargos__in=cargos, activo=True)
+            else:
+                g_es = Gauser_extra.objects.none()
+            if not entidad.ronda or entidad.ronda.fin < datetime.today().date():
+                y1, y2 = datetime.today().year, datetime.today().year + 1
+                inicio = datetime.strptime("1/9/%s" % y1, "%d/%m/%Y")
+                fin = datetime.strptime("31/8/%s" % y2, "%d/%m/%Y")
+                ronda = Ronda.objects.create(nombre="%s/%s" % (y1, y2), entidad=entidad, inicio=inicio, fin=fin)
+                entidad.ronda = ronda
+                entidad.save()
+                # Cargamos los usuarios capturados antes en la nueva ronda:
+                for g__e in g_es:
+                    try:
+                        Gauser_extra.objects.get(gauser=g__e.gauser, ronda=ronda)
+                    except:
+                        new_user = Gauser_extra.objects.create(gauser=g__e.gauser,
+                                                               ronda=ronda,
+                                                               id_entidad=g__e.id_entidad,
+                                                               id_organizacion=g__e.id_organizacion,
+                                                               alias=g__e.alias, activo=True,
+                                                               observaciones=g__e.observaciones,
+                                                               foto=g__e.foto,
+                                                               tutor1=None, tutor2=None,
+                                                               ocupacion=g__e.ocupacion,
+                                                               num_cuenta_bancaria=g__e.num_cuenta_bancaria)
+                        new_user.subentidades.add(*g__e.subentidades.all())
+                        new_user.subsubentidades.add(*g__e.subsubentidades.all())
+                        new_user.cargos.add(*g__e.cargos.all())
+                        new_user.permisos.add(*g__e.permisos.all())
 
-        # Menus:
-        for m in Menus_Centro_Educativo:
+            # Menus:
+            for m in Menus_Centro_Educativo:
+                try:
+                    md = Menu_default.objects.get(code_menu=m[0])
+                    try:
+                        Menu.objects.get(entidad=entidad, menu_default=md)
+                    except:
+                        Menu.objects.create(entidad=entidad, menu_default=md, texto_menu=m[1], pos=m[2])
+                except Exception as msg:
+                    Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros2: %s' % str(msg), fecha=now())
+            ee, created = EntidadExtra.objects.get_or_create(entidad=entidad)
+            ee.titularidad = sheet.cell(row_index, dict_names['Titularidad']).value
+            ee.tipo_centro = sheet.cell(row_index, dict_names['Tipo centro']).value
             try:
-                md = Menu_default.objects.get(code_menu=m[0])
-                try:
-                    Menu.objects.get(entidad=entidad, menu_default=md)
-                except:
-                    Menu.objects.create(entidad=entidad, menu_default=md, texto_menu=m[1], pos=m[2])
+                code_entidad_padre = int(sheet.cell(row_index, dict_names['IES del que depende']).value)
+                ee.depende_de = Entidad.objects.get(code=code_entidad_padre)
             except Exception as msg:
-                Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros2: %s' % str(msg), fecha=now())
-        ee, created = EntidadExtra.objects.get_or_create(entidad=entidad)
-        ee.titularidad = sheet.cell(row_index, dict_names['Titularidad']).value
-        ee.tipo_centro = sheet.cell(row_index, dict_names['Tipo centro']).value
-        try:
-            code_entidad_padre = int(sheet.cell(row_index, dict_names['IES del que depende']).value)
-            ee.depende_de = Entidad.objects.get(code=code_entidad_padre)
-        except Exception as msg:
-            ee.depende_de = None
-        if 'S' in sheet.cell(row_index, dict_names['Servicio comedor']).value:
-            ee.comedor = True
-        else:
-            ee.comedor = False
-        if 'S' in sheet.cell(row_index, dict_names['Transporte escolar']).value:
-            ee.transporte = True
-        else:
-            ee.transporte = False
-        ee.director = sheet.cell(row_index, dict_names['Dirección']).value
-        ee.save()
-        expediente = sheet.cell(row_index, dict_names['Expediente']).value
-        eee, created = EntidadExtraExpediente.objects.get_or_create(eextra=ee, expediente=expediente)
-        oferta = sheet.cell(row_index, dict_names['Oferta']).value
-        EntidadExtraExpedienteOferta.objects.get_or_create(eeexpediente=eee, oferta=oferta)
+                ee.depende_de = None
+            if 'S' in sheet.cell(row_index, dict_names['Servicio comedor']).value:
+                ee.comedor = True
+            else:
+                ee.comedor = False
+            if 'S' in sheet.cell(row_index, dict_names['Transporte escolar']).value:
+                ee.transporte = True
+            else:
+                ee.transporte = False
+            ee.director = sheet.cell(row_index, dict_names['Dirección']).value
+            ee.save()
+            expediente = sheet.cell(row_index, dict_names['Expediente']).value
+            eee, created = EntidadExtraExpediente.objects.get_or_create(eextra=ee, expediente=expediente)
+            oferta = sheet.cell(row_index, dict_names['Oferta']).value
+            EntidadExtraExpedienteOferta.objects.get_or_create(eeexpediente=eee, oferta=oferta)
 
-        # Crear usuario gauss para la entidad
-        ge, c = Gauser_extra.objects.get_or_create(gauser=gauss, ronda=entidad.ronda, activo=True)
-        if c:
-            permisos = Permiso.objects.all()
-            ge.permisos.add(*permisos)
-        # Crear el usuario entidad:
-        # Código para crear usuario con todos los permisos disponibles a través de los cargos:
-        try:
-            gauser_entidad = Gauser.objects.get(username=entidad.code)
-        except Exception as msg:
-            email = 'inventado@%s.com' % entidad.code
-            gauser_entidad = Gauser.objects.create_user(entidad.code, email, str(entidad.code), last_login=now())
-            Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros4: %s' % str(msg), fecha=now())
-        try:
-            Gauser_extra.objects.get(gauser=gauser_entidad, ronda=entidad.ronda)
-        except Exception as msg:
-            g_e_entidad = Gauser_extra.objects.create(gauser=gauser_entidad, ronda=entidad.ronda, activo=True)
-            g_e_entidad.permisos.add(*permisos_director)
+            # Crear usuario gauss para la entidad
+            ge, c = Gauser_extra.objects.get_or_create(gauser=gauss, ronda=entidad.ronda, activo=True)
+            if c:
+                permisos = Permiso.objects.all()
+                ge.permisos.add(*permisos)
+            # Crear el usuario entidad:
+            # Código para crear usuario con todos los permisos disponibles a través de los cargos:
+            try:
+                gauser_entidad = Gauser.objects.get(username=entidad.code)
+            except Exception as msg:
+                email = 'inventado@%s.com' % entidad.code
+                gauser_entidad = Gauser.objects.create_user(entidad.code, email, str(entidad.code), last_login=now())
+                Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros4: %s' % str(msg), fecha=now())
+            try:
+                Gauser_extra.objects.get(gauser=gauser_entidad, ronda=entidad.ronda)
+            except Exception as msg:
+                g_e_entidad = Gauser_extra.objects.create(gauser=gauser_entidad, ronda=entidad.ronda, activo=True)
+                cargo_director = Cargo.objects.get(entidad=entidad, clave_cargo='g_director_centro')
+                g_e_entidad.permisos.add(*cargo_director.permisos.all())
 
 
 def carga_masiva_tipo_DOCENTES_RACIMA(carga):
@@ -986,38 +980,42 @@ def carga_masiva_from_excel():
 # DEFINICIÓN DE FUNCIONES ACTUALIZAR MENUS Y PERMISOS EN ENTIDADES Y CARGOS
 # --------------------------------------------------------------------------#
 
+def ejecutar_configurar_cargos_permisos_entidad(e):
+    # e: class Entidad
+    mensaje = ''
+    try:
+        if e.entidadextra.tipo_centro in TiposCentro:
+            for c in CARGOS_CENTROS:
+                cargo, creado = Cargo.objects.get_or_create(entidad=e, borrable=False, clave_cargo=c['clave_cargo'])
+                cargo.cargo = c['cargo']
+                cargo.nivel = c['nivel']
+                cargo.save()
+                cargo.permisos.clear()
+                for code_nombre in c['permisos']:
+                    try:
+                        cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
+                    except Exception as msg:
+                        mensaje += '<br>Permiso: %s -- %s' % (code_nombre, str(msg))
+            try:
+                insp_g = e.centroinspeccionado.inspectorasignado_set.all()[0].inspector.gauser
+                if 'illanu' in insp_g.last_name:
+                    insp_ge, c = Gauser_extra.objects.get_or_create(gauser=insp_g, ronda=e.ronda)
+                    insp_ge.activo = True
+                    insp_ge.puesto = 'Inspector de Educación'
+                    insp_ge.save()
+                    insp_ge.cargos.add(Cargo.objects.get(entidad=e, clave_cargo='g_inspector_educacion'))
+            except Exception as msg:
+                mensaje += '<br>Cargo: g_inspector_educacion -- %s' % str(msg)
+    except Exception as msg:
+        mensaje += '<br>Entidad: %s -- %s' % (e, str(msg))
+    return mensaje
 @shared_task
 def ejecutar_configurar_cargos_permisos():
-    from gauss.constantes import CARGOS_CENTROS
-    from entidades.menus_entidades import TiposCentro
-    mensaje = 'Hecho.'
+    mensaje_final = 'Hecho.'
     for e in Entidad.objects.all():
-        try:
-            if e.entidadextra.tipo_centro in TiposCentro:
-                for c in CARGOS_CENTROS:
-                    cargo, creado = Cargo.objects.get_or_create(entidad=e, borrable=False, clave_cargo=c['clave_cargo'])
-                    if creado:
-                        cargo.cargo = c['cargo']
-                        cargo.save()
-                    cargo.permisos.clear()
-                    for code_nombre in c['permisos']:
-                        try:
-                            cargo.permisos.add(Permiso.objects.get(code_nombre=code_nombre))
-                        except Exception as msg:
-                            mensaje += '<br>Permiso: %s -- %s' % (code_nombre, str(msg))
-                try:
-                    insp_g = e.centroinspeccionado.inspectorasignado_set.all()[0].inspector.gauser
-                    if 'illanu' in insp_g.last_name:
-                        insp_ge, c = Gauser_extra.objects.get_or_create(gauser=insp_g, ronda=e.ronda)
-                        insp_ge.activo = True
-                        insp_ge.puesto = 'Inspector de Educación'
-                        insp_ge.save()
-                        insp_ge.cargos.add(Cargo.objects.get(entidad=e, clave_cargo='g_inspector_educacion'))
-                except Exception as msg:
-                    mensaje += '<br>Cargo: g_inspector_educacion -- %s' % str(msg)
-        except Exception as msg:
-            mensaje += '<br>Entidad: %s -- %s' %(e, str(msg))
-    Aviso.objects.create(aviso=mensaje, fecha=now(), aceptado=True)
+        mensaje = ejecutar_configurar_cargos_permisos_entidad(e)
+        mensaje_final += mensaje
+    Aviso.objects.create(aviso=mensaje_final, fecha=now(), aceptado=True)
     return True
 
 @shared_task

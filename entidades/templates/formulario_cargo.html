@@ -43,8 +43,9 @@
                 {% endif %}
             {% else %}
                 <li><a class="button secondary cargo_no_copiable"
-                           title="Este cargo no se puede copiar"><i class="fa fa-copy"></i> Copiar</a></li>
-                <li><a class="button secondary cargo_no_borrable" title="Este cargo no se puede borrar"><i class="fa fa-trash-o"></i>
+                       title="Este cargo no se puede copiar"><i class="fa fa-copy"></i> Copiar</a></li>
+                <li><a class="button secondary cargo_no_borrable" title="Este cargo no se puede borrar"><i
+                        class="fa fa-trash-o"></i>
                     Borrar</a></li>
             {% endif %}
         </ul>
@@ -64,7 +65,7 @@
         {% endif %}
     </div>
     <div class="large-4 columns">
-        {% if g_e|has_permiso:'edita_perfiles' %}
+        {% if g_e|has_permiso:'edita_perfiles' and cargo.borrable %}
             <label title="El primer nivel es entendido como el cargo más alto">Nivel en el organigrama
                 <select id="id_nivel" name="nivel" data-cargo="{{ cargo.id }}">
                     <option value="">---------</option>
@@ -129,8 +130,20 @@
             <div class="row">
                 <div class="columns large-2">&nbsp;</div>
                 <div class="columns large-10">
-                    <input type="checkbox" class="permiso_cargo" id="pc{{ p.id }}" data-cargo="{{ cargo.id }}"
-                           value="{{ p.id }}" {% if p in permisos %}checked{% endif %}> {{ p.nombre }}
+                    {% if g_e|has_permiso:'edita_perfiles_no_borrables' or cargo.borrable %}
+                        <input type="checkbox" class="permiso_cargo" id="pc{{ p.id }}" data-cargo="{{ cargo.id }}"
+                               value="{{ p.id }}" {% if p in permisos %}checked{% endif %}> {{ p.nombre }}
+                    {% else %}
+                        {% if p in permisos %}
+                            <span style="color:gray;">
+                            <i class="fa fa-check-square-o"></i> {{ p.nombre }}
+                            </span>
+                        {% else %}
+                            <span style="color:gray;">
+                            <i class="fa fa-square-o"></i> {{ p.nombre }}
+                            </span>
+                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
         {% endfor %}
@@ -146,9 +159,21 @@
                             &nbsp;
                         </div>
                         <div class="columns large-9">
-                            <input type="checkbox" class="permiso_cargo" data-cargo="{{ cargo.id }}" id="pc{{ p.id }}"
-                                   value="{{ p.id }}" {% if p in permisos %}checked{% endif %}>
-                            {{ p.nombre }}
+                            {% if g_e|has_permiso:'edita_perfiles_no_borrables' or cargo.borrable %}
+                                <input type="checkbox" class="permiso_cargo" data-cargo="{{ cargo.id }}"
+                                       id="pc{{ p.id }}" {% if p in permisos %}checked{% endif %}
+                                       value="{{ p.id }}"> {{ p.nombre }}
+                            {% else %}
+                                {% if p in permisos %}
+                                    <span style="color:gray;">
+                            <i class="fa fa-check-square-o"></i> {{ p.nombre }}
+                            </span>
+                                {% else %}
+                                    <span style="color:gray;">
+                            <i class="fa fa-square-o"></i> {{ p.nombre }}
+                            </span>
+                                {% endif %}
+                            {% endif %}
                         </div>
                     </div>
                 {% endfor %}
@@ -321,15 +346,19 @@
         });
     {% endif %}
 
-    $('#Contenido').on('click','.cargo_no_copiable', function (e){
+    $('#Contenido').on('click', '.cargo_no_copiable', function (e) {
         e.preventDefault();
-        show_mensajes({title: '<i class="fa fa-warning"></i> No se puede copiar!!',
-            texto: 'Este cargo/perfil se ha creado automáticamente y no puede ser copiado.'})
+        show_mensajes({
+            title: '<i class="fa fa-warning"></i> No se puede copiar!!',
+            texto: 'Este cargo/perfil se ha creado automáticamente y no puede ser copiado.'
+        })
     });
-    $('#Contenido').on('click','.cargo_no_borrable', function (e){
+    $('#Contenido').on('click', '.cargo_no_borrable', function (e) {
         e.preventDefault();
-        show_mensajes({title: '<i class="fa fa-warning"></i> No se puede borrar!!',
-            texto: 'Este cargo/perfil se ha creado automáticamente y no puede ser borrado.'})
+        show_mensajes({
+            title: '<i class="fa fa-warning"></i> No se puede borrar!!',
+            texto: 'Este cargo/perfil se ha creado automáticamente y no puede ser borrado.'
+        })
     });
 
 </script>
