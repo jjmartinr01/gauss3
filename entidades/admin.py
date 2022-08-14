@@ -28,7 +28,10 @@ class Menu_Admin(admin.ModelAdmin):
 class CargaMasivaAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['g_e'].queryset = Gauser_extra.objects.filter(ronda=self.instance.g_e.ronda)
+        try:
+            self.fields['g_e'].queryset = Gauser_extra.objects.filter(ronda=self.instance.g_e.ronda)
+        except:
+            self.fields['g_e'].queryset = Gauser_extra.objects.none()
 class CargaMasivaAdmin(admin.ModelAdmin):
     form = CargaMasivaAdminForm
 

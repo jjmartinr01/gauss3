@@ -1057,7 +1057,7 @@ def asignar_centros_inspeccion(request):
     })
 
 
-@permiso_required('acceso_carga_masiva_inspeccion')
+# @permiso_required('acceso_carga_masiva_inspeccion')
 def carga_masiva_inspeccion(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':

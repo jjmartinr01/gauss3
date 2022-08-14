@@ -3,6 +3,7 @@ import logging
 import unicodedata
 import string
 import xlrd
+import os
 from difflib import get_close_matches
 from celery import shared_task
 from django.utils.text import slugify
@@ -16,6 +17,7 @@ from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva, Entid
 from entidades.menus_entidades import Menus_Centro_Educativo, TiposCentro
 from autenticar.models import Gauser, Permiso, Menu_default
 from gauss.constantes import PROVINCIAS, CODE_CONTENEDOR, CARGOS_CENTROS
+from gauss.rutas import RUTA_BASE
 from bancos.views import asocia_banco_ge
 from mensajes.models import Aviso
 from gauss.funciones import pass_generator, genera_nie
@@ -952,10 +954,21 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
     return HttpResponse(errores)
 
 
+def borra_cargas_masivas_antiguas(carga):
+    fecha_limite = datetime.today().date() - timedelta(90)
+    cargas_antiguas = CargaMasiva.objects.filter(creado__lt=fecha_limite)
+    for c in cargas_antiguas:
+        try:
+            os.remove(RUTA_BASE + c.fichero.url)
+            c.delete()
+        except:
+            carga.log = 'Error al borrar: %s' % c
+            carga.save()
 @shared_task
 def carga_masiva_from_excel():
     cargas_necesarias = CargaMasiva.objects.filter(cargado=False)
     for carga in cargas_necesarias:
+        borra_cargas_masivas_antiguas(carga)
         try:
             if carga.tipo == 'EXCEL':
                 carga_masiva_tipo_EXCEL(carga)  # Función cambiada el 18/04/2021. Nuevos ficheros Racima

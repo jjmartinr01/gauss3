@@ -936,17 +936,6 @@ class CargaMasiva(models.Model):
             return 'Cargado: %s (%s -> %s)' % (self.cargado, self.creado, self.g_e)
 
 
-@receiver(post_save, sender=CargaMasiva, dispatch_uid="borra_cargas_masivas_antiguas")
-def borra_cargas_masivas_antiguas(sender, instance, **kwargs):
-    fecha_limite = date.today() - timedelta(90)
-    cargas_antiguas = CargaMasiva.objects.filter(creado__lt=fecha_limite)
-    for c in cargas_antiguas:
-        try:
-            os.remove(RUTA_BASE + c.fichero.url)
-            c.delete()
-        except:
-            instance.log = 'Error al borrar: %s' % c
-            instance.save()
 
 # n='cosa'
 # m='valor de la cosa'
