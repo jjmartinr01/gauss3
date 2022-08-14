@@ -13,7 +13,7 @@ from cupo.models import PlantillaXLS, PlantillaOrganica, LogCarga
 from programaciones.models import Especialidad_entidad, Gauser_extra_programaciones, Departamento, \
     Especialidad_funcionario, crea_departamentos
 from formularios.models import EvalFunPractAct, EvalFunPractRes
-from gauss.funciones import genera_nie
+from gauss.funciones import genera_nie, borra_cargas_masivas_antiguas
 from gauss.rutas import MEDIA_FILES
 
 logger = logging.getLogger('django')
@@ -42,9 +42,10 @@ def carga_masiva_from_file():
         efpa.actualiza_efprs = False
         efpa.save()
     # Fin de las líneas de código para cargra funcionarios en prácticas y sus cuestiones
-
-    cargas_necesarias = CargaMasiva.objects.filter(cargado=False)
+    tipos = ['PLUMIER', 'RACIMA', 'HORARIOXLS', 'PLANTILLAXLS']
+    cargas_necesarias = CargaMasiva.objects.filter(cargado=False, tipo__in=tipos)
     for carga in cargas_necesarias:
+        borra_cargas_masivas_antiguas(carga)
         if carga.tipo == 'PLUMIER':
             xml_file = ElementTree.XML(carga.fichero.read())
             horario = Horario.objects.get(entidad=carga.ronda.entidad, predeterminado=True)

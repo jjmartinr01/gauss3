@@ -1065,8 +1065,7 @@ def carga_masiva_inspeccion(request):
         if action == 'carga_masiva_centros_racima':
             crear_aviso(request, True, 'cm_ins1')
             logger.info('Carga de archivo de tipo: ' + request.FILES['file_centros_racima'].content_type)
-            CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_centros_racima'],
-                                       tipo='CENTROSRACIMA', g_e=g_e)
+            CargaMasiva.objects.create(g_e=g_e, fichero=request.FILES['file_centros_racima'], tipo='CENTROSRACIMA')
             crear_aviso(request, True, 'cm_ins2')
             try:
                 carga_masiva_from_excel.apply_async(expires=300)
@@ -1074,84 +1073,23 @@ def carga_masiva_inspeccion(request):
                 crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
             except:
                 crear_aviso(request, False, 'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
-
-        elif action == 'carga_masiva_xls_mdb':
-            from inspeccion_educativa.models import INSPECTORES_GAUSER
-            logger.info('Carga de archivo de tipo: ' + request.FILES['file_xls_mdb'].content_type)
-            carga = CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_xls_mdb'],
-                                               tipo='CENTROSRACIMA', g_e=g_e, cargado=True)
-            f = carga.fichero.read()
-            import xlrd
-            book = xlrd.open_workbook(file_contents=f)
-            sheet = book.sheet_by_index(0)
-
-            # Get the keys from line 5 of excel file:
-            dict_names = {}
-            for col_index in range(sheet.ncols):
-                dict_names[sheet.cell(0, col_index).value] = col_index
-            # return HttpResponse(sheet.cell(1, dict_names['FECHA'])
-            for row_index in range(1, sheet.nrows):
-                # try:
-                a1 = sheet.cell_value(rowx=row_index, colx=dict_names['FECHA'])
-                try:
-                    fecha = datetime(*xlrd.xldate_as_tuple(a1, book.datemode))
-                except:
-                    fecha = None
-                centro = CentroMDB.objects.get(code_mdb=str(int(sheet.cell(row_index, dict_names['CENTRO']).value)))
-                try:
-                    entidad = Entidad.objects.get(code=int(centro.code))
-                except:
-                    entidad = None
-                # datetime.strptime(sheet.cell(row_index, dict_names['FECHA']).value,
-                #                   '%d/%m/%Y')
-                try:
-                    TareaInspeccion.objects.get(clave_ex=sheet.cell(row_index, dict_names['Id']).value)
-                except:
-                    t = TareaInspeccion.objects.create(ronda_centro=carga.ronda,
-                                                       clave_ex=sheet.cell(row_index, dict_names['Id']).value,
-                                                       localizacion=str(
-                                                           sheet.cell(row_index, dict_names['LOCALIZACIÓN']).value),
-                                                       # nivel=str(sheet.cell(row_index, dict_names['NIVEL']).value),
-                                                       actuacion=str(
-                                                           sheet.cell(row_index, dict_names['ACTUACIÓN']).value),
-                                                       realizada=True,
-                                                       inspector_mdb=str(
-                                                           int(sheet.cell(row_index,
-                                                                          dict_names['Id INSPECTORES']).value)),
-                                                       fecha=fecha,
-                                                       # sector=str(sheet.cell(row_index, dict_names['SECTOR']).value),
-                                                       centro_mdb=centro,
-                                                       colaboracion=str(
-                                                           sheet.cell(row_index,
-                                                                      dict_names['Especificar colaboración']).value),
-                                                       participacion=str(
-                                                           sheet.cell(row_index, dict_names['PARTICIPACIÓN']).value),
-                                                       funcion=str(
-                                                           sheet.cell(row_index,
-                                                                      dict_names['FUNCIÓN INSPECTORA']).value),
-                                                       tipo=str(sheet.cell(row_index,
-                                                                           dict_names['TIPO DE ACTUACIÓN']).value),
-                                                       asunto=str(sheet.cell(row_index, dict_names['TEMA']).value),
-                                                       objeto=str(sheet.cell(row_index, dict_names['OBJETO']).value),
-                                                       creador=g_e
-                                                       )
-                    if entidad:
-                        t.centro = entidad
-                        t.save()
-                    # crear_aviso(request, aceptado=False, INSPECTORES_GAUSER[t.inspector_mdb])
-                    username = INSPECTORES_GAUSER[t.inspector_mdb]
-                    try:
-                        ge = Gauser_extra.objects.get(ronda=g_e.ronda, gauser__username=username)
-                        t.creador = ge
-                        t.save()
-                    except:
-                        ge = None
-                    InspectorTarea.objects.create(tarea=t, inspector=ge, rol='1', permiso='rwx')
+        elif request.POST['action'] == 'descarga_archivo':
+            try:
+                c = CargaMasiva.objects.get(g_e__gauser=g_e.gauser, id=request.POST['carga_masiva'])
+                fich = c.fichero
+                # content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                content_type = 'application/vnd.ms-excel'
+                response = HttpResponse(fich,content_type=content_type)
+                response['Content-Disposition'] = 'attachment; filename=carga_centros_%s' % c.creado.strftime('%Y%m%d')
+                return response
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
 
     return render(request, "carga_masiva_inspeccion.html",
                   {
                       'formname': 'carga_masiva_inspeccion',
                       'g_e': g_e,
+                      'cms': CargaMasiva.objects.filter(g_e__gauser=g_e.gauser, tipo='CENTROSRACIMA'),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 

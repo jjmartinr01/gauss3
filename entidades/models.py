@@ -929,6 +929,11 @@ class CargaMasiva(models.Model):
         verbose_name_plural = "Cargas Masivas"
         ordering = ['ronda']
 
+    @property
+    def dias_autoborrado(self):
+        dias_para_autoborrado = 90
+        dias = (date.today() - self.creado).days
+        return dias_para_autoborrado - dias
     def __str__(self):
         if self.ronda:
             return 'Cargado: %s -- %s -> %s' % (self.cargado, self.creado, self.g_e)

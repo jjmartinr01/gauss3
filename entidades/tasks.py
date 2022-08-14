@@ -17,10 +17,9 @@ from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva, Entid
 from entidades.menus_entidades import Menus_Centro_Educativo, TiposCentro
 from autenticar.models import Gauser, Permiso, Menu_default
 from gauss.constantes import PROVINCIAS, CODE_CONTENEDOR, CARGOS_CENTROS
-from gauss.rutas import RUTA_BASE
 from bancos.views import asocia_banco_ge
 from mensajes.models import Aviso
-from gauss.funciones import pass_generator, genera_nie
+from gauss.funciones import pass_generator, genera_nie, borra_cargas_masivas_antiguas
 from django.http import HttpResponse, JsonResponse
 
 logger = logging.getLogger('django')
@@ -728,10 +727,10 @@ def carga_masiva_tipo_PENDIENTES(carga):
             ge = None
             if alumno_matricula not in errores_ge:
                 if Gauser_extra.objects.filter(id_entidad=alumno_matricula, ronda=carga.ronda).count() > 1:
-                    carga.incidencias += '<p>Duplicidad con alumno  %s (Nº de Racima: %s)</p>' % (
+                    carga.log += '<p>Duplicidad con alumno  %s (Nº de Racima: %s)</p>' % (
                         sheet.cell(row_index, dict_names['Alumno']).value, alumno_matricula)
                 else:
-                    carga.incidencias += '<p>No existe el alumno %s con Nº de Racima: %s</p>' % (
+                    carga.log += '<p>No existe el alumno %s con Nº de Racima: %s</p>' % (
                         sheet.cell(row_index, dict_names['Alumno']).value, alumno_matricula)
                 carga.save()
                 errores_ge.append(alumno_matricula)
@@ -742,10 +741,10 @@ def carga_masiva_tipo_PENDIENTES(carga):
             materia = None
             if materia_matricula not in errores_materia:
                 if Materia.objects.filter(clave_ex=materia_matricula, curso__ronda=carga.ronda).count() > 1:
-                    carga.incidencias += '<p>Duplicidad con materia %s (código: %s)</p>' % (
+                    carga.log += '<p>Duplicidad con materia %s (código: %s)</p>' % (
                         sheet.cell(row_index, dict_names['Materia']).value, materia_matricula)
                 else:
-                    carga.incidencias += '<p>No se encuentra materia con código: %s</p>' % (materia_matricula)
+                    carga.log += '<p>No se encuentra materia con código: %s</p>' % (materia_matricula)
                 carga.save()
                 errores_materia.append(materia_matricula)
         estado_matricula = sheet.cell(row_index, dict_names['Estado materia']).value
@@ -954,19 +953,11 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
     return HttpResponse(errores)
 
 
-def borra_cargas_masivas_antiguas(carga):
-    fecha_limite = datetime.today().date() - timedelta(90)
-    cargas_antiguas = CargaMasiva.objects.filter(creado__lt=fecha_limite)
-    for c in cargas_antiguas:
-        try:
-            os.remove(RUTA_BASE + c.fichero.url)
-            c.delete()
-        except:
-            carga.log = 'Error al borrar: %s' % c
-            carga.save()
+
 @shared_task
 def carga_masiva_from_excel():
-    cargas_necesarias = CargaMasiva.objects.filter(cargado=False)
+    tipos = ['EXCEL', 'PENDIENTES', 'CENTROSRACIMA', 'DOCENTES_RACIMA', 'EXCELMDB']
+    cargas_necesarias = CargaMasiva.objects.filter(cargado=False, tipo__in=tipos)
     for carga in cargas_necesarias:
         borra_cargas_masivas_antiguas(carga)
         try:

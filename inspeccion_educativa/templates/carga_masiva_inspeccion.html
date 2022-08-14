@@ -2,6 +2,19 @@
 {% load my_templatetags %}
 
 {% block contenido %}
+    <style>
+        table {
+            width: 100%;
+        }
+
+        td {
+            text-align: center !important;
+        }
+
+        th {
+            text-align: center !important;
+        }
+    </style>
     <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
         {% csrf_token %}
 
@@ -10,6 +23,7 @@
         </div>
 
         <input type="hidden" name="action" id="action" value="carga_masiva_racima_xls">
+        <input type="hidden" name="carga_masiva" id="carga_masiva" value="">
         <div class="panel callout">
             {% if g_e|has_permiso:'carga_datos_centros' %}
                 <div class="row">
@@ -39,26 +53,32 @@
                     </div>
                 </div>
             {% endif %}
-            {#            <hr>#}
-            {#                <div class="row">#}
-            {#                    <div class="large-12 columns">#}
-            {#                        <p style="font-weight: bold;color: #008CBA">Carga del excel exportado del aplicativo MDB de Inspección:</p>#}
-            {#                    </div>#}
-            {#                </div>#}
-            {#                <hr>#}
-            {#                <div class="row">#}
-            {#                    <div class="large-3 columns">#}
-            {#                        <b>Archivo xls (MDB):</b>#}
-            {#                    </div>#}
-            {#                    <div class="large-6 columns center-block">#}
-            {#                        <input type="file" name="file_xls_mdb" id="file_xls_mdb"/>#}
-            {#                    </div>#}
-            {#                    <div class="large-3 columns">#}
-            {#                        <a class="button" id="carga_masiva_xls_mdb">Cargar el archivo</a>#}
-            {#                    </div>#}
-            {#                </div>#}
-
         </div>
+        <table>
+            <thead>
+            <tr>
+                <th colspan="3">Cargas masivas que has realizado</th>
+            </tr>
+            <tr>
+                <th>Archivo</th>
+                <th>Fecha de carga</th>
+                <th>Días autoborrado</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for cm in cms %}
+                {% if cm.dias_autoborrado > 0 %}
+                    <tr>
+                        <td><a data-id="{{ cm.id }}" class="descarga_archivo">
+                            <i class="fa fa-download"></i> Haz click aquí para descargar archivo
+                        </a></td>
+                        <td>{{ cm.creado }}</td>
+                        <td>{{ cm.dias_autoborrado }} días</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
     </form>
 
 {% endblock %}
@@ -80,19 +100,11 @@
                 }
             });
         {% endif %}
-
-        $('#carga_masiva_xls_mdb').click(function (e) {
+        $('.descarga_archivo').click(function (e) {
             e.preventDefault();
-            if ($('#file_xls_mdb').val()) {
-                $('#action').val('carga_masiva_xls_mdb');
-                document.getElementById("{{ formname }}").submit();
-            } else {
-                show_mensajes({
-                    title: '<i class="fa fa-warning"></i> No has cargado un archivo!!!!', texto: 'Para ' +
-                        'subir un archivo primero debes cargarlo pulsando en "Examinar..."'
-                })
-            }
+            $('#action').val('descarga_archivo');
+            $('#carga_masiva').val($(this).data('id'));
+            document.getElementById('{{formname}}').submit();
         });
-
     </script>
 {% endblock %}

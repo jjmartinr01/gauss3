@@ -9,11 +9,21 @@ import re
 from django.db.models import Q
 from django.template import Context, Template
 from django.template.loader import render_to_string
-from gauss.rutas import MEDIA_DOCUMENTOS, MEDIA_ANAGRAMAS
-from entidades.models import Alta_Baja, Gauser_extra, DocConfEntidad
+from gauss.rutas import MEDIA_DOCUMENTOS, MEDIA_ANAGRAMAS, RUTA_BASE
+from entidades.models import Alta_Baja, Gauser_extra, DocConfEntidad, CargaMasiva
 from datetime import date, timedelta, datetime
 logger = logging.getLogger('django')
 
+def borra_cargas_masivas_antiguas(carga):
+    fecha_limite = datetime.today().date() - timedelta(90)
+    cargas_antiguas = CargaMasiva.objects.filter(creado__lt=fecha_limite)
+    for c in cargas_antiguas:
+        try:
+            os.remove(RUTA_BASE + c.fichero.url)
+            c.delete()
+        except:
+            carga.log = 'Error al borrar: %s' % c
+            carga.save()
 
 def paginar(total, paso=15, c=1):
     lis = range(1, total + 1)

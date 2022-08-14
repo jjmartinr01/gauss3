@@ -25,11 +25,11 @@
             </div>
         </div>
 
-        {% if carga.incidencias|length > 5 %}
+        {% if carga.log|length > 5 %}
             <div class="panel">
                 <h3>Incidencias de la última carga:</h3>
                 {% autoescape off %}
-                    {{ carga.incidencias }}
+                    {{ carga.log }}
                 {% endautoescape %}
             </div>
         {% endif %}
