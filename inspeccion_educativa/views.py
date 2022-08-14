@@ -1073,6 +1073,14 @@ def carga_masiva_inspeccion(request):
                 crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
             except:
                 crear_aviso(request, False, 'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
+        elif request.POST['action'] == 'descarga_info':
+            try:
+                c = CargaMasiva.objects.get(g_e__gauser=g_e.gauser, id=request.POST['carga_masiva'])
+                title = 'Carga masiva del %s' % c.creado.strftime('%d/%m/%Y')
+                text = c.log
+                return JsonResponse({'ok': True, 'title': title, 'text': text})
+            except:
+                return JsonResponse({'ok': False})
         elif request.POST['action'] == 'descarga_archivo':
             try:
                 c = CargaMasiva.objects.get(g_e__gauser=g_e.gauser, id=request.POST['carga_masiva'])

@@ -775,7 +775,7 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
     for row_index in range(5, sheet.nrows):
         code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
         entidad, created = Entidad.objects.get_or_create(code=code_entidad)
-        carga.log += '\n%s' % entidad
+        # carga.log += '\n%s' % entidad
         carga.save()
         if created:
             entidad.name = sheet.cell(row_index, dict_names['Centro']).value
@@ -789,11 +789,11 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
             entidad.mail = sheet.cell(row_index, dict_names['Correo-e']).value
             entidad.save()
         if entidad not in entidades_creadas:
-            carga.log += '\nSe crea: %s' % entidad
+            carga.log += '<hr><br>Se procesa: %s' % entidad
             Cargo.objects.filter(entidad=entidad, borrable=True).delete()
             mensaje = ejecutar_configurar_cargos_permisos_entidad(entidad)
             entidades_creadas.append(entidad)
-            carga.log += '\n%s' % mensaje
+            carga.log += '<br>%s' % mensaje
             carga.save()
             if entidad.ronda:  # Capturamos los g_es con perfiles de dirección
                 q = Q(cargo__icontains='director') | Q(cargo__icontains='estudios') | Q(cargo__icontains='secretar')
@@ -974,10 +974,11 @@ def carga_masiva_from_excel():
         except Exception as msg:
             logger.info('Carga masiva xls se produce error con carga.id=%s' % carga.id)
             logger.info('El mensaje de error es: %s' % str(msg))
-            carga.log += '\n%s' % str(msg)
+            carga.log += '<br>%s' % str(msg)
             carga.error = True
             carga.cargado = True
             carga.save()
+        carga.log += '<p><b>Proceso de carga terminado (%s)</b></p>' % datetime.now()
         carga.cargado = True
         carga.save()
     return True

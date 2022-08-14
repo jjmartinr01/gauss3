@@ -57,10 +57,12 @@
         <table>
             <thead>
             <tr>
-                <th colspan="3">Cargas masivas que has realizado</th>
+                <th colspan="5">Cargas masivas que has realizado</th>
             </tr>
             <tr>
+                <th>Estado</th>
                 <th>Archivo</th>
+                <th>Info (Log)</th>
                 <th>Fecha de carga</th>
                 <th>Días autoborrado</th>
             </tr>
@@ -69,9 +71,27 @@
             {% for cm in cms %}
                 {% if cm.dias_autoborrado > 0 %}
                     <tr>
-                        <td><a data-id="{{ cm.id }}" class="descarga_archivo">
-                            <i class="fa fa-download"></i> Haz click aquí para descargar archivo
-                        </a></td>
+                        <td>
+                            {% if cm.cargado %}
+                                <span title="La carga se ha realizado">Realizada</span>
+                            {% else %}
+                                <span title="La carga se está pediente se ser realizada">Realizándose</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a data-id="{{ cm.id }}" class="descarga_archivo">
+                                <i class="fa fa-download"></i> Descarga archivo
+                            </a>
+                        </td>
+                        <td>
+                            {% if cm.log|length > 5 %}
+                                <a data-id="{{ cm.id }}" class="descarga_info">
+                                    <i class="fa fa-info-circle"></i> Descarga info
+                                </a>
+                            {% else %}
+                                Sin información adicional
+                            {% endif %}
+                        </td>
                         <td>{{ cm.creado }}</td>
                         <td>{{ cm.dias_autoborrado }} días</td>
                     </tr>
@@ -79,8 +99,13 @@
             {% endfor %}
             </tbody>
         </table>
+        <div id="reveal_info" class="reveal-modal" data-reveal aria-labelledby="reveal_infoTitle" aria-hidden="true"
+             role="dialog">
+            <h2 id="reveal_infoTitle"></h2>
+            <p id="reveal_infoText"></p>
+            <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+        </div>
     </form>
-
 {% endblock %}
 
 
@@ -105,6 +130,19 @@
             $('#action').val('descarga_archivo');
             $('#carga_masiva').val($(this).data('id'));
             document.getElementById('{{formname}}').submit();
+        });
+        $('.descarga_info').click(function (e) {
+            e.preventDefault();
+            var carga_masiva = $(this).data('id');
+            $.post("/carga_masiva_inspeccion/", {
+                    action: 'descarga_info', carga_masiva: carga_masiva
+                },
+                function (data) {
+                    $('#reveal_infoTitle').html(data.title);
+                    $('#reveal_infoText').html(data.text);
+                    $('#reveal_info').foundation('reveal', 'open');
+                    {# $(document).foundation(); #}
+                });
         });
     </script>
 {% endblock %}
