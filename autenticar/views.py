@@ -45,10 +45,13 @@ from mensajes.models import Aviso, Mensaje
 from bancos.views import asocia_banco_ge
 from autenticar.control_acceso import LogGauss, permiso_required, gauss_required
 from captcha.fields import CaptchaField
-try:
-    from gauss.settings import CAS_URL
-except:
-    CAS_URL = 'https://ias1.larioja.org/eduCas/'
+# try:
+#     from gauss.settings import CAS_URL
+# except:
+#     CAS_URL = 'https://ias1.larioja.org/eduCas/'
+
+CAS_URL = 'https://ias1.larioja.org/casLR/'
+
 
 # La línea "from django.utils import translation, timezone" y las siguientes 2 líneas, así como la nº 234 (o alrededor)
 # que contiene la variable "user_language" son para establecer el español como idioma por defecto a través de una
@@ -980,7 +983,7 @@ def recupera_password(request):
 # Login en GAUSS a través del servidor CAS del Gobierno de La Rioja
 # ------------------------------------------------------------------#
 def logincas(request):
-    # CAS_URL = 'https://ias1.larioja.org/eduCas/'
+    # CAS_URL = 'https://ias1.larioja.org/casLR/'
     if request.method == 'GET':
         if 'nexturl' in request.GET:
             nexturl = '?nexturl=' + request.GET['nexturl']
