@@ -39,7 +39,7 @@ from autenticar.models import Enlace, Permiso, Gauser, Menu_default
 from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, CargaMasiva, ConfigurationUpdate, Ronda, \
     Reserva_plaza
 from entidades.tasks import carga_masiva_from_excel, ejecutar_configurar_cargos_permisos, \
-    ejecutar_configurar_menus_centros_educativos
+    ejecutar_configurar_menus_centros_educativos, ejecutar_configurar_docs_conf_educarioja
 from mensajes.views import crear_aviso, crea_mensaje_cola
 from mensajes.models import Aviso, Mensaje
 from bancos.views import asocia_banco_ge
@@ -1156,4 +1156,7 @@ def configurar_menus_centros_educativos(request):
     ejecutar_configurar_menus_centros_educativos.apply_async(expires=300)
     return HttpResponse('Esta operación puede requerir varios minutos')
 
-
+@gauss_required
+def configurar_docs_conf_educarioja(request):
+    ejecutar_configurar_docs_conf_educarioja.apply_async(expires=300)
+    return HttpResponse('Esta operación puede requerir varios minutos')

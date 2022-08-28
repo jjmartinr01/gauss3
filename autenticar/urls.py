@@ -28,4 +28,6 @@ urlpatterns = [
     path('carga_docentes_general/', views.carga_docentes_general),
     path('configurar_cargos_permisos/', views.configurar_cargos_permisos),
     path('configurar_menus_centros_educativos/', views.configurar_menus_centros_educativos),
+    path('configurar_docs_conf_educarioja/', views.configurar_docs_conf_educarioja),
 ]
+

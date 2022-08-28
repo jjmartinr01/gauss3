@@ -6,6 +6,7 @@ import xlrd
 import os
 from difflib import get_close_matches
 from celery import shared_task
+from django.template.loader import render_to_string
 from django.utils.text import slugify
 from django.utils.timezone import timedelta, datetime, now
 from django.db.models import Q
@@ -13,7 +14,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils.encoding import smart_text
 from estudios.models import Grupo, Gauser_extra_estudios, Materia, Matricula, Curso
 from entidades.models import Subentidad, Cargo, Gauser_extra, CargaMasiva, Entidad, EntidadExtra, \
-    EntidadExtraExpediente, EntidadExtraExpedienteOferta, Ronda, Menu, GE_extra_field
+    EntidadExtraExpediente, EntidadExtraExpedienteOferta, Ronda, Menu, GE_extra_field, DocConfEntidad
 from entidades.menus_entidades import Menus_Centro_Educativo, TiposCentro
 from autenticar.models import Gauser, Permiso, Menu_default
 from gauss.constantes import PROVINCIAS, CODE_CONTENEDOR, CARGOS_CENTROS
@@ -81,10 +82,11 @@ def crear_nombre_usuario(nombre, apellidos):
             valid_usuario = True
     return username
 
+
 # 'username_tutor2': '', 'username_tutor1': '', 'username': ''
 def create_usuario(datos, ronda, tipo):
     dni = genera_nie(datos['dni' + tipo]) if len(datos['dni' + tipo]) > 6 else 'DNI inventado generar error en el try'
-    username_inventado = 'opqrstuvwxyz0009' # Servirá para comprobar si el username es correcto o no
+    username_inventado = 'opqrstuvwxyz0009'  # Servirá para comprobar si el username es correcto o no
     username = datos['username' + tipo] if len(datos['username' + tipo]) > 2 else username_inventado
     try:
         gauser = Gauser.objects.get(username=username)
@@ -110,7 +112,8 @@ def create_usuario(datos, ronda, tipo):
                 logger.warning('No existe Gauser con id_socio %s' % (datos['id_socio']))
             except MultipleObjectsReturned:
                 gauser_extra = Gauser_extra.objects.filter(id_entidad=datos['id_socio'], ronda=ronda)[0]
-                logger.warning('Existen varios Gauser_extra asociados al Gauser encontrado. Se elige %s' % (gauser_extra))
+                logger.warning(
+                    'Existen varios Gauser_extra asociados al Gauser encontrado. Se elige %s' % (gauser_extra))
                 gauser = gauser_extra.gauser
                 if username != username_inventado:
                     gauser.username = username
@@ -189,7 +192,7 @@ def create_usuario(datos, ronda, tipo):
                         gauser.first_name + ' ' + gauser.last_name)
             except:
                 mensaje = 'El IBAN asociado a %s parece no ser correcto. No se ha podido asociar una entidad bancaria al mismo.' % (
-                        'DESCONOCIDO')
+                    'DESCONOCIDO')
             logger.info(mensaje)
     if gauser_extra:
         logger.info('antes de subentidades')
@@ -903,7 +906,8 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
             try:
                 cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_nodocente', borrable=False)
             except:
-                cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_nodocente', borrable=False, cargo='No docente')
+                cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_nodocente', borrable=False,
+                                             cargo='No docente')
             dni = genera_nie(str(sheet.cell(row_index, dict_names['DNI']).value))
             nombre = sheet.cell(row_index, dict_names['Nombre docente']).value
             apellidos = sheet.cell(row_index, dict_names['Apellidos docente']).value
@@ -951,7 +955,6 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
             errores[row_index] = {'error': str(msg), 'apellidos': apellidos}
             logger.info('Error carga general docentes %s -- %s' % (str(apellidos), msg))
     return HttpResponse(errores)
-
 
 
 @shared_task
@@ -1017,6 +1020,8 @@ def ejecutar_configurar_cargos_permisos_entidad(e):
     except Exception as msg:
         mensaje += '<br>Entidad: %s -- %s' % (e, str(msg))
     return mensaje
+
+
 @shared_task
 def ejecutar_configurar_cargos_permisos():
     mensaje_final = 'Hecho.'
@@ -1025,6 +1030,7 @@ def ejecutar_configurar_cargos_permisos():
         mensaje_final += mensaje
     Aviso.objects.create(aviso=mensaje_final, fecha=now(), aceptado=True)
     return True
+
 
 @shared_task
 def ejecutar_configurar_menus_centros_educativos():
@@ -1045,6 +1051,34 @@ def ejecutar_configurar_menus_centros_educativos():
                     except Exception as msg:
                         mensaje += '<br>Menu: %s -- %s' % (m, str(msg))
                         Aviso.objects.create(aviso=mensaje, fecha=now())
+        except Exception as msg:
+            mensaje += '<br>Entidad: %s -- %s' % (e, str(msg))
+            Aviso.objects.create(aviso=mensaje, fecha=now(), aceptado=True)
+    return True
+
+
+@shared_task
+def ejecutar_configurar_docs_conf_educarioja():
+    from entidades.menus_entidades import TiposCentro
+    mensaje = 'Hecho.'
+    for e in Entidad.objects.all():
+        try:
+            if e.entidadextra.tipo_centro in TiposCentro:
+                header = render_to_string('cabecera_general_rioja.html', {'entidad': e})
+                doc_confs = DocConfEntidad.objects.filter(entidad=e)
+                if doc_confs.count() == 0:
+                    doc_confs = [DocConfEntidad.objects.create(entidad=e, predeterminado=True, header=header,
+                                                               footer='', nombre='Configuración predeterminada',
+                                                               margintop=35)]
+                else:
+                    for doc_conf in doc_confs:
+                        doc_conf.header = header
+                        doc_conf.footer = ''
+                        doc_conf.margintop = 40
+                        doc_conf.marginleft = 20
+                        doc_conf.marginright = 20
+                        doc_conf.headerspacing = 15
+                        doc_conf.save()
         except Exception as msg:
             mensaje += '<br>Entidad: %s -- %s' % (e, str(msg))
             Aviso.objects.create(aviso=mensaje, fecha=now(), aceptado=True)
