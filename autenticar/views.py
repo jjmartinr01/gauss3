@@ -568,7 +568,13 @@ def index(request):
             logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
             return redirect(url_destino)
     else:
-        if 'service' in request.session:
+        # if 'service' in request.session:
+        #     logout(request)
+        #     response = HttpResponse(status=302)
+        #     response['Location'] = CAS_URL + 'logout?url=https%3A%2F%2Fgauss.larioja.org%2Flogincas'
+        #     return response
+        # En el nuevo CAS cambiamos 'service' por 'TARGET'
+        if 'TARGET' in request.session:
             logout(request)
             response = HttpResponse(status=302)
             response['Location'] = CAS_URL + 'logout?url=https%3A%2F%2Fgauss.larioja.org%2Flogincas'
@@ -991,6 +997,91 @@ def logincas(request):
         else:
             nexturl = '?nexturl=%2Fcalendario%2F' # Por defecto irá a /calendario/
             request.session['nexturl'] = '/calendario/'
+        request.session['TARGET'] = 'https%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F' + nexturl
+        if 'ticket' in request.GET:
+            ticket = request.GET['ticket']
+            url = CAS_URL + 'serviceValidate?TARGET=' + request.session['TARGET'] + '&ticket=' + ticket
+            # xml = render_to_string('samlcas.xml', {'request_id': pass_generator(15), 'ticket': ticket,
+            #                                        'datetime_iso': datetime.utcnow().isoformat()})
+            # url = CAS_URL + 'samlValidate?TARGET=' + request.session['TARGET'] + '&ticket=' + ticket
+            s = requests.Session()
+            # headers = {'Content-Type': 'application/xml'}
+            s.verify = False
+            r = s.get(url, verify=False)
+            # r = s.post(url, verify=False, data=xml, headers=headers)
+            try:
+                id = r.text.split('<cas:user>')[1].split('</cas:user>')[0]
+            except:
+                return HttpResponse(r.text)
+            try:
+                user = Gauser.objects.get(username=id)
+            except:
+                try:
+                    user = Gauser.objects.get(dni=genera_nie(id))
+                except:
+                    return HttpResponse(id)
+                    # return HttpResponse('Tu usuario en Gauss debe coincidir con el de Racima')
+            if user.is_active:
+                login(request, user)
+                request.session["hoy"] = datetime.today()
+                request.session[translation.LANGUAGE_SESSION_KEY] = user_language
+                gauser_extras = Gauser_extra.objects.filter(Q(gauser=user) & Q(activo=True))
+                g_cs = gauser_extras
+                entidades_disponibles = 0
+                for gauser_extra in g_cs:
+                    if gauser_extra.ronda == gauser_extra.ronda.entidad.ronda:
+                        entidades_disponibles += 1
+                    else:
+                        gauser_extras = gauser_extras.exclude(pk=gauser_extra.id)
+                if entidades_disponibles > 1:
+                    logger.info('Gauser con acceso a múltiples entidades.')
+                    return render(request, "select_entidad.html", {'gauser_extras': gauser_extras, })
+                elif entidades_disponibles == 1:
+                    request.session["gauser_extra"] = gauser_extras[0]
+                    request.session["ronda"] = request.session["gauser_extra"].ronda
+                    request.session['num_items_page'] = 15
+                    # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
+                    gauss = Gauser.objects.get(username='gauss')
+                    Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
+                    logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+                    return redirect(request.session['nexturl'])
+                    # if request.session['nexturl']:
+                    #     response = HttpResponse(status=302)
+                    #     response['Location'] = request.session['nexturl']
+                    # else:
+                    #     return redirect(request.session['nexturl'])
+                else:
+                    logger.info('Gauser activo, pero no tiene asociada ninguna entidad.')
+                    return render(request, "no_cuenta.html", {'usuario': user, })
+            else:
+                return render(request, "no_cuenta.html", {'usuario': user, })
+        else:
+            response = HttpResponse(status=302)
+            response['Location'] = CAS_URL + 'login?inst=E&TARGET=' + request.session['TARGET']
+            return response
+    elif request.method == 'POST':
+        if request.POST['action'] == 'selecciona_entidad':
+            request.session["gauser_extra"] = Gauser_extra.objects.get(pk=request.POST['gauser_extra'])
+            request.session["ronda"] = request.session["gauser_extra"].ronda
+            request.session['num_items_page'] = 15
+            # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
+            gauss = Gauser.objects.get(username='gauss')
+            Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
+            logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+            return redirect(request.session['nexturl'])
+
+def logincas_antiguo(request):
+    #Con este logincas solo se puede autenticar con certificado digital. En mensaje del 30/08/2022, Luis Miguel
+    #Briones Román <lmbriones@larioja.org> me informa de como utilizar otra url para que aparezcan los mismos accesos
+    #que en Racima. Es necesario añadir el parámetro 'inst' y cambiar 'service' por 'TARGET'. Mirar función logincas.
+    # CAS_URL = 'https://ias1.larioja.org/casLR/'
+    if request.method == 'GET':
+        if 'nexturl' in request.GET:
+            nexturl = '?nexturl=' + request.GET['nexturl']
+            request.session['nexturl'] = request.GET['nexturl']
+        else:
+            nexturl = '?nexturl=%2Fcalendario%2F' # Por defecto irá a /calendario/
+            request.session['nexturl'] = '/calendario/'
         request.session['service'] = 'https%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F' + nexturl
         if 'ticket' in request.GET:
             ticket = request.GET['ticket']
@@ -1063,8 +1154,6 @@ def logincas(request):
             Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
             logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
             return redirect(request.session['nexturl'])
-
-
 # ------------------------------------------------------------------#
 # DEFINICIÓN DE FUNCIÓN PARA
 # ------------------------------------------------------------------#
