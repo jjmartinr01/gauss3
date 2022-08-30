@@ -997,13 +997,13 @@ def logincas(request):
         else:
             nexturl = '?nexturl=%2Fcalendario%2F' # Por defecto irá a /calendario/
             request.session['nexturl'] = '/calendario/'
-        request.session['TARGET'] = 'https%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F' + nexturl
+        request.session['service'] = 'https%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F' + nexturl
         if 'ticket' in request.GET:
             ticket = request.GET['ticket']
-            url = CAS_URL + 'serviceValidate?TARGET=' + request.session['TARGET'] + '&ticket=' + ticket
+            url = CAS_URL + 'serviceValidate?service=' + request.session['service'] + '&ticket=' + ticket
             # xml = render_to_string('samlcas.xml', {'request_id': pass_generator(15), 'ticket': ticket,
             #                                        'datetime_iso': datetime.utcnow().isoformat()})
-            # url = CAS_URL + 'samlValidate?TARGET=' + request.session['TARGET'] + '&ticket=' + ticket
+            # url = CAS_URL + 'samlValidate?service=' + request.session['service'] + '&ticket=' + ticket
             s = requests.Session()
             # headers = {'Content-Type': 'application/xml'}
             s.verify = False
@@ -1057,7 +1057,7 @@ def logincas(request):
                 return render(request, "no_cuenta.html", {'usuario': user, })
         else:
             response = HttpResponse(status=302)
-            response['Location'] = CAS_URL + 'login?inst=E&TARGET=' + request.session['TARGET']
+            response['Location'] = CAS_URL + 'login?inst=E&service=' + request.session['service']
             return response
     elif request.method == 'POST':
         if request.POST['action'] == 'selecciona_entidad':
