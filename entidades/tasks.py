@@ -958,6 +958,10 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
             gauser_extra.clave_ex = clave_ex
             gauser_extra.activo = True
             gauser_extra.puesto = puesto
+            try:
+                Cargo.objects.filter(cargo=puesto, entidad=entidad).exclude(clave_cargo__icontains='g_').delete()
+            except:
+                pass
             gauser_extra.tipo_personal = tipo_personal
             gauser_extra.jornada_contratada = jornada_contratada
             gauser_extra.cargos.add(cargo)
