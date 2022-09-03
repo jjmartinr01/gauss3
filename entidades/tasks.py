@@ -779,7 +779,7 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
         code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
         entidad, created = Entidad.objects.get_or_create(code=code_entidad)
         # carga.log += '\n%s' % entidad
-        carga.save()
+        # carga.save()
         if created:
             entidad.name = sheet.cell(row_index, dict_names['Centro']).value
             entidad.organization = carga.g_e.ronda.entidad.organization
@@ -832,6 +832,8 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
                         new_user.permisos.add(*g__e.permisos.all())
 
             # Menus:
+            carga.log += '<br>Comienza carga de menús'
+            carga.save()
             for m in Menus_Centro_Educativo:
                 try:
                     md = Menu_default.objects.get(code_menu=m[0])
@@ -881,7 +883,7 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
                 Gauser_extra.objects.get(gauser=gauser_entidad, ronda=entidad.ronda)
             except Exception as msg:
                 g_e_entidad = Gauser_extra.objects.create(gauser=gauser_entidad, ronda=entidad.ronda, activo=True)
-                cargo_director = Cargo.objects.get(entidad=entidad, clave_cargo='g_director_centro')
+                cargo_director, c = Cargo.objects.get_or_create(entidad=entidad, clave_cargo='g_director_centro')
                 g_e_entidad.permisos.add(*cargo_director.permisos.all())
 
 
@@ -997,7 +999,7 @@ def carga_masiva_from_excel():
 
 def ejecutar_configurar_cargos_permisos_entidad(e):
     # e: class Entidad
-    mensaje = ''
+    mensaje = 'ejecutar_configurar_cargos_permisos_entidad<br>'
     try:
         if e.entidadextra.tipo_centro in TiposCentro:
             for c in CARGOS_CENTROS:
