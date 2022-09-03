@@ -778,28 +778,31 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
     for row_index in range(5, sheet.nrows):
         code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
         entidad, created = Entidad.objects.get_or_create(code=code_entidad)
-        # carga.log += '\n%s' % entidad
-        # carga.save()
-        if created:
-            entidad.name = sheet.cell(row_index, dict_names['Centro']).value
-            entidad.organization = carga.g_e.ronda.entidad.organization
-            entidad.address = sheet.cell(row_index, dict_names['Dirección postal']).value
-            entidad.localidad = sheet.cell(row_index, dict_names['Localidad']).value
-            entidad.provincia = carga.g_e.ronda.entidad.provincia
-            entidad.postalcode = sheet.cell(row_index, dict_names['CP']).value
-            entidad.tel = sheet.cell(row_index, dict_names['Teléfono']).value
-            entidad.fax = sheet.cell(row_index, dict_names['FAX']).value
-            entidad.mail = sheet.cell(row_index, dict_names['Correo-e']).value
-            entidad.save()
         if entidad not in entidades_creadas:
-            carga.log += '<hr><br>Se procesa: %s' % entidad
-            Cargo.objects.filter(entidad=entidad, borrable=True).delete()
-            mensaje = ejecutar_configurar_cargos_permisos_entidad(entidad)
             entidades_creadas.append(entidad)
+            carga.log += '<hr><br>Se procesa: %s' % entidad
+            if created:
+                entidad.name = sheet.cell(row_index, dict_names['Centro']).value
+                entidad.organization = carga.g_e.ronda.entidad.organization
+                entidad.address = sheet.cell(row_index, dict_names['Dirección postal']).value
+                entidad.localidad = sheet.cell(row_index, dict_names['Localidad']).value
+                entidad.provincia = carga.g_e.ronda.entidad.provincia
+                entidad.postalcode = sheet.cell(row_index, dict_names['CP']).value
+                entidad.tel = sheet.cell(row_index, dict_names['Teléfono']).value
+                entidad.fax = sheet.cell(row_index, dict_names['FAX']).value
+                entidad.mail = sheet.cell(row_index, dict_names['Correo-e']).value
+                entidad.save()
+            # Se borran todos los cargos creados automáticamente y son borrables. Esto es para igualar a todos los
+            # centros. La siguiente línea debería borrarse si no hay cargos no borrables creados automáticamente.
+            Cargo.objects.filter(entidad=entidad, borrable=True).delete()
+            # Creación de cargos no borrables y asignación de inspectores a centros:
+            mensaje = ejecutar_configurar_cargos_permisos_entidad(entidad)
             carga.log += '<br>%s' % mensaje
             carga.save()
-            if entidad.ronda:  # Capturamos los g_es con perfiles de dirección
-                q = Q(cargo__icontains='director') | Q(cargo__icontains='estudios') | Q(cargo__icontains='secretar')
+            if entidad.ronda:  # Si existe una ronda, capturamos los g_es con perfiles de dirección
+                q = Q(clave_cargo='g_miembro_equipo_directivo') | Q(clave_cargo='g_jefe_estudios') | Q(
+                    clave_cargo='g_director_centro') | Q(clave_cargo='g_nodocente')
+                # q = Q(cargo__icontains='director') | Q(cargo__icontains='estudios') | Q(cargo__icontains='secretar')
                 cargos = Cargo.objects.filter(q, Q(entidad=entidad))
                 g_es = Gauser_extra.objects.filter(ronda=entidad.ronda, cargos__in=cargos, activo=True)
             else:
@@ -808,10 +811,10 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
                 y1, y2 = datetime.today().year, datetime.today().year + 1
                 inicio = datetime.strptime("1/9/%s" % y1, "%d/%m/%Y")
                 fin = datetime.strptime("31/8/%s" % y2, "%d/%m/%Y")
-                ronda = Ronda.objects.create(nombre="%s/%s" % (y1, y2), entidad=entidad, inicio=inicio, fin=fin)
+                ronda, c = Ronda.objects.get_or_create(nombre="%s/%s" % (y1, y2), entidad=entidad, inicio=inicio, fin=fin)
                 entidad.ronda = ronda
                 entidad.save()
-                # Cargamos los usuarios capturados antes en la nueva ronda:
+                # Cargamos los usuarios capturados antes en la nueva ronda (miembros del equipo directivo):
                 for g__e in g_es:
                     try:
                         Gauser_extra.objects.get(gauser=g__e.gauser, ronda=ronda)
@@ -830,61 +833,63 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
                         new_user.subsubentidades.add(*g__e.subsubentidades.all())
                         new_user.cargos.add(*g__e.cargos.all())
                         new_user.permisos.add(*g__e.permisos.all())
-
-            # Menus:
-            carga.log += '<br>Comienza carga de menús'
-            carga.save()
-            for m in Menus_Centro_Educativo:
+                # Crear usuario gauss para la entidad:
+                ge, c = Gauser_extra.objects.get_or_create(gauser=gauss, ronda=entidad.ronda, activo=True)
+                if c:
+                    permisos = Permiso.objects.all()
+                    ge.permisos.add(*permisos)
+                # Crear el usuario entidad:
                 try:
-                    md = Menu_default.objects.get(code_menu=m[0])
-                    try:
-                        Menu.objects.get(entidad=entidad, menu_default=md)
-                    except:
-                        Menu.objects.create(entidad=entidad, menu_default=md, texto_menu=m[1], pos=m[2])
+                    gauser_entidad = Gauser.objects.get(username=entidad.code)
                 except Exception as msg:
-                    Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros2: %s' % str(msg), fecha=now())
-            ee, created = EntidadExtra.objects.get_or_create(entidad=entidad)
-            ee.titularidad = sheet.cell(row_index, dict_names['Titularidad']).value
-            ee.tipo_centro = sheet.cell(row_index, dict_names['Tipo centro']).value
-            try:
-                code_entidad_padre = int(sheet.cell(row_index, dict_names['IES del que depende']).value)
-                ee.depende_de = Entidad.objects.get(code=code_entidad_padre)
-            except Exception as msg:
-                ee.depende_de = None
-            if 'S' in sheet.cell(row_index, dict_names['Servicio comedor']).value:
-                ee.comedor = True
-            else:
-                ee.comedor = False
-            if 'S' in sheet.cell(row_index, dict_names['Transporte escolar']).value:
-                ee.transporte = True
-            else:
-                ee.transporte = False
-            ee.director = sheet.cell(row_index, dict_names['Dirección']).value
-            ee.save()
-            expediente = sheet.cell(row_index, dict_names['Expediente']).value
-            eee, created = EntidadExtraExpediente.objects.get_or_create(eextra=ee, expediente=expediente)
-            oferta = sheet.cell(row_index, dict_names['Oferta']).value
-            EntidadExtraExpedienteOferta.objects.get_or_create(eeexpediente=eee, oferta=oferta)
+                    email = 'inventado@%s.com' % entidad.code
+                    gauser_entidad = Gauser.objects.create_user(entidad.code, email, str(entidad.code),
+                                                                last_login=now())
+                    Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros4: %s' % str(msg), fecha=now())
+                try:
+                    Gauser_extra.objects.get(gauser=gauser_entidad, ronda=entidad.ronda)
+                except Exception as msg:
+                    g_e_entidad = Gauser_extra.objects.create(gauser=gauser_entidad, ronda=entidad.ronda,
+                                                              activo=True)
+                    cargo_director, c = Cargo.objects.get_or_create(entidad=entidad,
+                                                                    clave_cargo='g_director_centro')
+                    g_e_entidad.permisos.add(*cargo_director.permisos.all())
+                # Menus:
+                carga.log += '<br>Comienza carga de menús'
+                carga.save()
+                for m in Menus_Centro_Educativo:
+                    try:
+                        md = Menu_default.objects.get(code_menu=m[0])
+                        try:
+                            Menu.objects.get(entidad=entidad, menu_default=md)
+                        except:
+                            Menu.objects.create(entidad=entidad, menu_default=md, texto_menu=m[1], pos=m[2])
+                    except Exception as msg:
+                        Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros2: %s' % str(msg), fecha=now())
+                ee, created = EntidadExtra.objects.get_or_create(entidad=entidad)
+                ee.titularidad = sheet.cell(row_index, dict_names['Titularidad']).value
+                ee.tipo_centro = sheet.cell(row_index, dict_names['Tipo centro']).value
+                try:
+                    code_entidad_padre = int(sheet.cell(row_index, dict_names['IES del que depende']).value)
+                    ee.depende_de = Entidad.objects.get(code=code_entidad_padre)
+                except Exception as msg:
+                    ee.depende_de = None
+                if 'S' in sheet.cell(row_index, dict_names['Servicio comedor']).value:
+                    ee.comedor = True
+                else:
+                    ee.comedor = False
+                if 'S' in sheet.cell(row_index, dict_names['Transporte escolar']).value:
+                    ee.transporte = True
+                else:
+                    ee.transporte = False
+                ee.director = sheet.cell(row_index, dict_names['Dirección']).value
+                ee.save()
+        expediente = sheet.cell(row_index, dict_names['Expediente']).value
+        eee, created = EntidadExtraExpediente.objects.get_or_create(eextra=ee, expediente=expediente)
+        oferta = sheet.cell(row_index, dict_names['Oferta']).value
+        EntidadExtraExpedienteOferta.objects.get_or_create(eeexpediente=eee, oferta=oferta)
 
-            # Crear usuario gauss para la entidad
-            ge, c = Gauser_extra.objects.get_or_create(gauser=gauss, ronda=entidad.ronda, activo=True)
-            if c:
-                permisos = Permiso.objects.all()
-                ge.permisos.add(*permisos)
-            # Crear el usuario entidad:
-            # Código para crear usuario con todos los permisos disponibles a través de los cargos:
-            try:
-                gauser_entidad = Gauser.objects.get(username=entidad.code)
-            except Exception as msg:
-                email = 'inventado@%s.com' % entidad.code
-                gauser_entidad = Gauser.objects.create_user(entidad.code, email, str(entidad.code), last_login=now())
-                Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros4: %s' % str(msg), fecha=now())
-            try:
-                Gauser_extra.objects.get(gauser=gauser_entidad, ronda=entidad.ronda)
-            except Exception as msg:
-                g_e_entidad = Gauser_extra.objects.create(gauser=gauser_entidad, ronda=entidad.ronda, activo=True)
-                cargo_director, c = Cargo.objects.get_or_create(entidad=entidad, clave_cargo='g_director_centro')
-                g_e_entidad.permisos.add(*cargo_director.permisos.all())
+
 
 
 def carga_masiva_tipo_DOCENTES_RACIMA(carga):
@@ -904,12 +909,13 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
             try:
                 cargo_d = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
             except:
-                cargo_d = Cargo.objects.create(entidad=entidad, clave_cargo='g_docente', borrable=False, cargo='Docente')
+                cargo_d = Cargo.objects.create(entidad=entidad, clave_cargo='g_docente', borrable=False,
+                                               cargo='Docente')
             try:
                 cargo_nd = Cargo.objects.get(entidad=entidad, clave_cargo='g_nodocente', borrable=False)
             except:
                 cargo_nd = Cargo.objects.create(entidad=entidad, clave_cargo='g_nodocente', borrable=False,
-                                             cargo='No docente')
+                                                cargo='No docente')
             dni = genera_nie(str(sheet.cell(row_index, dict_names['DNI']).value))
             nombre = sheet.cell(row_index, dict_names['Nombre docente']).value
             apellidos = sheet.cell(row_index, dict_names['Apellidos docente']).value
