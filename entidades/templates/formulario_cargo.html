@@ -59,9 +59,9 @@
                        data-cargo="{{ cargo.id }}">
             </label>
         {% else %}
-            <label>Define el cargo
+            <label>Nombre del cargo
             </label>
-            <strong>{{ cargo.cargo }}</strong>
+            <strong title="{{ cargo.clave_ex }}">{{ cargo.cargo }}</strong>
         {% endif %}
     </div>
     <div class="large-4 columns">
