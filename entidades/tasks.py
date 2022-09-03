@@ -962,6 +962,11 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
             gauser_extra.jornada_contratada = jornada_contratada
             gauser_extra.cargos.add(cargo)
             gauser_extra.save()
+            direc_apellidos, direc_nombre = entidad.entidadextra.director.split(', ')
+            if gauser_extra.gauser.first_name == direc_nombre and gauser_extra.gauser.last_name == direc_apellidos:
+                cargo_director, c = Cargo.objects.get_or_create(entidad=entidad, clave_cargo='g_director_centro')
+                gauser_extra.cargos.add(cargo_director)
+
         except Exception as msg:
             apellidos = slugify(sheet.cell(row_index, dict_names['Apellidos docente']).value)
             errores[row_index] = {'error': str(msg), 'apellidos': apellidos}
