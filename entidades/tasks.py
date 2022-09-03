@@ -854,36 +854,36 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
                     cargo_director, c = Cargo.objects.get_or_create(entidad=entidad,
                                                                     clave_cargo='g_director_centro')
                     g_e_entidad.permisos.add(*cargo_director.permisos.all())
-                # Menus:
-                carga.log += '<br>Comienza carga de menús'
-                carga.save()
-                for m in Menus_Centro_Educativo:
-                    try:
-                        md = Menu_default.objects.get(code_menu=m[0])
-                        try:
-                            Menu.objects.get(entidad=entidad, menu_default=md)
-                        except:
-                            Menu.objects.create(entidad=entidad, menu_default=md, texto_menu=m[1], pos=m[2])
-                    except Exception as msg:
-                        Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros2: %s' % str(msg), fecha=now())
-                ee, created = EntidadExtra.objects.get_or_create(entidad=entidad)
-                ee.titularidad = sheet.cell(row_index, dict_names['Titularidad']).value
-                ee.tipo_centro = sheet.cell(row_index, dict_names['Tipo centro']).value
+            # Menus:
+            carga.log += '<br>Comienza carga de menús'
+            carga.save()
+            for m in Menus_Centro_Educativo:
                 try:
-                    code_entidad_padre = int(sheet.cell(row_index, dict_names['IES del que depende']).value)
-                    ee.depende_de = Entidad.objects.get(code=code_entidad_padre)
+                    md = Menu_default.objects.get(code_menu=m[0])
+                    try:
+                        Menu.objects.get(entidad=entidad, menu_default=md)
+                    except:
+                        Menu.objects.create(entidad=entidad, menu_default=md, texto_menu=m[1], pos=m[2])
                 except Exception as msg:
-                    ee.depende_de = None
-                if 'S' in sheet.cell(row_index, dict_names['Servicio comedor']).value:
-                    ee.comedor = True
-                else:
-                    ee.comedor = False
-                if 'S' in sheet.cell(row_index, dict_names['Transporte escolar']).value:
-                    ee.transporte = True
-                else:
-                    ee.transporte = False
-                ee.director = sheet.cell(row_index, dict_names['Dirección']).value
-                ee.save()
+                    Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros2: %s' % str(msg), fecha=now())
+            ee, created = EntidadExtra.objects.get_or_create(entidad=entidad)
+            ee.titularidad = sheet.cell(row_index, dict_names['Titularidad']).value
+            ee.tipo_centro = sheet.cell(row_index, dict_names['Tipo centro']).value
+            try:
+                code_entidad_padre = int(sheet.cell(row_index, dict_names['IES del que depende']).value)
+                ee.depende_de = Entidad.objects.get(code=code_entidad_padre)
+            except Exception as msg:
+                ee.depende_de = None
+            if 'S' in sheet.cell(row_index, dict_names['Servicio comedor']).value:
+                ee.comedor = True
+            else:
+                ee.comedor = False
+            if 'S' in sheet.cell(row_index, dict_names['Transporte escolar']).value:
+                ee.transporte = True
+            else:
+                ee.transporte = False
+            ee.director = sheet.cell(row_index, dict_names['Dirección']).value
+            ee.save()
         expediente = sheet.cell(row_index, dict_names['Expediente']).value
         eee, created = EntidadExtraExpediente.objects.get_or_create(eextra=ee, expediente=expediente)
         oferta = sheet.cell(row_index, dict_names['Oferta']).value
