@@ -900,13 +900,13 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
             code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
             entidad = Entidad.objects.get(code=code_entidad)
             try:
-                cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
+                cargo_d = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
             except:
-                cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_docente', borrable=False, cargo='Docente')
+                cargo_d = Cargo.objects.create(entidad=entidad, clave_cargo='g_docente', borrable=False, cargo='Docente')
             try:
-                cargo = Cargo.objects.get(entidad=entidad, clave_cargo='g_nodocente', borrable=False)
+                cargo_nd = Cargo.objects.get(entidad=entidad, clave_cargo='g_nodocente', borrable=False)
             except:
-                cargo = Cargo.objects.create(entidad=entidad, clave_cargo='g_nodocente', borrable=False,
+                cargo_nd = Cargo.objects.create(entidad=entidad, clave_cargo='g_nodocente', borrable=False,
                                              cargo='No docente')
             dni = genera_nie(str(sheet.cell(row_index, dict_names['DNI']).value))
             nombre = sheet.cell(row_index, dict_names['Nombre docente']).value
@@ -916,6 +916,10 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
             clave_ex = str(sheet.cell(row_index, dict_names['X_DOCENTE']).value).strip()
             puesto = str(sheet.cell(row_index, dict_names['Puesto']).value).strip()
             tipo_personal = str(sheet.cell(row_index, dict_names['Tipo personal']).value).strip()
+            if 'No Docente' in tipo_personal:
+                cargo = cargo_nd
+            else:
+                cargo = cargo_d
             jornada_contratada = str(sheet.cell(row_index, dict_names['Jornada contratada']).value).strip()
             try:
                 try:

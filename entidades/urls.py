@@ -36,4 +36,5 @@ urlpatterns = [
     path('selectgcs_organization/', views.selectgcs_organization),
     path('doc_configuration/', views.doc_configuration),
     path('postnewreserva/<int:entidad_code>/', views.postnewreserva),
+    path('crear_ges_sies2ies/', views.crear_ges_sies2ies),
 ]

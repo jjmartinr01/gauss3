@@ -2763,3 +2763,30 @@ def arreglar_dnis(request):
     Este problema fue detectado al importar datos para evaluar funcionarios en prácticas.
     '''
     Gauser.objects.extra(where=["CHAR_LENGTH(dni) = 8"])
+
+@gauss_required
+def crear_ges_sies2ies(request):
+    #Función para crear gauser_extras en los IES a partir de los usuarios de sus secciones
+    #En primer lugar cargamos las SIES:
+    msgs = 'Creación de GES de SIES a IES realizada. <br>'
+    siess = EntidadExtra.objects.filter(depende_de__isnull=False)
+    for sies in Entidad.objects.filter(entidadextra__depende_de__isnull=False):
+        try:
+            ies = sies.entidadextra.depende_de
+            cargo_ies = Cargo.objects.get(entidad=ies, clave_cargo='g_docente', borrable=False)
+            msgs += '<br><br>' + str(ies) + '<br>'
+            for ge_sies in Gauser_extra.objects.filter(ronda=sies.ronda):
+                try:
+                    ge_ies, c = Gauser_extra.objects.get_or_create(ronda=ies.ronda, gauser=ge_sies.gauser)
+                    ge_ies.activo = True
+                    ge_ies.puesto = ge_sies.puesto
+                    ge_ies.tipo_personal = ge_sies.tipo_personal
+                    ge_ies.jornada_contratada = ge_sies.jornada_contratada
+                    ge_ies.cargos.add(cargo_ies)
+                    ge_ies.save()
+                    msgs += str(ge_sies) + '-->' + str(ge_ies) + '<br>'
+                except Exception as msg2:
+                    msgs += 'for2: ' + str(msg2)
+        except Exception as msg1:
+            msgs += 'for1: ' + str(msg1)
+    return HttpResponse(msgs)
