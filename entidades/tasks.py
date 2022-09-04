@@ -1060,7 +1060,7 @@ def ejecutar_configurar_menus_centros_educativos():
     mensaje = 'Hecho.'
     for e in Entidad.objects.all():
         try:
-            if e.entidadextra.tipo_centro in TiposCentro and 'Haro' not in e.name:
+            if e.entidadextra.tipo_centro in TiposCentro:
                 Menu.objects.filter(entidad=e).delete()
                 for m in Menus_Centro_Educativo:
                     try:

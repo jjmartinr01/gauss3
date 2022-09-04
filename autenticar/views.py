@@ -88,11 +88,15 @@ def carga_docentes_general(request):
             action = request.POST['action']
             if action == 'carga_masiva_docentes_racima':
                 if 'excel' in request.FILES['file_masivo'].content_type:
-                    carga = CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo'], tipo='DOCENTES_RACIMA')
-                    # from entidades.tasks import carga_masiva_tipo_DOCENTES_RACIMA
-                    # carga_masiva_tipo_DOCENTES_RACIMA(carga)
-                    carga_masiva_from_excel.apply_async(expires=300)
-                    crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+                    CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=request.FILES['file_masivo'],
+                                               tipo='DOCENTES_RACIMA')
+                    try:
+                        carga_masiva_from_excel.apply_async(expires=300)
+                        crear_aviso(request, True, 'cdg_manual')
+                        crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+                    except:
+                        crear_aviso(request, False,
+                                    'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
             else:
                 crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.')
 
@@ -504,8 +508,8 @@ def index(request):
                         logger.info('Gauser con acceso a múltiples entidades.')
                         return render(request, "select_entidad.html", {'gauser_extras': gauser_extras, })
                     elif entidades_disponibles == 1:
-                        request.session["gauser_extra"] = gauser_extras[0]
-                        request.session["ronda"] = request.session["gauser_extra"].ronda
+                        request.session['gauser_extra'] = gauser_extras[0]
+                        request.session['ronda'] = request.session["gauser_extra"].ronda
                         request.session['num_items_page'] = 15
                         # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
                         gauss = Gauser.objects.get(username='gauss')
@@ -584,7 +588,175 @@ def index(request):
             form = CaptchaForm()
             return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso', 'ip': ip})
 
+# ------------------------------------------------------------------#
+# Login en GAUSS a través del servidor CAS del Gobierno de La Rioja
+# ------------------------------------------------------------------#
+def logincas(request):
+    # CAS_URL = 'https://ias1.larioja.org/casLR/'
+    if request.method == 'GET':
+        if 'nexturl' in request.GET:
+            nexturl = '?nexturl=' + request.GET['nexturl']
+            request.session['nexturl'] = request.GET['nexturl']
+        else:
+            nexturl = '?nexturl=%2Fcalendario%2F' # Por defecto irá a /calendario/
+            request.session['nexturl'] = '/calendario/'
+        request.session['service'] = 'https%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F' + nexturl
+        if 'ticket' in request.GET:
+            ticket = request.GET['ticket']
+            url = CAS_URL + 'serviceValidate?service=' + request.session['service'] + '&ticket=' + ticket
+            # xml = render_to_string('samlcas.xml', {'request_id': pass_generator(15), 'ticket': ticket,
+            #                                        'datetime_iso': datetime.utcnow().isoformat()})
+            # url = CAS_URL + 'samlValidate?service=' + request.session['service'] + '&ticket=' + ticket
+            s = requests.Session()
+            # headers = {'Content-Type': 'application/xml'}
+            s.verify = False
+            r = s.get(url, verify=False)
+            # r = s.post(url, verify=False, data=xml, headers=headers)
+            try:
+                id = r.text.split('<cas:user>')[1].split('</cas:user>')[0]
+            except:
+                return HttpResponse(r.text)
+            try:
+                user = Gauser.objects.get(username=id)
+            except:
+                try:
+                    user = Gauser.objects.get(dni=genera_nie(id))
+                except:
+                    return HttpResponse(id)
+                    # return HttpResponse('Tu usuario en Gauss debe coincidir con el de Racima')
+            if user.is_active:
+                login(request, user)
+                request.session["hoy"] = datetime.today()
+                request.session[translation.LANGUAGE_SESSION_KEY] = user_language
+                gauser_extras = Gauser_extra.objects.filter(Q(gauser=user) & Q(activo=True))
+                g_cs = gauser_extras
+                entidades_disponibles = 0
+                for gauser_extra in g_cs:
+                    if gauser_extra.ronda == gauser_extra.ronda.entidad.ronda:
+                        entidades_disponibles += 1
+                    else:
+                        gauser_extras = gauser_extras.exclude(pk=gauser_extra.id)
+                if entidades_disponibles > 1:
+                    logger.info('Gauser con acceso a múltiples entidades.')
+                    return render(request, "select_entidad.html", {'gauser_extras': gauser_extras, })
+                elif entidades_disponibles == 1:
+                    request.session["gauser_extra"] = gauser_extras[0]
+                    request.session["ronda"] = request.session["gauser_extra"].ronda
+                    request.session['num_items_page'] = 15
+                    # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
+                    gauss = Gauser.objects.get(username='gauss')
+                    Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
+                    logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+                    return redirect(request.session['nexturl'])
+                    # if request.session['nexturl']:
+                    #     response = HttpResponse(status=302)
+                    #     response['Location'] = request.session['nexturl']
+                    # else:
+                    #     return redirect(request.session['nexturl'])
+                else:
+                    logger.info('Gauser activo, pero no tiene asociada ninguna entidad.')
+                    return render(request, "no_cuenta.html", {'usuario': user, })
+            else:
+                return render(request, "no_cuenta.html", {'usuario': user, })
+        else:
+            response = HttpResponse(status=302)
+            response['Location'] = CAS_URL + 'login?inst=E&service=' + request.session['service']
+            return response
+    elif request.method == 'POST':
+        if request.POST['action'] == 'selecciona_entidad':
+            request.session["gauser_extra"] = Gauser_extra.objects.get(pk=request.POST['gauser_extra'])
+            request.session["ronda"] = request.session["gauser_extra"].ronda
+            request.session['num_items_page'] = 15
+            # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
+            gauss = Gauser.objects.get(username='gauss')
+            Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
+            logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+            return redirect(request.session['nexturl'])
 
+def logincas_antiguo(request):
+    #Con este logincas solo se puede autenticar con certificado digital. En mensaje del 30/08/2022, Luis Miguel
+    #Briones Román <lmbriones@larioja.org> me informa de como utilizar otra url para que aparezcan los mismos accesos
+    #que en Racima. Es necesario añadir el parámetro 'inst' y cambiar 'service' por 'TARGET'. Mirar función logincas.
+    # CAS_URL = 'https://ias1.larioja.org/casLR/'
+    if request.method == 'GET':
+        if 'nexturl' in request.GET:
+            nexturl = '?nexturl=' + request.GET['nexturl']
+            request.session['nexturl'] = request.GET['nexturl']
+        else:
+            nexturl = '?nexturl=%2Fcalendario%2F' # Por defecto irá a /calendario/
+            request.session['nexturl'] = '/calendario/'
+        request.session['service'] = 'https%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F' + nexturl
+        if 'ticket' in request.GET:
+            ticket = request.GET['ticket']
+            url = CAS_URL + 'serviceValidate?service=' + request.session['service'] + '&ticket=' + ticket
+            # xml = render_to_string('samlcas.xml', {'request_id': pass_generator(15), 'ticket': ticket,
+            #                                        'datetime_iso': datetime.utcnow().isoformat()})
+            # url = CAS_URL + 'samlValidate?service=' + request.session['service'] + '&ticket=' + ticket
+            s = requests.Session()
+            # headers = {'Content-Type': 'application/xml'}
+            s.verify = False
+            r = s.get(url, verify=False)
+            # r = s.post(url, verify=False, data=xml, headers=headers)
+            try:
+                id = r.text.split('<cas:user>')[1].split('</cas:user>')[0]
+            except:
+                return HttpResponse(r.text)
+            try:
+                user = Gauser.objects.get(username=id)
+            except:
+                try:
+                    user = Gauser.objects.get(dni=genera_nie(id))
+                except:
+                    return HttpResponse(id)
+                    # return HttpResponse('Tu usuario en Gauss debe coincidir con el de Racima')
+            if user.is_active:
+                login(request, user)
+                request.session["hoy"] = datetime.today()
+                request.session[translation.LANGUAGE_SESSION_KEY] = user_language
+                gauser_extras = Gauser_extra.objects.filter(Q(gauser=user) & Q(activo=True))
+                g_cs = gauser_extras
+                entidades_disponibles = 0
+                for gauser_extra in g_cs:
+                    if gauser_extra.ronda == gauser_extra.ronda.entidad.ronda:
+                        entidades_disponibles += 1
+                    else:
+                        gauser_extras = gauser_extras.exclude(pk=gauser_extra.id)
+                if entidades_disponibles > 1:
+                    logger.info('Gauser con acceso a múltiples entidades.')
+                    return render(request, "select_entidad.html", {'gauser_extras': gauser_extras, })
+                elif entidades_disponibles == 1:
+                    request.session["gauser_extra"] = gauser_extras[0]
+                    request.session["ronda"] = request.session["gauser_extra"].ronda
+                    request.session['num_items_page'] = 15
+                    # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
+                    gauss = Gauser.objects.get(username='gauss')
+                    Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
+                    logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+                    return redirect(request.session['nexturl'])
+                    # if request.session['nexturl']:
+                    #     response = HttpResponse(status=302)
+                    #     response['Location'] = request.session['nexturl']
+                    # else:
+                    #     return redirect(request.session['nexturl'])
+                else:
+                    logger.info('Gauser activo, pero no tiene asociada ninguna entidad.')
+                    return render(request, "no_cuenta.html", {'usuario': user, })
+            else:
+                return render(request, "no_cuenta.html", {'usuario': user, })
+        else:
+            response = HttpResponse(status=302)
+            response['Location'] = CAS_URL + 'login?service=' + request.session['service']
+            return response
+    elif request.method == 'POST':
+        if request.POST['action'] == 'selecciona_entidad':
+            request.session["gauser_extra"] = Gauser_extra.objects.get(pk=request.POST['gauser_extra'])
+            request.session["ronda"] = request.session["gauser_extra"].ronda
+            request.session['num_items_page'] = 15
+            # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
+            gauss = Gauser.objects.get(username='gauss')
+            Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
+            logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
+            return redirect(request.session['nexturl'])
 def no_login(request):
     pag = request.GET['next']
     return render(request, "no_login.html", {'pag': pag, })
@@ -985,175 +1157,7 @@ def recupera_password(request):
 #     except:
 #         return HttpResponse("No está instalado el paquete cryptography")
 
-# ------------------------------------------------------------------#
-# Login en GAUSS a través del servidor CAS del Gobierno de La Rioja
-# ------------------------------------------------------------------#
-def logincas(request):
-    # CAS_URL = 'https://ias1.larioja.org/casLR/'
-    if request.method == 'GET':
-        if 'nexturl' in request.GET:
-            nexturl = '?nexturl=' + request.GET['nexturl']
-            request.session['nexturl'] = request.GET['nexturl']
-        else:
-            nexturl = '?nexturl=%2Fcalendario%2F' # Por defecto irá a /calendario/
-            request.session['nexturl'] = '/calendario/'
-        request.session['service'] = 'https%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F' + nexturl
-        if 'ticket' in request.GET:
-            ticket = request.GET['ticket']
-            url = CAS_URL + 'serviceValidate?service=' + request.session['service'] + '&ticket=' + ticket
-            # xml = render_to_string('samlcas.xml', {'request_id': pass_generator(15), 'ticket': ticket,
-            #                                        'datetime_iso': datetime.utcnow().isoformat()})
-            # url = CAS_URL + 'samlValidate?service=' + request.session['service'] + '&ticket=' + ticket
-            s = requests.Session()
-            # headers = {'Content-Type': 'application/xml'}
-            s.verify = False
-            r = s.get(url, verify=False)
-            # r = s.post(url, verify=False, data=xml, headers=headers)
-            try:
-                id = r.text.split('<cas:user>')[1].split('</cas:user>')[0]
-            except:
-                return HttpResponse(r.text)
-            try:
-                user = Gauser.objects.get(username=id)
-            except:
-                try:
-                    user = Gauser.objects.get(dni=genera_nie(id))
-                except:
-                    return HttpResponse(id)
-                    # return HttpResponse('Tu usuario en Gauss debe coincidir con el de Racima')
-            if user.is_active:
-                login(request, user)
-                request.session["hoy"] = datetime.today()
-                request.session[translation.LANGUAGE_SESSION_KEY] = user_language
-                gauser_extras = Gauser_extra.objects.filter(Q(gauser=user) & Q(activo=True))
-                g_cs = gauser_extras
-                entidades_disponibles = 0
-                for gauser_extra in g_cs:
-                    if gauser_extra.ronda == gauser_extra.ronda.entidad.ronda:
-                        entidades_disponibles += 1
-                    else:
-                        gauser_extras = gauser_extras.exclude(pk=gauser_extra.id)
-                if entidades_disponibles > 1:
-                    logger.info('Gauser con acceso a múltiples entidades.')
-                    return render(request, "select_entidad.html", {'gauser_extras': gauser_extras, })
-                elif entidades_disponibles == 1:
-                    request.session["gauser_extra"] = gauser_extras[0]
-                    request.session["ronda"] = request.session["gauser_extra"].ronda
-                    request.session['num_items_page'] = 15
-                    # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
-                    gauss = Gauser.objects.get(username='gauss')
-                    Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
-                    logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
-                    return redirect(request.session['nexturl'])
-                    # if request.session['nexturl']:
-                    #     response = HttpResponse(status=302)
-                    #     response['Location'] = request.session['nexturl']
-                    # else:
-                    #     return redirect(request.session['nexturl'])
-                else:
-                    logger.info('Gauser activo, pero no tiene asociada ninguna entidad.')
-                    return render(request, "no_cuenta.html", {'usuario': user, })
-            else:
-                return render(request, "no_cuenta.html", {'usuario': user, })
-        else:
-            response = HttpResponse(status=302)
-            response['Location'] = CAS_URL + 'login?inst=E&service=' + request.session['service']
-            return response
-    elif request.method == 'POST':
-        if request.POST['action'] == 'selecciona_entidad':
-            request.session["gauser_extra"] = Gauser_extra.objects.get(pk=request.POST['gauser_extra'])
-            request.session["ronda"] = request.session["gauser_extra"].ronda
-            request.session['num_items_page'] = 15
-            # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
-            gauss = Gauser.objects.get(username='gauss')
-            Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
-            logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
-            return redirect(request.session['nexturl'])
 
-def logincas_antiguo(request):
-    #Con este logincas solo se puede autenticar con certificado digital. En mensaje del 30/08/2022, Luis Miguel
-    #Briones Román <lmbriones@larioja.org> me informa de como utilizar otra url para que aparezcan los mismos accesos
-    #que en Racima. Es necesario añadir el parámetro 'inst' y cambiar 'service' por 'TARGET'. Mirar función logincas.
-    # CAS_URL = 'https://ias1.larioja.org/casLR/'
-    if request.method == 'GET':
-        if 'nexturl' in request.GET:
-            nexturl = '?nexturl=' + request.GET['nexturl']
-            request.session['nexturl'] = request.GET['nexturl']
-        else:
-            nexturl = '?nexturl=%2Fcalendario%2F' # Por defecto irá a /calendario/
-            request.session['nexturl'] = '/calendario/'
-        request.session['service'] = 'https%3A%2F%2F' + request.META['HTTP_HOST'] + '%2Flogincas%2F' + nexturl
-        if 'ticket' in request.GET:
-            ticket = request.GET['ticket']
-            url = CAS_URL + 'serviceValidate?service=' + request.session['service'] + '&ticket=' + ticket
-            # xml = render_to_string('samlcas.xml', {'request_id': pass_generator(15), 'ticket': ticket,
-            #                                        'datetime_iso': datetime.utcnow().isoformat()})
-            # url = CAS_URL + 'samlValidate?service=' + request.session['service'] + '&ticket=' + ticket
-            s = requests.Session()
-            # headers = {'Content-Type': 'application/xml'}
-            s.verify = False
-            r = s.get(url, verify=False)
-            # r = s.post(url, verify=False, data=xml, headers=headers)
-            try:
-                id = r.text.split('<cas:user>')[1].split('</cas:user>')[0]
-            except:
-                return HttpResponse(r.text)
-            try:
-                user = Gauser.objects.get(username=id)
-            except:
-                try:
-                    user = Gauser.objects.get(dni=genera_nie(id))
-                except:
-                    return HttpResponse(id)
-                    # return HttpResponse('Tu usuario en Gauss debe coincidir con el de Racima')
-            if user.is_active:
-                login(request, user)
-                request.session["hoy"] = datetime.today()
-                request.session[translation.LANGUAGE_SESSION_KEY] = user_language
-                gauser_extras = Gauser_extra.objects.filter(Q(gauser=user) & Q(activo=True))
-                g_cs = gauser_extras
-                entidades_disponibles = 0
-                for gauser_extra in g_cs:
-                    if gauser_extra.ronda == gauser_extra.ronda.entidad.ronda:
-                        entidades_disponibles += 1
-                    else:
-                        gauser_extras = gauser_extras.exclude(pk=gauser_extra.id)
-                if entidades_disponibles > 1:
-                    logger.info('Gauser con acceso a múltiples entidades.')
-                    return render(request, "select_entidad.html", {'gauser_extras': gauser_extras, })
-                elif entidades_disponibles == 1:
-                    request.session["gauser_extra"] = gauser_extras[0]
-                    request.session["ronda"] = request.session["gauser_extra"].ronda
-                    request.session['num_items_page'] = 15
-                    # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
-                    gauss = Gauser.objects.get(username='gauss')
-                    Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
-                    logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
-                    return redirect(request.session['nexturl'])
-                    # if request.session['nexturl']:
-                    #     response = HttpResponse(status=302)
-                    #     response['Location'] = request.session['nexturl']
-                    # else:
-                    #     return redirect(request.session['nexturl'])
-                else:
-                    logger.info('Gauser activo, pero no tiene asociada ninguna entidad.')
-                    return render(request, "no_cuenta.html", {'usuario': user, })
-            else:
-                return render(request, "no_cuenta.html", {'usuario': user, })
-        else:
-            response = HttpResponse(status=302)
-            response['Location'] = CAS_URL + 'login?service=' + request.session['service']
-            return response
-    elif request.method == 'POST':
-        if request.POST['action'] == 'selecciona_entidad':
-            request.session["gauser_extra"] = Gauser_extra.objects.get(pk=request.POST['gauser_extra'])
-            request.session["ronda"] = request.session["gauser_extra"].ronda
-            request.session['num_items_page'] = 15
-            # Las dos siguientes líneas son para asegurar que gauss existe como usuario en cualquier entidad
-            gauss = Gauser.objects.get(username='gauss')
-            Gauser_extra.objects.get_or_create(gauser=gauss, ronda=request.session["ronda"], activo=True)
-            logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
-            return redirect(request.session['nexturl'])
 # ------------------------------------------------------------------#
 # DEFINICIÓN DE FUNCIÓN PARA
 # ------------------------------------------------------------------#
