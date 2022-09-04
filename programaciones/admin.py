@@ -7,6 +7,8 @@ from programaciones.models import *
 class ProgSecAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['materia'].queryset = Materia_programaciones.objects.none()
+        self.fields['curso'].queryset = Curso.objects.none()
         try:
             self.fields['gep'].queryset = Gauser_extra_programaciones.objects.filter(ge__ronda=self.instance.gep.ge.ronda)
         except:
