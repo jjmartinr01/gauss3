@@ -1,7 +1,18 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
+from django import forms
 from programaciones.models import *
 
+
+class ProgSecAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        try:
+            self.fields['gep'].queryset = Gauser_extra_programaciones.objects.filter(ge__ronda=self.instance.gep.ge.ronda)
+        except:
+            self.fields['gep'].queryset = Gauser_extra_programaciones.objects.none()
+class ProgSecAdmin(admin.ModelAdmin):
+    form = ProgSecAdminForm
 
 admin.site.register(Titulo_FP)
 admin.site.register(Programacion_modulo)
@@ -20,7 +31,7 @@ admin.site.register(ProgramacionSubida)
 ############################################################
 ############### Programaciones Secundaria ##################
 ############################################################
-admin.site.register(ProgSec)
+admin.site.register(ProgSec, ProgSecAdmin)
 admin.site.register(CEProgSec)
 admin.site.register(CEvProgSec)
 admin.site.register(LibroRecurso)
