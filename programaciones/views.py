@@ -1963,7 +1963,7 @@ def reordenar_saberes_comienzo(psec):
     return render_to_string('progsec_accordion_content_saberes.html', {'progsec': psec})
 
 
-@permiso_required('acceso_progsecundaria')
+# @permiso_required('acceso_progsecundaria')
 def progsecundaria(request):
     # try:
         g_e = request.session['gauser_extra']
