@@ -75,633 +75,645 @@
 {% block final %}
     <script>
         {% comment %}
-        config = {
-            removePlugins: 'exportpdf',
-            toolbar: [
-                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
-                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
-                {
-                    name: 'basicstyles',
-                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
-                },
-                {
-                    name: 'paragraph',
-                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
-                },
-                '/',
-                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
-                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
-                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
-                {name: 'colors', items: ['TextColor', 'BGColor']},
-                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
-                {name: 'document', items: ['Source']},
-                {name: 'about', items: ['About', 'generapdfbutton']}
-            ],
-            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
-        }
+            config = {
+                removePlugins: 'exportpdf',
+                toolbar: [
+                    {
+                        name: 'clipboard',
+                        items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']
+                    },
+                    {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
+                    {
+                        name: 'basicstyles',
+                        items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
+                    },
+                    {
+                        name: 'paragraph',
+                        items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
+                    },
+                    '/',
+                    {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
+                    {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+                    {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
+                    {name: 'colors', items: ['TextColor', 'BGColor']},
+                    {name: 'tools', items: ['Maximize', 'ShowBlocks']},
+                    {name: 'document', items: ['Source']},
+                    {name: 'about', items: ['About', 'generapdfbutton']}
+                ],
+                extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
+            }
         {% endcomment %}
+        {% if g_e == g_ep.ge %}
 
-        {#habilita(['s_search']);#}
-        {% if g_e|has_permiso:"crea_programaciones" %}
-            habilita(['s_plus']);
-            $('#plus_sign').click(function (event) {
-                event.preventDefault();
-                $('#formulario_crear').toggle();
-                setTimeout(function () {
-                    $('#curso_progsec').select2();
-                    $('#areamateria_progsec').select2();
-                }, 100);
+            {#habilita(['s_search']);#}
+            {% if g_e|has_permiso:"crea_programaciones" %}
+                habilita(['s_plus']);
+                $('#plus_sign').click(function (event) {
+                    event.preventDefault();
+                    $('#formulario_crear').toggle();
+                    setTimeout(function () {
+                        $('#curso_progsec').select2();
+                        $('#areamateria_progsec').select2();
+                    }, 100);
+                });
+
+                $('#curso_progsec').change(function () {
+                    var curso = $('#curso_progsec').val();
+                    $.post("/progsecundaria/", {'action': 'get_areasmaterias', 'curso': curso},
+                        function (data) {
+                            if (data.ok) {
+                                $('#areamateria_progsec').prop('disabled', false).find('option').remove();
+                                $.each(data.valores, function (i, valor) {
+                                    $('#areamateria_progsec').append($('<option>', {
+                                        value: valor.valor,
+                                        text: valor.texto
+                                    }));
+                                });
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                            }
+                            $(document).scrollTop($('#title_page').offset().top - 150);
+                        });
+                });
+
+                $('#areamateria_progsec').change(function () {
+                    var areamateria = $('#areamateria_progsec').val();
+                    if (areamateria) {
+                        $('#crea_progsec').show();
+                    } else {
+                        $('#crea_progsec').hide();
+                    }
+                });
+
+                $('#crea_progsec').click(function (event) {
+                    event.preventDefault();
+                    var curso = $('#curso_progsec').val();
+                    var areamateria = $('#areamateria_progsec').val();
+                    $.post("/progsecundaria/", {'action': 'crea_progsec', 'curso': curso, 'areamateria': areamateria},
+                        function (data) {
+                            if (data.ok) {
+                                $('#list_progsec').prepend(data.html);
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $("#update_error").show().delay(1500).fadeOut();
+                                show_mensajes({
+                                    'title': '<i class="fa fa-warning"></i> Aviso',
+                                    'texto': data.msg
+                                })
+                            }
+                            $(document).scrollTop($('#title_page').offset().top - 150);
+                        });
+                });
+            {% endif %}
+            $('body').on('click', '.borrar_progsec', function () {
+                id = $(this).data('id');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar esta programación didáctica?',
+                    texto: 'Si aceptas, la programación se borrará por completo de la base de datos', size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post("/progsecundaria/", {action: 'borrar_progsec', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#accordion' + id).remove();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                        setTimeout(function () {
+                                            show_mensajes({
+                                                title: '<i class="fa fa-warning"></i> No es posible el borrado',
+                                                texto: data.msg
+                                            });
+                                        }, 500);
+                                    }
+                                });
+                        }
+                    }
+                });
             });
 
-            $('#curso_progsec').change(function () {
-                var curso = $('#curso_progsec').val();
-                $.post("/progsecundaria/", {'action': 'get_areasmaterias', 'curso': curso},
+            {% comment %}
+
+                function destroyEditorInstances() {
+                    for (var instance in CKEDITOR.instances) {
+                        CKEDITOR.instances[instance].destroy();
+                    }
+                }
+
+                function constructEditorInstances(id) {
+                    CKEDITOR.replace('texto_editable' + id, config);
+                    {#CKEDITOR.replace('destinatario' + id);#}
+                    CKEDITOR.inline('destinatario' + id, config);
+                }
+
+                function constructInlineEditorInstances() {
+                    $(".ckeditor").each(function (index) {
+                        var element = $(this);
+                        var id = element.attr('id');
+                        var editor = CKEDITOR.inline(id, config);
+                        editor.addCommand("generapdfinforme", {
+                            exec: function (edt) {
+                                genera_pdf_informe();
+                            }
+                        });
+                        editor.ui.addButton('generapdfbutton', {
+                            label: "Genera PDF",
+                            command: 'generapdfinforme',
+                            toolbar: 'insert',
+                            icon: '/static/images/pdf_icon.png'
+                        });
+                        var anchura = element.width() + 2;
+                        setTimeout(function () {
+                            $('#cke_' + id).css('width', anchura + 'px');
+                            {# Este es el id del ckeditor creado #}
+                        }, 200);
+                    });
+                }
+            {% endcomment %}
+
+            $(document).foundation({
+                accordion: {
+                    callback: function (accordion) {
+                        if (accordion.hasClass('accordion-progsec')) {
+                            var id = accordion.data('id');
+                            if ($('#circle' + id).hasClass('fa-plus-circle')) {
+                                $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                                $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                                window.scrollTo(0, $('#accordion' + id).offset().top - 50);
+                                $.post("/progsecundaria/", {action: 'open_accordion', id: id},
+                                    function (data) {
+                                        if (data.ok) {
+                                            $('#panel' + id).html(data.html);
+                                            {#destroyEditorInstances();#}
+                                            {#constructInlineEditorInstances(id);#}
+                                            $('#id_progsec').val(id);
+                                            {# utilizado para generar pdf #}
+                                            $("#update_ok").show().delay(1500).fadeOut();
+                                        } else {
+                                            $("#update_error").show().delay(1500).fadeOut();
+                                        }
+                                    });
+                            } else {
+                                $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                                $('#panel' + id).html('');
+                            }
+                        }
+                    }
+                }
+            });
+
+            {% if prog %}
+                $.post("/progsecundaria/", {action: 'open_accordion', id: {{prog}}},
                     function (data) {
                         if (data.ok) {
-                            $('#areamateria_progsec').prop('disabled', false).find('option').remove();
-                            $.each(data.valores, function (i, valor) {
-                                $('#areamateria_progsec').append($('<option>', {
-                                    value: valor.valor,
-                                    text: valor.texto
-                                }));
-                            });
+                            $('#panel{{ prog }}').html(data.html);
+                            $('#id_progsec').val({{prog}});
+                            window.scrollTo(0, $('#unidades_programacion{{ prog }}').offset().top + 200);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $("#update_error").show().delay(1500).fadeOut();
                         }
-                        $(document).scrollTop($('#title_page').offset().top - 150);
+                    });
+            {% endif %}
+
+            var funcion_tiempo_espera_update_texto;
+            $('body').on('keyup change', '.update_texto', function () {
+                clearTimeout(funcion_tiempo_espera_update_texto);
+                var element = $(this);
+                funcion_tiempo_espera_update_texto = setTimeout(function () {
+                    var id = element.data('id');
+                    var campo = element.data('campo');
+                    var nuevo_texto = element.val();
+                    $.post("/progsecundaria/", {action: 'update_texto', id: id, texto: nuevo_texto, campo: campo},
+                        function (data) {
+                            if (data.ok) {
+                                $('#accordion_nombre' + data.progsec).html(data.html);
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }, 750);
+            });
+
+            $('body').on('click', '.cargar_libro', function () {
+                var id = $(this).data('progsec');
+                var nombre = $('#nombre_libro' + id).val();
+                var isbn = $('#isbn_libro' + id).val();
+                var observaciones = $('#observaciones_libro' + id).val();
+                $.post("/progsecundaria/", {
+                        action: 'cargar_libro', id: id, nombre: nombre,
+                        isbn: isbn, observaciones: observaciones
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#lista_libros' + id).append(data.html);
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            $('body').on('click', '.borrar_libro', function () {
+                id = $(this).data('progsec');
+                libro = $(this).data('libro');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar este libro de la programación didáctica?',
+                    texto: 'Si aceptas, el libro se borrará por completo de la base de datos', size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post("/progsecundaria/", {action: 'borrar_libro', id: id, libro: libro},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('.datos_libro' + libro).remove();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+            $('body').on('click', '.cargar_actex', function () {
+                var id = $(this).data('progsec');
+                var nombre = $('#nombre_actex' + id).val();
+                var inicio = $('#inicio_actex' + id).val();
+                var fin = $('#fin_actex' + id).val();
+                var observaciones = $('#observaciones_actex' + id).val();
+                $.post("/progsecundaria/", {
+                        action: 'cargar_actex', id: id, nombre: nombre,
+                        inicio: inicio, fin: fin, observaciones: observaciones
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            $('#lista_actex' + id).append(data.html);
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            $('body').on('click', '.borrar_actex', function () {
+                id = $(this).data('progsec');
+                actex = $(this).data('actex');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar esta actividad extraescolar/complementaria de la programación didáctica?',
+                    texto: 'Si aceptas, la actividad se borrará por completo de la base de datos', size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post("/progsecundaria/", {action: 'borrar_actex', id: id, actex: actex},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('.datos_actex' + actex).remove();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+            $('body').on('click', '.add_saber', function () {
+                var id = $(this).data('progsec');
+                $.post("/progsecundaria/", {
+                        action: 'add_saber', id: id
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            {#$('#tbody_saberes' + id).append(data.html);#}
+                            $('#lista_saberes' + id).html(data.html);
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
                     });
             });
 
-            $('#areamateria_progsec').change(function () {
-                var areamateria = $('#areamateria_progsec').val();
-                if (areamateria) {
-                    $('#crea_progsec').show();
-                } else {
-                    $('#crea_progsec').hide();
-                }
+            var funcion_tiempo_espera_mod_saber;
+            $('body').on('keyup change', '.mod_saber', function () {
+                var element = $(this);
+                clearTimeout(funcion_tiempo_espera_mod_saber);
+                funcion_tiempo_espera_mod_saber = setTimeout(function () {
+                    var valor = element.val();
+                    var id = element.data('progsec');
+                    var saber = element.data('saber');
+                    var campo = element.data('campo');
+                    if (campo === 'orden' || campo === 'periodos') {
+                        valor = parseInt(valor);
+                    }
+                    $.post("/progsecundaria/", {
+                            action: 'mod_saber', id: id, saber: saber, campo: campo, valor: valor
+                        },
+                        function (data) {
+                            if (data.ok) {
+                                if (data.html) {
+                                    $('#gantt' + id).html(data.html);
+                                }
+                                $("#update_ok").show().delay(1500).fadeOut();
+                            } else {
+                                $('#update_error').show().delay(1500).fadeOut();
+                            }
+                        });
+                }, 750);
+            });
+            {#$('body').on('keydown', '.mod_saber', function () {#}
+            {#    clearTimeout(funcion_tiempo_espera_mod_saber);#}
+            {# });#}
+
+            $('body').on('click', '.ordenar_saberes', function () {
+                var element = $(this);
+                var id = element.data('progsec');
+                $.post("/progsecundaria/", {
+                        action: 'ordenar_saberes', id: id
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#lista_saberes' + id).html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
             });
 
-            $('#crea_progsec').click(function (event) {
-                event.preventDefault();
-                var curso = $('#curso_progsec').val();
-                var areamateria = $('#areamateria_progsec').val();
-                $.post("/progsecundaria/", {'action': 'crea_progsec', 'curso': curso, 'areamateria': areamateria},
+            $('body').on('click', '.borrar_saber', function () {
+                id = $(this).data('progsec');
+                saber = $(this).data('saber');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar esta unidad de programación?',
+                    texto: 'Si aceptas, esta unidad se borrará por completo de la base de datos', size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post("/progsecundaria/", {action: 'borrar_saber', id: id, saber: saber},
+                                function (data) {
+                                    if (data.ok) {
+                                        {#$('#tbody_saberes' + id).html(data.html);#}
+                                        $('#lista_saberes' + id).html(data.html);
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
+
+            $('body').on('change', '.select_tipo', function () {
+                var id = $(this).data('progsec');
+                var tipo = $(this).val();
+                $.post("/progsecundaria/", {action: 'select_tipo', id: id, tipo: tipo},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('change', '.select_departamento', function () {
+                var id = $(this).data('progsec');
+                var departamento = $(this).val();
+                $.post("/progsecundaria/", {action: 'select_departamento', id: id, departamento: departamento},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            $('body').on('change', '.select_jefe', function () {
+                var id = $(this).data('progsec');
+                var jefe = $(this).val();
+                $.post("/progsecundaria/", {action: 'select_jefe', id: id, jefe: jefe},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            $('body').on('change', '.miembros_departamento', function () {
+                var id = $(this).data('progsec');
+                var ges = $(this).val();
+                $.post("/progsecundaria/", {action: 'add_docprogsec', id: id, ges: ges},
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('change', '.pesocep', function () {
+                var id = $(this).data('progsec');
+                var cep = $(this).data('cep');
+                var cep_peso = $(this).val();
+                $.post("/progsecundaria/", {action: 'update_pesocep', id: id, cep: cep, cep_peso: cep_peso},
+                    function (data) {
+                        if (data.ok) {
+                            $('.valor_ce' + cep).html(cep_peso);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('change', '.pesocevp', function () {
+                var id = $(this).data('progsec');
+                var cevp = $(this).data('cevp');
+                var cevp_peso = $(this).val();
+                $.post("/progsecundaria/", {action: 'update_pesocevp', id: id, cevp: cevp, cevp_peso: cevp_peso},
+                    function (data) {
+                        if (data.ok) {
+                            $('#cevalponderada' + id).html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+
+            $('body').on('click', '.copiar_progsec', function () {
+                var progsec = $(this).data('progsec');
+                $.post("/progsecundaria/", {action: 'copiar_progsec', progsec: progsec},
                     function (data) {
                         if (data.ok) {
                             $('#list_progsec').prepend(data.html);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
-                            $("#update_error").show().delay(1500).fadeOut();
-                            show_mensajes({
-                                'title': '<i class="fa fa-warning"></i> Aviso',
-                                'texto': data.msg
-                            })
-                        }
-                        $(document).scrollTop($('#title_page').offset().top - 150);
-                    });
-            });
-        {% endif %}
-        $('body').on('click', '.borrar_progsec', function () {
-            id = $(this).data('id');
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar esta programación didáctica?',
-                texto: 'Si aceptas, la programación se borrará por completo de la base de datos', size: 'large',
-                buttons: {
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    },
-                    "Borrar": function () {
-                        hide_mensajes();
-                        $.post("/progsecundaria/", {action: 'borrar_progsec', id: id},
-                            function (data) {
-                                if (data.ok) {
-                                    $('#accordion' + id).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                    setTimeout(function (){
-                                        show_mensajes({
-                                            title: '<i class="fa fa-warning"></i> No es posible el borrado',
-                                            texto: data.msg
-                                        });
-                                    }, 500);
-                                }
-                            });
-                    }
-                }
-            });
-        });
-
-        {% comment %}
-
-        function destroyEditorInstances() {
-            for (var instance in CKEDITOR.instances) {
-                CKEDITOR.instances[instance].destroy();
-            }
-        }
-
-        function constructEditorInstances(id) {
-            CKEDITOR.replace('texto_editable' + id, config);
-            {#CKEDITOR.replace('destinatario' + id);#}
-            CKEDITOR.inline('destinatario' + id, config);
-        }
-
-        function constructInlineEditorInstances() {
-            $(".ckeditor").each(function (index) {
-                var element = $(this);
-                var id = element.attr('id');
-                var editor = CKEDITOR.inline(id, config);
-                editor.addCommand("generapdfinforme", {
-                    exec: function (edt) {
-                        genera_pdf_informe();
-                    }
-                });
-                editor.ui.addButton('generapdfbutton', {
-                    label: "Genera PDF",
-                    command: 'generapdfinforme',
-                    toolbar: 'insert',
-                    icon: '/static/images/pdf_icon.png'
-                });
-                var anchura = element.width() + 2;
-                setTimeout(function () {
-                    $('#cke_' + id).css('width', anchura + 'px');
-                    {# Este es el id del ckeditor creado #}
-                }, 200);
-            });
-        }
-        {% endcomment %}
-
-        $(document).foundation({
-            accordion: {
-                callback: function (accordion) {
-                    if (accordion.hasClass('accordion-progsec')) {
-                        var id = accordion.data('id');
-                        if ($('#circle' + id).hasClass('fa-plus-circle')) {
-                            $('.circle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
-                            $('#circle' + id).removeClass('fa-plus-circle').addClass('fa-minus-circle');
-                            window.scrollTo(0, $('#accordion' + id).offset().top - 50);
-                            $.post("/progsecundaria/", {action: 'open_accordion', id: id},
-                                function (data) {
-                                    if (data.ok) {
-                                        $('#panel' + id).html(data.html);
-                                        {#destroyEditorInstances();#}
-                                        {#constructInlineEditorInstances(id);#}
-                                        $('#id_progsec').val(id);
-                                        {# utilizado para generar pdf #}
-                                        $("#update_ok").show().delay(1500).fadeOut();
-                                    } else {
-                                        $("#update_error").show().delay(1500).fadeOut();
-                                    }
-                                });
-                        } else {
-                            $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
-                            $('#panel' + id).html('');
-                        }
-                    }
-                }
-            }
-        });
-
-        {% if prog %}
-            $.post("/progsecundaria/", {action: 'open_accordion', id: {{prog}}},
-                function (data) {
-                    if (data.ok) {
-                        $('#panel{{ prog }}').html(data.html);
-                        $('#id_progsec').val({{prog}});
-                        window.scrollTo(0, $('#unidades_programacion{{ prog }}').offset().top + 200);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $("#update_error").show().delay(1500).fadeOut();
-                    }
-                });
-        {% endif %}
-
-        var funcion_tiempo_espera_update_texto;
-        $('body').on('keyup change', '.update_texto', function () {
-            clearTimeout(funcion_tiempo_espera_update_texto);
-            var element = $(this);
-            funcion_tiempo_espera_update_texto = setTimeout(function () {
-                var id = element.data('id');
-                var campo = element.data('campo');
-                var nuevo_texto = element.val();
-                $.post("/progsecundaria/", {action: 'update_texto', id: id, texto: nuevo_texto, campo: campo},
-                    function (data) {
-                        if (data.ok) {
-                            $('#accordion_nombre' + data.progsec).html(data.html);
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
                             $('#update_error').show().delay(1500).fadeOut();
                         }
                     });
-            }, 750);
-        });
-
-        $('body').on('click', '.cargar_libro', function () {
-            var id = $(this).data('progsec');
-            var nombre = $('#nombre_libro' + id).val();
-            var isbn = $('#isbn_libro' + id).val();
-            var observaciones = $('#observaciones_libro' + id).val();
-            $.post("/progsecundaria/", {
-                    action: 'cargar_libro', id: id, nombre: nombre,
-                    isbn: isbn, observaciones: observaciones
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $('#lista_libros' + id).append(data.html);
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-        $('body').on('click', '.borrar_libro', function () {
-            id = $(this).data('progsec');
-            libro = $(this).data('libro');
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar este libro de la programación didáctica?',
-                texto: 'Si aceptas, el libro se borrará por completo de la base de datos', size: 'large',
-                buttons: {
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    },
-                    "Borrar": function () {
-                        hide_mensajes();
-                        $.post("/progsecundaria/", {action: 'borrar_libro', id: id, libro: libro},
-                            function (data) {
-                                if (data.ok) {
-                                    $('.datos_libro' + libro).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
-                    }
-                }
             });
-        });
 
-        $('body').on('click', '.cargar_actex', function () {
-            var id = $(this).data('progsec');
-            var nombre = $('#nombre_actex' + id).val();
-            var inicio = $('#inicio_actex' + id).val();
-            var fin = $('#fin_actex' + id).val();
-            var observaciones = $('#observaciones_actex' + id).val();
-            $.post("/progsecundaria/", {
-                    action: 'cargar_actex', id: id, nombre: nombre,
-                    inicio: inicio, fin: fin, observaciones: observaciones
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        $('#lista_actex' + id).append(data.html);
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
+
+            {% comment %}
+
+                {######################################################## #}
+
+                $("body").on('click', '#busca_progsec_manual', function (e) {
+                    var texto = $('#busca_progsec').val();
+                    var id_fecha_inicio = $('#id_fecha_inicio').val();
+                    var id_fecha_fin = $('#id_fecha_fin').val();
+                    var tipo_busqueda = $('#tipo_busqueda').val();
+                    $.post("/progsecundaria/", {
+                            action: 'busca_progsec', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                            id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
+                        },
+                        function (data) {
+                            $('#list_progsec').html(data['html']);
+                            $(document).foundation();
+                        });
                 });
-        });
-        $('body').on('click', '.borrar_actex', function () {
-            id = $(this).data('progsec');
-            actex = $(this).data('actex');
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar esta actividad extraescolar/complementaria de la programación didáctica?',
-                texto: 'Si aceptas, la actividad se borrará por completo de la base de datos', size: 'large',
-                buttons: {
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    },
-                    "Borrar": function () {
-                        hide_mensajes();
-                        $.post("/progsecundaria/", {action: 'borrar_actex', id: id, actex: actex},
-                            function (data) {
-                                if (data.ok) {
-                                    $('.datos_actex' + actex).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
+
+                $("body").on('keyup', '#busca_progsec', function (e) {
+                    var texto = $('#busca_progsec').val();
+                    var id_fecha_inicio = $('#id_fecha_inicio').val();
+                    var id_fecha_fin = $('#id_fecha_fin').val();
+                    var tipo_busqueda = $('#tipo_busqueda').val();
+                    $.post("/progsecundaria/", {
+                            action: 'busca_progsec', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                            id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
+                        },
+                        function (data) {
+                            $('#list_progsec').html(data['html']);
+                            $(document).foundation();
+                        });
+                });
+
+                function genera_pdf_informe() {
+                    $('#action').val('pdf_progsec');
+                    document.getElementById('{{formname}}').submit();
+                }
+
+                $('#Contenido').on('click', '.pdf_progsec', function (e) {
+                    e.preventDefault();
+                    {#var id = $(this).data('id')#}
+                    genera_pdf_informe();
+                    {#var protocol = window.location.protocol;#}
+                    {#var port = window.location.port;#}
+                    {#var domain = window.location.hostname;#}
+                    {#$('#protocol_domain').val( protocol + '//' + domain + ':' + port);#}
+
+                });
+
+                {# ##################################################################### #}
+                {# #################### CARGA DE ARCHIVOS ############################## #}
+                {# ##################################################################### #}
+
+
+                function updateProgress(evt) {
+                    if (evt.lengthComputable) {
+                        var percentComplete = (evt.loaded / evt.total) * 100;
+                        $('.span_porcentage').html(parseInt(percentComplete) + '%');
+                        console.log(percentComplete);
+                    } else {
+                        console.log('No es posible calcular el porcentaje de carga en el servidor');
                     }
                 }
-            });
-        });
 
-        $('body').on('click', '.add_saber', function () {
-            var id = $(this).data('progsec');
-            $.post("/progsecundaria/", {
-                    action: 'add_saber', id: id
-                },
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                        {#$('#tbody_saberes' + id).append(data.html);#}
-                        $('#lista_saberes' + id).html(data.html);
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
+                $('body').on('click', '.subir_gauss_file', function () {
+                    var id = $(this).data('id');
+                    var input_files = document.getElementById('input_gauss_file' + id).files;
+                    $('#span_spin').show();
+                    $('.span_porcentage').show();
+
+                    for (var i = 0; i < input_files.length; i++) {
+                        console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
                     }
-                });
-        });
 
-        var funcion_tiempo_espera_mod_saber;
-        $('body').on('keyup change', '.mod_saber', function () {
-            var element = $(this);
-            clearTimeout(funcion_tiempo_espera_mod_saber);
-            funcion_tiempo_espera_mod_saber = setTimeout(function () {
-                var valor = element.val();
-                var id = element.data('progsec');
-                var saber = element.data('saber');
-                var campo = element.data('campo');
-                if (campo === 'orden' || campo === 'periodos') {
-                    valor = parseInt(valor);
-                }
-                $.post("/progsecundaria/", {
-                        action: 'mod_saber', id: id, saber: saber, campo: campo, valor: valor
-                    },
-                    function (data) {
-                        if (data.ok) {
-                            if (data.html) {
-                                $('#gantt' + id).html(data.html);
+                    var formData = new FormData();
+                    for (var i = 0; i < input_files.length; i++) {
+                        formData.append('archivo_xhr' + i, input_files[i], slugify_filename(input_files[i].name));
+                    }
+                    formData.append('n_files', input_files.length);
+                    formData.append('action', 'upload_archivo_xhr');
+                    formData.append('progsec', id);
+                    formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+                    var xhr = new XMLHttpRequest();
+                    {#xhr.upload.addEventListener("progress", updateProgress, false);#}
+                    xhr.onload = function () {
+                        if (xhr.readyState === xhr.DONE) {
+                            if (xhr.status === 200) {
+                                console.log(xhr.responseText);
+                                {#var b = xhr.responseText;#}
+                                var data = JSON.parse(xhr.responseText);
+                                $('#tbody_gauss_file' + data.id).html(data.html);
+                                $('#span_spin').hide();
+                                $('#span_porcentage').hide();
                             }
-                            $("#update_ok").show().delay(1500).fadeOut();
-                        } else {
-                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    };
+                    xhr.open('POST', "/progsecundaria/", true);
+                    xhr.send(formData);
+                });
+
+                $('#Contenido').on('click', '.descarga_gauss_file', function (e) {
+                    e.preventDefault();
+                    $('#action').val('descarga_gauss_file');
+                    $('#faii').val($(this).data('id'));
+                    document.getElementById('{{formname}}').submit();
+                });
+
+                $('body').on('click', '.borra_gauss_file', function () {
+                    id = $(this).data('id');
+                    show_mensajes({
+                        title: '<i class="fa fa-warning"></i> ¿Borrar este archivo adjunto al informe?',
+                        texto: 'Si aceptas el archivo se borrará por completo de la base de datos',
+                        size: 'large',
+                        buttons: {
+                            "Cancelar": function () {
+                                hide_mensajes();
+                            },
+                            "Borrar": function () {
+                                hide_mensajes();
+                                $.post("/progsecundaria/", {action: 'borrar_faii', id: id},
+                                    function (data) {
+                                        if (data.ok) {
+                                            $('#gauss_file' + id).remove();
+                                            $("#update_ok").show().delay(1500).fadeOut();
+                                        } else {
+                                            $('#update_error').show().delay(1500).fadeOut();
+                                        }
+                                    });
+                            }
                         }
                     });
-            }, 750);
-        });
-        {#$('body').on('keydown', '.mod_saber', function () {#}
-        {#    clearTimeout(funcion_tiempo_espera_mod_saber);#}
-        {# });#}
-
-        $('body').on('click', '.ordenar_saberes', function () {
-            var element = $(this);
-            var id = element.data('progsec');
-            $.post("/progsecundaria/", {
-                    action: 'ordenar_saberes', id: id
-                },
-                function (data) {
-                    if (data.ok) {
-                        $('#lista_saberes' + id).html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
                 });
-        });
-
-        $('body').on('click', '.borrar_saber', function () {
-            id = $(this).data('progsec');
-            saber = $(this).data('saber');
+            {% endcomment %}
+        {% else %}
             show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar esta unidad de programación?',
-                texto: 'Si aceptas, esta unidad se borrará por completo de la base de datos', size: 'large',
-                buttons: {
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    },
-                    "Borrar": function () {
-                        hide_mensajes();
-                        $.post("/progsecundaria/", {action: 'borrar_saber', id: id, saber: saber},
-                            function (data) {
-                                if (data.ok) {
-                                    {#$('#tbody_saberes' + id).html(data.html);#}
-                                    $('#lista_saberes' + id).html(data.html);
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
-                    }
-                }
-            });
-        });
-
-        $('body').on('change', '.select_tipo', function () {
-            var id = $(this).data('progsec');
-            var tipo = $(this).val();
-            $.post("/progsecundaria/", {action: 'select_tipo', id: id, tipo: tipo},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('change', '.select_departamento', function () {
-            var id = $(this).data('progsec');
-            var departamento = $(this).val();
-            $.post("/progsecundaria/", {action: 'select_departamento', id: id, departamento: departamento},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-        $('body').on('change', '.select_jefe', function () {
-            var id = $(this).data('progsec');
-            var jefe = $(this).val();
-            $.post("/progsecundaria/", {action: 'select_jefe', id: id, jefe: jefe},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-        $('body').on('change', '.miembros_departamento', function () {
-            var id = $(this).data('progsec');
-            var ges = $(this).val();
-            $.post("/progsecundaria/", {action: 'add_docprogsec', id: id, ges: ges},
-                function (data) {
-                    if (data.ok) {
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('change', '.pesocep', function () {
-            var id = $(this).data('progsec');
-            var cep = $(this).data('cep');
-            var cep_peso = $(this).val();
-            $.post("/progsecundaria/", {action: 'update_pesocep', id: id, cep: cep, cep_peso: cep_peso},
-                function (data) {
-                    if (data.ok) {
-                        $('.valor_ce' + cep).html(cep_peso);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('change', '.pesocevp', function () {
-            var id = $(this).data('progsec');
-            var cevp = $(this).data('cevp');
-            var cevp_peso = $(this).val();
-            $.post("/progsecundaria/", {action: 'update_pesocevp', id: id, cevp: cevp, cevp_peso: cevp_peso},
-                function (data) {
-                    if (data.ok) {
-                        $('#cevalponderada' + id).html(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.copiar_progsec', function () {
-            var progsec = $(this).data('progsec');
-            $.post("/progsecundaria/", {action: 'copiar_progsec', progsec: progsec},
-                function (data) {
-                    if (data.ok) {
-                        $('#list_progsec').prepend(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-
-        {% comment %}
-
-        {######################################################## #}
-
-        $("body").on('click', '#busca_progsec_manual', function (e) {
-            var texto = $('#busca_progsec').val();
-            var id_fecha_inicio = $('#id_fecha_inicio').val();
-            var id_fecha_fin = $('#id_fecha_fin').val();
-            var tipo_busqueda = $('#tipo_busqueda').val();
-            $.post("/progsecundaria/", {
-                    action: 'busca_progsec', texto: texto, id_fecha_inicio: id_fecha_inicio,
-                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
-                },
-                function (data) {
-                    $('#list_progsec').html(data['html']);
-                    $(document).foundation();
-                });
-        });
-
-        $("body").on('keyup', '#busca_progsec', function (e) {
-            var texto = $('#busca_progsec').val();
-            var id_fecha_inicio = $('#id_fecha_inicio').val();
-            var id_fecha_fin = $('#id_fecha_fin').val();
-            var tipo_busqueda = $('#tipo_busqueda').val();
-            $.post("/progsecundaria/", {
-                    action: 'busca_progsec', texto: texto, id_fecha_inicio: id_fecha_inicio,
-                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
-                },
-                function (data) {
-                    $('#list_progsec').html(data['html']);
-                    $(document).foundation();
-                });
-        });
-
-        function genera_pdf_informe() {
-            $('#action').val('pdf_progsec');
-            document.getElementById('{{formname}}').submit();
-        }
-
-        $('#Contenido').on('click', '.pdf_progsec', function (e) {
-            e.preventDefault();
-            {#var id = $(this).data('id')#}
-            genera_pdf_informe();
-            {#var protocol = window.location.protocol;#}
-            {#var port = window.location.port;#}
-            {#var domain = window.location.hostname;#}
-            {#$('#protocol_domain').val( protocol + '//' + domain + ':' + port);#}
-
-        });
-
-        {# ##################################################################### #}
-        {# #################### CARGA DE ARCHIVOS ############################## #}
-        {# ##################################################################### #}
-
-
-        function updateProgress(evt) {
-            if (evt.lengthComputable) {
-                var percentComplete = (evt.loaded / evt.total) * 100;
-                $('.span_porcentage').html(parseInt(percentComplete) + '%');
-                console.log(percentComplete);
-            } else {
-                console.log('No es posible calcular el porcentaje de carga en el servidor');
-            }
-        }
-
-        $('body').on('click', '.subir_gauss_file', function () {
-            var id = $(this).data('id');
-            var input_files = document.getElementById('input_gauss_file' + id).files;
-            $('#span_spin').show();
-            $('.span_porcentage').show();
-
-            for (var i = 0; i < input_files.length; i++) {
-                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
-            }
-
-            var formData = new FormData();
-            for (var i = 0; i < input_files.length; i++) {
-                formData.append('archivo_xhr' + i, input_files[i], slugify_filename(input_files[i].name));
-            }
-            formData.append('n_files', input_files.length);
-            formData.append('action', 'upload_archivo_xhr');
-            formData.append('progsec', id);
-            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
-            var xhr = new XMLHttpRequest();
-            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
-            xhr.onload = function () {
-                if (xhr.readyState === xhr.DONE) {
-                    if (xhr.status === 200) {
-                        console.log(xhr.responseText);
-                        {#var b = xhr.responseText;#}
-                        var data = JSON.parse(xhr.responseText);
-                        $('#tbody_gauss_file' + data.id).html(data.html);
-                        $('#span_spin').hide();
-                        $('#span_porcentage').hide();
-                    }
-                }
-            };
-            xhr.open('POST', "/progsecundaria/", true);
-            xhr.send(formData);
-        });
-
-        $('#Contenido').on('click', '.descarga_gauss_file', function (e) {
-            e.preventDefault();
-            $('#action').val('descarga_gauss_file');
-            $('#faii').val($(this).data('id'));
-            document.getElementById('{{formname}}').submit();
-        });
-
-        $('body').on('click', '.borra_gauss_file', function () {
-            id = $(this).data('id');
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar este archivo adjunto al informe?',
-                texto: 'Si aceptas el archivo se borrará por completo de la base de datos', size: 'large', buttons: {
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    },
-                    "Borrar": function () {
-                        hide_mensajes();
-                        $.post("/progsecundaria/", {action: 'borrar_faii', id: id},
-                            function (data) {
-                                if (data.ok) {
-                                    $('#gauss_file' + id).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
-                    }
-                }
-            });
-        });
-        {% endcomment %}
+                title: '<i class="fa fa-warning"></i> Aviso',
+                texto: 'No se pueden modificar ni crear programaciones como usuario de la {{ g_e.ronda.entidad.name }}.<br> Si deseas modificar o crear alguna programación tienes que entrar como usuario en el {{ g_ep.ge.ronda.entidad.name }}.'
+            })
+        {% endif %}
     </script>
 
 {% endblock %}

@@ -1965,7 +1965,7 @@ def reordenar_saberes_comienzo(psec):
 
 @permiso_required('acceso_progsecundaria')
 def progsecundaria(request):
-    try:
+    # try:
         g_e = request.session['gauser_extra']
         ies = request.session['ronda'].entidad.entidadextra.depende_de
         if ies:
@@ -2455,14 +2455,15 @@ def progsecundaria(request):
                                 'permiso': 'libre'},
                                ),
                           'g_e': g_e,
+                          'g_ep': g_ep,
                           'prog': prog,
                           'progsecs': progsecs,
                           'cursos': AreaMateria.CURSOS_LOMLOE,
                           'areasmateria': AreaMateria.objects.all(),
                           'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False)
                       })
-    except Exception as msg:
-        return HttpResponse(str(msg))
+    # except Exception as msg:
+    #     return HttpResponse(str(msg))
 
 
 def verprogramacion(request, centro, id):
