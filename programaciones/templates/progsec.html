@@ -122,9 +122,14 @@
                     $.post("/progsecundaria/", {'action': 'get_areasmaterias', 'curso': curso},
                         function (data) {
                             if (data.ok) {
-                                $('#areamateria_progsec').prop('disabled', false).find('option').remove();
+                                var element_select = $('#areamateria_progsec');
+                                element_select.prop('disabled', false).find('option').remove();
+                                element_select.append($('<option>', {
+                                        value: '',
+                                        text: '-------'
+                                    }));
                                 $.each(data.valores, function (i, valor) {
-                                    $('#areamateria_progsec').append($('<option>', {
+                                    element_select.append($('<option>', {
                                         value: valor.valor,
                                         text: valor.texto
                                     }));
