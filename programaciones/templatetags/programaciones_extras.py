@@ -6,22 +6,37 @@ from programaciones.models import *
 
 register = Library()
 
+
+@register.filter
+def get_rondas_ge(ge):
+    # Fecha a partir de la cual se pueden encontrar programaciones:
+    fecha_inicio = datetime.strptime('01/01/2020', '%d/%m/%Y')
+    rondas_id = Gauser_extra.objects.filter(ronda__inicio__gt=fecha_inicio,
+                                            gauser=ge.gauser).values_list('ronda__id', flat=True)
+    return Ronda.objects.filter(id__in=rondas_id)
+
+
 @register.filter
 def ecpv_selected(calalum, ecpv):
     return calalum.calalumvalor_set.filter(ecpv=ecpv).count() > 0
+
 
 @register.filter
 def get_ecpv_xs(ecp, y):
     return ecp.escalacpvalor_set.filter(y=y)
 
+
 @register.filter
 def get_posibles_psec(cuaderno):
     psec_ids = DocProgSec.objects.filter(gep__ge=cuaderno.ge).values_list('psec__id', flat=True)
     return ProgSec.objects.filter(id__in=psec_ids)
+
+
 #################################################
 @register.filter
 def get_recpv_xs(recp, y):
     return recp.repoescalacpvalor_set.filter(y=y)
+
 
 #################################################
 ########  Estas dos funciones trabajan juntas para crear una función de tres variables
@@ -39,6 +54,7 @@ def get_calalum(cuaderno_cieval, alumno):
         return CalAlum.objects.get(alumno=alumno, cie=cieval, cp=cuaderno)
     except Exception as msg:
         return str(msg)
+
 
 ########  Fin de las dos funciones
 #################################################
@@ -61,6 +77,7 @@ def get_calalum_cev(cuaderno_cev, alumno):
     except Exception as msg:
         return str(msg)
 
+
 ########  Fin de las dos funciones
 #################################################
 
@@ -82,6 +99,7 @@ def get_calalum_ce(cuaderno_ce, alumno):
     except Exception as msg:
         return str(msg)
 
+
 ########  Fin de las dos funciones
 #################################################
 
@@ -91,6 +109,7 @@ def get_calalum_ce(cuaderno_ce, alumno):
 @register.filter
 def get_global_cal(cuaderno, alumno):
     return cuaderno.calificacion_alumno(alumno)
+
 
 ########  Estas funciones calculan la calificación global de un alumno del cuaderno en función de su asignatura
 
@@ -107,9 +126,9 @@ def get_global_cal_asignatura(cuaderno_asignatura, alumno):
     except Exception as msg:
         return str(msg)
 
+
 ########  Fin de la función
 #################################################
-
 
 
 @register.filter
@@ -119,6 +138,7 @@ def puede_borrar(psec, g_e):
     except:
         return False
 
+
 @register.filter
 def docpec(pec, tipo):
     try:
@@ -126,6 +146,7 @@ def docpec(pec, tipo):
     except:
         p = False
     return p
+
 
 @register.filter
 def programacion(materia):

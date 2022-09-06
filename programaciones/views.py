@@ -2046,6 +2046,20 @@ def progsecundaria(request):
                         JsonResponse({'ok': False, 'msg': 'No tienes permiso para crear programaciones.'})
                 except Exception as msg:
                     return JsonResponse({'ok': False, 'msg': str(msg)})
+            elif action == 'busca_progsec_manual':
+                try:
+                    ronda = Ronda.objects.get(id=request.POST['ronda'])
+                    id_progsecs1 = DocProgSec.objects.filter(gep__ge__gauser=g_e.gauser,
+                                                            gep__ge__ronda=ronda).values_list('psec__id', flat=True)
+                    id_progsecs2 = ProgSec.objects.filter(gep__ge__gauser=g_e.gauser,
+                                                          gep__ge__ronda=ronda).values_list('id', flat=True)
+                    id_progsecs = list(set(list(id_progsecs1) + list(id_progsecs2)))
+                    progsecs = ProgSec.objects.filter(id__in=id_progsecs)
+                    html = render_to_string('progsec_accordion.html', {'progsecs': progsecs, 'buscadas': True})
+                    return JsonResponse({'ok': True, 'html': html})
+                except Exception as msg:
+                    return JsonResponse({'ok': False, 'msg': str(msg)})
+
             elif action == 'open_accordion':
                 try:
                     progsec = ProgSec.objects.get(gep__ge__ronda__entidad=g_e.ronda.entidad,
@@ -2453,6 +2467,9 @@ def progsecundaria(request):
                                {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar',
                                 'title': 'Buscar programación a través del nombre de la materia de secundaria',
                                 'permiso': 'libre'},
+                               # {'tipo': 'button', 'nombre': 'file-text', 'texto': 'Programaciones otros cursos',
+                               #  'title': 'Mostrar programaciones de otros curso',
+                               #  'permiso': 'libre'},
                                ),
                           'g_e': g_e,
                           'g_ep': g_ep,

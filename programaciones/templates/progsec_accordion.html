@@ -12,7 +12,7 @@
         style="border-bottom: dotted 1px black">
         <a href="#panel{{ progsec.id }}" title="Última modificación: {{ progsec.modificado|date:"d-m-Y" }}">
             <i id="circle{{ progsec.id }}" class="fa fa-plus-circle circle_icon"></i>
-            <b>{{ progsec.curso.nombre }} - {{ progsec.areamateria.nombre }} - <span id="accordion_nombre{{ progsec.id }}">
+            <b>{{ progsec.pga.ronda.nombre }} - {{ progsec.areamateria.get_curso_display }} - {{ progsec.areamateria.nombre }} - <span id="accordion_nombre{{ progsec.id }}">
                 {% if not progsec.nombre %}<span style="color:red">Nueva programación</span>
                 {% else %}{{ progsec.nombre }}{% endif %}</span></b> -- ({{ progsec.creado|date:"d-m-Y" }})
 

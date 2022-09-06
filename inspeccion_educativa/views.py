@@ -914,7 +914,7 @@ def get_puntos_inspector(inspectores):
     return resultados
 
 
-@permiso_required('acceso_asignar_centros_inspeccion')
+# @permiso_required('acceso_asignar_centros_inspeccion')
 def asignar_centros_inspeccion(request):
     g_e = request.session["gauser_extra"]
     inspectores = get_inspectores(request)
@@ -1029,10 +1029,10 @@ def asignar_centros_inspeccion(request):
 
     organization = g_e.ronda.entidad.organization
     for e in Entidad.objects.filter(organization=organization):
-        ci, c = CentroInspeccionado.objects.get_or_create(centro=e)
-        if ci.ronda != g_e.ronda:
-            ci.ronda = g_e.ronda
-            ci.save()
+        ci, c = CentroInspeccionado.objects.get_or_create(centro=e, ronda=g_e.ronda)
+        # if ci.ronda != g_e.ronda:
+        #     ci.ronda = g_e.ronda
+        #     ci.save()
         if ci.inspectorasignado_set.all().count() == 0:
             InspectorAsignado.objects.create(cenins=ci)
     cis_posibles = CentroInspeccionado.objects.filter(ronda=g_e.ronda)
@@ -1057,7 +1057,7 @@ def asignar_centros_inspeccion(request):
     })
 
 
-# @permiso_required('acceso_carga_masiva_inspeccion')
+@permiso_required('acceso_carga_masiva_inspeccion')
 def carga_masiva_inspeccion(request):
     g_e = request.session["gauser_extra"]
     if request.method == 'POST':

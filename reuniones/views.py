@@ -479,7 +479,7 @@ def conv_reunion_ajax(request):
             conv = ConvReunion.objects.get(entidad=g_e.ronda.entidad, id=request.POST['convocatoria'], plantilla=False)
             if conv.fecha_hora > timezone.now():
                 plantillas = get_plantillas(g_e)
-                if conv.basada_en in plantillas or conv.creador == g_e.gauser:
+                if conv.basada_en in plantillas or conv.creador == g_e.gauser or g_e.has_permiso('w_conv_reunion'):
                     try:
                         cargos = Gauser_extra.objects.get(gauser=conv.convoca, ronda=g_e.ronda).cargos.all()
                     except:

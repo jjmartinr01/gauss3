@@ -1,5 +1,6 @@
 {% extends "base_select2-4.html" %}
 {% load my_templatetags %}
+{% load programaciones_extras %}
 
 {% block contenido %}
     <style>
@@ -7,7 +8,6 @@
             text-align: center;
             color: #008CBA;
         }
-
         .ckeditor {
             border: lightgrey 1px solid;
             min-height: 100px;
@@ -26,11 +26,18 @@
             <h4 id="title_page"><strong>Programaciones {{ request.session.gauser_extra.ronda.nombre }}</strong></h4>
         </div>
         <div id="formulario_add"></div>
-        <div id="formulario_search" style="display: none;">
+        <div id="formulario_search" style="display: block;">
             <div class="row">
-                <div class="columns large-10">
-                    <input type="text" name="busca_progsec" id="busca_progsec"
+                <div class="columns large-6">
+                    <input type="text" name="busca_progsec_texto" id="busca_progsec_texto"
                            placeholder="Escribe parte del texto incluido en la programación">
+                </div>
+                <div class="columns large-4">
+                    <select id="busca_progsec_ronda">
+                        {% for ronda in request.session.gauser_extra|get_rondas_ge %}
+                            <option value="{{ ronda.id }}">{{ ronda.nombre }} ({{ ronda.entidad.name }})</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="columns large-2">
                     <a id="busca_progsec_manual"><i class="fa fa-search"></i> <b>Buscar</b></a>
@@ -585,12 +592,9 @@
 
                 $("body").on('click', '#busca_progsec_manual', function (e) {
                     var texto = $('#busca_progsec').val();
-                    var id_fecha_inicio = $('#id_fecha_inicio').val();
-                    var id_fecha_fin = $('#id_fecha_fin').val();
-                    var tipo_busqueda = $('#tipo_busqueda').val();
+                    var ronda = $('#busca_progsec_ronda').val();
                     $.post("/progsecundaria/", {
-                            action: 'busca_progsec', texto: texto, id_fecha_inicio: id_fecha_inicio,
-                            id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
+                            action: 'busca_progsec_manual', texto: texto, ronda: ronda
                         },
                         function (data) {
                             $('#list_progsec').html(data['html']);

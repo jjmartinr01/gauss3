@@ -16,8 +16,8 @@
             <li title="Descargar la convocatoria en PDF">
                 <a data-id="{{ conv.id }}" class="button download_pdf"><i
                         class="fa fa-file-pdf-o"></i> PDF</a></li>
-            {% if g_e|has_permiso:'w_conv_reunion' %}
-                {% if g_e|has_permiso:'m_conv_reunion' %}
+            {% if g_e|has_permiso:'w_conv_reunion' or g_e.gauser == conv.creador %}
+                {% if g_e|has_permiso:'m_conv_reunion' or g_e.gauser == conv.creador %}
                     <li title="Mandar la convocatoria por e-mail a todos los convocados">
                         <a data-id="{{ conv.id }}" class="button send_email"><i
                                 class="fa fa-envelope-o"></i> eMail</a></li>
