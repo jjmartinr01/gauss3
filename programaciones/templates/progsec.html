@@ -8,6 +8,7 @@
             text-align: center;
             color: #008CBA;
         }
+
         .ckeditor {
             border: lightgrey 1px solid;
             min-height: 100px;
@@ -132,9 +133,9 @@
                                 var element_select = $('#areamateria_progsec');
                                 element_select.prop('disabled', false).find('option').remove();
                                 element_select.append($('<option>', {
-                                        value: '',
-                                        text: '-------'
-                                    }));
+                                    value: '',
+                                    text: '-------'
+                                }));
                                 $.each(data.valores, function (i, valor) {
                                     element_select.append($('<option>', {
                                         value: valor.valor,
@@ -586,22 +587,22 @@
             });
 
 
+
+
+            {######################################################## #}
+
+            $("body").on('click', '#busca_progsec_manual', function (e) {
+                var texto = $('#busca_progsec').val();
+                var ronda = $('#busca_progsec_ronda').val();
+                $.post("/progsecundaria/", {
+                        action: 'busca_progsec_manual', texto: texto, ronda: ronda
+                    },
+                    function (data) {
+                        $('#list_progsec').html(data['html']);
+                        $(document).foundation();
+                    });
+            });
             {% comment %}
-
-                {######################################################## #}
-
-                $("body").on('click', '#busca_progsec_manual', function (e) {
-                    var texto = $('#busca_progsec').val();
-                    var ronda = $('#busca_progsec_ronda').val();
-                    $.post("/progsecundaria/", {
-                            action: 'busca_progsec_manual', texto: texto, ronda: ronda
-                        },
-                        function (data) {
-                            $('#list_progsec').html(data['html']);
-                            $(document).foundation();
-                        });
-                });
-
                 $("body").on('keyup', '#busca_progsec', function (e) {
                     var texto = $('#busca_progsec').val();
                     var id_fecha_inicio = $('#id_fecha_inicio').val();
