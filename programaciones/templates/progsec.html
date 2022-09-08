@@ -30,8 +30,12 @@
         <div id="formulario_search" style="display: block;">
             <div class="row">
                 <div class="columns large-6">
-                    <input type="text" name="busca_progsec_texto" id="busca_progsec_texto"
-                           placeholder="Escribe parte del texto incluido en la programación">
+                    <span style="font-weight: bold;">
+                        Puedes cargar tus programaciones de cursos anteriores
+                        <a id="info_cargar_progsec"> <i class="fa fa-info-circle"></i></a> :
+                    </span>
+                    {#                    <input type="text" name="busca_progsec_texto" id="busca_progsec_texto"#}
+                    {#                           placeholder="Escribe parte del texto incluido en la programación">#}
                 </div>
                 <div class="columns large-4">
                     <select id="busca_progsec_ronda">
@@ -112,7 +116,11 @@
             }
         {% endcomment %}
         {% if g_e == g_ep.ge %}
-
+            $('#info_cargar_progsec').click(function (e){
+               e.preventDefault();
+               show_mensajes({title: 'Información <i class="fa fa-info-circle"></i>',
+               texto: 'Tras cargar tus programaciones de cursos anteriores podrás hacer copias. Estas copias podrán utilizarse durante este curso escolar.'})
+            });
             {#habilita(['s_search']);#}
             {% if g_e|has_permiso:"crea_programaciones" %}
                 habilita(['s_plus']);

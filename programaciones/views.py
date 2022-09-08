@@ -27,7 +27,7 @@ from django.utils.timezone import now
 from autenticar.control_acceso import permiso_required, gauss_required
 from autenticar.models import Gauser
 # from autenticar.control_acceso import access_required
-from entidades.models import Cargo
+from entidades.models import Cargo, EntidadExtra
 from entidades.templatetags.entidades_extras import profesorado
 from gauss.funciones import html_to_pdf, usuarios_ronda, usuarios_de_gauss, get_dce, clone_object
 from programaciones.models import *
@@ -1967,7 +1967,12 @@ def reordenar_saberes_comienzo(psec):
 def progsecundaria(request):
     # try:
         g_e = request.session['gauser_extra']
-        ies = request.session['ronda'].entidad.entidadextra.depende_de
+        try:
+            ies = request.session['ronda'].entidad.entidadextra.depende_de
+        except:
+            #Esta excepción ocurre en centros que no se cargan de Racima, por ejemplo el CRIE
+            EntidadExtra.objects.get_or_create(entidad=g_e.ronda.entidad)
+            ies = request.session['ronda'].entidad.entidadextra.depende_de
         if ies:
             try:
                 g_eies = Gauser_extra.objects.get(gauser=g_e.gauser, ronda=ies.ronda)
@@ -2092,9 +2097,11 @@ def progsecundaria(request):
                     return JsonResponse({'ok': False, 'msg': str(msg)})
             elif action == 'copiar_progsec':
                 try:
+                    crea_departamentos(g_e.ronda)
                     ps = ProgSec.objects.get(id=request.POST['progsec'])
                     ps_nueva = ProgSec.objects.get(id=ps.id)
                     ps_nueva.pk = None
+                    ps_nueva.pga = pga
                     ps_nueva.gep = g_ep
                     ps_nueva.nombre = ps.nombre + ' (Copia)'
                     ps_nueva.departamento = None
