@@ -562,6 +562,7 @@
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
+                            show_mensajes({title:'<i class="fa fa-warning"></i> Aviso', texto: data.msg})
                         }
                     });
             });
@@ -577,6 +578,7 @@
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
+                            show_mensajes({title:'<i class="fa fa-warning"></i> Aviso', texto: data.msg})
                         }
                     });
             });

@@ -908,7 +908,7 @@ def update_fichero_carga_masiva(instance, filename):
 
 
 class CargaMasiva(models.Model):
-    TIPOS = (('EXCEL', 'Usuarios cargados desde Racima'),
+    TIPOS = (('EXCEL', 'Alumnos cargados desde Racima'),
              ('PENDIENTES', 'Alumnos con materias pendientes cargados desde Racima'),
              ('HORARIOXLS', 'Sesiones cargadas desde el archivo excel de Racima'),
              ('CENTROSRACIMA', 'Consulta -> Centro -> Datos de los centros'),
@@ -936,9 +936,9 @@ class CargaMasiva(models.Model):
         return dias_para_autoborrado - dias
     def __str__(self):
         if self.ronda:
-            return 'Cargado: %s -- %s -> %s' % (self.cargado, self.creado, self.g_e)
+            return 'Cargado: %s -- %s -- %s -> %s' % (self.cargado, self.creado, self.get_tipo_display(), self.g_e)
         else:
-            return 'Cargado: %s (%s -> %s)' % (self.cargado, self.creado, self.g_e)
+            return 'Cargado: %s -- %s -- %s -> %s' % (self.cargado, self.creado, self.get_tipo_display(), self.g_e)
 
 
 

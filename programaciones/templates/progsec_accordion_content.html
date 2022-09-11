@@ -49,11 +49,11 @@
 <div class="row">
     <div class="columns large-12">
         <ul class="button-group right">
-{#            {% if gep.ge.gauser.username == 'gauss' or progsec|puede_borrar:gep.ge %}#}
-                <li><a class="button alert borrar_progsec tiny" data-id="{{ progsec.id }}"
-                       title="Borrar completamente este informe de la base de datos"><i class="fa fa-trash-o"></i>
-                    Borrar</a></li>
-{#            {% endif %}#}
+            {#            {% if gep.ge.gauser.username == 'gauss' or progsec|puede_borrar:gep.ge %}#}
+            <li><a class="button alert borrar_progsec tiny" data-id="{{ progsec.id }}"
+                   title="Borrar completamente este informe de la base de datos"><i class="fa fa-trash-o"></i>
+                Borrar</a></li>
+            {#            {% endif %}#}
             <li><a class="button copiar_progsec tiny" data-progsec="{{ progsec.id }}"
                    title="Hacer una copia (un duplicado) de esta programación didáctica"><i class="fa fa-copy"></i>
                 Copiar</a>
@@ -183,21 +183,31 @@
     <div class="row">
         {#        <div class="columns large-12">#}
         {#            <div class="panel callout"><h3>1º Dar un peso a cada competencia específica</h3></div>#}
-        {#            <p>La superación de {{ progsec.areamateria.nombre }} implica la adquisición de una serie de competencias#}
-        {#                específicas. Cada una de ellas contribuirá en parte a la calificación que finalmente obtendrán sus#}
-        {#                alumunos. No obstante, es posible que su departamento considere que una competencia específica tenga más#}
-        {#                importancia que otras en la calificación final. Esta importancia la puede fijar introduciendo un "peso"#}
-        {#                a cada competencia específica; este peso se representa por un número asociado a dicha competencia.#}
-        {#                Cuanto mayor es el peso (el número asignado) mayor es la importancia de la competencia.</p>#}
+        {#                    <p>La superación de {{ progsec.areamateria.nombre }} implica la adquisición de una serie de competencias#}
+        {#                        específicas. Cada una de ellas contribuirá en parte a la calificación que finalmente obtendrán sus#}
+        {#                        alumunos. No obstante, es posible que su departamento considere que una competencia específica tenga más#}
+        {#                        importancia que otras en la calificación final. Esta importancia la puede fijar introduciendo un "peso"#}
+        {#                        a cada competencia específica; este peso se representa por un número asociado a dicha competencia.#}
+        {#                        Cuanto mayor es el peso (el número asignado) mayor es la importancia de la competencia.</p>#}
         {#        </div>#}
         <div class="columns large-12">
             <div class="panel callout"><h3>1º Listado de competencias específicas</h3></div>
             <p>La superación de {{ progsec.areamateria.nombre }} implica la adquisición de una serie de competencias
-                específicas. Todas ellas contribuyen de igual forma a la calificación que finalmente obtendrán sus
-                alumunos.</p>
+                específicas. Cada una de estas competencias específicas contribuirá en parte a la calificación que
+                finalmente obtendrán sus alumunos.</p>
+            <p> No obstante, es posible que su departamento considere que una competencia específica tenga más
+                importancia que otras en la calificación final. Esta importancia la puede fijar introduciendo un "peso"
+                a cada competencia específica; este peso se representa por un número asociado a dicha competencia.
+                Cuanto mayor es el peso (el número asignado) mayor es la importancia de la competencia.</p>
             <p>A través de los criterios de evaluación se valora el grado de adquisición de cada
-                competencia específica; la media de esas valoraciones será la calificación que el alumnado obtendrá
-                en {{ progsec.areamateria.nombre }}.</p>
+                competencia específica; la media ponderada de esas valoraciones será la calificación que el alumnado
+                obtendrá en {{ progsec.areamateria.nombre }}.</p>
+            {#            <p>La superación de {{ progsec.areamateria.nombre }} implica la adquisición de una serie de competencias#}
+            {#                específicas. Todas ellas contribuyen de igual forma a la calificación que finalmente obtendrán sus#}
+            {#                alumunos.</p>#}
+            {#            <p>A través de los criterios de evaluación se valora el grado de adquisición de cada#}
+            {#                competencia específica; la media de esas valoraciones será la calificación que el alumnado obtendrá#}
+            {#                en {{ progsec.areamateria.nombre }}.</p>#}
         </div>
     </div>
 
@@ -206,69 +216,31 @@
             <table style="width: 100%;">
                 <thead>
                 <tr>
-                    <th>Competencias específicas</th>
-                    {#                    <th>Peso</th>#}
+                    <th style="width: 90%;">Competencias específicas</th>
+                    <th style="width: 10%;">Peso</th>
                 </tr>
                 </thead>
                 {% for cep in progsec.ceprogsec_set.all %}
                     {% ifchanged cep.ce.asignatura %}
                         {% if cep.ce.asignatura %}
-                        <tr>
-                            <td style="color: darkorange">{{ cep.ce.asignatura }}</td>
-                        </tr>
+                            <tr>
+                                <td style="color: darkorange">{{ cep.ce.asignatura }}</td>
+                            </tr>
                         {% endif %}
                     {% endifchanged %}
                     <tr>
                         <td>{{ cep.ce.orden }}.- {{ cep.ce.nombre }}</td>
-                        {#                        <td><input type="number" min="1" max="10" class="pesocep" data-cep="{{ cep.id }}"#}
-                        {#                                   data-progsec="{{ progsec.id }}" value="{{ cep.valor|floatformat }}"></td>#}
+                        <td><input type="number" min="1" max="5" class="pesocep" data-cep="{{ cep.id }}"
+                                   data-progsec="{{ progsec.id }}" value="{{ cep.valor|floatformat }}"></td>
                     </tr>
                 {% endfor %}
             </table>
         </div>
     </div>
-    {#    <div class="row">#}
-    {#        <div class="columns large-12">#}
-    {#            <p style="color: gray;">La calificación de {{ progsec.areamateria.nombre }} se calculará a través de la#}
-    {#                siguiente media ponderada:</p>#}
-    {#        </div>#}
-    {#    </div>#}
-    {#    <div class="row">#}
-    {#        <div class="columns large-12" style="text-align: left;">#}
-    {#            calificación {{ progsec.areamateria.nombre }} =#}
-    {#        </div>#}
-    {#    </div>#}
-    {#    <div class="row">#}
-    {#        <div class="columns large-12" style="text-align: center;">#}
-    {#            <div>#}
-    {#                {% for ce in progsec.ceprogsec_set.all %}#}
-    {#                    <span title="Calificación obtenida en la competencia específica {{ ce.ce.orden }}"#}
-    {#                    >CE{{ ce.ce.orden }}</span>&nbsp;×&nbsp;<span class="valor_ce{{ ce.id }}"#}
-    {#                >{{ ce.valor|floatformat }}</span>{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}#}
-    {#            </div>#}
-    {#            <div style="border-top: 1px solid black;">#}
-    {#                {% for ce in progsec.ceprogsec_set.all %}#}
-    {#                    <span class="valor_ce{{ ce.id }}">{{ ce.valor|floatformat }}</span#}
-    {#                    >{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}#}
-    {#            </div>#}
-    {#        </div>#}
-    {#    </div>#}
-    {#    <div class="row">#}
-    {#        <div class="columns large-12">#}
-    {#            <p style="color: gray;">En la anterior fórmula, CE1 es la calificación que un alumno obtiene en la#}
-    {#                competencia específica 1,#}
-    {#                <br>En la anterior fórmula, CE2 es la calificación que un alumno obtiene en la#}
-    {#                competencia específica 2,#}
-    {#                <br>...#}
-    {#                <br>CEn sería la calificación obtenida en la competencia específica "n".</p>#}
-    {#        </div>#}
-    {#    </div>#}
-
     <div class="row">
         <div class="columns large-12">
-            <p style="color: gray;">Tal y como se ha señalado anteriormente, la calificación
-                de {{ progsec.areamateria.nombre }}
-                se calculará a través de la siguiente expresión:</p>
+            <p style="color: gray;">La calificación de {{ progsec.areamateria.nombre }} se calculará a través de la
+                siguiente media ponderada:</p>
         </div>
     </div>
     <div class="row">
@@ -278,13 +250,16 @@
     </div>
     <div class="row">
         <div class="columns large-12" style="text-align: center;">
-            <div style="border-bottom: 1px solid black;">
+            <div>
                 {% for ce in progsec.ceprogsec_set.all %}
                     <span title="Calificación obtenida en la competencia específica {{ ce.ce.orden }}"
-                    >CE{{ ce.ce.orden }}</span>&nbsp;{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}
+                    >CE{{ ce.ce.orden }}</span>&nbsp;×&nbsp;<span class="valor_ce{{ ce.id }}"
+                >{{ ce.valor|floatformat }}</span>{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}
             </div>
-            <div>
-                {{ progsec.ceprogsec_set.all|length }}
+            <div style="border-top: 1px solid black;">
+                {% for ce in progsec.ceprogsec_set.all %}
+                    <span class="valor_ce{{ ce.id }}">{{ ce.valor|floatformat }}</span
+                    >{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}
             </div>
         </div>
     </div>
@@ -298,6 +273,41 @@
                 <br>CEn sería la calificación obtenida en la competencia específica "n".</p>
         </div>
     </div>
+
+    {#    <div class="row">#}
+    {#        <div class="columns large-12">#}
+    {#            <p style="color: gray;">Tal y como se ha señalado anteriormente, la calificación#}
+    {#                de {{ progsec.areamateria.nombre }}#}
+    {#                se calculará a través de la siguiente expresión:</p>#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div class="row">#}
+    {#        <div class="columns large-12" style="text-align: left;">#}
+    {#            calificación {{ progsec.areamateria.nombre }} =#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div class="row">#}
+    {#        <div class="columns large-12" style="text-align: center;">#}
+    {#            <div style="border-bottom: 1px solid black;">#}
+    {#                {% for ce in progsec.ceprogsec_set.all %}#}
+    {#                    <span title="Calificación obtenida en la competencia específica {{ ce.ce.orden }}"#}
+    {#                    >CE{{ ce.ce.orden }}</span>&nbsp;{% if not forloop.last %}&nbsp;+&nbsp;{% endif %}{% endfor %}#}
+    {#            </div>#}
+    {#            <div>#}
+    {#                {{ progsec.ceprogsec_set.all|length }}#}
+    {#            </div>#}
+    {#        </div>#}
+    {#    </div>#}
+    {#    <div class="row">#}
+    {#        <div class="columns large-12">#}
+    {#            <p style="color: gray;">En la anterior fórmula, CE1 es la calificación que un alumno obtiene en la#}
+    {#                competencia específica 1,#}
+    {#                <br>En la anterior fórmula, CE2 es la calificación que un alumno obtiene en la#}
+    {#                competencia específica 2,#}
+    {#                <br>...#}
+    {#                <br>CEn sería la calificación obtenida en la competencia específica "n".</p>#}
+    {#        </div>#}
+    {#    </div>#}
 
 
     <div class="row">
@@ -331,11 +341,11 @@
                 {% for cep in progsec.ceprogsec_set.all %}
                     {% ifchanged cep.ce.asignatura %}
                         {% if cep.ce.asignatura %}
-                        <thead>
-                        <tr>
-                            <th colspan="2" style="color: darkorange">{{ cep.ce.asignatura }}</th>
-                        </tr>
-                        </thead>
+                            <thead>
+                            <tr>
+                                <th colspan="2" style="color: darkorange">{{ cep.ce.asignatura }}</th>
+                            </tr>
+                            </thead>
                         {% endif %}
                     {% endifchanged %}
                     <thead>

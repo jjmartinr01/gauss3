@@ -195,17 +195,17 @@ def create_usuario(datos, ronda, tipo):
                     'DESCONOCIDO')
             logger.info(mensaje)
     if gauser_extra:
-        logger.info('antes de subentidades')
-        if datos['subentidades' + tipo]:
-            logger.info('entra en subentidades')
-            # La siguientes dos líneas no se si funcionarán en python3 debido a que filter en python3 no devuelve
-            # una lista. Incluida la conversión list() para evitar errores:
-            # http://stackoverflow.com/questions/3845423/remove-empty-strings-from-a-list-of-strings
-            subentidades_id = list(filter(None, datos['subentidades' + tipo].replace(' ', '').split(',')))
-            logger.info('entra en subentidades %s' % subentidades_id)
-            subentidades = Subentidad.objects.filter(id__in=subentidades_id, entidad=ronda.entidad,
-                                                     fecha_expira__gt=datetime.today())
-            gauser_extra.subentidades.add(*subentidades)
+        #logger.info('antes de subentidades')
+        # if datos['subentidades' + tipo]:
+        #     logger.info('entra en subentidades')
+        #    # La siguientes dos líneas no se si funcionarán en python3 debido a que filter en python3 no devuelve
+        #    # una lista. Incluida la conversión list() para evitar errores:
+        #    # http://stackoverflow.com/questions/3845423/remove-empty-strings-from-a-list-of-strings
+        #     subentidades_id = list(filter(None, datos['subentidades' + tipo].replace(' ', '').split(',')))
+        #     logger.info('entra en subentidades %s' % subentidades_id)
+        #     subentidades = Subentidad.objects.filter(id__in=subentidades_id, entidad=ronda.entidad,
+        #                                              fecha_expira__gt=datetime.today())
+        #     gauser_extra.subentidades.add(*subentidades)
         if datos['perfiles' + tipo]:
             logger.info('entra en perfiles')
             cargos_id = list(filter(None, datos['perfiles' + tipo].replace(' ', '').split(',')))
@@ -533,23 +533,29 @@ def carga_masiva_tipo_EXCEL(carga):
                 entidad = Entidad.objects.get(code=d['centro'].replace(')', '').split(sep='(')[1])
                 ronda = entidad.ronda
                 # Carga de subentidades y cargos de esta entidad:
-                subas = Subentidad.objects.filter(clave_ex='alumnos', entidad=entidad)
-                if subas.count() > 0:
-                    suba = subas[0]
-                else:
-                    suba = Subentidad.objects.create(nombre='Alumnos', mensajes=True, clave_ex='alumnos',
-                                                     entidad=entidad, edad_min=12, edad_max=67)
-                subps = Subentidad.objects.filter(clave_ex='madres_padres', entidad=entidad)
-                if subps.count() > 0:
-                    subp = subps[0]
-                else:
-                    subp = Subentidad.objects.create(nombre='Madres/Padres', mensajes=True,
-                                                     entidad=entidad,
-                                                     clave_ex='madres_padres', edad_min=18, edad_max=67)
-                cargoa = Cargo.objects.get_or_create(cargo='Alumno/a', entidad=entidad, borrable=False,
-                                                     clave_cargo='g_alumno')
-                cargop = Cargo.objects.get_or_create(cargo='Padre/Madre', entidad=entidad, borrable=False,
-                                                     clave_cargo='g_madre_padre')
+                # subas = Subentidad.objects.filter(clave_ex='alumnos', entidad=entidad)
+                # if subas.count() > 0:
+                #     suba = subas[0]
+                # else:
+                #     suba = Subentidad.objects.create(nombre='Alumnos', mensajes=True, clave_ex='alumnos',
+                #                                      entidad=entidad, edad_min=12, edad_max=67)
+                # subps = Subentidad.objects.filter(clave_ex='madres_padres', entidad=entidad)
+                # if subps.count() > 0:
+                #     subp = subps[0]
+                # else:
+                #     subp = Subentidad.objects.create(nombre='Madres/Padres', mensajes=True,
+                #                                      entidad=entidad,
+                #                                      clave_ex='madres_padres', edad_min=18, edad_max=67)
+                try:
+                    cargoa = Cargo.objects.get(entidad=entidad, borrable=False, clave_cargo='g_alumno')
+                except:
+                    cargoa = Cargo.objects.create(cargo='Alumno/a', entidad=entidad, borrable=False,
+                                                  clave_cargo='g_alumno')
+                try:
+                    cargop = Cargo.objects.get(entidad=entidad, borrable=False, clave_cargo='g_madre_padre')
+                except:
+                    cargop = Cargo.objects.create(cargo='Madre/Padre/Tutor/a legal', entidad=entidad,
+                                                  borrable=False, clave_cargo='g_madre_padre')
                 # Definición de los datos que permiten definir los usuarios:
                 d['apellidos'] = '%s %s' % (d['last_name1'], d['last_name2'])
                 d['apellidos_tutor1'] = '%s %s' % (d['last_name1_tutor1'], d['last_name2_tutor1'])
@@ -557,13 +563,17 @@ def carga_masiva_tipo_EXCEL(carga):
                 curso, c = Curso.objects.get_or_create(nombre=d['curso'], ronda=ronda, clave_ex=d['x_curso'])
                 if c:
                     logger.info('Carga masiva xls. Se crea curso %s' % curso.nombre)
+                    carga.log += '<br>Carga masiva xls. Se crea curso %s' % curso.nombre
+                    carga.save()
                 grupo, c = Grupo.objects.get_or_create(nombre=d['grupo'], ronda=ronda, clave_ex=d['x_unidad'])
                 if c:
                     logger.info('Carga masiva xls. Se crea grupo %s' % grupo.nombre)
+                    carga.log += '<br>Carga masiva xls. Se crea grupo %s' % grupo.nombre
+                    carga.save()
                 grupo.cursos.add(curso)
-                d['subentidades'] = str(suba.id)
-                d['subentidades_tutor1'] = str(subp.id)
-                d['subentidades_tutor2'] = str(subp.id)
+                # d['subentidades'] = str(suba.id)
+                # d['subentidades_tutor1'] = str(subp.id)
+                # d['subentidades_tutor2'] = str(subp.id)
                 d['activo'] = True
                 d['observaciones'] = '<b>Localidad de nacimiento:</b> %s<br><b>Nacionalidad:</b> %s<br>' \
                                      '<b>Código del país de nacimiento:</b> %s<br><b>País de nacimiento:</b> %s<br>' \
@@ -582,20 +592,19 @@ def carga_masiva_tipo_EXCEL(carga):
                                          d['num_matriculas_exp'],
                                          d['rep_curso'], d['familia_numerosa'], d['lengua_materna'],
                                          d['year_incorporacion'])
-
                 tutor1 = create_usuario(d, ronda, '_tutor1')
                 if tutor1:
-                    tutor1.cargos.add(cargop[0])
+                    tutor1.cargos.add(cargop)
                     tutor1.save()
                 tutor2 = create_usuario(d, ronda, '_tutor2')
                 if tutor2:
-                    tutor2.cargos.add(cargop[0])
+                    tutor2.cargos.add(cargop)
                     tutor2.save()
                 gauser_extra = create_usuario(d, ronda, '')
                 gauser_extra.tutor1 = tutor1
                 gauser_extra.tutor2 = tutor2
-                gauser_extra.subentidades.add(suba)
-                gauser_extra.cargos.add(cargoa[0])
+                # gauser_extra.subentidades.add(suba)
+                gauser_extra.cargos.add(cargoa)
                 gauser_extra.save()
                 gauser_extra.gauser_extra_estudios.grupo = grupo
                 gauser_extra.gauser_extra_estudios.save()
@@ -1030,12 +1039,12 @@ def ejecutar_configurar_cargos_permisos_entidad(e):
                         mensaje += '<br>Permiso: %s -- %s' % (code_nombre, str(msg))
             try:
                 insp_g = e.centroinspeccionado.inspectorasignado_set.all()[0].inspector.gauser
-                if 'illanu' in insp_g.last_name:
-                    insp_ge, c = Gauser_extra.objects.get_or_create(gauser=insp_g, ronda=e.ronda)
-                    insp_ge.activo = True
-                    insp_ge.puesto = 'Inspector de Educación'
-                    insp_ge.save()
-                    insp_ge.cargos.add(Cargo.objects.get(entidad=e, clave_cargo='g_inspector_educacion'))
+                # Inicialmente se hicieron pruebas únicamente para María Villanueva
+                insp_ge, c = Gauser_extra.objects.get_or_create(gauser=insp_g, ronda=e.ronda)
+                insp_ge.activo = True
+                insp_ge.puesto = 'Inspector de Educación'
+                insp_ge.save()
+                insp_ge.cargos.add(Cargo.objects.get(entidad=e, clave_cargo='g_inspector_educacion'))
             except Exception as msg:
                 mensaje += '<br>Cargo: g_inspector_educacion -- %s' % str(msg)
     except Exception as msg:

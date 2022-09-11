@@ -964,9 +964,14 @@ def carga_masiva(request):
                         gauser_extra.save()
         if action == 'carga_masiva_racima':
             if 'excel' in request.FILES['file_masivo'].content_type:
-                CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo'], tipo='EXCEL')
-                carga_masiva_from_excel.apply_async(expires=300)
-                crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+                CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=request.FILES['file_masivo'], tipo='EXCEL')
+                try:
+                    carga_masiva_from_excel.apply_async(expires=300)
+                    crear_aviso(request, True, 'cmexcel_automatica')
+                    crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+                except:
+                    crear_aviso(request, False,
+                                'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
         else:
             crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.')
 

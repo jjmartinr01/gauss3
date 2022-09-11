@@ -866,9 +866,22 @@ def carga_masiva_horarios(request):
                 crear_aviso(request, False, 'El archivo cargado no tiene el formato adecuado.')
         elif action == 'carga_masiva_racima_xls':
             logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls'].content_type)
-            CargaMasiva.objects.create(ronda=g_e.ronda, fichero=request.FILES['file_masivo_xls'], tipo='HORARIOXLS')
-            carga_masiva_from_file.delay()
-            crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+            CargaMasiva.objects.create(g_e=g_e, ronda=g_e.ronda, fichero=request.FILES['file_masivo_xls'],
+                                       tipo='HORARIOXLS')
+            # carga_masiva_from_file.delay()
+            # crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+
+            try:
+                carga_masiva_from_file.apply_async(expires=300)
+                crear_aviso(request, True, 'cmhorario_automatica')
+                crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+            except:
+                crear_aviso(request, False,
+                            'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
+
+
+
+
             # f = c.fichero.read()
             # book = xlrd.open_workbook(file_contents=f)
             # sheet = book.sheet_by_index(0)
@@ -1413,7 +1426,7 @@ def guardias_horario(request):
             except:
                 pass
 
-    horario = Horario.objects.get(ronda=g_e.ronda, predeterminado=True)
+    horario, c = Horario.objects.get_or_create(ronda=g_e.ronda, predeterminado=True)
     if 'd' in request.GET:
         fecha = datetime.strptime(request.GET['d'], '%d%m%Y').date()
     else:
