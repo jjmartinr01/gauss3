@@ -648,8 +648,7 @@ class ProgSec(models.Model):
     TIPOS = (('BOR', 'Borrador'), ('DEF', 'Definitiva'), ('RE', 'Refuerzo Educativo'),
              ('AAC', 'Adaptación de Acceso al Currículo'), ('EC', 'Enriquecimiento Curricular'),
              ('ACS', 'Adaptación Curricular Significativa'), ('PRE', 'Plan de Recuperación'),
-             ('FPB', 'Ciclo Formativo de Grado Básico'), ('PRT', 'Programa de Refuerzo Transitorio'),
-             ('DIV', 'Diversificación Curricular'), )
+             ('PRT', 'Programa de Refuerzo Transitorio'), ('DIV', 'Diversificación Curricular'), )
     pga = models.ForeignKey(PGA, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre específico para la programación', blank=True, max_length=300)
     gep = models.ForeignKey(Gauser_extra_programaciones, blank=True, null=True, on_delete=models.CASCADE)
