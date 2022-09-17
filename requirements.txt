@@ -49,7 +49,7 @@ monotonic==1.6
 more-itertools==8.10.0
 netifaces==0.11.0
 numpy==1.21.5
-oauthlib==3.2.0
+oauthlib==3.2.1
 olefile==0.46
 paramiko==2.9.3
 pdfkit==1.0.0
