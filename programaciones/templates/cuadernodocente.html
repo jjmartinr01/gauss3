@@ -200,8 +200,10 @@
             var cuaderno = element.data('cuaderno');
             var psec = $('#select_psec' + cuaderno).val();
             var grupo = $('#select_grupo' + cuaderno).val();
+            {#var tipo = $('#select_tipo_cuaderno' + cuaderno).val();#}
+            var tipo = 'PRO';
             $.post('/cuadernodocente/', {
-                    action: 'configura_cuaderno', cuaderno: cuaderno, psec: psec, grupo: grupo
+                    action: 'configura_cuaderno', cuaderno: cuaderno, psec: psec, grupo: grupo, tipo: tipo
                 },
                 function (data) {
                     if (data.ok) {
@@ -583,6 +585,24 @@
             }, 750);
         });
 
+        $('body').on('change', '.update_calalumce', function (e) {
+            e.preventDefault();
+            var element = $(this);
+            var calalumce = element.data('calalumce');
+            {#var cuaderno = element.data('cuaderno');#}
+            var valor = element.val();
+            $.post("/cuadernodocente/", {
+                        action: 'update_calalumce', valor: valor, calalumce: calalumce,
+                        cuaderno: $('#id_cuaderno').val()
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+        });
         {# ########################################################### #}
         {# ################# GESTIÓN DE LOS ALUMNOS ################## #}
         {# ########################################################### #}

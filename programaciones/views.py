@@ -2951,6 +2951,7 @@ def cuadernodocente(request):
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
                 cuaderno.psec = ProgSec.objects.get(id=request.POST['psec'])
                 cuaderno.grupo = Grupo.objects.get(id=request.POST['grupo'])
+                cuaderno.tipo = request.POST['tipo']
                 cuaderno.log += '%s %s %s | %s\n' % (action, now(), g_e, request.POST)
                 cuaderno.save()
                 cuaderno.alumnos.add(*cuaderno.grupo.gauser_extra_estudios_set.all().values_list('ge', flat=True))
@@ -3135,6 +3136,15 @@ def cuadernodocente(request):
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        elif action == 'update_calalumce':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                calalumce = CalAlumCE.objects.get(id=request.POST['calalumce'], cp=cuaderno)
+                calalumce.valor = max(min(10, float(request.POST['valor'])), 0)
+                calalumce.save()
+                return JsonResponse({'ok': True})
+            except:
+                return JsonResponse({'ok': False})
         elif action == 'update_calalum':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
@@ -3512,3 +3522,35 @@ def configurar_cargos_permisos(request):
         except Exception as msg:
             mensaje += '<br>%s -- %s' % (e, str(msg))
     return HttpResponse(mensaje)
+
+
+#########################################################
+################### Crear los nuevos CalAlumCE y CalAlumCEv asociados a las CalAlumValor ya existentes
+# Esta función hay que borrarla tras la primera ejecución sin errores
+@gauss_required
+def crea_calalumce_cev(request):
+    cavs = CalAlumValor.objects.all()
+    errores = ''
+    for cav in cavs:
+        try:
+            alumno = cav.ca.alumno
+            cuaderno = cav.ca.cp
+            cevps = cav.ca.cie.cevps
+            cev = cevps.cev
+            calalumce, c = CalAlumCE.objects.get_or_create(cp=cuaderno, alumno=alumno, cep=cevps.cepsec)
+            calalumcev, c = CalAlumCEv.objects.get_or_create(calalumce=calalumce, cevp=cevps)
+            cas = cuaderno.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)
+            numerador = 0
+            denominador = 0
+            for ca in cas:
+                if ca.cal > 0:
+                    numerador += ca.cie.peso * ca.cal
+                    denominador += ca.cie.peso
+            try:
+                calalumcev.valor = round(numerador / denominador, 2)
+            except:
+                calalumcev.valor = 0
+            calalumcev.save()
+        except Exception as msg:
+            errores += '<br>%s' % str(msg)
+    return HttpResponse('Trabajo terminado<br>Errores: %s' % errores)

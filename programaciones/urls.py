@@ -30,4 +30,5 @@ urlpatterns = [
     path('repositorio_sap/', views.repositorio_sap),
     path('repoescalacp/', views.repoescalacp),
     path('calificacc/', views.calificacc),
+    path('crea_calalumce_cev/', views.crea_calalumce_cev),
 ]

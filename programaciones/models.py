@@ -5,6 +5,8 @@ from django.utils.timezone import now, datetime
 import os
 
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from autenticar.models import Gauser
 from gauss.rutas import MEDIA_PROGRAMACIONES
@@ -320,6 +322,7 @@ class Departamento(models.Model):
     fp = models.BooleanField("Es una familia profesional", default=False)
     horas_coordinador = models.IntegerField("Nº de horas de coordinación jefe de departamento", null=True, blank=True)
     etapa = models.CharField('Etapa', choices=ETAPAS, max_length=4, blank=True, null=True, default='SEC')
+
     # En primaria y secundaria no existen departamentos, pero utilizamos esta tabla para recoger la
     # estructura de 'Ciclo' que se utiliza en ellas.
 
@@ -648,7 +651,7 @@ class ProgSec(models.Model):
     TIPOS = (('BOR', 'Borrador'), ('DEF', 'Definitiva'), ('RE', 'Refuerzo Educativo'),
              ('AAC', 'Adaptación de Acceso al Currículo'), ('EC', 'Enriquecimiento Curricular'),
              ('ACS', 'Adaptación Curricular Significativa'), ('PRE', 'Plan de Recuperación'),
-             ('PRT', 'Programa de Refuerzo Transitorio'), ('DIV', 'Diversificación Curricular'), )
+             ('PRT', 'Programa de Refuerzo Transitorio'), ('DIV', 'Diversificación Curricular'),)
     pga = models.ForeignKey(PGA, on_delete=models.CASCADE)
     nombre = models.CharField('Nombre específico para la programación', blank=True, max_length=300)
     gep = models.ForeignKey(Gauser_extra_programaciones, blank=True, null=True, on_delete=models.CASCADE)
@@ -719,10 +722,22 @@ class ProgSec(models.Model):
     @property
     def instrumentos_utilizados(self):
         try:
-            tipos_existentes = dict(InstrEval.TIPOS)
-            tipos_utilizados = InstrEval.objects.filter(asapren__sapren__sbas__psec=self).values_list('tipo', flat=True)
-            # con filter(None, lista) eliminamos los elementos vacíos de la lista
-            return [tipos_existentes[tipo] for tipo in filter(None, set(tipos_utilizados))]
+            procedimientos = {proc: 0 for abr, proc in InstrEval.TIPOS}
+            ceps = self.ceprogsec_set.all()
+            peso_ceps_total = sum(ceps.values_list('valor', flat=True))
+            for cep in ceps:
+                cevps = cep.cevprogsec_set.all()
+                peso_cevps_total = sum(cevps.values_list('valor', flat=True))
+                for cevp in cevps:
+                    criinstrevals = cevp.criinstreval_set.all()
+                    peso_criinstreval_total = sum(criinstrevals.values_list('peso', flat=True))
+                    for criinstreval in criinstrevals:
+                        aporte_criinstreval = criinstreval.peso / peso_criinstreval_total
+                        aporte_cevp = cevp.valor / peso_cevps_total
+                        aporte_cep = cep.valor / peso_ceps_total
+                        aporte_porcentual_total = round(aporte_criinstreval * aporte_cevp * aporte_cep * 100, 2)
+                        procedimientos[criinstreval.ieval.get_tipo_display()] += aporte_porcentual_total
+            return procedimientos
         except:
             return []
 
@@ -825,6 +840,7 @@ class ActExCom(models.Model):
     def __str__(self):
         return '%s - %s (%s - %s)' % (self.psec, self.nombre, self.inicio, self.fin)
 
+
 class SaberBas(models.Model):
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE)
     orden = models.IntegerField('Orden del saber básico dentro del conjunto de saberes', default=1)
@@ -888,7 +904,7 @@ class SitApren(models.Model):
 
     class Meta:
         verbose_name_plural = 'Situaciones de aprendizaje'
-        ordering = ['sbas__psec', 'sbas', 'id' ]
+        ordering = ['sbas__psec', 'sbas', 'id']
 
     @property
     def num_asapren(self):
@@ -974,6 +990,7 @@ class CriInstrEval(models.Model):
     def __str__(self):
         return '%s - %s (%s)' % (self.ieval, self.cevps, self.peso)
 
+
 ############################################################
 class RepoSitApren(models.Model):
     autor = models.ForeignKey(Gauser_extra, on_delete=models.SET_NULL, blank=True, null=True)
@@ -1001,7 +1018,7 @@ class RepoSitApren(models.Model):
         try:
             rsaprenlikes = self.repositaprenlike_set.all()
             suma = rsaprenlikes.aggregate(models.Sum('like'))['like__sum']
-            return round(suma/rsaprenlikes.count(), 2)
+            return round(suma / rsaprenlikes.count(), 2)
         except:
             return ''
 
@@ -1020,6 +1037,7 @@ class RepoSitApren(models.Model):
     def __str__(self):
         return '%s - %s' % (self.areamateria, self.nombre)
 
+
 class RepoSitAprenLike(models.Model):
     rsap = models.ForeignKey(RepoSitApren, on_delete=models.CASCADE, blank=True, null=True)
     ge = models.ForeignKey(Gauser_extra, on_delete=models.SET_NULL, blank=True, null=True)
@@ -1034,6 +1052,7 @@ class RepoSitAprenLike(models.Model):
     def __str__(self):
         return '%s - %s' % (self.rsap, self.like)
 
+
 class RepoCEv(models.Model):
     sapren = models.ForeignKey(RepoSitApren, on_delete=models.CASCADE)
     cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
@@ -1046,6 +1065,7 @@ class RepoCEv(models.Model):
 
     def __str__(self):
         return '%s - %s (%s)' % (self.cev.ce, self.cev, self.valor)
+
 
 class RepoActSitApren(models.Model):
     sapren = models.ForeignKey(RepoSitApren, on_delete=models.CASCADE)
@@ -1108,17 +1128,23 @@ class RepoCriInstrEval(models.Model):
     def __str__(self):
         return '%s - %s (%s)' % (self.ieval, self.cevps, self.peso)
 
+
 ############################################################
 
 class CuadernoProf(models.Model):
     VISTAS = (('NOR', 'Vista Normal'), ('COM', 'Vista por competencias'))
-    ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, related_name='cuaderno_docente_set', blank=True, null=True)
+    TIPOS = (('PRO', 'Nivel de detalle: Procedimientos de evaluación'),
+             ('CRI', 'Nivel de detalle: Criterios de evaluación'),
+             ('CES', 'Nivel de detalle: Competencias específicas'),)
+    ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, related_name='cuaderno_docente_set', blank=True,
+                           null=True)
     grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE, blank=True, null=True)
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE, blank=True, null=True)
     vmin = models.IntegerField('Valor mínimo de calificación asignable a un alumno', default=0)
     vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)
     alumnos = models.ManyToManyField(Gauser_extra, blank=True, related_name='cuaderno_alumno_set')
     vista = models.CharField('Tipo de vista', max_length=3, choices=VISTAS, default='NOR')
+    tipo = models.CharField('Tipo de vista', max_length=3, choices=TIPOS, default='PRO')
     borrado = models.BooleanField('¿Cuaderno borrado?', default=False)
     log = models.TextField('Log del cuaderno', blank=True, default='')
 
@@ -1149,6 +1175,14 @@ class CuadernoProf(models.Model):
             return 0
 
     def calificacion_alumno_ce(self, alumno, ce):  # Calificación de una determinada competencia específica
+        try:
+            return self.calalumce_set.get(alumno=alumno, cep__ce=ce).valor
+        except:
+            cep = CEProgSec.objects.get(psec=self.psec, ce=ce)
+            cace = CalAlumCE.objects.create(alumno=alumno, cp=self, cep=cep)
+            return 0
+        #################################################################
+        ######## LINEAS DE CÓDIGO ANTIGUAS:
         try:
             cepsec = self.psec.ceprogsec_set.get(ce=ce)
         except:
@@ -1196,7 +1230,7 @@ class CuadernoProf(models.Model):
 
     @property
     def estructura_cuaderno(self):
-        sbs_array=[]
+        sbs_array = []
         for sb in self.psec.saberbas_set.all():
             sb_element = {'sb': sb, 'sb_columns': 0, 'saps': []}
             saps = sb.sitapren_set.all()
@@ -1251,10 +1285,47 @@ class CuadernoProf(models.Model):
             sbs_array.append(sb_element)
         return sbs_array
 
+    def __str__(self):
+        return '%s - %s (%s)' % (self.psec, self.grupo, self.ge)
+
+
+class CalAlumCE(models.Model):
+    cp = models.ForeignKey(CuadernoProf, on_delete=models.CASCADE, blank=True, null=True)
+    alumno = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE)
+    cep = models.ForeignKey(CEProgSec, on_delete=models.CASCADE)
+    valor = models.FloatField('Valor cuantitativo asociado a la competencia específica', default=0)
+    obs = models.TextField('Observaciones a la calificación otorgada', blank=True, default='')
 
     def __str__(self):
-        # return 'cuaderno'
-        return '%s - %s (%s)' % (self.psec, self.grupo, self.ge)
+        return '%s - %s (%s)' % (self.cep.psec[:50], self.cep.ce[:50], self.valor)
+
+
+class CalAlumCEv(models.Model):
+    calalumce = models.ForeignKey(CalAlumCE, on_delete=models.CASCADE)
+    cevp = models.ForeignKey(CEvProgSec, on_delete=models.CASCADE)
+    valor = models.FloatField('Valor cuantitativo asociado al criterio de evaluación', default=0)
+    obs = models.TextField('Observaciones a la calificación otorgada', blank=True, default='')
+
+    # def save(self, *args, **kwargs):
+    #     self.slug = slugify(self.title)
+    #     super(CalAlumCEv, self).save(*args, **kwargs)
+    def __str__(self):
+        return '%s - %s (%s)' % (self.calalumce[:120], self.cevp.cev[:50], self.valor)
+
+
+@receiver(post_save, sender=CalAlumCEv)
+def update_calalumce(sender, instance, **kwargs):
+    numerador_final = 0
+    denominador_final = 0
+    for calalumcev in instance.calalumce.calalumcev_set.all():
+        numerador_final += calalumcev.cevp.valor * instance.valor
+        if instance.valor > 0:  # Esto es para no tener en cuenta las calificaciones iguales a 0
+            denominador_final += calalumcev.cevp.valor
+    try:
+        instance.calalumce.valor = numerador_final / denominador_final
+    except:
+        instance.calalumce.valor = 0
+    instance.calalumce.save()
 
 
 class EscalaCP(models.Model):  # Escala utilizada en el CuardernoProf
@@ -1310,7 +1381,6 @@ class CalAlum(models.Model):
                 n += 1
                 calificacion += cav.ecpv.valor
         try:
-            # return round(calificacion / cavs.count(), 2)
             return round(calificacion / n, 2)
         except:
             return 0
@@ -1326,6 +1396,28 @@ class CalAlumValor(models.Model):
 
     def __str__(self):
         return '%s (%s)' % (self.ca, self.ecpv)
+
+
+@receiver(post_save, sender=CalAlumValor)
+def update_calalumcev(sender, instance, **kwargs):
+    alumno = instance.ca.alumno
+    cuaderno = instance.ca.cp
+    cevps = instance.ca.cie.cevps
+    cev = cevps.cev
+    calalumce, c = CalAlumCE.objects.get_or_create(cp=cuaderno, alumno=alumno, cep=cevps.cepsec)
+    calalumcev, c = CalAlumCEv.objects.get_or_create(calalumce=calalumce, cevp=cevps)
+    cas = cuaderno.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)
+    numerador = 0
+    denominador = 0
+    for ca in cas:
+        if ca.cal > 0:
+            numerador += ca.cie.peso * ca.cal
+            denominador += ca.cie.peso
+    try:
+        calalumcev.valor = round(numerador / denominador, 2)
+    except:
+        calalumcev.valor = 0
+    calalumcev.save()
 
 
 class RepoEscalaCP(models.Model):  # Escala utilizada en el CuardernoProf

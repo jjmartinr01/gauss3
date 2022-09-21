@@ -549,20 +549,63 @@
     </div>
 </div>
 
+{#<div class="row">#}
+{#    <div class="columns large-12">#}
+{#        <div data-alert class="alert-box info radius">#}
+{#            <p>En esta programación, el porcentaje de uso de los diferentes procedimientos de evaluación#}
+{#                para obtener la calificación final del alumnado es:</p>#}
+{#            <ol>#}
+{#                {% for ins, p in progsec.instrumentos_utilizados.items %}#}
+{#                    {% if p > 60 and '50BAC' in progsec.areamateria.curso %}#}
+{#                        <li style="color:red;">{{ ins }}: {{ p|floatformat:2 }}%</li>#}
+{#                    {% elif p > 40 and '50BAC' not in progsec.areamateria.curso %}#}
+{#                        <li style="color:red;">{{ ins }}: {{ p|floatformat:2 }}%</li>#}
+{#                    {% else %}#}
+{#                        <li>{{ ins }}: {{ p|floatformat:2 }}%</li>#}
+{#                    {% endif %}#}
+{#                {% endfor %}#}
+{#            </ol>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
+
 <div class="row">
     <div class="columns large-12">
-        <div data-alert class="alert-box info radius">
-            <p>Para la valoración de los criterios de evaluación esta programación utiliza los siguientes
-                procedimientos de evaluación:</p>
-            <ol>
-                {% for ins in progsec.instrumentos_utilizados %}
-                    <li>{{ ins }}</li>
-                {% endfor %}
-            </ol>
-            {#                <a href="#" class="close">&times;</a>#}
-        </div>
+        <table style="width: 100%">
+            <thead>
+            <tr>
+                <th colspan="2">Según lo programado, el porcentaje de uso de los procedimientos de evaluación
+                    para obtener la calificación final del alumnado es:
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for ins, p in progsec.instrumentos_utilizados.items %}
+                <tr>
+                    {% if p > 60 and '50BAC' in progsec.areamateria.curso %}
+                        <td style="color:red;font-weight: bold;">{{ ins }}:</td>
+                        <td style="color:red;font-weight: bold;">{{ p|floatformat:2 }}%</td>
+                    {% elif p > 40 and '50BAC' not in progsec.areamateria.curso %}
+                        <td style="color:red;font-weight: bold;">{{ ins }}:</td>
+                        <td style="color:red;font-weight: bold;"> {{ p|floatformat:2 }}%</td>
+                    {% else %}
+                        {% if p > 0 %}
+                            <td style="color:green;font-weight: bold;">{{ ins }}:</td>
+                            <td style="color:green;font-weight: bold;">{{ p|floatformat:2 }}%</td>
+                        {% else %}
+                            <td>{{ ins }}:</td>
+                            <td>{{ p|floatformat:2 }}%</td>
+                        {% endif %}
+                    {% endif %}
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
     </div>
 </div>
+
 
 <div class="row">
     <div class="columns large-2"><b>Comienzo</b></div>
