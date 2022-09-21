@@ -721,8 +721,8 @@ class ProgSec(models.Model):
 
     @property
     def instrumentos_utilizados(self):
+        procedimientos = {proc: 0 for abr, proc in InstrEval.TIPOS}
         try:
-            procedimientos = {proc: 0 for abr, proc in InstrEval.TIPOS}
             ceps = self.ceprogsec_set.all()
             peso_ceps_total = sum(ceps.values_list('valor', flat=True))
             for cep in ceps:
@@ -732,14 +732,17 @@ class ProgSec(models.Model):
                     criinstrevals = cevp.criinstreval_set.all()
                     peso_criinstreval_total = sum(criinstrevals.values_list('peso', flat=True))
                     for criinstreval in criinstrevals:
-                        aporte_criinstreval = criinstreval.peso / peso_criinstreval_total
+                        if peso_criinstreval_total > 0:
+                            aporte_criinstreval = criinstreval.peso / peso_criinstreval_total
+                        else:
+                            aporte_criinstreval = 0
                         aporte_cevp = cevp.valor / peso_cevps_total
                         aporte_cep = cep.valor / peso_ceps_total
                         aporte_porcentual_total = round(aporte_criinstreval * aporte_cevp * aporte_cep * 100, 2)
                         procedimientos[criinstreval.ieval.get_tipo_display()] += aporte_porcentual_total
             return procedimientos
         except:
-            return []
+            return procedimientos
 
     @property
     def asignaturas_ambito(self):
@@ -1297,7 +1300,7 @@ class CalAlumCE(models.Model):
     obs = models.TextField('Observaciones a la calificación otorgada', blank=True, default='')
 
     def __str__(self):
-        return '%s - %s (%s)' % (self.cep.psec[:50], self.cep.ce[:50], self.valor)
+        return '%s - %s (%s)' % (self.cep.psec, self.cep.ce.nombre, self.valor)
 
 
 class CalAlumCEv(models.Model):
@@ -1310,7 +1313,7 @@ class CalAlumCEv(models.Model):
     #     self.slug = slugify(self.title)
     #     super(CalAlumCEv, self).save(*args, **kwargs)
     def __str__(self):
-        return '%s - %s (%s)' % (self.calalumce[:120], self.cevp.cev[:50], self.valor)
+        return '%s - %s (%s)' % (self.calalumce, self.cevp.cev.texto[:50], self.valor)
 
 
 @receiver(post_save, sender=CalAlumCEv)

@@ -16,6 +16,19 @@ class ProgSecAdminForm(forms.ModelForm):
 class ProgSecAdmin(admin.ModelAdmin):
     form = ProgSecAdminForm
 
+
+class CuadernoProfAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['materia'].queryset = Materia_programaciones.objects.none()
+        self.fields['curso'].queryset = Curso.objects.none()
+        try:
+            self.fields['gep'].queryset = Gauser_extra_programaciones.objects.filter(ge__ronda=self.instance.gep.ge.ronda)
+        except:
+            self.fields['gep'].queryset = Gauser_extra_programaciones.objects.none()
+class CuadernoProfAdmin(admin.ModelAdmin):
+    form = ProgSecAdminForm
+
 admin.site.register(Titulo_FP)
 admin.site.register(Programacion_modulo)
 admin.site.register(Obj_general)
@@ -44,6 +57,8 @@ admin.site.register(ActSitApren)
 admin.site.register(InstrEval)
 admin.site.register(CriInstrEval)
 admin.site.register(CuadernoProf)
+admin.site.register(CalAlumCE)
+admin.site.register(CalAlumCEv)
 admin.site.register(EscalaCP)
 admin.site.register(EscalaCPvalor)
 admin.site.register(CalAlum)

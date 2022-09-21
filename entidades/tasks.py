@@ -195,7 +195,7 @@ def create_usuario(datos, ronda, tipo):
                     'DESCONOCIDO')
             logger.info(mensaje)
     if gauser_extra:
-        #logger.info('antes de subentidades')
+        # logger.info('antes de subentidades')
         # if datos['subentidades' + tipo]:
         #     logger.info('entra en subentidades')
         #    # La siguientes dos líneas no se si funcionarán en python3 debido a que filter en python3 no devuelve
@@ -820,7 +820,8 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
                 y1, y2 = datetime.today().year, datetime.today().year + 1
                 inicio = datetime.strptime("1/9/%s" % y1, "%d/%m/%Y")
                 fin = datetime.strptime("31/8/%s" % y2, "%d/%m/%Y")
-                ronda, c = Ronda.objects.get_or_create(nombre="%s/%s" % (y1, y2), entidad=entidad, inicio=inicio, fin=fin)
+                ronda, c = Ronda.objects.get_or_create(nombre="%s/%s" % (y1, y2), entidad=entidad, inicio=inicio,
+                                                       fin=fin)
                 entidad.ronda = ronda
                 entidad.save()
                 # Cargamos los usuarios capturados antes en la nueva ronda (miembros del equipo directivo):
@@ -897,8 +898,6 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
         eee, created = EntidadExtraExpediente.objects.get_or_create(eextra=ee, expediente=expediente)
         oferta = sheet.cell(row_index, dict_names['Oferta']).value
         EntidadExtraExpedienteOferta.objects.get_or_create(eeexpediente=eee, oferta=oferta)
-
-
 
 
 def carga_masiva_tipo_DOCENTES_RACIMA(carga):
@@ -1112,4 +1111,35 @@ def ejecutar_configurar_docs_conf_educarioja():
         except Exception as msg:
             mensaje += '<br>Entidad: %s -- %s' % (e, str(msg))
             Aviso.objects.create(aviso=mensaje, fecha=now(), aceptado=True)
+    return True
+
+
+@shared_task
+def ejecutar_crea_calalumce_cev():
+    from programaciones.models import CalAlumValor, CalAlumCE, CalAlumCEv
+    cavs = CalAlumValor.objects.all()
+    errores = ''
+    for cav in cavs:
+        try:
+            alumno = cav.ca.alumno
+            cuaderno = cav.ca.cp
+            cevps = cav.ca.cie.cevps
+            cev = cevps.cev
+            calalumce, c = CalAlumCE.objects.get_or_create(cp=cuaderno, alumno=alumno, cep=cevps.cepsec)
+            calalumcev, c = CalAlumCEv.objects.get_or_create(calalumce=calalumce, cevp=cevps)
+            cas = cuaderno.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)
+            numerador = 0
+            denominador = 0
+            for ca in cas:
+                if ca.cal > 0:
+                    numerador += ca.cie.peso * ca.cal
+                    denominador += ca.cie.peso
+            try:
+                calalumcev.valor = round(numerador / denominador, 2)
+            except:
+                calalumcev.valor = 0
+            calalumcev.save()
+        except Exception as msg:
+            errores += '<br>%s' % str(msg)
+    Aviso.objects.create(aviso='ejecutar_crea_calalumce_cev terminado.<br>%s' % errores, fecha=now(), aceptado=True)
     return True

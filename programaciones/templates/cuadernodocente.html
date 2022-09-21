@@ -200,8 +200,7 @@
             var cuaderno = element.data('cuaderno');
             var psec = $('#select_psec' + cuaderno).val();
             var grupo = $('#select_grupo' + cuaderno).val();
-            {#var tipo = $('#select_tipo_cuaderno' + cuaderno).val();#}
-            var tipo = 'PRO';
+            var tipo = $('#select_tipo_cuaderno' + cuaderno).val();
             $.post('/cuadernodocente/', {
                     action: 'configura_cuaderno', cuaderno: cuaderno, psec: psec, grupo: grupo, tipo: tipo
                 },
@@ -593,6 +592,26 @@
             var valor = element.val();
             $.post("/cuadernodocente/", {
                         action: 'update_calalumce', valor: valor, calalumce: calalumce,
+                        cuaderno: $('#id_cuaderno').val()
+                    },
+                    function (data) {
+                        if (data.ok) {
+                            $('#cal_am_' + data.asignatura + '_' + data.alumno).html(data.cal_am);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+        });
+
+        $('body').on('change', '.update_calalumcev', function (e) {
+            e.preventDefault();
+            var element = $(this);
+            var calalumcev = element.data('calalumcev');
+            {#var cuaderno = element.data('cuaderno');#}
+            var valor = element.val();
+            $.post("/cuadernodocente/", {
+                        action: 'update_calalumcev', valor: valor, calalumcev: calalumcev,
                         cuaderno: $('#id_cuaderno').val()
                     },
                     function (data) {

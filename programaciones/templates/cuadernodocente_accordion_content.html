@@ -108,16 +108,16 @@
                 </select>
             </label>
         </div>
-{#        <div class="columns large-4">#}
-{#            <label>Tipo de cuaderno:#}
-{#                <select data-cuaderno="{{ cuaderno.id }}" class="select_tipo_cuaderno"#}
-{#                        id="select_tipo_cuaderno{{ cuaderno.id }}">#}
-{#                    {% for tipo in cuaderno.TIPOS %}#}
-{#                        <option value="{{ tipo.0 }}">{{ tipo.1 }}</option>#}
-{#                    {% endfor %}#}
-{#                </select>#}
-{#            </label>#}
-{#        </div>#}
+        <div class="columns large-4">
+            <label>Tipo de cuaderno:
+                <select data-cuaderno="{{ cuaderno.id }}" class="select_tipo_cuaderno"
+                        id="select_tipo_cuaderno{{ cuaderno.id }}">
+                    {% for tipo in cuaderno.TIPOS %}
+                        <option value="{{ tipo.0 }}">{{ tipo.1 }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
         <div class="columns large-1">
             <label>&nbsp;</label>
             <a class="configura_cuaderno" data-cuaderno="{{ cuaderno.id }}">
@@ -127,57 +127,53 @@
             </a>
         </div>
     </div>
-{#    <div class="row">#}
-{#        <div class="columns large-12 panel callout">#}
-{##}
-{#            <h5><i class="fa fa-info-circle fa-3x"></i> Para elegir el tipo de cuaderno tenga en cuenta las siguientes#}
-{#                observaciones:</h5>#}
-{#            <p>#}
-{#            <ul>#}
-{#                <li style="font-weight: bold;">Nivel de detalle: Competencias específicas</li>#}
-{#                En este caso, el docente proporciona calificaciones directamente a las competencias específicas. Es de#}
-{#                suponer que utilizará otras herramientas para evaluar a través de los criterios de evaluación.#}
-{#                Solo hay que introducir por alumno un número de calificaciones igual al número de competencias#}
-{#                específicas asociadas a una asignatura.#}
-{#                <li style="font-weight: bold;">Nivel de detalle: Criterios de evaluación</li>#}
-{#                En este caso, el docente proporciona calificaciones únicamente a los criterios de evaluación. Estas#}
-{#                calificaciones las habrá obtenido tras la aplicación de los procedimientos de evaluación al#}
-{#                alumnado.#}
-{#                Solo hay que introducir por alumno un número de calificaciones igual al número de criterios de#}
-{#                evaluación asociados a una asignatura.#}
-{#                <li style="font-weight: bold;">Nivel de detalle: Procedimientos de evaluación</li>#}
-{#                El cuaderno docente tiene tantos campos#}
-{#                para introducir calificaciones como criterios de evaluación se han definido en cada uno de los#}
-{#                procedimientos de evaluación.#}
-{#            </ul>#}
-{#            </p>#}
-{#        </div>#}
-{#    </div>#}
+    <div class="row">
+        <div class="columns large-12 panel callout">
+
+            <h5><i class="fa fa-info-circle fa-3x"></i> Para elegir el tipo de cuaderno tenga en cuenta las siguientes
+                observaciones:</h5>
+            <p>
+            <ul>
+                <li style="font-weight: bold;">Nivel de detalle: Competencias específicas</li>
+                En este caso, el docente proporciona calificaciones directamente a las competencias específicas. Es de
+                suponer que utilizará otras herramientas para evaluar a través de los criterios de evaluación.
+                Solo hay que introducir por alumno un número de calificaciones igual al número de competencias
+                específicas asociadas a una asignatura.
+                <li style="font-weight: bold;">Nivel de detalle: Criterios de evaluación</li>
+                En este caso, el docente proporciona calificaciones únicamente a los criterios de evaluación. Estas
+                calificaciones las habrá obtenido tras la aplicación de los procedimientos de evaluación al
+                alumnado.
+                Solo hay que introducir por alumno un número de calificaciones igual al número de criterios de
+                evaluación asociados a una asignatura.
+                <li style="font-weight: bold;">Nivel de detalle: Procedimientos de evaluación</li>
+                El cuaderno docente tiene tantos campos
+                para introducir calificaciones como criterios de evaluación se han definido en cada uno de los
+                procedimientos de evaluación.
+            </ul>
+            </p>
+        </div>
+    </div>
 {% elif cuaderno.tipo == 'CES' %}
     <div class="div_table{{ cuaderno.id }}">
         <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
             <thead style="position: sticky;top:0">
             <tr>
-                <th class="fixed_column" rowspan="5" id="fixed_column{{ cuaderno.id }}">
+                <th class="fixed_column" id="fixed_column{{ cuaderno.id }}">
                     Nombre alumno/a<br><br>
                     <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}"
                        title="Mostrar en pantalla completa"
                        style="position:absolute;top:5px;left:5px">
                         <i class="fa fa-external-link"></i>
                     </a>
-                    {#                            <a class="cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="COM"#}
-                    {#                               title="Ir a la vista de calificaciones por competencias específicas"#}
-                    {#                               style="position:absolute;top:5px;right:5px">#}
-                    {#                                <i class="fa fa-exchange"></i>#}
-                    {#                            </a>#}
                     <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
                         <i class="fa fa-users"></i> Gestionar alumnos
                     </a>
                 </th>
+            <th>Calificación</th>
                 {% for cep in cuaderno.psec.ceprogsec_set.all %}
                     <th id="cep_title{{ cep.id }}"
-                        title="{{ cep.ce.orden }}.- {{ cep.ce.nombre }}">CE{{ cep.ce.orden }}.-
-                        {{ cep.ce.nombre|truncatechars:20 }}</th>
+                        title="{{ cep.ce.orden }}.- {{ cep.ce.texto }}">CE{{ cep.ce.orden }}<br>
+                        {{ cep.ce.texto|truncatechars:20 }}</th>
                 {% endfor %}
             </tr>
             </thead>
@@ -188,30 +184,103 @@
                         <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
                     </td>
                     {% for cep in cuaderno.psec.ceprogsec_set.all %}
+                        {% ifchanged cep.ce.asignatura %}
+                            <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">--</td>
+                        {% endifchanged %}
                         {% with calalumce=cuaderno|get_cep:cep|get_calalumce:alumno %}
-{#                            <td class="update_calalumce" data-calalumce="{{ calalumce.id }}"#}
-{#                                data-cep="{{ cep.id }}" data-cuaderno="{{ cuaderno.id }}"#}
-{#                                data-alumno="{{ alumno.id }}" title="{{ calalumce.obs }}"#}
-{#                                id="valor_calalumce{{ calalumce.id }}_{{ alumno.id }}" contenteditable="true">#}
-{#                                {{ calalumce.valor }}#}
-{#                            </td>#}
+                            {#                            <td class="update_calalumce" data-calalumce="{{ calalumce.id }}"#}
+                            {#                                data-cep="{{ cep.id }}" data-cuaderno="{{ cuaderno.id }}"#}
+                            {#                                data-alumno="{{ alumno.id }}" title="{{ calalumce.obs }}"#}
+                            {#                                id="valor_calalumce{{ calalumce.id }}_{{ alumno.id }}" contenteditable="true">#}
+                            {#                                {{ calalumce.valor }}#}
+                            {#                            </td>#}
                             <td><input class="update_calalumce" data-calalumce="{{ calalumce.id }}" type="number"
-                                data-cep="{{ cep.id }}" data-cuaderno="{{ cuaderno.id }}" min="0" max="10"
-                                data-alumno="{{ alumno.id }}" title="{{ calalumce.obs }}" step="0.01"
-                                id="valor_calalumce{{ calalumce.id }}_{{ alumno.id }}" value="{{ calalumce.valor }}">
+                                       data-cep="{{ cep.id }}" data-cuaderno="{{ cuaderno.id }}" min="0" max="10"
+                                       data-alumno="{{ alumno.id }}" title="{{ calalumce.obs }}" step="0.01"
+                                       id="valor_calalumce{{ calalumce.id }}_{{ alumno.id }}"
+                                       value="{{ calalumce.valor }}">
                             </td>
                         {% endwith %}
                     {% endfor %}
                 </tr>
             {% endfor %}
-{#            <tr id="tr_calificar_alumno{{ cuaderno.id }}">#}
-{#                <td colspan="70" style="text-align: left!important;"#}
-{#                    id="td_calificar_alumno{{ cuaderno.id }}"></td>#}
-{#            </tr>#}
+            {#            <tr id="tr_calificar_alumno{{ cuaderno.id }}">#}
+            {#                <td colspan="70" style="text-align: left!important;"#}
+            {#                    id="td_calificar_alumno{{ cuaderno.id }}"></td>#}
+            {#            </tr>#}
             </tbody>
         </table>
     </div>
 {% elif cuaderno.tipo == 'CRI' %}
+    <p><b>Es posible introducir calificaciones que el sistema irá almacenando, pero todavía no va a actualizar
+    las calificaciones de la asignatura y de las competencias específicas.</b></p>
+    <p><b>En breve se terminará el desarrollo para que se produzca dicha actualización.</b></p>
+    <div class="div_table{{ cuaderno.id }}">
+        <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
+            <thead style="position: sticky;top:0">
+            <tr>
+                <th class="fixed_column" rowspan="2" id="fixed_column{{ cuaderno.id }}">
+                    Nombre alumno/a<br><br>
+                    <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}"
+                       title="Mostrar en pantalla completa"
+                       style="position:absolute;top:5px;left:5px">
+                        <i class="fa fa-external-link"></i>
+                    </a>
+                    <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
+                        <i class="fa fa-users"></i> Gestionar alumnos
+                    </a>
+                </th>
+            <th rowspan="2">Calificación</th>
+                {% for cep in cuaderno.psec.ceprogsec_set.all %}
+                    <th id="cep_title{{ cep.id }}" colspan="{{ cep.cevprogsec_set.all|length|add:"1" }}"
+                        title="CE{{ cep.ce.orden }}.- {{ cep.ce.texto }}">CE{{ cep.ce.orden }}.-
+                        {{ cep.ce.texto|truncatechars:60 }}</th>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for cep in cuaderno.psec.ceprogsec_set.all %}
+                    {% ifchanged %}
+                        <th>Cal. CE{{ cep.ce.orden }}</th>
+                    {% endifchanged %}
+                    {% for cevp in cep.cevprogsec_set.all %}
+                        <th id="cevp_title{{ cevp.id }}"
+                            title="{{ cevp.cev.orden }}.- {{ cevp.cev.texto }}">CEv{{ cevp.cev.orden }}.-
+                            {{ cevp.cev.texto|truncatechars:20 }}</th>
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody id="tbody_cuaderno{{ cuaderno.id }}">
+            {% for alumno in cuaderno.alumnos.all %}
+                <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
+                    <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
+                        <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
+                    </td>
+                <td id="cal_am_{{ alumno.id }}">--</td>
+                    {% for cep in cuaderno.psec.ceprogsec_set.all %}
+                        {% ifchanged %}
+                            <td id="cal_ce_{{ cep.id }}_{{ alumno.id }}">--</td>
+                        {% endifchanged %}
+                        {% for cevp in cep.cevprogsec_set.all %}
+                            {% with calalumcev=cuaderno|get_cevp:cevp|get_calalumcev:alumno %}
+                                <td><input class="update_calalumcev" data-calalumcev="{{ calalumcev.id }}" type="number"
+                                           data-cevp="{{ cevp.id }}" data-cuaderno="{{ cuaderno.id }}" min="0" max="10"
+                                           data-alumno="{{ alumno.id }}" title="{{ calalumcev.obs }}" step="0.01"
+                                           id="valor_calalumcev{{ calalumcev.id }}_{{ alumno.id }}"
+                                           value="{{ calalumcev.valor }}">
+                                </td>
+                            {% endwith %}
+                        {% endfor %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            {#            <tr id="tr_calificar_alumno{{ cuaderno.id }}">#}
+            {#                <td colspan="70" style="text-align: left!important;"#}
+            {#                    id="td_calificar_alumno{{ cuaderno.id }}"></td>#}
+            {#            </tr>#}
+            </tbody>
+        </table>
+    </div>
 {% elif cuaderno.tipo == 'PRO' %}
     {% if cuaderno.vista == 'NOR' %}
         {#{% elif cuaderno %}#}

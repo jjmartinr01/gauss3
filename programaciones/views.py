@@ -2955,6 +2955,11 @@ def cuadernodocente(request):
                 cuaderno.log += '%s %s %s | %s\n' % (action, now(), g_e, request.POST)
                 cuaderno.save()
                 cuaderno.alumnos.add(*cuaderno.grupo.gauser_extra_estudios_set.all().values_list('ge', flat=True))
+                for alumno in cuaderno.alumnos.all():
+                    for cep in cuaderno.psec.ceprogsec_set.all():
+                        calalumce = CalAlumCE.objects.create(cp=cuaderno, alumno=alumno, cep=cep)
+                        for cevp in cep.cevprogsec_set.all():
+                            CalAlumCEv.objects.create(calalumce=calalumce, cevp=cevp)
                 html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno})
                 return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre})
             except:
@@ -3142,6 +3147,18 @@ def cuadernodocente(request):
                 calalumce = CalAlumCE.objects.get(id=request.POST['calalumce'], cp=cuaderno)
                 calalumce.valor = max(min(10, float(request.POST['valor'])), 0)
                 calalumce.save()
+                alumno = calalumce.alumno
+                asignatura = calalumce.cep.ce.asignatura
+                cal_am = cuaderno.calificacion_alumno_asignatura(alumno, asignatura)
+                return JsonResponse({'ok': True, 'cal_am': cal_am, 'asignatura': slugify(asignatura), 'alumno': alumno.id })
+            except:
+                return JsonResponse({'ok': False})
+        elif action == 'update_calalumcev':
+            try:
+                cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
+                calalumcev = CalAlumCEv.objects.get(id=request.POST['calalumcev'], calalumce__cp=cuaderno)
+                calalumcev.valor = max(min(10, float(request.POST['valor'])), 0)
+                calalumcev.save()
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
@@ -3216,10 +3233,15 @@ def cuadernodocente(request):
                 cuaderno = CuadernoProf.objects.get(id=request.POST['cuaderno'], ge=g_e)
                 alumno = Gauser_extra.objects.get(id=int(request.POST['alumno'][1:]), ronda=g_e.ronda)
                 if alumno not in cuaderno.alumnos.all():
-                    cievals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec)
-                    for cieval in cievals:
-                        ecp = EscalaCP.objects.get(cp=cuaderno, ieval=cieval.ieval)
-                        CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval, ecp=ecp)
+                    if cuaderno.tipo == 'PRO':
+                        cievals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+                        for cieval in cievals:
+                            ecp = EscalaCP.objects.get(cp=cuaderno, ieval=cieval.ieval)
+                            CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval, ecp=ecp)
+                    for cep in cuaderno.psec.ceprogsec_set.all():
+                        calalumce = CalAlumCE.objects.create(cp=cuaderno, alumno=alumno, cep=cep)
+                        for cevp in cep.cevprogsec_set.all():
+                            CalAlumCEv.objects.create(calalumce=calalumce, cevp=cevp)
                     html_span = render_to_string('cuadernodocente_accordion_content_ga_alumno.html',
                                                  {'cuaderno': cuaderno, 'alumno': alumno})
                 else:
@@ -3234,6 +3256,8 @@ def cuadernodocente(request):
                 cuaderno = CuadernoProf.objects.get(id=request.POST['cuaderno'], ge=g_e)
                 alumno = Gauser_extra.objects.get(id=int(request.POST['alumno']), ronda=g_e.ronda)
                 cuaderno.calalum_set.filter(alumno=alumno).delete()
+                CalAlumCEv.objects.filter(calalumce__cp=cuaderno, calalumce__alumno=alumno).delete()
+                cuaderno.calalumce_set.filter(alumno=alumno).delete()
                 cuaderno.alumnos.remove(alumno)
                 return JsonResponse({'ok': True, 'cuaderno': cuaderno.id, 'alumno': alumno.id,
                                      'num_alumnos': cuaderno.alumnos.all().count()})
@@ -3455,13 +3479,20 @@ def calificacc(request):
                     cc_siglas.append(cc.siglas)
                     for do in DescriptorOperativo.objects.filter(cc=cc):
                         dos_claves.append(do.clave)
-                cals_alumno = CalAlum.objects.filter(alumno=alumno.ge)
-                for cal_alumno in cals_alumno:
-                    ce = cal_alumno.cie.cevps.cepsec.ce
-                    cal_ce = cal_alumno.cp.calificacion_alumno_ce(alumno.ge, ce)
+                cals_ces_alumnos = CalAlumCE.objects.filter(alumno=alumno.ge, cp__borrado=False)
+                for cal_ce_alumno in cals_ces_alumnos:
+                    ce = cal_ce_alumno.cep.ce
+                    cal_ce = cal_ce_alumno.valor
                     for do in ce.dos.all():
                         key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
                         cal_dos[key] = cal_ce
+                # cals_alumno = CalAlum.objects.filter(alumno=alumno.ge)
+                # for cal_alumno in cals_alumno:
+                #     ce = cal_alumno.cie.cevps.cepsec.ce
+                #     cal_ce = cal_alumno.cp.calificacion_alumno_ce(alumno.ge, ce)
+                #     for do in ce.dos.all():
+                #         key = 'do-%s-%s-%s' % (ce.am.id, ce.id, do.id)
+                #         cal_dos[key] = cal_ce
                 return JsonResponse({'ok': True, 'cal_dos': cal_dos, 'cc_siglas': cc_siglas, 'dos_claves': dos_claves,
                                      'nombre_alumno': alumno.ge.gauser.get_full_name()})
             except Exception as msg:
@@ -3529,28 +3560,9 @@ def configurar_cargos_permisos(request):
 # Esta función hay que borrarla tras la primera ejecución sin errores
 @gauss_required
 def crea_calalumce_cev(request):
-    cavs = CalAlumValor.objects.all()
-    errores = ''
-    for cav in cavs:
-        try:
-            alumno = cav.ca.alumno
-            cuaderno = cav.ca.cp
-            cevps = cav.ca.cie.cevps
-            cev = cevps.cev
-            calalumce, c = CalAlumCE.objects.get_or_create(cp=cuaderno, alumno=alumno, cep=cevps.cepsec)
-            calalumcev, c = CalAlumCEv.objects.get_or_create(calalumce=calalumce, cevp=cevps)
-            cas = cuaderno.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)
-            numerador = 0
-            denominador = 0
-            for ca in cas:
-                if ca.cal > 0:
-                    numerador += ca.cie.peso * ca.cal
-                    denominador += ca.cie.peso
-            try:
-                calalumcev.valor = round(numerador / denominador, 2)
-            except:
-                calalumcev.valor = 0
-            calalumcev.save()
-        except Exception as msg:
-            errores += '<br>%s' % str(msg)
-    return HttpResponse('Trabajo terminado<br>Errores: %s' % errores)
+    try:
+        from entidades.tasks import ejecutar_crea_calalumce_cev
+        ejecutar_crea_calalumce_cev.apply_async(expires=300)
+        return HttpResponse('Esta operación puede requerir varios minutos')
+    except Exception as msg:
+        return HttpResponse(str(msg))

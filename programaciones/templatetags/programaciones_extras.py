@@ -61,6 +61,27 @@ def get_calalumce(cuaderno_cep, alumno):
 #################################################
 ########  Estas dos funciones trabajan juntas para crear una función de tres variables
 ########  Observarlas en cuadernodocente_accordion_content.html
+########  cuaderno|get_cep:cep|get_calalumce:alumno
+@register.filter
+def get_cevp(cuaderno, cevp):
+    return cuaderno, cevp
+
+
+@register.filter
+def get_calalumcev(cuaderno_cevp, alumno):
+    try:
+        cuaderno, cevp = cuaderno_cevp
+        return CalAlumCEv.objects.get(calalumce__alumno=alumno, cevp=cevp, calalumce__cp=cuaderno)
+    except Exception as msg:
+        return str(msg)
+
+
+########  Fin de las dos funciones
+#################################################
+
+#################################################
+########  Estas dos funciones trabajan juntas para crear una función de tres variables
+########  Observarlas en cuadernodocente_accordion_content.html
 ########  cuaderno|get_cieval:cieval|get_calalum:alumno
 @register.filter
 def get_cieval(cuaderno, cieval):
