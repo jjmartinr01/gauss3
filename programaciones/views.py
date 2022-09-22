@@ -2903,14 +2903,15 @@ def cuadernodocente(request):
         elif action == 'open_accordion':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['id'])
-                cievals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec)
-                for alumno in cuaderno.alumnos.all():
-                    for cieval in cievals:
-                        ecp, c = EscalaCP.objects.get_or_create(cp=cuaderno, ieval=cieval.ieval)
-                        CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval, ecp=ecp)
+                # cievals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec)
+                # for alumno in cuaderno.alumnos.all():
+                #     for cieval in cievals:
+                #         ecp, c = EscalaCP.objects.get_or_create(cp=cuaderno, ieval=cieval.ieval)
+                #         CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval, ecp=ecp)
                 docentes = profesorado(g_e.ronda.entidad)
                 html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno,
                                                                                    'docentes': docentes})
+                # html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno})
                 cuaderno.log += '%s %s %s\n' % (action, now(), g_e)
                 cuaderno.save()
                 return JsonResponse({'ok': True, 'html': html})
