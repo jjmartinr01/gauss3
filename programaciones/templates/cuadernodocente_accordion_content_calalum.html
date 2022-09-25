@@ -64,7 +64,8 @@
                                 </th>
                             {% else %}
                                 <td class="update_esvcl {% if calalum|ecpv_selected:ecpv %}ecpv_selected{% endif %}"
-                                    data-calalum="{{ calalum.id }}" data-ecpv="{{ ecpv.id }}">
+                                    data-calalum="{{ calalum.id }}" data-ecpv="{{ ecpv.id }}"
+                                    data-cieval="{{ calalum.cie.id }}">
                                     {{ ecpv.texto_cualitativo }}<br>({{ ecpv.valor }})
                                 </td>
                             {% endif %}
@@ -102,6 +103,7 @@
                                     <input type="radio" title="Elegir el grado de valoración"
                                            name="ecpv{{ calalum.ecp.id }}_{{ ecpv.y }}" data-calalum="{{ calalum.id }}"
                                            class="update_lcont" value="{{ ecpv.valor }}" data-ecpv="{{ ecpv.id }}"
+                                           data-cieval="{{ calalum.cie.id }}"
                                            {% if calalum|ecpv_selected:ecpv %}checked{% endif %}>
                                 </td>
                             {% endif %}
@@ -114,7 +116,7 @@
         <span class="maximo_width">
         {% for ecpv in calalum.ecp.escalacpvalor_set.all %}
             <a type="text" data-ecpv="{{ ecpv.id }}" data-calalum="{{ calalum.id }}" data-valor="{{ ecpv.valor }}"
-               class="button tiny update_esvcn"><b>{{ ecpv.valor }}</b></a>
+               class="button tiny update_esvcn" data-cieval="{{ calalum.cie.id }}"><b>{{ ecpv.valor }}</b></a>
         {% endfor %}
         </span>
         <div class="maximo_width">
@@ -126,7 +128,7 @@
                 </div>
                 <div class="small-3 columns">
                     <span class="postfix update_esvcn" data-calalum="{{ calalum.id }}" data-ecpv="empty"
-                          style="background-color: #007095;cursor: pointer;">
+                          data-cieval="{{ calalum.cie.id }}" style="background-color: #007095;cursor: pointer;">
                         <b style="color: white;">Calificar</b>
                     </span>
                 </div>

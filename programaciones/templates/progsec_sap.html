@@ -2,92 +2,96 @@
 {% load my_templatetags %}
 
 {% block contenido %}
-    <style>
-        .title_page {
-            text-align: center;
-            color: #008CBA;
-        }
+<style>
+    .title_page {
+        text-align: center;
+        color: #008CBA;
+    }
 
-        .ckeditor {
-            border: lightgrey 1px solid;
-            min-height: 100px;
-        }
-    </style>
-    <form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
-        {% csrf_token %}
-        {#        <input type="hidden" name="action" id="action" value="">#}
-        {#        <input type="hidden" name="q" id="q" value="">#}
-        {#        <input type="hidden" name="page" id="page" value="">#}
-        <input type="hidden" id="id_sb" name="id_sb" value="{{ sb.id }}">
-        <input type="hidden" id="id_sap" name="id_sap" value="">
+    .ckeditor {
+        border: lightgrey 1px solid;
+        min-height: 100px;
+    }
+</style>
+<form action="" method="post" enctype="multipart/form-data" id="{{ formname }}" name="{{ formname }}">
+    {% csrf_token %}
+    {#        <input type="hidden" name="action" id="action" value="">#}
+    {#        <input type="hidden" name="q" id="q" value="">#}
+    {#        <input type="hidden" name="page" id="page" value="">#}
+    <input type="hidden" id="id_sb" name="id_sb" value="{{ sb.id }}">
+    <input type="hidden" id="id_sap" name="id_sap" value="">
     <input type="hidden" id="id_reposap" name="id_reposap" value="">
+    <input type="hidden" id="am_sap" name="am_sap" value="{{ sb.psec.areamateria.id }}">
 
-        <div>
-            <h4 class="title_page"><strong>{{ sb.psec.areamateria.nombre }} - {{ sb.psec.nombre }}</strong></h4>
-            <h5 class="title_page"><strong>Situaciones de aprendizaje asociadas a la unidad de programación: {{ sb.orden }}.-
-                {% autoescape off %}{{ sb.nombre }}{% endautoescape %}
-                ({{ sb.periodos }} periodo{{ sb.periodos|pluralize }})</strong></h5>
-        </div>
+    <div>
+        <h4 class="title_page"><strong>{{ sb.psec.areamateria.nombre }} - {{ sb.psec.nombre }}</strong></h4>
+        <h5 class="title_page"><strong>Situaciones de aprendizaje asociadas a la unidad de programación: {{ sb.orden }}.-
+            {% autoescape off %}{{ sb.nombre }}{% endautoescape %}
+            ({{ sb.periodos }} periodo{{ sb.periodos|pluralize }})</strong></h5>
+    </div>
     <fieldset id="formulario_search_sap" style="display: none;">
         <legend>Buscar Situaciones de Aprendizaje</legend>
-            <div class="row">
-                <div class="columns large-9">
-                    <input name="busca_saps" id="busca_saps"
-                           placeholder="Escribe parte del texto incluido en la SAP">
-                </div>
-                <div class="columns large-3">
-                    <select name="busca_saps_tipo" id="busca_saps_tipo">
-                        <option value="MSAP" selected="selected">Entre mis SAP</option>
-                        <option value="ASAP">Entre todas las SAP</option>
-                    </select>
-                </div>
+        <div class="row">
+            <div class="columns large-9">
+                <input name="busca_saps" id="busca_saps"
+                       placeholder="Escribe parte del texto incluido en la SAP (al menos 3 caracteres)">
             </div>
+            <div class="columns large-3">
+                <select name="busca_saps_tipo" id="busca_saps_tipo">
+                    <option value="MSAP" selected="selected">Entre mis SAP</option>
+                    <option value="ASAP">Entre todas las SAP</option>
+                </select>
+            </div>
+        </div>
         <div>
             <br>
             <dl class="accordion" data-accordion id="resultados_buscar_sap">
             </dl>
         </div>
-        </fieldset>
-        <div id="contenido_sb">
-            <br>
-            <dl class="accordion" data-accordion id="list_sbs">
-                {% for sap in sb.sitapren_set.all %}
-                    {% include 'progsec_sap_accordion.html' %}
-                {% endfor %}
-            </dl>
-        </div>
-    </form>
+    </fieldset>
+    <div id="contenido_sb">
+        <br>
+        <dl class="accordion" data-accordion id="list_sbs">
+            {% for sap in sb.sitapren_set.all %}
+                {% include 'progsec_sap_accordion.html' %}
+            {% endfor %}
+        </dl>
+    </div>
+</form>
 {% endblock %}
 
 {% block final %}
     <script>
         {% comment %}
-        config = {
-            removePlugins: 'exportpdf',
-            toolbar: [
-                {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
-                {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
-                {
-                    name: 'basicstyles',
-                    items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
-                },
-                {
-                    name: 'paragraph',
-                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
-                },
-                '/',
-                {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
-                {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
-                {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
-                {name: 'colors', items: ['TextColor', 'BGColor']},
-                {name: 'tools', items: ['Maximize', 'ShowBlocks']},
-                {name: 'document', items: ['Source']},
-                {name: 'about', items: ['About', 'generapdfbutton']}
-            ],
-            extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
-        }
+            config = {
+                removePlugins: 'exportpdf',
+                toolbar: [
+                    {
+                        name: 'clipboard',
+                        items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']
+                    },
+                    {name: 'editing', items: ['Find', 'Replace', '-', 'SelectAll', '-', 'Scayt']},
+                    {
+                        name: 'basicstyles',
+                        items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat']
+                    },
+                    {
+                        name: 'paragraph',
+                        items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']
+                    },
+                    '/',
+                    {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
+                    {name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+                    {name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize']},
+                    {name: 'colors', items: ['TextColor', 'BGColor']},
+                    {name: 'tools', items: ['Maximize', 'ShowBlocks']},
+                    {name: 'document', items: ['Source']},
+                    {name: 'about', items: ['About', 'generapdfbutton']}
+                ],
+                extraAllowedContent: 'span[id];b;h2;h3;table;tr;td[id];',
+            }
 
-        habilita(['s_search']);
+            habilita(['s_search']);
         {% endcomment %}
         var url_progsec_sap = "/progsecundaria_sb/{{ sb.id }}/"
         habilita(['s_arrow-left']);
@@ -96,8 +100,8 @@
             window.location.href = '/progsecundaria/?prog={{ sb.psec.id }}'
         });
         {% if g_e|has_permiso:"crea_programaciones" %}
-            habilita(['s_plus',]);
-            {#habilita(['s_plus', 's_sign-in']);#}
+            {#habilita(['s_plus',]);#}
+            habilita(['s_plus', 's_sign-in']);
             $('#plus_sign').click(function (event) {
                 event.preventDefault();
                 var sb = {{ sb.id }};
@@ -116,45 +120,68 @@
             $('#sign-in_sign').click(function (event) {
                 event.preventDefault();
                 $('#formulario_search_sap').toggle();
-                {#var sb = {{ sb.id }};#}
-                {#$.post(url_progsec_sap, {'action': 'crea_sap'},#}
-                {#    function (data) {#}
-                {#        if (data.ok) {#}
-                {#            $('#list_sbs').append(data.html);#}
-                {#            $("#update_ok").show().delay(1500).fadeOut();#}
-                {#        } else {#}
-                {#            $("#update_error").show().delay(1500).fadeOut();#}
-                {#        }#}
+            });
+
+            $('#busca_saps').keyup(function (event) {
+                event.preventDefault();
+                var texto = $(this).val();
+                var tipo = $('#busca_saps_tipo').val();
+                var am_sap = $('#am_sap').val();
+                $.post(url_progsec_sap, {'action': 'busca_saps', 'texto': texto, 'am_sap': am_sap, 'tipo': tipo},
+                    function (data) {
+                        if (data.ok) {
+                            $('#resultados_buscar_sap').html(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
                         {#$(document).scrollTop($('#title_page').offset().top - 150);#}
-                {#    });#}
+                    });
+            });
+
+            $('body').on('click', '.importar_reposap', function (event) {
+                event.preventDefault();
+                var reposap = $(this).data('id');
+                var sb = $('#id_sb').val();
+                $.post(url_progsec_sap, {'action': 'importar_reposap', 'reposap': reposap, 'sb': sb},
+                    function (data) {
+                        if (data.ok) {
+                            $('#formulario_search_sap').hide();
+                            $('#resultados_buscar_sap').html('');
+                            $('#list_sbs').append(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                            {#$(document).scrollTop($('#title_page').offset().top - 150);#}
+                        } else {
+                            $("#update_error").show().delay(1500).fadeOut();
+                        }
+                    });
             });
 
             $('body').on('click', '.borrar_sap', function () {
-            id = $(this).data('id');
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar esta situación de aprendizaje?',
-                texto: 'Si aceptas, la situación de aprendizaje se borrará por completo de la base de datos',
-                size: 'large',
-                buttons: {
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    },
-                    "Borrar": function () {
-                        hide_mensajes();
-                        $.post(url_progsec_sap, {action: 'borrar_sap', id: id},
-                            function (data) {
-                                if (data.ok) {
-                                    $('#accordion' + id).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
+                id = $(this).data('id');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar esta situación de aprendizaje?',
+                    texto: 'Si aceptas, la situación de aprendizaje se borrará por completo de la base de datos',
+                    size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post(url_progsec_sap, {action: 'borrar_sap', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#accordion' + id).remove();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
                     }
-                }
+                });
             });
-
-        });
         {% endif %}
 
         $(document).foundation({
@@ -183,15 +210,7 @@
                             $('#circle' + id).removeClass('fa-minus-circle').addClass('fa-plus-circle');
                             $('#panel' + id).html('');
                         }
-                    }
-                }
-            }
-        });
-
-        $(document).foundation({
-            accordion: {
-                callback: function (accordion) {
-                    if (accordion.hasClass('accordion-reposap')) {
+                    } else if (accordion.hasClass('accordion-reposap')) {
                         var id = accordion.data('id');
                         if ($('#repocircle' + id).hasClass('fa-plus-circle')) {
                             $('.repocircle_icon').removeClass('fa-minus-circle').addClass('fa-plus-circle');
@@ -420,277 +439,287 @@
 
 
         {% comment %}
-        function destroyEditorInstances() {
-            for (var instance in CKEDITOR.instances) {
-                CKEDITOR.instances[instance].destroy();
+            function destroyEditorInstances() {
+                for (var instance in CKEDITOR.instances) {
+                    CKEDITOR.instances[instance].destroy();
+                }
             }
-        }
 
-        function constructEditorInstances(id) {
-            CKEDITOR.replace('texto_editable' + id, config);
-            {#CKEDITOR.replace('destinatario' + id);#}
-            CKEDITOR.inline('destinatario' + id, config);
-        }
+            function constructEditorInstances(id) {
+                CKEDITOR.replace('texto_editable' + id, config);
+                {#CKEDITOR.replace('destinatario' + id);#}
+                CKEDITOR.inline('destinatario' + id, config);
+            }
 
-        function constructInlineEditorInstances() {
-            $(".ckeditor").each(function (index) {
-                var element = $(this);
-                var id = element.attr('id');
-                var editor = CKEDITOR.inline(id, config);
-                editor.addCommand("generapdfinforme", {
-                    exec: function (edt) {
-                        genera_pdf_informe();
-                    }
+            function constructInlineEditorInstances() {
+                $(".ckeditor").each(function (index) {
+                    var element = $(this);
+                    var id = element.attr('id');
+                    var editor = CKEDITOR.inline(id, config);
+                    editor.addCommand("generapdfinforme", {
+                        exec: function (edt) {
+                            genera_pdf_informe();
+                        }
+                    });
+                    editor.ui.addButton('generapdfbutton', {
+                        label: "Genera PDF",
+                        command: 'generapdfinforme',
+                        toolbar: 'insert',
+                        icon: '/static/images/pdf_icon.png'
+                    });
+                    var anchura = element.width() + 2;
+                    setTimeout(function () {
+                        $('#cke_' + id).css('width', anchura + 'px');
+                        {# Este es el id del ckeditor creado #}
+                    }, 200);
                 });
-                editor.ui.addButton('generapdfbutton', {
-                    label: "Genera PDF",
-                    command: 'generapdfinforme',
-                    toolbar: 'insert',
-                    icon: '/static/images/pdf_icon.png'
-                });
-                var anchura = element.width() + 2;
-                setTimeout(function () {
-                    $('#cke_' + id).css('width', anchura + 'px');
-                    {# Este es el id del ckeditor creado #}
-                }, 200);
-            });
-        }
+            }
         {% endcomment %}
 
 
         {% comment %}
 
-        $('body').on('change', '.select_variante', function () {
-            var va = $(this).val();
-            var progsec = $(this).data('progsec');
-            $.post("url_progsec_sap", {action: 'select_variante', va: va, progsec: progsec},
-                function (data) {
-                    if (data.ok) {
-                        $("#contenido_informe" + data.progsec).html(data.html);
-                        $("#destinatario" + data.progsec).html(data.destinatario);
-                        $("#input_asunto" + data.progsec).val(data.asunto);
-                        destroyEditorInstances();
-                        {#constructEditorInstances(id);#}
-                        {#CKEDITOR.inlineAll();#}
-                        constructInlineEditorInstances(progsec);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
+            $('body').on('change', '.select_variante', function () {
+                var va = $(this).val();
+                var progsec = $(this).data('progsec');
+                $.post("url_progsec_sap", {action: 'select_variante', va: va, progsec: progsec},
+                    function (data) {
+                        if (data.ok) {
+                            $("#contenido_informe" + data.progsec).html(data.html);
+                            $("#destinatario" + data.progsec).html(data.destinatario);
+                            $("#input_asunto" + data.progsec).val(data.asunto);
+                            destroyEditorInstances();
+                            {#constructEditorInstances(id);#}
+                            {#CKEDITOR.inlineAll();#}
+                            constructInlineEditorInstances(progsec);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
 
-        function get_texto_from_update_texto(element, id) {
-            var texto;
-            if (element.hasClass('asunto')) {
-                texto = element.val();
-                $('#asunto' + id).html(texto);
-            } else if (element.hasClass('variable')) {
-                texto = element.val();
-            } else {
-                texto = element.html();
-            }
-            return texto;
-        }
-
-        $('body').on('keyup', '.update_texto', function () {
-            var element = $(this);
-            var id = element.data('id');
-            var campo = element.data('campo');
-            var v = element.hasClass('variable') ? 1 : 0;
-            var antiguo_texto = get_texto_from_update_texto(element, id);
-            setTimeout(function () {
-                var nuevo_texto = get_texto_from_update_texto(element, id);
-                if (antiguo_texto === nuevo_texto) {
-                    $.post("url_progsec_sap", {action: 'update_texto', id: id, valor: nuevo_texto, campo: campo, v: v},
-                        function (data) {
-                            if (data.ok) {
-                                $('#texto_informe' + data.progsec).html(data.html);
-                                if (data.html_v) {
-                                    $('#variables' + data.progsec).html(data.html_v);
-                                }
-                                if (data.num_v > 0) {
-                                    $('.variables_texto2pdf' + data.progsec).show();
-                                } else {
-                                    $('.variables_texto2pdf' + data.progsec).hide();
-                                }
-                                $("#update_ok").show().delay(1500).fadeOut();
-                            } else {
-                                $('#update_error').show().delay(1500).fadeOut();
-                            }
-                        });
+            function get_texto_from_update_texto(element, id) {
+                var texto;
+                if (element.hasClass('asunto')) {
+                    texto = element.val();
+                    $('#asunto' + id).html(texto);
+                } else if (element.hasClass('variable')) {
+                    texto = element.val();
+                } else {
+                    texto = element.html();
                 }
-            }, 750);
-        });
+                return texto;
+            }
 
-        $('body').on('click', '.copiar_progsec', function () {
-            var id = $(this).data('id');
-            $.post("url_progsec_sap", {action: 'copiar_progsec', id: id},
-                function (data) {
-                    if (data.ok) {
-                        $('#list_progsec').prepend(data.html);
-                        $("#update_ok").show().delay(1500).fadeOut();
-                    } else {
-                        $('#update_error').show().delay(1500).fadeOut();
-                    }
-                });
-        });
-
-        $('body').on('click', '.borrar_progsec', function () {
-            id = $(this).data('id');
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar esta informe de informe de inspección?',
-                texto: 'Si aceptas el informe se borrará por completo de la base de datos', size: 'large', buttons: {
-                    "Cancelar": function () {
-                        hide_mensajes();
-                    },
-                    "Borrar": function () {
-                        hide_mensajes();
-                        $.post("url_progsec_sap", {action: 'borrar_progsec', id: id},
+            $('body').on('keyup', '.update_texto', function () {
+                var element = $(this);
+                var id = element.data('id');
+                var campo = element.data('campo');
+                var v = element.hasClass('variable') ? 1 : 0;
+                var antiguo_texto = get_texto_from_update_texto(element, id);
+                setTimeout(function () {
+                    var nuevo_texto = get_texto_from_update_texto(element, id);
+                    if (antiguo_texto === nuevo_texto) {
+                        $.post("url_progsec_sap", {
+                                action: 'update_texto',
+                                id: id,
+                                valor: nuevo_texto,
+                                campo: campo,
+                                v: v
+                            },
                             function (data) {
                                 if (data.ok) {
-                                    $('#accordion' + id).remove();
+                                    $('#texto_informe' + data.progsec).html(data.html);
+                                    if (data.html_v) {
+                                        $('#variables' + data.progsec).html(data.html_v);
+                                    }
+                                    if (data.num_v > 0) {
+                                        $('.variables_texto2pdf' + data.progsec).show();
+                                    } else {
+                                        $('.variables_texto2pdf' + data.progsec).hide();
+                                    }
                                     $("#update_ok").show().delay(1500).fadeOut();
                                 } else {
                                     $('#update_error').show().delay(1500).fadeOut();
                                 }
                             });
                     }
-                }
+                }, 750);
             });
 
-        });
+            $('body').on('click', '.copiar_progsec', function () {
+                var id = $(this).data('id');
+                $.post("url_progsec_sap", {action: 'copiar_progsec', id: id},
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_progsec').prepend(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
 
-
-        {######################################################## #}
-
-        $("body").on('click', '#busca_progsec_manual', function (e) {
-            var texto = $('#busca_progsec').val();
-            var id_fecha_inicio = $('#id_fecha_inicio').val();
-            var id_fecha_fin = $('#id_fecha_fin').val();
-            var tipo_busqueda = $('#tipo_busqueda').val();
-            $.post("url_progsec_sap", {
-                    action: 'busca_progsec', texto: texto, id_fecha_inicio: id_fecha_inicio,
-                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
-                },
-                function (data) {
-                    $('#list_progsec').html(data['html']);
-                    $(document).foundation();
-                });
-        });
-
-        $("body").on('keyup', '#busca_progsec', function (e) {
-            var texto = $('#busca_progsec').val();
-            var id_fecha_inicio = $('#id_fecha_inicio').val();
-            var id_fecha_fin = $('#id_fecha_fin').val();
-            var tipo_busqueda = $('#tipo_busqueda').val();
-            $.post("url_progsec_sap", {
-                    action: 'busca_progsec', texto: texto, id_fecha_inicio: id_fecha_inicio,
-                    id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
-                },
-                function (data) {
-                    $('#list_progsec').html(data['html']);
-                    $(document).foundation();
-                });
-        });
-
-        function genera_pdf_informe() {
-            $('#action').val('pdf_progsec');
-            document.getElementById('{{formname}}').submit();
-        }
-
-        $('#Contenido').on('click', '.pdf_progsec', function (e) {
-            e.preventDefault();
-            {#var id = $(this).data('id')#}
-            genera_pdf_informe();
-            {#var protocol = window.location.protocol;#}
-            {#var port = window.location.port;#}
-            {#var domain = window.location.hostname;#}
-            {#$('#protocol_domain').val( protocol + '//' + domain + ':' + port);#}
-
-        });
-
-        {# ##################################################################### #}
-        {# #################### CARGA DE ARCHIVOS ############################## #}
-        {# ##################################################################### #}
-
-
-        function updateProgress(evt) {
-            if (evt.lengthComputable) {
-                var percentComplete = (evt.loaded / evt.total) * 100;
-                $('.span_porcentage').html(parseInt(percentComplete) + '%');
-                console.log(percentComplete);
-            } else {
-                console.log('No es posible calcular el porcentaje de carga en el servidor');
-            }
-        }
-
-        $('body').on('click', '.subir_gauss_file', function () {
-            var id = $(this).data('id');
-            var input_files = document.getElementById('input_gauss_file' + id).files;
-            $('#span_spin').show();
-            $('.span_porcentage').show();
-
-            for (var i = 0; i < input_files.length; i++) {
-                console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
-            }
-
-            var formData = new FormData();
-            for (var i = 0; i < input_files.length; i++) {
-                formData.append('archivo_xhr' + i, input_files[i], slugify_filename(input_files[i].name));
-            }
-            formData.append('n_files', input_files.length);
-            formData.append('action', 'upload_archivo_xhr');
-            formData.append('progsec', id);
-            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
-            var xhr = new XMLHttpRequest();
-            {#xhr.upload.addEventListener("progress", updateProgress, false);#}
-            xhr.onload = function () {
-                if (xhr.readyState === xhr.DONE) {
-                    if (xhr.status === 200) {
-                        console.log(xhr.responseText);
-                        {#var b = xhr.responseText;#}
-                        var data = JSON.parse(xhr.responseText);
-                        $('#tbody_gauss_file' + data.id).html(data.html);
-                        $('#span_spin').hide();
-                        $('#span_porcentage').hide();
+            $('body').on('click', '.borrar_progsec', function () {
+                id = $(this).data('id');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar esta informe de informe de inspección?',
+                    texto: 'Si aceptas el informe se borrará por completo de la base de datos',
+                    size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post("url_progsec_sap", {action: 'borrar_progsec', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#accordion' + id).remove();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
                     }
-                }
-            };
-            xhr.open('POST', "url_progsec_sap", true);
-            xhr.send(formData);
-        });
+                });
 
-        $('#Contenido').on('click', '.descarga_gauss_file', function (e) {
-            e.preventDefault();
-            $('#action').val('descarga_gauss_file');
-            $('#faii').val($(this).data('id'));
-            document.getElementById('{{formname}}').submit();
-        });
+            });
 
-        $('body').on('click', '.borra_gauss_file', function () {
-            id = $(this).data('id');
-            show_mensajes({
-                title: '<i class="fa fa-warning"></i> ¿Borrar este archivo adjunto al informe?',
-                texto: 'Si aceptas el archivo se borrará por completo de la base de datos', size: 'large', buttons: {
-                    "Cancelar": function () {
-                        hide_mensajes();
+
+            {######################################################## #}
+
+            $("body").on('click', '#busca_progsec_manual', function (e) {
+                var texto = $('#busca_progsec').val();
+                var id_fecha_inicio = $('#id_fecha_inicio').val();
+                var id_fecha_fin = $('#id_fecha_fin').val();
+                var tipo_busqueda = $('#tipo_busqueda').val();
+                $.post("url_progsec_sap", {
+                        action: 'busca_progsec', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                        id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
                     },
-                    "Borrar": function () {
-                        hide_mensajes();
-                        $.post("url_progsec_sap", {action: 'borrar_faii', id: id},
-                            function (data) {
-                                if (data.ok) {
-                                    $('#gauss_file' + id).remove();
-                                    $("#update_ok").show().delay(1500).fadeOut();
-                                } else {
-                                    $('#update_error').show().delay(1500).fadeOut();
-                                }
-                            });
-                    }
-                }
+                    function (data) {
+                        $('#list_progsec').html(data['html']);
+                        $(document).foundation();
+                    });
             });
-        });
+
+            $("body").on('keyup', '#busca_progsec', function (e) {
+                var texto = $('#busca_progsec').val();
+                var id_fecha_inicio = $('#id_fecha_inicio').val();
+                var id_fecha_fin = $('#id_fecha_fin').val();
+                var tipo_busqueda = $('#tipo_busqueda').val();
+                $.post("url_progsec_sap", {
+                        action: 'busca_progsec', texto: texto, id_fecha_inicio: id_fecha_inicio,
+                        id_fecha_fin: id_fecha_fin, tipo_busqueda: tipo_busqueda
+                    },
+                    function (data) {
+                        $('#list_progsec').html(data['html']);
+                        $(document).foundation();
+                    });
+            });
+
+            function genera_pdf_informe() {
+                $('#action').val('pdf_progsec');
+                document.getElementById('{{formname}}').submit();
+            }
+
+            $('#Contenido').on('click', '.pdf_progsec', function (e) {
+                e.preventDefault();
+                {#var id = $(this).data('id')#}
+                genera_pdf_informe();
+                {#var protocol = window.location.protocol;#}
+                {#var port = window.location.port;#}
+                {#var domain = window.location.hostname;#}
+                {#$('#protocol_domain').val( protocol + '//' + domain + ':' + port);#}
+
+            });
+
+            {# ##################################################################### #}
+            {# #################### CARGA DE ARCHIVOS ############################## #}
+            {# ##################################################################### #}
+
+
+            function updateProgress(evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = (evt.loaded / evt.total) * 100;
+                    $('.span_porcentage').html(parseInt(percentComplete) + '%');
+                    console.log(percentComplete);
+                } else {
+                    console.log('No es posible calcular el porcentaje de carga en el servidor');
+                }
+            }
+
+            $('body').on('click', '.subir_gauss_file', function () {
+                var id = $(this).data('id');
+                var input_files = document.getElementById('input_gauss_file' + id).files;
+                $('#span_spin').show();
+                $('.span_porcentage').show();
+
+                for (var i = 0; i < input_files.length; i++) {
+                    console.log(input_files[i].name + ' (' + input_files[i].size + ' bytes)');
+                }
+
+                var formData = new FormData();
+                for (var i = 0; i < input_files.length; i++) {
+                    formData.append('archivo_xhr' + i, input_files[i], slugify_filename(input_files[i].name));
+                }
+                formData.append('n_files', input_files.length);
+                formData.append('action', 'upload_archivo_xhr');
+                formData.append('progsec', id);
+                formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+                var xhr = new XMLHttpRequest();
+                {#xhr.upload.addEventListener("progress", updateProgress, false);#}
+                xhr.onload = function () {
+                    if (xhr.readyState === xhr.DONE) {
+                        if (xhr.status === 200) {
+                            console.log(xhr.responseText);
+                            {#var b = xhr.responseText;#}
+                            var data = JSON.parse(xhr.responseText);
+                            $('#tbody_gauss_file' + data.id).html(data.html);
+                            $('#span_spin').hide();
+                            $('#span_porcentage').hide();
+                        }
+                    }
+                };
+                xhr.open('POST', "url_progsec_sap", true);
+                xhr.send(formData);
+            });
+
+            $('#Contenido').on('click', '.descarga_gauss_file', function (e) {
+                e.preventDefault();
+                $('#action').val('descarga_gauss_file');
+                $('#faii').val($(this).data('id'));
+                document.getElementById('{{formname}}').submit();
+            });
+
+            $('body').on('click', '.borra_gauss_file', function () {
+                id = $(this).data('id');
+                show_mensajes({
+                    title: '<i class="fa fa-warning"></i> ¿Borrar este archivo adjunto al informe?',
+                    texto: 'Si aceptas el archivo se borrará por completo de la base de datos',
+                    size: 'large',
+                    buttons: {
+                        "Cancelar": function () {
+                            hide_mensajes();
+                        },
+                        "Borrar": function () {
+                            hide_mensajes();
+                            $.post("url_progsec_sap", {action: 'borrar_faii', id: id},
+                                function (data) {
+                                    if (data.ok) {
+                                        $('#gauss_file' + id).remove();
+                                        $("#update_ok").show().delay(1500).fadeOut();
+                                    } else {
+                                        $('#update_error').show().delay(1500).fadeOut();
+                                    }
+                                });
+                        }
+                    }
+                });
+            });
         {% endcomment %}
     </script>
 

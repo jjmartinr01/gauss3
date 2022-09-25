@@ -17,7 +17,6 @@ from entidades.models import Gauser_extra, Ronda, Entidad
 from horarios.models import Horario, Sesion
 from actividades.models import Actividad
 
-
 #############################################################################
 ##################### PROGRAMACIONES ANTIGUAS  ##############################
 #############################################################################
@@ -1321,11 +1320,11 @@ def update_calalumce(sender, instance, **kwargs):
     numerador_final = 0
     denominador_final = 0
     for calalumcev in instance.calalumce.calalumcev_set.all():
-        numerador_final += calalumcev.cevp.valor * instance.valor
+        numerador_final += calalumcev.cevp.valor * calalumcev.valor
         if instance.valor > 0:  # Esto es para no tener en cuenta las calificaciones iguales a 0
             denominador_final += calalumcev.cevp.valor
     try:
-        instance.calalumce.valor = numerador_final / denominador_final
+        instance.calalumce.valor = round(numerador_final / denominador_final, 2)
     except:
         instance.calalumce.valor = 0
     instance.calalumce.save()

@@ -12,7 +12,7 @@
 <div class="row">
     <div class="columns large-12">
         <ul class="button-group right">
-            <li><a class="button importar_sap tiny" data-id="{{ sap.id }}"
+            <li><a class="button importar_reposap tiny" data-id="{{ sap.id }}"
                    title="Importar esta SAP del repositorio e incluirla en la programación"><i
                     class="fa fa-sign-in"></i> Importar</a>
             </li>
@@ -64,70 +64,71 @@
 {#<div>#}
 {#    <div>#}
 {% for actividad in sap.repoactsitapren_set.all %}
-    <fieldset style="position:relative;">
-        <legend>{{ actividad.nombre }}</legend>
-        <div class="row">
-            <div class="columns large-12">
-                <label>Descripción de la actividad:</label>
-                {{ actividad.description }}
-            </div>
+    <p style="font-weight: bold;"> {{ actividad.nombre }}</p>
+    <div class="row">
+        <div class="columns large-12">
+            <label>Descripción de la actividad:</label>
+            {{ actividad.description }}
         </div>
-        <div class="row">
-            <div class="columns large-12">
-                <label>Producto solicitado a los alumnos en esta actividad:</label>
-                {{ actividad.producto }}
-            </div>
+    </div>
+    <div class="row">
+        <div class="columns large-12">
+            <label>Producto solicitado a los alumnos en esta actividad:</label>
+            {{ actividad.producto }}
         </div>
-        <div>
-            <span style="font-weight: bold;">Procedimientos utilizados para evaluar la actividad:</span>
-            {% for instrumento in actividad.instreval_set.all %}
-                <div>
-                    <hr style="margin: 0.1rem 0 1.2rem;">
-                    <div class="row">
-                        <div class="columns large-7">
-                            <label>Nombre del procedimiento utilizado para evaluar esta situación de
-                                aprendizaje: </label>
-                            {{ instrumento.nombre }}
-                        </div>
-                        <div class="columns large-5">
-                            <label>Tipo de procedimiento:</label>
-                            {{ instrumento.get_tipo_display }}
-                        </div>
+    </div>
+    <div>
+        <span style="font-weight: bold;">Procedimientos utilizados para evaluar la actividad:</span>
+        {% for instrumento in actividad.repoinstreval_set.all %}
+            <div>
+                <hr style="margin: 0.1rem 0 1.2rem;">
+                <div class="row">
+                    <div class="columns large-7">
+                        <label>Nombre del procedimiento utilizado para evaluar esta situación de
+                            aprendizaje: </label>
+                        {{ instrumento.nombre }}
                     </div>
-
-                    <div class="row">
-                        <div class="columns large-12">
-                            <table style="width: 100%">
-                                <thead title="Un peso igual a 0 implica que el criterio no es evaluado a través del procedimiento">
-                                <tr>
-                                    <th colspan="2" style="text-align: center;position: relative;">
-                                        Criterios de evaluación asociados al procedimiento anterior
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th>Criterio de evaluación</th>
-                                    <th>Peso</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for criinstreval in instrumento.repocriinstreval_set.all %}
-                                    <tr>
-                                        <td title="{{ criinstreval.cevps.cev.ce.nombre }}">
-                                            {{ criinstreval.cevps.cev.ce.orden }}.{{ criinstreval.cevps.cev.orden }}.- {{ criinstreval.cevps.cev.texto }}
-                                        </td>
-                                        <td title="Un peso igual a 0 implica que el criterio no es evaluado a través del procedimiento">
-                                            {{ criinstreval.peso }}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="columns large-5">
+                        <label>Tipo de procedimiento:</label>
+                        {{ instrumento.get_tipo_display }}
                     </div>
                 </div>
-            {% endfor %}
-        </div>
-    </fieldset>
+
+                <div class="row">
+                    <div class="columns large-12">
+                        <table style="width: 100%">
+                            <thead title="Un peso igual a 0 implica que el criterio no es evaluado a través del procedimiento">
+                            <tr>
+                                <th colspan="2" style="text-align: center;position: relative;">
+                                    Criterios de evaluación asociados al procedimiento anterior
+                                </th>
+                            </tr>
+                            <tr>
+                                <th>Criterio de evaluación</th>
+                                <th>Peso</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for criinstreval in instrumento.repocriinstreval_set.all %}
+                                <tr>
+                                    <td title="{{ criinstreval.cevps.cev.ce.nombre }}">
+                                        {{ criinstreval.cevps.cev.ce.orden }}.{{ criinstreval.cevps.cev.orden }}.- {{ criinstreval.cevps.cev.texto }}
+                                    </td>
+                                    <td title="Un peso igual a 0 implica que el criterio no es evaluado a través del procedimiento">
+                                        {{ criinstreval.peso }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% if not forloop.last %}
+        <hr>
+    {% endif %}
 {% endfor %}
 {#    </div>#}
 {#</div>#}

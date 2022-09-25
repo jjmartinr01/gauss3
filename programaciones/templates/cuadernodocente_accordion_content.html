@@ -382,7 +382,8 @@
                                                     <td class="update_calalum" data-calalum="{{ calalum.id }}"
                                                         data-cieval="{{ cieval.id }}" data-cuaderno="{{ cuaderno.id }}"
                                                         data-alumno="{{ alumno.id }}" title="{{ calalum.obs }}"
-                                                        id="valor_calalum{{ calalum.id }}_{{ alumno.id }}">
+{#                                                        id="valor_calalum{{ calalum.id }}_{{ alumno.id }}"#}
+                                                        id="valor_calalum{{ cieval.id }}_{{ alumno.id }}">
                                                         {{ calalum.cal }}
                                                     </td>
                                                 {% endwith %}

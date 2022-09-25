@@ -2215,7 +2215,7 @@ def progsecundaria(request):
                         gep.jefe = False
                         try:
                             dps = DocProgSec.objects.get(gep=gep, psec=progsec)
-                            if progsec.gep == gep: #Si el jefe era el creador de la progsec se queda con permiso 'X'
+                            if progsec.gep == gep:  # Si el jefe era el creador de la progsec se queda con permiso 'X'
                                 dps.permiso = 'X'
                             else:
                                 dps.permiso = 'L'
@@ -2555,14 +2555,50 @@ def progsecundaria_sb(request, id):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'busca_saps':
+            try:
+                am = AreaMateria.objects.get(id=request.POST['am_sap'])
+                texto = request.POST['texto']
+                q1 = Q(areamateria=am, borrada=False, autor__gauser=g_e.gauser)
+                q2 = Q(autor__gauser__first_name__icontains=texto) | Q(autor__gauser__last_name__icontains=texto) | Q(
+                    nombre__icontains=texto) | Q(objetivo__icontains=texto)
+                if request.POST['tipo'] == 'ASAP':
+                    q1 = q1 | Q(areamateria=am, borrada=False, publicar=True)
+                reposaps = RepoSitApren.objects.filter(q1, q2).distinct()
+                html = render_to_string('progsec_sap_buscada_accordion.html', {'reposaps': reposaps})
+                return JsonResponse({'ok': True, 'html': html, 'am': am.id})
+            except:
+                return JsonResponse({'ok': False})
         elif action == 'open_repoaccordion':
             try:
-                sap = RepoSitApren.objects.get(sbas__psec__gep__ge__ronda__entidad=g_e.ronda.entidad,
-                                           id=request.POST['id'])
+                sap = RepoSitApren.objects.get(id=request.POST['id'])
                 html = render_to_string('progsec_sap_buscada_accordion_content.html', {'sap': sap, 'g_e': g_e})
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'importar_reposap':
+            try:
+                reposap = RepoSitApren.objects.get(id=request.POST['reposap'])
+                sbas = SaberBas.objects.get(id=request.POST['sb'])
+                if sbas.psec.areamateria == reposap.areamateria:
+                    ceps = CEProgSec.objects.filter(psec=sbas.psec, ce__in=reposap.ces.all())
+                    sap = SitApren.objects.create(sbas=sbas, nombre=reposap.nombre, objetivo=reposap.objetivo)
+                    sap.ceps.add(*ceps)
+                    for repoact in reposap.repoactsitapren_set.all():
+                        asapren =ActSitApren.objects.create(sapren=sap, nombre=repoact.nombre,
+                                                            description=repoact.description, producto=repoact.producto)
+                        for repoieval in repoact.repoinstreval_set.all():
+                            ieval = InstrEval.objects.create(asapren=asapren, tipo=repoieval.tipo,
+                                                             nombre=repoieval.nombre)
+                            for repocrieval in repoieval.repocriinstreval_set.all():
+                                cevps = CEvProgSec.objects.get(cepsec__psec=sbas.psec, cev=repocrieval.cevps.cev)
+                                CriInstrEval.objects.create(ieval=ieval, cevps=cevps, peso=repocrieval.peso)
+                    html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
+                    return JsonResponse({'ok': True, 'html': html})
+                else:
+                    return JsonResponse({'ok': False, 'msg': 'Asignaturas de SAP y programación no coinciden.'})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'update_texto':
             try:
                 clase = eval(request.POST['clase'])
@@ -3170,7 +3206,8 @@ def cuadernodocente(request):
                 alumno = calalumce.alumno
                 asignatura = calalumce.cep.ce.asignatura
                 cal_am = cuaderno.calificacion_alumno_asignatura(alumno, asignatura)
-                return JsonResponse({'ok': True, 'cal_am': cal_am, 'asignatura': slugify(asignatura), 'alumno': alumno.id })
+                return JsonResponse(
+                    {'ok': True, 'cal_am': cal_am, 'asignatura': slugify(asignatura), 'alumno': alumno.id})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_calalumcev':
@@ -3191,7 +3228,8 @@ def cuadernodocente(request):
                 ecp, c = EscalaCP.objects.get_or_create(cp=cuaderno, ieval=cieval.ieval)
                 ca, c = CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval, ecp=ecp)
                 html = render_to_string('cuadernodocente_accordion_content_calalum.html', {'calalum': ca})
-                return JsonResponse({'ok': True, 'html': html, 'calalum': ca.id, 'alumno': alumno.id, 'cal': ca.cal})
+                return JsonResponse({'ok': True, 'html': html, 'calalum': ca.id, 'alumno': alumno.id, 'cal': ca.cal,
+                                     'cieval': cieval.id})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_esvcl':
@@ -3219,7 +3257,7 @@ def cuadernodocente(request):
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_esvcn':
-            try:
+            # try:
                 ca = CalAlum.objects.get(id=request.POST['calalum'])
                 ca.calalumvalor_set.all().delete()
                 valor = float(request.POST['valor'])
@@ -3229,8 +3267,8 @@ def cuadernodocente(request):
                     e.save()
                 CalAlumValor.objects.create(ca=ca, ecpv=ecpv)
                 return JsonResponse({'ok': True, 'alumno': ca.alumno.id, 'cal': ca.cal})
-            except:
-                return JsonResponse({'ok': False})
+            # except:
+            #     return JsonResponse({'ok': False})
         elif action == 'update_obs':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])

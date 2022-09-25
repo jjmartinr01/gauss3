@@ -425,7 +425,8 @@
                         }, 200);
                         var sx = $('#tabla' + cuaderno)[0].scrollLeft;
                         $('#div_calalum' + cuaderno).css('margin-left', sx + 10 + 'px');
-                        $('#valor_calalum' + data.calalum + '_' + data.alumno).html(data.cal);
+                        {#$('#valor_calalum' + data.calalum + '_' + data.alumno).html(data.cal);#}
+                        $('#valor_calalum' + data.cieval + '_' + data.alumno).html(data.cal);
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
                     }
@@ -491,6 +492,7 @@
             e.preventDefault();
             var element = $(this);
             var calalum = element.data('calalum');
+            var cieval = element.data('cieval');
             var ecpv = element.data('ecpv');
             $.post('/cuadernodocente/', {
                     action: 'update_esvcl', ecpv: ecpv, calalum: calalum,
@@ -498,7 +500,8 @@
                 },
                 function (data) {
                     if (data.ok) {
-                        $('#valor_calalum' + calalum + '_' + data.alumno).html(data.cal);
+                        {#$('#valor_calalum' + calalum + '_' + data.alumno).html(data.cal);#}
+                        $('#valor_calalum' + cieval + '_' + data.alumno).html(data.cal);
                         if (data.selected) {
                             element.addClass('ecpv_selected');
                         } else {
@@ -515,6 +518,7 @@
             {#e.preventDefault();#}
             var element = $(this);
             var calalum = element.data('calalum');
+            var cieval = element.data('cieval');
             var ecpv = element.data('ecpv');
             $.post('/cuadernodocente/', {
                     action: 'update_lcont', ecpv: ecpv, calalum: calalum,
@@ -522,7 +526,8 @@
                 },
                 function (data) {
                     if (data.ok) {
-                        $('#valor_calalum' + calalum + '_' + data.alumno).html(data.cal);
+                        {#$('#valor_calalum' + calalum + '_' + data.alumno).html(data.cal);#}
+                        $('#valor_calalum' + cieval + '_' + data.alumno).html(data.cal);
                         $('#update_ok').show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();
@@ -533,6 +538,7 @@
         $('body').on('click', '.update_esvcn', function (e) {
             var element = $(this);
             var calalum = element.data('calalum');
+            var cieval = element.data('cieval');
             var ecpv = element.data('ecpv');
             var valor = '';
             if (ecpv === 'empty') {
@@ -552,7 +558,8 @@
                 },
                 function (data) {
                     if (data.ok) {
-                        $('#valor_calalum' + calalum + '_' + data.alumno).html(data.cal);
+                        {#$('#valor_calalum' + calalum + '_' + data.alumno).html(data.cal);#}
+                        $('#valor_calalum' + cieval + '_' + data.alumno).html(data.cal);
                         $('#update_ok').show().delay(1500).fadeOut();
                     } else {
                         $('#update_error').show().delay(1500).fadeOut();

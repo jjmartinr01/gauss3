@@ -226,14 +226,15 @@
 
     {% for ecpv in ecp.escalacpvalor_set.all %}
         <div class="columns large-1">
-            <a type="text" data-ecp="{{ ecp.id }}" class="button tiny update_esvcn"><b>{{ ecpv.valor }}</b></a>
+            <a type="text" data-ecp="{{ ecp.id }}" class="button tiny update_esvcn"
+            data-cieval=""><b>{{ ecpv.valor }}</b></a>
         </div>
     {% endfor %}
 
     <div class="row">
         <div class="columns large-12">
             <label>Calificación numérica asignada
-                <input type="text" data-ecp="{{ ecp.id }}" value="" class="update_esvcn">
+                <input type="text" data-ecp="{{ ecp.id }}" value="" data-cieval="" class="update_esvcn">
             </label>
         </div>
     </div>
