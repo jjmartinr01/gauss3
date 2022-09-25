@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.template import Library
+from django.db.models import Q
 from autenticar.models import Permiso
 from estudios.models import Gauser_extra_estudios
 from programaciones.models import *
@@ -28,7 +29,15 @@ def get_ecpv_xs(ecp, y):
 
 @register.filter
 def get_posibles_psec(cuaderno):
-    psec_ids = DocProgSec.objects.filter(gep__ge=cuaderno.ge).values_list('psec__id', flat=True)
+    # comprobar si es una sies que depende de un ies:
+    g_e = cuaderno.ge
+    ies = cuaderno.ge.ronda.entidad.entidadextra.depende_de
+    if ies:
+        ge_ies = Gauser_extra.objects.filter(gauser=g_e.gauser, ronda=ies.ronda)
+        q = Q(gep__ge=cuaderno.ge) | Q(gep__ge=ge_ies)
+    else:
+        q = Q(gep__ge=cuaderno.ge)
+    psec_ids = DocProgSec.objects.filter(q).values_list('psec__id', flat=True)
     return ProgSec.objects.filter(id__in=psec_ids)
 
 

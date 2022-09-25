@@ -1,0 +1,136 @@
+{% load entidades_extras %}
+<style>
+    p {
+        text-align: justify;
+    }
+
+    h5 {
+        font-weight: bold;
+    }
+
+</style>
+<div class="row">
+    <div class="columns large-12">
+        <ul class="button-group right">
+            <li><a class="button importar_sap tiny" data-id="{{ sap.id }}"
+                   title="Importar esta SAP del repositorio e incluirla en la programación"><i
+                    class="fa fa-sign-in"></i> Importar</a>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Nombre dado a la situación de aprendizaje: </b></label>
+        {{ sap.nombre }}
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Descripción de esta situación de aprendizaje: </b></label>
+        {{ sap.objetivo }}
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <table style="width: 100%">
+            <thead>
+            <tr>
+                <th colspan="2">
+                    Competencias específicas que se trabajan en esta situación de aprendizaje
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for ce in sap.ces.all %}
+                <thead>
+                <tr>
+                    <th colspan="2" style="color: darkorange">{{ cep.ce.asignatura }}</th>
+                </tr>
+                </thead>
+                <tr>
+                    <td><i class="fa fa-check-square-o"></i></td>
+                    <td>{{ ce.orden }}.- {{ ce.nombre }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<br>
+
+{#<div>#}
+{#    <div>#}
+{% for actividad in sap.repoactsitapren_set.all %}
+    <fieldset style="position:relative;">
+        <legend>{{ actividad.nombre }}</legend>
+        <div class="row">
+            <div class="columns large-12">
+                <label>Descripción de la actividad:</label>
+                {{ actividad.description }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns large-12">
+                <label>Producto solicitado a los alumnos en esta actividad:</label>
+                {{ actividad.producto }}
+            </div>
+        </div>
+        <div>
+            <span style="font-weight: bold;">Procedimientos utilizados para evaluar la actividad:</span>
+            {% for instrumento in actividad.instreval_set.all %}
+                <div>
+                    <hr style="margin: 0.1rem 0 1.2rem;">
+                    <div class="row">
+                        <div class="columns large-7">
+                            <label>Nombre del procedimiento utilizado para evaluar esta situación de
+                                aprendizaje: </label>
+                            {{ instrumento.nombre }}
+                        </div>
+                        <div class="columns large-5">
+                            <label>Tipo de procedimiento:</label>
+                            {{ instrumento.get_tipo_display }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="columns large-12">
+                            <table style="width: 100%">
+                                <thead title="Un peso igual a 0 implica que el criterio no es evaluado a través del procedimiento">
+                                <tr>
+                                    <th colspan="2" style="text-align: center;position: relative;">
+                                        Criterios de evaluación asociados al procedimiento anterior
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>Criterio de evaluación</th>
+                                    <th>Peso</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for criinstreval in instrumento.repocriinstreval_set.all %}
+                                    <tr>
+                                        <td title="{{ criinstreval.cevps.cev.ce.nombre }}">
+                                            {{ criinstreval.cevps.cev.ce.orden }}.{{ criinstreval.cevps.cev.orden }}.- {{ criinstreval.cevps.cev.texto }}
+                                        </td>
+                                        <td title="Un peso igual a 0 implica que el criterio no es evaluado a través del procedimiento">
+                                            {{ criinstreval.peso }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </fieldset>
+{% endfor %}
+{#    </div>#}
+{#</div>#}
+{#<script>#}
+{#    $('select').select2();#}
+{#</script>#}

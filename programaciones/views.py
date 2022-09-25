@@ -2555,6 +2555,14 @@ def progsecundaria_sb(request, id):
                 return JsonResponse({'ok': True, 'html': html})
             except:
                 return JsonResponse({'ok': False})
+        elif action == 'open_repoaccordion':
+            try:
+                sap = RepoSitApren.objects.get(sbas__psec__gep__ge__ronda__entidad=g_e.ronda.entidad,
+                                           id=request.POST['id'])
+                html = render_to_string('progsec_sap_buscada_accordion_content.html', {'sap': sap, 'g_e': g_e})
+                return JsonResponse({'ok': True, 'html': html})
+            except:
+                return JsonResponse({'ok': False})
         elif action == 'update_texto':
             try:
                 clase = eval(request.POST['clase'])
@@ -2689,7 +2697,9 @@ def progsecundaria_sb(request, id):
                   {
                       'formname': 'progsec_sap',
                       'iconos':
-                          ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear SAP', 'permiso': 'libre',
+                          ({'tipo': 'button', 'nombre': 'sign-in', 'texto': 'Importar SAP', 'permiso': 'libre',
+                            'title': 'Importar una situación de aprendizaje del repositorio'},
+                           {'tipo': 'button', 'nombre': 'plus', 'texto': 'Crear SAP', 'permiso': 'libre',
                             'title': 'Crear una nueva situación de aprendizaje para este saber básico'},
                            {'tipo': 'button', 'nombre': 'arrow-left', 'texto': 'Volver', 'permiso': 'libre',
                             'title': 'Volver a la programación didáctica'},
@@ -2891,7 +2901,16 @@ def cuadernodocente(request):
         action = request.POST['action']
         if action == 'crea_cuaderno':
             try:
-                if DocProgSec.objects.filter(psec__pga__ronda=g_e.ronda).count() < 1:
+                # Comprobamos si el usuario tiene programaciones asociadas.
+                # Serán válidas tanto las de la entidad a la que pertenece, como de la entidad
+                # de la que depende (por ejemplo una SIES de un IES).
+                ies = g_e.ronda.entidad.entidadextra.depende_de
+                if ies:
+                    ge_ies = Gauser_extra.objects.filter(gauser=g_e.gauser, ronda=ies.ronda)
+                    q = Q(gep__ge=g_e) | Q(gep__ge=ge_ies)
+                else:
+                    q = Q(gep__ge=g_e)
+                if DocProgSec.objects.filter(q).count() < 1:
                     msg = 'Primero tienes que participar como docente en alguna programación didáctica.'
                     return JsonResponse({'ok': False, 'msg': msg})
                 log = '%s %s %s\n' % (action, now(), g_e)
