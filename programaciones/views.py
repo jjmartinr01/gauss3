@@ -2942,7 +2942,7 @@ def cuadernodocente(request):
                 # de la que depende (por ejemplo una SIES de un IES).
                 ies = g_e.ronda.entidad.entidadextra.depende_de
                 if ies:
-                    ge_ies = Gauser_extra.objects.filter(gauser=g_e.gauser, ronda=ies.ronda)
+                    ge_ies = Gauser_extra.objects.get(gauser=g_e.gauser, ronda=ies.ronda)
                     q = Q(gep__ge=g_e) | Q(gep__ge=ge_ies)
                 else:
                     q = Q(gep__ge=g_e)
