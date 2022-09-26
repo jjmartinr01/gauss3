@@ -2993,7 +2993,12 @@ def cuadernodocente(request):
             try:
                 psec = ProgSec.objects.get(id=request.POST['psec'])
                 try:
-                    DocProgSec.objects.get(gep__ge=g_e, psec=psec)
+                    ies = g_e.ronda.entidad.entidadextra.depende_de
+                    if ies:
+                        ge_ies = Gauser_extra.objects.get(gauser=g_e.gauser, ronda=ies.ronda)
+                        DocProgSec.objects.get(gep__ge=ge_ies, psec=psec)
+                    else:
+                        DocProgSec.objects.get(gep__ge=g_e, psec=psec)
                     # grupos = psec.curso.grupos
                     grupos = Grupo.objects.filter(ronda=g_e.ronda)
                     html = render_to_string('cuadernodocente_accordion_content_grupos.html', {'grupos': grupos})
