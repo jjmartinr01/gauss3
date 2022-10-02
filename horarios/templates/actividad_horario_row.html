@@ -55,10 +55,12 @@
         <input type="checkbox" data-id="{{ a.id }}" class="rgu_checkbox2 change_checkbox" data-attr="guardia"
                {% if a.guardia %}checked{% endif %}>
     </div>
-    <div class="columns large-4 ob_actividad" data-id="{{ a.id }}" title="Observaciones sobre la actividad"
-         contenteditable="true">
+    {#    <div class="columns large-4 ob_actividad" data-id="{{ a.id }}" contenteditable="true"#}
+    {#         title="{% autoescape off %}{{ a.observaciones }}{% endautoescape %}">#}
+    <div class="columns large-4 ob_actividad" data-id="{{ a.id }}"
+         title="{% autoescape off %}{{ a.observaciones }}{% endautoescape %}">
         {% autoescape off %}
-            {{ a.observaciones }}
+        {{ a.observaciones|truncatechars:35 }}
         {% endautoescape %}
     </div>
 </div>

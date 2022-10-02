@@ -927,7 +927,7 @@ class CargaMasiva(models.Model):
 
     class Meta:
         verbose_name_plural = "Cargas Masivas"
-        ordering = ['ronda']
+        ordering = ['-id']
 
     @property
     def dias_autoborrado(self):

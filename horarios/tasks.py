@@ -6,15 +6,14 @@ from lxml import etree as ElementTree
 from difflib import get_close_matches
 from django.db.models import Q
 from django.utils.timezone import datetime, timedelta
-from entidades.models import CargaMasiva, Gauser_extra, Dependencia, Subentidad, Entidad, Organization, Cargo
-from estudios.models import Curso, Grupo, Materia, Gauser_extra_estudios, EtapaEscolar
-from horarios.models import Horario, Tramo_horario, Actividad, Sesion, Falta_asistencia, Guardia
+from entidades.models import CargaMasiva, Gauser_extra, Dependencia, Entidad, Organization, Cargo
+from estudios.models import Curso, Grupo, Materia, EtapaEscolar
+from horarios.models import Horario, Tramo_horario, Actividad, Sesion
 from cupo.models import PlantillaXLS, PlantillaOrganica, LogCarga
 from programaciones.models import Especialidad_entidad, Gauser_extra_programaciones, Departamento, \
     Especialidad_funcionario, crea_departamentos
 from formularios.models import EvalFunPractAct, EvalFunPractRes
 from gauss.funciones import genera_nie, borra_cargas_masivas_antiguas
-from gauss.rutas import MEDIA_FILES
 
 logger = logging.getLogger('django')
 

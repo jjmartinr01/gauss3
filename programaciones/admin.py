@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 from django import forms
+
+from entidades.models import Cargo
 from programaciones.models import *
 
 
@@ -10,7 +12,8 @@ class ProgSecAdminForm(forms.ModelForm):
         self.fields['materia'].queryset = Materia_programaciones.objects.none()
         self.fields['curso'].queryset = Curso.objects.none()
         try:
-            self.fields['gep'].queryset = Gauser_extra_programaciones.objects.filter(ge__ronda=self.instance.gep.ge.ronda)
+            cargo_docente = Cargo.objects.filter(clave_cargo='g_docente', entidad=self.instance.gep.ge.ronda.entidad)
+            self.fields['gep'].queryset = Gauser_extra_programaciones.objects.filter(ge__ronda=self.instance.gep.ge.ronda, cargos__in=cargo_docente)
         except:
             self.fields['gep'].queryset = Gauser_extra_programaciones.objects.none()
 class ProgSecAdmin(admin.ModelAdmin):
@@ -20,14 +23,19 @@ class ProgSecAdmin(admin.ModelAdmin):
 class CuadernoProfAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['materia'].queryset = Materia_programaciones.objects.none()
-        self.fields['curso'].queryset = Curso.objects.none()
+        self.fields['alumnos'].queryset = self.instance.alumnos.all()
+        self.fields['psec'].queryset = ProgSec.objects.filter(gep__ge__ronda=self.instance.ge.ronda)
+        self.fields['grupo'].queryset = Grupo.objects.filter(ronda=self.instance.ge.ronda)
         try:
-            self.fields['gep'].queryset = Gauser_extra_programaciones.objects.filter(ge__ronda=self.instance.gep.ge.ronda)
+            cargo_docente = Cargo.objects.filter(clave_cargo='g_docente', entidad=self.instance.ge.ronda.entidad)
+            self.fields['ge'].queryset = Gauser_extra.objects.filter(ronda=self.instance.psec.pga.ronda, cargos__in=cargo_docente)
         except:
-            self.fields['gep'].queryset = Gauser_extra_programaciones.objects.none()
+            self.fields['ge'].queryset = Gauser_extra.objects.filter(ronda=self.instance.psec.pga.ronda)
 class CuadernoProfAdmin(admin.ModelAdmin):
-    form = ProgSecAdminForm
+    form = CuadernoProfAdminForm
+    search_fields = ['ge__ronda__entidad__name']
+    # list_filter = ['entidad', 'ronda']
+
 
 admin.site.register(Titulo_FP)
 admin.site.register(Programacion_modulo)
@@ -56,7 +64,7 @@ admin.site.register(SitApren)
 admin.site.register(ActSitApren)
 admin.site.register(InstrEval)
 admin.site.register(CriInstrEval)
-admin.site.register(CuadernoProf)
+admin.site.register(CuadernoProf, CuadernoProfAdmin)
 admin.site.register(CalAlumCE)
 admin.site.register(CalAlumCEv)
 admin.site.register(EscalaCP)

@@ -10,6 +10,7 @@ class GuardiaAdmin(admin.ModelAdmin):
     search_fields = ['sesion__horario__ronda__entidad']
     list_filter = ['sesion__horario__predeterminado', 'sesion__horario__ronda']
 
+
 admin.site.register(Horario, HorarioAdmin)
 admin.site.register(Actividad)
 admin.site.register(Tramo_horario)

@@ -25,13 +25,29 @@ class DependenciaAdmin(admin.ModelAdmin):
 class Menu_Admin(admin.ModelAdmin):
     list_filter = ['entidad']
 
+# class CargaMasivaAdminForm(forms.ModelForm):
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         try:
+#             self.fields['g_e'].queryset = Gauser_extra.objects.filter(ronda=self.instance.g_e.ronda)
+#         except:
+#             self.fields['g_e'].queryset = Gauser_extra.objects.none()
+#
+# class CargaMasivaAdmin(admin.ModelAdmin):
+#     form = CargaMasivaAdminForm
+
 class CargaMasivaAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         try:
-            self.fields['g_e'].queryset = Gauser_extra.objects.filter(ronda=self.instance.g_e.ronda)
+            self.fields['ronda'].queryset = Ronda.objects.filter(id=self.instance.ronda.id)
+        except:
+            self.fields['ronda'].queryset = Ronda.objects.none()
+        try:
+            self.fields['g_e'].queryset = Gauser_extra.objects.filter(id=self.instance.g_e.id)
         except:
             self.fields['g_e'].queryset = Gauser_extra.objects.none()
+
 class CargaMasivaAdmin(admin.ModelAdmin):
     form = CargaMasivaAdminForm
 
