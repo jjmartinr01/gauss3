@@ -14,41 +14,41 @@
 
 
     {% comment %}
-    {% for sb in sap.saberbas_set.all %}
-        #row_sb_botones{{ sb.id }} {
-            display: none;
-            position: absolute;
-            top: 1px;
-            right: 35px;
-        }
-        #row_sb{{ sb.id }} {
-            position: relative;
-        }
-        #row_sb{{ sb.id }}:hover #row_sb_botones{{ sb.id }} {
-            display: block;
-        }
-        #row_sb{{ sb.id }}:hover {
-            border-top: 1px solid #ebccd1;
-        }
-        {% for sap in sb.sitapren_set.all %}
-            #row_sap_botones{{ sb.id }} {
+        {% for sb in sap.saberbas_set.all %}
+            #row_sb_botones{{ sb.id }} {
                 display: none;
                 position: absolute;
                 top: 1px;
                 right: 35px;
             }
-            #row_sap{{ sb.id }} {
+            #row_sb{{ sb.id }} {
                 position: relative;
             }
-            #row_sap{{ sb.id }}:hover #row_sap_botones{{ sb.id }} {
+            #row_sb{{ sb.id }}:hover #row_sb_botones{{ sb.id }} {
                 display: block;
             }
-            #row_sap{{ sb.id }}:hover {
+            #row_sb{{ sb.id }}:hover {
                 border-top: 1px solid #ebccd1;
             }
+            {% for sap in sb.sitapren_set.all %}
+                #row_sap_botones{{ sb.id }} {
+                    display: none;
+                    position: absolute;
+                    top: 1px;
+                    right: 35px;
+                }
+                #row_sap{{ sb.id }} {
+                    position: relative;
+                }
+                #row_sap{{ sb.id }}:hover #row_sap_botones{{ sb.id }} {
+                    display: block;
+                }
+                #row_sap{{ sb.id }}:hover {
+                    border-top: 1px solid #ebccd1;
+                }
+            {% endfor %}
         {% endfor %}
-    {% endfor %}
-{% endcomment %}
+    {% endcomment %}
 
 </style>
 <div class="row">
@@ -75,9 +75,20 @@
 
 <div class="row">
     <div class="columns large-12">
-        <label><b>Descripción de esta situación de aprendizaje: </b>
+        <label><b>Descripción y saberes básicos en esta situación de aprendizaje, así como las
+            metodologías utilizadas: </b>
+            <textarea type="text" class="update_texto" data-campo="contenidos_sbas" data-clase="SitApren"
+                      placeholder="Introduce aquí una descripción, saberes básicos y metodologías"
+                      data-id="{{ sap.id }}" id="input_contenidos_sbas{{ sap.id }}">{{ sap.contenidos_sbas }}</textarea>
+        </label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12">
+        <label><b>Producto solicitado a los alumnos en esta situación de aprendizaje: </b>
             <textarea type="text" class="update_texto" data-campo="objetivo" data-clase="SitApren"
-                      placeholder="Introduce aquí observaciones para la situación de aprendizaje" data-id="{{ sap.id }}"
+                      placeholder="Introduce aquí el producto que deben entregar los alumnos" data-id="{{ sap.id }}"
                       id="input_objetivo{{ sap.id }}">{{ sap.objetivo }}</textarea></label>
     </div>
 </div>

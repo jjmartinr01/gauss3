@@ -782,6 +782,20 @@ class CEProgSec(models.Model):
     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
+    @property
+    def num_criinstreval_vinculados(self):
+        total = 0
+        for cevpsec in self.cevprogsec_set.all():
+            total += cevpsec.criinstreval_vinculados.count()
+        return total
+    @property
+    def tipos_procedimientos_utilizados(self):
+        tipos = []
+        for cevpsec in self.cevprogsec_set.all():
+            for criinstreval in cevpsec.criinstreval_vinculados:
+                tipos.append((criinstreval.ieval.tipo, criinstreval.ieval.get_tipo_display()))
+        return set(tipos)
+
     class Meta:
         verbose_name_plural = 'Competencias específicas asociadas a una programación'
         ordering = ['ce__asignatura', 'ce__orden', ]
@@ -795,6 +809,10 @@ class CEvProgSec(models.Model):
     cev = models.ForeignKey(CriterioEvaluacion, on_delete=models.CASCADE)
     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    @property
+    def criinstreval_vinculados(self):
+        return self.criinstreval_set.all()
 
     class Meta:
         verbose_name_plural = 'Criterios de Evaluación asociados a una programación'
@@ -1152,7 +1170,7 @@ class CuadernoProf(models.Model):
 
     class Meta:
         verbose_name_plural = 'Cuadernos de docente'
-        ordering = ['psec', 'ge']
+        ordering = ['-id', 'psec', 'ge']
 
     @property
     def num_columns(self):
@@ -1161,7 +1179,19 @@ class CuadernoProf(models.Model):
 
     @property
     def nombre(self):
-        return '%s - %s - %s' % (self.psec.pga.ronda, self.psec.areamateria.nombre, self.grupo.nombre)
+        try:
+            ronda = self.psec.pga.ronda
+        except:
+            ronda = 'Curso escolar desconocido'
+        try:
+            am = self.psec.areamateria.nombre
+        except:
+            am = 'Asignatura desconocida'
+        try:
+            grupo = self.grupo.nombre
+        except:
+            grupo = 'Grupo desconocido'
+        return '%s - %s - %s' % (ronda, am, grupo)
 
     def calificacion_alumno_cev(self, alumno, cev):  # Calificación de un determinado criterio de evaluación
         cas = self.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)
@@ -1185,22 +1215,22 @@ class CuadernoProf(models.Model):
             return 0
         #################################################################
         ######## LINEAS DE CÓDIGO ANTIGUAS:
-        try:
-            cepsec = self.psec.ceprogsec_set.get(ce=ce)
-        except:
-            return 1000000  # Si se da un error devolverá una cantidad tan grande que lo evidenciará
-        cevpsecs = cepsec.cevprogsec_set.all()
-        numerador = 0
-        denominador = 0
-        for cevp in cevpsecs:
-            cal_cev = self.calificacion_alumno_cev(alumno, cevp.cev)
-            if cal_cev > 0:
-                numerador += cal_cev * cevp.valor
-                denominador += cevp.valor
-        try:
-            return round(numerador / denominador, 2)
-        except:
-            return 0
+        # try:
+        #     cepsec = self.psec.ceprogsec_set.get(ce=ce)
+        # except:
+        #     return 1000000  # Si se da un error devolverá una cantidad tan grande que lo evidenciará
+        # cevpsecs = cepsec.cevprogsec_set.all()
+        # numerador = 0
+        # denominador = 0
+        # for cevp in cevpsecs:
+        #     cal_cev = self.calificacion_alumno_cev(alumno, cevp.cev)
+        #     if cal_cev > 0:
+        #         numerador += cal_cev * cevp.valor
+        #         denominador += cevp.valor
+        # try:
+        #     return round(numerador / denominador, 2)
+        # except:
+        #     return 0
 
     def calificacion_alumno(self, alumno):
         ceps = self.psec.ceprogsec_set.all()
@@ -1288,7 +1318,7 @@ class CuadernoProf(models.Model):
         return sbs_array
 
     def __str__(self):
-        return '%s - %s (%s)' % (self.psec, self.grupo, self.ge)
+        return '%s - %s -- %s - Borrado: %s' % (self.psec.nombre, self.grupo.nombre, self.ge, self.borrado)
 
 
 class CalAlumCE(models.Model):

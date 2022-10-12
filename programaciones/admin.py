@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
+from django.db.models import Q
 from django import forms
 
 from entidades.models import Cargo
@@ -27,10 +28,14 @@ class CuadernoProfAdminForm(forms.ModelForm):
         self.fields['psec'].queryset = ProgSec.objects.filter(gep__ge__ronda=self.instance.ge.ronda)
         self.fields['grupo'].queryset = Grupo.objects.filter(ronda=self.instance.ge.ronda)
         try:
-            cargo_docente = Cargo.objects.filter(clave_cargo='g_docente', entidad=self.instance.ge.ronda.entidad)
+            q = Q(clave_cargo='g_docente') | Q(clave_cargo='g_inspector_educacion')
+            cargo_docente = Cargo.objects.filter(Q(entidad=self.instance.ge.ronda.entidad), q)
             self.fields['ge'].queryset = Gauser_extra.objects.filter(ronda=self.instance.psec.pga.ronda, cargos__in=cargo_docente)
         except:
-            self.fields['ge'].queryset = Gauser_extra.objects.filter(ronda=self.instance.psec.pga.ronda)
+            try:
+                self.fields['ge'].queryset = Gauser_extra.objects.filter(ronda=self.instance.psec.pga.ronda)
+            except:
+                self.fields['ge'].queryset = Gauser_extra.objects.none()
 class CuadernoProfAdmin(admin.ModelAdmin):
     form = CuadernoProfAdminForm
     search_fields = ['ge__ronda__entidad__name']

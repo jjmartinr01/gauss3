@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import pdfkit
 from datetime import date, datetime
 import simplejson as json
 import unicodedata
@@ -27,7 +28,7 @@ from django.utils.timezone import now
 from autenticar.control_acceso import permiso_required, gauss_required
 from autenticar.models import Gauser
 # from autenticar.control_acceso import access_required
-from entidades.models import Cargo, EntidadExtra
+from entidades.models import Cargo, EntidadExtra, DocConfEntidad
 from entidades.templatetags.entidades_extras import profesorado
 from gauss.funciones import html_to_pdf, usuarios_ronda, usuarios_de_gauss, get_dce, clone_object
 from programaciones.models import *
@@ -2435,32 +2436,30 @@ def progsecundaria(request):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
     elif request.method == 'POST':
-        if request.POST['action'] == 'sube_file_pec':
-            pec = PEC.objects.get(id=request.POST['pec'])
-            n_files = int(request.POST['n_files'])
-            mensaje = False
-            p = {'doc_nombre': False}
-            if g_e.has_permiso('carga_programaciones'):
-                for i in range(n_files):
-                    fichero = request.FILES['fichero_xhr' + str(i)]
-                    try:
-                        p = PECdocumento.objects.get(pec=pec, tipo=request.POST['name'])
-                        if p.doc_file:
-                            os.remove(p.doc_file.path)
-                        p.doc_file = fichero
-                        p.doc_nombre = slugify(p.get_tipo_display())
-                        p.content_type = fichero.content_type
-                        p.save()
-                    except:
-                        p = PECdocumento.objects.create(pec=pec, doc_nombre=request.POST['name'], doc_file=fichero,
-                                                        content_type=fichero.content_type,
-                                                        tipo=request.POST['name'])
-                        p.doc_nombre = slugify(p.get_tipo_display())
-                        p.save()
-                return JsonResponse({'ok': True, 'mensaje': mensaje})
-            else:
-                mensaje = 'No tienes permiso para cargar archivos del PEC.'
-                return JsonResponse({'ok': False, 'mensaje': mensaje})
+        if request.POST['action'] == 'pdf_progsec':
+            doc_progsec = 'Configuración de programaciones didácticas'
+            try:
+                dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, nombre=doc_progsec)
+            except:
+                try:
+                    dce = DocConfEntidad.objects.get(entidad=g_e.ronda.entidad, predeterminado=True)
+                except:
+                    dce = DocConfEntidad.objects.filter(entidad=g_e.ronda.entidad)[0]
+                    dce.predeterminado = True
+                    dce.save()
+                dce.pk = None
+                dce.nombre = doc_progsec
+                dce.predeterminado = False
+                dce.editable = False
+                dce.save()
+            progsec = ProgSec.objects.get(id=request.POST['id_progsec'])
+            c = render_to_string('verprogramacion.html', {'progsec': progsec, 'pdf': True})
+            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            fich = open(dce.url_pdf, 'rb')
+            response = HttpResponse(fich, content_type='application/pdf')
+            nombre = progsec.areamateria.nombre + '_' + progsec.areamateria.get_curso_display()
+            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+            return response
         elif request.POST['action'] == 'download_file':
             try:
                 pecdoc = PECdocumento.objects.get(id=request.POST['archivo'], pec__id=request.POST['pec'],
@@ -2509,7 +2508,8 @@ def verprogramacion(request, centro, id):
         return render(request, "verprogramacion.html",
                       {
                           'formname': 'progsec',
-                          'progsec': progsec
+                          'progsec': progsec,
+                          'tipos_procedimientos': InstrEval.TIPOS,
                       })
     except:
         pass
@@ -2585,8 +2585,8 @@ def progsecundaria_sb(request, id):
                     sap = SitApren.objects.create(sbas=sbas, nombre=reposap.nombre, objetivo=reposap.objetivo)
                     sap.ceps.add(*ceps)
                     for repoact in reposap.repoactsitapren_set.all():
-                        asapren =ActSitApren.objects.create(sapren=sap, nombre=repoact.nombre,
-                                                            description=repoact.description, producto=repoact.producto)
+                        asapren = ActSitApren.objects.create(sapren=sap, nombre=repoact.nombre,
+                                                             description=repoact.description, producto=repoact.producto)
                         for repoieval in repoact.repoinstreval_set.all():
                             ieval = InstrEval.objects.create(asapren=asapren, tipo=repoieval.tipo,
                                                              nombre=repoieval.nombre)
@@ -3263,17 +3263,17 @@ def cuadernodocente(request):
                 return JsonResponse({'ok': False})
         elif action == 'update_esvcn':
             # try:
-                ca = CalAlum.objects.get(id=request.POST['calalum'])
-                ca.calalumvalor_set.all().delete()
-                valor = float(request.POST['valor'])
-                ecpv, c = EscalaCPvalor.objects.get_or_create(ecp=ca.ecp, ecp__cp__ge=g_e, valor=valor)
-                for idx, e in enumerate(ca.ecp.escalacpvalor_set.all().order_by('valor')):
-                    e.y = idx
-                    e.save()
-                CalAlumValor.objects.create(ca=ca, ecpv=ecpv)
-                return JsonResponse({'ok': True, 'alumno': ca.alumno.id, 'cal': ca.cal})
-            # except:
-            #     return JsonResponse({'ok': False})
+            ca = CalAlum.objects.get(id=request.POST['calalum'])
+            ca.calalumvalor_set.all().delete()
+            valor = float(request.POST['valor'])
+            ecpv, c = EscalaCPvalor.objects.get_or_create(ecp=ca.ecp, ecp__cp__ge=g_e, valor=valor)
+            for idx, e in enumerate(ca.ecp.escalacpvalor_set.all().order_by('valor')):
+                e.y = idx
+                e.save()
+            CalAlumValor.objects.create(ca=ca, ecpv=ecpv)
+            return JsonResponse({'ok': True, 'alumno': ca.alumno.id, 'cal': ca.cal})
+        # except:
+        #     return JsonResponse({'ok': False})
         elif action == 'update_obs':
             try:
                 cuaderno = CuadernoProf.objects.get(ge__gauser=g_e.gauser, id=request.POST['cuaderno'])
@@ -3334,6 +3334,7 @@ def cuadernodocente(request):
                             'title': 'Crear un nuevo cuaderno de profesor asociado a una programación'},
                            ),
                       'g_e': g_e,
+                      'cuadernos': CuadernoProf.objects.filter(ge=g_e, borrado=False),
                       'avisos': Aviso.objects.filter(usuario=g_e, aceptado=False),
                   })
 
@@ -3577,8 +3578,8 @@ def calificacc(request):
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
 
-    grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False).values_list('grupo__id',
-                                                                                               'grupo__nombre')
+    grupos = CuadernoProf.objects.filter(ge__ronda=g_e.ronda, grupo__isnull=False,
+                                         borrado=False).values_list('grupo__id', 'grupo__nombre')
     return render(request, "calificacc.html",
                   {
                       'formname': 'calificacc',

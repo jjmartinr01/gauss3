@@ -12,14 +12,14 @@
             </label>
         </div>
     </div>
-    <div class="row">
-        <div class="columns large-12">
-            <label>Producto solicitado a los alumnos en esta actividad:
-                <textarea type="text" data-id="{{ actividad.id }}" data-clase="ActSitApren"
-                          class="update_texto" data-campo="producto">{{ actividad.producto }}</textarea>
-            </label>
-        </div>
-    </div>
+{#    <div class="row">#}
+{#        <div class="columns large-12">#}
+{#            <label>Producto solicitado a los alumnos en esta actividad:#}
+{#                <textarea type="text" data-id="{{ actividad.id }}" data-clase="ActSitApren"#}
+{#                          class="update_texto" data-campo="producto">{{ actividad.producto }}</textarea>#}
+{#            </label>#}
+{#        </div>#}
+{#    </div>#}
     <div id="list_instrumentos_actividad{{ actividad.id }}">
         <span style="font-weight: bold;">Procedimientos utilizados para evaluar la actividad:</span>
         {% for instrumento in actividad.instreval_set.all %}

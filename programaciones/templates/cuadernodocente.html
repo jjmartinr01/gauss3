@@ -25,10 +25,13 @@
         <div id="contenido_cuadernos">
             <br>
             <dl class="accordion" data-accordion id="list_cuadernos">
-                {% for cuaderno in g_e.cuaderno_docente_set.all %}
-                    {% if not cuaderno.borrado %}
-                        {% include 'cuadernodocente_accordion.html' %}
-                    {% endif %}
+{#                {% for cuaderno in g_e.cuaderno_docente_set.all %}#}
+{#                    {% if not cuaderno.borrado %}#}
+{#                        {% include 'cuadernodocente_accordion.html' %}#}
+{#                    {% endif %}#}
+{#                {% endfor %}#}
+                {% for cuaderno in cuadernos %}
+                    {% include 'cuadernodocente_accordion.html' %}
                 {% endfor %}
             </dl>
         </div>

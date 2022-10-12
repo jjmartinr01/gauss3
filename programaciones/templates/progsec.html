@@ -597,8 +597,6 @@
             });
 
 
-
-
             {######################################################## #}
 
             $("body").on('click', '#busca_progsec_manual', function (e) {
@@ -612,6 +610,14 @@
                         $(document).foundation();
                     });
             });
+
+            $('#Contenido').on('click', '.pdf_progsec', function (e) {
+                    e.preventDefault();
+                    {#genera_pdf_informe();#}
+                    $('#action').val('pdf_progsec');
+                    document.getElementById('{{formname}}').submit();
+                });
+
             {% comment %}
                 $("body").on('keyup', '#busca_progsec', function (e) {
                     var texto = $('#busca_progsec').val();
@@ -628,21 +634,11 @@
                         });
                 });
 
-                function genera_pdf_informe() {
-                    $('#action').val('pdf_progsec');
-                    document.getElementById('{{formname}}').submit();
-                }
+                {#function genera_pdf_informe() {#}
+                {#    $('#action').val('pdf_progsec');#}
+                {#    document.getElementById('{{formname}}').submit();#}
+                {# }#}
 
-                $('#Contenido').on('click', '.pdf_progsec', function (e) {
-                    e.preventDefault();
-                    {#var id = $(this).data('id')#}
-                    genera_pdf_informe();
-                    {#var protocol = window.location.protocol;#}
-                    {#var port = window.location.port;#}
-                    {#var domain = window.location.hostname;#}
-                    {#$('#protocol_domain').val( protocol + '//' + domain + ':' + port);#}
-
-                });
 
                 {# ##################################################################### #}
                 {# #################### CARGA DE ARCHIVOS ############################## #}

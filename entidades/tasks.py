@@ -1143,5 +1143,3 @@ def ejecutar_crea_calalumce_cev():
             errores += '<br>%s' % str(msg)
     Aviso.objects.create(aviso='ejecutar_crea_calalumce_cev terminado.<br>%s' % errores, fecha=now(), aceptado=True)
     return True
-
-#prueba
