@@ -435,7 +435,10 @@ def get_plazas(objeto):
 
 @register.filter
 def get_fecha_plazas(po):
-    return CargaPlantillaOrganicaCentros.objects.all().last().creado
+    try:
+        return CargaPlantillaOrganicaCentros.objects.all().last().creado
+    except:
+        return 'No hay un CargaPlantillaOrganicaCentros'
 
 
 @register.filter

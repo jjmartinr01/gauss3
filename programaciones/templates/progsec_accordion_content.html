@@ -115,7 +115,7 @@
                         <option value="">------</option>
                         {% for d in docentes %}
                             <option value="{{ d.id }}"
-                                    {% if gep.departamento.jefe.ge == d %}selected{% endif %}>{{ d.gauser.get_full_name }}</option>
+                                    {% if progsec.departamento.jefe.ge == d %}selected{% endif %}>{{ d.gauser.get_full_name }}</option>
                         {% endfor %}
                     </select>
                 </label>
@@ -156,7 +156,7 @@
                         <option value="">------</option>
                         {% for d in docentes %}
                             <option value="{{ d.id }}"
-                                    {% if gep.departamento.jefe.ge == d %}selected{% endif %}>{{ d.gauser.get_full_name }}</option>
+                                    {% if progsec.departamento.jefe.ge == d %}selected{% endif %}>{{ d.gauser.get_full_name }}</option>
                         {% endfor %}
                     </select>
                 </label>

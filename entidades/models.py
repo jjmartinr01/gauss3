@@ -912,7 +912,7 @@ class CargaMasiva(models.Model):
              ('PENDIENTES', 'Alumnos con materias pendientes cargados desde Racima'),
              ('HORARIOXLS', 'Sesiones cargadas desde el archivo excel de Racima'),
              ('CENTROSRACIMA', 'Consulta -> Centro -> Datos de los centros'),
-             ('PLANTILLAXLS', 'Sesiones cargadas desde el archivo excel de Racima'),
+             ('PLANTILLAXLS', 'Sesiones cargadas desde el archivo excel de Racima PXLS'),
              ('DOCENTES_RACIMA', 'Docentes cargados desde consulta general'))
     ronda = models.ForeignKey(Ronda, on_delete=models.CASCADE, blank=True, null=True)
     # Persona que ha realizado la carga masiva

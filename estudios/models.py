@@ -2,6 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from entidades.models import Entidad, Ronda, Subentidad, Gauser_extra, Dependencia
 
 
@@ -52,6 +54,14 @@ class Curso(models.Model):
         return '%s (%s)' % (self.nombre, self.ronda.entidad.name)
 
 
+# @receiver(post_save, sender=Curso)
+# def update_curso_clave_ex(sender, instance, **kwargs):
+#     try:
+#         instance.clave_ex = str(int(float(instance.clave_ex.replace(',', '.'))))
+#     except:
+#         instance.clave_ex = ''
+#     instance.save()
+
 # Ligar un Grupo a un curso es problemático porque alumnos de un grupo pueden pertenecer a varios cursos. Por ejemplo
 # los alumnos del grupo 1Bach A pueden pertenecer a los cursos de Ciencias y de Artes
 class Grupo(models.Model):
@@ -81,12 +91,19 @@ class Grupo(models.Model):
         return Gauser_extra_estudios.objects.filter(grupo__id=self.id)
 
     class Meta:
-        ordering = ['nombre']
+        ordering = ['-id', 'nombre']
 
     def __str__(self):
         cursos = self.cursos.all().values_list('nombre', flat=True)
         return '%s - %s - %s' % (self.nombre, ', '.join(cursos), self.ronda)
 
+# @receiver(post_save, sender=Grupo)
+# def update_grupo_clave_ex(sender, instance, **kwargs):
+#     try:
+#         instance.clave_ex = str(int(float(instance.clave_ex.replace(',', '.'))))
+#     except:
+#         instance.clave_ex = ''
+#     instance.save()
 
 class Materia(models.Model):
     curso = models.ForeignKey(Curso, null=True, blank=True, on_delete=models.CASCADE)

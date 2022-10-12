@@ -299,11 +299,17 @@ class PlantillaOrganica(models.Model):
         verbose_name_plural = 'Plantillas orgánicas'
         ordering = ['-creado']
 
+    def clave_ex2clave_ex(self, cadena):
+        try:
+            return str(int(float(cadena.replace(',', '.'))))
+        except:
+            return ''
     ########################################################################
     ############ Cargamos dependencias:
     def carga_dependencia(self, data):
+        x_dependencia = self.clave_ex2clave_ex(data['x_dependencia'])
         try:
-            dependencia, c = Dependencia.objects.get_or_create(clave_ex=data['x_dependencia'],
+            dependencia, c = Dependencia.objects.get_or_create(clave_ex=x_dependencia,
                                                                entidad=self.ronda_centro.entidad)
             if c:
                 dependencia.nombre = data['c_coddep']
@@ -311,7 +317,7 @@ class PlantillaOrganica(models.Model):
                 dependencia.es_aula = True
                 dependencia.save()
         except:
-            dependencias = Dependencia.objects.filter(clave_ex=data['x_dependencia'],
+            dependencias = Dependencia.objects.filter(clave_ex=x_dependencia,
                                                       entidad=self.ronda_centro.entidad)
             dependencia = dependencias[0]
             dependencias.exclude(pk__in=[dependencia.pk]).delete()
@@ -332,21 +338,24 @@ class PlantillaOrganica(models.Model):
     def carga_etapas(self):
         etapas = self.plantillaxls_set.all().values('etapa_escolar', 'x_etapa_escolar').distinct()
         for etapa in etapas:
-            EtapaEscolar.objects.get_or_create(nombre=etapa['etapa_escolar'], clave_ex=etapa['x_etapa_escolar'])
+            x_etapa_escolar = self.clave_ex2clave_ex(etapa['x_etapa_escolar'])
+            EtapaEscolar.objects.get_or_create(nombre=etapa['etapa_escolar'], clave_ex=x_etapa_escolar)
 
     ########################################################################
     ############ Cargamos cursos:
     def carga_curso(self, data):
+        x_curso = self.clave_ex2clave_ex(data['x_curso'])
         try:
-            curso, c = Curso.objects.get_or_create(clave_ex=data['x_curso'], ronda=self.ronda_centro)
+            curso, c = Curso.objects.get_or_create(clave_ex=x_curso, ronda=self.ronda_centro)
         except:
-            cursos = Curso.objects.filter(clave_ex=data['x_curso'], ronda=self.ronda_centro)
+            cursos = Curso.objects.filter(clave_ex=x_curso, ronda=self.ronda_centro)
             curso = cursos[0]
             cursos.exclude(pk__in=[curso.pk]).delete()
         curso.nombre = data['curso']
         curso.nombre_especifico = data['omc']
+        x_etapa_escolar = self.clave_ex2clave_ex(data['x_etapa_escolar'])
         try:
-            curso.etapa_escolar = EtapaEscolar.objects.get(clave_ex=data['x_etapa_escolar'])
+            curso.etapa_escolar = EtapaEscolar.objects.get(clave_ex=x_etapa_escolar)
         except:
             LogCarga.objects.create(g_e=self.g_e, log='No encuentra etapa: %s' % data['x_etapa_escolar'])
         curso.save()
@@ -356,24 +365,27 @@ class PlantillaOrganica(models.Model):
         cursos = self.plantillaxls_set.all().values('x_curso', 'curso', 'omc', 'x_etapa_escolar')
         for curso in cursos:
             self.carga_curso(curso)
+        Curso.objects.filter(ronda=self.ronda_centro, clave_ex='').delete()
         return True
 
     ########################################################################
     ############ Cargamos grupos:
     def carga_grupo(self, data):
+        x_unidad = self.clave_ex2clave_ex(data['x_unidad'])
         try:
-            grupo, c = Grupo.objects.get_or_create(clave_ex=data['x_unidad'], ronda=self.ronda_centro)
+            grupo, c = Grupo.objects.get_or_create(clave_ex=x_unidad, ronda=self.ronda_centro)
             if c:
                 grupo.nombre = data['unidad']
                 grupo.save()
         except:
-            grupos = Grupo.objects.filter(clave_ex=data['x_unidad'], ronda=self.ronda_centro)
+            grupos = Grupo.objects.filter(clave_ex=x_unidad, ronda=self.ronda_centro)
             grupo = grupos[0]
             grupos.exclude(pk__in=[grupo.pk]).delete()
             grupo.nombre = data['unidad']
             grupo.save()
         try:
-            curso = Curso.objects.get(clave_ex=data['x_curso'], ronda=self.ronda_centro)
+            x_curso = self.clave_ex2clave_ex(data['x_curso'])
+            curso = Curso.objects.get(clave_ex=x_curso, ronda=self.ronda_centro)
             grupo.cursos.add(curso)
         except:
             LogCarga.objects.create(g_e=self.g_e, log='Error al cargar el curso: %s' % data['x_curso'])
@@ -383,19 +395,22 @@ class PlantillaOrganica(models.Model):
         grupos = self.plantillaxls_set.all().values('x_curso', 'x_unidad', 'unidad')
         for grupo in grupos:
             self.carga_grupo(grupo)
+        Grupo.objects.filter(ronda=self.ronda_centro, clave_ex='').delete()
 
     ########################################################################
     ############ Cargamos materias:
     def carga_materia(self, data):
+        x_curso = self.clave_ex2clave_ex(data['x_curso'])
+        x_materiaomg = self.clave_ex2clave_ex(data['x_materiaomg'])
         try:
-            curso = Curso.objects.get(clave_ex=data['x_curso'], ronda=self.ronda_centro)
+            curso = Curso.objects.get(clave_ex=x_curso, ronda=self.ronda_centro)
         except:
             LogCarga.objects.create(g_e=self.g_e, log='Error carga de curso de la materia: %s' % data['x_materiaomg'])
             curso = None
         try:
-            materia, c = Materia.objects.get_or_create(clave_ex=data['x_materiaomg'], curso=curso)
+            materia, c = Materia.objects.get_or_create(clave_ex=x_materiaomg, curso=curso)
         except:
-            materias = Materia.objects.filter(clave_ex=data['x_materiaomg'], curso=curso)
+            materias = Materia.objects.filter(clave_ex=x_materiaomg, curso=curso)
             materia = materias[0]
             materias.exclude(pk__in=[materia.pk]).delete()
         horas, sc, minutos = data['horas_semana_min'].rpartition(':')
@@ -418,6 +433,7 @@ class PlantillaOrganica(models.Model):
                                                                         'materia').distinct()
         for materia in materias:
             self.carga_materia(materia)
+        Materia.objects.filter(curso__ronda=self.ronda_centro, clave_ex='').delete()
 
     ########################################################################
     ############ Cargamos departamentos:
@@ -426,16 +442,18 @@ class PlantillaOrganica(models.Model):
         if 'C.E.I.P.' in tipo_centro or 'C.R.A.' in tipo_centro:
             departamentos = self.plantillaxls_set.all().values('puesto', 'x_puesto').distinct()
             for d in departamentos:
-                DepEntidad.objects.get_or_create(ronda=self.ronda_centro, nombre=d['puesto'], clave_ex=d['x_puesto'])
+                x_puesto = self.clave_ex2clave_ex(d['x_puesto'])
+                DepEntidad.objects.get_or_create(ronda=self.ronda_centro, nombre=d['puesto'], clave_ex=x_puesto)
         else:
             departamentos = self.plantillaxls_set.all().values('departamento', 'x_departamento').distinct()
             for d in departamentos:
-                if d['x_departamento'] == '63':  # El 63 es el departamento de Actividades compl. y extraes.
+                x_departamento = self.clave_ex2clave_ex(d['x_departamento'])
+                if x_departamento == '63':  # El 63 es el departamento de Actividades compl. y extraes.
                     DepEntidad.objects.get_or_create(ronda=self.ronda_centro, nombre=d['departamento'],
-                                                     clave_ex=d['x_departamento'], didactico=False)
+                                                     clave_ex=x_departamento, didactico=False)
                 else:
                     DepEntidad.objects.get_or_create(ronda=self.ronda_centro, nombre=d['departamento'],
-                                                     clave_ex=d['x_departamento'])
+                                                     clave_ex=x_departamento)
 
         return True
 
@@ -461,8 +479,9 @@ class PlantillaOrganica(models.Model):
                                                          'docencia').distinct()
         b = {'S': True, 'N': False, 's': True, 'n': False}
         for a in actividades:
+            x_actividad = self.clave_ex2clave_ex(a['x_actividad'])
             try:
-                act, c = Actividad.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_ex=a['x_actividad'])
+                act, c = Actividad.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_ex=x_actividad)
                 if c:
                     act.requiere_unidad = b[a['l_requnidad']]
                     act.nombre = a['actividad']
@@ -471,7 +490,7 @@ class PlantillaOrganica(models.Model):
             except Exception as msg:
                 log = 'Error cargar actividad %s. %s' % (a['x_actividad'], str(msg))
                 LogCarga.objects.create(g_e=self.g_e, log=log)
-                acts = Actividad.objects.filter(entidad=self.ronda_centro.entidad, clave_ex=a['x_actividad'])
+                acts = Actividad.objects.filter(entidad=self.ronda_centro.entidad, clave_ex=x_actividad)
                 act = acts[0]
                 acts.exclude(pk__in=[act.pk]).delete()
                 act.requiere_unidad = b[a['l_requnidad']]
@@ -486,8 +505,7 @@ class PlantillaOrganica(models.Model):
         egeneral, errores = get_entidad_general()
         cargo_data = Cargo.objects.get(clave_cargo='g_docente', entidad=egeneral).export_data()
         try:
-            cargo, c = Cargo.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_cargo='g_docente',
-                                                   borrable=False)
+            cargo = Cargo.objects.get(entidad=self.ronda_centro.entidad, clave_cargo='g_docente', borrable=False)
         except:
             Cargo.objects.filter(entidad=self.ronda_centro.entidad, clave_cargo='g_docente').delete()
             cargo = Cargo.objects.create(entidad=self.ronda_centro.entidad, clave_cargo='g_docente', borrable=False)

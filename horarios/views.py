@@ -942,7 +942,11 @@ def carga_masiva_horarios(request):
                 return JsonResponse({'ok': True})
             except:
                 return JsonResponse({'ok': False})
-
+    # Comando para que se incluya el permiso de crear plantillas a los miembros del equipo directivo:
+    permiso = Permiso.objects.get(code_nombre='acceso_plantilla_organica')
+    cargos = Cargo.objects.filter(clave_cargo='g_miembro_equipo_directivo')
+    for cargo in cargos:
+        cargo.permisos.add(permiso)
     return render(request, "carga_masiva_horarios.html",
                   {
                       'iconos': ({'tipo': 'button', 'nombre': 'check', 'texto': 'Aceptar',

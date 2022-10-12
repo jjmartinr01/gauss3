@@ -470,6 +470,7 @@ def carga_masiva_from_file():
             carga.cargado = True
             carga.save()
         elif carga.tipo == 'HORARIOXLS':
+            return True
             try:
                 horario = Horario.objects.get(entidad=carga.ronda.entidad, predeterminado=True)
                 Sesion.objects.filter(horario=horario).delete()
@@ -487,7 +488,9 @@ def carga_masiva_from_file():
                     "HORA FIN": "", "HORA INICIO CADENA": "", "HORA FIN CADENA": "", "X_ACTIVIDAD": "",
                     "ACTIVIDAD": "", "L_REQUNIDAD": "", "DOCENCIA": "", "MINUTOS": "", "X_DEPENDENCIA": "",
                     "C_CODDEP": "", "X_DEPENDENCIA2": "", "C_CODDEP2": "", "X_UNIDAD": "", "UNIDAD": "",
-                    "MATERIA": "", "X_MATERIOAOMG": "", "CURSO": "", "OMC": "", "Grupo de materias": ""}
+                    "MATERIA": "", "X_MATERIOAOMG": "", "CURSO": "", "OMC": "", "Grupo de materias": "",
+                    "X_OFERTAMATRIG": ""}
+
             keys_index = {col_index: str(sheet.cell(4, col_index).value) for col_index in range(sheet.ncols)}
             for row_index in range(5, sheet.nrows):
                 for col_index in range(sheet.ncols):
@@ -497,11 +500,13 @@ def carga_masiva_from_file():
                 fin = int(keys['HORA FIN'])
                 h_fin = '%d:%d' % (int(fin / 60), int(fin % 60))
                 try:
-                    docente = Gauser_extra.objects.get(clave_ex=str(int(keys['X_DOCENTE'])), ronda=carga.ronda)
+                    x_docente = str(int(float(keys['X_DOCENTE'])))
+                    docente = Gauser_extra.objects.get(clave_ex=x_docente, ronda=carga.ronda)
                 except:
                     docente = None
                 try:
-                    grupo = Grupo.objects.get(clave_ex=str(int(keys['X_UNIDAD'])), ronda=carga.ronda)
+                    x_unidad = str(int(float(keys['X_UNIDAD'])))
+                    grupo = Grupo.objects.get(clave_ex=x_unidad, ronda=carga.ronda)
                 except:
                     grupo = None
                 try:
@@ -510,7 +515,8 @@ def carga_masiva_from_file():
                 except:
                     dependencia = None
                 try:
-                    materia = Materia.objects.get(clave_ex=str(int(keys['X_MATERIOAOMG'])), curso__ronda=carga.ronda)
+                    x_materia = str(int(float(keys['X_MATERIOAOMG'])))
+                    materia = Materia.objects.get(clave_ex=x_materia, curso__ronda=carga.ronda)
                 except:
                     materia = None
                 actividad = Actividad.objects.get(clave_ex=str(int(keys['X_ACTIVIDAD'])), entidad=carga.ronda.entidad)
@@ -525,10 +531,18 @@ def carga_masiva_from_file():
         elif carga.tipo == 'PLANTILLAXLS':
             hace_un_mes = datetime.now() - timedelta(days=31)
             LogCarga.objects.filter(creado__lt=hace_un_mes).delete()
-            Curso.objects.filter(clave_ex__icontains='.0').delete()
-            Grupo.objects.filter(clave_ex__icontains='.0').delete()
-            Materia.objects.filter(clave_ex__icontains='.0').delete()
-            EtapaEscolar.objects.filter(clave_ex__icontains='.0').delete()
+            for curso in Curso.objects.filter(clave_ex__icontains='.0'):
+                curso.clave_ex = str(int(float(curso.clave_ex)))
+                curso.save()
+            for grupo in Grupo.objects.filter(clave_ex__icontains='.0'):
+                grupo.clave_ex = str(int(float(grupo.clave_ex)))
+                grupo.save()
+            for materia in Materia.objects.filter(clave_ex__icontains='.0'):
+                materia.clave_ex = str(int(float(materia.clave_ex)))
+                materia.save()
+            for etapa in EtapaEscolar.objects.filter(clave_ex__icontains='.0'):
+                etapa.clave_ex = str(int(float(etapa.clave_ex)))
+                etapa.save()
             try:
                 f = carga.fichero.read()
                 book = xlrd.open_workbook(file_contents=f)

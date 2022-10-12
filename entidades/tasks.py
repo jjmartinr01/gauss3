@@ -560,12 +560,20 @@ def carga_masiva_tipo_EXCEL(carga):
                 d['apellidos'] = '%s %s' % (d['last_name1'], d['last_name2'])
                 d['apellidos_tutor1'] = '%s %s' % (d['last_name1_tutor1'], d['last_name2_tutor1'])
                 d['apellidos_tutor2'] = '%s %s' % (d['last_name1_tutor2'], d['last_name2_tutor2'])
-                curso, c = Curso.objects.get_or_create(nombre=d['curso'], ronda=ronda, clave_ex=d['x_curso'])
+                try:
+                    x_curso = str(int(float(d['x_curso'].replace(',', '.'))))
+                except:
+                    x_curso = ''
+                curso, c = Curso.objects.get_or_create(nombre=d['curso'], ronda=ronda, clave_ex=x_curso)
                 if c:
                     logger.info('Carga masiva xls. Se crea curso %s' % curso.nombre)
                     carga.log += '<br>Carga masiva xls. Se crea curso %s' % curso.nombre
                     carga.save()
-                grupo, c = Grupo.objects.get_or_create(nombre=d['grupo'], ronda=ronda, clave_ex=d['x_unidad'])
+                try:
+                    x_unidad = str(int(float(d['x_unidad'].replace(',', '.'))))
+                except:
+                    x_unidad = ''
+                grupo, c = Grupo.objects.get_or_create(nombre=d['grupo'], ronda=ronda, clave_ex=x_unidad)
                 if c:
                     logger.info('Carga masiva xls. Se crea grupo %s' % grupo.nombre)
                     carga.log += '<br>Carga masiva xls. Se crea grupo %s' % grupo.nombre
@@ -801,9 +809,6 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
                 entidad.fax = sheet.cell(row_index, dict_names['FAX']).value
                 entidad.mail = sheet.cell(row_index, dict_names['Correo-e']).value
                 entidad.save()
-            # Se borran todos los cargos creados automáticamente y son borrables. Esto es para igualar a todos los
-            # centros. La siguiente línea debería borrarse si no hay cargos no borrables creados automáticamente.
-            Cargo.objects.filter(entidad=entidad, borrable=True).delete()
             # Creación de cargos no borrables y asignación de inspectores a centros:
             mensaje = ejecutar_configurar_cargos_permisos_entidad(entidad)
             carga.log += '<br>%s' % mensaje

@@ -596,7 +596,7 @@ CARGOS_CENTROS = [{'clave_cargo': 'g_inspector_educacion', 'cargo': 'Inspector d
                                 'acceso_gestion_documental',
                                 'acceso_documentos', 'crea_carpetas', 'sube_archivos', 've_todas_carpetas',
                                 'edita_todos_archivos', 'borra_cualquier_archivo', 'borra_cualquier_carpeta',
-                                'edita_carpetas',
+                                'edita_carpetas', 'acceso_plantilla_organica',
                                 'acceso_horarios', 'acceso_cupos', 'acceso_cupo_profesorado', 'edita_cupos',
                                 'copia_cupo_profesorado', 'borra_cupo_profesorado', 'crea_materias_cupo', 'pdf_cupo',
                                 'bloquea_cupos', 'acceso_acciones_usuarios1', 'acceso_convivencia',

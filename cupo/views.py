@@ -1257,8 +1257,13 @@ def plantilla_organica(request):
         if request.POST['action'] == 'carga_masiva_plantilla':
             logger.info('Carga de archivo de tipo: ' + request.FILES['file_masivo_xls'].content_type)
             CargaMasiva.objects.create(g_e=g_e, fichero=request.FILES['file_masivo_xls'], tipo='PLANTILLAXLS')
-            carga_masiva_from_file.delay()
-            crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+            try:
+                carga_masiva_from_file.apply_async(expires=300)
+                crear_aviso(request, True, 'cmplantilla_organica')
+                crear_aviso(request, False, 'El archivo cargado puede tardar unos minutos en ser procesado.')
+            except:
+                crear_aviso(request, False,
+                            'El archivo cargado no se ha encolado. Ejecutar la carga manualmente.')
         elif request.POST['action'] == 'excel_po':
             try:
                 po = PlantillaOrganica.objects.get(id=request.POST['po'])

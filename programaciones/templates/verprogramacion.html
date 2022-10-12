@@ -301,12 +301,14 @@
                 <tbody>
                 {% for ieval in asapren.instreval_set.all %}
                     <tr>
-                        <td>{{ ieval.get_tipo_display }}</td>
-                        <td>{{ ieval.nombre }}</td>
-                        <td>{% for criinstreval in ieval.criinstreval_set.all %}
+                        <td style="width: 20%;">{{ ieval.get_tipo_display }}</td>
+                        <td style="width: 20%;">{{ ieval.nombre }}</td>
+                        <td style="width: 60%;">{% for criinstreval in ieval.criinstreval_set.all %}
+                            {% if criinstreval.peso > 0 %}
                             {{ criinstreval.cevps.cev.ce.orden }}.{{ criinstreval.cevps.cev.orden }}.-
                             {{ criinstreval.cevps.cev.texto }}
                             (<span style="font-weight: bold;">{{ criinstreval.peso }}</span>)<br>
+                            {% endif %}
                         {% endfor %}
                         </td>
                     </tr>
@@ -603,7 +605,7 @@
         </tr>
         {% for tipo in cepsec.tipos_procedimientos_utilizados %}
             <tr>
-                <td>{{ tipo.1 }}</td>
+                <td style="width: 20%;">{{ tipo.1 }}</td>
                 {% for cevpsec in cepsec.cevprogsec_set.all %}
                     {% for criinstreval in cevpsec.criinstreval_set.all %}
                         {% if criinstreval.ieval.tipo == tipo.0 %}

@@ -1318,7 +1318,8 @@ class CuadernoProf(models.Model):
         return sbs_array
 
     def __str__(self):
-        return '%s - %s -- %s - Borrado: %s' % (self.psec.nombre, self.grupo.nombre, self.ge, self.borrado)
+        autor = '%s (%s)' % (self.ge.gauser.get_full_name(), self.ge.gauser.email)
+        return '%s -- %s - Borrado: %s' % (self.nombre, autor, self.borrado)
 
 
 class CalAlumCE(models.Model):
