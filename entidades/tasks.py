@@ -564,20 +564,48 @@ def carga_masiva_tipo_EXCEL(carga):
                     x_curso = str(int(float(d['x_curso'].replace(',', '.'))))
                 except:
                     x_curso = ''
-                curso, c = Curso.objects.get_or_create(nombre=d['curso'], ronda=ronda, clave_ex=x_curso)
-                if c:
-                    logger.info('Carga masiva xls. Se crea curso %s' % curso.nombre)
-                    carga.log += '<br>Carga masiva xls. Se crea curso %s' % curso.nombre
-                    carga.save()
+                # curso, c = Curso.objects.get_or_create(nombre=d['curso'], ronda=ronda, clave_ex=x_curso)
+                # if c:
+                #     logger.info('Carga masiva xls. Se crea curso %s' % curso.nombre)
+                #     carga.log += '<br>Carga masiva xls. Se crea curso %s' % curso.nombre
+                #     carga.save()
+                try:
+                    curso = Curso.objects.get(ronda=ronda, clave_ex=x_curso)
+                except:
+                    cursos = Curso.objects.filter(ronda=ronda, clave_ex=x_curso)
+                    if cursos.count() > 0:
+                        curso = cursos[0]
+                        cursos.exclude(pk__in=[curso.pk]).delete()
+                    else:
+                        curso = Curso.objects.create(clave_ex=x_curso, ronda=ronda)
+                        logger.info('Carga masiva xls. Se crea curso %s' % curso.clave_ex)
+                        carga.log += '<br>Carga masiva xls. Se crea curso %s' % curso.clave_ex
+                        carga.save()
+                curso.nombre = d['curso']
+                curso.save()
                 try:
                     x_unidad = str(int(float(d['x_unidad'].replace(',', '.'))))
                 except:
                     x_unidad = ''
-                grupo, c = Grupo.objects.get_or_create(nombre=d['grupo'], ronda=ronda, clave_ex=x_unidad)
-                if c:
-                    logger.info('Carga masiva xls. Se crea grupo %s' % grupo.nombre)
-                    carga.log += '<br>Carga masiva xls. Se crea grupo %s' % grupo.nombre
-                    carga.save()
+                # grupo, c = Grupo.objects.get_or_create(nombre=d['grupo'], ronda=ronda, clave_ex=x_unidad)
+                # if c:
+                #     logger.info('Carga masiva xls. Se crea grupo %s' % grupo.nombre)
+                #     carga.log += '<br>Carga masiva xls. Se crea grupo %s' % grupo.nombre
+                #     carga.save()
+                try:
+                    grupo = Grupo.objects.get(ronda=ronda, clave_ex=x_unidad)
+                except:
+                    grupos = Grupo.objects.filter(ronda=ronda, clave_ex=x_unidad)
+                    if grupos.count() > 0:
+                        grupo = grupos[0]
+                        grupos.exclude(pk__in=[grupo.pk]).delete()
+                    else:
+                        grupo = Grupo.objects.create(ronda=ronda, clave_ex=x_unidad)
+                        logger.info('Carga masiva xls. Se crea grupo %s' % grupo.clave_ex)
+                        carga.log += '<br>Carga masiva xls. Se crea grupo %s' % grupo.clave_ex
+                        carga.save()
+                grupo.nombre = d['grupo']
+                grupo.save()
                 grupo.cursos.add(curso)
                 # d['subentidades'] = str(suba.id)
                 # d['subentidades_tutor1'] = str(subp.id)
