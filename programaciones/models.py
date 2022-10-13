@@ -1156,9 +1156,9 @@ class CuadernoProf(models.Model):
     TIPOS = (('PRO', 'Nivel de detalle: Procedimientos de evaluación'),
              ('CRI', 'Nivel de detalle: Criterios de evaluación'),
              ('CES', 'Nivel de detalle: Competencias específicas'),)
-    ge = models.ForeignKey(Gauser_extra, on_delete=models.CASCADE, related_name='cuaderno_docente_set', blank=True,
+    ge = models.ForeignKey(Gauser_extra, on_delete=models.SET_NULL, related_name='cuaderno_docente_set', blank=True,
                            null=True)
-    grupo = models.ForeignKey(Grupo, on_delete=models.CASCADE, blank=True, null=True)
+    grupo = models.ForeignKey(Grupo, on_delete=models.SET_NULL, blank=True, null=True)
     psec = models.ForeignKey(ProgSec, on_delete=models.CASCADE, blank=True, null=True)
     vmin = models.IntegerField('Valor mínimo de calificación asignable a un alumno', default=0)
     vmax = models.IntegerField('Valor máximo de calificación asignable a un alumno', default=10)

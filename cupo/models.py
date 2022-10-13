@@ -346,11 +346,15 @@ class PlantillaOrganica(models.Model):
     def carga_curso(self, data):
         x_curso = self.clave_ex2clave_ex(data['x_curso'])
         try:
-            curso, c = Curso.objects.get_or_create(clave_ex=x_curso, ronda=self.ronda_centro)
+            # curso, c = Curso.objects.get_or_create(clave_ex=x_curso, ronda=self.ronda_centro)
+            curso = Curso.objects.get(clave_ex=x_curso, ronda=self.ronda_centro)
         except:
             cursos = Curso.objects.filter(clave_ex=x_curso, ronda=self.ronda_centro)
-            curso = cursos[0]
-            cursos.exclude(pk__in=[curso.pk]).delete()
+            if cursos.count() > 0:
+                curso = cursos[0]
+                cursos.exclude(pk__in=[curso.pk]).delete()
+            else:
+                curso = Curso.objects.create(clave_ex=x_curso, ronda=self.ronda_centro)
         curso.nombre = data['curso']
         curso.nombre_especifico = data['omc']
         x_etapa_escolar = self.clave_ex2clave_ex(data['x_etapa_escolar'])
@@ -373,16 +377,20 @@ class PlantillaOrganica(models.Model):
     def carga_grupo(self, data):
         x_unidad = self.clave_ex2clave_ex(data['x_unidad'])
         try:
-            grupo, c = Grupo.objects.get_or_create(clave_ex=x_unidad, ronda=self.ronda_centro)
-            if c:
-                grupo.nombre = data['unidad']
-                grupo.save()
+            # grupo, c = Grupo.objects.get_or_create(clave_ex=x_unidad, ronda=self.ronda_centro)
+            grupo = Grupo.objects.get(clave_ex=x_unidad, ronda=self.ronda_centro)
+            # if c:
+            #     grupo.nombre = data['unidad']
+            #     grupo.save()
         except:
             grupos = Grupo.objects.filter(clave_ex=x_unidad, ronda=self.ronda_centro)
-            grupo = grupos[0]
-            grupos.exclude(pk__in=[grupo.pk]).delete()
-            grupo.nombre = data['unidad']
-            grupo.save()
+            if grupos.count() > 0:
+                grupo = grupos[0]
+                grupos.exclude(pk__in=[grupo.pk]).delete()
+            else:
+                grupo = Grupo.objects.create(clave_ex=x_unidad, ronda=self.ronda_centro)
+        grupo.nombre = data['unidad']
+        grupo.save()
         try:
             x_curso = self.clave_ex2clave_ex(data['x_curso'])
             curso = Curso.objects.get(clave_ex=x_curso, ronda=self.ronda_centro)
@@ -408,11 +416,15 @@ class PlantillaOrganica(models.Model):
             LogCarga.objects.create(g_e=self.g_e, log='Error carga de curso de la materia: %s' % data['x_materiaomg'])
             curso = None
         try:
-            materia, c = Materia.objects.get_or_create(clave_ex=x_materiaomg, curso=curso)
+            # materia, c = Materia.objects.get_or_create(clave_ex=x_materiaomg, curso=curso)
+            materia = Materia.objects.get(clave_ex=x_materiaomg, curso=curso)
         except:
             materias = Materia.objects.filter(clave_ex=x_materiaomg, curso=curso)
-            materia = materias[0]
-            materias.exclude(pk__in=[materia.pk]).delete()
+            if materias.count() > 0:
+                materia = materias[0]
+                materias.exclude(pk__in=[materia.pk]).delete()
+            else:
+                materia = Materia.objects.create(clave_ex=x_materiaomg, curso=curso)
         horas, sc, minutos = data['horas_semana_min'].rpartition(':')
         try:
             materia.horas = int(horas)
@@ -481,22 +493,26 @@ class PlantillaOrganica(models.Model):
         for a in actividades:
             x_actividad = self.clave_ex2clave_ex(a['x_actividad'])
             try:
-                act, c = Actividad.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_ex=x_actividad)
-                if c:
-                    act.requiere_unidad = b[a['l_requnidad']]
-                    act.nombre = a['actividad']
-                    act.requiere_materia = b[a['docencia']]
-                    act.save()
+                # act, c = Actividad.objects.get_or_create(entidad=self.ronda_centro.entidad, clave_ex=x_actividad)
+                # if c:
+                #     act.requiere_unidad = b[a['l_requnidad']]
+                #     act.nombre = a['actividad']
+                #     act.requiere_materia = b[a['docencia']]
+                #     act.save()
+                act = Actividad.objects.get(entidad=self.ronda_centro.entidad, clave_ex=x_actividad)
             except Exception as msg:
                 log = 'Error cargar actividad %s. %s' % (a['x_actividad'], str(msg))
                 LogCarga.objects.create(g_e=self.g_e, log=log)
                 acts = Actividad.objects.filter(entidad=self.ronda_centro.entidad, clave_ex=x_actividad)
-                act = acts[0]
-                acts.exclude(pk__in=[act.pk]).delete()
-                act.requiere_unidad = b[a['l_requnidad']]
-                act.nombre = a['actividad']
-                act.requiere_materia = b[a['docencia']]
-                act.save()
+                if acts.count() > 0:
+                    act = acts[0]
+                    acts.exclude(pk__in=[act.pk]).delete()
+                else:
+                    act = Actividad.objects.create(entidad=self.ronda_centro.entidad, clave_ex=x_actividad)
+            act.requiere_unidad = b[a['l_requnidad']]
+            act.nombre = a['actividad']
+            act.requiere_materia = b[a['docencia']]
+            act.save()
         return True
 
     ########################################################################
