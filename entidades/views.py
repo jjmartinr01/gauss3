@@ -2633,7 +2633,8 @@ def selectgcs(request):
             else:
                 subs = Subentidad.objects.none()
             if 'cars[]' in request.GET:
-                cars = Cargo.objects.filter(entidad=g_e.ronda.entidad, id__in=request.GET.getlist('cars[]'))
+                # cars = Cargo.objects.filter(entidad=g_e.ronda.entidad, id__in=request.GET.getlist('cars[]'))
+                cars = Cargo.objects.filter(entidad=g_e.ronda.entidad, clave_cargo__in=request.GET.getlist('cars[]'))
             else:
                 cars = Cargo.objects.none()
             ges, cargos, subentidades = Gauser_extra.objects.none(), Cargo.objects.none(), Subentidad.objects.none()

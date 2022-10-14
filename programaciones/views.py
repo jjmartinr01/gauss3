@@ -3299,8 +3299,11 @@ def cuadernodocente(request):
                     if cuaderno.tipo == 'PRO':
                         cievals = CriInstrEval.objects.filter(ieval__asapren__sapren__sbas__psec=cuaderno.psec)
                         for cieval in cievals:
-                            ecp = EscalaCP.objects.get(cp=cuaderno, ieval=cieval.ieval)
-                            CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval, ecp=ecp)
+                            try:
+                                ecp = EscalaCP.objects.get(cp=cuaderno, ieval=cieval.ieval)
+                                CalAlum.objects.get_or_create(cp=cuaderno, alumno=alumno, cie=cieval, ecp=ecp)
+                            except:
+                                pass
                     for cep in cuaderno.psec.ceprogsec_set.all():
                         calalumce = CalAlumCE.objects.create(cp=cuaderno, alumno=alumno, cep=cep)
                         for cevp in cep.cevprogsec_set.all():

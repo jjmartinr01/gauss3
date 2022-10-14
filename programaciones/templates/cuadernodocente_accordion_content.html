@@ -81,7 +81,8 @@
         </label>
     </div>
 </div>
-{% if not cuaderno.grupo %}
+
+{% if not cuaderno.grupo and cuaderno.alumnos.all|length == 0 %}
     <div class="row">
         <div class="columns large-12">
             <p>El cuaderno docente debe relacionarse con una programación didáctica y con un grupo de alumnos.</p>
@@ -153,335 +154,341 @@
             </p>
         </div>
     </div>
-{% elif cuaderno.tipo == 'CES' %}
-    <div class="div_table{{ cuaderno.id }}">
-        <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
-            <thead style="position: sticky;top:0">
-            <tr>
-                <th class="fixed_column" id="fixed_column{{ cuaderno.id }}">
-                    Nombre alumno/a<br><br>
-                    <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}"
-                       title="Mostrar en pantalla completa"
-                       style="position:absolute;top:5px;left:5px">
-                        <i class="fa fa-external-link"></i>
-                    </a>
-                    <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
-                        <i class="fa fa-users"></i> Gestionar alumnos
-                    </a>
-                </th>
-            <th>Calificación</th>
-                {% for cep in cuaderno.psec.ceprogsec_set.all %}
-                    <th id="cep_title{{ cep.id }}"
-                        title="{{ cep.ce.orden }}.- {{ cep.ce.texto }}">CE{{ cep.ce.orden }}<br>
-                        {{ cep.ce.texto|truncatechars:20 }}</th>
-                {% endfor %}
-            </tr>
-            </thead>
-            <tbody id="tbody_cuaderno{{ cuaderno.id }}">
-            {% for alumno in cuaderno.alumnos.all %}
-                <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
-                    <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
-                        <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
-                    </td>
+{% else %}
+    {% if cuaderno.tipo == 'CES' %}
+        <div class="div_table{{ cuaderno.id }}">
+            <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
+                <thead style="position: sticky;top:0">
+                <tr>
+                    <th class="fixed_column" id="fixed_column{{ cuaderno.id }}">
+                        Nombre alumno/a<br><br>
+                        <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}"
+                           title="Mostrar en pantalla completa"
+                           style="position:absolute;top:5px;left:5px">
+                            <i class="fa fa-external-link"></i>
+                        </a>
+                        <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
+                            <i class="fa fa-users"></i> Gestionar alumnos
+                        </a>
+                    </th>
+                    <th>Calificación</th>
                     {% for cep in cuaderno.psec.ceprogsec_set.all %}
-                        {% ifchanged cep.ce.asignatura %}
-                            <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">--</td>
-                        {% endifchanged %}
-                        {% with calalumce=cuaderno|get_cep:cep|get_calalumce:alumno %}
-                            {#                            <td class="update_calalumce" data-calalumce="{{ calalumce.id }}"#}
-                            {#                                data-cep="{{ cep.id }}" data-cuaderno="{{ cuaderno.id }}"#}
-                            {#                                data-alumno="{{ alumno.id }}" title="{{ calalumce.obs }}"#}
-                            {#                                id="valor_calalumce{{ calalumce.id }}_{{ alumno.id }}" contenteditable="true">#}
-                            {#                                {{ calalumce.valor }}#}
-                            {#                            </td>#}
-                            <td><input class="update_calalumce" data-calalumce="{{ calalumce.id }}" type="number"
-                                       data-cep="{{ cep.id }}" data-cuaderno="{{ cuaderno.id }}" min="0" max="10"
-                                       data-alumno="{{ alumno.id }}" title="{{ calalumce.obs }}" step="0.01"
-                                       id="valor_calalumce{{ calalumce.id }}_{{ alumno.id }}"
-                                       value="{{ calalumce.valor }}">
-                            </td>
-                        {% endwith %}
+                        <th id="cep_title{{ cep.id }}"
+                            title="{{ cep.ce.orden }}.- {{ cep.ce.texto }}">CE{{ cep.ce.orden }}<br>
+                            {{ cep.ce.texto|truncatechars:20 }}</th>
                     {% endfor %}
                 </tr>
-            {% endfor %}
-            {#            <tr id="tr_calificar_alumno{{ cuaderno.id }}">#}
-            {#                <td colspan="70" style="text-align: left!important;"#}
-            {#                    id="td_calificar_alumno{{ cuaderno.id }}"></td>#}
-            {#            </tr>#}
-            </tbody>
-        </table>
-    </div>
-{% elif cuaderno.tipo == 'CRI' %}
-    <p><b>Es posible introducir calificaciones que el sistema irá almacenando, pero todavía no va a actualizar
-    las calificaciones de la asignatura y de las competencias específicas.</b></p>
-    <p><b>En breve se terminará el desarrollo para que se produzca dicha actualización.</b></p>
-    <div class="div_table{{ cuaderno.id }}">
-        <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
-            <thead style="position: sticky;top:0">
-            <tr>
-                <th class="fixed_column" rowspan="2" id="fixed_column{{ cuaderno.id }}">
-                    Nombre alumno/a<br><br>
-                    <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}"
-                       title="Mostrar en pantalla completa"
-                       style="position:absolute;top:5px;left:5px">
-                        <i class="fa fa-external-link"></i>
-                    </a>
-                    <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
-                        <i class="fa fa-users"></i> Gestionar alumnos
-                    </a>
-                </th>
-            <th rowspan="2">Calificación</th>
-                {% for cep in cuaderno.psec.ceprogsec_set.all %}
-                    <th id="cep_title{{ cep.id }}" colspan="{{ cep.cevprogsec_set.all|length|add:"1" }}"
-                        title="CE{{ cep.ce.orden }}.- {{ cep.ce.texto }}">CE{{ cep.ce.orden }}.-
-                        {{ cep.ce.texto|truncatechars:60 }}</th>
-                {% endfor %}
-            </tr>
-            <tr>
-                {% for cep in cuaderno.psec.ceprogsec_set.all %}
-                    {% ifchanged %}
-                        <th>Cal. CE{{ cep.ce.orden }}</th>
-                    {% endifchanged %}
-                    {% for cevp in cep.cevprogsec_set.all %}
-                        <th id="cevp_title{{ cevp.id }}"
-                            title="{{ cevp.cev.orden }}.- {{ cevp.cev.texto }}">CEv{{ cevp.cev.orden }}.-
-                            {{ cevp.cev.texto|truncatechars:20 }}</th>
-                    {% endfor %}
-                {% endfor %}
-            </tr>
-            </thead>
-            <tbody id="tbody_cuaderno{{ cuaderno.id }}">
-            {% for alumno in cuaderno.alumnos.all %}
-                <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
-                    <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
-                        <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
-                    </td>
-                <td id="cal_am_{{ alumno.id }}">--</td>
-                    {% for cep in cuaderno.psec.ceprogsec_set.all %}
-                        {% ifchanged %}
-                            <td id="cal_ce_{{ cep.id }}_{{ alumno.id }}">--</td>
-                        {% endifchanged %}
-                        {% for cevp in cep.cevprogsec_set.all %}
-                            {% with calalumcev=cuaderno|get_cevp:cevp|get_calalumcev:alumno %}
-                                <td><input class="update_calalumcev" data-calalumcev="{{ calalumcev.id }}" type="number"
-                                           data-cevp="{{ cevp.id }}" data-cuaderno="{{ cuaderno.id }}" min="0" max="10"
-                                           data-alumno="{{ alumno.id }}" title="{{ calalumcev.obs }}" step="0.01"
-                                           id="valor_calalumcev{{ calalumcev.id }}_{{ alumno.id }}"
-                                           value="{{ calalumcev.valor }}">
+                </thead>
+                <tbody id="tbody_cuaderno{{ cuaderno.id }}">
+                {% for alumno in cuaderno.alumnos.all %}
+                    <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
+                        <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
+                            <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
+                        </td>
+                        {% for cep in cuaderno.psec.ceprogsec_set.all %}
+                            {% ifchanged cep.ce.asignatura %}
+                                <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">--</td>
+                            {% endifchanged %}
+                            {% with calalumce=cuaderno|get_cep:cep|get_calalumce:alumno %}
+                                {#                            <td class="update_calalumce" data-calalumce="{{ calalumce.id }}"#}
+                                {#                                data-cep="{{ cep.id }}" data-cuaderno="{{ cuaderno.id }}"#}
+                                {#                                data-alumno="{{ alumno.id }}" title="{{ calalumce.obs }}"#}
+                                {#                                id="valor_calalumce{{ calalumce.id }}_{{ alumno.id }}" contenteditable="true">#}
+                                {#                                {{ calalumce.valor }}#}
+                                {#                            </td>#}
+                                <td><input class="update_calalumce" data-calalumce="{{ calalumce.id }}" type="number"
+                                           data-cep="{{ cep.id }}" data-cuaderno="{{ cuaderno.id }}" min="0" max="10"
+                                           data-alumno="{{ alumno.id }}" title="{{ calalumce.obs }}" step="0.01"
+                                           id="valor_calalumce{{ calalumce.id }}_{{ alumno.id }}"
+                                           value="{{ calalumce.valor }}">
                                 </td>
                             {% endwith %}
                         {% endfor %}
+                    </tr>
+                {% endfor %}
+                {#            <tr id="tr_calificar_alumno{{ cuaderno.id }}">#}
+                {#                <td colspan="70" style="text-align: left!important;"#}
+                {#                    id="td_calificar_alumno{{ cuaderno.id }}"></td>#}
+                {#            </tr>#}
+                </tbody>
+            </table>
+        </div>
+    {% elif cuaderno.tipo == 'CRI' %}
+        <p><b>Es posible introducir calificaciones que el sistema irá almacenando, pero todavía no va a actualizar
+            las calificaciones de la asignatura y de las competencias específicas.</b></p>
+        <p><b>En breve se terminará el desarrollo para que se produzca dicha actualización.</b></p>
+        <div class="div_table{{ cuaderno.id }}">
+            <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
+                <thead style="position: sticky;top:0">
+                <tr>
+                    <th class="fixed_column" rowspan="2" id="fixed_column{{ cuaderno.id }}">
+                        Nombre alumno/a<br><br>
+                        <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}"
+                           title="Mostrar en pantalla completa"
+                           style="position:absolute;top:5px;left:5px">
+                            <i class="fa fa-external-link"></i>
+                        </a>
+                        <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
+                            <i class="fa fa-users"></i> Gestionar alumnos
+                        </a>
+                    </th>
+                    <th rowspan="2">Calificación</th>
+                    {% for cep in cuaderno.psec.ceprogsec_set.all %}
+                        <th id="cep_title{{ cep.id }}" colspan="{{ cep.cevprogsec_set.all|length|add:"1" }}"
+                            title="CE{{ cep.ce.orden }}.- {{ cep.ce.texto }}">CE{{ cep.ce.orden }}.-
+                            {{ cep.ce.texto|truncatechars:60 }}</th>
                     {% endfor %}
                 </tr>
-            {% endfor %}
-            {#            <tr id="tr_calificar_alumno{{ cuaderno.id }}">#}
-            {#                <td colspan="70" style="text-align: left!important;"#}
-            {#                    id="td_calificar_alumno{{ cuaderno.id }}"></td>#}
-            {#            </tr>#}
-            </tbody>
-        </table>
-    </div>
-{% elif cuaderno.tipo == 'PRO' %}
-    {% if cuaderno.vista == 'NOR' %}
-        {#{% elif cuaderno %}#}
-        {% with estructura_cuaderno=cuaderno.estructura_cuaderno %}
-            <div class="div_table{{ cuaderno.id }}">
-                <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
-                    <thead style="position: sticky;top:0">
-                    <tr>
-                        <th class="fixed_column" rowspan="5" id="fixed_column{{ cuaderno.id }}">
-                            Nombre alumno/a<br><br>
-                            <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}"
-                               title="Mostrar en pantalla completa"
-                               style="position:absolute;top:5px;left:5px">
-                                <i class="fa fa-external-link"></i>
-                            </a>
-                            <a class="cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="COM"
-                               title="Ir a la vista de calificaciones por competencias específicas"
-                               style="position:absolute;top:5px;right:5px">
-                                <i class="fa fa-exchange"></i>
-                            </a>
-                            <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
-                                <i class="fa fa-users"></i> Gestionar alumnos
-                            </a>
-                        </th>
-                        {% for sb in estructura_cuaderno %}
-                            <th colspan="{{ sb.sb_columns }}" id="sb{{ forloop.counter }}"
-                                title="{{ sb.sb.nombre }}">{{ sb.sb.nombre|truncatechars:160 }}</th>
+                <tr>
+                    {% for cep in cuaderno.psec.ceprogsec_set.all %}
+                        {% ifchanged %}
+                            <th>Cal. CE{{ cep.ce.orden }}</th>
+                        {% endifchanged %}
+                        {% for cevp in cep.cevprogsec_set.all %}
+                            <th id="cevp_title{{ cevp.id }}"
+                                title="{{ cevp.cev.orden }}.- {{ cevp.cev.texto }}">CEv{{ cevp.cev.orden }}.-
+                                {{ cevp.cev.texto|truncatechars:20 }}</th>
                         {% endfor %}
-                    </tr>
-                    <tr>
-                        {% for sb in estructura_cuaderno %}
-                            {% for sap in sb.saps %}
-                                <th colspan="{{ sap.sap_columns }}"
-                                    title="{{ sap.sap.nombre }}">{{ sap.sap.nombre|truncatechars:80 }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody id="tbody_cuaderno{{ cuaderno.id }}">
+                {% for alumno in cuaderno.alumnos.all %}
+                    <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
+                        <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
+                            <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
+                        </td>
+                        <td id="cal_am_{{ alumno.id }}">--</td>
+                        {% for cep in cuaderno.psec.ceprogsec_set.all %}
+                            {% ifchanged %}
+                                <td id="cal_ce_{{ cep.id }}_{{ alumno.id }}">--</td>
+                            {% endifchanged %}
+                            {% for cevp in cep.cevprogsec_set.all %}
+                                {% with calalumcev=cuaderno|get_cevp:cevp|get_calalumcev:alumno %}
+                                    <td><input class="update_calalumcev" data-calalumcev="{{ calalumcev.id }}"
+                                               type="number"
+                                               data-cevp="{{ cevp.id }}" data-cuaderno="{{ cuaderno.id }}" min="0"
+                                               max="10"
+                                               data-alumno="{{ alumno.id }}" title="{{ calalumcev.obs }}" step="0.01"
+                                               id="valor_calalumcev{{ calalumcev.id }}_{{ alumno.id }}"
+                                               value="{{ calalumcev.valor }}">
+                                    </td>
+                                {% endwith %}
                             {% endfor %}
                         {% endfor %}
                     </tr>
-                    <tr>
-                        {#                <th class="fixed_column"></th>#}
-                        {% for sb in estructura_cuaderno %}
-                            {% for sap in sb.saps %}
-                                {% for asap in sap.asaps %}
-                                    <th colspan="{{ asap.asap_columns }}"
-                                        title="{{ asap.asap.nombre }}">{{ asap.asap.nombre|truncatechars:40 }}</th>
+                {% endfor %}
+                {#            <tr id="tr_calificar_alumno{{ cuaderno.id }}">#}
+                {#                <td colspan="70" style="text-align: left!important;"#}
+                {#                    id="td_calificar_alumno{{ cuaderno.id }}"></td>#}
+                {#            </tr>#}
+                </tbody>
+            </table>
+        </div>
+    {% elif cuaderno.tipo == 'PRO' %}
+        {% if cuaderno.vista == 'NOR' %}
+            {#{% elif cuaderno %}#}
+            {% with estructura_cuaderno=cuaderno.estructura_cuaderno %}
+                <div class="div_table{{ cuaderno.id }}">
+                    <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
+                        <thead style="position: sticky;top:0">
+                        <tr>
+                            <th class="fixed_column" rowspan="5" id="fixed_column{{ cuaderno.id }}">
+                                Nombre alumno/a<br><br>
+                                <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}"
+                                   title="Mostrar en pantalla completa"
+                                   style="position:absolute;top:5px;left:5px">
+                                    <i class="fa fa-external-link"></i>
+                                </a>
+                                <a class="cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="COM"
+                                   title="Ir a la vista de calificaciones por competencias específicas"
+                                   style="position:absolute;top:5px;right:5px">
+                                    <i class="fa fa-exchange"></i>
+                                </a>
+                                <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
+                                    <i class="fa fa-users"></i> Gestionar alumnos
+                                </a>
+                            </th>
+                            {% for sb in estructura_cuaderno %}
+                                <th colspan="{{ sb.sb_columns }}" id="sb{{ forloop.counter }}"
+                                    title="{{ sb.sb.nombre }}">{{ sb.sb.nombre|truncatechars:160 }}</th>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            {% for sb in estructura_cuaderno %}
+                                {% for sap in sb.saps %}
+                                    <th colspan="{{ sap.sap_columns }}"
+                                        title="{{ sap.sap.nombre }}">{{ sap.sap.nombre|truncatechars:80 }}</th>
                                 {% endfor %}
                             {% endfor %}
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        {% for sb in estructura_cuaderno %}
-                            {% for sap in sb.saps %}
-                                {% for asap in sap.asaps %}
-                                    {% for ieval in asap.ievals %}
-                                        <th colspan="{{ ieval.ieval_columns }}" title="{{ ieval.ieval.nombre }}">
-                                            <a data-ieval="{{ ieval.ieval.id }}" class="define_ecp"
-                                               data-cuaderno="{{ cuaderno.id }}">
-                                                {{ ieval.ieval.nombre|truncatechars:20 }}
-                                            </a>
-                                        </th>
+                        </tr>
+                        <tr>
+                            {#                <th class="fixed_column"></th>#}
+                            {% for sb in estructura_cuaderno %}
+                                {% for sap in sb.saps %}
+                                    {% for asap in sap.asaps %}
+                                        <th colspan="{{ asap.asap_columns }}"
+                                            title="{{ asap.asap.nombre }}">{{ asap.asap.nombre|truncatechars:40 }}</th>
                                     {% endfor %}
                                 {% endfor %}
                             {% endfor %}
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        {% for sb in estructura_cuaderno %}
-                            {% for sap in sb.saps %}
-                                {% for asap in sap.asaps %}
-                                    {% for ieval in asap.ievals %}
-                                        {% for cieval in ieval.cievals %}
-                                            {% if cieval %}
-                                                <th title="{{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
-                                               {{ cieval.cevps.cev.texto }}">
-                                                    {{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
-                                                    {{ cieval.cevps.cev.texto|truncatechars:10 }}
-                                                </th>
-                                            {% else %}
-                                                <th>&nbsp;</th>
-                                            {% endif %}
+                        </tr>
+                        <tr>
+                            {% for sb in estructura_cuaderno %}
+                                {% for sap in sb.saps %}
+                                    {% for asap in sap.asaps %}
+                                        {% for ieval in asap.ievals %}
+                                            <th colspan="{{ ieval.ieval_columns }}" title="{{ ieval.ieval.nombre }}">
+                                                <a data-ieval="{{ ieval.ieval.id }}" class="define_ecp"
+                                                   data-cuaderno="{{ cuaderno.id }}">
+                                                    {{ ieval.ieval.nombre|truncatechars:20 }}
+                                                </a>
+                                            </th>
                                         {% endfor %}
                                     {% endfor %}
                                 {% endfor %}
                             {% endfor %}
-                        {% endfor %}
-                    </tr>
-                    </thead>
-                    <tbody id="tbody_cuaderno{{ cuaderno.id }}">
-                    {% for alumno in cuaderno.alumnos.all %}
-                        <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
-                            <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
-                                <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
-                            </td>
+                        </tr>
+                        <tr>
                             {% for sb in estructura_cuaderno %}
                                 {% for sap in sb.saps %}
                                     {% for asap in sap.asaps %}
                                         {% for ieval in asap.ievals %}
                                             {% for cieval in ieval.cievals %}
-                                                {% with calalum=cuaderno|get_cieval:cieval|get_calalum:alumno %}
-                                                    <td class="update_calalum" data-calalum="{{ calalum.id }}"
-                                                        data-cieval="{{ cieval.id }}" data-cuaderno="{{ cuaderno.id }}"
-                                                        data-alumno="{{ alumno.id }}" title="{{ calalum.obs }}"
-{#                                                        id="valor_calalum{{ calalum.id }}_{{ alumno.id }}"#}
-                                                        id="valor_calalum{{ cieval.id }}_{{ alumno.id }}">
-                                                        {{ calalum.cal }}
-                                                    </td>
-                                                {% endwith %}
+                                                {% if cieval %}
+                                                    <th title="{{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
+                                               {{ cieval.cevps.cev.texto }}">
+                                                        {{ cieval.cevps.cev.ce.orden }}.{{ cieval.cevps.cev.orden }}.-
+                                                        {{ cieval.cevps.cev.texto|truncatechars:10 }}
+                                                    </th>
+                                                {% else %}
+                                                    <th>&nbsp;</th>
+                                                {% endif %}
                                             {% endfor %}
                                         {% endfor %}
                                     {% endfor %}
                                 {% endfor %}
                             {% endfor %}
                         </tr>
-                    {% endfor %}
-                    <tr id="tr_calificar_alumno{{ cuaderno.id }}">
-                        <td colspan="70" style="text-align: left!important;"
-                            id="td_calificar_alumno{{ cuaderno.id }}"></td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        {% endwith %}
-    {% else %}
-        {% with num_asig=cuaderno.psec.ces_asignaturas_ambito|length caas=cuaderno.psec.ces_asignaturas_ambito %}
-            <div class="div_table{{ cuaderno.id }}">
-                <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
-                    <thead style="position: sticky;top:0">
-                    <tr>
-                        <th class="fixed_column" rowspan="5">
-                            Nombre alumno/a<br><br>
-                            <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}"
-                               title="Mostrar en pantalla completa"
-                               style="position:absolute;top:5px;left:5px">
-                                <i class="fa fa-external-link"></i>
-                            </a>
-                            <a class="cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="NOR"
-                               title="Ir a la vista de calificaciones por instrumentos, situaciones de aprendizaje y saberes básicos"
-                               style="position:absolute;top:5px;right:5px">
-                                <i class="fa fa-exchange"></i>
-                            </a>
-                            <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
-                                <i class="fa fa-users"></i> Gestionar alumnos
-                            </a>
-                        </th>
-                        {% if num_asig > 1 %}
-                            <th rowspan="2">Asignatura</th>
-                        {% endif %}
-                        <th rowspan="2" title="Calificación total obtenida en la materia">Calificación<br>global</th>
-                        {% for ce in cuaderno.psec.areamateria.competenciaespecifica_set.all %}
-                            <th colspan="{{ ce.criterioevaluacion_set.all|length|add:'1' }}"
-                                title="{{ ce.orden }}.- {{ ce.nombre }}">{{ ce.orden }}.-
-                                {{ ce.nombre|truncatechars:160 }}</th>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        {% for cev in cuaderno.psec.areamateria.cevs %}
-                            {% ifchanged cev.ce %}
-                                <th title="Calificación global de la CE{{ cev.ce.orden }}">Cal.
-                                    CE{{ cev.ce.orden }}</th>
-                            {% endifchanged %}
-                            <th title="{{ cev.ce.orden }}.{{ cev.orden }}.- {{ cev.texto }}"
-                            >{{ cev.ce.orden }}.{{ cev.orden }}.- {{ cev.texto|truncatechars:20 }}</th>
-                        {% endfor %}
-                    </tr>
-                    </thead>
-                    <tbody id="tbody_cuaderno{{ cuaderno.id }}">
-                    {% for alumno in cuaderno.alumnos.all %}
-                        {% for asignatura, ces in caas.items %}
-                            <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}" style="color:red">
-                                {% if forloop.first %}
-                                    <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}"
-                                        rowspan="{{ num_asig }}">
-                                        <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
-                                    </td>
-                                {% endif %}
-                                {% if num_asig > 1 %}
-                                    <td>{{ asignatura }}</td>
-                                {% endif %}
-                                {#                                                        <td><b>{{ cuaderno|get_global_cal:alumno }}</b></td>#}
-                                <td>
-                                    <b>
-                                        {{ cuaderno|get_global_asignatura:asignatura|get_global_cal_asignatura:alumno }}</b>
+                        </thead>
+                        <tbody id="tbody_cuaderno{{ cuaderno.id }}">
+                        {% for alumno in cuaderno.alumnos.all %}
+                            <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}">
+                                <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
+                                    <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
                                 </td>
-                                {% for cev in cuaderno.psec.areamateria.cevs %}
-                                    {% ifchanged cev.ce %}
+                                {% for sb in estructura_cuaderno %}
+                                    {% for sap in sb.saps %}
+                                        {% for asap in sap.asaps %}
+                                            {% for ieval in asap.ievals %}
+                                                {% for cieval in ieval.cievals %}
+                                                    {% with calalum=cuaderno|get_cieval:cieval|get_calalum:alumno %}
+                                                        <td class="update_calalum" data-calalum="{{ calalum.id }}"
+                                                            data-cieval="{{ cieval.id }}"
+                                                            data-cuaderno="{{ cuaderno.id }}"
+                                                            data-alumno="{{ alumno.id }}" title="{{ calalum.obs }}"
+                                                                {#                                                        id="valor_calalum{{ calalum.id }}_{{ alumno.id }}"#}
+                                                            id="valor_calalum{{ cieval.id }}_{{ alumno.id }}">
+                                                            {{ calalum.cal }}
+                                                        </td>
+                                                    {% endwith %}
+                                                {% endfor %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        <tr id="tr_calificar_alumno{{ cuaderno.id }}">
+                            <td colspan="70" style="text-align: left!important;"
+                                id="td_calificar_alumno{{ cuaderno.id }}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            {% endwith %}
+        {% else %}
+            {% with num_asig=cuaderno.psec.ces_asignaturas_ambito|length caas=cuaderno.psec.ces_asignaturas_ambito %}
+                <div class="div_table{{ cuaderno.id }}">
+                    <table id="tabla{{ cuaderno.id }}" class="tabla_cuaderno">
+                        <thead style="position: sticky;top:0">
+                        <tr>
+                            <th class="fixed_column" rowspan="5">
+                                Nombre alumno/a<br><br>
+                                <a class="cuaderno_full_screen" data-id="{{ cuaderno.id }}"
+                                   title="Mostrar en pantalla completa"
+                                   style="position:absolute;top:5px;left:5px">
+                                    <i class="fa fa-external-link"></i>
+                                </a>
+                                <a class="cuaderno_competencias" data-cuaderno="{{ cuaderno.id }}" data-vista="NOR"
+                                   title="Ir a la vista de calificaciones por instrumentos, situaciones de aprendizaje y saberes básicos"
+                                   style="position:absolute;top:5px;right:5px">
+                                    <i class="fa fa-exchange"></i>
+                                </a>
+                                <a class="gestionar_alumnos" data-cuaderno="{{ cuaderno.id }}">
+                                    <i class="fa fa-users"></i> Gestionar alumnos
+                                </a>
+                            </th>
+                            {% if num_asig > 1 %}
+                                <th rowspan="2">Asignatura</th>
+                            {% endif %}
+                            <th rowspan="2" title="Calificación total obtenida en la materia">Calificación<br>global
+                            </th>
+                            {% for ce in cuaderno.psec.areamateria.competenciaespecifica_set.all %}
+                                <th colspan="{{ ce.criterioevaluacion_set.all|length|add:'1' }}"
+                                    title="{{ ce.orden }}.- {{ ce.nombre }}">{{ ce.orden }}.-
+                                    {{ ce.nombre|truncatechars:160 }}</th>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            {% for cev in cuaderno.psec.areamateria.cevs %}
+                                {% ifchanged cev.ce %}
+                                    <th title="Calificación global de la CE{{ cev.ce.orden }}">Cal.
+                                        CE{{ cev.ce.orden }}</th>
+                                {% endifchanged %}
+                                <th title="{{ cev.ce.orden }}.{{ cev.orden }}.- {{ cev.texto }}"
+                                >{{ cev.ce.orden }}.{{ cev.orden }}.- {{ cev.texto|truncatechars:20 }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody id="tbody_cuaderno{{ cuaderno.id }}">
+                        {% for alumno in cuaderno.alumnos.all %}
+                            {% for asignatura, ces in caas.items %}
+                                <tr id="tr_alumno{{ alumno.id }}" data-alumno="{{ alumno.id }}" style="color:red">
+                                    {% if forloop.first %}
+                                        <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}"
+                                            rowspan="{{ num_asig }}">
+                                            <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
+                                        </td>
+                                    {% endif %}
+                                    {% if num_asig > 1 %}
+                                        <td>{{ asignatura }}</td>
+                                    {% endif %}
+                                    {#                                                        <td><b>{{ cuaderno|get_global_cal:alumno }}</b></td>#}
+                                    <td>
+                                        <b>
+                                            {{ cuaderno|get_global_asignatura:asignatura|get_global_cal_asignatura:alumno }}</b>
+                                    </td>
+                                    {% for cev in cuaderno.psec.areamateria.cevs %}
+                                        {% ifchanged cev.ce %}
+                                            {% if cev.ce in ces %}
+                                                <td>{{ cuaderno|get_ce_cal:cev.ce|get_calalum_ce:alumno }}</td>
+                                            {% else %}
+                                                <td>--</td>
+                                            {% endif %}
+                                        {% endifchanged %}
                                         {% if cev.ce in ces %}
-                                            <td>{{ cuaderno|get_ce_cal:cev.ce|get_calalum_ce:alumno }}</td>
+                                            <td>{{ cuaderno|get_cev_cals:cev|get_calalum_cev:alumno }}</td>
                                         {% else %}
                                             <td>--</td>
                                         {% endif %}
-                                    {% endifchanged %}
-                                    {% if cev.ce in ces %}
-                                        <td>{{ cuaderno|get_cev_cals:cev|get_calalum_cev:alumno }}</td>
-                                    {% else %}
-                                        <td>--</td>
-                                    {% endif %}
-                                {% endfor %}
-                            </tr>
-                        {% endfor %}{% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% endwith %}
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}{% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endwith %}
+        {% endif %}
     {% endif %}
 {% endif %}

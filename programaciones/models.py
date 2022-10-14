@@ -1188,7 +1188,18 @@ class CuadernoProf(models.Model):
         except:
             am = 'Asignatura desconocida'
         try:
-            grupo = self.grupo.nombre
+            if self.alumnos.count() > 0:
+                grupos = []
+                for alumno in self.alumnos.all():
+                    try:
+                        if alumno.gauser_extra_estudios.grupo.nombre not in grupos:
+                            grupos.append(alumno.gauser_extra_estudios.grupo.nombre)
+                    except:
+                        if 'Grupo desconocido' not in grupos:
+                            grupos.append('Grupo desconocido')
+                grupo = '-'.join(grupos)
+            else:
+                grupo = self.grupo.nombre
         except:
             grupo = 'Grupo desconocido'
         return '%s - %s - %s' % (ronda, am, grupo)

@@ -4,7 +4,7 @@
     <a href="#panel{{ cuaderno.id }}">
         <i id="circle{{ cuaderno.id }}" class="fa fa-plus-circle circle_icon"></i>
         <b id="nombre{{ cuaderno.id }}">
-            {% if not cuaderno.grupo %}<span style="color:red">Nuevo cuaderno</span>
+            {% if not cuaderno.grupo and cuaderno.alumnos.all|length == 0 %}<span style="color:red">Nuevo cuaderno</span>
             {% else %}{{ cuaderno.nombre }}{% endif %}</b>
     </a>
 

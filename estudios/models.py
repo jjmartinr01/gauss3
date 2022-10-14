@@ -95,7 +95,7 @@ class Grupo(models.Model):
 
     def __str__(self):
         cursos = self.cursos.all().values_list('nombre', flat=True)
-        return '%s - %s - %s' % (self.nombre, ', '.join(cursos), self.ronda)
+        return '%s - %s - %s - clave_ex: %s' % (self.nombre, ', '.join(cursos), self.ronda, self.clave_ex)
 
 # @receiver(post_save, sender=Grupo)
 # def update_grupo_clave_ex(sender, instance, **kwargs):
@@ -132,11 +132,11 @@ class Materia(models.Model):
 
 class Gauser_extra_estudios(models.Model):
     ge = models.OneToOneField(Gauser_extra, on_delete=models.CASCADE)  # Alumno
-    grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.CASCADE)  # Grupo del alumno
+    grupo = models.ForeignKey(Grupo, blank=True, null=True, on_delete=models.SET_NULL)  # Grupo del alumno
     tutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='estudios_tutor',
-                              on_delete=models.CASCADE)
+                              on_delete=models.SET_NULL)
     cotutor = models.ForeignKey(Gauser_extra, blank=True, null=True, related_name='estudios_cotutor',
-                                on_delete=models.CASCADE)
+                                on_delete=models.SET_NULL)
 
     @property
     def materias(self):

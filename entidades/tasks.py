@@ -444,6 +444,7 @@ def carga_masiva_tipo_EXCEL(carga):
     key_columns = {col_index: slugify(sheet.cell(4, col_index).value) for col_index in range(sheet.ncols)}
 
     if int(sheet.ncols) > 50:  # En este caso es el archivo de los alumnos
+        carga.log += '<p>Carga de alumnos</p>'
         # Un ejemplo de key_columns es:
         # {0: 'estado-matricula', 1: 'direccion', 2: 'codigo-postal', 3: 'localidad-de-residencia',
         # 4: 'provincia-de-residencia', 5: 'alumno', 6: 'telefono', 7: 'telefono-movil', 8: 'correo-electronico',
@@ -485,24 +486,6 @@ def carga_masiva_tipo_EXCEL(carga):
             'fecha-de-la-matricula': 'fecha_matricula', 'sexo': 'sexo', 'fecha-de-nacimiento': 'nacimiento',
             'usuario-alumnado': 'username', 'usuario-primer-tutor': 'username_tutor1',
             'usuario-segundo-tutor': 'username_tutor2', 'x_unidad': 'x_unidad', 'x_ofertamatrig': 'x_curso'}
-
-        # subas = Subentidad.objects.filter(clave_ex='alumnos', entidad=carga.ronda.entidad)
-        # if subas.count() > 0:
-        #     suba = subas[0]
-        # else:
-        #     suba = Subentidad.objects.create(nombre='Alumnos', mensajes=True, clave_ex='alumnos',
-        #                                      entidad=carga.ronda.entidad, edad_min=12, edad_max=67)
-        # subps = Subentidad.objects.filter(clave_ex='madres_padres', entidad=carga.ronda.entidad)
-        # if subps.count() > 0:
-        #     subp = subps[0]
-        # else:
-        #     subp = Subentidad.objects.create(nombre='Madres/Padres', mensajes=True,
-        #                                      entidad=carga.ronda.entidad,
-        #                                      clave_ex='madres_padres', edad_min=18, edad_max=67)
-        # cargoa = Cargo.objects.get_or_create(cargo='Alumno/a', entidad=carga.ronda.entidad, borrable=False,
-        #                                      clave_cargo='g_alumno')
-        # cargop = Cargo.objects.get_or_create(cargo='Padre/Madre', entidad=carga.ronda.entidad, borrable=False,
-        #                                      clave_cargo='g_madre_padre')
         for row_index in range(5, sheet.nrows):
             d = {'alumno': '', 'estado_matricula': '', 'id_socio': '', 'dni': '', 'direccion': '', 'cp': '',
                  'localidad': '', 'nacimiento': '', 'provincia': '', 'telefono_fijo': '', 'telefono_movil': '',
@@ -532,48 +515,34 @@ def carga_masiva_tipo_EXCEL(carga):
             try:
                 entidad = Entidad.objects.get(code=d['centro'].replace(')', '').split(sep='(')[1])
                 ronda = entidad.ronda
-                # Carga de subentidades y cargos de esta entidad:
-                # subas = Subentidad.objects.filter(clave_ex='alumnos', entidad=entidad)
-                # if subas.count() > 0:
-                #     suba = subas[0]
-                # else:
-                #     suba = Subentidad.objects.create(nombre='Alumnos', mensajes=True, clave_ex='alumnos',
-                #                                      entidad=entidad, edad_min=12, edad_max=67)
-                # subps = Subentidad.objects.filter(clave_ex='madres_padres', entidad=entidad)
-                # if subps.count() > 0:
-                #     subp = subps[0]
-                # else:
-                #     subp = Subentidad.objects.create(nombre='Madres/Padres', mensajes=True,
-                #                                      entidad=entidad,
-                #                                      clave_ex='madres_padres', edad_min=18, edad_max=67)
                 try:
                     cargoa = Cargo.objects.get(entidad=entidad, borrable=False, clave_cargo='g_alumno')
                 except:
                     cargoa = Cargo.objects.create(cargo='Alumno/a', entidad=entidad, borrable=False,
                                                   clave_cargo='g_alumno')
+                    carga.log += '<p>Crear cargo g_alumno - %s</p>' % ronda
                 try:
                     cargop = Cargo.objects.get(entidad=entidad, borrable=False, clave_cargo='g_madre_padre')
                 except:
                     cargop = Cargo.objects.create(cargo='Madre/Padre/Tutor/a legal', entidad=entidad,
                                                   borrable=False, clave_cargo='g_madre_padre')
+                    carga.log += '<p>Crear cargo g_madre_padre - %s</p>' % ronda
                 # Definición de los datos que permiten definir los usuarios:
                 d['apellidos'] = '%s %s' % (d['last_name1'], d['last_name2'])
                 d['apellidos_tutor1'] = '%s %s' % (d['last_name1_tutor1'], d['last_name2_tutor1'])
                 d['apellidos_tutor2'] = '%s %s' % (d['last_name1_tutor2'], d['last_name2_tutor2'])
                 try:
-                    x_curso = str(int(float(d['x_curso'].replace(',', '.'))))
+                    # x_curso = str(int(float(d['x_curso'].replace(',', '.'))))
+                    x_curso = str(d['x_curso']).split('.')[0]
                 except:
                     x_curso = ''
-                # curso, c = Curso.objects.get_or_create(nombre=d['curso'], ronda=ronda, clave_ex=x_curso)
-                # if c:
-                #     logger.info('Carga masiva xls. Se crea curso %s' % curso.nombre)
-                #     carga.log += '<br>Carga masiva xls. Se crea curso %s' % curso.nombre
-                #     carga.save()
+                    carga.log += '<p>x_curso: %s - %s</p>' % (d['x_curso'], ronda)
                 try:
                     curso = Curso.objects.get(ronda=ronda, clave_ex=x_curso)
                 except:
                     cursos = Curso.objects.filter(ronda=ronda, clave_ex=x_curso)
                     if cursos.count() > 0:
+                        carga.log += '<p>cursos iguales (%s): %s - %s</p>' % (cursos.count(), d['x_curso'], ronda)
                         curso = cursos[0]
                         cursos.exclude(pk__in=[curso.pk]).delete()
                     else:
@@ -584,19 +553,17 @@ def carga_masiva_tipo_EXCEL(carga):
                 curso.nombre = d['curso']
                 curso.save()
                 try:
-                    x_unidad = str(int(float(d['x_unidad'].replace(',', '.'))))
+                    # x_unidad = str(int(float(d['x_unidad'].replace(',', '.'))))
+                    x_unidad = str(d['x_unidad']).split('.')[0]
                 except:
                     x_unidad = ''
-                # grupo, c = Grupo.objects.get_or_create(nombre=d['grupo'], ronda=ronda, clave_ex=x_unidad)
-                # if c:
-                #     logger.info('Carga masiva xls. Se crea grupo %s' % grupo.nombre)
-                #     carga.log += '<br>Carga masiva xls. Se crea grupo %s' % grupo.nombre
-                #     carga.save()
+                    carga.log += '<p>x_unidad: %s - %s</p>' % (d['x_unidad'], ronda)
                 try:
                     grupo = Grupo.objects.get(ronda=ronda, clave_ex=x_unidad)
                 except:
                     grupos = Grupo.objects.filter(ronda=ronda, clave_ex=x_unidad)
                     if grupos.count() > 0:
+                        carga.log += '<p>grupos iguales (%s): %s - %s</p>' % (grupos.count(), d['x_unidad'], ronda)
                         grupo = grupos[0]
                         grupos.exclude(pk__in=[grupo.pk]).delete()
                     else:
@@ -607,9 +574,6 @@ def carga_masiva_tipo_EXCEL(carga):
                 grupo.nombre = d['grupo']
                 grupo.save()
                 grupo.cursos.add(curso)
-                # d['subentidades'] = str(suba.id)
-                # d['subentidades_tutor1'] = str(subp.id)
-                # d['subentidades_tutor2'] = str(subp.id)
                 d['activo'] = True
                 d['observaciones'] = '<b>Localidad de nacimiento:</b> %s<br><b>Nacionalidad:</b> %s<br>' \
                                      '<b>Código del país de nacimiento:</b> %s<br><b>País de nacimiento:</b> %s<br>' \
@@ -639,7 +603,6 @@ def carga_masiva_tipo_EXCEL(carga):
                 gauser_extra = create_usuario(d, ronda, '')
                 gauser_extra.tutor1 = tutor1
                 gauser_extra.tutor2 = tutor2
-                # gauser_extra.subentidades.add(suba)
                 gauser_extra.cargos.add(cargoa)
                 gauser_extra.save()
                 gauser_extra.gauser_extra_estudios.grupo = grupo
