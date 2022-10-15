@@ -598,7 +598,7 @@
         <tr>
             <td style="border: none;">&nbsp;</td>
             {% for cevpsec in cepsec.cevprogsec_set.all %}
-                <td colspan="{{ cevpsec.criinstreval_set.all|length }}">
+                <td style="text-align: center;" colspan="{{ cevpsec.criinstreval_set.all|length }}">
                     CEv{{ cevpsec.cepsec.ce.orden }}.{{ cevpsec.cev.orden }} ({{ cevpsec.valor|floatformat }})
                 </td>
             {% endfor %}

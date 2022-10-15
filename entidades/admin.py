@@ -6,7 +6,7 @@ from entidades.models import *
 
 
 class Gauser_extraAdmin(admin.ModelAdmin):
-    search_fields = ['gauser__last_name']
+    search_fields = ['gauser__last_name',]
     list_filter = ['entidad', 'ronda']
 
 

@@ -812,7 +812,7 @@ class CEvProgSec(models.Model):
 
     @property
     def criinstreval_vinculados(self):
-        return self.criinstreval_set.all()
+        return self.criinstreval_set.filter(peso__gt=0)
 
     class Meta:
         verbose_name_plural = 'Criterios de Evaluación asociados a una programación'

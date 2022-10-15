@@ -608,7 +608,8 @@ def carga_masiva_tipo_EXCEL(carga):
                 gauser_extra.gauser_extra_estudios.grupo = grupo
                 gauser_extra.gauser_extra_estudios.save()
             except Exception as msg:
-                Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros0: %s' % str(msg), fecha=now())
+                Aviso.objects.create(usuario=carga.g_e, aviso='carga_centros0: %s - %s' % (str(msg), d['centro']),
+                                     fecha=now())
     if int(sheet.ncols) < 15:  # En este caso es el archivo es del personal
         # Un ejemplo de key_columns es:
         # {0: 'ano', 1: 'centro', 2: 'codigo', 3: 'nombre-docente', 4: 'apellidos-docente', 5: 'dni', 6: 'x_docente',
@@ -785,21 +786,33 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
     entidades_creadas = []
     for row_index in range(5, sheet.nrows):
         code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
-        entidad, created = Entidad.objects.get_or_create(code=code_entidad)
+        # entidad, created = Entidad.objects.get_or_create(code=code_entidad)
+        try:
+            entidad = Entidad.objects.get(code=code_entidad)
+        except:
+            entidades = Entidad.objects.filter(code=code_entidad)
+            if entidades.count() > 1:
+                aviso = 'carga_centros12: Múltiples entidades con código %s' % str(code_entidad)
+                Aviso.objects.create(usuario=carga.g_e, aviso=aviso, fecha=now())
+                entidad = entidades[0]
+                for e in entidades:
+                    e.name = 'Entidad múltiple'
+                    e.save()
+            else:
+                entidad = Entidad.objects.create(code=code_entidad)
         if entidad not in entidades_creadas:
             entidades_creadas.append(entidad)
             carga.log += '<hr><br>Se procesa: %s' % entidad
-            if created:
-                entidad.name = sheet.cell(row_index, dict_names['Centro']).value
-                entidad.organization = carga.g_e.ronda.entidad.organization
-                entidad.address = sheet.cell(row_index, dict_names['Dirección postal']).value
-                entidad.localidad = sheet.cell(row_index, dict_names['Localidad']).value
-                entidad.provincia = carga.g_e.ronda.entidad.provincia
-                entidad.postalcode = sheet.cell(row_index, dict_names['CP']).value
-                entidad.tel = sheet.cell(row_index, dict_names['Teléfono']).value
-                entidad.fax = sheet.cell(row_index, dict_names['FAX']).value
-                entidad.mail = sheet.cell(row_index, dict_names['Correo-e']).value
-                entidad.save()
+            entidad.name = sheet.cell(row_index, dict_names['Centro']).value
+            entidad.organization = carga.g_e.ronda.entidad.organization
+            entidad.address = sheet.cell(row_index, dict_names['Dirección postal']).value
+            entidad.localidad = sheet.cell(row_index, dict_names['Localidad']).value
+            entidad.provincia = carga.g_e.ronda.entidad.provincia
+            entidad.postalcode = sheet.cell(row_index, dict_names['CP']).value
+            entidad.tel = sheet.cell(row_index, dict_names['Teléfono']).value
+            entidad.fax = sheet.cell(row_index, dict_names['FAX']).value
+            entidad.mail = sheet.cell(row_index, dict_names['Correo-e']).value
+            entidad.save()
             # Creación de cargos no borrables y asignación de inspectores a centros:
             mensaje = ejecutar_configurar_cargos_permisos_entidad(entidad)
             carga.log += '<br>%s' % mensaje
@@ -925,7 +938,7 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
             apellidos = sheet.cell(row_index, dict_names['Apellidos docente']).value
             email = sheet.cell(row_index, dict_names['Correo-e']).value
             username = sheet.cell(row_index, dict_names['Usuario']).value
-            clave_ex = str(sheet.cell(row_index, dict_names['X_DOCENTE']).value).strip()
+            clave_ex = str(sheet.cell(row_index, dict_names['X_DOCENTE']).value).strip().split('.')[0]
             puesto = str(sheet.cell(row_index, dict_names['Puesto']).value).strip()
             tipo_personal = str(sheet.cell(row_index, dict_names['Tipo personal']).value).strip()
             if 'No Docente' in tipo_personal:

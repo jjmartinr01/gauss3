@@ -800,6 +800,8 @@ class PlantillaOrganica(models.Model):
         self.habilitar_miembros_equipo_directivo()
         LogCarga.objects.create(g_e=self.g_e, log="Finalizada la carga de la plantilla")
         return True
+    def __str__(self):
+        return 'PO: %s - %s' % (self.ronda_centro, self.g_e)
 
 
 class PlantillaXLS(models.Model):
@@ -868,6 +870,10 @@ class PlantillaXLS(models.Model):
     class Meta:
         verbose_name_plural = 'Sesiones obtenidas del XLS (PlantillaXLS)'
         ordering = ['x_etapa_escolar', 'curso', 'unidad']
+
+    def __str__(self):
+        return '%s - x_docente: %s - x_puesto: %s - x_unidad: %s' % (self.po, self.x_docente,
+                                                                     self.x_puesto, self.x_unidad)
 
 
 class PDocente(models.Model):

@@ -652,7 +652,7 @@ class Gauser_extra(models.Model):
         ordering = ['gauser__last_name']
 
     def __str__(self):
-        return '%s -- %s' % (self.gauser, self.ronda)
+        return '%s -- %s - clave_ex: %s' % (self.gauser, self.ronda, self.clave_ex)
 
 
 class GE_extra_field(models.Model):

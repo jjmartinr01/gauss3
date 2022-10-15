@@ -113,7 +113,7 @@ class Aviso(models.Model):
     usuario = models.ForeignKey(GE, on_delete=models.SET_NULL, related_name='ge6', blank=True, null=True)
     aviso = models.TextField("Mensaje de aviso")
     ip = models.CharField("Dirección IP en la que estaba el usuario", max_length=50, null=True, blank=True)
-    link = models.CharField("Redireccionamiento", max_length=100, null=True, blank=True)
+    link = models.CharField("Redireccionamiento", max_length=100, null=True, blank=True, default="")
     fecha = models.DateTimeField("Fecha y hora en la que se generó el aviso")
     aceptado = models.BooleanField("¿Ha sido aceptado/OK?", default=False)
 
