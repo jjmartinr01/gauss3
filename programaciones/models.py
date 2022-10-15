@@ -720,6 +720,34 @@ class ProgSec(models.Model):
 
     @property
     def instrumentos_utilizados(self):
+        procedimientos = {nombre: 0 for tipo, nombre in InstrEval.TIPOS}
+        pesos = {'ceps_total': 0}
+        for cepsec in self.ceprogsec_set.all():
+            pesos['ceps_total'] += cepsec.valor
+            pesos[cepsec.id] = {'cevs_total': 0}
+            for cevpsec in cepsec.cevprogsec_set.all():
+                pesos[cepsec.id]['cevs_total'] += cevpsec.valor
+                pesos[cepsec.id][cevpsec.id] = {'crii_total': 0}
+                for criinstreval in cevpsec.criinstreval_set.filter(peso__gt=0):
+                    pesos[cepsec.id][cevpsec.id]['crii_total'] += criinstreval.peso
+        for cepsec in self.ceprogsec_set.all():
+            contrib_cepsec = cepsec.valor / pesos['ceps_total']
+            for cevpsec in cepsec.cevprogsec_set.all():
+                contrib_cevpsec = cevpsec.valor / pesos[cepsec.id]['cevs_total']
+                for criinstreval in cevpsec.criinstreval_set.filter(peso__gt=0):
+                    contrib_crii = criinstreval.peso / pesos[cepsec.id][cevpsec.id]['crii_total']
+                    proc = criinstreval.ieval.get_tipo_display()
+                    procedimientos[proc] += contrib_cepsec * contrib_cevpsec * contrib_crii * 100
+        return procedimientos
+
+# class CriInstrEval(models.Model):
+#     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
+#     cevps = models.ForeignKey(CEvProgSec, on_delete=models.CASCADE, blank=True, null=True)
+#     peso = models.IntegerField(
+#         'Peso sobre la evaluación del mismo criterio en otros saberes', default=0)
+#     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    @property
+    def instrumentos_utilizados_antiguo(self):
         procedimientos = {proc: 0 for abr, proc in InstrEval.TIPOS}
         try:
             ceps = self.ceprogsec_set.all()
@@ -742,7 +770,6 @@ class ProgSec(models.Model):
             return procedimientos
         except:
             return procedimientos
-
     @property
     def asignaturas_ambito(self):
         return set(self.areamateria.competenciaespecifica_set.all().values_list('asignatura', flat=True))
