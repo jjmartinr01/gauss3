@@ -719,7 +719,7 @@ class ProgSec(models.Model):
         return permiso
 
     @property
-    def instrumentos_utilizados(self):
+    def procedimientos_utilizados(self):
         procedimientos = {nombre: 0 for tipo, nombre in InstrEval.TIPOS}
         pesos = {'ceps_total': 0}
         for cepsec in self.ceprogsec_set.all():
@@ -740,14 +740,8 @@ class ProgSec(models.Model):
                     procedimientos[proc] += contrib_cepsec * contrib_cevpsec * contrib_crii * 100
         return procedimientos
 
-# class CriInstrEval(models.Model):
-#     ieval = models.ForeignKey(InstrEval, on_delete=models.CASCADE)
-#     cevps = models.ForeignKey(CEvProgSec, on_delete=models.CASCADE, blank=True, null=True)
-#     peso = models.IntegerField(
-#         'Peso sobre la evaluación del mismo criterio en otros saberes', default=0)
-#     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
     @property
-    def instrumentos_utilizados_antiguo(self):
+    def procedimientos_utilizados_antiguo(self):
         procedimientos = {proc: 0 for abr, proc in InstrEval.TIPOS}
         try:
             ceps = self.ceprogsec_set.all()

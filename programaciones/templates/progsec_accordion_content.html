@@ -555,7 +555,7 @@
 {#            <p>En esta programación, el porcentaje de uso de los diferentes procedimientos de evaluación#}
 {#                para obtener la calificación final del alumnado es:</p>#}
 {#            <ol>#}
-{#                {% for ins, p in progsec.instrumentos_utilizados.items %}#}
+{#                {% for ins, p in progsec.procedimientos_utilizados.items %}#}
 {#                    {% if p > 60 and '50BAC' in progsec.areamateria.curso %}#}
 {#                        <li style="color:red;">{{ ins }}: {{ p|floatformat:2 }}%</li>#}
 {#                    {% elif p > 40 and '50BAC' not in progsec.areamateria.curso %}#}
@@ -581,7 +581,7 @@
             </thead>
             <tbody>
 
-            {% for ins, p in progsec.instrumentos_utilizados.items %}
+            {% for ins, p in progsec.procedimientos_utilizados.items %}
                 <tr>
                     {% if p > 60 and '50BAC' in progsec.areamateria.curso %}
                         <td style="color:red;font-weight: bold;">{{ ins }}:</td>

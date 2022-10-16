@@ -200,7 +200,7 @@
             </thead>
             <tbody>
 
-            {% for ins, p in progsec.instrumentos_utilizados.items %}
+            {% for ins, p in progsec.procedimientos_utilizados.items %}
                 {% if p > 0 %}
                     <tr>
                         {% if p > 60 and '50BAC' in progsec.areamateria.curso %}
@@ -228,11 +228,11 @@
 </div>
 
 
-{#{% if progsec.instrumentos_utilizados|length > 0 %}#}
+{#{% if progsec.procedimientos_utilizados|length > 0 %}#}
 {#    <p>Para la valoración de los criterios de evaluación esta programación utiliza los siguientes#}
 {#        procedimientos de evaluación:</p>#}
 {#    <ol>#}
-{#        {% for ins in progsec.instrumentos_utilizados %}#}
+{#        {% for ins in progsec.procedimientos_utilizados %}#}
 {#            <li>{{ ins }}</li>#}
 {#        {% endfor %}#}
 {#    </ol>#}
@@ -598,7 +598,8 @@
         <tr>
             <td style="border: none;">&nbsp;</td>
             {% for cevpsec in cepsec.cevprogsec_set.all %}
-                <td style="text-align: center;" colspan="{{ cevpsec.criinstreval_set.all|length }}">
+{#                <td style="text-align: center;" colspan="{{ cevpsec.criinstreval_set.all|length }}">#}
+                <td style="text-align: center;" colspan="{{ cevpsec.criinstreval_vinculados|length }}">
                     CEv{{ cevpsec.cepsec.ce.orden }}.{{ cevpsec.cev.orden }} ({{ cevpsec.valor|floatformat }})
                 </td>
             {% endfor %}
@@ -607,15 +608,13 @@
             <tr>
                 <td style="width: 20%;">{{ tipo.1 }}</td>
                 {% for cevpsec in cepsec.cevprogsec_set.all %}
-                    {% for criinstreval in cevpsec.criinstreval_set.all %}
+                    {% for criinstreval in cevpsec.criinstreval_vinculados %}
                         {% if criinstreval.ieval.tipo == tipo.0 %}
-                            <td>
                                 {% if criinstreval.peso > 0 %}
-                                    {{ criinstreval.peso }}
+                                    <td title="{{ criinstreval.ieval.nombre }} - {{ criinstreval.ieval.asapren }}">{{ criinstreval.peso }}</td>
                                 {% else %}
-                                    --
+                                   <td>--</td>
                                 {% endif %}
-                            </td>
                         {% else %}
                             <td>
                                 --
