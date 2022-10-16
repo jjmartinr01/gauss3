@@ -663,6 +663,7 @@ class ProgSec(models.Model):
     fin_clases = models.DateField('Fecha de fin de las clases', blank=True, null=True)
     es_copia_de = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
     procdiversidad = models.TextField('Proced. adop. medidas de aten. a la divers.', blank=True, null=True, default='')
+    identificador = models.CharField('Identificador', max_length=11, default=pass_generator)
     creado = models.DateField('Fecha de creación', auto_now_add=True)
     modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
 
@@ -718,52 +719,45 @@ class ProgSec(models.Model):
                 permiso = 'No tiene permiso'
         return permiso
 
+    def cepsec_evaluadas(self):
+        cepsecs = []
+        for criinstreval in CriInstrEval.objects.filter(peso__gt=0, ieval__asapren__sapren__sbas__psec=self):
+            if criinstreval.cevps.cepsec not in cepsecs:
+                cepsecs.append(criinstreval.cevps.cepsec)
+        return cepsecs
+
+    def cevpsec_evaluadas(self, cepsec):
+        cevpsecs = []
+        for criinstreval in CriInstrEval.objects.filter(peso__gt=0, ieval__asapren__sapren__sbas__psec=self,
+                                                        cevps__cepsec=cepsec):
+            if criinstreval.cevps not in cevpsecs:
+                cevpsecs.append(criinstreval.cevps)
+        return cevpsecs
     @property
     def procedimientos_utilizados(self):
         procedimientos = {nombre: 0 for tipo, nombre in InstrEval.TIPOS}
         pesos = {'ceps_total': 0}
-        for cepsec in self.ceprogsec_set.all():
+        # for cepsec in self.ceprogsec_set.all():
+        for cepsec in self.cepsec_evaluadas():
             pesos['ceps_total'] += cepsec.valor
             pesos[cepsec.id] = {'cevs_total': 0}
-            for cevpsec in cepsec.cevprogsec_set.all():
+            # for cevpsec in cepsec.cevprogsec_set.all():
+            for cevpsec in self.cevpsec_evaluadas(cepsec):
                 pesos[cepsec.id]['cevs_total'] += cevpsec.valor
                 pesos[cepsec.id][cevpsec.id] = {'crii_total': 0}
                 for criinstreval in cevpsec.criinstreval_set.filter(peso__gt=0):
                     pesos[cepsec.id][cevpsec.id]['crii_total'] += criinstreval.peso
-        for cepsec in self.ceprogsec_set.all():
+        # for cepsec in self.ceprogsec_set.all():
+        for cepsec in self.cepsec_evaluadas():
             contrib_cepsec = cepsec.valor / pesos['ceps_total']
-            for cevpsec in cepsec.cevprogsec_set.all():
+            # for cevpsec in cepsec.cevprogsec_set.all():
+            for cevpsec in self.cevpsec_evaluadas(cepsec):
                 contrib_cevpsec = cevpsec.valor / pesos[cepsec.id]['cevs_total']
                 for criinstreval in cevpsec.criinstreval_set.filter(peso__gt=0):
                     contrib_crii = criinstreval.peso / pesos[cepsec.id][cevpsec.id]['crii_total']
                     proc = criinstreval.ieval.get_tipo_display()
                     procedimientos[proc] += contrib_cepsec * contrib_cevpsec * contrib_crii * 100
         return procedimientos
-
-    @property
-    def procedimientos_utilizados_antiguo(self):
-        procedimientos = {proc: 0 for abr, proc in InstrEval.TIPOS}
-        try:
-            ceps = self.ceprogsec_set.all()
-            peso_ceps_total = sum(ceps.values_list('valor', flat=True))
-            for cep in ceps:
-                cevps = cep.cevprogsec_set.all()
-                peso_cevps_total = sum(cevps.values_list('valor', flat=True))
-                for cevp in cevps:
-                    criinstrevals = cevp.criinstreval_set.all()
-                    peso_criinstreval_total = sum(criinstrevals.values_list('peso', flat=True))
-                    for criinstreval in criinstrevals:
-                        if peso_criinstreval_total > 0:
-                            aporte_criinstreval = criinstreval.peso / peso_criinstreval_total
-                        else:
-                            aporte_criinstreval = 0
-                        aporte_cevp = cevp.valor / peso_cevps_total
-                        aporte_cep = cep.valor / peso_ceps_total
-                        aporte_porcentual_total = round(aporte_criinstreval * aporte_cevp * aporte_cep * 100, 2)
-                        procedimientos[criinstreval.ieval.get_tipo_display()] += aporte_porcentual_total
-            return procedimientos
-        except:
-            return procedimientos
     @property
     def asignaturas_ambito(self):
         return set(self.areamateria.competenciaespecifica_set.all().values_list('asignatura', flat=True))
@@ -807,7 +801,10 @@ class CEProgSec(models.Model):
     def num_criinstreval_vinculados(self):
         total = 0
         for cevpsec in self.cevprogsec_set.all():
-            total += cevpsec.criinstreval_vinculados.count()
+            cantidad = cevpsec.criinstreval_vinculados.count()
+            if cantidad == 0:
+                cantidad = 1
+            total += cantidad
         return total
     @property
     def tipos_procedimientos_utilizados(self):
