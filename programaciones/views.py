@@ -1966,9 +1966,9 @@ def reordenar_saberes_comienzo(psec):
 
 # @permiso_required('acceso_progsecundaria')
 def progsecundaria(request):
-    for p in ProgSec.objects.all():
-        p.identificador = pass_generator()
-        p.save()
+    # for p in ProgSec.objects.all():
+    #     p.identificador = pass_generator()
+    #     p.save()
     # try:
     g_e = request.session['gauser_extra']
     try:
