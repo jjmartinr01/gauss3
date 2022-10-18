@@ -194,6 +194,10 @@
                         {% endif %}
                     {% endfor %}
                     <li class="divider"></li>
+                    {% if request.session.gauser_extras|length > 1 %}
+                        <li><a href="/?select_gauser_extras=1"><i class="fa fa-address-card-o"></i>
+                            <strong>Perfiles</strong></a></li>
+                    {% endif %}
                     <li><a href="/mis_datos/"><i class="fa fa-user"></i> <strong>Mis datos</strong></a></li>
                     <li><a href="/"><i class="fa fa-sign-out"></i> <strong>Salir</strong></a></li>
                 </ul>

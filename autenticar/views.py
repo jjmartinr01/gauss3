@@ -506,6 +506,7 @@ def index(request):
                             gauser_extras = gauser_extras.exclude(pk=gauser_extra.id)
                     if entidades_disponibles > 1:
                         logger.info('Gauser con acceso a múltiples entidades.')
+                        request.session['gauser_extras'] = gauser_extras
                         return render(request, "select_entidad.html", {'gauser_extras': gauser_extras, })
                     elif entidades_disponibles == 1:
                         request.session['gauser_extra'] = gauser_extras[0]
@@ -572,6 +573,8 @@ def index(request):
             logger.info('%s se loguea en GAUSS.' % (request.session["gauser_extra"]))
             return redirect(url_destino)
     else:
+        if 'select_gauser_extras' in request.GET:
+            return render(request, "select_entidad.html", {'gauser_extras': request.session['gauser_extras'], })
         # if 'service' in request.session:
         #     logout(request)
         #     response = HttpResponse(status=302)
