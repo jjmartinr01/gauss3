@@ -129,7 +129,8 @@
         <label style="font-weight: 800;">Nº ident. entidad <a href="/listados_usuarios_entidad/?tab=1"><i
                 class="fa fa-info-circle"></i></a>
             {% if g_e|has_permiso:'configura_auto_id' %}
-                <a href="/configura_auto_id/"><i class="fa fa-id-card-o"></i></a>{% endif %}
+                <a href="/configura_auto_id/"><i class="fa fa-id-card-o"></i></a>
+            {% endif %}
             {% if g_e.ronda.entidad.entidad_auto_id.auto %}
                 <input type="text" data-campo="id_entidad" value="{{ gauser_extra_selected|auto_id }}"
                        id="id_id_entidad" maxlength="20" class="gauser_extra" readonly="readonly"/>
@@ -144,8 +145,10 @@
         <label style="font-weight: 800;">Nº ident. organización <a href="/listados_usuarios_entidad/?tab=1"><i
                 class="fa fa-info-circle"></i></a>
             {% if gauser_extra_selected.id_organizacion %}
-                <input type="text" data-campo="id_organizacion" value="{{ gauser_extra_selected.id_organizacion }}"
-                       id="id_id_organizacion" maxlength="20" class="gauser_extra"/>
+                <span data-tooltip title="Este campo no es editable por los usuarios"
+                      class="has-tip label secondary radius">{{ gauser_extra_selected.id_organizacion }}</span>
+{#                <input type="text" data-campo="id_organizacion" value="{{ gauser_extra_selected.id_organizacion }}"#}
+{#                       id="id_id_organizacion" maxlength="20" class="gauser_extra"/>#}
             {% else %}
                 <span data-tooltip title="Este campo no está disponible para este tipo de perfil"
                       class="has-tip label secondary radius">No disponible en este perfil</span>

@@ -911,6 +911,9 @@ def carga_masiva_tipo_CENTROSRACIMA(carga):
 
 def carga_masiva_tipo_DOCENTES_RACIMA(carga):
     gauss = Gauser.objects.get(username='gauss')
+    centros_cargados = []
+    docentes_cargados = {}
+    carga.log += '<p>Comienza carga de docentes</p>'
     errores = {}
     f = carga.fichero.read()
     book = xlrd.open_workbook(file_contents=f)
@@ -923,6 +926,10 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
         try:
             code_entidad = int(sheet.cell(row_index, dict_names['Código']).value)
             entidad = Entidad.objects.get(code=code_entidad)
+            if code_entidad not in centros_cargados:
+                centros_cargados.append(code_entidad)
+            if code_entidad not in docentes_cargados:
+                docentes_cargados[code_entidad] = []
             try:
                 cargo_d = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
             except:
@@ -948,51 +955,79 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
             jornada_contratada = str(sheet.cell(row_index, dict_names['Jornada contratada']).value).strip()
             try:
                 try:
+                    gauser = Gauser.objects.get(username=username)
+                    gauser.dni = dni
+                    gauser.email = email
+                    gauser.username = username
+                    gauser.first_name = nombre
+                    gauser.last_name = apellidos
+                    gauser.save()
+                except:
                     gauser = Gauser.objects.get(dni=dni)
                     gauser.email = email
                     gauser.username = username
-                except:
-                    gauser = Gauser.objects.get(username=username)
-                    gauser.email = email
-                    gauser.dni = dni
+                    gauser.first_name = nombre
+                    gauser.last_name = apellidos
+                    gauser.save()
+                    carga.log += '<p>Se busca usuario %s por dni: %s</p>\n' % (username, dni)
+                    carga.save()
             except:
+                carga.log += '<p>Se intenta crear usuario con username: %s</p>\n' % username
+                carga.save()
                 gauser = Gauser.objects.create_user(username, email=email, last_login=now(), dni=dni,
                                                     password=pass_generator(size=9))
-                # try:
-                #     gauser = Gauser.objects.create_user(username, email=email, last_login=now(),
-                #                                         password=pass_generator(size=9))
-                # except:
-                #     usuario = crear_nombre_usuario(nombre, apellidos)
-                #     gauser = Gauser.objects.create_user(usuario, email=email, last_login=now(),
-                #                                         password=pass_generator(size=9))
-            # if 'larioja.edu.es' in email.split('@')[1]:
-            #     gauser.username = email.split('@')[0]
-            gauser.first_name = nombre
-            gauser.last_name = apellidos
-            # gauser.dni = dni
-            gauser.save()
             gauser_extra, c = Gauser_extra.objects.get_or_create(ronda=entidad.ronda, gauser=gauser)
             gauser_extra.clave_ex = clave_ex
+            gauser_extra.id_organizacion = clave_ex
             gauser_extra.activo = True
             gauser_extra.puesto = puesto
-            try:
-                Cargo.objects.filter(cargo=puesto, entidad=entidad).exclude(clave_cargo__icontains='g_').delete()
-            except:
-                pass
             gauser_extra.tipo_personal = tipo_personal
             gauser_extra.jornada_contratada = jornada_contratada
             gauser_extra.cargos.add(cargo)
             gauser_extra.save()
+            docentes_cargados[code_entidad].append(clave_ex)
+            #carga.log += '<p>Carga de %s - %s - %s</p>\n' % (username, dni, gauser_extra.id_organizacion)
             direc_apellidos, direc_nombre = entidad.entidadextra.director.split(', ')
             if gauser_extra.gauser.first_name == direc_nombre and gauser_extra.gauser.last_name == direc_apellidos:
                 cargo_director, c = Cargo.objects.get_or_create(entidad=entidad, clave_cargo='g_director_centro')
                 gauser_extra.cargos.add(cargo_director)
-
+            if entidad.entidadextra.depende_de:
+                nueva_entidad = entidad.entidadextra.depende_de
+                carga.log += '<p>Entidad depende de: %s</p>\n' % (nueva_entidad)
+                gauser_extra, c = Gauser_extra.objects.get_or_create(ronda=nueva_entidad.ronda, gauser=gauser)
+                gauser_extra.clave_ex = 's-%s' % clave_ex
+                gauser_extra.id_organizacion = 's-%s' % clave_ex
+                gauser_extra.activo = True
+                gauser_extra.puesto = puesto
+                gauser_extra.tipo_personal = tipo_personal
+                gauser_extra.jornada_contratada = jornada_contratada
+                gauser_extra.cargos.add(cargo)
+                gauser_extra.save()
+                carga.log += '<p>Carga de %s - %s - s-%s</p>\n' % (username, dni, gauser_extra.id_organizacion)
         except Exception as msg:
             apellidos = slugify(sheet.cell(row_index, dict_names['Apellidos docente']).value)
             errores[row_index] = {'error': str(msg), 'apellidos': apellidos}
             logger.info('Error carga general docentes %s -- %s' % (str(apellidos), msg))
-    return HttpResponse(errores)
+            carga.log += '<p>Error carga general docentes %s -- %s</p>' % (str(apellidos), msg)
+    for centro_cargado in centros_cargados:
+        # Líneas de código para eliminar usuarios que no están en el archivo de carga:
+        entidad = Entidad.objects.get(code=centro_cargado)
+        carga.log += '<p><b>%s</b></p>' % entidad
+        carga.log += '<p>Lista: %s</p>' % ', '.join(docentes_cargados[entidad.code])
+        cargo_d = Cargo.objects.get(entidad=entidad, clave_cargo='g_docente', borrable=False)
+        cargo_nd = Cargo.objects.get(entidad=entidad, clave_cargo='g_nodocente', borrable=False)
+        usuarios_activos = Gauser_extra.objects.filter(activo=True, cargos__in=[cargo_nd, cargo_d],
+                                                       ronda=entidad.ronda)
+        for usuario_activo in usuarios_activos:
+            if usuario_activo.clave_ex not in docentes_cargados[entidad.code]:
+                # Puede que existan usuarios activos correctamente por pertenecer a una sección
+                # Estos usuarios tienen una clave_ex que comienza por s-
+                if 's-' not in usuario_activo.clave_ex:
+                    usuario_activo.activo = False
+                    usuario_activo.save()
+                    carga.log += '<p>Desactivado usuario: %s</p>\n' % (usuario_activo)
+    carga.save()
+    return True
 
 
 @shared_task

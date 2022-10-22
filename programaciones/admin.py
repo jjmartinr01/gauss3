@@ -10,6 +10,7 @@ from programaciones.models import *
 class ProgSecAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['pga'].queryset = PGA.objects.filter(ronda__entidad=self.instance.gep.ge.ronda.entidad)
         self.fields['materia'].queryset = Materia_programaciones.objects.none()
         self.fields['curso'].queryset = Curso.objects.none()
         try:

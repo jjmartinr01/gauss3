@@ -875,6 +875,10 @@ class ActExCom(models.Model):
     fin = models.DateTimeField('Fecha y hora de finalización', blank=True, null=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
 
+    class Meta:
+        verbose_name_plural = 'Actividades extraescolares en programaciones (ActExCom)'
+        ordering = ['inicio', ]
+
     def __str__(self):
         return '%s - %s (%s - %s)' % (self.psec, self.nombre, self.inicio, self.fin)
 
