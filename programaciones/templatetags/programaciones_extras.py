@@ -46,6 +46,10 @@ def get_posibles_psec(cuaderno):
 def get_recpv_xs(recp, y):
     return recp.repoescalacpvalor_set.filter(y=y)
 
+@register.filter
+def calificacion_alumno(cuaderno, alumno):
+    return cuaderno.calificacion_alumno(alumno)
+
 #################################################
 ########  Estas dos funciones trabajan juntas para crear una función de tres variables
 ########  Observarlas en cuadernodocente_accordion_content.html
@@ -59,7 +63,8 @@ def get_cep(cuaderno, cep):
 def get_calalumce(cuaderno_cep, alumno):
     try:
         cuaderno, cep = cuaderno_cep
-        return CalAlumCE.objects.get(alumno=alumno, cep=cep, cp=cuaderno)
+        return cuaderno.calificacion_alumno_ce(alumno, cep.ce)
+        # return CalAlumCE.objects.get(alumno=alumno, cep=cep, cp=cuaderno)
     except Exception as msg:
         return str(msg)
 

@@ -958,11 +958,12 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
                     gauser = Gauser.objects.get(username=username)
                     gauser.dni = dni
                     gauser.email = email
-                    gauser.username = username
                     gauser.first_name = nombre
-                    gauser.last_name = apellidos
+                    gauser.last_name = apellidos[:30]
                     gauser.save()
-                except:
+                except Exception as msg:
+                    carga.log += '<p>Error: %s</p>\n' % (msg)
+                    carga.save()
                     gauser = Gauser.objects.get(dni=dni)
                     gauser.email = email
                     gauser.username = username
@@ -1022,10 +1023,13 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
             if usuario_activo.clave_ex not in docentes_cargados[entidad.code]:
                 # Puede que existan usuarios activos correctamente por pertenecer a una sección
                 # Estos usuarios tienen una clave_ex que comienza por s-
-                if 's-' not in usuario_activo.clave_ex:
-                    usuario_activo.activo = False
-                    usuario_activo.save()
-                    carga.log += '<p>Desactivado usuario: %s</p>\n' % (usuario_activo)
+                try:
+                    if 's-' not in usuario_activo.clave_ex:
+                        usuario_activo.activo = False
+                        usuario_activo.save()
+                        carga.log += '<p>Desactivado usuario: %s</p>\n' % (usuario_activo)
+                except Exception as msg:
+                    carga.log += '<p>Error al desactivar a: %s</p>\n' % (usuario_activo)
     carga.save()
     return True
 

@@ -187,7 +187,7 @@
                         </td>
                         {% for cep in cuaderno.psec.ceprogsec_set.all %}
                             {% ifchanged cep.ce.asignatura %}
-                                <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">--</td>
+                                <td id="cal_am_{{ cep.ce.asignatura|slugify }}_{{ alumno.id }}">{{ cuaderno|calificacion_alumno:alumno }}</td>
                             {% endifchanged %}
                             {% with calalumce=cuaderno|get_cep:cep|get_calalumce:alumno %}
                                 {#                            <td class="update_calalumce" data-calalumce="{{ calalumce.id }}"#}
@@ -258,10 +258,10 @@
                         <td class="fixed_column" title="{{ alumno.gauser_extra_estudios.grupo.nombre }}">
                             <b>{{ alumno.gauser.last_name }}, {{ alumno.gauser.first_name }}</b>
                         </td>
-                        <td id="cal_am_{{ alumno.id }}">--</td>
+                        <td id="cal_am_{{ alumno.id }}">{{ cuaderno|calificacion_alumno:alumno }}</td>
                         {% for cep in cuaderno.psec.ceprogsec_set.all %}
                             {% ifchanged %}
-                                <td id="cal_ce_{{ cep.id }}_{{ alumno.id }}">--</td>
+                                <td id="cal_ce_{{ cep.id }}_{{ alumno.id }}">{{ cuaderno|get_cep:cep|get_calalumce:alumno }}</td>
                             {% endifchanged %}
                             {% for cevp in cep.cevprogsec_set.all %}
                                 {% with calalumcev=cuaderno|get_cevp:cevp|get_calalumcev:alumno %}

@@ -3224,7 +3224,12 @@ def cuadernodocente(request):
                 calalumcev = CalAlumCEv.objects.get(id=request.POST['calalumcev'], calalumce__cp=cuaderno)
                 calalumcev.valor = max(min(10, float(request.POST['valor'])), 0)
                 calalumcev.save()
-                return JsonResponse({'ok': True})
+                calalumce = calalumcev.calalumce
+                alumno = calalumce.alumno
+                asignatura = calalumce.cep.ce.asignatura
+                cal_am = cuaderno.calificacion_alumno_asignatura(alumno, asignatura)
+                return JsonResponse({'ok': True, 'cal_am': cal_am, 'calalumce': calalumce.valor, 'alumno': alumno.id,
+                                     'asignatura': slugify(asignatura), 'cep': calalumce.cep.id})
             except:
                 return JsonResponse({'ok': False})
         elif action == 'update_calalum':

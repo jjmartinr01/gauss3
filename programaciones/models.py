@@ -1224,7 +1224,7 @@ class CuadernoProf(models.Model):
                 grupo = self.grupo.nombre
         except:
             grupo = 'Grupo desconocido'
-        return '%s - %s - %s' % (ronda, am, grupo)
+        return '%s - %s - %s (%s)' % (ronda, am, grupo, self.tipo)
 
     def calificacion_alumno_cev(self, alumno, cev):  # Calificación de un determinado criterio de evaluación
         cas = self.calalum_set.filter(alumno=alumno, cie__cevps__cev=cev)
@@ -1384,8 +1384,8 @@ def update_calalumce(sender, instance, **kwargs):
     numerador_final = 0
     denominador_final = 0
     for calalumcev in instance.calalumce.calalumcev_set.all():
-        numerador_final += calalumcev.cevp.valor * calalumcev.valor
-        if instance.valor > 0:  # Esto es para no tener en cuenta las calificaciones iguales a 0
+        if calalumcev.valor > 0:  # Esto es para no tener en cuenta las calificaciones iguales a 0
+            numerador_final += calalumcev.cevp.valor * calalumcev.valor
             denominador_final += calalumcev.cevp.valor
     try:
         instance.calalumce.valor = round(numerador_final / denominador_final, 2)

@@ -594,7 +594,7 @@
             }, 750);
         });
 
-        $('body').on('change', '.update_calalumce', function (e) {
+        $('body').on('change keyup', '.update_calalumce', function (e) {
             e.preventDefault();
             var element = $(this);
             var calalumce = element.data('calalumce');
@@ -614,7 +614,7 @@
                     });
         });
 
-        $('body').on('change', '.update_calalumcev', function (e) {
+        $('body').on('change keyup', '.update_calalumcev', function (e) {
             e.preventDefault();
             var element = $(this);
             var calalumcev = element.data('calalumcev');
@@ -626,6 +626,8 @@
                     },
                     function (data) {
                         if (data.ok) {
+                            $('#cal_am_' + data.alumno).html(data.cal_am);
+                            $('#cal_ce_' + data.cep + '_' + data.alumno).html(data.calalumce);
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
