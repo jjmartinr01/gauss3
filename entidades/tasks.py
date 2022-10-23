@@ -1029,7 +1029,7 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
                         usuario_activo.save()
                         carga.log += '<p>Desactivado usuario: %s</p>\n' % (usuario_activo)
                 except Exception as msg:
-                    carga.log += '<p>Error al desactivar a: %s</p>\n' % (usuario_activo)
+                    carga.log += '<p>Error al desactivar a: %s - %s</p>\n' % (usuario_activo, str(msg))
     carga.save()
     return True
 
