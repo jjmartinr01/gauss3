@@ -1024,10 +1024,15 @@ def carga_masiva_tipo_DOCENTES_RACIMA(carga):
                 # Puede que existan usuarios activos correctamente por pertenecer a una sección
                 # Estos usuarios tienen una clave_ex que comienza por s-
                 try:
-                    if 's-' not in usuario_activo.clave_ex:
+                    if usuario_activo.clave_ex:
+                        if 's-' not in usuario_activo.clave_ex:
+                            usuario_activo.activo = False
+                            usuario_activo.save()
+                            carga.log += '<p>Desactivado usuario: %s con clave_ex: </p>\n' % (usuario_activo, clave_ex)
+                    else:
                         usuario_activo.activo = False
                         usuario_activo.save()
-                        carga.log += '<p>Desactivado usuario: %s</p>\n' % (usuario_activo)
+                        carga.log += '<p>Desactivado usuario: %s, clave_ex: None</p>\n' % (usuario_activo)
                 except Exception as msg:
                     carga.log += '<p>Error al desactivar a: %s - %s</p>\n' % (usuario_activo, str(msg))
     carga.save()
