@@ -261,7 +261,7 @@
                         <td id="cal_am_{{ alumno.id }}">{{ cuaderno|calificacion_alumno:alumno }}</td>
                         {% for cep in cuaderno.psec.ceprogsec_set.all %}
                             {% ifchanged %}
-                                <td id="cal_ce_{{ cep.id }}_{{ alumno.id }}">{{ cuaderno|get_cep:cep|get_calalumce:alumno }}</td>
+                                <td id="cal_ce_{{ cep.id }}_{{ alumno.id }}">{{ cuaderno|get_cep:cep|get_calalumce_valor:alumno }}</td>
                             {% endifchanged %}
                             {% for cevp in cep.cevprogsec_set.all %}
                                 {% with calalumcev=cuaderno|get_cevp:cevp|get_calalumcev:alumno %}

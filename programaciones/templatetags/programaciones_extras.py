@@ -63,11 +63,19 @@ def get_cep(cuaderno, cep):
 def get_calalumce(cuaderno_cep, alumno):
     try:
         cuaderno, cep = cuaderno_cep
-        return cuaderno.calificacion_alumno_ce(alumno, cep.ce)
-        # return CalAlumCE.objects.get(alumno=alumno, cep=cep, cp=cuaderno)
+        # return cuaderno.calificacion_alumno_ce(alumno, cep.ce)
+        return CalAlumCE.objects.get(alumno=alumno, cep=cep, cp=cuaderno)
     except Exception as msg:
         return str(msg)
 
+
+@register.filter
+def get_calalumce_valor(cuaderno_cep, alumno):
+    try:
+        cuaderno, cep = cuaderno_cep
+        return cuaderno.calificacion_alumno_ce(alumno, cep.ce)
+    except Exception as msg:
+        return str(msg)
 
 ########  Fin de las dos funciones
 #################################################
