@@ -8,6 +8,11 @@ from programaciones.models import *
 register = Library()
 
 
+
+@register.filter
+def float2stringpoint(number):
+    return str(number).replace(',', '.')
+
 @register.filter
 def get_rondas_ge(ge):
     # Fecha a partir de la cual se pueden encontrar programaciones:

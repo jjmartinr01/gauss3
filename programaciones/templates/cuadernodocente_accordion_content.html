@@ -200,7 +200,7 @@
                                            data-cep="{{ cep.id }}" data-cuaderno="{{ cuaderno.id }}" min="0" max="10"
                                            data-alumno="{{ alumno.id }}" title="{{ calalumce.obs }}" step="0.01"
                                            id="valor_calalumce{{ calalumce.id }}_{{ alumno.id }}"
-                                           value="{{ calalumce.valor }}">
+                                           value="{{ calalumce.valor|float2stringpoint }}">
                                 </td>
                             {% endwith %}
                         {% endfor %}
@@ -261,7 +261,7 @@
                         <td id="cal_am_{{ alumno.id }}">{{ cuaderno|calificacion_alumno:alumno }}</td>
                         {% for cep in cuaderno.psec.ceprogsec_set.all %}
                             {% ifchanged %}
-                                <td id="cal_ce_{{ cep.id }}_{{ alumno.id }}">{{ cuaderno|get_cep:cep|get_calalumce_valor:alumno }}</td>
+                                <td id="cal_ce_{{ cep.id }}_{{ alumno.id }}">{{ cuaderno|get_cep:cep|get_calalumce_valor:alumno|floatformat:2 }}</td>
                             {% endifchanged %}
                             {% for cevp in cep.cevprogsec_set.all %}
                                 {% with calalumcev=cuaderno|get_cevp:cevp|get_calalumcev:alumno %}
@@ -271,7 +271,7 @@
                                                max="10"
                                                data-alumno="{{ alumno.id }}" title="{{ calalumcev.obs }}" step="0.01"
                                                id="valor_calalumcev{{ calalumcev.id }}_{{ alumno.id }}"
-                                               value="{{ calalumcev.valor }}">
+                                               value="{{ calalumcev.valor|float2stringpoint }}">
                                     </td>
                                 {% endwith %}
                             {% endfor %}
