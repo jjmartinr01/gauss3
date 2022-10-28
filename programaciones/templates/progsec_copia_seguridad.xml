@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ProgSec id="x">
+    <datos>
+        <nombre></nombre>
+        <tipo></tipo>
+        <inicio_clases></inicio_clases>
+        <fin_clases></fin_clases>
+        <procdiversidad></procdiversidad>
+        <creado></creado>
+        <modificado></modificado>
+        <areamateria_id></areamateria_id>
+        <curso_id></curso_id>
+        <departamento_id></departamento_id>
+        <es_copia_de_id></es_copia_de_id>
+        <gep_id></gep_id>
+        <materia_id></materia_id>
+        <pga_id></pga_id>
+    </datos>
+    <LibroRecurso__list>
+        <LibroRecurso id="1">
+            <datos>
+                <nombre></nombre>
+                <isbn></isbn>
+                <observaciones></observaciones>
+                <doc_file></doc_file>
+                <content_type></content_type>
+                <modificado></modificado>
+                <psec_id></psec_id>
+            </datos>
+        </LibroRecurso>
+        <LibroRecurso id="">
+            <datos>
+            </datos>
+        </LibroRecurso>
+    </LibroRecurso__list>
+    <SaberBas__list>
+        <SaberBas id="1">
+            <datos>
+                <orden></orden>
+                <nombre></nombre>
+                <comienzo></comienzo>
+                <periodos></periodos>
+                <modificado></modificado>
+                <psec_id></psec_id>
+            </datos>
+            <SitApren__list>
+                <SitApren>
+                    <datos></datos>
+                    <ActSitApren__list>
+                        <ActSitApren id="">
+                            <datos></datos>
+                        </ActSitApren>
+                    </ActSitApren__list>
+                    <InstrEval__list>
+                        <InstrEval id="">
+                            <datos></datos>
+                            <CriInstrEval__list>
+                                <CriInstrEval id="">
+                                    <datos></datos>
+                                </CriInstrEval>
+                            </CriInstrEval__list>
+                        </InstrEval>
+                    </InstrEval__list>
+                </SitApren>
+            </SitApren__list>
+        </SaberBas>
+        <SaberBas id="">
+            <datos>
+            </datos>
+        </SaberBas>
+    </SaberBas__list>
+    <ActExCom__list>
+        <ActExCom id="1">
+            <datos>
+                <nombre></nombre>
+                <observaciones></observaciones>
+                <inicio></inicio>
+                <fin></fin>
+                <modificado></modificado>
+                <psec_id></psec_id>
+            </datos>
+        </ActExCom>
+        <ActExCom id="">
+            <datos>
+            </datos>
+        </ActExCom>
+    </ActExCom__list>
+    <CEProgSec__list>
+        <CEProgSec id="1">
+            <datos>
+                <valor></valor>
+                <modificado></modificado>
+                <ce_id></ce_id>
+                <psec_id></psec_id>
+            </datos>
+        </CEProgSec>
+        <CEProgSec id="n">
+            <datos>
+            </datos>
+        </CEProgSec>
+    </CEProgSec__list>
+    <CuadernoProf__list>
+        <CuadernoProf id="1">
+            <datos>
+                <vmin></vmin>
+                <vmax></vmax>
+                <vista></vista>
+                <borrado></borrado>
+                <log></log>
+                <ge_id></ge_id>
+                <grupo_id></grupo_id>
+                <psec_id></psec_id>
+            </datos>
+            <alumnos> <!-- Realmente no se necesita, se puede regenerar sin problema -->
+                <datos>
+                    <cuaderno_id></cuaderno_id>
+                    <gauser_extra_id></gauser_extra_id>
+                </datos>
+            </alumnos>
+            <CalAlumCE__list>
+                <CalAlumCE id="">
+                    <datos></datos>
+                    <CalAlumCEv__list>
+                        <CalAlumCEv id="">
+                            <datos></datos>
+                        </CalAlumCEv>
+                    </CalAlumCEv__list>
+                </CalAlumCE>
+            </CalAlumCE__list>
+            <EscalaCP__list>
+                <EscalaCP id="1">
+                    <datos>
+                        <tipo></tipo>
+                        <nombre></nombre>
+                        <cp_id></cp_id>
+                        <ieval_id></ieval_id>
+                    </datos>
+                    <EscalaCPvalor__list>
+                        <EscalaCPvalor id="1">
+                            <datos>
+                                <x></x>
+                                <y></y>
+                                <text_cualitativo></text_cualitativo>
+                                <valor></valor>
+                                <ecpi_id></ecpi_id>
+                            </datos>
+                        </EscalaCPvalor>
+                        <EscalaCPvalor id="">
+                            <datos>
+                            </datos>
+                        </EscalaCPvalor>
+                    </EscalaCPvalor__list>
+                </EscalaCP>
+                <EscalaCP id="">
+                </EscalaCP>
+            </EscalaCP__list>
+            <CalAlum__list>
+                <CalAlum id="1">
+                    <datos>
+                        <obs></obs>
+                        <alumno_id></alumno_id>
+                        <cie_id></cie_id>
+                        <cp_id></cp_id>
+                        <ecp_id></ecp_id>
+                    </datos>
+                    <CalAlumValor__list>
+                        <CalAlumValor id="1">
+                            <datos>
+                                <obs></obs>
+                                <ca_id></ca_id>
+                                <ecpv_id></ecpv_id>
+                            </datos>
+                        </CalAlumValor>
+                        <CalAlumValor id="">
+                        </CalAlumValor>
+                    </CalAlumValor__list>
+                </CalAlum>
+                <CalAlum id="">
+                </CalAlum>
+            </CalAlum__list>
+        </CuadernoProf>
+        <CuadernoProf id="">
+        </CuadernoProf>
+    </CuadernoProf__list>
+</ProgSec>
