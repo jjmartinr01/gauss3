@@ -706,7 +706,7 @@ class ProgSec(models.Model):
 
     def get_permiso(self, gep):
         permiso = ''
-        if self.cuadernoprof_set.all().count() > 0:
+        if self.cuadernoprof_set.filter(borrado=False).count() > 0:
             permiso += 'C'
         if gep == self.gep:
             permiso += 'LEX'
@@ -1045,6 +1045,10 @@ class RepoSitApren(models.Model):
     borrada = models.BooleanField('¿Está borrada?', default=False)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    contenidos_sbas = models.TextField('Saberes básicos que se van a trabajar en la SAP', blank=True, default='')
+
+
+
 
     class Meta:
         verbose_name_plural = 'SAP Repositorio de situaciones de aprendizaje'
@@ -1243,9 +1247,9 @@ class CuadernoProf(models.Model):
         try:
             return self.calalumce_set.get(alumno=alumno, cep__ce=ce).valor
         except:
-            cep = CEProgSec.objects.get(psec=self.psec, ce=ce)
-            cace = CalAlumCE.objects.create(alumno=alumno, cp=self, cep=cep)
-            return 0
+            # cep = CEProgSec.objects.get(psec=self.psec, ce=ce)
+            # cace = CalAlumCE.objects.create(alumno=alumno, cp=self, cep=cep)
+            return 10000
         #################################################################
         ######## LINEAS DE CÓDIGO ANTIGUAS:
         # try:

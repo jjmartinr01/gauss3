@@ -2017,32 +2017,17 @@ def progsecundaria(request):
                                      '10PRI3': 'Segundo Ciclo Primaria', '10PRI4': 'Segundo Ciclo Primaria',
                                      '10PRI5': 'Tercer Ciclo Primaria', '10PRI6': 'Tercer Ciclo Primaria'}
                     areamateria = AreaMateria.objects.get(id=request.POST['areamateria'])
+                    nombre_psec = '%s - %s' % (areamateria.get_curso_display(), areamateria.nombre)
                     try:
                         ciclo = CURSOS_CICLOS[request.POST['curso']]
                         etapa = ''.join([i for i in request.POST['curso'] if not i.isdigit()])
                         dep, c = Departamento.objects.get_or_create(ronda=g_e.ronda, nombre=ciclo, etapa=etapa,
                                                                     abreviatura=etapa)
                         progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria,
-                                                         departamento=dep)
-                        # try:
-                        #     ProgSec.objects.get(pga=pga, areamateria=areamateria, departamento=dep)
-                        #     msg = 'Ya existe una programación para %s (%s). No se crea una nueva.' % (
-                        #         areamateria.nombre, areamateria.get_curso_display())
-                        #     return JsonResponse({'ok': False, 'msg': msg})
-                        # except:
-                        #     progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria,
-                        #                                      departamento=dep)
+                                                         departamento=dep, nombre=nombre_psec)
                     except:
                         crea_departamentos(g_e.ronda)
-                        progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria)
-                        # try:
-                        #     ProgSec.objects.get(pga=pga, areamateria=areamateria)
-                        #     msg = 'Ya existe una programación para %s (%s). No se crea una nueva.' % (
-                        #         areamateria.nombre, areamateria.get_curso_display())
-                        #     return JsonResponse({'ok': False, 'msg': msg})
-                        # except:
-                        #     crea_departamentos(g_e.ronda)
-                        #     progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria)
+                        progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria, nombre=nombre_psec)
                     DocProgSec.objects.get_or_create(psec=progsec, gep=g_ep, permiso='X')
                     for ce in areamateria.competenciaespecifica_set.all():
                         cepsec = CEProgSec.objects.create(psec=progsec, ce=ce)
@@ -2090,7 +2075,11 @@ def progsecundaria(request):
                                               id=request.POST['id'])
                 permiso = progsec.get_permiso(g_ep)
                 if 'C' in permiso:
-                    msg = 'Hay cuadernos de docentes creados. Primero deberían ser borrados.'
+                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
+                    cuadernos = []
+                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    msg += ''.join(cuadernos)
                     return JsonResponse({'ok': False, 'msg': msg})
                 elif permiso == 'X' or progsec.gep.ge == g_e:
                     progsec.delete()
@@ -2180,14 +2169,19 @@ def progsecundaria(request):
                 if 'E' in permiso or 'X' in permiso:
                     if request.POST['tipo'] == 'DEF':
                         definitivas = ProgSec.objects.filter(tipo='DEF', pga=pga, areamateria=progsec.areamateria)
-                        for d in definitivas:
-                            d.tipo = 'BOR'
-                            d.save()
+                        if definitivas.count() > 0:
+                            msg = '<p>Ya existe una programación "Definitiva" asociada a esta materia en su centro.</p>'
+                            msg += '<p>Antes de hacer este cambio, debe marcarse como "Borrador" dicha programación.</p>'
+                            return JsonResponse({'ok': False, 'progsec': progsec.id, 'msg': msg, 'tipo': progsec.tipo})
+                        # for d in definitivas:
+                        #     d.tipo = 'BOR'
+                        #     d.save()
                     progsec.tipo = request.POST['tipo']
                     progsec.save()
                     return JsonResponse({'ok': True, 'progsec': progsec.id})
                 else:
-                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+                    msg = '<p>No tiene permiso para hacer el cambio solicitado.</p>'
+                    return JsonResponse({'ok': False, 'msg': msg, 'tipo': progsec.tipo, 'progsec': progsec.id})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'select_departamento':
@@ -2585,7 +2579,8 @@ def progsecundaria_sb(request, id):
                 sbas = SaberBas.objects.get(id=request.POST['sb'])
                 if sbas.psec.areamateria == reposap.areamateria:
                     ceps = CEProgSec.objects.filter(psec=sbas.psec, ce__in=reposap.ces.all())
-                    sap = SitApren.objects.create(sbas=sbas, nombre=reposap.nombre, objetivo=reposap.objetivo)
+                    sap = SitApren.objects.create(sbas=sbas, nombre=reposap.nombre, objetivo=reposap.objetivo,
+                                                  contenidos_sbas=reposap.contenidos_sbas)
                     sap.ceps.add(*ceps)
                     for repoact in reposap.repoactsitapren_set.all():
                         asapren = ActSitApren.objects.create(sapren=sap, nombre=repoact.nombre,

@@ -55,13 +55,32 @@
 
     <div class="row">
         <div class="columns large-12">
-            <label><b>Descripción de esta situación de aprendizaje: </b>
-                <textarea type="text" class="update_texto" data-campo="objetivo" data-clase="RepoSitApren"
-                          placeholder="Introduce aquí observaciones para la situación de aprendizaje"
-                          data-id="{{ sap.id }}"
-                          id="input_objetivo{{ sap.id }}">{{ sap.objetivo }}</textarea></label>
+            <label><b>Descripción y saberes básicos en esta situación de aprendizaje, así como las
+                metodologías utilizadas: </b>
+                <textarea type="text" class="update_texto" data-campo="contenidos_sbas" data-clase="RepoSitApren"
+                          placeholder="Introduce aquí una descripción, saberes básicos y metodologías"
+                          data-id="{{ sap.id }}" id="input_contenidos_sbas{{ sap.id }}">{{ sap.contenidos_sbas }}</textarea>
+            </label>
         </div>
     </div>
+
+    <div class="row">
+    <div class="columns large-12">
+        <label><b>Producto solicitado a los alumnos en esta situación de aprendizaje: </b>
+            <textarea type="text" class="update_texto" data-campo="objetivo" data-clase="RepoSitApren"
+                      placeholder="Introduce aquí el producto que deben entregar los alumnos" data-id="{{ sap.id }}"
+                      id="input_objetivo{{ sap.id }}">{{ sap.objetivo }}</textarea></label>
+    </div>
+</div>
+{#    <div class="row">#}
+{#        <div class="columns large-12">#}
+{#            <label><b>Descripción de esta situación de aprendizaje: </b>#}
+{#                <textarea type="text" class="update_texto" data-campo="objetivo" data-clase="RepoSitApren"#}
+{#                          placeholder="Introduce aquí observaciones para la situación de aprendizaje"#}
+{#                          data-id="{{ sap.id }}"#}
+{#                          id="input_objetivo{{ sap.id }}">{{ sap.objetivo }}</textarea></label>#}
+{#        </div>#}
+{#    </div>#}
 
     <div class="row">
         <div class="columns large-12">

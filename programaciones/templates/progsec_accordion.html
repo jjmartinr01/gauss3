@@ -12,10 +12,14 @@
         style="border-bottom: dotted 1px black">
         <a href="#panel{{ progsec.id }}" title="Última modificación: {{ progsec.modificado|date:"d-m-Y" }}">
             <i id="circle{{ progsec.id }}" class="fa fa-plus-circle circle_icon"></i>
-            <b>{{ progsec.pga.ronda.nombre }} - {{ progsec.areamateria.get_curso_display }} - {{ progsec.areamateria.nombre }} - <span id="accordion_nombre{{ progsec.id }}">
-                {% if not progsec.nombre %}<span style="color:red">Nueva programación</span>
-                {% else %}{{ progsec.nombre }}{% endif %}</span></b> -- ({{ progsec.creado|date:"d-m-Y" }})
-
+            {% if progsec.nombre %}
+                <b>{{ progsec.pga.ronda.nombre }} - <span id="accordion_nombre{{ progsec.id }}">
+                    {{ progsec.nombre }}</span></b>
+        {% else %}
+            <b>{{ progsec.pga.ronda.nombre }} - <span id="accordion_nombre{{ progsec.id }}">
+                {{ progsec.areamateria.get_curso_display }} - {{ progsec.areamateria.nombre }}</span></b>
+        {% endif %}
+        -- ({{ progsec.creado|date:"d-m-Y" }})
                 Creado por: <span style="color: green; padding-right: 20px;"><i
                         class="fa fa-user"></i> {{ progsec.gep.ge.gauser.get_full_name }}</span>
 

@@ -127,6 +127,7 @@
                 $('#plus_sign').click(function (event) {
                     event.preventDefault();
                     $('#formulario_crear').toggle();
+                    $(document).scrollTop($('#title_page').offset().top - 150);
                     setTimeout(function () {
                         $('#curso_progsec').select2();
                         $('#areamateria_progsec').select2();
@@ -509,6 +510,9 @@
                         if (data.ok) {
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
+                            show_mensajes({'title': '<i class="fa fa-warning"></i> Error', 'texto': data.msg})
+                            $('#tipo' + data.progsec).val(data.tipo);
+                            $('#tipo' + data.progsec).trigger('change');
                             $('#update_error').show().delay(1500).fadeOut();
                         }
                     });

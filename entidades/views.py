@@ -2791,3 +2791,63 @@ def crear_ges_sies2ies(request):
         except Exception as msg1:
             msgs += 'for1: ' + str(msg1)
     return HttpResponse(msgs)
+
+@gauss_required
+def add_permiso_cargo(request):
+    try:
+        clave_cargo = request.GET['clave_cargo']
+    except:
+        return HttpResponse('<p>La solicitud no contiene el parámetro "clave_cargo"</p>')
+    try:
+        code_nombre = request.GET['code_nombre']
+    except:
+        return HttpResponse('<p>La solicitud no contiene el parámetro "code_nombre"</p>')
+    try:
+        permiso = Permiso.objects.get(code_nombre=code_nombre)
+    except:
+        return HttpResponse('<p>El permiso indicado no existe</p>')
+    if 'entidad' in request.GET:
+        try:
+            entidad = Entidad.objects.get(code=request.GET['entidad'])
+            cargos = Cargo.objects.filter(clave_cargo=clave_cargo, entidad=entidad)
+            if cargos.count() == 0:
+                return HttpResponse('<p>En la entidad indicada no existe el cargo %s</p>' % clave_cargo)
+        except:
+            return HttpResponse('<p>La entidad indicada no existe</p>')
+    else:
+        cargos = Cargo.objects.filter(clave_cargo=clave_cargo)
+        if cargos.count() == 0:
+            return HttpResponse('<p>No existe ninguna entidad con el cargo %s</p>' % clave_cargo)
+    for cargo in cargos:
+        cargo.permisos.add(permiso)
+    return HttpResponse('<p>Proceso de asignación del permiso finalizado</p>')
+
+@gauss_required
+def del_permiso_cargo(request):
+    try:
+        clave_cargo = request.GET['clave_cargo']
+    except:
+        return HttpResponse('<p>La solicitud no contiene el parámetro "clave_cargo"</p>')
+    try:
+        code_nombre = request.GET['code_nombre']
+    except:
+        return HttpResponse('<p>La solicitud no contiene el parámetro "code_nombre"</p>')
+    try:
+        permiso = Permiso.objects.get(code_nombre=code_nombre)
+    except:
+        return HttpResponse('<p>El permiso indicado no existe</p>')
+    if 'entidad' in request.GET:
+        try:
+            entidad = Entidad.objects.get(code=request.GET['entidad'])
+            cargos = Cargo.objects.filter(clave_cargo=clave_cargo, entidad=entidad)
+            if cargos.count() == 0:
+                return HttpResponse('<p>En la entidad indicada no existe el cargo %s</p>' % clave_cargo)
+        except:
+            return HttpResponse('<p>La entidad indicada no existe</p>')
+    else:
+        cargos = Cargo.objects.filter(clave_cargo=clave_cargo)
+        if cargos.count() == 0:
+            return HttpResponse('<p>No existe ninguna entidad con el cargo %s</p>' % clave_cargo)
+    for cargo in cargos:
+        cargo.permisos.remove(permiso)
+    return HttpResponse('<p>Proceso de borrado del permiso finalizado</p>')
