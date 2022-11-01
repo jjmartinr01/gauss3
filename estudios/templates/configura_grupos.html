@@ -86,6 +86,14 @@
                 });
         });
 
+        $('body').on('change', '.update_alumnos', function (e) {
+            var alumnos = $(this).val();
+            var grupo = $(this).data('grupo');
+            $.post("/configura_grupos/", {action: 'update_alumnos', grupo: grupo, alumnos: alumnos},
+                function (data) {
+                    $("#update_ok").show().delay(1500).fadeOut();
+                });
+        });
 
 
         $(document).foundation({
@@ -102,6 +110,7 @@
                                     $("#update_ok").show().delay(1500).fadeOut();
                                     $('#panel' + id).html(data.html);
                                     $('#cursos' + id).select2();
+                                    $('#alumnos' + id).select2();
                                 } else {
                                     $("#update_error").show().delay(1500).fadeOut();
                                 }
