@@ -135,7 +135,7 @@ def departamentos_didacticos(request):
     return render(request, "configura_cursos.html", respuesta)
 
 
-# @permiso_required('acceso_configura_grupos')
+@permiso_required('acceso_configura_grupos')
 def configura_grupos(request):
     g_e = request.session['gauser_extra']
     if request.method == 'POST' and request.is_ajax():
@@ -161,8 +161,9 @@ def configura_grupos(request):
                 if gee.ge not in alumnos:
                     gee.grupo = None
             for alumno in alumnos:
-                alumno.gauser_extra_estudios.grupo = grupo
-                alumno.gauser_extra_estudios.save()
+                gee, c = Gauser_extra_estudios.objects.get_or_create(ge=alumno)
+                gee.grupo = grupo
+                gee.save()
             return JsonResponse({'ok': True})
         elif action == 'change_campo_texto':
             grupo = Grupo.objects.get(id=request.POST['grupo'], ronda=g_e.ronda)
