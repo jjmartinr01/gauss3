@@ -10,6 +10,9 @@
                 Procedimientos: <span id="num_insts{{ sap.id }}">{{ sap.num_instreval }}</span>
                 Criterios: <span id="num_criinsts{{ sap.id }}">{{ sap.num_criinstreval }}</span>
             {% endif %}</b>
+    <span style="color:green;">
+        - {{ sap.areamateria.nombre }} - {{ sap.areamateria.get_curso_display }}
+    </span>
     </a>
 
     <div id="panel{{ sap.id }}" class="content accordion-sap" data-id="{{ sap.id }}">
