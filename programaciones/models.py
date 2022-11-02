@@ -1134,12 +1134,18 @@ class RepoActSitApren(models.Model):
 class RepoInstrEval(models.Model):
     ESCALAS = (('ESVCL', 'Escala de valoración cualitativa'), ('ESVCN', 'Escala de valoración cuantitativa'),
                ('LCONT', 'Lista de control'))
-    TIPOS = (('CUADE', 'Revisión del cuaderno'), ('COMPO', 'Composición y/o ensayo'), ('RANEC', 'Registro anecdótico'),
-             ('PRESC', 'Preguntas de respuesta corta'), ('PREEM', 'Preguntas de emparejamiento'),
-             ('PTINC', 'Preguntas de texto incompleto'), ('POMUL', 'Preguntas de opción múltiple'),
-             ('PRVOF', 'Preguntas de verdadero/falso justificadas'), ('PRAYD', 'Preguntas de analogías y diferencias'),
-             ('PRIEL', 'Preguntas de interpretación y/o elaboración de gráficos, tablas, mapas, ...'),
-             ('TMONO', 'Trabajo monográfico o de investigación'), ('EXATR', 'Examen tradicional/Prueba objetiva'))
+    # TIPOS = (('CUADE', 'Revisión del cuaderno'), ('COMPO', 'Composición y/o ensayo'), ('RANEC', 'Registro anecdótico'),
+    #          ('PRESC', 'Preguntas de respuesta corta'), ('PREEM', 'Preguntas de emparejamiento'),
+    #          ('PTINC', 'Preguntas de texto incompleto'), ('POMUL', 'Preguntas de opción múltiple'),
+    #          ('PRVOF', 'Preguntas de verdadero/falso justificadas'), ('PRAYD', 'Preguntas de analogías y diferencias'),
+    #          ('PRIEL', 'Preguntas de interpretación y/o elaboración de gráficos, tablas, mapas, ...'),
+    #          ('TMONO', 'Trabajo monográfico o de investigación'), ('EXATR', 'Examen tradicional/Prueba objetiva'))
+    TIPOS = (('OBSS', 'Observación sistemática'), ('PROD', 'Procesos de diálogo/Debates'),
+             ('ESQMA', 'Esquemas y mapas conceptuales'), ('PREJ', 'Pruebas de ejecución'),
+             ('PRESE', 'Presentación de un producto'), ('CUADE', 'Revisión del cuaderno o producto'),
+             ('EXATR', 'Examen tradicional/Prueba objetiva/competencial'),
+             ('BLOOM', 'Preguntas de análisis, evaluación y/o creación'), ('COMPO', 'Composición y/o ensayo'),
+             ('TMONO', 'Trabajo monográfico o de investigación'))
     asapren = models.ForeignKey(RepoActSitApren, on_delete=models.CASCADE, blank=True, null=True)
     tipo = models.CharField('Tipo de instrumento', blank=True, max_length=10, choices=TIPOS)
     nombre = models.CharField('Nombre dado al instrumento', blank=True, max_length=300)
