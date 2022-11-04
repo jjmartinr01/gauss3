@@ -3636,3 +3636,20 @@ def crea_calalumce_cev(request):
         return HttpResponse('Esta operación puede requerir varios minutos')
     except Exception as msg:
         return HttpResponse(str(msg))
+
+
+@gauss_required
+def arregla_instrevals(request):
+    try:
+        tipos = InstrEval.TIPOS
+        for instreval in InstrEval.objects.all():
+            if instreval.tipo not in tipos:
+                instreval.tipo = 'OBSS'
+                instreval.save()
+        for instreval in RepoInstrEval.objects.all():
+            if instreval.tipo not in tipos:
+                instreval.tipo = 'OBSS'
+                instreval.save()
+        return HttpResponse('InstrEvals y RepoInstrEvals arreglados')
+    except Exception as msg:
+        return HttpResponse(str(msg))
