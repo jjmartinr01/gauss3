@@ -3641,7 +3641,7 @@ def crea_calalumce_cev(request):
 @gauss_required
 def arregla_instrevals(request):
     try:
-        tipos = InstrEval.TIPOS
+        tipos = [t[0] for t in InstrEval.TIPOS]
         for instreval in InstrEval.objects.all():
             if instreval.tipo not in tipos:
                 instreval.tipo = 'OBSS'
