@@ -3640,16 +3640,20 @@ def crea_calalumce_cev(request):
 
 @gauss_required
 def arregla_instrevals(request):
+    info = 0
+    repoinfo = 0
     try:
         tipos = [t[0] for t in InstrEval.TIPOS]
         for instreval in InstrEval.objects.all():
             if instreval.tipo not in tipos:
                 instreval.tipo = 'OBSS'
                 instreval.save()
+                info += 1
         for instreval in RepoInstrEval.objects.all():
             if instreval.tipo not in tipos:
                 instreval.tipo = 'OBSS'
                 instreval.save()
-        return HttpResponse('InstrEvals y RepoInstrEvals arreglados')
+                repoinfo += 1
+        return HttpResponse('InstrEvals (%s) y RepoInstrEvals (%s) arreglados' % (info, repoinfo))
     except Exception as msg:
         return HttpResponse(str(msg))
