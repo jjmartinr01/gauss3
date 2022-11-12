@@ -35,7 +35,7 @@ from gauss.constantes import PROVINCIAS, GAUSER_COMODIN
 from gauss.funciones import pass_generator, genera_nie
 from gauss.settings import RUTA_BASE_SETTINGS
 from estudios.models import Gauser_extra_estudios
-from autenticar.models import Enlace, Permiso, Gauser, Menu_default
+from autenticar.models import Enlace, Permiso, Gauser, Menu_default, Configauss
 from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, CargaMasiva, ConfigurationUpdate, Ronda, \
     Reserva_plaza
 from entidades.tasks import carga_masiva_from_excel, ejecutar_configurar_cargos_permisos, \
@@ -457,6 +457,7 @@ def ejecutar_query(request):
 
 @LogGauss
 def index(request):
+    Configauss.objects.get_or_create(server_name=request.META.get('SERVER_NAME'))
     if 'nexturl' in request.GET:
         url_destino = request.GET['nexturl']
     else:
