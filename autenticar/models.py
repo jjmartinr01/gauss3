@@ -63,7 +63,7 @@ class Configauss(models.Model):
                                       default='Gestión Interna de la Entidad')
     logo_cabecera = models.ImageField("Imagen de acceso", upload_to=update_logo_cabecera, blank=True, null=True)
     def __str__(self):
-        return '%s --> %s' % (self.url_acceso, self.nombre)
+        return '%s --> %s' % (self.server_name, self.nombre)
 
 class Menu_default(models.Model):
     code_menu = models.CharField("Código identificador del menú", max_length=100, blank=True, null=True)
