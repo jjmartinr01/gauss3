@@ -457,7 +457,7 @@ def ejecutar_query(request):
 
 @LogGauss
 def index(request):
-    Configauss.objects.get_or_create(server_name=request.META.get('SERVER_NAME'))
+    Configauss.objects.get_or_create(server_name=request.META.get('HTTP_HOST'))
     if 'nexturl' in request.GET:
         url_destino = request.GET['nexturl']
     else:
