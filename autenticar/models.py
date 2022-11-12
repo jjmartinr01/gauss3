@@ -47,12 +47,12 @@ NIVEL = ((1, 'Menú principal'),
 
 def update_logo_acceso(instance, filename):
     nombre = filename.partition('.')
-    nuevo_nombre = 'logo_acceso_%s.%s' % (slugify(instance.url_acceso), nombre[2])
+    nuevo_nombre = 'logo_acceso_%s.%s' % (slugify(instance.server_name), nombre[2])
     return os.path.join("configauss/", nuevo_nombre)
 
 def update_logo_cabecera(instance, filename):
     nombre = filename.partition('.')
-    nuevo_nombre = 'logo_cabecera_%s.%s' % (slugify(instance.url_acceso), nombre[2])
+    nuevo_nombre = 'logo_cabecera_%s.%s' % (slugify(instance.server_name), nombre[2])
     return os.path.join("configauss/", nuevo_nombre)
 
 class Configauss(models.Model):

@@ -457,7 +457,12 @@ def ejecutar_query(request):
 
 @LogGauss
 def index(request):
-    Configauss.objects.get_or_create(server_name=request.META.get('HTTP_HOST'))
+    configauss, c = Configauss.objects.get_or_create(server_name=request.META.get('HTTP_HOST'))
+    request.session['configauss'] = configauss
+    if configauss.logo_acceso:
+        logo_acceso_url = configauss.logo_acceso.url
+    else:
+        logo_acceso_url = "/static/images/logo_gauss_acceso.png"
     if 'nexturl' in request.GET:
         url_destino = request.GET['nexturl']
     else:
@@ -528,7 +533,8 @@ def index(request):
                 logger.info('Usuario: %s, no reconocido. Intenta acceso desde %s' % (usuario, ip))
                 logout(request)
                 form = CaptchaForm()
-                return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso'})
+                return render(request, "autenticar.html", {'logo_acceso_url': logo_acceso_url, 'form': form,
+                                                           'email': 'aaa@aaa', 'tipo': 'acceso'})
         elif request.POST['action'] == 'solicita_pass':
             form = CaptchaForm(request.POST)
             email = request.POST['email']
@@ -559,11 +565,11 @@ def index(request):
                 except:
                     form = CaptchaForm()
                     return render(request, "autenticar.html", {'form': form, 'tipo': 'introduce_mail',
-                                                               'email': email})
+                                                               'logo_acceso_url': logo_acceso_url, 'email': email})
             else:
                 form = CaptchaForm()
                 return render(request, "autenticar.html", {'form': form, 'tipo': 'introduce_captcha',
-                                                           'email': email})
+                                                           'logo_acceso_url': logo_acceso_url, 'email': email})
         elif request.POST['action'] == 'selecciona_entidad':
             request.session["gauser_extra"] = Gauser_extra.objects.get(pk=request.POST['gauser_extra'])
             request.session["ronda"] = request.session["gauser_extra"].ronda
@@ -590,7 +596,8 @@ def index(request):
         else:
             logout(request)
             form = CaptchaForm()
-            return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso', 'ip': ip})
+            return render(request, "autenticar.html", {'logo_acceso_url': logo_acceso_url, 'form': form,
+                                                       'email': 'aaa@aaa', 'tipo': 'acceso', 'ip': ip})
 
 # ------------------------------------------------------------------#
 # Login en GAUSS a través del servidor CAS del Gobierno de La Rioja
