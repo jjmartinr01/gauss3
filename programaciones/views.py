@@ -2123,7 +2123,8 @@ def progsecundaria(request):
                     for lr in sb.librorecursos.all():
                         sb_nuevo.actexcoms.add(*ps_nueva.librorecurso_set.filter(nombre=lr.nombre))
                     for sa in sb.sitapren_set.all():
-                        sa_nueva = SitApren.objects.create(sbas=sb_nuevo, objetivo=sa.objetivo, nombre=sa.nombre)
+                        sa_nueva = SitApren.objects.create(sbas=sb_nuevo, objetivo=sa.objetivo, nombre=sa.nombre,
+                                                           contenidos_sbas=sa.contenidos_sbas)
                         for cep in sa.ceps.all():
                             sa_nueva.ceps.add(*ps_nueva.ceprogsec_set.filter(ce=cep.ce))
                         for asa in sa.actsitapren_set.all():
@@ -2477,6 +2478,9 @@ def progsecundaria(request):
                       'iconos':
                           ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Programación',
                             'title': 'Crear una nueva programación de una materia de secundaria',
+                            'permiso': 'libre'},
+                           {'tipo': 'button', 'nombre': 'link', 'texto': 'Enlace web',
+                            'title': 'Obtener el código a escribir en la página web del centro para ver programaciones',
                             'permiso': 'libre'},
                            {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar',
                             'title': 'Buscar programación a través del nombre de la materia de secundaria',

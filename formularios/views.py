@@ -30,7 +30,7 @@ from mensajes.models import Aviso
 from mensajes.views import crear_aviso
 from formularios.models import *
 from gauss.rutas import *
-from gauss.funciones import get_dce
+from gauss.funciones import get_dce, genera_nie
 from entidades.models import Gauser_extra
 from horarios.tasks import carga_masiva_from_file
 
@@ -1375,20 +1375,19 @@ def procesos_evaluacion_funcpract(request):  # procesos_evaluacion_funcionarios_
                         try:
                             code_centro = int(sheet.cell_value(row_index, 1))
                             entidad_funcionario = Entidad.objects.get(code=code_centro)
-                            docente = Gauser_extra.objects.get(gauser__dni=str(sheet.cell_value(row_index, 3)).strip(),
-                                                               ronda=entidad_funcionario.ronda)
+                            dni = genera_nie(str(sheet.cell_value(row_index, 3)).strip())
+                            docente = Gauser_extra.objects.get(gauser__dni=dni, ronda=entidad_funcionario.ronda)
                             doc = True
-                            director = Gauser_extra.objects.get(gauser__dni=str(sheet.cell_value(row_index, 5)).strip(),
-                                                                ronda=entidad_funcionario.ronda)
+                            dni = genera_nie(str(sheet.cell_value(row_index, 5)).strip())
+                            director = Gauser_extra.objects.get(gauser__dni=dni, ronda=entidad_funcionario.ronda)
                             dir = True
-                            tutor = Gauser_extra.objects.get(gauser__dni=str(sheet.cell_value(row_index, 7)).strip(),
-                                                             ronda=entidad_funcionario.ronda)
+                            dni = genera_nie(str(sheet.cell_value(row_index, 7)).strip())
+                            tutor = Gauser_extra.objects.get(gauser__dni=dni, ronda=entidad_funcionario.ronda)
                             tut = True
                             entidad_inspeccion = Entidad.objects.get(name__icontains='inspecc')
                             # entidad_inspeccion = entidad_funcionario
-                            inspector = Gauser_extra.objects.get(
-                                gauser__dni=str(sheet.cell_value(row_index, 9)).strip(),
-                                ronda=entidad_inspeccion.ronda)
+                            dni = genera_nie(str(sheet.cell_value(row_index, 9)).strip())
+                            inspector = Gauser_extra.objects.get(gauser__dni=dni, ronda=entidad_inspeccion.ronda)
                             insp = True
                             efpa, c = EvalFunPractAct.objects.get_or_create(procesoevalfunpract=pefp,
                                                                             inspector=inspector, tutor=tutor,

@@ -62,9 +62,9 @@
                    href="/verprogramacion/{{ progsec.pga.ronda.entidad.code }}/{{ progsec.id }}/"><i
                     class="fa fa-file-text"></i> Texto</a>
             </li>
-                        <li><a class="button pdf_progsec tiny" data-progsec="{{ progsec.id }}"
-                               title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>
-                        </li>
+            <li><a class="button pdf_progsec tiny" data-progsec="{{ progsec.id }}"
+                   title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>
+            </li>
         </ul>
     </div>
 </div>
@@ -459,13 +459,14 @@
     </div>
 </div>
 <div class="row">
-    <div class="columns large-9">
-        <label>Cargar el archivo del libro/material (opcional):
-            <input type="file" disabled="disabled" name="archivo_libro{{ progsec.id }}"
-                   id="archivo_libro{{ progsec.id }}">
-        </label>
-    </div>
-    <div class="columns large-3">
+{#        <div class="columns large-9">#}
+{#            <label>Cargar el archivo del libro/material (opcional):#}
+{#                <input type="file" disabled="disabled" name="archivo_libro{{ progsec.id }}"#}
+{#                       id="archivo_libro{{ progsec.id }}">#}
+{#            </label>#}
+{#        </div>#}
+    <div class="columns large-9">&nbsp;</div>
+    <div class="columns large-3 right">
         <a data-progsec="{{ progsec.id }}" class="button right cargar_libro">Cargar libro/material</a>
     </div>
 </div>
@@ -520,14 +521,22 @@
     </div>
 </div>
 <div class="row">
-    <div class="columns large-9">
+    <div class="columns large-12">
         <label>Observaciones a la actividad extraescolar/complementaria:
             <textarea data-progsec="{{ progsec.id }}" id="observaciones_actex{{ progsec.id }}"
                       placeholder="Texto opcional"></textarea>
         </label>
     </div>
-    <div class="columns large-3">
-        <label>&nbsp;<br>
+{#    <div class="columns large-3">#}
+{#        <label>&nbsp;<br>#}
+{#            <a data-progsec="{{ progsec.id }}" class="button right cargar_actex">Cargar actividad</a>#}
+{#        </label>#}
+{#    </div>#}
+</div>
+<div class="row">
+    <div class="columns large-9">&nbsp;</div>
+    <div class="columns large-3 right">
+        <label>
             <a data-progsec="{{ progsec.id }}" class="button right cargar_actex">Cargar actividad</a>
         </label>
     </div>
