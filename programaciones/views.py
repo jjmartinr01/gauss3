@@ -2503,17 +2503,55 @@ def progsecundaria(request):
 #     return HttpResponse(str(msg))
 
 
-def verprogramacion(request, centro, id):
+def verprogramacion(request, secret, id):
     try:
-        progsec = ProgSec.objects.get(id=id, pga__ronda__entidad__code=centro)
+        entidad = Entidad.objects.get(secret=secret)
+        progsec = ProgSec.objects.get(id=id, pga__ronda__entidad=entidad)
+        if 'pdf' in request.GET:
+            doc_progsec = 'Configuración de programaciones didácticas'
+            try:
+                dce = DocConfEntidad.objects.get(entidad=entidad, nombre=doc_progsec)
+            except:
+                try:
+                    dce = DocConfEntidad.objects.get(entidad=entidad, predeterminado=True)
+                except:
+                    dce = DocConfEntidad.objects.filter(entidad=entidad)[0]
+                    dce.predeterminado = True
+                    dce.save()
+                dce.pk = None
+                dce.nombre = doc_progsec
+                dce.predeterminado = False
+                dce.editable = False
+                dce.save()
+            c = render_to_string('verprogramacion.html', {'progsec': progsec, 'pdf': True})
+            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            fich = open(dce.url_pdf, 'rb')
+            response = HttpResponse(fich, content_type='application/pdf')
+            nombre = progsec.areamateria.nombre + '_' + progsec.areamateria.get_curso_display()
+            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+            return response
+
         return render(request, "verprogramacion.html",
                       {
-                          'formname': 'progsec',
+                          'formname': 'verprogramacion',
                           'progsec': progsec,
                           'tipos_procedimientos': InstrEval.TIPOS,
                       })
     except:
         pass
+
+def verprogramaciones(request, secret):
+    try:
+        entidad = Entidad.objects.get(secret=secret)
+        progsecs = ProgSec.objects.filter(pga__ronda__entidad=entidad).order_by('areamateria__curso')
+        return render(request, "verprogramaciones.html",
+                      {
+                          'formname': 'verprogramaciones',
+                          'progsecs': progsecs,
+                          'entidad': entidad,
+                      })
+    except:
+        return HttpResponse('<h1>Se ha producido un error. Petición no llevada a cabo.</h1>')
 
 
 @permiso_required('acceso_progsecundaria')

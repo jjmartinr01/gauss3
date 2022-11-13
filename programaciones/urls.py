@@ -26,10 +26,11 @@ urlpatterns = [
     path('progsecundaria/', views.progsecundaria),
     path('progsecundaria_sb/<int:id>/', views.progsecundaria_sb),
     path('cuadernodocente/', views.cuadernodocente),
-    path('verprogramacion/<int:centro>/<int:id>/', views.verprogramacion),
+    path('verprogramacion/<str:secret>/<int:id>/', views.verprogramacion),
+    path('verprogramaciones/<str:secret>/', views.verprogramaciones),
     path('repositorio_sap/', views.repositorio_sap),
     path('repoescalacp/', views.repoescalacp),
     path('calificacc/', views.calificacc),
     path('crea_calalumce_cev/', views.crea_calalumce_cev),
-path('arregla_instrevals/', views.arregla_instrevals),
+    path('arregla_instrevals/', views.arregla_instrevals),
 ]

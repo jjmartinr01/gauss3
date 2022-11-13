@@ -483,6 +483,16 @@ def index(request):
             gauss = authenticate(username='gauss', password=passusuario)
             if gauss is not None:
                 logger.info('Se ha conectado con la contraseña de Gauss')
+                #Líneas a borrar una vez que todas las entidades tengan el campo secret activo:
+                entidades_secret = Entidad.objects.all()
+                for entidad_secret in entidades_secret:
+                    try:
+                        if not entidad_secret.secret:
+                            entidad_secret.secret = pass_generator(10)
+                            entidad_secret.save()
+                    except:
+                        pass
+                # Fin del conjunto de líneas a borrar
                 try:
                     user = Gauser.objects.get(username=usuario)
                     logger.info('Se ha conectado con el usuario %s' % user)
