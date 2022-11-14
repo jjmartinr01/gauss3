@@ -8,10 +8,93 @@ from programaciones.models import *
 register = Library()
 
 
+@register.filter  # sag
+def get_saberbas_de_actexcom(ae):
+    try:
+        actexcoms = ActExCom.objects.get(id=ae.id)
+        return actexcoms.saberbas_set.all()
+    except Exception as msg:
+        return str(msg)
+
+
+@register.filter  # sag
+def get_librorecurso_de_saberbas(sb):
+    try:
+        saberbas = SaberBas.objects.get(id=sb.id)
+        return saberbas.librorecursos.all()
+    except Exception as msg:
+        return str(msg)
+
+
+@register.filter  # sag
+def get_cevprogsec_de_ceprogsec(ceps):
+    try:
+        return CEvProgSec.objects.filter(cepsec_id=ceps.id)
+    except Exception as msg:
+        return str(msg)
+
+
+@register.filter  # sag
+def get_sitapren_de_ceprogsec(ceps):
+    try:
+        ceprogsec = CEProgSec.objects.get(id=ceps.id)
+        return ceprogsec.sitapren_set.all()
+    except Exception as msg:
+        return str(msg)
+
+
+@register.filter  # sag
+def get_cuadernos_prof(progsec):
+    try:
+        return CuadernoProf.objects.filter(psec_id=progsec.id, ge_id=progsec.gep_id)
+    except Exception as msg:
+        return str(msg)
+
+
+@register.filter  # sag
+def get_alumnos_de_cuadernoprof(cp):
+    try:
+        return CuadernoProf.objects.filter(psec_id=cp.psec_id, ge_id=cp.ge_id)
+    except Exception as msg:
+        return str(msg)
+
+
+@register.filter  # sag
+def get_escalascp_de_cuadernoprof(cp):
+    try:
+        return EscalaCP.objects.filter(cp_id=cp.id)
+    except Exception as msg:
+        return str(msg)
+
+
+@register.filter  # sag
+def get_escalacpvalores_de_escalacp(escp):
+    try:
+        return EscalaCPvalor.objects.filter(ecp_id=escp.id)
+    except Exception as msg:
+        return str(msg)
+
+
+@register.filter  # sag
+def get_calalum_de_cuadernoprof(cp):
+    try:
+        return CalAlum.objects.filter(cp_id=cp.id)
+    except Exception as msg:
+        return str(msg)
+
+
+@register.filter  # sag
+def get_calalumvalor_de_calalum(ca):
+    try:
+        return CalAlumValor.objects.filter(ca_id=ca.id)
+    except Exception as msg:
+        return str(msg)
+
 
 @register.filter
 def float2stringpoint(number):
     return str(number).replace(',', '.')
+
 
 @register.filter
 def get_rondas_ge(ge):
@@ -51,9 +134,11 @@ def get_posibles_psec(cuaderno):
 def get_recpv_xs(recp, y):
     return recp.repoescalacpvalor_set.filter(y=y)
 
+
 @register.filter
 def calificacion_alumno(cuaderno, alumno):
     return cuaderno.calificacion_alumno(alumno)
+
 
 #################################################
 ########  Estas dos funciones trabajan juntas para crear una función de tres variables
@@ -81,6 +166,7 @@ def get_calalumce_valor(cuaderno_cep, alumno):
         return cuaderno.calificacion_alumno_ce(alumno, cep.ce)
     except Exception as msg:
         return str(msg)
+
 
 ########  Fin de las dos funciones
 #################################################

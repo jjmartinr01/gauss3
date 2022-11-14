@@ -1,0 +1,173 @@
+{% load programaciones_extras %}
+
+<?xml version="1.0" encoding="utf-8" ?>
+<programaciones model = "progsec">
+    <programacion id = "{{ progsec.id }}">
+        <datos>
+            <nombre>{{ progsec.nombre }}</nombre>
+            <tipo>{{ progsec.tipo }}</tipo>
+            <inicio_clases>{{ progsec.inicio_clases }}</inicio_clases>
+            <fin_clases>{{ progsec.fin_clases }}</fin_clases>
+            <procdiversidad>{{ progsec.procdiversidad }}</procdiversidad>
+            <creado>{{ progsec.creado }}</creado>
+            <modificado>{{ progsec.modificado }}</modificado>
+            <areamateria_id>{{ progsec.areamateria_id }}</areamateria_id>
+            <curso_id>{{ progsec.curso_id }}</curso_id>
+            <departamento_id>{{ progsec.departamento_id }}</departamento_id>
+            <es_copia_de_id>{{ progsec.es_copia_de_id }}</es_copia_de_id>
+            <gep_id>{{ progsec.gep_id }}</gep_id>
+            <materia_id>{{ progsec.materia_id }}</materia_id>
+            <pga_id>{{ progsec.pga_id }}</pga_id>
+        </datos>
+        <cuadernos_prof>
+            {% for cp in progsec|get_cuadernos_prof %}
+                <cuadernoprof id = "{{ cp.id }}">
+                    <datos>
+                        <vmin>{{ cp.vmin }}</vmin>
+                        <vmax>{{ cp.vmax }}</vmax>
+                        <vista>{{ cp.vista }}</vista>
+                        <borrado>{{ cp.borrado }}</borrado>
+                        <log>{{ cp.log }}</log>
+                        <ge_id>{{ cp.ge.id }}</ge_id>
+                        <grupo_id>{{ cp.grupo_id }}</grupo_id>
+                        <psec_id>{{ cp.psec_id }}</psec_id>
+                    </datos>
+                    <alumnos model = "alumnos">
+                        {% for al in cp|get_alumnos_de_cuadernoprof %}
+                        <alumno id = "{{ al.id }}">
+                            <datos>
+                                <cuadernoprof_id>{{ cp.id }}</cuadernoprof_id>
+                                <gauser_extra_id>{{ al.id }}</gauser_extra_id>
+                            </datos>
+                        </alumno>
+                        {% endfor %}
+                    </alumnos>
+                    <escalas_cp model = "escalacp">
+                        {% for escp in cp|get_escalascp_de_cuadernoprof %}
+                        <escala id = "{{ escp.id }}">
+                            <datos>
+                                <tipo>{{ escp.tipo }}</tipo>
+                                <nombre>{{ escp.nombre }}</nombre>
+                                <cp_id>{{ escp.cp_id }}</cp_id>
+                                <ieval_id>{{ escp.ieval_id }}</ieval_id>
+                            </datos>
+                            <escalacpvalores model = "escalacpvalor">
+                                {% for escp_valor in escp|get_escalacpvalores_de_escalacp %}
+                                <escalacpvalor id = "{{ escp_valor.id }}">
+                                    <datos>
+                                        <x>{{ escp_valor.x }}</x>
+                                        <y>{{ escp_valor.y }}</y>
+                                        <test_cualitativo>{{ escp_valor.test_cualitativo }}</test_cualitativo>
+                                        <ecp_id>{{ escp_valor.ecp_id }}</ecp_id>
+                                    </datos>
+                                </escalacpvalor>
+                                {% endfor %}
+                            </escalacpvalores>
+                        </escala>
+                        {% endfor %}
+                    </escalas_cp>
+                    <cal_alumnos model = "calalum">
+                       {% for ca in cp|get_calalum_de_cuadernoprof %}
+                        <datos>
+                            <obs>{{ ca.obs }}</obs>
+                            <alumno_id>{{ ca.alumno_id }}</alumno_id>
+                            <cie_id>{{ ca.cie_id }}</cie_id>
+                            <cp_id>{{ ca.cp_id }}</cp_id>
+                            <ecp_id>{{ ca.ecp_id }}</ecp_id>
+                        </datos>
+                        <cal_alumnos_valor model="calalumvalor">
+                        {% for cavalor in ca|get_calalumvalor_de_calalum %}
+                            <calalum_valor id="{{ cavalor.id }}">
+                                <datos>
+                                    <obs>{{ cavalor.obs }}</obs>
+                                    <ca_id>{{ cavalor.ca_id }}</ca_id>
+                                    <ecpv_id>{{ cavalor.ecpv_id }}</ecpv_id>
+                                </datos>
+                            </calalum_valor>
+                        {% endfor %}
+                        </cal_alumnos_valor>
+                        {% endfor %}
+                    </cal_alumnos>
+                </cuadernoprof>
+            {% endfor %}
+        </cuadernos_prof>
+        <libros_recurso model = "librorecurso">
+            {% for lr in progsec.librorecurso_set.all %}
+            <librorecurso id = "{{ lr.id }}">
+                <datos>
+                    <nombre>{{ lr.nombre }}</nombre>
+                    <isbn>{{ lr.isbn }}</isbn>
+                    <observaciones>{{ lr.observaciones }}</observaciones>
+                    <doc_file>{{ lr.doc_file }}</doc_file>
+                    <content_type>{{ lr.content_type }}</content_type>
+                    <modificado>{{ lr.modificado }}</modificado>
+                    <psec_id>{{ lr.psec_id }}</psec_id>
+                </datos>
+            </librorecurso>
+            {% endfor %}
+        </libros_recurso>
+        <saberes_basicos model = "saberbas">
+            {% for sb in progsec.saberbas_set.all %}
+            <saberbas id = "{{ sb.id }}">
+                <datos>
+                    <orden>{{ sb.orden }}</orden>
+                    <nombre>{{ sb.nombre }}</nombre>
+                    <comienzo>{{ sb.comienzo }}</comienzo>
+                    <periodos>{{ sb.periodos }}</periodos>
+                    <modificado>{{ sb.modificado }}</modificado>
+                    <psec_id>{{ sb.psec_id }}</psec_id>
+                </datos>
+                {% for lr in sb|get_librorecurso_de_saberbas %}
+                <librorecurso>{{ lr.id }}</librorecurso>
+                {% endfor %}
+            </saberbas>
+            {% endfor %}
+        </saberes_basicos>
+        <acts_excom model = "actexcom">
+            {% for ae in progsec.actexcom_set.all %}
+            <actexcom id = "{{ ae.id }}">
+                <datos>
+                    <nombre>{{ ae.nombre }}</nombre>
+                    <observaciones>{{ ae.observaciones }}</observaciones>
+                    <inicio>{{ ae.inicio }}</inicio>
+                    <fin>{{ ae.fin }}</fin>
+                    <modificado>{{ ae.modificado }}</modificado>
+                    <psec_id>{{ ae.psec_id }}</psec_id>
+                </datos>
+                <saberesbas>
+                    {% for sb in ae|get_saberbas_de_actexcom %}
+                    <saberbas>{{ sb.id }}</saberbas>
+                    {% endfor %}
+                </saberesbas>
+            </actexcom>
+            {% endfor %}
+        </acts_excom>
+        <ces_progsec model = "ceprogsec">
+            {% for ceps in progsec.ceprogsec_set.all %}
+            <ceprogsec id = "{{ ceps.id }}">
+                <datos>
+                    <valor>{{ ceps.valor }}</valor>
+                    <modificado>{{ ceps.modificado }}</modificado>
+                    <ce_id>{{ ceps.ce_id }}</ce_id>
+                    <psec_id>{{ ceps.psec_id }}</psec_id>
+                </datos>
+                {% for cev in ceps|get_cevprogsec_de_ceprogsec %}
+                <cevprogsec id = "{{ cev.id }}">
+                    <datos>
+                        <valor>{{ cev.valor }}</valor>
+                        <modificado>{{ cev.modificado }}</modificado>
+                        <cepsec_id>{{ cev.cepsec_id }}</cepsec_id>
+                        <cev_id>{{ cev.cev_id }}</cev_id>
+                    </datos>
+                </cevprogsec>
+                {% endfor %}
+                <sitaprens>
+                    {% for sp in ceps|get_sitapren_de_ceprogsec %}
+                    <sitapren>{{ sp.id }}</sitapren>
+                    {% endfor %}
+                </sitaprens>
+            </ceprogsec>
+            {% endfor %}
+        </ces_progsec>
+    </programacion>
+</programaciones>

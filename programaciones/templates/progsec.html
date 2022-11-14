@@ -618,6 +618,13 @@
                     document.getElementById('{{formname}}').submit();
                 });
 
+            $('#Contenido').on('click', '.backup_progsec', function (e) { // sag
+                    e.preventDefault();
+                    {#genera_pdf_informe();#}
+                    $('#action').val('backup_progsec');
+                    document.getElementById('{{formname}}').submit();
+                });
+
             {% comment %}
                 $("body").on('keyup', '#busca_progsec', function (e) {
                     var texto = $('#busca_progsec').val();

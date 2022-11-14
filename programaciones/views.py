@@ -1,23 +1,17 @@
 # -*- coding: utf-8 -*-
-import re
 import pdfkit
 from datetime import date, datetime
 import simplejson as json
-import unicodedata
 import os
-import zipfile
 import shutil
 import locale
-from math import modf
 import logging
 import requests
 import xlrd
 from bs4 import BeautifulSoup
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.template import RequestContext
 from django.db.models import Q, Sum
-from django import forms
 from django.forms import ModelForm
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
@@ -36,6 +30,7 @@ from gauss.rutas import RUTA_BASE, MEDIA_PROGRAMACIONES
 from mensajes.views import crear_aviso
 from mensajes.models import Aviso
 from estudios.models import ETAPAS, Gauser_extra_estudios, PerfilSalida, DescriptorOperativo
+from .custom_classes.backups import BkProgsec # sag
 
 locale.setlocale(locale.LC_ALL, 'es_ES.UTF-8')
 
@@ -2472,7 +2467,11 @@ def progsecundaria(request):
                 return response
             except:
                 pass
-
+        elif request.POST['action'] == 'backup_progsec':  # sag
+            bkps = BkProgsec(request.POST['id_progsec'])
+            response = HttpResponse(bkps.generarXML(ProgSec), content_type='application/xml')
+            response['Content-Disposition'] = 'attachment; filename="Programacion_'+request.POST["id_progsec"]+'.xml"'
+            return response
     try:
         prog = int(request.GET['prog'])
     except:

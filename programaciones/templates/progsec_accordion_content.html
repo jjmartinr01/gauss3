@@ -62,9 +62,12 @@
                    href="/verprogramacion/{{ progsec.pga.ronda.entidad.code }}/{{ progsec.id }}/"><i
                     class="fa fa-file-text"></i> Texto</a>
             </li>
-                        <li><a class="button pdf_progsec tiny" data-progsec="{{ progsec.id }}"
-                               title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>
-                        </li>
+            <li><a class="button pdf_progsec tiny" data-progsec="{{ progsec.id }}"
+                   title="Crear un PDF de este informe"><i class="fa fa-file-pdf-o"></i> PDF</a>
+            </li>
+            <li><a class="button backup_progsec tiny" data-progsec="{{ progsec.id }}"
+                   title="Descargar copia completa de la proramación"><i class="fa fa-download"></i> Copia de seguridad</a> <!-- sag -->
+            </li>
         </ul>
     </div>
 </div>
