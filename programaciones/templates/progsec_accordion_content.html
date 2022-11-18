@@ -59,7 +59,7 @@
                 Copiar</a>
             </li>
             <li><a class="button tiny" target="_blank" title="Ver la programación en el navegador"
-                   href="/verprogramacion/{{ progsec.pga.ronda.entidad.code }}/{{ progsec.id }}/"><i
+                   href="/verprogramacion/{{ progsec.pga.ronda.entidad.secret }}/{{ progsec.id }}/"><i
                     class="fa fa-file-text"></i> Texto</a>
             </li>
             <li><a class="button pdf_progsec tiny" data-progsec="{{ progsec.id }}"
@@ -288,7 +288,13 @@
                                 {% endif %}
                             {% endifchanged %}
                             <tr>
-                                <td>{{ cep.ce.orden }}.- {{ cep.ce.nombre }}</td>
+                                <td>{{ cep.ce.orden }}.- {{ cep.ce.nombre }}
+                                    <span style="color: green;">
+                                    <span title="Porcentaje sobre la calificación final de esta competencia específica"
+                                          id="cep_porcentaje{{ cep.id }}">
+                                        {{ progsec.ceprogsec_porcentajes|keyvalue:cep.id|floatformat:2 }}</span>%
+                                        </span>
+                                </td>
                                 <td><input type="number" min="1" max="5" class="pesocep" data-cep="{{ cep.id }}"
                                            data-progsec="{{ progsec.id }}" value="{{ cep.valor|floatformat }}"></td>
                             </tr>
@@ -382,7 +388,13 @@
                 <tbody>
                 {% for cevp in cep.cevprogsec_set.all %}
                     <tr>
-                        <td>{{ cep.ce.orden }}.{{ cevp.cev.orden }}.- {{ cevp.cev.texto }}</td>
+                        <td>{{ cep.ce.orden }}.{{ cevp.cev.orden }}.- {{ cevp.cev.texto }}
+                        <span style="color: green;">
+                                    <span title="Porcentaje sobre la calificación final de este criterio de evaluación"
+                                          id="cev_porcentaje{{ cevp.id }}">
+                                        {{ cep.cevrogsec_porcentajes|keyvalue:cevp.id }}</span>%
+                                        </span>
+                        </td>
                         <td><input type="number" min="1" max="10" class="pesocevp" data-cevp="{{ cevp.id }}"
                                    data-progsec="{{ progsec.id }}" value="{{ cevp.valor|floatformat }}"
                                    onkeydown="return false"></td>
@@ -462,13 +474,14 @@
     </div>
 </div>
 <div class="row">
-    <div class="columns large-9">
-        <label>Cargar el archivo del libro/material (opcional):
-            <input type="file" disabled="disabled" name="archivo_libro{{ progsec.id }}"
-                   id="archivo_libro{{ progsec.id }}">
-        </label>
-    </div>
-    <div class="columns large-3">
+    {#        <div class="columns large-9">#}
+    {#            <label>Cargar el archivo del libro/material (opcional):#}
+    {#                <input type="file" disabled="disabled" name="archivo_libro{{ progsec.id }}"#}
+    {#                       id="archivo_libro{{ progsec.id }}">#}
+    {#            </label>#}
+    {#        </div>#}
+    <div class="columns large-9">&nbsp;</div>
+    <div class="columns large-3 right">
         <a data-progsec="{{ progsec.id }}" class="button right cargar_libro">Cargar libro/material</a>
     </div>
 </div>
@@ -523,14 +536,22 @@
     </div>
 </div>
 <div class="row">
-    <div class="columns large-9">
+    <div class="columns large-12">
         <label>Observaciones a la actividad extraescolar/complementaria:
             <textarea data-progsec="{{ progsec.id }}" id="observaciones_actex{{ progsec.id }}"
                       placeholder="Texto opcional"></textarea>
         </label>
     </div>
-    <div class="columns large-3">
-        <label>&nbsp;<br>
+    {#    <div class="columns large-3">#}
+    {#        <label>&nbsp;<br>#}
+    {#            <a data-progsec="{{ progsec.id }}" class="button right cargar_actex">Cargar actividad</a>#}
+    {#        </label>#}
+    {#    </div>#}
+</div>
+<div class="row">
+    <div class="columns large-9">&nbsp;</div>
+    <div class="columns large-3 right">
+        <label>
             <a data-progsec="{{ progsec.id }}" class="button right cargar_actex">Cargar actividad</a>
         </label>
     </div>

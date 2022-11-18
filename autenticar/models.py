@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
 from datetime import date
 import re
+import os
+import string
+import random
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils.text import slugify
 from gauss.constantes import *
 from bancos.models import Banco
 
+def pass_generator(size=10, chars=string.ascii_letters + string.digits):
+    return ''.join(random.choice(chars) for x in range(size))
 def genera_nie(a=''):
     if a:
         a = a.upper()
@@ -39,6 +45,25 @@ NIVEL = ((1, 'Menú principal'),
          (3, 'Menú de tercer nivel'),
          (4, 'Menú de cuarto nivel'))
 
+def update_logo_acceso(instance, filename):
+    nombre = filename.partition('.')
+    nuevo_nombre = 'logo_acceso_%s.%s' % (slugify(instance.server_name), nombre[2])
+    return os.path.join("configauss/", nuevo_nombre)
+
+def update_logo_cabecera(instance, filename):
+    nombre = filename.partition('.')
+    nuevo_nombre = 'logo_cabecera_%s.%s' % (slugify(instance.server_name), nombre[2])
+    return os.path.join("configauss/", nuevo_nombre)
+
+class Configauss(models.Model):
+    server_name = models.CharField("SERVER_NAME Gauss", max_length=100, default='')
+    nombre = models.CharField("Nombre particular de la aplicación", max_length=100, default='GAUSS')
+    logo_acceso = models.ImageField("Imagen de acceso", upload_to=update_logo_acceso, blank=True, null=True)
+    texto_cabecera = models.CharField("Cadena redirigida en urls.py", max_length=200, blank=True, null=True,
+                                      default='Gestión Interna de la Entidad')
+    logo_cabecera = models.ImageField("Imagen de acceso", upload_to=update_logo_cabecera, blank=True, null=True)
+    def __str__(self):
+        return '%s --> %s' % (self.server_name, self.nombre)
 
 class Menu_default(models.Model):
     code_menu = models.CharField("Código identificador del menú", max_length=100, blank=True, null=True)

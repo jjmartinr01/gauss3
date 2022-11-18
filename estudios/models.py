@@ -247,8 +247,10 @@ class AreaMateria(models.Model):
                      ('10PRI3', 'Segundo Ciclo Primaria - 3er Curso'), ('10PRI4', 'Segundo Ciclo Primaria - 4o Curso'),
                      ('10PRI5', 'Tercer Ciclo Primaria - 5o Curso'), ('10PRI6', 'Tercer Ciclo Primaria - 6o Curso'),
                      ('20ESO1', '1º de ESO'), ('20ESO2', '2º de ESO'), ('20ESO3', '3º de ESO'), ('20ESO4', '4º de ESO'),
-                     ('30CFGB1', '1º Ciclo Formativo de Grado Básico'),
-                     ('30CFGB2', '2º Ciclo Formativo de Grado Básico'),
+                     # ('30CFGB1', '1º Ciclo Formativo de Grado Básico borrar'),
+                     # ('30CFGB2', '2º Ciclo Formativo de Grado Básico borrar'),
+                     ('30FPB1', '1º Ciclo Formativo de Grado Básico'),
+                     ('30FPB2', '2º Ciclo Formativo de Grado Básico'),
                      ('50BAC1C', '1º Bachillerato de Ciencias y Tecnología'),
                      ('50BAC2C', '2º Bachillerato de Ciencias y Tecnología'),
                      ('50BAC1H', '1º Bachillerato de Humanidades y Ciencias Sociales'),
@@ -263,6 +265,7 @@ class AreaMateria(models.Model):
     texto = models.TextField('Descripción del Área/Materia', blank=True, null=True)
     curso = models.CharField('Curso', choices=CURSOS_LOMLOE, max_length=8, blank=True, null=True)
     periodos = models.FloatField('Número de periodos u horas semanales', default=3, blank=True, null=True)
+    clave_ex = models.CharField("Clave externa", max_length=15, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'Áreas/Materias'

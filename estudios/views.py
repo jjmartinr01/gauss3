@@ -12,7 +12,7 @@ from autenticar.control_acceso import permiso_required
 from entidades.models import Subentidad, Gauser_extra, Ronda, CargaMasiva, Dependencia, Cargo
 from entidades.tasks import carga_masiva_from_excel
 from estudios.models import Curso, Materia, ETAPAS, Grupo, Matricula, DescriptorOperativo, AreaMateria, \
-    CompetenciaEspecifica, CriterioEvaluacion, PerfilSalida, CompetenciaClave
+    CompetenciaEspecifica, CriterioEvaluacion, PerfilSalida, CompetenciaClave, Gauser_extra_estudios
 from gauss.funciones import usuarios_de_gauss, usuarios_ronda, human_readable_list, html_to_pdf
 from gauss.rutas import MEDIA_PENDIENTES
 from programaciones.models import Materia_programaciones
@@ -154,6 +154,17 @@ def configura_grupos(request):
             grupo.cursos.clear()
             grupo.cursos.add(*cursos)
             return JsonResponse({'ok': True})
+        elif action == 'update_alumnos':
+            grupo = Grupo.objects.get(id=request.POST['grupo'], ronda=g_e.ronda)
+            alumnos = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=request.POST.getlist('alumnos[]'))
+            for gee in Gauser_extra_estudios.objects.filter(grupo=grupo):
+                if gee.ge not in alumnos:
+                    gee.grupo = None
+            for alumno in alumnos:
+                gee, c = Gauser_extra_estudios.objects.get_or_create(ge=alumno)
+                gee.grupo = grupo
+                gee.save()
+            return JsonResponse({'ok': True})
         elif action == 'change_campo_texto':
             grupo = Grupo.objects.get(id=request.POST['grupo'], ronda=g_e.ronda)
             setattr(grupo, request.POST['campo'], request.POST['value'])
@@ -188,8 +199,20 @@ def configura_grupos(request):
             cargo = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_docente')
             docentes = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo])
             ds = Dependencia.objects.filter(entidad=g_e.ronda.entidad, es_aula=True)
-            html = render_to_string('configura_grupos_formulario_content.html',
-                                    {'grupo': grupo, 'dependencias': ds, 'cursos': cursos, 'docentes': docentes})
+            if g_e.gauser.username == 'gauss':
+                cargo_alumno = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_alumno')
+                alumnos = Gauser_extra.objects.filter(ronda=g_e.ronda, cargos__in=[cargo_alumno])
+                html = render_to_string('configura_grupos_formulario_content.html',
+                                        {'grupo': grupo, 'dependencias': ds, 'cursos': cursos, 'docentes': docentes,
+                                         'alumnos': alumnos, 'g_e': g_e})
+            else:
+                cargo_alumno = Cargo.objects.get(entidad=g_e.ronda.entidad, clave_cargo='g_alumno')
+                gee_ids = Gauser_extra_estudios.objects.filter(ge__cargos__in=[cargo_alumno],
+                                                               grupo=grupo).values_list('ge__id', flat=True)
+                alumnos = Gauser_extra.objects.filter(ronda=g_e.ronda, id__in=gee_ids)
+                html = render_to_string('configura_grupos_formulario_content.html',
+                                        {'grupo': grupo, 'dependencias': ds, 'cursos': cursos, 'docentes': docentes,
+                                         'alumnos': alumnos, 'g_e': g_e})
             return JsonResponse({'html': html, 'ok': True})
 
     respuesta = {

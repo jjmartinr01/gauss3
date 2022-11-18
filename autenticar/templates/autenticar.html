@@ -67,13 +67,18 @@
     <input type="hidden" id="protocol" value="" name="protocol">
     <input type="hidden" id="hostname" value="" name="hostname">
     <input type="hidden" id="port" value="" name="port">
-
     <div class="row">&nbsp;</div>
     <div class="panel">
         <div class="row">
             <div class="large-6 small-6 medium-6 columns end text-right">
-                <img id="logo_general" src="/static/images/logo_gauss_acceso.png" height="76" width="273">
-                <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.svg" height="76" width="203">
+{#                <img id="logo_general" src="/static/images/logo_gauss_acceso.png" height="76" width="273">#}
+{#                <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.svg" height="76" width="203">#}
+{#                {% if request.session.configauss.logo_acceso %}#}
+{#                    <img src="{{ request.session.configauss.logo_acceso.url }}" style="height: 76px;"/>#}
+{#                {% else %}#}
+{#                    <img id="logo_general" src="/static/images/logo_gauss_acceso.png" height="76" width="273">#}
+{#                {% endif %}#}
+            <img src="{{ logo_acceso_url }}" style="height: 76px;"/>
             </div>
         </div>
         <div id="introduce_user_pass" style="display:{% if tipo == 'acceso' %}block{% else %}none{% endif %};">

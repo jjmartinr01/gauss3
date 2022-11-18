@@ -26,7 +26,12 @@
         <div>
             <h4 id="title_page"><strong>Programaciones {{ request.session.gauser_extra.ronda.nombre }}</strong></h4>
         </div>
-        <div id="formulario_add"></div>
+        <div id="info_web_link" style="display: none;">
+            <fieldset>
+                <legend>Información para hacer visibles las programaciones en la web del centro</legend>
+                fdasfa
+            </fieldset>
+        </div>
         <div id="formulario_search" style="display: block;">
             <div class="row">
                 <div class="columns large-6">
@@ -116,17 +121,21 @@
             }
         {% endcomment %}
         {% if g_e == g_ep.ge %}
-            $('#info_cargar_progsec').click(function (e){
-               e.preventDefault();
-               show_mensajes({title: 'Información <i class="fa fa-info-circle"></i>',
-               texto: 'Tras cargar tus programaciones de cursos anteriores podrás hacer copias. Estas copias podrán utilizarse durante este curso escolar.'})
+            $('#info_cargar_progsec').click(function (e) {
+                e.preventDefault();
+                show_mensajes({
+                    title: 'Información <i class="fa fa-info-circle"></i>',
+                    texto: 'Tras cargar tus programaciones de cursos anteriores podrás hacer copias. Estas copias podrán utilizarse durante este curso escolar.'
+                })
             });
             {#habilita(['s_search']);#}
             {% if g_e|has_permiso:"crea_programaciones" %}
-                habilita(['s_plus']);
+                {#habilita(['s_plus', 's_link']);#}
+                habilita(['s_plus',]);
                 $('#plus_sign').click(function (event) {
                     event.preventDefault();
                     $('#formulario_crear').toggle();
+                    $(document).scrollTop($('#title_page').offset().top - 150);
                     setTimeout(function () {
                         $('#curso_progsec').select2();
                         $('#areamateria_progsec').select2();
@@ -509,6 +518,9 @@
                         if (data.ok) {
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
+                            show_mensajes({'title': '<i class="fa fa-warning"></i> Error', 'texto': data.msg})
+                            $('#tipo' + data.progsec).val(data.tipo);
+                            $('#tipo' + data.progsec).trigger('change');
                             $('#update_error').show().delay(1500).fadeOut();
                         }
                     });
@@ -559,10 +571,13 @@
                     function (data) {
                         if (data.ok) {
                             $('.valor_ce' + cep).html(cep_peso);
+                            for (var cep_id in data.ceprogsec_porcentajes) {
+                                $('#cep_porcentaje' + cep_id).html(data.ceprogsec_porcentajes[cep_id]);
+                            }
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
-                            show_mensajes({title:'<i class="fa fa-warning"></i> Aviso', texto: data.msg})
+                            show_mensajes({title: '<i class="fa fa-warning"></i> Aviso', texto: data.msg})
                         }
                     });
             });
@@ -575,10 +590,13 @@
                     function (data) {
                         if (data.ok) {
                             $('#cevalponderada' + id).html(data.html);
+                            for (var cev_id in data.cevrogsec_porcentajes) {
+                                $('#cev_porcentaje' + cev_id).html(data.cevrogsec_porcentajes[cev_id]);
+                            }
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
-                            show_mensajes({title:'<i class="fa fa-warning"></i> Aviso', texto: data.msg})
+                            show_mensajes({title: '<i class="fa fa-warning"></i> Aviso', texto: data.msg})
                         }
                     });
             });
@@ -612,11 +630,11 @@
             });
 
             $('#Contenido').on('click', '.pdf_progsec', function (e) {
-                    e.preventDefault();
-                    {#genera_pdf_informe();#}
-                    $('#action').val('pdf_progsec');
-                    document.getElementById('{{formname}}').submit();
-                });
+                e.preventDefault();
+                {#genera_pdf_informe();#}
+                $('#action').val('pdf_progsec');
+                document.getElementById('{{formname}}').submit();
+            });
 
             $('#Contenido').on('click', '.backup_progsec', function (e) { // sag
                     e.preventDefault();

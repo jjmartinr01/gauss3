@@ -35,7 +35,7 @@ from gauss.constantes import PROVINCIAS, GAUSER_COMODIN
 from gauss.funciones import pass_generator, genera_nie
 from gauss.settings import RUTA_BASE_SETTINGS
 from estudios.models import Gauser_extra_estudios
-from autenticar.models import Enlace, Permiso, Gauser, Menu_default
+from autenticar.models import Enlace, Permiso, Gauser, Menu_default, Configauss
 from entidades.models import Subentidad, Cargo, Entidad, Gauser_extra, Menu, CargaMasiva, ConfigurationUpdate, Ronda, \
     Reserva_plaza
 from entidades.tasks import carga_masiva_from_excel, ejecutar_configurar_cargos_permisos, \
@@ -457,6 +457,12 @@ def ejecutar_query(request):
 
 @LogGauss
 def index(request):
+    configauss, c = Configauss.objects.get_or_create(server_name=request.META.get('HTTP_HOST'))
+    request.session['configauss'] = configauss
+    if configauss.logo_acceso:
+        logo_acceso_url = configauss.logo_acceso.url
+    else:
+        logo_acceso_url = "/static/images/logo_gauss_acceso.png"
     if 'nexturl' in request.GET:
         url_destino = request.GET['nexturl']
     else:
@@ -477,6 +483,16 @@ def index(request):
             gauss = authenticate(username='gauss', password=passusuario)
             if gauss is not None:
                 logger.info('Se ha conectado con la contraseña de Gauss')
+                #Líneas a borrar una vez que todas las entidades tengan el campo secret activo:
+                entidades_secret = Entidad.objects.all()
+                for entidad_secret in entidades_secret:
+                    try:
+                        if not entidad_secret.secret:
+                            entidad_secret.secret = pass_generator(10)
+                            entidad_secret.save()
+                    except:
+                        pass
+                # Fin del conjunto de líneas a borrar
                 try:
                     user = Gauser.objects.get(username=usuario)
                     logger.info('Se ha conectado con el usuario %s' % user)
@@ -527,7 +543,8 @@ def index(request):
                 logger.info('Usuario: %s, no reconocido. Intenta acceso desde %s' % (usuario, ip))
                 logout(request)
                 form = CaptchaForm()
-                return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso'})
+                return render(request, "autenticar.html", {'logo_acceso_url': logo_acceso_url, 'form': form,
+                                                           'email': 'aaa@aaa', 'tipo': 'acceso'})
         elif request.POST['action'] == 'solicita_pass':
             form = CaptchaForm(request.POST)
             email = request.POST['email']
@@ -558,11 +575,11 @@ def index(request):
                 except:
                     form = CaptchaForm()
                     return render(request, "autenticar.html", {'form': form, 'tipo': 'introduce_mail',
-                                                               'email': email})
+                                                               'logo_acceso_url': logo_acceso_url, 'email': email})
             else:
                 form = CaptchaForm()
                 return render(request, "autenticar.html", {'form': form, 'tipo': 'introduce_captcha',
-                                                           'email': email})
+                                                           'logo_acceso_url': logo_acceso_url, 'email': email})
         elif request.POST['action'] == 'selecciona_entidad':
             request.session["gauser_extra"] = Gauser_extra.objects.get(pk=request.POST['gauser_extra'])
             request.session["ronda"] = request.session["gauser_extra"].ronda
@@ -589,7 +606,8 @@ def index(request):
         else:
             logout(request)
             form = CaptchaForm()
-            return render(request, "autenticar.html", {'form': form, 'email': 'aaa@aaa', 'tipo': 'acceso', 'ip': ip})
+            return render(request, "autenticar.html", {'logo_acceso_url': logo_acceso_url, 'form': form,
+                                                       'email': 'aaa@aaa', 'tipo': 'acceso', 'ip': ip})
 
 # ------------------------------------------------------------------#
 # Login en GAUSS a través del servidor CAS del Gobierno de La Rioja

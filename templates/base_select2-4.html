@@ -90,7 +90,11 @@
         <div class="columns large-6 medium-6 small-6 cabecera_gauss2" style="padding-top:3px;height:43px;">
             <div class="row">
                 <div class="columns large-4 medium-4 small-4" style="padding-top:3px;height:43px;">
-                    <img src="/static/images/logo_gauss.png" id="logo_gauss" style="float: right;"/>
+                    {% if request.session.configauss.logo_cabecera %}
+                        <img src="{{request.session.configauss.logo_cabecera.url}}" id="logo_gauss" style="float: right;height: 43px;"/>
+                    {% else %}
+                        <img src="/static/images/logo_gauss.png" id="logo_gauss" style="float: right;"/>
+                    {% endif %}
                 </div>
                 <div class="columns large-8 medium-8 small-8">
                     <div class="row" style="margin-top: -7px;">

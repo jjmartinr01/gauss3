@@ -91,6 +91,12 @@
 
 
 </style>
+{% if not pdf %}
+<form action="/verprogramacion/{{ progsec.pga.ronda.entidad.secret }}/{{ progsec.id }}/" method="GET">
+    <input type="hidden" name="pdf" value="1">
+    <button type="submit" style="position: fixed;top:40px;right: 30px;">Genera PDF</button>
+</form>
+{% endif %}
 <h1>Programación Didáctica</h1>
 <h2>{{ progsec.nombre }}</h2>
 <p style="text-align: center; font-weight: bold;">{{ progsec.areamateria.nombre }} -

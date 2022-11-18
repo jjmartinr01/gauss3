@@ -90,11 +90,13 @@ def get_calalumvalor_de_calalum(ca):
     except Exception as msg:
         return str(msg)
 
+@register.filter
+def keyvalue(diccionario, key):
+    return diccionario[key]
 
 @register.filter
 def float2stringpoint(number):
     return str(number).replace(',', '.')
-
 
 @register.filter
 def get_rondas_ge(ge):
@@ -134,11 +136,9 @@ def get_posibles_psec(cuaderno):
 def get_recpv_xs(recp, y):
     return recp.repoescalacpvalor_set.filter(y=y)
 
-
 @register.filter
 def calificacion_alumno(cuaderno, alumno):
     return cuaderno.calificacion_alumno(alumno)
-
 
 #################################################
 ########  Estas dos funciones trabajan juntas para crear una función de tres variables
@@ -166,7 +166,6 @@ def get_calalumce_valor(cuaderno_cep, alumno):
         return cuaderno.calificacion_alumno_ce(alumno, cep.ce)
     except Exception as msg:
         return str(msg)
-
 
 ########  Fin de las dos funciones
 #################################################

@@ -46,8 +46,12 @@
     <div id="main_div">
         <div class="row">
             <div class="large-12 small-12 medium-12 columns text-center">
-                <img id="logo_general" src="/static/images/logo_gauss_acceso.png" height="76" width="273">
-                <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.svg" height="76" width="203">
+                {#                <img id="logo_gobierno" src="/static/images/logo_gauss_gobierno.svg" height="76" width="203">#}
+                {% if request.session.configauss.logo_acceso %}
+                    <img src="{{ request.session.configauss.logo_acceso.url }}" style="height: 76px;"/>
+                {% else %}
+                    <img id="logo_general" src="/static/images/logo_gauss_acceso.png" height="76" width="273">
+                {% endif %}
             </div>
         </div>
         <div>
@@ -61,8 +65,13 @@
                             <img src="{{ gauser_extra.ronda.entidad.anagrama.url }}" class="ent_select"
                                  alt="{{ gauser_extra.ronda.entidad.anagrama.url }}">
                         {% else %}
-                            <img src="/static/images/logo_gauss.png" class="ent_select"
-                                 alt="{{ gauser_extra.ronda.entidad.name }}">
+                            {% if request.session.configauss.logo_cabecera %}
+                                <img src="{{ request.session.configauss.logo_cabecera.url }}" class="ent_select"
+                                     alt="{{ gauser_extra.ronda.entidad.name }}"/>
+                            {% else %}
+                                <img src="/static/images/logo_gauss.png" class="ent_select"
+                                     alt="{{ gauser_extra.ronda.entidad.name }}">
+                            {% endif %}
                         {% endif %}
                         <figcaption><b>{{ gauser_extra.ronda.entidad.name }}</b></figcaption>
                     </figure>

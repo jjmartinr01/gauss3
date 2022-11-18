@@ -1,0 +1,27 @@
+{% load entidades_extras %}
+{% load programaciones_extras %}
+<htm>
+    <style>
+        html {
+            font-family: Helvetica, Arial;
+        }
+        p {
+            text-align: justify;
+        }
+    </style>
+    {#<input type="hidden" name="centro" id="centro" value="{{ progsecs.0.pga.ronda.entidad.code }}">#}
+    <h1>Programaciones Didácticas</h1>
+    {% for progsec in progsecs %}
+        {% ifchanged progsec.areamateria.curso %}
+            <h2>{{ progsec.areamateria.get_curso_display }}</h2>
+        {% endifchanged %}
+        <p>
+            <a class="verprogsec" href="/verprogramacion/{{ entidad.secret }}/{{ progsec.id }}/" target="_blank">
+                {{ progsec.areamateria.nombre }}
+            </a>
+        </p>
+    {% endfor %}
+<script>
+
+</script>
+</htm>

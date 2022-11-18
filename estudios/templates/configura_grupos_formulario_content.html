@@ -88,17 +88,40 @@
             </select>
         </label>
     </div>
-
-
 </div>
 
-{% if grupo.observaciones %}
+{% if g_e.gauser.username == 'gauss' %}
     <div class="row">
         <div class="columns large-12">
-            <label>Observaciones:
+            <label>Alumos en este grupo:
+                <select id="alumnos{{ grupo.id }}" class="update_alumnos" data-grupo="{{ grupo.id }}" multiple>
+                    {% for alumno in alumnos %}
+                        <option value="{{ alumno.id }}"
+                                {% if alumno.gauser_extra_estudios.grupo == grupo %}selected{% endif %}>{{ alumno.gauser.get_full_name }}</option>
+                    {% endfor %}
+                </select>
             </label>
-            {% autoescape off %}{{ grupo.observaciones }}{% endautoescape %}
-            A este grupo pertenecen {{ grupo|alumnos_grupo|length }} alumnos
         </div>
     </div>
+{% else %}
+    <div class="row">
+        <div class="columns large-12">
+            <label>Alumos en este grupo:<br>
+                {% for alumno in alumnos %}
+                    <span class="label">{{ alumno.gauser.get_full_name }}</span>
+                {% endfor %}
+            </label>
+        </div>
+    </div>
+{% endif %}
+
+{% if grupo.observaciones %}
+<div class="row">
+    <div class="columns large-12">
+        <label>Observaciones:
+        </label>
+        {% autoescape off %}{{ grupo.observaciones }}{% endautoescape %}
+        A este grupo pertenecen {{ grupo|alumnos_grupo|length }} alumnos
+    </div>
+</div>
 {% endif %}

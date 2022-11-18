@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django import forms
 
-from autenticar.models import Enlace, Gauser, Permiso, Menu_default
+from autenticar.models import Enlace, Gauser, Permiso, Menu_default, Configauss
 
 
 
@@ -39,3 +39,4 @@ admin.site.register(Gauser, MyUserAdmin)
 admin.site.register(Permiso, PermisoAdmin)
 admin.site.register(Enlace)
 admin.site.register(Menu_default)
+admin.site.register(Configauss)

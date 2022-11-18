@@ -706,7 +706,7 @@ class ProgSec(models.Model):
 
     def get_permiso(self, gep):
         permiso = ''
-        if self.cuadernoprof_set.all().count() > 0:
+        if self.cuadernoprof_set.filter(borrado=False).count() > 0:
             permiso += 'C'
         if gep == self.gep:
             permiso += 'LEX'
@@ -777,6 +777,12 @@ class ProgSec(models.Model):
     def ces_asignatura(self, asignatura):
         return self.areamateria.competenciaespecifica_set.filter(asignatura=asignatura)
 
+    @property
+    def ceprogsec_porcentajes(self):
+        ceps = self.ceprogsec_set.all()
+        total_valores = ceps.aggregate(models.Sum('valor'))['valor__sum']
+        return {cep.id: str(round(cep.valor/total_valores*100, 2)) for cep in ceps}
+
     def __str__(self):
         return '%s - %s (%s)' % (self.pga.ronda, self.areamateria, self.gep.ge.gauser.get_full_name())
 
@@ -796,6 +802,12 @@ class CEProgSec(models.Model):
     ce = models.ForeignKey(CompetenciaEspecifica, on_delete=models.CASCADE)
     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    @property
+    def cevrogsec_porcentajes(self):
+        cevs = self.cevprogsec_set.all()
+        total_valores = cevs.aggregate(models.Sum('valor'))['valor__sum']
+        return {cev.id: str(round(cev.valor / total_valores * 100, 2)) for cev in cevs}
 
     @property
     def num_criinstreval_vinculados(self):
@@ -1045,6 +1057,10 @@ class RepoSitApren(models.Model):
     borrada = models.BooleanField('¿Está borrada?', default=False)
     creado = models.DateField("Fecha de creación", auto_now_add=True)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+    contenidos_sbas = models.TextField('Saberes básicos que se van a trabajar en la SAP', blank=True, default='')
+
+
+
 
     class Meta:
         verbose_name_plural = 'SAP Repositorio de situaciones de aprendizaje'
@@ -1130,12 +1146,18 @@ class RepoActSitApren(models.Model):
 class RepoInstrEval(models.Model):
     ESCALAS = (('ESVCL', 'Escala de valoración cualitativa'), ('ESVCN', 'Escala de valoración cuantitativa'),
                ('LCONT', 'Lista de control'))
-    TIPOS = (('CUADE', 'Revisión del cuaderno'), ('COMPO', 'Composición y/o ensayo'), ('RANEC', 'Registro anecdótico'),
-             ('PRESC', 'Preguntas de respuesta corta'), ('PREEM', 'Preguntas de emparejamiento'),
-             ('PTINC', 'Preguntas de texto incompleto'), ('POMUL', 'Preguntas de opción múltiple'),
-             ('PRVOF', 'Preguntas de verdadero/falso justificadas'), ('PRAYD', 'Preguntas de analogías y diferencias'),
-             ('PRIEL', 'Preguntas de interpretación y/o elaboración de gráficos, tablas, mapas, ...'),
-             ('TMONO', 'Trabajo monográfico o de investigación'), ('EXATR', 'Examen tradicional/Prueba objetiva'))
+    # TIPOS = (('CUADE', 'Revisión del cuaderno'), ('COMPO', 'Composición y/o ensayo'), ('RANEC', 'Registro anecdótico'),
+    #          ('PRESC', 'Preguntas de respuesta corta'), ('PREEM', 'Preguntas de emparejamiento'),
+    #          ('PTINC', 'Preguntas de texto incompleto'), ('POMUL', 'Preguntas de opción múltiple'),
+    #          ('PRVOF', 'Preguntas de verdadero/falso justificadas'), ('PRAYD', 'Preguntas de analogías y diferencias'),
+    #          ('PRIEL', 'Preguntas de interpretación y/o elaboración de gráficos, tablas, mapas, ...'),
+    #          ('TMONO', 'Trabajo monográfico o de investigación'), ('EXATR', 'Examen tradicional/Prueba objetiva'))
+    TIPOS = (('OBSS', 'Observación sistemática'), ('PROD', 'Procesos de diálogo/Debates'),
+             ('ESQMA', 'Esquemas y mapas conceptuales'), ('PREJ', 'Pruebas de ejecución'),
+             ('PRESE', 'Presentación de un producto'), ('CUADE', 'Revisión del cuaderno o producto'),
+             ('EXATR', 'Examen tradicional/Prueba objetiva/competencial'),
+             ('BLOOM', 'Preguntas de análisis, evaluación y/o creación'), ('COMPO', 'Composición y/o ensayo'),
+             ('TMONO', 'Trabajo monográfico o de investigación'))
     asapren = models.ForeignKey(RepoActSitApren, on_delete=models.CASCADE, blank=True, null=True)
     tipo = models.CharField('Tipo de instrumento', blank=True, max_length=10, choices=TIPOS)
     nombre = models.CharField('Nombre dado al instrumento', blank=True, max_length=300)
@@ -1243,9 +1265,9 @@ class CuadernoProf(models.Model):
         try:
             return self.calalumce_set.get(alumno=alumno, cep__ce=ce).valor
         except:
-            cep = CEProgSec.objects.get(psec=self.psec, ce=ce)
-            cace = CalAlumCE.objects.create(alumno=alumno, cp=self, cep=cep)
-            return 0
+            # cep = CEProgSec.objects.get(psec=self.psec, ce=ce)
+            # cace = CalAlumCE.objects.create(alumno=alumno, cp=self, cep=cep)
+            return 10000
         #################################################################
         ######## LINEAS DE CÓDIGO ANTIGUAS:
         # try:

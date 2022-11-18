@@ -2012,32 +2012,17 @@ def progsecundaria(request):
                                      '10PRI3': 'Segundo Ciclo Primaria', '10PRI4': 'Segundo Ciclo Primaria',
                                      '10PRI5': 'Tercer Ciclo Primaria', '10PRI6': 'Tercer Ciclo Primaria'}
                     areamateria = AreaMateria.objects.get(id=request.POST['areamateria'])
+                    nombre_psec = '%s - %s' % (areamateria.get_curso_display(), areamateria.nombre)
                     try:
                         ciclo = CURSOS_CICLOS[request.POST['curso']]
                         etapa = ''.join([i for i in request.POST['curso'] if not i.isdigit()])
                         dep, c = Departamento.objects.get_or_create(ronda=g_e.ronda, nombre=ciclo, etapa=etapa,
                                                                     abreviatura=etapa)
                         progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria,
-                                                         departamento=dep)
-                        # try:
-                        #     ProgSec.objects.get(pga=pga, areamateria=areamateria, departamento=dep)
-                        #     msg = 'Ya existe una programación para %s (%s). No se crea una nueva.' % (
-                        #         areamateria.nombre, areamateria.get_curso_display())
-                        #     return JsonResponse({'ok': False, 'msg': msg})
-                        # except:
-                        #     progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria,
-                        #                                      departamento=dep)
+                                                         departamento=dep, nombre=nombre_psec)
                     except:
                         crea_departamentos(g_e.ronda)
-                        progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria)
-                        # try:
-                        #     ProgSec.objects.get(pga=pga, areamateria=areamateria)
-                        #     msg = 'Ya existe una programación para %s (%s). No se crea una nueva.' % (
-                        #         areamateria.nombre, areamateria.get_curso_display())
-                        #     return JsonResponse({'ok': False, 'msg': msg})
-                        # except:
-                        #     crea_departamentos(g_e.ronda)
-                        #     progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria)
+                        progsec = ProgSec.objects.create(pga=pga, gep=g_ep, areamateria=areamateria, nombre=nombre_psec)
                     DocProgSec.objects.get_or_create(psec=progsec, gep=g_ep, permiso='X')
                     for ce in areamateria.competenciaespecifica_set.all():
                         cepsec = CEProgSec.objects.create(psec=progsec, ce=ce)
@@ -2085,7 +2070,11 @@ def progsecundaria(request):
                                               id=request.POST['id'])
                 permiso = progsec.get_permiso(g_ep)
                 if 'C' in permiso:
-                    msg = 'Hay cuadernos de docentes creados. Primero deberían ser borrados.'
+                    msg = '<p>Hay cuadernos de docentes creados. Primero deberían ser borrados.</p>'
+                    cuadernos = []
+                    for cuaderno in progsec.cuadernoprof_set.filter(borrado=False):
+                        cuadernos.append('<br>%s - (%s)' % (cuaderno.nombre, cuaderno.ge.gauser.get_full_name()))
+                    msg += ''.join(cuadernos)
                     return JsonResponse({'ok': False, 'msg': msg})
                 elif permiso == 'X' or progsec.gep.ge == g_e:
                     progsec.delete()
@@ -2129,7 +2118,8 @@ def progsecundaria(request):
                     for lr in sb.librorecursos.all():
                         sb_nuevo.actexcoms.add(*ps_nueva.librorecurso_set.filter(nombre=lr.nombre))
                     for sa in sb.sitapren_set.all():
-                        sa_nueva = SitApren.objects.create(sbas=sb_nuevo, objetivo=sa.objetivo, nombre=sa.nombre)
+                        sa_nueva = SitApren.objects.create(sbas=sb_nuevo, objetivo=sa.objetivo, nombre=sa.nombre,
+                                                           contenidos_sbas=sa.contenidos_sbas)
                         for cep in sa.ceps.all():
                             sa_nueva.ceps.add(*ps_nueva.ceprogsec_set.filter(ce=cep.ce))
                         for asa in sa.actsitapren_set.all():
@@ -2175,14 +2165,19 @@ def progsecundaria(request):
                 if 'E' in permiso or 'X' in permiso:
                     if request.POST['tipo'] == 'DEF':
                         definitivas = ProgSec.objects.filter(tipo='DEF', pga=pga, areamateria=progsec.areamateria)
-                        for d in definitivas:
-                            d.tipo = 'BOR'
-                            d.save()
+                        if definitivas.count() > 0:
+                            msg = '<p>Ya existe una programación "Definitiva" asociada a esta materia en su centro.</p>'
+                            msg += '<p>Antes de hacer este cambio, debe marcarse como "Borrador" dicha programación.</p>'
+                            return JsonResponse({'ok': False, 'progsec': progsec.id, 'msg': msg, 'tipo': progsec.tipo})
+                        # for d in definitivas:
+                        #     d.tipo = 'BOR'
+                        #     d.save()
                     progsec.tipo = request.POST['tipo']
                     progsec.save()
                     return JsonResponse({'ok': True, 'progsec': progsec.id})
                 else:
-                    return JsonResponse({'ok': False, 'msg': 'No tiene permiso'})
+                    msg = '<p>No tiene permiso para hacer el cambio solicitado.</p>'
+                    return JsonResponse({'ok': False, 'msg': msg, 'tipo': progsec.tipo, 'progsec': progsec.id})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'select_departamento':
@@ -2269,7 +2264,8 @@ def progsecundaria(request):
                     if valor in [1, 2, 3, 4, 5]:
                         cep.valor = valor
                         cep.save()
-                        return JsonResponse({'ok': True, 'progsec': progsec.id})
+                        return JsonResponse({'ok': True, 'progsec': progsec.id,
+                                             'ceprogsec_porcentajes': progsec.ceprogsec_porcentajes})
                     else:
                         return JsonResponse({'ok': False, 'msg': 'El peso solo puede tomar valores entre 1 y 5'})
                 else:
@@ -2288,7 +2284,8 @@ def progsecundaria(request):
                         cevp.valor = valor
                         cevp.save()
                         html = render_to_string('progsec_accordion_content_cevalponderada.html', {'cep': cevp.cepsec})
-                        return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': html})
+                        return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': html,
+                                             'cevrogsec_porcentajes': cevp.cepsec.cevrogsec_porcentajes})
                     else:
                         return JsonResponse({'ok': False, 'msg': 'El peso solo puede tomar valores entre 1 y 10'})
                 else:
@@ -2483,6 +2480,9 @@ def progsecundaria(request):
                           ({'tipo': 'button', 'nombre': 'plus', 'texto': 'Programación',
                             'title': 'Crear una nueva programación de una materia de secundaria',
                             'permiso': 'libre'},
+                           {'tipo': 'button', 'nombre': 'link', 'texto': 'Enlace web',
+                            'title': 'Obtener el código a escribir en la página web del centro para ver programaciones',
+                            'permiso': 'libre'},
                            {'tipo': 'button', 'nombre': 'search', 'texto': 'Buscar',
                             'title': 'Buscar programación a través del nombre de la materia de secundaria',
                             'permiso': 'libre'},
@@ -2504,17 +2504,55 @@ def progsecundaria(request):
 #     return HttpResponse(str(msg))
 
 
-def verprogramacion(request, centro, id):
+def verprogramacion(request, secret, id):
     try:
-        progsec = ProgSec.objects.get(id=id, pga__ronda__entidad__code=centro)
+        entidad = Entidad.objects.get(secret=secret)
+        progsec = ProgSec.objects.get(id=id, pga__ronda__entidad=entidad)
+        if 'pdf' in request.GET:
+            doc_progsec = 'Configuración de programaciones didácticas'
+            try:
+                dce = DocConfEntidad.objects.get(entidad=entidad, nombre=doc_progsec)
+            except:
+                try:
+                    dce = DocConfEntidad.objects.get(entidad=entidad, predeterminado=True)
+                except:
+                    dce = DocConfEntidad.objects.filter(entidad=entidad)[0]
+                    dce.predeterminado = True
+                    dce.save()
+                dce.pk = None
+                dce.nombre = doc_progsec
+                dce.predeterminado = False
+                dce.editable = False
+                dce.save()
+            c = render_to_string('verprogramacion.html', {'progsec': progsec, 'pdf': True})
+            pdfkit.from_string(c, dce.url_pdf, dce.get_opciones)
+            fich = open(dce.url_pdf, 'rb')
+            response = HttpResponse(fich, content_type='application/pdf')
+            nombre = progsec.areamateria.nombre + '_' + progsec.areamateria.get_curso_display()
+            response['Content-Disposition'] = 'attachment; filename=%s.pdf' % slugify(nombre)
+            return response
+
         return render(request, "verprogramacion.html",
                       {
-                          'formname': 'progsec',
+                          'formname': 'verprogramacion',
                           'progsec': progsec,
                           'tipos_procedimientos': InstrEval.TIPOS,
                       })
     except:
         pass
+
+def verprogramaciones(request, secret):
+    try:
+        entidad = Entidad.objects.get(secret=secret)
+        progsecs = ProgSec.objects.filter(pga__ronda__entidad=entidad).order_by('areamateria__curso')
+        return render(request, "verprogramaciones.html",
+                      {
+                          'formname': 'verprogramaciones',
+                          'progsecs': progsecs,
+                          'entidad': entidad,
+                      })
+    except:
+        return HttpResponse('<h1>Se ha producido un error. Petición no llevada a cabo.</h1>')
 
 
 @permiso_required('acceso_progsecundaria')
@@ -2584,7 +2622,8 @@ def progsecundaria_sb(request, id):
                 sbas = SaberBas.objects.get(id=request.POST['sb'])
                 if sbas.psec.areamateria == reposap.areamateria:
                     ceps = CEProgSec.objects.filter(psec=sbas.psec, ce__in=reposap.ces.all())
-                    sap = SitApren.objects.create(sbas=sbas, nombre=reposap.nombre, objetivo=reposap.objetivo)
+                    sap = SitApren.objects.create(sbas=sbas, nombre=reposap.nombre, objetivo=reposap.objetivo,
+                                                  contenidos_sbas=reposap.contenidos_sbas)
                     sap.ceps.add(*ceps)
                     for repoact in reposap.repoactsitapren_set.all():
                         asapren = ActSitApren.objects.create(sapren=sap, nombre=repoact.nombre,
@@ -3638,5 +3677,26 @@ def crea_calalumce_cev(request):
         from entidades.tasks import ejecutar_crea_calalumce_cev
         ejecutar_crea_calalumce_cev.apply_async(expires=300)
         return HttpResponse('Esta operación puede requerir varios minutos')
+    except Exception as msg:
+        return HttpResponse(str(msg))
+
+
+@gauss_required
+def arregla_instrevals(request):
+    info = 0
+    repoinfo = 0
+    try:
+        tipos = [t[0] for t in InstrEval.TIPOS]
+        for instreval in InstrEval.objects.all():
+            if instreval.tipo not in tipos:
+                instreval.tipo = 'OBSS'
+                instreval.save()
+                info += 1
+        for instreval in RepoInstrEval.objects.all():
+            if instreval.tipo not in tipos:
+                instreval.tipo = 'OBSS'
+                instreval.save()
+                repoinfo += 1
+        return HttpResponse('InstrEvals (%s) y RepoInstrEvals (%s) arreglados' % (info, repoinfo))
     except Exception as msg:
         return HttpResponse(str(msg))
