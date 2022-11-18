@@ -2269,7 +2269,8 @@ def progsecundaria(request):
                     if valor in [1, 2, 3, 4, 5]:
                         cep.valor = valor
                         cep.save()
-                        return JsonResponse({'ok': True, 'progsec': progsec.id})
+                        return JsonResponse({'ok': True, 'progsec': progsec.id,
+                                             'ceprogsec_porcentajes': progsec.ceprogsec_porcentajes})
                     else:
                         return JsonResponse({'ok': False, 'msg': 'El peso solo puede tomar valores entre 1 y 5'})
                 else:
@@ -2288,7 +2289,8 @@ def progsecundaria(request):
                         cevp.valor = valor
                         cevp.save()
                         html = render_to_string('progsec_accordion_content_cevalponderada.html', {'cep': cevp.cepsec})
-                        return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': html})
+                        return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': html,
+                                             'cevrogsec_porcentajes': cevp.cepsec.cevrogsec_porcentajes})
                     else:
                         return JsonResponse({'ok': False, 'msg': 'El peso solo puede tomar valores entre 1 y 10'})
                 else:

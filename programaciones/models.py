@@ -777,6 +777,12 @@ class ProgSec(models.Model):
     def ces_asignatura(self, asignatura):
         return self.areamateria.competenciaespecifica_set.filter(asignatura=asignatura)
 
+    @property
+    def ceprogsec_porcentajes(self):
+        ceps = self.ceprogsec_set.all()
+        total_valores = ceps.aggregate(models.Sum('valor'))['valor__sum']
+        return {cep.id: str(round(cep.valor/total_valores*100, 2)) for cep in ceps}
+
     def __str__(self):
         return '%s - %s (%s)' % (self.pga.ronda, self.areamateria, self.gep.ge.gauser.get_full_name())
 
@@ -796,6 +802,12 @@ class CEProgSec(models.Model):
     ce = models.ForeignKey(CompetenciaEspecifica, on_delete=models.CASCADE)
     valor = models.FloatField('Peso del criterio en la puntuación total de la Comp. Específ.', blank=True, default=1)
     modificado = models.DateTimeField("Fecha de modificación", auto_now=True)
+
+    @property
+    def cevrogsec_porcentajes(self):
+        cevs = self.cevprogsec_set.all()
+        total_valores = cevs.aggregate(models.Sum('valor'))['valor__sum']
+        return {cev.id: str(round(cev.valor / total_valores * 100, 2)) for cev in cevs}
 
     @property
     def num_criinstreval_vinculados(self):
