@@ -121,10 +121,12 @@
             }
         {% endcomment %}
         {% if g_e == g_ep.ge %}
-            $('#info_cargar_progsec').click(function (e){
-               e.preventDefault();
-               show_mensajes({title: 'Información <i class="fa fa-info-circle"></i>',
-               texto: 'Tras cargar tus programaciones de cursos anteriores podrás hacer copias. Estas copias podrán utilizarse durante este curso escolar.'})
+            $('#info_cargar_progsec').click(function (e) {
+                e.preventDefault();
+                show_mensajes({
+                    title: 'Información <i class="fa fa-info-circle"></i>',
+                    texto: 'Tras cargar tus programaciones de cursos anteriores podrás hacer copias. Estas copias podrán utilizarse durante este curso escolar.'
+                })
             });
             {#habilita(['s_search']);#}
             {% if g_e|has_permiso:"crea_programaciones" %}
@@ -569,10 +571,13 @@
                     function (data) {
                         if (data.ok) {
                             $('.valor_ce' + cep).html(cep_peso);
+                            for (var cep_id in data.ceprogsec_porcentajes) {
+                                $('#cep_porcentaje' + cep_id).html(data.ceprogsec_porcentajes[cep_id]);
+                            }
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
-                            show_mensajes({title:'<i class="fa fa-warning"></i> Aviso', texto: data.msg})
+                            show_mensajes({title: '<i class="fa fa-warning"></i> Aviso', texto: data.msg})
                         }
                     });
             });
@@ -585,10 +590,13 @@
                     function (data) {
                         if (data.ok) {
                             $('#cevalponderada' + id).html(data.html);
+                            for (var cev_id in data.cevrogsec_porcentajes) {
+                                $('#cev_porcentaje' + cev_id).html(data.cevrogsec_porcentajes[cev_id]);
+                            }
                             $("#update_ok").show().delay(1500).fadeOut();
                         } else {
                             $('#update_error').show().delay(1500).fadeOut();
-                            show_mensajes({title:'<i class="fa fa-warning"></i> Aviso', texto: data.msg})
+                            show_mensajes({title: '<i class="fa fa-warning"></i> Aviso', texto: data.msg})
                         }
                     });
             });
@@ -622,11 +630,11 @@
             });
 
             $('#Contenido').on('click', '.pdf_progsec', function (e) {
-                    e.preventDefault();
-                    {#genera_pdf_informe();#}
-                    $('#action').val('pdf_progsec');
-                    document.getElementById('{{formname}}').submit();
-                });
+                e.preventDefault();
+                {#genera_pdf_informe();#}
+                $('#action').val('pdf_progsec');
+                document.getElementById('{{formname}}').submit();
+            });
 
             {% comment %}
                 $("body").on('keyup', '#busca_progsec', function (e) {

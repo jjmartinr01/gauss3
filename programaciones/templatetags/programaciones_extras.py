@@ -8,6 +8,9 @@ from programaciones.models import *
 register = Library()
 
 
+@register.filter
+def keyvalue(diccionario, key):
+    return diccionario[key]
 
 @register.filter
 def float2stringpoint(number):
