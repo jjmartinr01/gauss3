@@ -2574,6 +2574,42 @@ def progsecundaria_sb(request, id):
                 html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
                 return JsonResponse({'ok': True, 'html': html})
             except Exception as msg:
+                #sap = SitApren.objects.create(sbas=sb)
+                #html = render_to_string('progsec_sap_accordion.html', {'sap': sap})
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+                #return JsonResponse({'ok': True, 'html': html})
+        elif action == 'exportar_sap':
+            try:
+                input_nombre = request.POST['input_nombre']
+                input_contenidos_sbas = request.POST['input_contenidos_sbas']
+                input_objetivo = request.POST['input_objetivo']
+                ## Se obtiene el objeto SitAprend
+                sapren = SitApren.objects.get(id=request.POST['id'])
+
+                ## Se obtiene el objeto ActSitAprend
+                actsapren = ActSitApren.objects.get(sapren=sapren)
+                ## Se obtiene el objeto InstrEval
+                #instreval = InstrEval.objects.filter(asapren=actsapren).first()
+                instreval_all = InstrEval.objects.filter(asapren=actsapren)
+                ## Se obtiene el objeto SaberBas
+                saberbas = SaberBas.objects.get(id=sapren.sbas.id)
+                ## Se obtiene el objeto ProgSec
+                progsec = ProgSec.objects.get(id=saberbas.psec.id)
+                ## Se obtiene un objeto AreaMateria
+                areamateria = AreaMateria.objects.get(id=progsec.areamateria.id)
+                ## Se crea un repositorio de situación de aprendizaje con el area materia
+                ## de la situación de aprendizaje de la que se exporta.
+                sap = RepoSitApren.objects.create(autor=g_e, areamateria=areamateria, nombre=sapren.nombre, contenidos_sbas=sapren.contenidos_sbas, objetivo=sapren.objetivo)
+                act = RepoActSitApren.objects.create(sapren=sap,nombre=actsapren.nombre,description=actsapren.description)
+                for ie in instreval_all:
+                    RepoInstrEval.objects.create(asapren=act, tipo=ie.tipo, nombre=ie.nombre)
+                if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
+                    #sapren.delete()
+                    return JsonResponse({'ok': True})
+                else:
+                    msg = 'No tienes permiso para borrar esta situación de aprendizaje.'
+                    return JsonResponse({'ok': False, 'msg': msg})
+            except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
         elif action == 'borrar_sap':
             try:
