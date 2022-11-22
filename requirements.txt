@@ -54,7 +54,7 @@ olefile==0.46
 paramiko==2.9.3
 pdfkit==1.0.0
 pexpect==4.8.0
-Pillow==9.0.1
+Pillow==9.3.0
 prompt-toolkit==3.0.30
 protobuf==3.12.4
 ptyprocess==0.7.0
