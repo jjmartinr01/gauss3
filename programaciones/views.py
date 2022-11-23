@@ -2580,7 +2580,8 @@ def progsecundaria_sb(request, id):
         elif action == 'borrar_sap':
             try:
                 sapren = SitApren.objects.get(id=request.POST['id'])
-                if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
+                if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'E':
+                # if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
                     sapren.delete()
                     return JsonResponse({'ok': True})
                 else:
