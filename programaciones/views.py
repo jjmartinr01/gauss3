@@ -2156,6 +2156,9 @@ def progsecundaria(request):
                     else:
                         texto = request.POST['texto']
                     setattr(progsec, request.POST['campo'], texto)
+                    if request.POST['campo'] == 'nombre' and not texto:
+                        texto = '%s - %s' % (progsec.areamateria.get_curso_display(), progsec.areamateria.nombre)
+                        progsec.nombre = texto
                     progsec.save()
                     return JsonResponse({'ok': True, 'progsec': progsec.id, 'html': texto})
                 else:
@@ -2542,6 +2545,7 @@ def verprogramacion(request, secret, id):
     except:
         pass
 
+
 def verprogramaciones(request, secret):
     try:
         entidad = Entidad.objects.get(secret=secret)
@@ -2625,7 +2629,8 @@ def progsecundaria_sb(request, id):
         elif action == 'borrar_sap':
             try:
                 sapren = SitApren.objects.get(id=request.POST['id'])
-                if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
+                if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'E':
+                    # if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
                     sapren.delete()
                     return JsonResponse({'ok': True})
                 else:
@@ -3105,9 +3110,9 @@ def cuadernodocente(request):
                 cuaderno.alumnos.add(*cuaderno.grupo.gauser_extra_estudios_set.all().values_list('ge', flat=True))
                 for alumno in cuaderno.alumnos.all():
                     for cep in cuaderno.psec.ceprogsec_set.all():
-                        calalumce = CalAlumCE.objects.create(cp=cuaderno, alumno=alumno, cep=cep)
+                        calalumce, c = CalAlumCE.objects.get_or_create(cp=cuaderno, alumno=alumno, cep=cep)
                         for cevp in cep.cevprogsec_set.all():
-                            CalAlumCEv.objects.create(calalumce=calalumce, cevp=cevp)
+                            CalAlumCEv.objects.get_or_create(calalumce=calalumce, cevp=cevp)
                 html = render_to_string('cuadernodocente_accordion_content.html', {'cuaderno': cuaderno})
                 return JsonResponse({'ok': True, 'html': html, 'nombre': cuaderno.nombre})
             except:
@@ -3397,9 +3402,9 @@ def cuadernodocente(request):
                             except:
                                 pass
                     for cep in cuaderno.psec.ceprogsec_set.all():
-                        calalumce = CalAlumCE.objects.create(cp=cuaderno, alumno=alumno, cep=cep)
+                        calalumce, c = CalAlumCE.objects.get_or_create(cp=cuaderno, alumno=alumno, cep=cep)
                         for cevp in cep.cevprogsec_set.all():
-                            CalAlumCEv.objects.create(calalumce=calalumce, cevp=cevp)
+                            CalAlumCEv.objects.get_or_create(calalumce=calalumce, cevp=cevp)
                     html_span = render_to_string('cuadernodocente_accordion_content_ga_alumno.html',
                                                  {'cuaderno': cuaderno, 'alumno': alumno})
                 else:

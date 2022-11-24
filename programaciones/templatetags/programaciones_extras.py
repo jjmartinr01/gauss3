@@ -9,6 +9,10 @@ register = Library()
 
 
 @register.filter
+def cbarra2br(texto):
+    # Transformar "\n" en <br> para imprimir en html
+    return texto.replace('\n', '<br>')
+@register.filter
 def keyvalue(diccionario, key):
     return diccionario[key]
 
