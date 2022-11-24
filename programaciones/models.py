@@ -665,6 +665,7 @@ class ProgSec(models.Model):
     fin_clases = models.DateField('Fecha de fin de las clases', blank=True, null=True)
     es_copia_de = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
     procdiversidad = models.TextField('Proced. adop. medidas de aten. a la divers.', blank=True, null=True, default='')
+    planrecup = models.TextField('Organización y seguimiento de los PREs', blank=True, null=True, default='')
     identificador = models.CharField('Identificador', max_length=11, default=pass_generator)
     creado = models.DateField('Fecha de creación', auto_now_add=True)
     modificado = models.DateTimeField('Fecha de modificación', auto_now=True)
@@ -1281,9 +1282,24 @@ class CuadernoProf(models.Model):
             return self.calalumce_set.get(alumno=alumno, cep__ce=ce).valor
         except Exception as msg:
             try:
-                aviso = 'cuaderno: %s - alumno: %s - msg: %s' % (self.id, alumno.id, msg)
+                # En algún cuaderno se ha generado más de un calalumnce y, por tanto, aparece esta exception.
+                # Es necesario borrar todas las calalumnces y generarlas de nuevo
+                calalumnces = self.calalumce_set.filter(alumno=alumno, cep__ce=ce)
+                for calalumnce in calalumnces:
+                    calalumnce.calalumcev_set.all().delete()
+                calalumnces.delete()
+                calalumvalores = CalAlumValor.objects.filter(ca__alumno=alumno, ca__cp=self)
+                for calalumvalor in calalumvalores:
+                    # El grabado, save(), de un calalumvalor provoca la creación de calalumces y calalumcevs.
+                    # De esta forma regeneramos todos los valores:
+                    calalumvalor.save()
+                # Registramos el error:
+                aviso = 'cuaderno 10000: %s - alumno: %s - msg: %s' % (self.id, alumno.id, msg)
                 Aviso.objects.create(usuario=alumno, aviso=aviso, fecha=now(), aceptado=True)
-                return 10000
+                try:
+                    return self.calalumce_set.get(alumno=alumno, cep__ce=ce).valor
+                except:
+                    return 10000
             except:
                 return 20000
             # cep = CEProgSec.objects.get(psec=self.psec, ce=ce)

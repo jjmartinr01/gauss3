@@ -416,7 +416,9 @@
 </div>
 <div class="row">
     <div class="columns large-12">
-        <label>Describe aquí el procedimiento:
+        <label>En el siguiente cuadro puede describir el procedimiento. Recuerde que una programación didáctica que
+            vaya a ser publicada no debe mostrar nombres de alumnos, profesores, ... Ni tampoco descripciones que
+            afecten de manera particular a una persona. Tenga en cuenta esto en la redacción del texto.
             <textarea
                     placeholder="Introduce aquí el procedimiento para la adopción de medidas de atención a las diversidad"
                     id="procdiversidad{{ progsec.id }}" class="update_texto" data-campo="procdiversidad"
@@ -427,7 +429,24 @@
 
 <div class="row">
     <div class="columns large-12 callout panel">
-        <h3>4º Libros o materiales van a ser utilizados para el desarrollo de la materia</h3>
+        <h3>4º Organización y seguimiento de los planes de recuperación del alumnado con materias pendientes de
+            cursos anteriores</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="columns large-12">
+        <label>Describa aquí la organización y seguimiento de los PREs por parte de los docentes:
+            <textarea
+                    placeholder="Describe aquí la organización y seguimiento por parte de los docentes"
+                    id="planrecup{{ progsec.id }}" class="update_texto" data-campo="planrecup"
+                    data-id="{{ progsec.id }}">{{ progsec.planrecup }}</textarea>
+        </label>
+    </div>
+</div>
+
+<div class="row">
+    <div class="columns large-12 callout panel">
+        <h3>5º Libros o materiales van a ser utilizados para el desarrollo de la materia</h3>
         {#            <p>Indique los libros/materiales que van utilizarse para desarrollar:</p>#}
     </div>
 </div>
@@ -486,7 +505,7 @@
 <div class="row">
     <div class="columns large-12">
         <div class="panel callout">
-            <h3>5º Actividades extraescolares/complementarias que se van a llevar a cabo</h3>
+            <h3>6º Actividades extraescolares/complementarias que se van a llevar a cabo</h3>
         </div>
         {#            <p>Indique los libros/materiales que van utilizarse para desarrollar:</p>#}
     </div>
@@ -558,7 +577,7 @@
 <div class="row">
     <div class="columns large-12">
         <div class="panel callout">
-            <h3 id="unidades_programacion{{ progsec.id }}">6º Unidades de programación</h3>
+            <h3 id="unidades_programacion{{ progsec.id }}">7º Unidades de programación</h3>
         </div>
         <p>Las unidades de programación organizan la acción didáctica orientada hacia la adquisición de
             competencias. En este proceso se desarrollan los saberes básicos (conocimientos, destrezas y actitudes),
