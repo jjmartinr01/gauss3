@@ -2582,17 +2582,10 @@ def progsecundaria_sb(request, id):
                 #return JsonResponse({'ok': True, 'html': html})
         elif action == 'exportar_sap':
             try:
-                input_nombre = request.POST['input_nombre']
-                input_contenidos_sbas = request.POST['input_contenidos_sbas']
-                input_objetivo = request.POST['input_objetivo']
                 ## Se obtiene el objeto SitAprend
                 sapren = SitApren.objects.get(id=request.POST['id'])
-
-                ## Se obtiene el objeto ActSitAprend
-                actsapren = ActSitApren.objects.get(sapren=sapren)
-                ## Se obtiene el objeto InstrEval
-                #instreval = InstrEval.objects.filter(asapren=actsapren).first()
-                instreval_all = InstrEval.objects.filter(asapren=actsapren)
+                ## Se obtienen las actividades de aprendizaje asociadas
+                actsapren_all = ActSitApren.objects.filter(sapren=sapren)
                 ## Se obtiene el objeto SaberBas
                 saberbas = SaberBas.objects.get(id=sapren.sbas.id)
                 ## Se obtiene el objeto ProgSec
@@ -2602,11 +2595,27 @@ def progsecundaria_sb(request, id):
                 ## Se crea un repositorio de situación de aprendizaje con el area materia
                 ## de la situación de aprendizaje de la que se exporta.
                 sap = RepoSitApren.objects.create(autor=g_e, areamateria=areamateria, nombre=sapren.nombre, contenidos_sbas=sapren.contenidos_sbas, objetivo=sapren.objetivo)
-                act = RepoActSitApren.objects.create(sapren=sap,nombre=actsapren.nombre,description=actsapren.description)
-                for ie in instreval_all:
-                    RepoInstrEval.objects.create(asapren=act, tipo=ie.tipo, nombre=ie.nombre)
+                ## Se obtienen las competencias especificas de la situación de aprendizaje
+                for cep in sapren.ceps.all():
+                    sap.ces.add(cep.ce) #Se agregan las competencias al repo de la situacion de aprendizaje
+                for asa in actsapren_all: #Se recorren las actividades de aprendizaje
+                    act = RepoActSitApren.objects.create(sapren=sap,nombre=asa.nombre,description=asa.description)
+                    ## Se obtienen los intrumentos de evaluación, que son objetos InstrEval, de una actividad de aprendizaje
+                    instreval_all = InstrEval.objects.filter(asapren=asa)
+                    for ie in instreval_all: #se recorren los instrumentos de evaluacion
+                        repoIEval = RepoInstrEval.objects.create(asapren=act, tipo=ie.tipo, nombre=ie.nombre)
+                        criinstreval_all = CriInstrEval.objects.filter(ieval=ie) # se obtienen los criterios de evaluacion
+                        for criinstreval in criinstreval_all:
+                            #Este condicional es para no crear más de un RepoCEv asociado a una sap y un cev
+                            #por que si no el refrescon en la vista de la interfaz da un error
+                            repocev_all = RepoCEv.objects.filter(sapren=sap, cev=criinstreval.cevps.cev)
+                            if repocev_all.count() == 0:
+                                repocev = RepoCEv.objects.create(sapren=sap, cev=criinstreval.cevps.cev, valor=criinstreval.peso,modificado=criinstreval.modificado)
+                                RepoCriInstrEval.objects.create(ieval=repoIEval, cevps=repocev, peso=criinstreval.peso, modificado=criinstreval.modificado)
+                            else:
+                                repocev = repocev_all[0]
+                                RepoCriInstrEval.objects.create(ieval=repoIEval, cevps=repocev, peso=criinstreval.peso,modificado=criinstreval.modificado)
                 if sapren.sbas.psec.docprogsec_set.get(gep=g_ep).permiso == 'X':
-                    #sapren.delete()
                     return JsonResponse({'ok': True})
                 else:
                     msg = 'No tienes permiso para borrar esta situación de aprendizaje.'
