@@ -1282,20 +1282,21 @@ class CuadernoProf(models.Model):
             return self.calalumce_set.get(alumno=alumno, cep__ce=ce).valor
         except Exception as msg:
             try:
-                ## En algún cuaderno se ha generado más de un calalumnce y, por tanto, aparece esta exception.
-                ## Es necesario borrar todas las calalumnces y generarlas de nuevo
-                # calalumnces = self.calalumce_set.filter(alumno=alumno, cep__ce=ce)
-                # for calalumnce in calalumnces:
-                #     calalumnce.calalumcev_set.all().delete()
-                # calalumnces.delete()
-                # calalumvalores = CalAlumValor.objects.filter(ca__alumno=alumno, ca__cp=self)
-                # for calalumvalor in calalumvalores:
-                ##     El grabado, save(), de un calalumvalor provoca la creación de calalumces y calalumcevs.
-                    ## De esta forma regeneramos todos los valores:
-                    # calalumvalor.save()
-                ## Registramos el error:
-                aviso = 'cuaderno 10000: %s - alumno: %s - msg: %s' % (self.id, alumno.id, msg)
-                Aviso.objects.create(usuario=alumno, aviso=aviso, fecha=now(), aceptado=True)
+                # En algún cuaderno se ha generado más de un calalumnce y, por tanto, aparece esta exception.
+                # Es necesario borrar todas las calalumnces y generarlas de nuevo
+                calalumnces = self.calalumce_set.filter(alumno=alumno, cep__ce=ce)
+                if calalumnces.count() > 1:
+                    for calalumnce in calalumnces:
+                        calalumnce.calalumcev_set.all().delete()
+                    calalumnces.delete()
+                    calalumvalores = CalAlumValor.objects.filter(ca__alumno=alumno, ca__cp=self)
+                    for calalumvalor in calalumvalores:
+                    #     El grabado, save(), de un calalumvalor provoca la creación de calalumces y calalumcevs.
+                        # De esta forma regeneramos todos los valores:
+                        calalumvalor.save()
+                    # Registramos el error:
+                    aviso = 'cuaderno 10000: %s - alumno: %s - msg: %s' % (self.id, alumno.id, msg)
+                    Aviso.objects.create(usuario=alumno, aviso=aviso, fecha=now(), aceptado=True)
                 try:
                     return self.calalumce_set.get(alumno=alumno, cep__ce=ce).valor
                 except:
