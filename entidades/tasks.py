@@ -544,7 +544,7 @@ def carga_masiva_tipo_EXCEL(carga):
                     if cursos.count() > 0:
                         carga.log += '<p>cursos iguales (%s): %s - %s</p>' % (cursos.count(), d['x_curso'], ronda)
                         curso = cursos[0]
-                        cursos.exclude(pk__in=[curso.pk]).delete()
+                        #cursos.exclude(pk__in=[curso.pk]).delete()
                     else:
                         curso = Curso.objects.create(clave_ex=x_curso, ronda=ronda)
                         logger.info('Carga masiva xls. Se crea curso %s' % curso.clave_ex)
@@ -565,7 +565,7 @@ def carga_masiva_tipo_EXCEL(carga):
                     if grupos.count() > 0:
                         carga.log += '<p>grupos iguales (%s): %s - %s</p>' % (grupos.count(), d['x_unidad'], ronda)
                         grupo = grupos[0]
-                        grupos.exclude(pk__in=[grupo.pk]).delete()
+                        #grupos.exclude(pk__in=[grupo.pk]).delete()
                     else:
                         grupo = Grupo.objects.create(ronda=ronda, clave_ex=x_unidad)
                         logger.info('Carga masiva xls. Se crea grupo %s' % grupo.clave_ex)
