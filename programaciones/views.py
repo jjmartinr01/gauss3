@@ -2588,6 +2588,38 @@ def progsecundaria_sb(request, id):
                     return JsonResponse({'ok': False, 'msg': msg})
             except Exception as msg:
                 return JsonResponse({'ok': False, 'msg': str(msg)})
+        # Espe: Copiar (duplicar) SAP
+        elif action == 'copiar_sap':
+            try:
+                #codigo copiar_sap
+                sb = SaberBas.objects.get(id=request.POST['sb'])
+                sap = SitApren.objects.get(id=request.POST['sap'], sbas=sb)
+                sap_nueva = SitApren.objects.get(id=sap.id)
+                sap_nueva.pk = None
+                # sap_nueva.sbas = sb
+                sap_nueva.nombre = '%s (Copia)' % sap.nombre
+                sap_nueva.save()
+                # sap_nueva.ceps.add(*sap.ceps.all())
+
+                for act in sap.actsitapren_set.all():
+                    act_nueva = ActSitapren.objects.get(id=act.id)
+                    act_nueva.pk = None
+                    act_nueva.sapren = sap_nueva
+                    act_nueva.save()
+                    for instev in act.instreval_set.all():
+                        instev_nuevo = instev
+                        instev_nuevo.pk = None
+                        instev.asapren = act_nueva
+                        instev.save()
+                        for criinstev in instev.criinstreval_set.all():
+                            criinstev.pk = None
+                            criinstev.ieval = instev_nuevo
+                            criinstev.save()
+                html = render_to_string('progsec_sap_accordion.html', {'sap': sap_nueva})
+                return JsonResponse({'ok': True, 'html': html})
+            except Exception as msg:
+                return JsonResponse({'ok': False, 'msg': str(msg)})
+        # Espe: Fin
         elif action == 'open_accordion':
             try:
                 sap = SitApren.objects.get(sbas__psec__gep__ge__ronda__entidad=g_e.ronda.entidad,

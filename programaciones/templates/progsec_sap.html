@@ -215,6 +215,21 @@
                     }
                 });
             });
+            // Espe: Copiar (duplicar) SAP
+            $('body').on('click', '.copiar_sap', function () {
+                var sap = $(this).data('sap');
+                var sb = $(this).data('sb');
+                $.post("/progsecundaria_sb/{{ sb.id }}/", {action: 'copiar_sap', sap: sap, sb: sb},
+                    function (data) {
+                        if (data.ok) {
+                            $('#list_sbs').prepend(data.html);
+                            $("#update_ok").show().delay(1500).fadeOut();
+                        } else {
+                            $('#update_error').show().delay(1500).fadeOut();
+                        }
+                    });
+            });
+            // Espe: Fin
         {% endif %}
 
         $(document).foundation({
