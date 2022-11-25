@@ -1298,13 +1298,13 @@ class CuadernoProf(models.Model):
                     aviso = 'cuaderno 10000: %s - alumno: %s - msg: %s' % (self.id, alumno.id, msg)
                     Aviso.objects.create(usuario=alumno, aviso=aviso, fecha=now(), aceptado=True)
                 elif calalumnces.count() == 0:
-                    calalumvalores = CalAlumValor.objects.filter(ca__alumno=alumno, ca__cp=self)
-                    for calalumvalor in calalumvalores:
-                        # El grabado, save(), de un calalumvalor provoca la creación de calalumces y calalumcevs.
-                        # De esta forma regeneramos todos los valores:
-                        calalumvalor.save()
-                    # Registramos el error:
-                    aviso = 'cuaderno 10000: %s - alumno: %s - msg: %s' % (self.id, alumno.id, msg)
+                    # calalumvalores = CalAlumValor.objects.filter(ca__alumno=alumno, ca__cp=self)
+                    # for calalumvalor in calalumvalores:
+                    #    # El grabado, save(), de un calalumvalor provoca la creación de calalumces y calalumcevs.
+                    #    # De esta forma regeneramos todos los valores:
+                    #     calalumvalor.save()
+                    ## Registramos el error:
+                    aviso = 'cuaderno 10000-0: %s - alumno: %s - msg: %s' % (self.id, alumno.id, msg)
                     Aviso.objects.create(usuario=alumno, aviso=aviso, fecha=now(), aceptado=True)
                     return 0
                 try:

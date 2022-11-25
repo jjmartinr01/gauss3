@@ -17,6 +17,7 @@
         </div>
         {% if request.session.gauser_extra|has_permiso:'carga_masiva_racima' %}
             <input type="hidden" name="action" value="carga_masiva_racima">
+            <input type="hidden" name="tipo_carga" id="tipo_carga" value="">
             <div class="row">
                 <div class="columns large-8">
                     <label>Selecciona el tipo de datos a cargar:
@@ -363,13 +364,14 @@
             </div>
         {% else %}
             <input type="hidden" name="action" value="carga_masiva_csv">
+            <input type="hidden" name="tipo_carga" id="tipo_carga" value="CSV">
             <div class="panel callout">
                 <div class="row">
                     <div class="large-4 columns">
                         Archivo CSV (utf-8): <strong>{{ gauser_extra.gauser.get_full_name }}</strong>
                     </div>
                     <div class="large-8 columns">
-                        <input type="file" name="file_masivo" id="file_masivo"/></strong>
+                        <input type="file" name="file_masivo_CSV" id="file_masivo_CSV"/></strong>
                     </div>
                 </div>
             </div>
@@ -500,7 +502,8 @@
         habilita(['s_check']);
         $('#check_sign').click(function (e) {
             e.preventDefault();
-            if ($('#file_masivo').val()) {
+            var tipo_carga = $('#tipo_carga').val();
+            if ($('#file_masivo_' + tipo_carga).val()) {
                 document.getElementById("{{ formname }}").submit();
             } else {
                 show_mensajes({
@@ -515,6 +518,7 @@
             var tipo = $('#select_tipo_carga').val();
             $('.panel_carga_masiva_racima').hide();
             $('#panel_' + tipo).show();
+            $('#tipo_carga').val(tipo);
         });
         $('.hide_formulario_carga').click(function (e) {
             e.preventDefault();
